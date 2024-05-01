@@ -1,0 +1,160 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: black;
+}
+
+#canvas1 {
+    border: 5px solid black;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 100%;
+    max-height: 100%;
+    font-family: 'Love Ya Like A Sister', cursive;
+}
+/* icon */
+#firedogHead, 
+/* menu images */ 
+#mainmenubackground, #skinStage, #greenCompleted, 
+    /* forest images */ 
+    #forestmap, #forestmapNight, #forestmapFiredog, #forestmapHatFiredog, #forestmapCholoFiredog, #forestmapZabkaFiredog, #forestmapFiredogShiny, 
+    /* saving images */ 
+    #savingAnimation, #savingBookAnimation, #deleteProgressAnimation, #deleteProgressBookAnimation,  
+/* how to play */ 
+#howToPlay, #howToPlay2, #howToPlay3, #howToPlay4, #howToPlay5, #howToPlay6, #howToPlay7, #howToPlay8, 
+/* ability UI */
+    /* firedog UI */
+    #fireballUI, #fireballRedPotionUI, #divingUI, #fireballUIWhiteBorder, #divingUIWhiteBorder, #invisibleUI, #invisibleUIWhiteBorder, 
+    /* elyvorg UI */
+    #poisonUI, #gravityUI, #slashUI, #slashWarningUI, #electricUI, #electricWarningUI,
+/* entities */
+    /* firedog */
+    #player, #player2, #player3, #player4, #player5, 
+        /* firedog animations */ 
+        #dust_black, #ice_crystal, #fire, #fireball, #redPotionFireball, #bluefire, #bubble, #bluebubble, #bubble_projectile, #bubble_redPotion, #damageIndicator, 
+    /* penguin */
+    #penguinBatSprite, #penguinPistolSprite, #penguinDead,
+    /* enemies */
+        /* elyvorg */
+        #elyvorgIdle, #elyvorgLaserIdle, #elyvorgGravityIdle, #elyvorgMeteorIdle, #elyvorgPoisonIdle, #elyvorgPistolIdle, #elyvorgGhostIdle, #elyvorgInkIdle, #elyvorgIdleFireball, #elyvorgRechargeIdle, #elyvorgRun, #elyvorgJump, 
+            /* abilities */
+            #purpleWarningIndicator, #barrier, #barrier1, #barrier2, #elyvorgGhostRun, #elyvorg_laser_beam, #meteorAttack, #poisonDrop, #electricWheel, #gravitationalAura, #inkBomb, #purpleFireball, #purpleSlash, #blueArrow, #yellowArrow, #greenArrow, 
+        /* projectiles */ 
+        #leafAttack, #darkLeafAttack, #windAttack, #poison_spit,  #laser_beam, #iceBall, #darkLaser, #yellowBeam, #rockProjectile, #purpleLaser, 
+        /* goblin */
+        #goblinRun, #goblinSteal, #goblinJump, 
+        /* map1 */
+        #spinning_enemy, #enemy_fly, #vertical_bat, #enemy_bat, #skeletonBomb, #runningSkeleton, #enemy_raven, #orangeFlyMonsterWalk, #orangeFlyMonsterAttack, 
+        /* map2 */
+        #enemy_nightPlant, #enemy_spider, #enemy_ghost, #enemy_dollGhost, #aura, #vertical_ghost,
+        /* map3 */
+        #piranha, #skeletonFish, #spearFish, #electricEel, #jetFish, #piperIdle, #piperExtended, #oneEyeOcto, 
+        /* map4 */
+        #enemy_slug, #enemy_greenPlant, #spider_walk, #spider_laser_attack, #flyingBomber, #greenFlappyBird, #lilHornet, #skeletonBombSmall, #runningSkeletonSmall, #karateCrocodileIdle, #karateCrocodileFlyKick, #enemy_frog_run, #enemy_frog_poison_attack, 
+        /* map5 */
+        #enemy_bee, #angry_enemy_bee, #spider_laser_attack_climbing, #tauro, #spikeySnail, #oneEyeFly, #purpleFly, #lazyMosquito, #leafSlug, #powderFlower, #orangeCyclop, 
+        /* map6 */
+        #theRock, #theRockSmash, #dragon, #singleCactus, #rockPlant, #lazyOneEyePlant, #redOneEyeFly, #turtle, #redHedgehogNormal, #redHedgehogRolling, #volcanoWasp,  
+    /* cabin */
+    #map1cabin, #map2cabin, #map3submarine, #map4cabin, #map5cabin, #map6cave,
+    /* power up */ 
+    #redpotion, #bluepotion, #healthlive, #coin, #oxygenTank,
+    /* power down */
+    #drink, #cauldron, #blackhole,
+/* map1 */ 
+#map1Background, #map1Ground, #map1Rocks, #map1Bush, #map1Trees1, #map1Trees2, #map1Trees3, #map1Trees4, #map1Trees5, #map1Trees6, #map1Trees7, 
+/* map2 */
+#map2Background, #map2Ground, #map2CityLights1, #map2CityLights2, #map2Trees1, 
+/* map3 */
+#map3Background, #map3Ground, #map3BackgroundRocks, #map3seaPlants1, #map3seaPlants2, #map3seaPlants3, #map3seaPlants4, #map3seaPlants5, #map3seaPlants6, #map3seaPlants7, 
+/* map4 */ 
+#map4Background, #map4Ground, #map4BottomVines, #map4TopVines, #map4Trees1, #map4Trees2, #map4Trees3, #map4Trees4, 
+/* map5 */ 
+#map5Background, #map5Ground, #map5Flowers1, #map5Flowers2, #map5Bush1, #map5Bush2, #map5Trees1, #map5Trees2, #map5Trees3, #map5Trees4, #map5Trees5, 
+/* map6 */ 
+#map6Background, #map6Ground, #map6spikeStones, #map6rocks1, #map6rocks2, #map6cactus, 
+/* animations */ 
+    /* collision animations */ 
+    #singleCoin, #collisionAnimation, #explosionCollisionAnimation, #darkExplosion, #redFireballCollision, #purpleFireballCollision, #meteorExplosion, #electricityCollision, #blueCollisionAnimation, #poisonSpitSplash, #poisonDropCollision, #blackInk, #inkBombCollision, #blood, #raindropSplash, #poisonDropGroundCollision, 
+    /* ink */ 
+    #paint_splatter_1, #paint_splatter_2, #paint_splatter_3, #paint_splatter_4, #paint_splatter_5, #paint_splatter_6, #paint_splatter_7, #paint_splatter_8, #paint_splatter_9, 
+    #paint_splatter_10, #paint_splatter_11, #paint_splatter_12, #paint_splatter_13, #paint_splatter_14, #paint_splatter_15, #paint_splatter_16, #paint_splatter_17, #paint_splatter_18,
+    /* fish */ 
+    #jellyfish, #fish, #fish2, #fish3, #fish4, #fish5, #fish6, #fish7, #fish8, #fish9, #fish10, #fish11, 
+/* cutscene images */
+    /* background images */
+    #toBeContinued, #madeByDanial,
+        /* map1 cutscene images */
+            #map1blackBackground, #map1TentFireplace, #map1outsideCastleDoor, #map1KingsBedroom, #map1crypticTokenWar, #map1SafeRoom, #map1outsideLakeAndTrees, #map1crypticTokenWallpaper, 
+            #cabincutscene1, #map1Lab, #map1DestroyedTree, #map1RegeneratedTree, 
+        /* map2 cutscene images */
+            #dreamLight1, #dreamLight2, #dreamLight3, #dreamLight4, #dreamLight5, #dreamLight6, #dreamLight7, #dreamDark1, #dreamDark2, #dreamDark3, #dreamDark4, #dreamDark5, #dreamDark6, #cabincutscene1_5, #map2outsideCabin, 
+        /* map3 cutscene images */
+            #map3CutsceneCabin, #map3CutsceneCabinNight, #map3OutsideCabin, #map3InsideSubmarine, #map3Sorcerer, #map3ForestRiver, 
+        /* map4 cutscene images */
+            #map4OutsideCabin, #map4beginningForestView, #map4footsteps, #map4CloningLab, #map4hospitalBedEmpty, #map4ElyvorgFlames, #map4EvilElyvorg, #map4CabinEndCutscene, 
+        /* map5 cutscene images */
+            #map5insideCabin, 
+        /* map6 cutscene images */
+            #map6VolcanoWalkUp, #map6insideCaveLava, #map6insideCaveLavaEarthquake, #map6insideCaveLavaEarthquakeHat, #map6insideCaveLavaEarthquakeCholo, #map6insideCaveLavaEarthquakeZabka, #map6insideCaveLavaEarthquakeShiny, #map6elyvorgTokenPlaceFind, #map6elyvorgTokenPlace, #map6elyvorgTokenPlaceActive, #map6stone, #map6stone2, #map6stone3, 
+    /* normal images */
+    #scrollLetterMessageGaladon, #scrollLetterMessageGaladonClosed, #crypticTokenShining, #textBox, 
+    /* character images */
+        /* firedog */
+            /* default */
+            #firedogHappy, #firedogLaugh, #firedogAngry, #firedogAngry2, #firedogPhew, #firedogTired, #firedogHeadache, #firedogCry, #firedogSad, 
+            #firedogNormal, #firedogNormalExclamationMark, #firedogNormalQuestionMark, #firedogNormalQuestionAndExlamationMark,
+            /* hat */
+            #hatfiredogHappy, #hatfiredogLaugh, #hatfiredogAngry, #hatfiredogAngry2, #hatfiredogPhew, #hatfiredogTired, #hatfiredogHeadache, #hatfiredogCry, #hatfiredogSad, 
+            #hatfiredogNormal, #hatfiredogNormalExclamationMark, #hatfiredogNormalQuestionMark, #hatfiredogNormalQuestionAndExlamationMark,
+            /* cholo */
+            #cholofiredogHappy, #cholofiredogLaugh, #cholofiredogAngry, #cholofiredogAngry2, #cholofiredogPhew, #cholofiredogTired, #cholofiredogHeadache, #cholofiredogCry, #cholofiredogSad, 
+            #cholofiredogNormal, #cholofiredogNormalExclamationMark, #cholofiredogNormalQuestionMark, #cholofiredogNormalQuestionAndExlamationMark,
+            /* zabka */
+            #zabkafiredogHappy, #zabkafiredogLaugh, #zabkafiredogAngry, #zabkafiredogAngry2, #zabkafiredogPhew, #zabkafiredogTired, #zabkafiredogHeadache, #zabkafiredogCry, #zabkafiredogSad, 
+            #zabkafiredogNormal, #zabkafiredogNormalExclamationMark, #zabkafiredogNormalQuestionMark, #zabkafiredogNormalQuestionAndExlamationMark,
+            /* shiny */
+            #shinyfiredogHappy, #shinyfiredogLaugh, #shinyfiredogAngry, #shinyfiredogAngry2, #shinyfiredogPhew, #shinyfiredogTired, #shinyfiredogHeadache, #shinyfiredogCry, #shinyfiredogSad, 
+            #shinyfiredogNormal, #shinyfiredogNormalExclamationMark, #shinyfiredogNormalQuestionMark, #shinyfiredogNormalQuestionAndExlamationMark,
+        /* galadon */
+        #galadonNormal, #galadonSad, #galadonAmazed, #galadonHurt, #galadonScaredHurt, #galadonOh, #galadonSurprised, #galadonScared, 
+        /* quilzorin */
+        #quilzorinExplaining, #quilzorinExplaining2, #quilzorinHandUp, #quilzorinLaugh, #quilzorinNormal, #quilzorinScared, #quilzorinSurprised, 
+        /* valdorin */
+        #valdorinCrossedArms, #valdorinFistUp, #valdorinNormal, #valdorinSurprised, #ValdorinTalking,
+        /* duskmaw */
+        #duskmawLaugh, #duskmawLiftingHat, #duskmawLiftingHat2, #duskmawNormal, 
+        /* zephyrion */
+        #zephyrionDistraught, #zephyrionEyesClosed, #zephyrionHappy, #zephyrionNormal, 
+        /* penguini */
+        #penguinBatLaugh, #penguinBatTalkNormal, #penguinBatUp, #penguinGunLaugh, #penguinGunTalkNormal, #penguinGunUp, 
+    /* border images */
+        /* firedog */
+            /* default */
+            #firedogHappyBorder, #firedogLaughBorder, #firedogAngryBorder, #firedogAngry2Border, #firedogPhewBorder, #firedogTiredBorder, #firedogHeadacheBorder, #firedogCryBorder, #firedogSadBorder, 
+            #firedogNormalBorder, #firedogNormalExclamationMarkBorder, #firedogNormalQuestionMarkBorder, #firedogNormalQuestionAndExlamationMarkBorder,
+            /* hat */
+            #hatfiredogHappyBorder, #hatfiredogLaughBorder, #hatfiredogAngryBorder, #hatfiredogAngry2Border, #hatfiredogPhewBorder, #hatfiredogTiredBorder, #hatfiredogHeadacheBorder, #hatfiredogCryBorder, #hatfiredogSadBorder, 
+            #hatfiredogNormalBorder, #hatfiredogNormalExclamationMarkBorder, #hatfiredogNormalQuestionMarkBorder, #hatfiredogNormalQuestionAndExlamationMarkBorder,
+            /* cholo */
+            #cholofiredogHappyBorder, #cholofiredogLaughBorder, #cholofiredogAngryBorder, #cholofiredogAngry2Border, #cholofiredogPhewBorder, #cholofiredogTiredBorder, #cholofiredogHeadacheBorder, #cholofiredogCryBorder, #cholofiredogSadBorder, 
+            #cholofiredogNormalBorder, #cholofiredogNormalExclamationMarkBorder, #cholofiredogNormalQuestionMarkBorder, #cholofiredogNormalQuestionAndExlamationMarkBorder,
+            /* zabka */
+            #zabkafiredogHappyBorder, #zabkafiredogLaughBorder, #zabkafiredogAngryBorder, #zabkafiredogAngry2Border, #zabkafiredogPhewBorder, #zabkafiredogTiredBorder, #zabkafiredogHeadacheBorder, #zabkafiredogCryBorder, #zabkafiredogSadBorder, 
+            #zabkafiredogNormalBorder, #zabkafiredogNormalExclamationMarkBorder, #zabkafiredogNormalQuestionMarkBorder, #zabkafiredogNormalQuestionAndExlamationMarkBorder,
+            /* shiny */
+            #shinyfiredogHappyBorder, #shinyfiredogLaughBorder, #shinyfiredogAngryBorder, #shinyfiredogAngry2Border, #shinyfiredogPhewBorder, #shinyfiredogTiredBorder, #shinyfiredogHeadacheBorder, #shinyfiredogCryBorder, #shinyfiredogSadBorder, 
+            #shinyfiredogNormalBorder, #shinyfiredogNormalExclamationMarkBorder, #shinyfiredogNormalQuestionMarkBorder, #shinyfiredogNormalQuestionAndExlamationMarkBorder,
+        /* penguin */
+        #penguinBatLaughBorder, #penguinBatTalkNormalBorder, #penguinBatUpBorder, #penguinGunLaughBorder, #penguinGunTalkNormalBorder, #penguinGunUpBorder, #penguinOnFloorBorder,
+        /* elyvorg */
+        #elyvorgBorder, #elyvorgTokenBorder
+{
+    display: none;
+}

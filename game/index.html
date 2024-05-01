@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firedog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Love+Ya+Like+A+Sister&family=Pangolin&display=swap"
+        rel="stylesheet">
+    <link rel="icon" type="image/png" href="assets/howToPlay.png">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<canvas id="canvas1"></canvas>
+<!-- audio -->
+<!-- menu audio -->
+<audio id="soundtrack" src="assets/audio/menu/criminality.mp3"></audio>
+<audio id="optionSelectedSound" src="assets/audio/menu/optionSelectedSound.mp3"></audio>
+<audio id="mapOpening" src="assets/audio/menu/mapOpening.mp3"></audio>
+<audio id="shinySkinRizzSound" src="assets/audio/menu/shinySkinRizzSound.mp3" preload="auto"></audio>
+<!-- cutscene audio -->
+    <!-- background audio -->
+    <audio id="cracklingMountainCampfirewithRelaxingRiver" src="assets/audio/cutscenes/background/cracklingMountainCampfirewithRelaxingRiver.mp3" preload="auto"></audio>
+    <audio id="onTheBeachAtDusk" src="assets/audio/cutscenes/background/onTheBeachAtDusk.mp3" preload="auto"></audio>
+    <audio id="exaleDeskant" src="assets/audio/cutscenes/background/exaleDeskant.mp3" preload="auto"></audio>
+    <audio id="inTheFuture" src="assets/audio/cutscenes/background/inTheFuture.mp3" preload="auto"></audio>
+    <audio id="planetsParalysis" src="assets/audio/cutscenes/background/planetsParalysis.mp3" preload="auto"></audio>
+    <audio id="blizzardWindFireplace" src="assets/audio/cutscenes/background/blizzardWindFireplace.mp3" preload="auto"></audio>
+    <audio id="echoesOfTime" src="assets/audio/cutscenes/background/echoesOfTime.mp3" preload="auto"></audio>
+    <audio id="windBreezeSound" src="assets/audio/cutscenes/background/windBreezeSound.mp3" preload="auto"></audio>
+    <audio id="birdsChirping" src="assets/audio/cutscenes/background/birdsChirping.mp3" preload="auto"></audio>
+    <audio id="submarineSonarUnderwaterSound" src="assets/audio/cutscenes/background/submarineSonarUnderwaterSound.mp3" preload="auto"></audio>
+    <audio id="crypticTokenDarkAmbienceSound" src="assets/audio/cutscenes/background/crypticTokenDarkAmbienceSound.mp3" preload="auto"></audio>
+    <audio id="unboundPurpose" src="assets/audio/cutscenes/background/unboundPurpose.mp3" preload="auto"></audio>
+    <audio id="bubblingVolcanoLavaSound" src="assets/audio/cutscenes/background/bubblingVolcanoLavaSound.mp3" preload="auto"></audio>
+    <audio id="groundShakingSound" src="assets/audio/cutscenes/background/groundShakingSound.mp3" preload="auto"></audio>
+    <audio id="gta4Theme" src="assets/audio/cutscenes/background/gta4Theme.mp3" preload="auto"></audio>
+    <!-- sfx audio -->
+    <audio id="cashOut" src="assets/audio/cutscenes/sfx/cashOut.mp3" preload="auto"></audio>
+    <audio id="doorOpening" src="assets/audio/cutscenes/sfx/doorOpening.mp3" preload="auto"></audio>
+    <audio id="battleStarting" src="assets/audio/cutscenes/sfx/battleStarting.mp3" preload="auto"></audio>
+    <audio id="submarineDoorOpening" src="assets/audio/cutscenes/sfx/submarineDoorOpening.mp3" preload="auto"></audio>
+    <audio id="slashSound" src="assets/audio/cutscenes/sfx/slashSound.mp3" preload="auto"></audio>
+    <audio id="walkingCutsceneSound" src="assets/audio/cutscenes/sfx/walkingCutsceneSound.mp3" preload="auto"></audio>
+    <audio id="dreamSound" src="assets/audio/cutscenes/sfx/dreamSound.mp3" preload="auto"></audio>
+    <audio id="cutsceneMapOpening" src="assets/audio/cutscenes/sfx/cutsceneMapOpening.mp3" preload="auto"></audio>
+    <audio id="waterSplashSound" src="assets/audio/cutscenes/sfx/waterSplashSound.mp3" preload="auto"></audio>
+    <audio id="sorcererEnteringMindSound" src="assets/audio/cutscenes/sfx/sorcererEnteringMindSound.mp3" preload="auto"></audio>
+    <audio id="sorcererTeleportBackSound" src="assets/audio/cutscenes/sfx/sorcererTeleportBackSound.mp3" preload="auto"></audio>
+    <audio id="sorcererWaterSpellSound" src="assets/audio/cutscenes/sfx/sorcererWaterSpellSound.mp3" preload="auto"></audio>
+    <audio id="submarineRevving" src="assets/audio/cutscenes/sfx/submarineRevving.mp3" preload="auto"></audio>
+    <!-- dialogue audio -->
+    <audio id="8bit1" src="assets/audio/cutscenes/dialogueSound/8bit1.mp3" preload="auto"></audio>
+    <audio id="8bit2" src="assets/audio/cutscenes/dialogueSound/8bit2.mp3" preload="auto"></audio>
+<!-- ingame audio -->
+<!-- map soundtracks -->
+    <!-- map1 soundtracks -->
+    <audio id="map1Soundtrack" src="assets/audio/mapSoundtrack/map1Soundtrack.mp3" preload="auto" ></audio>
+    <!-- map2 soundtracks -->
+    <audio id="map2Soundtrack" src="assets/audio/mapSoundtrack/map2Soundtrack.mp3" preload="auto"></audio>
+    <!-- map3 soundtracks -->
+    <audio id="map3Soundtrack" src="assets/audio/mapSoundtrack/map3Soundtrack.mp3" preload="auto"></audio>
+    <audio id="timeTickingSound" src="assets/audio/mapSoundtrack/timeTickingSound.mp3" preload="auto"></audio>
+    <!-- map4 soundtracks -->
+    <audio id="map4Soundtrack" src="assets/audio/mapSoundtrack/map4Soundtrack.mp3" preload="auto"></audio>
+    <!-- map5 soundtracks -->
+    <audio id="map5Soundtrack" src="assets/audio/mapSoundtrack/map5Soundtrack.mp3" preload="auto"></audio>
+    <audio id="rainSound" src="assets/audio/mapSoundtrack/rainSound.mp3" preload="auto"></audio>
+    <!-- map6 soundtracks -->
+    <audio id="map6Soundtrack" src="assets/audio/mapSoundtrack/map6Soundtrack.mp3" preload="auto"></audio>
+    <audio id="crypticTokenDarkAmbienceSoundInGame" src="assets/audio/mapSoundtrack/crypticTokenDarkAmbienceSoundInGame.mp3" preload="auto"></audio>
+    <audio id="elyvorgBattleTheme" src="assets/audio/mapSoundtrack/elyvorgBattleTheme.mp3" preload="auto"></audio>
+<!-- powerup/down audio -->
+<audio id="healthLiveSound" src="assets/audio/powerUpAndDown/healthLiveSound.mp3" preload="auto"></audio>
+<audio id="coinSound" src="assets/audio/powerUpAndDown/coinSound.mp3" preload="auto"></audio>
+<audio id="bluePotionSound" src="assets/audio/powerUpAndDown/bluePotionSound.mp3" preload="auto"></audio>
+<audio id="bluePotionSound2" src="assets/audio/powerUpAndDown/bluePotionSound2.mp3" preload="auto"></audio>
+<audio id="redPotionSound" src="assets/audio/powerUpAndDown/redPotionSound.mp3" preload="auto"></audio>
+<audio id="oxygenTankSound" src="assets/audio/powerUpAndDown/oxygenTankSound.mp3" preload="auto"></audio>
+<audio id="darkHoleLaughSound" src="assets/audio/powerUpAndDown/darkHoleLaughSound.mp3" preload="auto"></audio>
+<audio id="cauldronSoundEffect" src="assets/audio/powerUpAndDown/cauldronSoundEffect.mp3" preload="auto"></audio>
+<audio id="drinkSoundEffect" src="assets/audio/powerUpAndDown/drinkSoundEffect.mp3" preload="auto"></audio>
+<!-- player audio -->
+<audio id="rollingSFX" src="assets/audio/player/rollingSFX.mp3" preload="auto"></audio>
+<audio id="rollingUnderwaterSFX" src="assets/audio/player/rollingUnderwaterSFX.mp3" preload="auto"></audio>
+<audio id="fireballSFX" src="assets/audio/player/fireballSFX.mp3" preload="auto"></audio>
+<audio id="fireballRedPotionActiveSFX" src="assets/audio/player/fireballRedPotionActiveSFX.mp3" preload="auto"></audio>
+<audio id="fireballUnderwaterSFX" src="assets/audio/player/fireballUnderwaterSFX.mp3" preload="auto"></audio>
+<audio id="fireballUnderwaterRedPotionSFX" src="assets/audio/player/fireballUnderwaterRedPotionSFX.mp3" preload="auto"></audio>
+<audio id="divingSFX" src="assets/audio/player/divingSFX.mp3" preload="auto"></audio>
+<audio id="runningSFX1" src="assets/audio/player/runningSFX1.mp3" preload="auto"></audio>
+<audio id="runningSFX2" src="assets/audio/player/runningSFX2.mp3" preload="auto"></audio>
+<audio id="jumpSFX" src="assets/audio/player/jumpSFX.mp3" preload="auto"></audio>
+<audio id="fallingSFX" src="assets/audio/player/fallingSFX.mp3" preload="auto"></audio>
+<audio id="deathFall" src="assets/audio/player/deathFall.mp3" preload="auto"></audio>
+<audio id="gettingHit" src="assets/audio/player/gettingHit.mp3" preload="auto"></audio>
+<audio id="energyReachedZeroSound" src="assets/audio/player/energyReachedZeroSound.mp3" preload="auto"></audio>
+<audio id="stunnedSound" src="assets/audio/player/stunnedSound.mp3" preload="auto"></audio>
+<audio id="dreamSoundInGame" src="assets/audio/player/dreamSoundInGame.mp3" preload="auto"></audio>
+<audio id="invisibleInSFX" src="assets/audio/player/invisibleInSFX.mp3" preload="auto"></audio>
+<audio id="invisibleOutSFX" src="assets/audio/player/invisibleOutSFX.mp3" preload="auto"></audio>
+<!-- collision audio -->
+<audio id="poofSound" src="assets/audio/collision/poofSound.mp3" preload="auto"></audio>
+<audio id="explosionCollision" src="assets/audio/collision/explosionCollision.mp3" preload="auto"></audio>
+<audio id="darkExplosionCollisionSound" src="assets/audio/collision/darkExplosionCollisionSound.mp3" preload="auto"></audio>
+<audio id="bloodSound" src="assets/audio/collision/bloodSound.mp3" preload="auto"></audio>
+<audio id="slugExplosion" src="assets/audio/collision/slugExplosion.mp3" preload="auto"></audio>
+<audio id="fireballExplosionSound" src="assets/audio/collision/fireballExplosionSound.mp3" preload="auto"></audio>
+<audio id="elyvorg_electricity_wheel_collision_sound" src="assets/audio/collision/elyvorg_electricity_wheel_collision_sound.mp3" preload="auto"></audio>
+<audio id="elyvorg_meteor_in_contact_sound" src="assets/audio/collision/elyvorg_meteor_in_contact_sound.mp3" preload="auto"></audio>
+<audio id="elyvorg_meteor_in_contact_with_ground_sound" src="assets/audio/collision/elyvorg_meteor_in_contact_with_ground_sound.mp3" preload="auto"></audio>
+<audio id="poisonDropCollisionSound" src="assets/audio/collision/poisonDropCollisionSound.mp3" preload="auto"></audio>
+<!-- enemy audio -->
+    <!-- elyvorg audio -->
+    <audio id="elyvorg_laser_attack_sound" src="assets/audio/enemies/0elyvorg/elyvorg_laser_attack_sound.mp3" preload="auto"></audio>
+    <audio id="elyvorg_meteor_attack_sound" src="assets/audio/enemies/0elyvorg/elyvorg_meteor_attack_sound.mp3" preload="auto"></audio>
+    <audio id="elyvorg_meteor_falling_sound" src="assets/audio/enemies/0elyvorg/elyvorg_meteor_falling_sound.mp3" preload="auto"></audio>
+    <audio id="elyvorg_ghost_attack_sound" src="assets/audio/enemies/0elyvorg/elyvorg_ghost_attack_sound.mp3" preload="auto"></audio>
+    <audio id="elyvorg_shield_up_sound" src="assets/audio/enemies/0elyvorg/elyvorg_shield_up_sound.mp3" preload="auto"></audio>
+    <audio id="elyvorg_shield_crack_1_sound" src="assets/audio/enemies/0elyvorg/elyvorg_shield_crack_1_sound.mp3" preload="auto"></audio>
+    <audio id="elyvorg_shield_crack_2_sound" src="assets/audio/enemies/0elyvorg/elyvorg_shield_crack_2_sound.mp3" preload="auto"></audio>
+    <audio id="elyvorg_shield_crack_3_sound" src="assets/audio/enemies/0elyvorg/elyvorg_shield_crack_3_sound.mp3" preload="auto"></audio>
+    <audio id="elyvorg_electricity_wheel_sound" src="assets/audio/enemies/0elyvorg/elyvorg_electricity_wheel_sound.mp3" preload="auto"></audio>
+    <audio id="elyvorg_electricity_wheel_warning_sound" src="assets/audio/enemies/0elyvorg/elyvorg_electricity_wheel_warning_sound.mp3" preload="auto"></audio>
+    <audio id="elyvorg_gravitational_aura_release_sound_effect" src="assets/audio/enemies/0elyvorg/elyvorg_gravitational_aura_release_sound_effect.mp3" preload="auto"></audio>
+    <audio id="elyvorg_gravitational_aura_sound_effect" src="assets/audio/enemies/0elyvorg/elyvorg_gravitational_aura_sound_effect.mp3" preload="auto"></audio>
+    <audio id="elyvorg_ink_bomb_sound" src="assets/audio/enemies/0elyvorg/elyvorg_ink_bomb_sound.mp3" preload="auto"></audio>
+    <audio id="elyvorg_ink_bomb_throw_sound" src="assets/audio/enemies/0elyvorg/elyvorg_ink_bomb_throw_sound.mp3" preload="auto"></audio>
+    <audio id="elyvorg_purple_fireball_sound_effect" src="assets/audio/enemies/0elyvorg/elyvorg_purple_fireball_sound_effect.mp3" preload="auto"></audio>
+    <audio id="elyvorg_poison_drop_indicator_sound" src="assets/audio/enemies/0elyvorg/elyvorg_poison_drop_indicator_sound.mp3" preload="auto"></audio>
+    <audio id="elyvorg_poison_drop_rain_sound" src="assets/audio/enemies/0elyvorg/elyvorg_poison_drop_rain_sound.mp3" preload="auto"></audio>
+    <audio id="elyvorg_slash_attack_sound" src="assets/audio/enemies/0elyvorg/elyvorg_slash_attack_sound.mp3" preload="auto"></audio>
+    <audio id="elyvorg_arrow_attack_sound" src="assets/audio/enemies/0elyvorg/elyvorg_arrow_attack_sound.mp3" preload="auto"></audio>
+    <!-- projectiles audio -->
+    <audio id="windAttackAudio" src="assets/audio/enemies/0projectiles/windAttackAudio.mp3" preload="auto"></audio>
+    <audio id="tornadoAudio" src="assets/audio/enemies/0projectiles/tornadoAudio.mp3" preload="auto"></audio>
+    <audio id="leafAttackAudio" src="assets/audio/enemies/0projectiles/leafAttackAudio.mp3" preload="auto"></audio>
+    <audio id="laserAttackAudio" src="assets/audio/enemies/0projectiles/laserAttackAudio.mp3" preload="auto"></audio>
+    <audio id="spitSound" src="assets/audio/enemies/0projectiles/spitSound.mp3" preload="auto"></audio>
+    <audio id="acidSoundEffect" src="assets/audio/enemies/0projectiles/acidSoundEffect.mp3" preload="auto"></audio>
+    <audio id="frozenSound" src="assets/audio/enemies/0projectiles/frozenSound.mp3" preload="auto"></audio>
+    <audio id="staticSound" src="assets/audio/enemies/0projectiles/staticSound.mp3" preload="auto"></audio>
+    <audio id="rockAttackSound" src="assets/audio/enemies/0projectiles/rockAttackSound.mp3" preload="auto"></audio>
+    <!-- goblin audio -->
+    <audio id="goblinDie" src="assets/audio/enemies/goblin/goblinDie.mp3" preload="auto"></audio>
+    <audio id="goblinStealing" src="assets/audio/enemies/goblin/goblinStealing.mp3" preload="auto"></audio>
+    <audio id="goblinRunSound" src="assets/audio/enemies/goblin/goblinRunSound.mp3" preload="auto"></audio>
+    <audio id="goblinJumpSound" src="assets/audio/enemies/goblin/goblinJumpSound.mp3" preload="auto"></audio>
+    <!-- smallFly audio -->
+    <audio id="buzzingFly" src="assets/audio/enemies/smallFly/buzzingFly.mp3" preload="auto"></audio>
+    <!-- spinningEnemy audio -->
+    <audio id="spinningChainsaw" src="assets/audio/enemies/spinningEnemy/spinningChainsaw.mp3" preload="auto"></audio>
+    <!-- raven audio -->
+    <audio id="ravenCallAudio" src="assets/audio/enemies/raven/ravenCallAudio.mp3" preload="auto"></audio>
+    <audio id="ravenSingleFlap" src="assets/audio/enemies/raven/ravenSingleFlap.mp3" preload="auto"></audio>
+    <!-- ghost audio -->
+    <audio id="ghostHmAudio" src="assets/audio/enemies/ghost/ghostHmAudio.mp3" preload="auto"></audio>
+    <!-- bat audio -->
+    <audio id="batFlapAudio" src="assets/audio/enemies/bat/batFlapAudio.mp3" preload="auto"></audio>
+    <!-- bee audio -->
+    <audio id="beeBuzzing" src="assets/audio/enemies/bee/beeBuzzing.mp3" preload="auto"></audio>
+    <audio id="angryBeeBuzzing" src="assets/audio/enemies/bee/angryBeeBuzzing.mp3" preload="auto"></audio>
+    <!-- doll audio -->
+    <audio id="auraSoundEffect" src="assets/audio/enemies/dollGhost/auraSoundEffect.mp3" preload="auto"></audio>
+    <audio id="dollHumming" src="assets/audio/enemies/dollGhost/dollHumming.mp3" preload="auto"></audio>
+    <!-- flyingBomber audio -->
+    <audio id="kiteSound" src="assets/audio/enemies/flyingBomber/kiteSound.mp3" preload="auto"></audio>
+    <audio id="throwingBombSound" src="assets/audio/enemies/flyingBomber/throwingBombSound.mp3" preload="auto"></audio>
+    <!-- nightPlant/greenPlant audio -->
+    <audio id="teethChatteringSound" src="assets/audio/enemies/nightPlant/teethChatteringSound.mp3" preload="auto"></audio>
+    <!-- skeleton audio -->
+    <audio id="fuseSound" src="assets/audio/enemies/skeleton/fuseSound.mp3" preload="auto"></audio>
+    <audio id="skeletonRattlingSound" src="assets/audio/enemies/skeleton/skeletonRattlingSound.mp3" preload="auto"></audio>
+    <!-- slug audio -->
+    <audio id="slimyWalkSound" src="assets/audio/enemies/slug/slimyWalkSound.mp3" preload="auto"></audio>
+    <!-- nightSpider audio -->
+    <audio id="nightSpiderSound" src="assets/audio/enemies/nightSpider/nightSpiderSound.mp3" preload="auto"></audio>
+    <!-- frog audio -->
+    <audio id="frogSound" src="assets/audio/enemies/frog/frogSound.mp3" preload="auto"></audio>
+    <audio id="landingJumpSound" src="assets/audio/enemies/frog/landingJumpSound.mp3" preload="auto"></audio>
+    <!-- purpleSpider audio -->
+    <audio id="purpleSpiderWalking" src="assets/audio/enemies/purpleSpider/purpleSpiderWalking.mp3" preload="auto"></audio>
+    <!-- orangeMonster audio -->
+    <audio id="orangeMonsterFlap" src="assets/audio/enemies/orangeMonster/orangeMonsterFlap.mp3" preload="auto"></audio>
+    <!-- verticalEnemyBat audio -->
+    <audio id="wooshBat" src="assets/audio/enemies/verticalEnemyBat/wooshBat.mp3" preload="auto"></audio>
+    <!-- verticalGhost audio -->
+    <audio id="verticalGhostSound" src="assets/audio/enemies/verticalGhost/verticalGhostSound.mp3" preload="auto"></audio>
+    <audio id="batPitch" src="assets/audio/enemies/verticalEnemyBat/batPitch.mp3" preload="auto"></audio>
+    <!-- piranha audio -->
+    <audio id="crunchSound" src="assets/audio/enemies/piranha/crunchSound.mp3" preload="auto"></audio>
+    <!-- skeletonFish audio -->
+    <audio id="skeletonCrunshSound" src="assets/audio/enemies/skeletonFish/skeletonCrunshSound.mp3" preload="auto"></audio>
+    <!-- electicEel audio -->
+    <audio id="electricitySound" src="assets/audio/enemies/electricEel/electricitySound.mp3" preload="auto"></audio>
+    <!-- jetFish audio -->
+    <audio id="rocketLauncherSound" src="assets/audio/enemies/jetFish/rocketLauncherSound.mp3" preload="auto"></audio>
+    <!-- spearFish audio -->
+    <audio id="stepWaterSound" src="assets/audio/enemies/spearFish/stepWaterSound.mp3" preload="auto"></audio>
+    <!-- tauro audio -->
+    <audio id="stomp" src="assets/audio/enemies/tauro/stomp.mp3" preload="auto"></audio>
+    <!-- karateCroco audio -->
+    <audio id="ahhhSound" src="assets/audio/enemies/karateCroco/ahhhSound.mp3" preload="auto"></audio>
+    <!-- purpleFly audio -->
+    <audio id="iceballThrowSound" src="assets/audio/enemies/purpleFly/iceballThrowSound.mp3" preload="auto"></audio>
+    <!-- powderFlower audio -->
+    <audio id="yellowLaserBeamSound" src="assets/audio/enemies/powderFlower/yellowLaserBeamSound.mp3" preload="auto"></audio>
+    <!-- piper audio -->
+    <audio id="extendingSound" src="assets/audio/enemies/piper/extendingSound.mp3" preload="auto"></audio>
+    <!-- theRock audio -->
+    <audio id="theRockStomp" src="assets/audio/enemies/theRock/theRockStomp.mp3" preload="auto"></audio>
+    <!-- redHedgehog audio -->
+    <audio id="hedgehogRollingSound" src="assets/audio/enemies/redHedgehog/hedgehogRollingSound.mp3" preload="auto"></audio>
+<!-- icon image -->
+<img id="firedogHead" src="assets/icons/firedogHead.png">
+<!-- menu images -->
+<img id="mainmenubackground" src="assets/menu/mainmenubackground.png">
+<img id="skinStage" src="assets/menu/skinStage.png">
+<img id="greenCompleted" src="assets/menu/greenCompleted.png">
+    <!-- forest images -->
+    <img id="forestmap" src="assets/menu/forestMap/forestmap.png">
+    <img id="forestmapNight" src="assets/menu/forestMap/forestmapNight.png">
+    <img id="forestmapFiredog" src="assets/menu/forestMap/forestmapFiredog.png">
+    <img id="forestmapHatFiredog" src="assets/menu/forestMap/forestmapHatFiredog.png">
+    <img id="forestmapCholoFiredog" src="assets/menu/forestMap/forestmapCholoFiredog.png">
+    <img id="forestmapZabkaFiredog" src="assets/menu/forestMap/forestmapZabkaFiredog.png">
+    <img id="forestmapFiredogShiny" src="assets/menu/forestMap/forestmapFiredogShiny.png">
+    <!-- saving/delete images -->
+    <img id="savingAnimation" src="assets/menu/saveAndDeleteAnimation/savingAnimation.png">
+    <img id="savingBookAnimation" src="assets/menu/saveAndDeleteAnimation/savingBookAnimation.png">
+    <img id="deleteProgressAnimation" src="assets/menu/saveAndDeleteAnimation/deleteProgressAnimation.png">
+    <img id="deleteProgressBookAnimation" src="assets/menu/saveAndDeleteAnimation/deleteProgressBookAnimation.png">
+<!-- how to play -->
+<img id="howToPlay" src="assets/menu/howToPlayImages/howToPlay.png">
+<img id="howToPlay2" src="assets/menu/howToPlayImages/howToPlay2.png">
+<img id="howToPlay3" src="assets/menu/howToPlayImages/howToPlay3.png">
+<img id="howToPlay4" src="assets/menu/howToPlayImages/howToPlay4.png">
+<img id="howToPlay5" src="assets/menu/howToPlayImages/howToPlay5.png">
+<img id="howToPlay6" src="assets/menu/howToPlayImages/howToPlay6.png">
+<img id="howToPlay7" src="assets/menu/howToPlayImages/howToPlay7.png">
+<img id="howToPlay8" src="assets/menu/howToPlayImages/howToPlay8.png">
+<!-- ability UI -->
+    <!-- firedog UI -->
+    <img id="fireballUI" src="assets/abilityUI/firedog/fireballUI.png">
+    <img id="fireballRedPotionUI" src="assets/abilityUI/firedog/fireballRedPotionUI.png">
+    <img id="divingUI" src="assets/abilityUI/firedog/divingUI.png">
+    <img id="fireballUIWhiteBorder" src="assets/abilityUI/firedog/fireballUIWhiteBorder.png">
+    <img id="divingUIWhiteBorder" src="assets/abilityUI/firedog/divingUIWhiteBorder.png">
+    <img id="invisibleUI" src="assets/abilityUI/firedog/invisibleUI.png">
+    <img id="invisibleUIWhiteBorder" src="assets/abilityUI/firedog/invisibleUIWhiteBorder.png">
+    <!-- elyvorg UI -->
+    <img id="poisonUI" src="assets/abilityUI/elyvorg/poisonUI.png">
+    <img id="gravityUI" src="assets/abilityUI/elyvorg/gravityUI.png">
+    <img id="slashUI" src="assets/abilityUI/elyvorg/slashUI.png">
+    <img id="slashWarningUI" src="assets/abilityUI/elyvorg/slashWarningUI.png">
+    <img id="electricUI" src="assets/abilityUI/elyvorg/electricUI.png">
+    <img id="electricWarningUI" src="assets/abilityUI/elyvorg/electricWarningUI.png">
+<!-- entities -->
+    <!-- firedog -->
+    <img id="player" src="assets/entities/firedog/player.png">
+    <img id="player2" src="assets/entities/firedog/player2.png">
+    <img id="player3" src="assets/entities/firedog/player3.png">
+    <img id="player4" src="assets/entities/firedog/player4.png">
+    <img id="player5" src="assets/entities/firedog/player5.png">
+    <!-- firedog animations -->
+    <img id="dust_black" src="assets/entities/firedog/animations/dust_black.png">
+    <img id="ice_crystal" src="assets/entities/firedog/animations/ice_crystal.png">
+    <img id="fire" src="assets/entities/firedog/animations/fire.png">
+    <img id="fireball" src="assets/entities/firedog/animations/fireball.png">
+    <img id="redPotionFireball" src="assets/entities/firedog/animations/redPotionFireball.png">
+    <img id="bluefire" src="assets/entities/firedog/animations/bluefire.png">
+    <img id="bubble" src="assets/entities/firedog/animations/bubble.png">
+    <img id="bluebubble" src="assets/entities/firedog/animations/bluebubble.png">
+    <img id="bubble_projectile" src="assets/entities/firedog/animations/bubble_projectile.png">
+    <img id="bubble_redPotion" src="assets/entities/firedog/animations/bubble_redPotion.png">
+    <img id="damageIndicator" src="assets/entities/firedog/animations/damageIndicator.png">
+    <!-- penguin -->
+    <img id="penguinBatSprite" src="assets/entities/penguin/penguinBatSprite.png">
+    <img id="penguinPistolSprite" src="assets/entities/penguin/penguinPistolSprite.png">
+    <img id="penguinDead" src="assets/entities/penguin/penguinDead.png">
+    <!-- enemies -->
+        <!-- projectiles -->
+        <img id="leafAttack" src="assets/entities/enemies/projectiles/leafAttack.png">
+        <img id="darkLeafAttack" src="assets/entities/enemies/projectiles/darkLeafAttack.png">
+        <img id="windAttack" src="assets/entities/enemies/projectiles/windAttack.png">
+        <img id="poison_spit" src="assets/entities/enemies/projectiles/poison_spit.png">
+        <img id="laser_beam" src="assets/entities/enemies/projectiles/laser_beam.png">
+        <img id="iceBall" src="assets/entities/enemies/projectiles/iceBall.png">
+        <img id="darkLaser" src="assets/entities/enemies/projectiles/darkLaser.png">
+        <img id="yellowBeam" src="assets/entities/enemies/projectiles/yellowBeam.png">
+        <img id="rockProjectile" src="assets/entities/enemies/projectiles/rockProjectile.png">
+        <img id="purpleLaser" src="assets/entities/enemies/projectiles/purpleLaser.png">
+        <!-- elyvorg -->
+        <img id="elyvorgIdle" src="assets/entities/enemies/Elyvorg/elyvorgIdle.png">
+        <img id="elyvorgLaserIdle" src="assets/entities/enemies/Elyvorg/elyvorgLaserIdle.png">
+        <img id="elyvorgGravityIdle" src="assets/entities/enemies/Elyvorg/elyvorgGravityIdle.png">
+        <img id="elyvorgMeteorIdle" src="assets/entities/enemies/Elyvorg/elyvorgMeteorIdle.png">
+        <img id="elyvorgPoisonIdle" src="assets/entities/enemies/Elyvorg/elyvorgPoisonIdle.png">
+        <img id="elyvorgPistolIdle" src="assets/entities/enemies/Elyvorg/elyvorgPistolIdle.png">
+        <img id="elyvorgGhostIdle" src="assets/entities/enemies/Elyvorg/elyvorgGhostIdle.png">
+        <img id="elyvorgInkIdle" src="assets/entities/enemies/Elyvorg/elyvorgInkIdle.png">
+        <img id="elyvorgIdleFireball" src="assets/entities/enemies/Elyvorg/elyvorgIdleFireball.png">
+        <img id="elyvorgRechargeIdle" src="assets/entities/enemies/Elyvorg/elyvorgRechargeIdle.png">
+        <img id="elyvorgRun" src="assets/entities/enemies/Elyvorg/elyvorgRun.png">
+        <img id="elyvorgJump" src="assets/entities/enemies/Elyvorg/elyvorgJump.png">
+            <!-- abilities -->
+            <img id="purpleWarningIndicator" src="assets/entities/enemies/Elyvorg/abilities/purpleWarningIndicator.png">
+            <img id="barrier" src="assets/entities/enemies/Elyvorg/abilities/barrier.png">
+            <img id="barrier1" src="assets/entities/enemies/Elyvorg/abilities/barrier1.png">
+            <img id="barrier2" src="assets/entities/enemies/Elyvorg/abilities/barrier2.png">
+            <img id="elyvorgGhostRun" src="assets/entities/enemies/Elyvorg/abilities/elyvorgGhostRun.png">
+            <img id="elyvorg_laser_beam" src="assets/entities/enemies/Elyvorg/abilities/elyvorg_laser_beam.png">
+            <img id="meteorAttack" src="assets/entities/enemies/Elyvorg/abilities/meteorAttack.png">
+            <img id="poisonDrop" src="assets/entities/enemies/Elyvorg/abilities/poisonDrop.png">
+            <img id="electricWheel" src="assets/entities/enemies/Elyvorg/abilities/electricWheel.png">
+            <img id="gravitationalAura" src="assets/entities/enemies/Elyvorg/abilities/gravitationalAura.png">
+            <img id="inkBomb" src="assets/entities/enemies/Elyvorg/abilities/inkBomb.png">
+            <img id="purpleFireball" src="assets/entities/enemies/Elyvorg/abilities/purpleFireball.png">
+            <img id="purpleSlash" src="assets/entities/enemies/Elyvorg/abilities/purpleSlash.png">
+            <img id="blueArrow" src="assets/entities/enemies/Elyvorg/abilities/blueArrow.png">
+            <img id="yellowArrow" src="assets/entities/enemies/Elyvorg/abilities/yellowArrow.png">
+            <img id="greenArrow" src="assets/entities/enemies/Elyvorg/abilities/greenArrow.png">
+        <!-- goblin -->
+        <img id="goblinRun" src="assets/entities/enemies/goblinRun.png">
+        <img id="goblinSteal" src="assets/entities/enemies/goblinSteal.png">
+        <img id="goblinJump" src="assets/entities/enemies/goblinJump.png">
+        <!-- map1 -->
+        <img id="spinning_enemy" src="assets/entities/enemies/Map1/spinning_enemy.png">
+        <img id="enemy_fly" src="assets/entities/enemies/Map1/enemy_fly.png">
+        <img id="vertical_bat" src="assets/entities/enemies/Map1/vertical_bat.png">
+        <img id="enemy_bat" src="assets/entities/enemies/Map1/enemy_bat.png">
+        <img id="skeletonBomb" src="assets/entities/enemies/Map1/skeletonBomb.png">
+        <img id="runningSkeleton" src="assets/entities/enemies/Map1/runningSkeleton.png">
+        <img id="enemy_raven" src="assets/entities/enemies/Map1/enemy_raven.png">
+        <img id="orangeFlyMonsterWalk" src="assets/entities/enemies/Map1/orangeFlyMonsterWalk.png">
+        <img id="orangeFlyMonsterAttack" src="assets/entities/enemies/Map1/orangeFlyMonsterAttack.png">
+        <!-- map2 -->
+        <img id="enemy_nightPlant" src="assets/entities/enemies/Map2/enemy_nightPlant.png">
+        <img id="enemy_spider" src="assets/entities/enemies/Map2/enemy_spider.png">
+        <img id="enemy_ghost" src="assets/entities/enemies/Map2/enemy_ghost.png">
+        <img id="enemy_dollGhost" src="assets/entities/enemies/Map2/enemy_dollGhost.png">
+        <img id="aura" src="assets/entities/enemies/Map2/aura.png">
+        <img id="vertical_ghost" src="assets/entities/enemies/Map2/vertical_ghost.png">
+        <!-- map3 -->
+        <img id="piranha" src="assets/entities/enemies/Map3/piranha.png">
+        <img id="skeletonFish" src="assets/entities/enemies/Map3/skeletonFish.png">
+        <img id="spearFish" src="assets/entities/enemies/Map3/spearFish.png">
+        <img id="electricEel" src="assets/entities/enemies/Map3/electricEel.png">
+        <img id="jetFish" src="assets/entities/enemies/Map3/jetFish.png">
+        <img id="piperIdle" src="assets/entities/enemies/Map3/piperIdle.png">
+        <img id="piperExtended" src="assets/entities/enemies/Map3/piperExtended.png">
+        <img id="oneEyeOcto" src="assets/entities/enemies/Map3/oneEyeOcto.png">
+        <!-- map4 -->
+        <img id="enemy_slug" src="assets/entities/enemies/Map4/enemy_slug.png">
+        <img id="enemy_greenPlant" src="assets/entities/enemies/Map4/enemy_greenPlant.png">
+        <img id="spider_walk" src="assets/entities/enemies/Map4/spider_walk.png">
+        <img id="spider_laser_attack" src="assets/entities/enemies/Map4/spider_laser_attack.png">
+        <img id="flyingBomber" src="assets/entities/enemies/Map4/flyingBomber.png">
+        <img id="greenFlappyBird" src="assets/entities/enemies/Map4/greenFlappyBird.png">
+        <img id="lilHornet" src="assets/entities/enemies/Map4/lilHornet.png">
+        <img id="skeletonBombSmall" src="assets/entities/enemies/Map4/skeletonBombSmall.png">
+        <img id="runningSkeletonSmall" src="assets/entities/enemies/Map4/runningSkeletonSmall.png">
+        <img id="karateCrocodileIdle" src="assets/entities/enemies/Map4/karateCrocodileIdle.png">
+        <img id="karateCrocodileFlyKick" src="assets/entities/enemies/Map4/karateCrocodileFlyKick.png">
+        <img id="enemy_frog_run" src="assets/entities/enemies/Map4/enemy_frog_run.png">
+        <img id="enemy_frog_poison_attack" src="assets/entities/enemies/Map4/enemy_frog_poison_attack.png">
+        <!-- map5 -->
+        <img id="enemy_bee" src="assets/entities/enemies/Map5/enemy_bee.png">
+        <img id="angry_enemy_bee" src="assets/entities/enemies/Map5/angry_enemy_bee.png">
+        <img id="spider_laser_attack_climbing" src="assets/entities/enemies/Map5/spider_laser_attack_climbing.png">
+        <img id="tauro" src="assets/entities/enemies/Map5/tauro.png">
+        <img id="spikeySnail" src="assets/entities/enemies/Map5/spikeySnail.png">
+        <img id="oneEyeFly" src="assets/entities/enemies/Map5/oneEyeFly.png">
+        <img id="purpleFly" src="assets/entities/enemies/Map5/purpleFly.png">
+        <img id="lazyMosquito" src="assets/entities/enemies/Map5/lazyMosquito.png">
+        <img id="leafSlug" src="assets/entities/enemies/Map5/leafSlug.png">
+        <img id="powderFlower" src="assets/entities/enemies/Map5/powderFlower.png">
+        <img id="orangeCyclop" src="assets/entities/enemies/Map5/orangeCyclop.png">
+        <!-- map6 -->
+        <img id="theRock" src="assets/entities/enemies/Map6/theRock.png">
+        <img id="theRockSmash" src="assets/entities/enemies/Map6/theRockSmash.png">
+        <img id="dragon" src="assets/entities/enemies/Map6/dragon.png">
+        <img id="singleCactus" src="assets/entities/enemies/Map6/singleCactus.png">
+        <img id="rockPlant" src="assets/entities/enemies/Map6/rockPlant.png">
+        <img id="lazyOneEyePlant" src="assets/entities/enemies/Map6/lazyOneEyePlant.png">
+        <img id="redOneEyeFly" src="assets/entities/enemies/Map6/redOneEyeFly.png">
+        <img id="turtle" src="assets/entities/enemies/Map6/turtle.png">
+        <img id="redHedgehogNormal" src="assets/entities/enemies/Map6/redHedgehogNormal.png">
+        <img id="redHedgehogRolling" src="assets/entities/enemies/Map6/redHedgehogRolling.png">
+        <img id="volcanoWasp" src="assets/entities/enemies/Map6/volcanoWasp.png">
+    <!-- cabin -->
+    <img id="map1cabin" src="assets/entities/cabin/map1cabin.png">
+    <img id="map2cabin" src="assets/entities/cabin/map2cabin.png">
+    <img id="map3submarine" src="assets/entities/cabin/map3submarine.png">
+    <img id="map4cabin" src="assets/entities/cabin/map4cabin.png">
+    <img id="map5cabin" src="assets/entities/cabin/map5cabin.png">
+    <img id="map6cave" src="assets/entities/cabin/map6cave.png">
+    <!-- power up -->
+    <img id="redpotion" src="assets/entities/powerUps/redpotion.png">
+    <img id="bluepotion" src="assets/entities/powerUps/bluepotion.png">
+    <img id="healthlive" src="assets/entities/powerUps/healthlive.png">
+    <img id="coin" src="assets/entities/powerUps/coin.png">
+    <img id="oxygenTank" src="assets/entities/powerUps/oxygenTank.png">
+    <!-- power down -->
+    <img id="drink" src="assets/entities/powerDown/drink.png">
+    <img id="cauldron" src="assets/entities/powerDown/cauldron.png">
+    <img id="blackhole" src="assets/entities/powerDown/blackhole.png">
+<!-- map1 -->
+<img id="map1Background" src="assets/mapsBackground/Map1/map1Background.png">
+<img id="map1Ground" src="assets/mapsBackground/Map1/map1Ground.png">
+<img id="map1Rocks" src="assets/mapsBackground/Map1/map1Rocks.png">
+<img id="map1Bush" src="assets/mapsBackground/Map1/map1Bush.png">
+<img id="map1Trees1" src="assets/mapsBackground/Map1/map1Trees1.png">
+<img id="map1Trees2" src="assets/mapsBackground/Map1/map1Trees2.png">
+<img id="map1Trees3" src="assets/mapsBackground/Map1/map1Trees3.png">
+<img id="map1Trees4" src="assets/mapsBackground/Map1/map1Trees4.png">
+<img id="map1Trees5" src="assets/mapsBackground/Map1/map1Trees5.png">
+<img id="map1Trees6" src="assets/mapsBackground/Map1/map1Trees6.png">
+<img id="map1Trees7" src="assets/mapsBackground/Map1/map1Trees7.png">
+<!-- map2 -->
+<img id="map2Background" src="assets/mapsBackground/Map2/map2Background.png">
+<img id="map2Ground" src="assets/mapsBackground/Map2/map2Ground.png">
+<img id="map2CityLights1" src="assets/mapsBackground/Map2/map2CityLights1.png">
+<img id="map2CityLights2" src="assets/mapsBackground/Map2/map2CityLights2.png">
+<img id="map2Trees1" src="assets/mapsBackground/Map2/map2Trees1.png">
+<!-- map3 -->
+<img id="map3Background" src="assets/mapsBackground/Map3/map3Background.png">
+<img id="map3Ground" src="assets/mapsBackground/Map3/map3Ground.png">
+<img id="map3BackgroundRocks" src="assets/mapsBackground/Map3/map3BackgroundRocks.png">
+<img id="map3seaPlants1" src="assets/mapsBackground/Map3/map3seaPlants1.png">
+<img id="map3seaPlants2" src="assets/mapsBackground/Map3/map3seaPlants2.png">
+<img id="map3seaPlants3" src="assets/mapsBackground/Map3/map3seaPlants3.png">
+<img id="map3seaPlants4" src="assets/mapsBackground/Map3/map3seaPlants4.png">
+<img id="map3seaPlants5" src="assets/mapsBackground/Map3/map3seaPlants5.png">
+<img id="map3seaPlants6" src="assets/mapsBackground/Map3/map3seaPlants6.png">
+<img id="map3seaPlants7" src="assets/mapsBackground/Map3/map3seaPlants7.png">
+<!-- map4 -->
+<img id="map4Background" src="assets/mapsBackground/Map4/map4Background.png">
+<img id="map4Ground" src="assets/mapsBackground/Map4/map4Ground.png">
+<img id="map4BottomVines" src="assets/mapsBackground/Map4/map4BottomVines.png">
+<img id="map4TopVines" src="assets/mapsBackground/Map4/map4TopVines.png">
+<img id="map4Trees1" src="assets/mapsBackground/Map4/map4Trees1.png">
+<img id="map4Trees2" src="assets/mapsBackground/Map4/map4Trees2.png">
+<img id="map4Trees3" src="assets/mapsBackground/Map4/map4Trees3.png">
+<img id="map4Trees4" src="assets/mapsBackground/Map4/map4Trees4.png">
+<!-- map5 -->
+<img id="map5Background" src="assets/mapsBackground/Map5/map5Background.png">
+<img id="map5Ground" src="assets/mapsBackground/Map5/map5Ground.png">
+<img id="map5Flowers1" src="assets/mapsBackground/Map5/map5Flowers1.png">
+<img id="map5Flowers2" src="assets/mapsBackground/Map5/map5Flowers2.png">
+<img id="map5Bush1" src="assets/mapsBackground/Map5/map5Bush1.png">
+<img id="map5Bush2" src="assets/mapsBackground/Map5/map5Bush2.png">
+<img id="map5Trees1" src="assets/mapsBackground/Map5/map5Trees1.png">
+<img id="map5Trees2" src="assets/mapsBackground/Map5/map5Trees2.png">
+<img id="map5Trees3" src="assets/mapsBackground/Map5/map5Trees3.png">
+<img id="map5Trees4" src="assets/mapsBackground/Map5/map5Trees4.png">
+<img id="map5Trees5" src="assets/mapsBackground/Map5/map5Trees5.png">
+<!-- map6 -->
+<img id="map6Background" src="assets/mapsBackground/Map6/map6Background.png">
+<img id="map6Ground" src="assets/mapsBackground/Map6/map6Ground.png">
+<img id="map6spikeStones" src="assets/mapsBackground/Map6/map6spikeStones.png">
+<img id="map6rocks1" src="assets/mapsBackground/Map6/map6rocks1.png">
+<img id="map6rocks2" src="assets/mapsBackground/Map6/map6rocks2.png">
+<img id="map6cactus" src="assets/mapsBackground/Map6/map6cactus.png">
+<!-- animations -->
+    <!-- collision animations -->
+    <img id="singleCoin" src="assets/animations/collisionAnimations/singleCoin.png">
+    <img id="collisionAnimation" src="assets/animations/collisionAnimations/collisionAnimation.png">
+    <img id="explosionCollisionAnimation" src="assets/animations/collisionAnimations/explosionCollisionAnimation.png">
+    <img id="meteorExplosion" src="assets/animations/collisionAnimations/meteorExplosion.png">
+    <img id="electricityCollision" src="assets/animations/collisionAnimations/electricityCollision.png">
+    <img id="darkExplosion" src="assets/animations/collisionAnimations/darkExplosion.png">
+    <img id="redFireballCollision" src="assets/animations/collisionAnimations/redFireballCollision.png">
+    <img id="purpleFireballCollision" src="assets/animations/collisionAnimations/purpleFireballCollision.png">
+    <img id="blueCollisionAnimation" src="assets/animations/collisionAnimations/blueCollisionAnimation.png">
+    <img id="poisonSpitSplash" src="assets/animations/collisionAnimations/poisonSpitSplash.png">
+    <img id="poisonDropCollision" src="assets/animations/collisionAnimations/poisonDropCollision.png">
+    <img id="blackInk" src="assets/animations/collisionAnimations/blackInk.png">
+    <img id="inkBombCollision" src="assets/animations/collisionAnimations/inkBombCollision.png">
+    <img id="blood" src="assets/animations/collisionAnimations/blood.png">
+    <img id="raindropSplash" src="assets/animations/collisionAnimations/raindropSplash.png">
+    <img id="poisonDropGroundCollision" src="assets/animations/collisionAnimations/poisonDropGroundCollision.png">
+    <!-- ink -->
+    <img id="paint_splatter_1" src="assets/animations/ink/paint-splatter-1.png">
+    <img id="paint_splatter_2" src="assets/animations/ink/paint-splatter-2.png">
+    <img id="paint_splatter_3" src="assets/animations/ink/paint-splatter-3.png">
+    <img id="paint_splatter_4" src="assets/animations/ink/paint-splatter-4.png">
+    <img id="paint_splatter_5" src="assets/animations/ink/paint-splatter-5.png">
+    <img id="paint_splatter_6" src="assets/animations/ink/paint-splatter-6.png">
+    <img id="paint_splatter_7" src="assets/animations/ink/paint-splatter-7.png">
+    <img id="paint_splatter_8" src="assets/animations/ink/paint-splatter-8.png">
+    <img id="paint_splatter_9" src="assets/animations/ink/paint-splatter-9.png">
+    <img id="paint_splatter_10" src="assets/animations/ink/paint-splatter-10.png">
+    <img id="paint_splatter_11" src="assets/animations/ink/paint-splatter-11.png">
+    <img id="paint_splatter_12" src="assets/animations/ink/paint-splatter-12.png">
+    <img id="paint_splatter_13" src="assets/animations/ink/paint-splatter-13.png">
+    <img id="paint_splatter_14" src="assets/animations/ink/paint-splatter-14.png">
+    <img id="paint_splatter_15" src="assets/animations/ink/paint-splatter-15.png">
+    <img id="paint_splatter_16" src="assets/animations/ink/paint-splatter-16.png">
+    <img id="paint_splatter_17" src="assets/animations/ink/paint-splatter-17.png">
+    <img id="paint_splatter_18" src="assets/animations/ink/paint-splatter-18.png">
+    <!-- fish -->
+    <img id="jellyfish" src="assets/animations/fish/jellyfish.png">
+    <img id="fish" src="assets/animations/fish/fish.png">
+    <img id="fish2" src="assets/animations/fish/fish2.png">
+    <img id="fish3" src="assets/animations/fish/fish3.png">
+    <img id="fish4" src="assets/animations/fish/fish4.png">
+    <img id="fish5" src="assets/animations/fish/fish5.png">
+    <img id="fish6" src="assets/animations/fish/fish6.png">
+    <img id="fish7" src="assets/animations/fish/fish7.png">
+    <img id="fish8" src="assets/animations/fish/fish8.png">
+    <img id="fish9" src="assets/animations/fish/fish9.png">
+    <img id="fish10" src="assets/animations/fish/fish10.png">
+    <img id="fish11" src="assets/animations/fish/fish11.png">
+<!-- cutscene images -->
+    <!-- background images -->
+        <img id="toBeContinued" src="assets/cutscenes/background/toBeContinued.png">
+        <img id="madeByDanial" src="assets/cutscenes/background/madeByDanial.png">
+        <!-- map1 images -->
+        <img id="map1blackBackground" src="assets/cutscenes/background/map1blackBackground.png">
+        <img id="map1TentFireplace" src="assets/cutscenes/background/map1TentFireplace.png">
+        <img id="map1outsideCastleDoor" src="assets/cutscenes/background/map1outsideCastleDoor.png">
+        <img id="map1KingsBedroom" src="assets/cutscenes/background/map1KingsBedroom.png">
+        <img id="map1crypticTokenWar" src="assets/cutscenes/background/map1crypticTokenWar.png">
+        <img id="map1SafeRoom" src="assets/cutscenes/background/map1SafeRoom.png">
+        <img id="map1outsideLakeAndTrees" src="assets/cutscenes/background/map1outsideLakeAndTrees.png">
+        <img id="map1crypticTokenWallpaper" src="assets/cutscenes/background/map1crypticTokenWallpaper.png">
+        <img id="cabincutscene1" src="assets/cutscenes/background/cabincutscene1.png">
+        <img id="map1Lab" src="assets/cutscenes/background/map1Lab.png">
+        <img id="map1DestroyedTree" src="assets/cutscenes/background/map1DestroyedTree.png">
+        <img id="map1RegeneratedTree" src="assets/cutscenes/background/map1RegeneratedTree.png">
+        <!-- map2 images -->
+        <img id="dreamLight1" src="assets/cutscenes/background/dreamLight1.png">
+        <img id="dreamLight2" src="assets/cutscenes/background/dreamLight2.png">
+        <img id="dreamLight3" src="assets/cutscenes/background/dreamLight3.png">
+        <img id="dreamLight4" src="assets/cutscenes/background/dreamLight4.png">
+        <img id="dreamLight5" src="assets/cutscenes/background/dreamLight5.png">
+        <img id="dreamLight6" src="assets/cutscenes/background/dreamLight6.png">
+        <img id="dreamLight7" src="assets/cutscenes/background/dreamLight7.png">
+        <img id="dreamDark1" src="assets/cutscenes/background/dreamDark1.png">
+        <img id="dreamDark2" src="assets/cutscenes/background/dreamDark2.png">
+        <img id="dreamDark3" src="assets/cutscenes/background/dreamDark3.png">
+        <img id="dreamDark4" src="assets/cutscenes/background/dreamDark4.png">
+        <img id="dreamDark5" src="assets/cutscenes/background/dreamDark5.png">
+        <img id="dreamDark6" src="assets/cutscenes/background/dreamDark6.png">
+        <img id="map2outsideCabin" src="assets/cutscenes/background/map2outsideCabin.png">
+        <img id="cabincutscene1_5" src="assets/cutscenes/background/cabincutscene1_5.png">
+        <!-- map3 images -->
+        <img id="map3CutsceneCabin" src="assets/cutscenes/background/map3CutsceneCabin.png">
+        <img id="map3CutsceneCabinNight" src="assets/cutscenes/background/map3CutsceneCabinNight.png">
+        <img id="map3OutsideCabin" src="assets/cutscenes/background/map3OutsideCabin.png">
+        <img id="map3InsideSubmarine" src="assets/cutscenes/background/map3InsideSubmarine.png">
+        <img id="map3Sorcerer" src="assets/cutscenes/background/map3Sorcerer.png">
+        <img id="map3ForestRiver" src="assets/cutscenes/background/map3ForestRiver.png">
+        <!-- map4 images -->
+        <img id="map4OutsideCabin" src="assets/cutscenes/background/map4OutsideCabin.png">
+        <img id="map4beginningForestView" src="assets/cutscenes/background/map4beginningForestView.png">
+        <img id="map4footsteps" src="assets/cutscenes/background/map4footsteps.png">
+        <img id="map4CloningLab" src="assets/cutscenes/background/map4CloningLab.png">
+        <img id="map4hospitalBedEmpty" src="assets/cutscenes/background/map4hospitalBedEmpty.png">
+        <img id="map4ElyvorgFlames" src="assets/cutscenes/background/map4ElyvorgFlames.png">
+        <img id="map4EvilElyvorg" src="assets/cutscenes/background/map4EvilElyvorg.png">
+        <img id="map4CabinEndCutscene" src="assets/cutscenes/background/map4CabinEndCutscene.png">
+        <!-- map5 images -->
+        <img id="map5insideCabin" src="assets/cutscenes/background/map5insideCabin.png">
+        <!-- map6 images -->
+        <img id="map6VolcanoWalkUp" src="assets/cutscenes/background/map6VolcanoWalkUp.png">
+        <img id="map6insideCaveLava" src="assets/cutscenes/background/map6insideCaveLava.png">
+        <img id="map6insideCaveLavaEarthquake" src="assets/cutscenes/background/map6insideCaveLavaEarthquake.png">
+        <img id="map6insideCaveLavaEarthquakeHat" src="assets/cutscenes/background/map6insideCaveLavaEarthquakeHat.png">
+        <img id="map6insideCaveLavaEarthquakeCholo" src="assets/cutscenes/background/map6insideCaveLavaEarthquakeCholo.png">
+        <img id="map6insideCaveLavaEarthquakeZabka" src="assets/cutscenes/background/map6insideCaveLavaEarthquakeZabka.png">
+        <img id="map6insideCaveLavaEarthquakeShiny" src="assets/cutscenes/background/map6insideCaveLavaEarthquakeShiny.png">
+        <img id="map6elyvorgTokenPlaceFind" src="assets/cutscenes/background/map6elyvorgTokenPlaceFind.png">
+        <img id="map6elyvorgTokenPlace" src="assets/cutscenes/background/map6elyvorgTokenPlace.png">
+        <img id="map6elyvorgTokenPlaceActive" src="assets/cutscenes/background/map6elyvorgTokenPlaceActive.png">
+        <img id="map6stone" src="assets/cutscenes/background/map6stone.png">
+        <img id="map6stone2" src="assets/cutscenes/background/map6stone2.png">
+        <img id="map6stone3" src="assets/cutscenes/background/map6stone3.png">
+    <!-- normal images -->
+    <img id="scrollLetterMessageGaladon" src="assets/cutscenes/scrollLetterMessageGaladon.png">
+    <img id="scrollLetterMessageGaladonClosed" src="assets/cutscenes/scrollLetterMessageGaladonClosed.png">
+    <img id="crypticTokenShining" src="assets/cutscenes/crypticTokenShining.png">
+    <img id="textBox" src="assets/cutscenes/textBox.png">
+    <!-- character images -->
+        <!-- firedog images -->
+            <!-- default images -->
+            <img id="firedogHappy" src="assets/cutscenes/characterImages/Firedog/default/firedogHappy.png">
+            <img id="firedogLaugh" src="assets/cutscenes/characterImages/Firedog/default/firedogLaugh.png">
+            <img id="firedogAngry" src="assets/cutscenes/characterImages/Firedog/default/firedogAngry.png">
+            <img id="firedogAngry2" src="assets/cutscenes/characterImages/Firedog/default/firedogAngry2.png">
+            <img id="firedogPhew" src="assets/cutscenes/characterImages/Firedog/default/firedogPhew.png">
+            <img id="firedogTired" src="assets/cutscenes/characterImages/Firedog/default/firedogTired.png">
+            <img id="firedogHeadache" src="assets/cutscenes/characterImages/Firedog/default/firedogHeadache.png">
+            <img id="firedogCry" src="assets/cutscenes/characterImages/Firedog/default/firedogCry.png">
+            <img id="firedogSad" src="assets/cutscenes/characterImages/Firedog/default/firedogSad.png">
+            <img id="firedogNormal" src="assets/cutscenes/characterImages/Firedog/default/firedogNormal.png">
+            <img id="firedogNormalExclamationMark" src="assets/cutscenes/characterImages/Firedog/default/firedogNormalExclamationMark.png">
+            <img id="firedogNormalQuestionMark" src="assets/cutscenes/characterImages/Firedog/default/firedogNormalQuestionMark.png">
+            <img id="firedogNormalQuestionAndExlamationMark" src="assets/cutscenes/characterImages/Firedog/default/firedogNormalQuestionAndExlamationMark.png">
+            <!-- hat images -->
+            <img id="hatfiredogHappy" src="assets/cutscenes/characterImages/Firedog/hat/hatfiredogHappy.png">
+            <img id="hatfiredogLaugh" src="assets/cutscenes/characterImages/Firedog/hat/hatfiredogLaugh.png">
+            <img id="hatfiredogAngry" src="assets/cutscenes/characterImages/Firedog/hat/hatfiredogAngry.png">
+            <img id="hatfiredogAngry2" src="assets/cutscenes/characterImages/Firedog/hat/hatfiredogAngry2.png">
+            <img id="hatfiredogPhew" src="assets/cutscenes/characterImages/Firedog/hat/hatfiredogPhew.png">
+            <img id="hatfiredogTired" src="assets/cutscenes/characterImages/Firedog/hat/hatfiredogTired.png">
+            <img id="hatfiredogHeadache" src="assets/cutscenes/characterImages/Firedog/hat/hatfiredogHeadache.png">
+            <img id="hatfiredogCry" src="assets/cutscenes/characterImages/Firedog/hat/hatfiredogCry.png">
+            <img id="hatfiredogSad" src="assets/cutscenes/characterImages/Firedog/hat/hatfiredogSad.png">
+            <img id="hatfiredogNormal" src="assets/cutscenes/characterImages/Firedog/hat/hatfiredogNormal.png">
+            <img id="hatfiredogNormalExclamationMark" src="assets/cutscenes/characterImages/Firedog/hat/hatfiredogNormalExclamationMark.png">
+            <img id="hatfiredogNormalQuestionMark" src="assets/cutscenes/characterImages/Firedog/hat/hatfiredogNormalQuestionMark.png">
+            <img id="hatfiredogNormalQuestionAndExlamationMark" src="assets/cutscenes/characterImages/Firedog/hat/hatfiredogNormalQuestionAndExlamationMark.png">
+            <!-- cholo images -->
+            <img id="cholofiredogHappy" src="assets/cutscenes/characterImages/Firedog/cholo/cholofiredogHappy.png">
+            <img id="cholofiredogLaugh" src="assets/cutscenes/characterImages/Firedog/cholo/cholofiredogLaugh.png">
+            <img id="cholofiredogAngry" src="assets/cutscenes/characterImages/Firedog/cholo/cholofiredogAngry.png">
+            <img id="cholofiredogAngry2" src="assets/cutscenes/characterImages/Firedog/cholo/cholofiredogAngry2.png">
+            <img id="cholofiredogPhew" src="assets/cutscenes/characterImages/Firedog/cholo/cholofiredogPhew.png">
+            <img id="cholofiredogTired" src="assets/cutscenes/characterImages/Firedog/cholo/cholofiredogTired.png">
+            <img id="cholofiredogHeadache" src="assets/cutscenes/characterImages/Firedog/cholo/cholofiredogHeadache.png">
+            <img id="cholofiredogCry" src="assets/cutscenes/characterImages/Firedog/cholo/cholofiredogCry.png">
+            <img id="cholofiredogSad" src="assets/cutscenes/characterImages/Firedog/cholo/cholofiredogSad.png">
+            <img id="cholofiredogNormal" src="assets/cutscenes/characterImages/Firedog/cholo/cholofiredogNormal.png">
+            <img id="cholofiredogNormalExclamationMark" src="assets/cutscenes/characterImages/Firedog/cholo/cholofiredogNormalExclamationMark.png">
+            <img id="cholofiredogNormalQuestionMark" src="assets/cutscenes/characterImages/Firedog/cholo/cholofiredogNormalQuestionMark.png">
+            <img id="cholofiredogNormalQuestionAndExlamationMark" src="assets/cutscenes/characterImages/Firedog/cholo/cholofiredogNormalQuestionAndExlamationMark.png">
+            <!-- zabka images -->
+            <img id="zabkafiredogHappy" src="assets/cutscenes/characterImages/Firedog/zabka/zabkafiredogHappy.png">
+            <img id="zabkafiredogLaugh" src="assets/cutscenes/characterImages/Firedog/zabka/zabkafiredogLaugh.png">
+            <img id="zabkafiredogAngry" src="assets/cutscenes/characterImages/Firedog/zabka/zabkafiredogAngry.png">
+            <img id="zabkafiredogAngry2" src="assets/cutscenes/characterImages/Firedog/zabka/zabkafiredogAngry2.png">
+            <img id="zabkafiredogPhew" src="assets/cutscenes/characterImages/Firedog/zabka/zabkafiredogPhew.png">
+            <img id="zabkafiredogTired" src="assets/cutscenes/characterImages/Firedog/zabka/zabkafiredogTired.png">
+            <img id="zabkafiredogHeadache" src="assets/cutscenes/characterImages/Firedog/zabka/zabkafiredogHeadache.png">
+            <img id="zabkafiredogCry" src="assets/cutscenes/characterImages/Firedog/zabka/zabkafiredogCry.png">
+            <img id="zabkafiredogSad" src="assets/cutscenes/characterImages/Firedog/zabka/zabkafiredogSad.png">
+            <img id="zabkafiredogNormal" src="assets/cutscenes/characterImages/Firedog/zabka/zabkafiredogNormal.png">
+            <img id="zabkafiredogNormalExclamationMark" src="assets/cutscenes/characterImages/Firedog/zabka/zabkafiredogNormalExclamationMark.png">
+            <img id="zabkafiredogNormalQuestionMark" src="assets/cutscenes/characterImages/Firedog/zabka/zabkafiredogNormalQuestionMark.png">
+            <img id="zabkafiredogNormalQuestionAndExlamationMark" src="assets/cutscenes/characterImages/Firedog/zabka/zabkafiredogNormalQuestionAndExlamationMark.png">
+            <!-- shiny images -->
+            <img id="shinyfiredogHappy" src="assets/cutscenes/characterImages/Firedog/shiny/shinyfiredogHappy.png">
+            <img id="shinyfiredogLaugh" src="assets/cutscenes/characterImages/Firedog/shiny/shinyfiredogLaugh.png">
+            <img id="shinyfiredogAngry" src="assets/cutscenes/characterImages/Firedog/shiny/shinyfiredogAngry.png">
+            <img id="shinyfiredogAngry2" src="assets/cutscenes/characterImages/Firedog/shiny/shinyfiredogAngry2.png">
+            <img id="shinyfiredogPhew" src="assets/cutscenes/characterImages/Firedog/shiny/shinyfiredogPhew.png">
+            <img id="shinyfiredogTired" src="assets/cutscenes/characterImages/Firedog/shiny/shinyfiredogTired.png">
+            <img id="shinyfiredogHeadache" src="assets/cutscenes/characterImages/Firedog/shiny/shinyfiredogHeadache.png">
+            <img id="shinyfiredogCry" src="assets/cutscenes/characterImages/Firedog/shiny/shinyfiredogCry.png">
+            <img id="shinyfiredogSad" src="assets/cutscenes/characterImages/Firedog/shiny/shinyfiredogSad.png">
+            <img id="shinyfiredogNormal" src="assets/cutscenes/characterImages/Firedog/shiny/shinyfiredogNormal.png">
+            <img id="shinyfiredogNormalExclamationMark" src="assets/cutscenes/characterImages/Firedog/shiny/shinyfiredogNormalExclamationMark.png">
+            <img id="shinyfiredogNormalQuestionMark" src="assets/cutscenes/characterImages/Firedog/shiny/shinyfiredogNormalQuestionMark.png">
+            <img id="shinyfiredogNormalQuestionAndExlamationMark" src="assets/cutscenes/characterImages/Firedog/shiny/shinyfiredogNormalQuestionAndExlamationMark.png">
+        <!-- galadon images -->
+        <img id="galadonNormal" src="assets/cutscenes/characterImages/Galadon/galadonNormal.png">
+        <img id="galadonSad" src="assets/cutscenes/characterImages/Galadon/galadonSad.png">
+        <img id="galadonAmazed" src="assets/cutscenes/characterImages/Galadon/galadonAmazed.png">
+        <img id="galadonHurt" src="assets/cutscenes/characterImages/Galadon/galadonHurt.png">
+        <img id="galadonScaredHurt" src="assets/cutscenes/characterImages/Galadon/galadonScaredHurt.png">
+        <img id="galadonOh" src="assets/cutscenes/characterImages/Galadon/galadonOh.png">
+        <img id="galadonSurprised" src="assets/cutscenes/characterImages/Galadon/galadonSurprised.png">
+        <img id="galadonScared" src="assets/cutscenes/characterImages/Galadon/galadonScared.png">
+        <!-- quilzorin images -->
+        <img id="quilzorinExplaining" src="assets/cutscenes/characterImages/Quilzorin/quilzorinExplaining.png">
+        <img id="quilzorinExplaining2" src="assets/cutscenes/characterImages/Quilzorin/quilzorinExplaining2.png">
+        <img id="quilzorinHandUp" src="assets/cutscenes/characterImages/Quilzorin/quilzorinHandUp.png">
+        <img id="quilzorinLaugh" src="assets/cutscenes/characterImages/Quilzorin/quilzorinLaugh.png">
+        <img id="quilzorinNormal" src="assets/cutscenes/characterImages/Quilzorin/quilzorinNormal.png">
+        <img id="quilzorinScared" src="assets/cutscenes/characterImages/Quilzorin/quilzorinScared.png">
+        <img id="quilzorinSurprised" src="assets/cutscenes/characterImages/Quilzorin/quilzorinSurprised.png">
+        <!-- valdorin images -->
+        <img id="valdorinCrossedArms" src="assets/cutscenes/characterImages/Valdorin/valdorinCrossedArms.png">
+        <img id="valdorinFistUp" src="assets/cutscenes/characterImages/Valdorin/valdorinFistUp.png">
+        <img id="valdorinNormal" src="assets/cutscenes/characterImages/Valdorin/valdorinNormal.png">
+        <img id="valdorinSurprised" src="assets/cutscenes/characterImages/Valdorin/valdorinSurprised.png">
+        <img id="ValdorinTalking" src="assets/cutscenes/characterImages/Valdorin/ValdorinTalking.png">
+        <!-- duskmaw images -->
+        <img id="duskmawLaugh" src="assets/cutscenes/characterImages/Duskmaw/duskmawLaugh.png">
+        <img id="duskmawLiftingHat" src="assets/cutscenes/characterImages/Duskmaw/duskmawLiftingHat.png">
+        <img id="duskmawLiftingHat2" src="assets/cutscenes/characterImages/Duskmaw/duskmawLiftingHat2.png">
+        <img id="duskmawNormal" src="assets/cutscenes/characterImages/Duskmaw/duskmawNormal.png">
+        <!-- zephyrion images -->
+        <img id="zephyrionDistraught" src="assets/cutscenes/characterImages/Zephyrion/zephyrionDistraught.png">
+        <img id="zephyrionEyesClosed" src="assets/cutscenes/characterImages/Zephyrion/zephyrionEyesClosed.png">
+        <img id="zephyrionHappy" src="assets/cutscenes/characterImages/Zephyrion/zephyrionHappy.png">
+        <img id="zephyrionNormal" src="assets/cutscenes/characterImages/Zephyrion/zephyrionNormal.png">
+        <!-- penguini images -->
+        <img id="penguinBatLaugh" src="assets/cutscenes/characterImages/Penguini/penguinBatLaugh.png">
+        <img id="penguinBatTalkNormal" src="assets/cutscenes/characterImages/Penguini/penguinBatTalkNormal.png">
+        <img id="penguinBatUp" src="assets/cutscenes/characterImages/Penguini/penguinBatUp.png">
+        <img id="penguinGunLaugh" src="assets/cutscenes/characterImages/Penguini/penguinGunLaugh.png">
+        <img id="penguinGunTalkNormal" src="assets/cutscenes/characterImages/Penguini/penguinGunTalkNormal.png">
+        <img id="penguinGunUp" src="assets/cutscenes/characterImages/Penguini/penguinGunUp.png">
+    <!-- border images -->
+        <!-- firedog -->
+            <!-- default images -->
+            <img id="firedogHappyBorder" src="assets/cutscenes/borderImages/Firedog/default/firedogHappyBorder.png">
+            <img id="firedogLaughBorder" src="assets/cutscenes/borderImages/Firedog/default/firedogLaughBorder.png">
+            <img id="firedogAngryBorder" src="assets/cutscenes/borderImages/Firedog/default/firedogAngryBorder.png">
+            <img id="firedogAngry2Border" src="assets/cutscenes/borderImages/Firedog/default/firedogAngry2Border.png">
+            <img id="firedogPhewBorder" src="assets/cutscenes/borderImages/Firedog/default/firedogPhewBorder.png">
+            <img id="firedogTiredBorder" src="assets/cutscenes/borderImages/Firedog/default/firedogTiredBorder.png">
+            <img id="firedogHeadacheBorder" src="assets/cutscenes/borderImages/Firedog/default/firedogHeadacheBorder.png">
+            <img id="firedogCryBorder" src="assets/cutscenes/borderImages/Firedog/default/firedogCryBorder.png">
+            <img id="firedogSadBorder" src="assets/cutscenes/borderImages/Firedog/default/firedogSadBorder.png">
+            <img id="firedogNormalBorder" src="assets/cutscenes/borderImages/Firedog/default/firedogNormalBorder.png">
+            <img id="firedogNormalExclamationMarkBorder" src="assets/cutscenes/borderImages/Firedog/default/firedogNormalExclamationMarkBorder.png">
+            <img id="firedogNormalQuestionMarkBorder" src="assets/cutscenes/borderImages/Firedog/default/firedogNormalQuestionMarkBorder.png">
+            <img id="firedogNormalQuestionAndExlamationMarkBorder" src="assets/cutscenes/borderImages/Firedog/default/firedogNormalQuestionAndExlamationMarkBorder.png">
+            <!-- hat images -->
+            <img id="hatfiredogHappyBorder" src="assets/cutscenes/borderImages/Firedog/hat/hatfiredogHappyBorder.png">
+            <img id="hatfiredogLaughBorder" src="assets/cutscenes/borderImages/Firedog/hat/hatfiredogLaughBorder.png">
+            <img id="hatfiredogAngryBorder" src="assets/cutscenes/borderImages/Firedog/hat/hatfiredogAngryBorder.png">
+            <img id="hatfiredogAngry2Border" src="assets/cutscenes/borderImages/Firedog/hat/hatfiredogAngry2Border.png">
+            <img id="hatfiredogPhewBorder" src="assets/cutscenes/borderImages/Firedog/hat/hatfiredogPhewBorder.png">
+            <img id="hatfiredogTiredBorder" src="assets/cutscenes/borderImages/Firedog/hat/hatfiredogTiredBorder.png">
+            <img id="hatfiredogHeadacheBorder" src="assets/cutscenes/borderImages/Firedog/hat/hatfiredogHeadacheBorder.png">
+            <img id="hatfiredogCryBorder" src="assets/cutscenes/borderImages/Firedog/hat/hatfiredogCryBorder.png">
+            <img id="hatfiredogSadBorder" src="assets/cutscenes/borderImages/Firedog/hat/hatfiredogSadBorder.png">
+            <img id="hatfiredogNormalBorder" src="assets/cutscenes/borderImages/Firedog/hat/hatfiredogNormalBorder.png">
+            <img id="hatfiredogNormalExclamationMarkBorder" src="assets/cutscenes/borderImages/Firedog/hat/hatfiredogNormalExclamationMarkBorder.png">
+            <img id="hatfiredogNormalQuestionMarkBorder" src="assets/cutscenes/borderImages/Firedog/hat/hatfiredogNormalQuestionMarkBorder.png">
+            <img id="hatfiredogNormalQuestionAndExlamationMarkBorder" src="assets/cutscenes/borderImages/Firedog/hat/hatfiredogNormalQuestionAndExlamationMarkBorder.png">
+            <!-- cholo images -->
+            <img id="cholofiredogHappyBorder" src="assets/cutscenes/borderImages/Firedog/cholo/cholofiredogHappyBorder.png">
+            <img id="cholofiredogLaughBorder" src="assets/cutscenes/borderImages/Firedog/cholo/cholofiredogLaughBorder.png">
+            <img id="cholofiredogAngryBorder" src="assets/cutscenes/borderImages/Firedog/cholo/cholofiredogAngryBorder.png">
+            <img id="cholofiredogAngry2Border" src="assets/cutscenes/borderImages/Firedog/cholo/cholofiredogAngry2Border.png">
+            <img id="cholofiredogPhewBorder" src="assets/cutscenes/borderImages/Firedog/cholo/cholofiredogPhewBorder.png">
+            <img id="cholofiredogTiredBorder" src="assets/cutscenes/borderImages/Firedog/cholo/cholofiredogTiredBorder.png">
+            <img id="cholofiredogHeadacheBorder" src="assets/cutscenes/borderImages/Firedog/cholo/cholofiredogHeadacheBorder.png">
+            <img id="cholofiredogCryBorder" src="assets/cutscenes/borderImages/Firedog/cholo/cholofiredogCryBorder.png">
+            <img id="cholofiredogSadBorder" src="assets/cutscenes/borderImages/Firedog/cholo/cholofiredogSadBorder.png">
+            <img id="cholofiredogNormalBorder" src="assets/cutscenes/borderImages/Firedog/cholo/cholofiredogNormalBorder.png">
+            <img id="cholofiredogNormalExclamationMarkBorder" src="assets/cutscenes/borderImages/Firedog/cholo/cholofiredogNormalExclamationMarkBorder.png">
+            <img id="cholofiredogNormalQuestionMarkBorder" src="assets/cutscenes/borderImages/Firedog/cholo/cholofiredogNormalQuestionMarkBorder.png">
+            <img id="cholofiredogNormalQuestionAndExlamationMarkBorder" src="assets/cutscenes/borderImages/Firedog/cholo/cholofiredogNormalQuestionAndExlamationMarkBorder.png">
+            <!-- zabka images -->
+            <img id="zabkafiredogHappyBorder" src="assets/cutscenes/borderImages/Firedog/zabka/zabkafiredogHappyBorder.png">
+            <img id="zabkafiredogLaughBorder" src="assets/cutscenes/borderImages/Firedog/zabka/zabkafiredogLaughBorder.png">
+            <img id="zabkafiredogAngryBorder" src="assets/cutscenes/borderImages/Firedog/zabka/zabkafiredogAngryBorder.png">
+            <img id="zabkafiredogAngry2Border" src="assets/cutscenes/borderImages/Firedog/zabka/zabkafiredogAngry2Border.png">
+            <img id="zabkafiredogPhewBorder" src="assets/cutscenes/borderImages/Firedog/zabka/zabkafiredogPhewBorder.png">
+            <img id="zabkafiredogTiredBorder" src="assets/cutscenes/borderImages/Firedog/zabka/zabkafiredogTiredBorder.png">
+            <img id="zabkafiredogHeadacheBorder" src="assets/cutscenes/borderImages/Firedog/zabka/zabkafiredogHeadacheBorder.png">
+            <img id="zabkafiredogCryBorder" src="assets/cutscenes/borderImages/Firedog/zabka/zabkafiredogCryBorder.png">
+            <img id="zabkafiredogSadBorder" src="assets/cutscenes/borderImages/Firedog/zabka/zabkafiredogSadBorder.png">
+            <img id="zabkafiredogNormalBorder" src="assets/cutscenes/borderImages/Firedog/zabka/zabkafiredogNormalBorder.png">
+            <img id="zabkafiredogNormalExclamationMarkBorder" src="assets/cutscenes/borderImages/Firedog/zabka/zabkafiredogNormalExclamationMarkBorder.png">
+            <img id="zabkafiredogNormalQuestionMarkBorder" src="assets/cutscenes/borderImages/Firedog/zabka/zabkafiredogNormalQuestionMarkBorder.png">
+            <img id="zabkafiredogNormalQuestionAndExlamationMarkBorder" src="assets/cutscenes/borderImages/Firedog/zabka/zabkafiredogNormalQuestionAndExlamationMarkBorder.png">
+            <!-- shiny images -->
+            <img id="shinyfiredogHappyBorder" src="assets/cutscenes/borderImages/Firedog/shiny/shinyfiredogHappyBorder.png">
+            <img id="shinyfiredogLaughBorder" src="assets/cutscenes/borderImages/Firedog/shiny/shinyfiredogLaughBorder.png">
+            <img id="shinyfiredogAngryBorder" src="assets/cutscenes/borderImages/Firedog/shiny/shinyfiredogAngryBorder.png">
+            <img id="shinyfiredogAngry2Border" src="assets/cutscenes/borderImages/Firedog/shiny/shinyfiredogAngry2Border.png">
+            <img id="shinyfiredogPhewBorder" src="assets/cutscenes/borderImages/Firedog/shiny/shinyfiredogPhewBorder.png">
+            <img id="shinyfiredogTiredBorder" src="assets/cutscenes/borderImages/Firedog/shiny/shinyfiredogTiredBorder.png">
+            <img id="shinyfiredogHeadacheBorder" src="assets/cutscenes/borderImages/Firedog/shiny/shinyfiredogHeadacheBorder.png">
+            <img id="shinyfiredogCryBorder" src="assets/cutscenes/borderImages/Firedog/shiny/shinyfiredogCryBorder.png">
+            <img id="shinyfiredogSadBorder" src="assets/cutscenes/borderImages/Firedog/shiny/shinyfiredogSadBorder.png">
+            <img id="shinyfiredogNormalBorder" src="assets/cutscenes/borderImages/Firedog/shiny/shinyfiredogNormalBorder.png">
+            <img id="shinyfiredogNormalExclamationMarkBorder" src="assets/cutscenes/borderImages/Firedog/shiny/shinyfiredogNormalExclamationMarkBorder.png">
+            <img id="shinyfiredogNormalQuestionMarkBorder" src="assets/cutscenes/borderImages/Firedog/shiny/shinyfiredogNormalQuestionMarkBorder.png">
+            <img id="shinyfiredogNormalQuestionAndExlamationMarkBorder" src="assets/cutscenes/borderImages/Firedog/shiny/shinyfiredogNormalQuestionAndExlamationMarkBorder.png">
+        <!-- penguin -->
+        <img id="penguinBatLaughBorder" src="assets/cutscenes/borderImages/Penguini/penguinBatLaughBorder.png">
+        <img id="penguinBatTalkNormalBorder" src="assets/cutscenes/borderImages/Penguini/penguinBatTalkNormalBorder.png">
+        <img id="penguinBatUpBorder" src="assets/cutscenes/borderImages/Penguini/penguinBatUpBorder.png">
+        <img id="penguinGunLaughBorder" src="assets/cutscenes/borderImages/Penguini/penguinGunLaughBorder.png">
+        <img id="penguinGunTalkNormalBorder" src="assets/cutscenes/borderImages/Penguini/penguinGunTalkNormalBorder.png">
+        <img id="penguinGunUpBorder" src="assets/cutscenes/borderImages/Penguini/penguinGunUpBorder.png">
+        <img id="penguinOnFloorBorder" src="assets/cutscenes/borderImages/Penguini/penguinOnFloorBorder.png">
+        <!-- elyvorg -->
+        <img id="elyvorgBorder" src="assets/cutscenes/borderImages/Elyvorg/elyvorgBorder.png">
+        <img id="elyvorgTokenBorder" src="assets/cutscenes/borderImages/Elyvorg/elyvorgTokenBorder.png">
+<script type="module" src="game-main.js"></script>
+</body>
+
+</html>
