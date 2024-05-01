@@ -13,17 +13,17 @@ Your objective on each map is to eliminate as many enemies as you can, gathering
 Your progress will be automatically saved whenever you complete a map or adjust your settings (such as audio, skin selection, or level difficulty).
 
 ## Preview
-https://github.com/danialjivraj/firedog/assets/61945058/6ec9f682-fb1b-4115-a089-5ab64b95d51b
+https://github.com/danialjivraj/firedog/assets/61945058/dae97b8f-976e-4bb0-8a34-62a802c70080
 
-![image](https://github.com/danialjivraj/firedog/assets/61945058/3a9fd076-0c3e-4dc3-b699-9d59ee71acb9)
-![image](https://github.com/danialjivraj/firedog/assets/61945058/032708dd-ee4e-48c7-9a2b-51d0c062c1ba)
-![image](https://github.com/danialjivraj/firedog/assets/61945058/2d0cae00-a689-4e58-b604-df01262f2085)
-![image](https://github.com/danialjivraj/firedog/assets/61945058/0f8eb21d-563c-4e04-bb8d-5cef27ab6297)
-![image](https://github.com/danialjivraj/firedog/assets/61945058/925274be-308e-4fc5-9b33-ccbf4739a8eb)
-![image](https://github.com/danialjivraj/firedog/assets/61945058/aefff024-23e0-4969-875e-8c7e42034594)
-![image](https://github.com/danialjivraj/firedog/assets/61945058/5e46380a-6c30-4a6b-9327-0ff2ff71c94d)
-![image](https://github.com/danialjivraj/firedog/assets/61945058/6d6492f1-76d5-4b92-b3d7-c8d5c7b9b7b1)
-![image](https://github.com/danialjivraj/firedog/assets/61945058/765c9994-a8da-4ba5-8db4-338b634e583f)
+![image](https://github.com/danialjivraj/firedog/assets/61945058/93dfb886-7d84-490f-a095-22a72345d674)
+![image](https://github.com/danialjivraj/firedog/assets/61945058/a0748eec-72bc-4c61-9d9b-bd70c2bdffc9)
+![image](https://github.com/danialjivraj/firedog/assets/61945058/87ae694b-1994-43bd-894d-a1a64a4b2ee9)
+![image](https://github.com/danialjivraj/firedog/assets/61945058/59286ed2-aa81-4546-8472-5f2649d151a6)
+![image](https://github.com/danialjivraj/firedog/assets/61945058/8c90196b-fe97-4a0b-9e0c-7f0789cab60a)
+![image](https://github.com/danialjivraj/firedog/assets/61945058/87d61289-d150-4b47-b1b9-6d14b677fd0e)
+![image](https://github.com/danialjivraj/firedog/assets/61945058/69e747d4-1883-4b70-9e36-774001fc359a)
+![image](https://github.com/danialjivraj/firedog/assets/61945058/23c0eacf-222f-4257-9e6c-338389481188)
+![image](https://github.com/danialjivraj/firedog/assets/61945058/1643f8bf-7cf2-4790-aad0-94c123e86ca8)
 
 ## Controls
 
