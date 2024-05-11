@@ -1,5 +1,5 @@
 # firedog
-Firedog is a 2D game built from scratch with over 19k lines of code and over 648 different assets (499 images and 149 audio files).
+Firedog is a 2D game built from scratch with over 18.8k lines of code and over 653 different assets (502 images and 151 audio files).
 
 This game was created by using HTML Canvas and pure Javascript without relying on external frameworks except for 
 Electron, which was utilized to transform it into a Desktop application.
@@ -7,38 +7,35 @@ Electron, which was utilized to transform it into a Desktop application.
 ## Story and Objective
 Embark on a thrilling quest as Firedog to recover the stolen Cryptic Token, pilfered by an enigmatic thief! <br>
 
-This is a story-based game which includes 6 different maps, with over 48 different enemies and a final boss. <br>
+This is a story-based game which includes 6 different maps, with over 49 different enemies and a final boss. <br>
 Your objective on each map is to eliminate as many enemies as you can, gathering sufficient coins to advance to the next stage of your journey! <br>
 
-Your progress will be automatically saved whenever you complete a map or adjust your settings (such as audio, skin selection, or level difficulty).
+Your progress/game settings will be automatically saved whenever you complete a map or adjust your settings (such as audio, skin selection, or level difficulty).
 
 ## Preview
-https://github.com/danialjivraj/firedog/assets/61945058/dae97b8f-976e-4bb0-8a34-62a802c70080
+https://github.com/danialjivraj/firedog/assets/61945058/08cbec3d-63b2-49af-a379-b56664a5d041
 
 ![image](https://github.com/danialjivraj/firedog/assets/61945058/93dfb886-7d84-490f-a095-22a72345d674)
 ![image](https://github.com/danialjivraj/firedog/assets/61945058/a0748eec-72bc-4c61-9d9b-bd70c2bdffc9)
 ![image](https://github.com/danialjivraj/firedog/assets/61945058/87ae694b-1994-43bd-894d-a1a64a4b2ee9)
-![image](https://github.com/danialjivraj/firedog/assets/61945058/59286ed2-aa81-4546-8472-5f2649d151a6)
-![image](https://github.com/danialjivraj/firedog/assets/61945058/8c90196b-fe97-4a0b-9e0c-7f0789cab60a)
+![image](https://github.com/danialjivraj/firedog/assets/61945058/f6c70d35-3dc0-4bd0-bfae-a08323b2cc7d)
+![image](https://github.com/danialjivraj/firedog/assets/61945058/2785bda6-3c34-41c3-b809-8c0956453ee3)
 ![image](https://github.com/danialjivraj/firedog/assets/61945058/87d61289-d150-4b47-b1b9-6d14b677fd0e)
 ![image](https://github.com/danialjivraj/firedog/assets/61945058/69e747d4-1883-4b70-9e36-774001fc359a)
-![image](https://github.com/danialjivraj/firedog/assets/61945058/23c0eacf-222f-4257-9e6c-338389481188)
-![image](https://github.com/danialjivraj/firedog/assets/61945058/1643f8bf-7cf2-4790-aad0-94c123e86ca8)
+![image](https://github.com/danialjivraj/firedog/assets/61945058/f64e695d-3c8d-4772-9216-851af829b6f9)
+![image](https://github.com/danialjivraj/firedog/assets/61945058/a8cfbd96-f585-423b-a17d-7f6e9ffbe7f8)
 
 ## Controls
-
-**Note:** The controls are exclusively keyboard-based (for now); mouse input is not enabled.
-
-- **Menu & Pause Menu**
-  - Arrow Up: Move Up
-  - Arrow Down: Move Down
+- **Menus**
+  - Arrow Up / Scroll Wheel Up: Move Up
+  - Arrow Down / Scroll Wheel Down: Move Down
   - Arrow Right: Move Right
   - Arrow Left: Move Left
-  - Enter: Select Option
-  - Esc: Return to Main Menu/Game
+  - Enter / Left Click: Select Option
+  - Esc / Right Click: Return to Main Menu/Game
 
 - **Cutscenes**
-  - Enter: Skip dialogue animation/Advance to the next dialogue
+  - Enter / Left Click: Advance to the next dialogue/Skip dialogue animation
   - Tab: Skip entire cutscene
 
 - **Gameplay**
@@ -49,10 +46,10 @@ https://github.com/danialjivraj/firedog/assets/61945058/dae97b8f-976e-4bb0-8a34-
     - D: Move Forward
 
   - **Special Moves:**
-    - Enter: Roll Attack
+    - Enter / Right Click: Roll Attack
     - S (while in the air): Dive Attack
-    - Q: Fireball Attack
-    - E: Invisible Defense
+    - Q / Left Click: Fireball Attack
+    - E / Scroll Wheel Click: Invisible Defense
 
   - Esc: Pause/Unpause Game
 
@@ -61,13 +58,13 @@ https://github.com/danialjivraj/firedog/assets/61945058/dae97b8f-976e-4bb0-8a34-
 You can download the game by clicking one of the following links:
 
 #### For Windows
-- [Download (345.75MB)](https://www.mediafire.com/file/qyevkifbijgp18p/Firedog-win32-x64.rar/file)
+- [Download (347.32MB)](https://www.mediafire.com/file/d89ceq050tjd62n/Firedog-win32-x64.rar/file)
 
 #### For MacOS
-- [Download (367.84MB)](https://www.mediafire.com/file/702hi2e6voc6gtm/Firedog-darwin-x64.zip/file)
+- [Download (369.46MB)](https://www.mediafire.com/file/h2m3ndrrl76ovcb/Firedog-darwin-x64.zip/file)
 
 #### For Linux
-- [Download (340.75MB)](https://www.mediafire.com/file/agnji9q0dx7g9ra/Firedog-linux-x64.rar/file)
+- [Download (342.10MB)](https://www.mediafire.com/file/k0byxvv5ah15nsg/Firedog-linux-x64.rar/file)
 
 ## Dependencies
 Alternatively to downloading the game, you can clone the project and run it locally. <br>
