@@ -10,10 +10,12 @@ These are the programs I've used to be able to edit my assets:
 ## Assets
 
 ### Videos
-- **Franks Laboratory**
+- **Frank's Laboratory**
   - YouTube: [Franks Laboratory](https://www.youtube.com/@Frankslaboratory)
 
 ### Images
+- **Cursor:**
+  - Cursor by [Aaron Iker](https://codepen.io/aaroniker/pen/zYeYoVp)
 - **Menu:**
   - Forest Map by [Augustinas Raginskis](https://www.deviantart.com/augustinasraginskis/art/Land-of-Lourne-764340483)
 - **Cutscene:**
@@ -36,7 +38,9 @@ These are the programs I've used to be able to edit my assets:
 ### General Images
 - [Freepik](https://www.freepik.com/)
 - [Vecteezy](https://www.vecteezy.com/)
+- [Pngtree](https://pngtree.com/)
 - [Shutterstock](https://www.shutterstock.com/)
+- [Adobe Stock](https://stock.adobe.com/)
 
 ### Map Backgrounds
 - [Cartoon Nature Night Time Landscape](https://stock.adobe.com/images/cartoon-nature-night-time-landscape-with-rocks-trees-pond-and-field-under-full-moon-shining-in-starry-sky-mysterious-scenery-background-with-glowworms-on-dark-meadow-at-twilight-vector-illustration/499946562) from Adobe Stock
@@ -73,6 +77,6 @@ Below, only soundtracks will be credited.
 - **Map 4:** [Tribal Jungle Music - Amazon Princess](https://www.youtube.com/watch?v=Uj5H4vJoCOw)
 - **Map 5:** [Relaxing Celtic Music - Spring Charm by Adrian von Ziegler](https://www.youtube.com/watch?v=YGkuJlEZy04&t)
 - **Map 6:** [Fire Volcano - Pokémon Snap](https://www.youtube.com/watch?v=fNo-c6p7pBw&t)
-- **Elyvorg:** 
+- **Elyvorg Themes:** 
     - [Super Meat Boy: The Battle of Lil' Slugger](https://www.youtube.com/watch?v=WL-8rU8ltA4)
     - [Unbound Purpose by Greg Dombrowski](https://www.youtube.com/watch?v=Kw1-B9FGYTA)
