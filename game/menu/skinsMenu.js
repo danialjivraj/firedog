@@ -23,6 +23,7 @@ export class Skins extends BaseMenu {
         this.height = 91.3;
         this.x = this.game.width / 2;
         this.y = this.game.height - this.height;
+        this.setCurrentSkinById('player');
     }
     setCurrentSkinById(skinId) {
         const skinElement = document.getElementById(skinId);
@@ -74,9 +75,6 @@ export class Skins extends BaseMenu {
                 this.currentSkin = this.defaultSkin;
                 break;
         }
-    }
-    update(deltaTime) {
-        super.update(deltaTime);
     }
     handleMenuSelection() {
         const selectedOption = this.menuOptions[this.selectedOption];

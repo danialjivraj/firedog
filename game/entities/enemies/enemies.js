@@ -178,9 +178,6 @@ export class FallingEnemy extends Enemy {
         this.speedY = Math.random() * 2 + 0.5;
         this.maxFrame = maxFrame;
     }
-    update(deltaTime) {
-        super.update(deltaTime);
-    }
 }
 
 class UnderwaterEnemy extends Enemy {
@@ -405,9 +402,6 @@ export class LaserBeam extends Projectile {
     constructor(game, x, y, width, height, maxFrame, imageId, speedX) {
         super(game, x, y, width, height, maxFrame, imageId, speedX, 30);
     }
-    update(deltaTime) {
-        super.update(deltaTime);
-    }
     draw(context) {
         super.draw(context);
         if (this.game.isElyvorgFullyVisible) {
@@ -515,9 +509,6 @@ export class YellowBeam extends Projectile {
 export class PurpleLaser extends Projectile {
     constructor(game, x, y) {
         super(game, x, y, 82, 48, 0, 'purpleLaser', 15, 0);
-    }
-    update(deltaTime) {
-        super.update(deltaTime);
     }
 }
 
