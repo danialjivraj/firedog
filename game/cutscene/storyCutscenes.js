@@ -1,126 +1,92 @@
-import { preShake, postShake } from '../animations/shake.js';
+import { Cutscene } from './cutscene.js';
 
-export class Cutscene {
+export class StoryCutscene extends Cutscene {
     constructor(game) {
-        this.game = game;
-        this.dialogue = [];
-        this.backgroundImage = null;
-        this.dialogueIndex = 0;
-        this.textIndex = 0;
-        this.lastSoundPlayed = false;
-        this.lastSound2Played = false;
+        super(game);
+        this.characterLimit = 75;
+        this.textBoxWidth = 1050;
+    }
+
+    enterOrLeftClick(cutscene) {
+        this.cutsceneController();
+
         this.playSound2OnDotPause = false;
-        this.silent = false;
-        this.dialogueText = '';
-        this.isEnterPressed = false;
-        this.isTabPressed = true;
-        this.pause = false;
-        this.continueDialogue = false;
-        this.shouldDrawWord = false;
-        this.isCharacterBlackAndWhite = false;
-        this.isBackgroundBlackAndWhite = false;
-        this.fullWords = [];
-        this.fullWordsColor = [];
-        this.halfASecond = 500;
-        this.groundShaking = false;
-        this.firedog = "Firedog";
-        this.elyvorg = "Elyvorg";
-        this.galadon = "Galadon";
-        this.quilzorin = "Quilzorin";
-        this.duskmaw = "Duskmaw";
-        this.everyone = "Everyone";
-        this.threeDots = "... ";
-        this.questionMark = "???";
-        this.penguini = "Penguini";
-        this.valdorin = "Valdorin";
-        this.valdonotski = "Valdonotski"
-        this.zephyrion = "Zephyrion";
-        this.cryptic = "Cryptic";
-        this.token = "Token";
-        this.temporal = "Temporal";
-        this.timber = "Timber";
-        this.lunar = "Lunar";
-        this.moonlit = "Moonlit";
-        this.glade = "Glade";
-        this.nightfall = "Nightfall";
-        this.city = "City";
-        this.phantom = "Phantom";
-        this.coral = "Coral";
-        this.abyss = "Abyss";
-        this.verdant = "Verdant";
-        this.vine = "Vine";
-        this.springly = "Springly";
-        this.lemony = "Lemony";
-        this.infernal = "Infernal";
-        this.crater = "Crater";
-        this.peak = "Peak";
-        this.project = "Project";
-        this.cryptoterra = "Cryptoterra";
-        this.genesis = "Genesis";
-        this.characterColors = {
-            //characters
-            [this.firedog]: 'yellow',
-            [this.galadon]: 'tomato',
-            [this.valdorin]: 'RoyalBlue',
-            [this.valdonotski]: 'RoyalBlue',
-            [this.quilzorin]: 'Teal',
-            [this.duskmaw]: 'DarkOliveGreen',
-            [this.penguini]: 'cyan',
-            [this.zephyrion]: 'DodgerBlue',
-            [this.elyvorg]: 'red',
-            [this.everyone]: 'SkyBlue',
-            //unknown
-            [this.questionMark]: 'red',
-            [this.threeDots]: 'white',
-            //map1
-            [this.lunar]: 'green',
-            [this.moonlit]: 'green',
-            [this.glade]: 'green',
-            //map2
-            [this.nightfall]: 'green',
-            [this.city]: 'green',
-            [this.phantom]: 'green',
-            //map3
-            [this.coral]: 'green',
-            [this.abyss]: 'green',
-            //map4
-            [this.verdant]: 'green',
-            [this.vine]: 'green',
-            //map5
-            [this.springly]: 'green',
-            [this.lemony]: 'green',
-            //map6
-            [this.infernal]: 'Crimson',
-            [this.crater]: 'Crimson',
-            [this.peak]: 'Crimson',
-            // project
-            [this.project]: 'OrangeRed',
-            [this.cryptoterra]: 'OrangeRed',
-            [this.genesis]: 'OrangeRed',
-            //other
-            [this.cryptic]: 'DarkViolet',
-            [this.token]: 'DarkViolet',
-            [this.temporal]: 'GoldenRod',
-            [this.timber]: 'GoldenRod',
-        };
-    }
-    splitDialogueIntoWords(dialogueText) {
-        const words = dialogueText.split(" ");
-        return words;
-    }
-    playEightBitSound(soundId, soundIDpaused) {
-        const audioElement = this.game.audioHandler.cutsceneDialogue.sounds[soundIDpaused];
-        if (this.dialogueText.trim().startsWith("(")) {
-            // if dialogue starts with "(" don't play the sound
-            return;
-        }
-        if (!this.pause) {
-            this.game.audioHandler.cutsceneDialogue.playSound(soundId);
+        this.isEnterPressed = true;
+        if (this.continueDialogue) {
+            this.pause = false;
+            this.textIndex++;
+            this.continueDialogue = false;
+        } else if (this.textIndex < this.dialogue[this.dialogueIndex].dialogue.length) {
+            const dotIndices = this.getDotIndices(this.dialogue[this.dialogueIndex].dialogue);
+
+            const nextDotIndex = dotIndices.find(index => index > this.textIndex);
+            this.textIndex = nextDotIndex !== undefined ? nextDotIndex : this.dialogue[this.dialogueIndex].dialogue.length;
+        } else if (this.dialogueIndex < this.dialogue.length - 1) {
+            this.dialogueIndex++;
+            this.textIndex = 0;
+            this.lastSound2Played = false;
+            const currentDialogue = this.dialogue[this.dialogueIndex];
+            const prefullWords = this.splitDialogueIntoWords(currentDialogue.dialogue);
+            this.fullWordsColor = [];
+            this.fullWordsColor = prefullWords;
         } else {
-            this.game.audioHandler.cutsceneDialogue.pauseSound(audioElement);
+            this.removeEventListeners();
+            this.cutsceneBackgroundChange(400, 600, 400);
+            setTimeout(() => {
+                this.game.endCutscene(cutscene);
+                if (this.game.isEndCutscene) {
+                    this.game.isPlayerInGame = false;
+                } else {
+                    this.game.isPlayerInGame = true;
+                }
+                this.game.input.keys = [];
+                this.game.audioHandler.cutsceneDialogue.stopAllSounds();
+                this.game.audioHandler.cutsceneSFX.stopAllSounds();
+                this.game.audioHandler.cutsceneMusic.stopAllSounds();
+                this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
+            }, 500);
         }
+        const checkAnimationStatus = setInterval(() => {
+            if (this.textIndex >= this.dialogue[this.dialogueIndex].dialogue.length) {
+                this.isEnterPressed = false;
+                clearInterval(checkAnimationStatus);
+            }
+        }, 100);
     }
-    bcChange() {
+
+    displayDialogue(cutscene) {
+        this.handleKeyDown = (event) => {
+            if (event.key === 'Tab' && this.game.fadingIn === false && this.game.enterDuringBackgroundTransition && this.game.waitForFadeInOpacity === false) {
+                this.removeEventListeners();
+                this.cutsceneBackgroundChange(400, 600, 400);
+                setTimeout(() => {
+                    this.dialogueIndex = this.dialogue.length - 1;
+                    this.game.endCutscene(cutscene);
+                    if (this.game.isEndCutscene) {
+                        this.game.isPlayerInGame = false;
+                    } else {
+                        this.game.isPlayerInGame = true;
+                    }
+                    this.game.audioHandler.cutsceneDialogue.stopAllSounds();
+                    this.game.audioHandler.cutsceneSFX.stopAllSounds();
+                    this.game.audioHandler.cutsceneMusic.stopAllSounds();
+                    this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
+                }, 500);
+            }
+            if (event.key === 'Enter' && !this.isEnterPressed && !this.game.fadingIn &&
+                this.game.enterDuringBackgroundTransition && this.game.waitForFadeInOpacity === false) {
+                this.enterOrLeftClick(cutscene);
+            }
+        };
+        this.handleLeftClick = (event) => {
+            if (!this.isEnterPressed && !this.game.fadingIn && this.game.enterDuringBackgroundTransition && this.game.waitForFadeInOpacity === false) {
+                this.enterOrLeftClick(cutscene);
+            }
+        };
+        super.displayDialogue(cutscene);
+    }
+
+    cutsceneController() {
         if (this.textIndex === this.dialogue[this.dialogueIndex].dialogue.length) {
             if (this.game.mapSelected[1]) {
                 if (this.game.isEndCutscene === false) {
@@ -128,7 +94,7 @@ export class Cutscene {
                         this.game.audioHandler.cutsceneSFX.playSound('slashSound');
                     } else if (this.dialogueIndex === 6) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map1TentFireplace');
@@ -141,7 +107,7 @@ export class Cutscene {
                     } else if (this.dialogueIndex === 58) {
                         this.removeEventListeners();
                         this.game.audioHandler.cutsceneMusic.fadeOutAndStop('cracklingMountainCampfirewithRelaxingRiver');
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 4, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 4, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map1outsideCastleDoor');
@@ -149,7 +115,7 @@ export class Cutscene {
                         }, this.halfASecond + 100);
                     } else if (this.dialogueIndex === 60) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 4, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 4, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map1KingsBedroom');
@@ -161,49 +127,49 @@ export class Cutscene {
                         }, this.halfASecond + 100);
                     } else if (this.dialogueIndex === 66) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map1SafeRoom');
                         }, this.halfASecond + 100);
                     } else if (this.dialogueIndex === 73) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map1crypticTokenWar');
                         }, this.halfASecond + 100);
                     } else if (this.dialogueIndex === 93) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map1Lab');
                         }, this.halfASecond + 100);
                     } else if (this.dialogueIndex === 95) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map1DestroyedTree');
                         }, this.halfASecond + 100);
                     } else if (this.dialogueIndex === 97) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map1RegeneratedTree');
                         }, this.halfASecond + 100);
                     } else if (this.dialogueIndex === 100) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map1KingsBedroom');
                         }, this.halfASecond + 100);
                     } else if (this.dialogueIndex === 132) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map1outsideCastleDoor');
@@ -211,7 +177,7 @@ export class Cutscene {
                         }, this.halfASecond + 100);
                     } else if (this.dialogueIndex === 138) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.game.audioHandler.cutsceneMusic.playSound('windBreezeSound', true);
@@ -226,7 +192,7 @@ export class Cutscene {
                     if (this.dialogueIndex === 2) {
                         this.removeEventListeners();
                         this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
-                        this.game.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 3, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 3, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('dreamLight1');
@@ -235,7 +201,7 @@ export class Cutscene {
                     } else if (this.dialogueIndex === 4) {
                         this.removeEventListeners();
                         this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
-                        this.game.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
+                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('dreamDark1');
@@ -243,7 +209,7 @@ export class Cutscene {
                     } else if (this.dialogueIndex === 28) {
                         this.removeEventListeners();
                         this.game.audioHandler.cutsceneMusic.fadeOutAndStop('echoesOfTime');
-                        this.game.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
+                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.game.audioHandler.cutsceneMusic.playSound('exaleDeskant', true);
@@ -252,7 +218,7 @@ export class Cutscene {
                     } else if (this.dialogueIndex === 35) {
                         this.removeEventListeners();
                         this.game.audioHandler.cutsceneMusic.fadeOutAndStop('exaleDeskant');
-                        this.game.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
+                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.game.audioHandler.cutsceneSFX.playSound('doorOpening');
@@ -265,7 +231,7 @@ export class Cutscene {
                         this.game.audioHandler.cutsceneSFX.playSound('cutsceneMapOpening');
                     } else if (this.dialogueIndex === 19) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map1blackBackground');
@@ -273,7 +239,7 @@ export class Cutscene {
                     } else if (this.dialogueIndex === 20) {
                         this.removeEventListeners();
                         this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
-                        this.game.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
+                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.game.audioHandler.cutsceneMusic.playSound('echoesOfTime', true);
@@ -282,14 +248,14 @@ export class Cutscene {
                     } else if (this.dialogueIndex === 24) {
                         this.removeEventListeners();
                         this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
-                        this.game.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
+                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('dreamDark2');
                         }, this.halfASecond * 2 + 700);
                     } else if (this.dialogueIndex === 39) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map1blackBackground');
@@ -303,7 +269,7 @@ export class Cutscene {
                         this.game.audioHandler.cutsceneSFX.playSound('cutsceneMapOpening');
                     } else if (this.dialogueIndex === 11) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
+                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.game.audioHandler.cutsceneSFX.playSound('doorOpening');
@@ -312,7 +278,7 @@ export class Cutscene {
                         }, this.halfASecond * 2 + 700);
                     } else if (this.dialogueIndex === 32) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 5, this.halfASecond * 2);
+                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 5, this.halfASecond * 2);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.game.audioHandler.cutsceneSFX.playSound('walkingCutsceneSound');
@@ -323,7 +289,7 @@ export class Cutscene {
                         this.game.audioHandler.cutsceneSFX.playSound('sorcererEnteringMindSound');
                         this.game.audioHandler.cutsceneMusic.fadeOutAndStop('birdsChirping');
                         this.game.audioHandler.cutsceneMusic.fadeOutAndStop('windBreezeSound');
-                        this.game.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
+                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.isCharacterBlackAndWhite = true;
@@ -334,7 +300,7 @@ export class Cutscene {
                         this.isCharacterBlackAndWhite = false;
                     } else if (this.dialogueIndex === 60) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
+                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.isBackgroundBlackAndWhite = false;
@@ -343,17 +309,17 @@ export class Cutscene {
                         }, this.halfASecond * 2 + 700);
                     } else if (this.dialogueIndex === 64) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
+                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('dreamDark3');
                         }, this.halfASecond * 2 + 700);
                     } else if (this.dialogueIndex === 73) {
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond / 2, this.halfASecond / 2);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond / 2, this.halfASecond / 2);
                         this.game.audioHandler.cutsceneSFX.playSound('sorcererTeleportBackSound');
                     } else if (this.dialogueIndex === 74) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
+                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.game.audioHandler.cutsceneMusic.fadeOutAndStop('echoesOfTime');
@@ -365,7 +331,7 @@ export class Cutscene {
                         this.game.audioHandler.cutsceneSFX.playSound('sorcererWaterSpellSound');
                     } else if (this.dialogueIndex === 95) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 4, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 4, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.game.audioHandler.cutsceneSFX.playSound('waterSplashSound');
@@ -377,7 +343,7 @@ export class Cutscene {
                 } else {
                     if (this.dialogueIndex === 6) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
                         this.game.audioHandler.cutsceneMusic.fadeOutAndStop('submarineSonarUnderwaterSound');
                         setTimeout(() => {
                             this.addEventListeners();
@@ -385,7 +351,7 @@ export class Cutscene {
                         }, this.halfASecond + 100);
                     } else if (this.dialogueIndex === 10) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 4, this.halfASecond * 2);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 4, this.halfASecond * 2);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.game.audioHandler.cutsceneMusic.playSound('submarineSonarUnderwaterSound');
@@ -393,18 +359,18 @@ export class Cutscene {
                         }, this.halfASecond + 100);
                     } else if (this.dialogueIndex === 14) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 16, this.halfASecond * 2);
+                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 16, this.halfASecond * 2);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.game.audioHandler.cutsceneSFX.playSound('submarineRevving', true);
                             this.backgroundImage = document.getElementById('map1blackBackground');
                         }, this.halfASecond * 2 + 100);
                     } else if (this.dialogueIndex === 16) {
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         this.game.audioHandler.cutsceneSFX.fadeOutAndStop('submarineRevving');
                     } else if (this.dialogueIndex === 18) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.game.audioHandler.cutsceneSFX.playSound('submarineDoorOpening');
@@ -412,7 +378,7 @@ export class Cutscene {
                     } else if (this.dialogueIndex === 19) {
                         this.removeEventListeners();
                         this.game.audioHandler.cutsceneMusic.fadeOutAndStop('submarineSonarUnderwaterSound');
-                        this.game.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 4, this.halfASecond * 2);
+                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 4, this.halfASecond * 2);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.game.audioHandler.cutsceneMusic.playSound('windBreezeSound');
@@ -424,23 +390,23 @@ export class Cutscene {
                 if (this.game.isEndCutscene === false) {
                     if (this.dialogueIndex === 5) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map4footsteps');
                         }, this.halfASecond + 100);
                     } else if (this.dialogueIndex === 10) {
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         this.game.audioHandler.cutsceneSFX.playSound('dreamSound', false, true);
                     } else if (this.dialogueIndex === 12) {
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         this.game.audioHandler.cutsceneSFX.playSound('dreamSound', false, true);
                     } else if (this.dialogueIndex === 14) {
                         this.removeEventListeners();
                         this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
                         this.game.audioHandler.cutsceneMusic.fadeOutAndStop('birdsChirping');
                         this.game.audioHandler.cutsceneMusic.fadeOutAndStop('windBreezeSound');
-                        this.game.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
+                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('dreamLight4');
@@ -448,11 +414,11 @@ export class Cutscene {
                         }, this.halfASecond * 4 + 100);
                     } else if (this.dialogueIndex === 15) {
                         this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
                     } else if (this.dialogueIndex === 17) {
                         this.removeEventListeners();
                         this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
-                        this.game.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
+                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('dreamDark4');
@@ -460,7 +426,7 @@ export class Cutscene {
                     } else if (this.dialogueIndex === 37) {
                         this.removeEventListeners();
                         this.game.audioHandler.cutsceneMusic.fadeOutAndStop('echoesOfTime');
-                        this.game.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
+                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.game.audioHandler.cutsceneMusic.playSound('birdsChirping', true);
@@ -470,7 +436,7 @@ export class Cutscene {
                     } else if (this.dialogueIndex === 46) {
                         this.removeEventListeners();
                         this.game.audioHandler.cutsceneMusic.fadeOutAndStop('windBreezeSound');
-                        this.game.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
+                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
                         this.game.audioHandler.cutsceneMusic.fadeOutAndStop('birdsChirping');
                         this.game.audioHandler.cutsceneMusic.fadeOutAndStop('windBreezeSound');
                         setTimeout(() => {
@@ -483,42 +449,42 @@ export class Cutscene {
                         }, this.halfASecond);
                     } else if (this.dialogueIndex === 56) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map1crypticTokenWallpaper');
                         }, this.halfASecond + 100);
                     } else if (this.dialogueIndex === 57) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map4CloningLab');
                         }, this.halfASecond + 100);
                     } else if (this.dialogueIndex === 60) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map4ElyvorgFlames');
                         }, this.halfASecond + 100);
                     } else if (this.dialogueIndex === 64) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map4EvilElyvorg');
                         }, this.halfASecond + 100);
                     } else if (this.dialogueIndex === 66) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map4hospitalBedEmpty');
                         }, this.halfASecond + 100);
                     } else if (this.dialogueIndex === 69) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map1KingsBedroom');
@@ -529,7 +495,7 @@ export class Cutscene {
                         this.game.audioHandler.cutsceneMusic.playSound('planetsParalysis', true);
                     } else if (this.dialogueIndex === 20) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.isCharacterBlackAndWhite = true;
@@ -538,7 +504,7 @@ export class Cutscene {
                         }, this.halfASecond + 100);
                     } else if (this.dialogueIndex === 21) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.isCharacterBlackAndWhite = false;
@@ -564,7 +530,7 @@ export class Cutscene {
                 if (this.game.isEndCutscene === false) {
                     if (this.dialogueIndex === 5) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('dreamLight5');
@@ -572,7 +538,7 @@ export class Cutscene {
                         }, this.halfASecond * 2 + 100);
                     } else if (this.dialogueIndex === 8) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.game.audioHandler.cutsceneMusic.playSound('crypticTokenDarkAmbienceSound', true);
@@ -580,7 +546,7 @@ export class Cutscene {
                         }, this.halfASecond * 2 + 100);
                     } else if (this.dialogueIndex === 12) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.game.audioHandler.cutsceneMusic.fadeOutAndStop('echoesOfTime');
@@ -591,14 +557,14 @@ export class Cutscene {
                     } else if (this.dialogueIndex === 15) {
                         this.game.audioHandler.cutsceneSFX.playSound('doorOpening');
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond / 2, this.halfASecond / 2, this.halfASecond / 2);
+                        this.cutsceneBackgroundChange(this.halfASecond / 2, this.halfASecond / 2, this.halfASecond / 2);
                         setTimeout(() => {
                             this.addEventListeners();
                         }, this.halfASecond + 100);
                     } else if (this.dialogueIndex === 27) {
                         this.removeEventListeners();
                         this.game.audioHandler.cutsceneMusic.fadeOutAndStop('birdsChirping');
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.game.audioHandler.cutsceneMusic.playSound('bubblingVolcanoLavaSound', true);
@@ -606,7 +572,7 @@ export class Cutscene {
                         }, this.halfASecond * 2 + 100);
                     } else if (this.dialogueIndex === 35) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                         }, this.halfASecond * 2 + 100);
@@ -614,7 +580,7 @@ export class Cutscene {
                 } else {
                     if (this.dialogueIndex === 0) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond * 2);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond * 2);
                         setTimeout(() => {
                             this.game.audioHandler.cutsceneMusic.playSound('bubblingVolcanoLavaSound', true);
                             this.addEventListeners();
@@ -623,21 +589,21 @@ export class Cutscene {
                     } else if (this.dialogueIndex === 3) {
                         this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                         }, this.halfASecond + 100);
                     } else if (this.dialogueIndex === 5) {
                         this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                         }, this.halfASecond + 100);
                     } else if (this.dialogueIndex === 7) {
                         this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
                         this.game.audioHandler.cutsceneMusic.fadeOutAndStop('bubblingVolcanoLavaSound');
-                        this.game.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
+                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('dreamLight6');
@@ -646,14 +612,14 @@ export class Cutscene {
                     } else if (this.dialogueIndex === 9) {
                         this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('dreamDark6');
                         }, this.halfASecond * 2 + 100);
                     } else if (this.dialogueIndex === 32) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.game.audioHandler.cutsceneMusic.fadeOutAndStop('echoesOfTime');
@@ -661,7 +627,7 @@ export class Cutscene {
                         }, this.halfASecond * 2 + 100);
                     } else if (this.dialogueIndex === 36) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.game.audioHandler.cutsceneMusic.playSound('bubblingVolcanoLavaSound', true);
@@ -669,28 +635,28 @@ export class Cutscene {
                         }, this.halfASecond * 2 + 100);
                     } else if (this.dialogueIndex === 38) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map6elyvorgTokenPlace');
                         }, this.halfASecond * 2 + 100);
                     } else if (this.dialogueIndex === 39) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map6stone');
                         }, this.halfASecond * 2 + 100);
                     } else if (this.dialogueIndex === 43) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map6stone2');
                         }, this.halfASecond * 2 + 100);
                     } else if (this.dialogueIndex === 44) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.game.audioHandler.cutsceneMusic.playSound('groundShakingSound', true);
@@ -699,14 +665,14 @@ export class Cutscene {
                         }, this.halfASecond * 2 + 100);
                     } else if (this.dialogueIndex === 48) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('map6elyvorgTokenPlaceActive');
                         }, this.halfASecond * 2 + 100);
                     } else if (this.dialogueIndex === 51) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
                         this.game.audioHandler.cutsceneMusic.fadeOutAndStop('bubblingVolcanoLavaSound');
                         setTimeout(() => {
                             this.addEventListeners();
@@ -715,7 +681,7 @@ export class Cutscene {
                     } else if (this.dialogueIndex === 55) {
                         this.removeEventListeners();
                         this.game.audioHandler.cutsceneMusic.playSound('bubblingVolcanoLavaSound', true);
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById(this.getmap6insideCaveLavaEarthquake());
@@ -723,7 +689,7 @@ export class Cutscene {
                     } else if (this.dialogueIndex === 59) {
                         this.removeEventListeners();
                         this.game.audioHandler.cutsceneMusic.fadeOutAndStop('bubblingVolcanoLavaSound');
-                        this.game.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.backgroundImage = document.getElementById('dreamLight7');
@@ -732,7 +698,7 @@ export class Cutscene {
                         this.removeEventListeners();
                         this.silent = true;
                         this.game.audioHandler.cutsceneMusic.fadeOutAndStop('groundShakingSound');
-                        this.game.cutsceneBackgroundChange(this.halfASecond * 4, this.halfASecond * 2, this.halfASecond * 7);
+                        this.cutsceneBackgroundChange(this.halfASecond * 4, this.halfASecond * 2, this.halfASecond * 7);
                         setTimeout(() => {
                             this.game.audioHandler.cutsceneMusic.playSound('gta4Theme', true);
                             this.groundShaking = false;
@@ -743,7 +709,7 @@ export class Cutscene {
                         }, this.halfASecond * 13);
                     } else if (this.dialogueIndex === 68) {
                         this.removeEventListeners();
-                        this.game.cutsceneBackgroundChange(this.halfASecond * 4, this.halfASecond * 2, this.halfASecond * 7);
+                        this.cutsceneBackgroundChange(this.halfASecond * 4, this.halfASecond * 2, this.halfASecond * 7);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.groundShaking = false;
@@ -754,388 +720,11 @@ export class Cutscene {
             }
         }
     }
-    removeEventListeners() {
-        document.removeEventListener('keydown', this.handleKeyDown);
-        document.removeEventListener('keyup', this.handleKeyUp);
-    }
-    addEventListeners() {
-        document.addEventListener('keydown', this.handleKeyDown);
-        document.addEventListener('keyup', this.handleKeyUp);
-    }
-    displayDialogue(cutscene) {
-        const currentDialogue = this.dialogue[this.dialogueIndex];
-        const prefullWords = this.splitDialogueIntoWords(currentDialogue.dialogue);
-        this.fullWords = prefullWords;
-        this.fullWordsColor = prefullWords;
-        this.dialogueIndex = -1;
-        this.textIndex = 0;
-        this.lastSound2Played = false;
-        this.isEnterPressed = false;
-
-        this.handleKeyDown = (event) => {
-            if (event.key === 'Tab' && this.game.fadingIn === false && this.game.enterDuringBackgroundTransition && this.game.waitForFadeInOpacity === false) {
-                this.removeEventListeners();
-                this.game.cutsceneBackgroundChange(400, 600, 400);
-                setTimeout(() => {
-                    this.dialogueIndex = this.dialogue.length - 1;
-                    this.game.endCutscene(cutscene);
-                    if (this.game.isEndCutscene) {
-                        this.game.isPlayerInGame = false;
-                    } else {
-                        this.game.isPlayerInGame = true;
-                    }
-                    this.game.audioHandler.cutsceneDialogue.stopAllSounds();
-                    this.game.audioHandler.cutsceneSFX.stopAllSounds();
-                    this.game.audioHandler.cutsceneMusic.stopAllSounds();
-                    this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
-                }, 500);
-            }
-            if (event.key === 'Enter' && !this.isEnterPressed && !this.game.fadingIn && this.game.enterDuringBackgroundTransition && this.game.waitForFadeInOpacity === false) {
-                this.bcChange();
-
-                this.playSound2OnDotPause = false;
-                this.isEnterPressed = true;
-                if (this.continueDialogue) {
-                    this.pause = false;
-                    this.textIndex++;
-                    this.continueDialogue = false;
-                } else if (this.textIndex < this.dialogue[this.dialogueIndex].dialogue.length) {
-                    const dotIndices = this.getDotIndices(this.dialogue[this.dialogueIndex].dialogue);
-
-                    const nextDotIndex = dotIndices.find(index => index > this.textIndex);
-                    this.textIndex = nextDotIndex !== undefined ? nextDotIndex : this.dialogue[this.dialogueIndex].dialogue.length;
-                } else if (this.dialogueIndex < this.dialogue.length - 1) {
-                    this.dialogueIndex++;
-                    this.textIndex = 0;
-                    this.lastSound2Played = false;
-                    const currentDialogue = this.dialogue[this.dialogueIndex];
-                    const prefullWords = this.splitDialogueIntoWords(currentDialogue.dialogue);
-                    this.fullWordsColor = [];
-                    this.fullWordsColor = prefullWords;
-                } else {
-                    this.removeEventListeners();
-                    this.game.cutsceneBackgroundChange(400, 600, 400);
-                    setTimeout(() => {
-                        this.game.endCutscene(cutscene);
-                        if (this.game.isEndCutscene) {
-                            this.game.isPlayerInGame = false;
-                        } else {
-                            this.game.isPlayerInGame = true;
-                        }
-                        this.game.audioHandler.cutsceneDialogue.stopAllSounds();
-                        this.game.audioHandler.cutsceneSFX.stopAllSounds();
-                        this.game.audioHandler.cutsceneMusic.stopAllSounds();
-                        this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
-                    }, 500);
-                }
-                const checkAnimationStatus = setInterval(() => {
-                    if (this.textIndex >= this.dialogue[this.dialogueIndex].dialogue.length) {
-                        this.isEnterPressed = false;
-                        clearInterval(checkAnimationStatus);
-                    }
-                }, 100);
-            }
-        };
-
-        this.handleKeyUp = (event) => {
-            if (event.key === 'Enter') {
-                this.isEnterPressed = false;
-            }
-        };
-
-        this.dialogueIndex++;
-        this.addEventListeners();
-    }
-
-    getDotIndices(dialogue) {
-        const dotIndices = [];
-        let dotIndex = dialogue.indexOf('...');
-
-        while (dotIndex !== -1) {
-            dotIndices.push(dotIndex);
-            dotIndex = dialogue.indexOf('...', dotIndex + 3);
-        }
-        return dotIndices;
-    }
-    isCharacterName(word) {
-        return this.characterColors.hasOwnProperty(word);
-    }
-    draw(context) {
-        if (this.backgroundImage) {
-            if (this.isBackgroundBlackAndWhite) {
-                context.filter = "grayscale(100%)";
-            }
-
-            if (this.groundShaking) {
-                preShake(context);
-            }
-            context.drawImage(this.backgroundImage, 0, 0, this.game.width, this.game.height);
-            if (this.groundShaking) {
-                postShake(context);
-            }
-
-            context.filter = "none";
-        }
-        if (this.dialogueIndex < this.dialogue.length) {
-            const currentDialogue = this.dialogue[this.dialogueIndex];
-            const { character, dialogue, images } = currentDialogue;
-            const partialText = dialogue.substring(0, this.textIndex + 1);
-            this.dialogueText = partialText;
-            const words = this.splitDialogueIntoWords(partialText);
-            const lines = this.getLinesWithinLimit(words, this.dialogueText);
-
-            context.save();
-
-            if (this.game.enterDuringBackgroundTransition) {
-                if (images && Array.isArray(images)) {
-                    images.forEach((imageObject) => {
-                        const { id, opacity, x, y, width, height } = imageObject;
-
-                        if (this.isCharacterBlackAndWhite) {
-                            context.filter = "grayscale(100%)";
-                        }
-
-                        context.globalAlpha = opacity !== undefined ? opacity : 1;
-                        context.drawImage(document.getElementById(id), x, y, width, height);
-
-                        context.filter = "none";
-                        context.globalAlpha = 1;
-                    });
-                }
-                if (this.silent === false) {
-                    context.drawImage(document.getElementById("textBox"), 0 + 15, this.game.height - 70, 1050, 96);
-                }
-            }
-
-            const characterColor = this.characterColors[character] || 'white';
-            context.fillStyle = characterColor;
-
-            context.font = '23px Arial';
-            context.textAlign = 'left';
-            context.shadowOffsetX = 2;
-            context.shadowOffsetY = 2;
-            context.shadowColor = 'black';
-            context.shadowBlur = 0;
-
-            const characterName = `${character}: `;
-
-            let xPosition = 50;
-
-            if (this.game.enterDuringBackgroundTransition) {
-                for (let charIndex = 0; charIndex < characterName.length; charIndex++) {
-                    const punctuationChars = ':';
-                    const char = characterName[charIndex];
-
-                    if (punctuationChars.includes(char)) {
-                        context.fillStyle = 'white';
-                    } else {
-                        context.fillStyle = characterColor;
-                    }
-
-                    context.fillText(char, xPosition, this.game.height - 33);
-                    xPosition += context.measureText(char).width;
-                }
-            }
-
-            if (this.textIndex < dialogue.length) {
-                if (!this.game.enterDuringBackgroundTransition) {
-                    this.textIndex -= 2;
-                    if (this.textIndex < 0) {
-                        this.textIndex = -2;
-                    }
-                    this.pause = true;
-                } else {
-                    this.pause = false;
-                }
-                if (partialText.endsWith('...') && !this.lastSoundPlayed && partialText !== dialogue) {
-                    if (!this.playSound2OnDotPause) {
-                        this.playEightBitSound('bit2');
-                        this.playSound2OnDotPause = true;
-                    }
-                    this.textIndex--;
-                    this.pause = true;
-                    this.continueDialogue = true;
-                    this.isEnterPressed = false;
-                }
-
-                this.characterColorLogic(context, lines, words, characterName)
-
-                this.playEightBitSound('bit1', 'bit1');
-                this.textIndex++;
-            } else {
-                this.characterColorLogic(context, lines, words, characterName)
-            }
-
-            if (this.textIndex >= dialogue.length && !this.lastSoundPlayed) {
-                this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
-                if (!this.lastSound2Played && this.silent === false) {
-                    this.playEightBitSound('bit2');
-                    this.lastSound2Played = true;
-                }
-            }
-        }
-        context.restore();
-    }
-    characterColorLogic(context, lines, words, characterName) {
-        const punctuationChars = ',!?.:;()"';
-
-        for (let index = 0; index < lines.length; index++) {
-            const line = lines[index];
-            const lineWords = this.splitDialogueIntoWords(line);
-            let xPosition = 50 + context.measureText(characterName).width;
-
-            for (let wordIndex = 0; wordIndex < lineWords.length; wordIndex++) {
-                const word = lineWords[wordIndex];
-
-                for (let i = 0; i < words.length; i++) {
-                    const wordsIndex = words[i];
-                    const completedWord = this.fullWordsColor[i].replace(/[,!?.:;()"]/g, '');
-
-                    if (word === wordsIndex) {
-                        for (let charIndex = 0; charIndex < word.length; charIndex++) {
-                            const char = word[charIndex];
-
-                            if (this.isCharacterName(completedWord)) {
-                                context.fillStyle = this.characterColors[completedWord];
-                            } else {
-                                context.fillStyle = 'white';
-                            }
-
-                            if (punctuationChars.includes(char)) {
-                                context.fillStyle = 'white';
-                            }
-
-                            context.fillText(char, xPosition, this.game.height - 33 + (index * 25));
-                            xPosition += context.measureText(char).width;
-                        }
-
-                        xPosition += context.measureText(' ').width; // adds space between words
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    getLinesWithinLimit(words, fullWords) {
-        const lines = [];
-        const limit = 75;
-        let currentLine = '';
-        let lineCounter = 1;
-        for (let i = 0; i < words.length; i++) {
-            const completedWords = fullWords[i];
-            const word = words[i];
-            const currentLineLength = currentLine.length;
-            if (fullWords[i] && (currentLineLength + fullWords[i].length) > limit && lineCounter < 2) {
-                lines.push(currentLine);
-                currentLine = word;
-                lineCounter++;
-            } else {
-                currentLine += (currentLine === '' ? '' : ' ') + word;
-            }
-        }
-        if (currentLine !== '') {
-            lines.push(currentLine);
-        }
-        return lines;
-    }
 }
 
-export class FilterCleanDialogue extends Cutscene {
-    constructor(game) {
-        super(game);
-        this.dialogue = [];
-    }
-
-    addDialogue(character, dialogue, ...images) {
-        this.dialogue.push({
-            character: character,
-            dialogue: dialogue,
-            images: images
-        });
-    }
-
-    addImage(id, opacity, x, y, width, height) {
-        return { id, opacity, x, y, width, height };
-    }
-
-    getmap6insideCaveLavaEarthquake() {
-        const currentSkin = this.game.menuInstances.skins.currentSkin;
-        if (currentSkin === this.game.menuInstances.skins.defaultSkin) {
-            return 'map6insideCaveLavaEarthquake';
-        } else if (currentSkin === this.game.menuInstances.skins.hatSkin) {
-            return 'map6insideCaveLavaEarthquakeHat';
-        } else if (currentSkin === this.game.menuInstances.skins.choloSkin) {
-            return 'map6insideCaveLavaEarthquakeCholo';
-        } else if (currentSkin === this.game.menuInstances.skins.zabkaSkin) {
-            return 'map6insideCaveLavaEarthquakeZabka';
-        } else if (currentSkin === this.game.menuInstances.skins.shinySkin) {
-            return 'map6insideCaveLavaEarthquakeShiny';
-        }
-    }
-
-    getSkinPrefix() {
-        const currentSkin = this.game.menuInstances.skins.currentSkin;
-        if (currentSkin === this.game.menuInstances.skins.defaultSkin) {
-            return '';
-        } else if (currentSkin === this.game.menuInstances.skins.hatSkin) {
-            return 'hat';
-        } else if (currentSkin === this.game.menuInstances.skins.choloSkin) {
-            return 'cholo';
-        } else if (currentSkin === this.game.menuInstances.skins.zabkaSkin) {
-            return 'zabka';
-        } else if (currentSkin === this.game.menuInstances.skins.shinySkin) {
-            return 'shiny';
-        }
-    }
-
-    setFiredogImage(imageName) {
-        const prefix = this.getSkinPrefix();
-        return `${prefix}firedog${imageName}`;
-    }
-
-    setfiredogAngry() {
-        return this.setFiredogImage('Angry');
-    }
-    setfiredogAngry2() {
-        return this.setFiredogImage('Angry2');
-    }
-    setfiredogCry() {
-        return this.setFiredogImage('Cry');
-    }
-    setfiredogHappy() {
-        return this.setFiredogImage('Happy');
-    }
-    setfiredogHeadache() {
-        return this.setFiredogImage('Headache');
-    }
-    setfiredogLaugh() {
-        return this.setFiredogImage('Laugh');
-    }
-    setfiredogNormal() {
-        return this.setFiredogImage('Normal');
-    }
-    setfiredogNormalExclamationMark() {
-        return this.setFiredogImage('NormalExclamationMark');
-    }
-    setfiredogNormalQuestionAndExlamationMark() {
-        return this.setFiredogImage('NormalQuestionAndExlamationMark');
-    }
-    setfiredogNormalQuestionMark() {
-        return this.setFiredogImage('NormalQuestionMark');
-    }
-    setfiredogPhew() {
-        return this.setFiredogImage('Phew');
-    }
-    setfiredogSad() {
-        return this.setFiredogImage('Sad');
-    }
-    setfiredogTired() {
-        return this.setFiredogImage('Tired');
-    }
-}
 
 // Map 1 Cutscenes -----------------------------------------------------------------------------------------------------------------------------------------------------
-export class Map1Cutscene extends FilterCleanDialogue {
+export class Map1Cutscene extends StoryCutscene {
     constructor(game) {
         super(game);
         this.backgroundImage = document.getElementById('map1blackBackground');
@@ -2037,7 +1626,7 @@ export class Map1Cutscene extends FilterCleanDialogue {
         );
     }
 }
-export class Map1EndCutscene extends FilterCleanDialogue {
+export class Map1EndCutscene extends StoryCutscene {
     constructor(game) {
         super(game);
         this.backgroundImage = document.getElementById('cabincutscene1');
@@ -2571,7 +2160,7 @@ export class Map1EndCutscene extends FilterCleanDialogue {
     }
 }
 // Map 2 Cutscenes -----------------------------------------------------------------------------------------------------------------------------------------------------
-export class Map2Cutscene extends FilterCleanDialogue {
+export class Map2Cutscene extends StoryCutscene {
     constructor(game) {
         super(game, true);
         this.backgroundImage = document.getElementById('cabincutscene1_5');
@@ -2861,8 +2450,7 @@ export class Map2Cutscene extends FilterCleanDialogue {
         );
     }
 }
-
-export class Map2EndCutscene extends FilterCleanDialogue {
+export class Map2EndCutscene extends StoryCutscene {
     constructor(game) {
         super(game, true);
         this.backgroundImage = document.getElementById('map3CutsceneCabinNight');
@@ -3076,7 +2664,7 @@ export class Map2EndCutscene extends FilterCleanDialogue {
     }
 }
 // Map 3 Cutscenes -----------------------------------------------------------------------------------------------------------------------------------------------------
-export class Map3Cutscene extends FilterCleanDialogue {
+export class Map3Cutscene extends StoryCutscene {
     constructor(game) {
         super(game, true);
         this.backgroundImage = document.getElementById('map3CutsceneCabin');
@@ -3543,7 +3131,7 @@ export class Map3Cutscene extends FilterCleanDialogue {
         );
         this.addDialogue( //82
             `${this.zephyrion}`,
-            `But be wary, you must be quick to reach the other side, it only lasts 10 minutes.`,
+            `But be wary, you must be quick to reach the other side, the spell only lasts 7 minutes and 30 seconds.`,
             this.addImage(this.setfiredogLaugh(), 0.7, 0, 79, 590, 610),
             this.addImage('zephyrionNormal', 1, 1300, 79, 590, 610),
         );
@@ -3647,8 +3235,7 @@ export class Map3Cutscene extends FilterCleanDialogue {
         );
     }
 }
-
-export class Map3EndCutscene extends FilterCleanDialogue {
+export class Map3EndCutscene extends StoryCutscene {
     constructor(game) {
         super(game, true);
         this.backgroundImage = document.getElementById('map3InsideSubmarine');
@@ -3782,7 +3369,7 @@ export class Map3EndCutscene extends FilterCleanDialogue {
     }
 }
 // Map 4 Cutscenes -----------------------------------------------------------------------------------------------------------------------------------------------------
-export class Map4Cutscene extends FilterCleanDialogue {
+export class Map4Cutscene extends StoryCutscene {
     constructor(game) {
         super(game, true);
         this.backgroundImage = document.getElementById('map4beginningForestView');
@@ -4395,8 +3982,7 @@ export class Map4Cutscene extends FilterCleanDialogue {
         );
     }
 }
-
-export class Map4EndCutscene extends FilterCleanDialogue {
+export class Map4EndCutscene extends StoryCutscene {
     constructor(game) {
         super(game);
         this.backgroundImage = document.getElementById('map4CabinEndCutscene');
@@ -4689,7 +4275,7 @@ export class Map4EndCutscene extends FilterCleanDialogue {
     }
 }
 // Map 5 Cutscenes -----------------------------------------------------------------------------------------------------------------------------------------------------
-export class Map5Cutscene extends FilterCleanDialogue {
+export class Map5Cutscene extends StoryCutscene {
     constructor(game) {
         super(game, true);
         this.backgroundImage = document.getElementById('map4CabinEndCutscene');
@@ -4846,8 +4432,7 @@ export class Map5Cutscene extends FilterCleanDialogue {
         );
     }
 }
-
-export class Map5EndCutscene extends FilterCleanDialogue {
+export class Map5EndCutscene extends StoryCutscene {
     constructor(game) {
         super(game);
         this.backgroundImage = document.getElementById('map5insideCabin');
@@ -5048,7 +4633,7 @@ export class Map5EndCutscene extends FilterCleanDialogue {
     }
 }
 // Map 6 Cutscenes -----------------------------------------------------------------------------------------------------------------------------------------------------
-export class Map6Cutscene extends FilterCleanDialogue {
+export class Map6Cutscene extends StoryCutscene {
     constructor(game) {
         super(game, true);
         this.backgroundImage = document.getElementById('map1blackBackground');
@@ -5250,8 +4835,7 @@ export class Map6Cutscene extends FilterCleanDialogue {
         );
     }
 }
-
-export class Map6EndCutscene extends FilterCleanDialogue {
+export class Map6EndCutscene extends StoryCutscene {
     constructor(game) {
         super(game);
         this.backgroundImage = document.getElementById('map1blackBackground');
@@ -5542,7 +5126,7 @@ export class Map6EndCutscene extends FilterCleanDialogue {
         );
         this.addDialogue( //60
             `${this.firedog}`,
-            `Wah- The ground... what's going on...`,
+            `Wha- The ground... what's going on...`,
             this.addImage(this.setfiredogNormalQuestionAndExlamationMark(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //61

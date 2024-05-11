@@ -1,6 +1,7 @@
 import { Enemy, FallingEnemy, Projectile, LaserBeam } from "./enemies.js";
 import { MeteorExplosionCollision, DarkExplosion, PoisonDropGroundCollision } from "../../animations/collisionAnimation.js";
 import { PurpleWarningIndicator } from "../../animations/damageIndicator.js";
+import { fadeInAndOut } from "../../animations/fading.js";
 
 export class GroundEnemyBoss extends Enemy {
     constructor(game, width, height, maxFrame, imageId) {
@@ -218,6 +219,9 @@ export class ElectricWheel extends Projectile {
         context.translate(this.x + this.width / 2, this.y + this.height / 2);
         context.rotate(this.rotationAngle);
 
+        context.shadowColor = 'yellow';
+        context.shadowBlur = 10;
+
         if (this.game.debug) context.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
         context.drawImage(this.image, this.frameX * this.width, 0, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
 
@@ -312,6 +316,10 @@ export class PurpleFireball extends Projectile {
 
     draw(context) {
         context.save();
+
+        context.shadowColor = 'purple';
+        context.shadowBlur = 20;
+
         context.translate(this.x + this.size / 2, this.y + this.size / 2);
         context.rotate(this.rotationAngle);
 
@@ -337,6 +345,15 @@ export class Arrow extends Projectile {
         if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
 
         context.save();
+
+        if (this.image.id === 'yellowArrow') {
+            context.shadowColor = 'yellow';
+            context.shadowBlur = 10;
+        } else if (this.image.id === 'blueArrow') {
+            context.shadowColor = 'blue';
+            context.shadowBlur = 10;
+        }
+
         context.translate(this.x + this.width / 2, this.y + this.height / 2);
         let angle = Math.atan2(this.speedY, this.speedX);
 
@@ -372,6 +389,9 @@ export class PurpleSlash extends Projectile {
 
         context.save();
         context.translate(this.x + this.width / 2, this.y + this.height / 2);
+
+        context.shadowColor = 'purple';
+        context.shadowBlur = 20;
 
         const shouldInvert = this.direction > 0;
         if (shouldInvert) {
@@ -496,6 +516,12 @@ export class Elyvorg extends GroundEnemyBoss {
         this.fireballAnimation = new GroundEnemyBoss(game, 153.20833333333333333333333333333, 180, 23, 'elyvorgIdleFireball');
         this.fireballAnimation.frameX = 0;
         this.canFireballAttack = true;
+    }
+    cutsceneBackgroundChange(fadein, stay, fadeout) {
+        this.game.enterDuringBackgroundTransition = false;
+        fadeInAndOut(this.game.canvas, fadein, stay, fadeout, () => {
+            this.game.enterDuringBackgroundTransition = true;
+        });
     }
     backToIdleSetUp() {
         this.previousState = this.state;
@@ -997,7 +1023,7 @@ export class Elyvorg extends GroundEnemyBoss {
         if (this.lives <= 5) {
             this.game.elyvorgInFight = false;
             this.lives = 110;
-            this.game.cutsceneBackgroundChange(200, 600, 300);
+            this.cutsceneBackgroundChange(200, 600, 300);
             this.game.audioHandler.mapSoundtrack.fadeOutAndStop('elyvorgBattleTheme');
             this.game.input.keys = [];
             this.game.audioHandler.enemySFX.stopAllSounds();
@@ -1091,6 +1117,12 @@ export class Elyvorg extends GroundEnemyBoss {
         const allStates = ['run', 'jump', 'laser', 'meteor', 'ghost', 'gravity', 'ink', 'fireball', 'poison'];
 
         if (this.game.gameOver) {
+            if (this.isInTheMiddle) {
+                this.runningDirection = 10;
+                this.state = 'run';
+            } else {
+                this.state = 'idle';
+            }
             return;
         }
 

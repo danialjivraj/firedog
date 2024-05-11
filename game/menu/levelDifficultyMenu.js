@@ -35,8 +35,7 @@ export class LevelDifficultyMenu extends BaseMenu {
         super.handleMenuSelection();
 
         if (selectedOption === 'Go Back') {
-            this.menuActive = false;
-            this.game.currentMenu = this.game.menuInstances.mainMenu;
+            this.game.menu.main.activateMenu(2);
         } else {
             this.setDifficulty(selectedOption.replace(' - Selected', ''));
         }

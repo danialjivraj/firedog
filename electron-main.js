@@ -10,7 +10,7 @@ function createWindow() {
     height: 1080,
     icon: path.join(__dirname, 'game', 'assets', 'icons', 'firedogHead.png'),
   });
-  
+
   mainWindow.removeMenu()
 
   mainWindow.loadURL(url.format({
@@ -18,7 +18,7 @@ function createWindow() {
     protocol: 'file:',
     slashes: true
   }));
-  
+
   mainWindow.maximize();
 
   mainWindow.on('closed', function () {
@@ -35,3 +35,9 @@ app.on('window-all-closed', function () {
 app.on('activate', function () {
   if (mainWindow === null) createWindow();
 });
+
+// to package
+// for windows/linux
+// electron-packager . Firedog --platform=all --asar --icon=./game/assets/icons/firedogHeadIcon.ico
+// for mac
+// electron-packager . Firedog --platform=darwin --asar --icon=./game/assets/icons/firedogHeadMIconMac.icns

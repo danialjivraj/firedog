@@ -236,6 +236,7 @@ export class FiredogAudioHandler extends AudioHandler {
     super(game);
     this.soundsMapping = {
       //player
+      bluePotionEnergyGoingUp: 'bluePotionEnergyGoingUp',
       rollingSFX: 'rollingSFX',
       rollingUnderwaterSFX: 'rollingUnderwaterSFX',
       fireballSFX: 'fireballSFX',
@@ -340,6 +341,8 @@ export class EnemySFXAudioHandler extends AudioHandler {
       goblinJumpSound: 'goblinJumpSound',
       //smallFly
       buzzingFly: 'buzzingFly',
+      //meatSoldier
+      meatSoldierSound: 'meatSoldierSound',
       //spinningEnemy
       spinningChainsaw: 'spinningChainsaw',
       //raven
@@ -407,4 +410,3 @@ export class EnemySFXAudioHandler extends AudioHandler {
     this.initializeSounds();
   }
 }
-

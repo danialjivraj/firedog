@@ -35,6 +35,8 @@ export class UI {
         context.fillStyle = this.game.fontColor;
         //coins score
         context.fillText('Coins: ' + this.game.coins, 20, 50);
+        //progress bar
+        this.progressBar(context);
         //time
         this.timer(context);
         //energy
@@ -48,45 +50,107 @@ export class UI {
         this.firedogAbilityUI(context)
         this.elyvorgAbilityUI(context);
     }
-    energy(context) {
-        if (this.game.player.isBluePotionActive === true) {
+    progressBar(context) {
+        if (!this.game.mapSelected[6]) {
+            const percentage = Math.min((this.game.background.totalDistanceTraveled / this.game.maxDistance) * 100, 100);
+            const barWidth = 500;
+            const barHeight = 10;
+            const barX = (this.game.width / 2) - (barWidth / 2);
+            const barY = 10;
+
             context.save();
-            const shakeAmount = 3;
-            const shakeFrequency = 0.1;
-            const shakeDirectionX = Math.random() > 0.5 ? 1 : -1;
-            const shakeDirectionY = Math.random() > 0.5 ? 1 : -1;
-            const offsetX = shakeAmount * shakeDirectionX * Math.sin(Date.now() * shakeFrequency);
-            const offsetY = shakeAmount * shakeDirectionY * Math.cos(Date.now() * shakeFrequency);
-            context.font = this.fontSize * 1.2 + 'px ' + this.fontFamily;
-            context.fillStyle = 'blue';
-            context.shadowColor = 'black';
-            if (!this.game.ingamePauseMenu.isPaused) {
-                context.fillText('Energy: ' + this.game.player.energy.toFixed(1), 20 + offsetX, 130 + offsetY);
-            } else if (this.game.ingamePauseMenu.isPaused) {
-                context.fillText('Energy: ' + this.game.player.energy.toFixed(1), 20 + 0, 130 + 0);
-            }
-            context.restore();
-        } else if (this.game.player.isPoisonedActive === true) {
-            context.save();
-            context.font = this.fontSize * 1.2 + 'px ' + this.fontFamily;
-            context.fillStyle = 'darkgreen';
-            context.shadowColor = 'black';
-            context.fillText('Energy: ' + this.game.player.energy.toFixed(1), 20, 130);
-            context.restore();
-        } else if (this.game.player.energyReachedZero === true) {
-            context.save();
-            context.font = this.fontSize * 1.2 + 'px ' + this.fontFamily;
-            context.fillStyle = 'red';
-            context.shadowColor = 'black';
-            context.fillText('Energy: ' + this.game.player.energy.toFixed(1), 20, 130);
-            context.restore();
-        } else if (this.game.player.energyReachedZero === false) {
-            context.save();
-            context.font = this.fontSize * 1.2 + 'px ' + this.fontFamily;
-            context.fillText('Energy: ' + this.game.player.energy.toFixed(1), 20, 130);
+            context.font = '18px ' + this.fontFamily;
+            context.fillStyle = this.game.fontColor;
+            context.textAlign = 'left';
+            context.fillText(Math.floor(percentage) + '%', barX + barWidth + 5, barY + barHeight);
+
+            context.shadowColor = 'rgba(0, 0, 0, 0)';
+            context.shadowOffsetX = 0;
+            context.shadowOffsetY = 0;
+            context.shadowBlur = 0;
+
+            context.fillStyle = 'rgba(255, 255, 255, 0.25)';
+            context.beginPath();
+            context.moveTo(barX + 5, barY);
+            context.lineTo(barX + barWidth - 5, barY);
+            context.arcTo(barX + barWidth, barY, barX + barWidth, barY + 5, 5);
+            context.lineTo(barX + barWidth, barY + barHeight - 5);
+            context.arcTo(barX + barWidth, barY + barHeight, barX + barWidth - 5, barY + barHeight, 5);
+            context.lineTo(barX + 5, barY + barHeight);
+            context.arcTo(barX, barY + barHeight, barX, barY + barHeight - 5, 5);
+            context.lineTo(barX, barY + 5);
+            context.arcTo(barX, barY, barX + 5, barY, 5);
+            context.closePath();
+            context.fill();
+
+            const filledWidth = (this.game.background.totalDistanceTraveled / this.game.maxDistance) * barWidth;
+
+            context.beginPath();
+            context.moveTo(barX + 5, barY);
+            context.lineTo(barX + barWidth - 5, barY);
+            context.arcTo(barX + barWidth, barY, barX + barWidth, barY + 5, 5);
+            context.lineTo(barX + barWidth, barY + barHeight - 5);
+            context.arcTo(barX + barWidth, barY + barHeight, barX + barWidth - 5, barY + barHeight, 5);
+            context.lineTo(barX + 5, barY + barHeight);
+            context.arcTo(barX, barY + barHeight, barX, barY + barHeight - 5, 5);
+            context.lineTo(barX, barY + 5);
+            context.arcTo(barX, barY, barX + 5, barY, 5);
+            context.closePath();
+            context.clip();
+
+            context.fillStyle = '#2ecc71';
+            context.beginPath();
+            context.moveTo(barX + 10, barY);
+            context.lineTo(barX + filledWidth - 5, barY);
+            context.arcTo(barX + filledWidth, barY, barX + filledWidth, barY + 5, 5);
+            context.lineTo(barX + filledWidth, barY + barHeight - 5);
+            context.arcTo(barX + filledWidth, barY + barHeight, barX + filledWidth - 5, barY + barHeight, 5);
+            context.lineTo(barX + 5, barY + barHeight);
+            context.arcTo(barX, barY + barHeight, barX, barY + barHeight - 5, 5);
+            context.lineTo(barX, barY + 5);
+            context.arcTo(barX, barY, barX + 10, barY, 5);
+            context.closePath();
+            context.fill();
             context.restore();
         }
+    }
+    energy(context) {
+        let textColor = 'black';
+        let shadowColor = 'white';
 
+        if (this.game.player.isBluePotionActive === true) {
+            textColor = 'blue';
+            shadowColor = 'black';
+        } else if (this.game.player.isPoisonedActive === true) {
+            textColor = 'darkgreen';
+            shadowColor = 'black';
+        } else if (this.game.player.energyReachedZero === false && this.game.player.energy < 20.00) {
+            textColor = 'black';
+            shadowColor = 'gold';
+        } else if (this.game.player.energyReachedZero === true) {
+            textColor = 'red';
+            shadowColor = 'black';
+        }
+
+        context.save();
+        const shakeAmount = this.game.player.isBluePotionActive ? 3 : 0;
+        const shakeFrequency = 0.1;
+        const shakeDirectionX = Math.random() > 0.5 ? 1 : -1;
+        const shakeDirectionY = Math.random() > 0.5 ? 1 : -1;
+        const offsetX = shakeAmount * shakeDirectionX * Math.sin(Date.now() * shakeFrequency);
+        const offsetY = shakeAmount * shakeDirectionY * Math.cos(Date.now() * shakeFrequency);
+
+        context.font = this.fontSize * 1.2 + 'px ' + this.fontFamily;
+        context.fillStyle = textColor;
+        context.shadowColor = shadowColor;
+
+        if (!this.game.menu.pause.isPaused) {
+            context.fillText('Energy: ' + this.game.player.energy.toFixed(1), 20 + offsetX, 130 + offsetY);
+        } else {
+            context.fillText('Energy: ' + this.game.player.energy.toFixed(1), 20, 130);
+        }
+
+        context.restore();
     }
     timer(context) {
         context.font = this.fontSize * 1 + 'px ' + this.fontFamily;
@@ -136,7 +200,7 @@ export class UI {
         if (this.game.cabin.isFullyVisible || this.game.gameOver) {
             this.game.audioHandler.mapSoundtrack.stopSound('timeTickingSound');
         }
-        if (this.game.ingamePauseMenu.isPaused) {
+        if (this.game.menu.pause.isPaused) {
             this.game.audioHandler.mapSoundtrack.pauseSound(timeTickingSound);
         } else {
             this.game.audioHandler.mapSoundtrack.resumeSound(timeTickingSound);
@@ -144,7 +208,6 @@ export class UI {
         if (this.game.player.isUnderwater) {
             context.restore();
         }
-
     }
 
     firedogAbilityUI(context) {
@@ -177,7 +240,7 @@ export class UI {
 
         //fireball ability
         const fireballX = divingX + firedogBorderSize + spaceBetweenAbilities;
-        if (this.game.player.fireballTimer < this.game.player.fireballCooldown) {
+        if (this.game.player.fireballTimer < this.game.player.fireballCooldown || this.game.player.energyReachedZero) {
             context.save();
             context.filter = 'grayscale(100%)';
         }
@@ -198,15 +261,17 @@ export class UI {
             context.drawImage(fireballImage, fireballX, yPosition, firedogBorderSize, firedogBorderSize);
         }
 
-        if (this.game.player.fireballTimer < this.game.player.fireballCooldown) {
+        if (this.game.player.fireballTimer < this.game.player.fireballCooldown || this.game.player.energyReachedZero) {
             context.restore();
-            const fireballCooldown = Math.max(0, this.game.player.fireballCooldown - this.game.player.fireballTimer) / 1000;
-            const countdownText = fireballCooldown.toFixed(1);
-            const textX = fireballX + (firedogBorderSize - maxTextWidth) / 2 + 10;
-            const textY = yPosition + (50 - 16) / 2 + 16;
-            context.fillStyle = 'white';
-            context.font = 'bold 20px Arial';
-            context.fillText(countdownText, textX, textY);
+            if (this.game.player.fireballTimer < this.game.player.fireballCooldown) {
+                const fireballCooldown = Math.max(0, this.game.player.fireballCooldown - this.game.player.fireballTimer) / 1000;
+                const countdownText = fireballCooldown.toFixed(1);
+                const textX = fireballX + (firedogBorderSize - maxTextWidth) / 2 + 10;
+                const textY = yPosition + (50 - 16) / 2 + 16;
+                context.fillStyle = 'white';
+                context.font = 'bold 20px Arial';
+                context.fillText(countdownText, textX, textY);
+            }
         }
 
         //invisible ability

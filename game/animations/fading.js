@@ -14,6 +14,7 @@ export function fadeIn(element, duration, callback) {
 
       requestAnimationFrame(animate);
     } else {
+      element.style.opacity = 1;
       if (callback) {
         callback();
       }

@@ -14,31 +14,34 @@ export class MainMenu extends BaseMenu {
 
     handleMenuSelection() {
         const selectedOption = this.menuOptions[this.selectedOption];
-        if (this.game.menuInstances.deleteProgress2.canSelect) {
+        if (this.game.canSelect) {
             super.handleMenuSelection();
             if (selectedOption === 'Play') {
                 this.game.audioHandler.menu.playSound('mapOpening');
-                this.game.currentMenu = this.game.menuInstances.forestMapMenu;
+                this.game.currentMenu = this.game.menu.forestMap;
+                this.game.menu.forestMap.activateMenu();
             } else if (selectedOption === 'Level Difficulty') {
-                this.game.currentMenu = this.game.menuInstances.levelDifficultyMenu;
-                this.game.menuInstances.levelDifficultyMenu.selectedOption = this.game.menuInstances.levelDifficultyMenu.selectedDifficultyIndex;
+                this.game.currentMenu = this.game.menu.levelDifficulty;
+                this.game.menu.levelDifficulty.activateMenu(this.game.menu.levelDifficulty.selectedDifficultyIndex);
             } else if (selectedOption === 'Skins') {
-                this.game.currentMenu = this.game.menuInstances.skins;
-                this.game.menuInstances.skins.selectedOption = this.game.menuInstances.skins.selectedSkinIndex;
+                this.game.currentMenu = this.game.menu.skins;
+                this.game.menu.skins.activateMenu(this.game.menu.skins.selectedSkinIndex);
             } else if (selectedOption === 'How to Play') {
-                this.game.currentMenu = this.game.menuInstances.howToPlayMenu;
+                this.game.currentMenu = this.game.menu.howToPlay;
+                this.game.menu.howToPlay.activateMenu();
             } else if (selectedOption === 'Audio Settings') {
-                this.game.currentMenu = this.game.menuInstances.audioSettingsMenu;
+                this.game.currentMenu = this.game.menu.audioSettings;
+                this.game.menu.audioSettings.activateMenu();
             } else if (selectedOption === 'Delete Progress') {
-                this.game.currentMenu = this.game.menuInstances.deleteProgress;
-                this.game.menuInstances.deleteProgress.selectedOption = 1;
+                this.game.currentMenu = this.game.menu.deleteProgress;
+                this.game.menu.deleteProgress.activateMenu(1);
             }
         }
-        this.menuActive = false;
     }
+
     update(deltaTime) {
         super.update(deltaTime);
-        if (this.game.menuInstances.deleteProgress2.showSavingSprite) {
+        if (this.game.menu.deleteProgress2.showSavingSprite) {
             this.deleteProgressAnimation.update(deltaTime);
             this.deleteProgressBookAnimation.update(deltaTime);
         } else if (this.showSavingSprite) {
@@ -48,7 +51,7 @@ export class MainMenu extends BaseMenu {
     }
     draw(context) {
         super.draw(context);
-        if (this.game.menuInstances.deleteProgress2.showSavingSprite) {
+        if (this.game.menu.deleteProgress2.showSavingSprite) {
             this.deleteProgressAnimation.draw(context);
             this.deleteProgressBookAnimation.draw(context);
         }

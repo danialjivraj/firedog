@@ -104,7 +104,7 @@ export class BlackHole extends PowerDown {
 
     update(deltaTime) {
         super.update(deltaTime);
-        if (this.game.player.isSlowed){
+        if (this.game.player.isSlowed) {
             this.pullStrength = 0.1;
         } else {
             this.pullStrength = 0.3;

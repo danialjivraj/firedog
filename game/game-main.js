@@ -2,29 +2,27 @@
 import { Player } from "./entities/player.js";
 import {
     Goblin,
-    FlyEnemy, VerticalBat, BatEnemy, RavenEnemy, RunningSkeleton, SpinningEnemy, OrangeFlyMonster,
+    FlyEnemy, VerticalBat, BatEnemy, RavenEnemy, MeatSoldier, RunningSkeleton, SpinningEnemy, OrangeFlyMonster,
     NightPlant, NightSpider, GhostEnemy, VerticalGhost, DollGhost, Aura,
     Piranha, SkeletonFish, SpearFish, JetFish, Piper, ElectricEel, OneEyeOcto,
     BigSlug, GreenPlant, GreenFlappyBird, LilHornet, KarateCroco, Frog, PurpleSpider, FlyingBomber,
     SpikeySnail, OneEyeFly, PurpleFly, LazyMosquito, LeafSlug, PowderFlower, OrangeCyclop, Tauro, AngryBeeEnemy, BeeEnemy, ClimbingPurpleSpider,
-    Cactus, RockPlant, LazyOneEyePlant,
-    WindAttack, RunningSkeletonSizes, RedOneEyeFly, Turtle, TheRock, VolcanoWasp, RedHedgehog, Dragon,
+    Cactus, RockPlant, LazyOneEyePlant, RedOneEyeFly, Turtle, TheRock, VolcanoWasp, RedHedgehog, Dragon,
+    WindAttack, RunningSkeletonSizes,
     ImmobileGroundEnemy,
 } from "./entities/enemies/enemies.js";
 import { Elyvorg, InkBomb, MeteorAttack } from "./entities/enemies/elyvorg.js";
 import { RedPotion, BluePotion, HealthLive, Coin, OxygenTank } from "./entities/powerUp.js";
-import { Penguini } from "./entities/penguini.js";
-import { Cabin } from "./entities/cabin.js";
 //ingame
 import { Reset } from "./reset.js";
-import { IngamePauseMenu } from "./menu/ingamePauseMenu.js";
+import { PauseMenu } from "./menu/pauseMenu.js";
+import { GameOverMenu } from "./menu/gameOverMenu.js";
 //ui
 import { InputHandler } from "./interface/input.js";
 import { UI } from "./interface/UI.js";
-import { Map1, Map2, Map3, Map4, Map5, Map6 } from './background/background.js';
+import { Map3, Map6 } from './background/background.js';
 //menus
 import { MainMenu } from "./menu/mainMenu.js";
-import { AudioSettingsMenu } from "./menu/audio/audioSettingsMenu.js";
 import { LevelDifficultyMenu } from './menu/levelDifficultyMenu.js';
 import { ForestMapMenu } from './menu/forestMap.js';
 import { HowToPlayMenu } from "./menu/howToPlayMenu.js";
@@ -32,27 +30,28 @@ import { Skins } from "./menu/skinsMenu.js";
 import { DeleteProgress, DeleteProgress2 } from "./menu/deleteProgress.js";
 import { BlackHole, Cauldron, Drink } from "./entities/powerDown.js";
 //audios
+import { AudioSettingsMenu } from "./menu/audio/audioSettingsMenu.js";
+import { IngameAudioSettingsMenu } from "./menu/audio/ingameAudioSettingsMenu.js";
 import {
     MenuAudioHandler, FiredogAudioHandler, EnemySFXAudioHandler, ExplosionSFXAudioHandler, MapSoundtrackAudioHandler,
     PowerUpAndDownSFXAudioHandler, CutsceneMusicAudioHandler, CutsceneDialogueAudioHandler, CutsceneSFXAudioHandler
 } from "./audioHandler.js";
-import { IngameAudioSettingsMenu } from "./menu/audio/ingameAudioSettingsMenu.js";
 //animations
-import { fadeIn, fadeInAndOut } from "./animations/fading.js";
+import { fadeIn } from "./animations/fading.js";
 import { screenColourFadeIn, screenColourFadeOut } from "./animations/screenColourFade.js";
 //cutscenes
 import {
     Map1EndCutscene, Map2EndCutscene, Map3EndCutscene,
     Map4EndCutscene, Map5EndCutscene, Map6EndCutscene
-} from "./cutscene/cutscenes.js";
+} from "./cutscene/storyCutscenes.js";
 import {
     Map1PenguinIngameCutscene, Map2PenguinIngameCutscene, Map3PenguinIngameCutscene,
     Map4PenguinIngameCutscene, Map5PenguinIngameCutscene, Map6PenguinIngameCutscene
-} from "./cutscene/penguinInGameCutscenes.js";
+} from "./cutscene/penguiniCutscenes.js";
 import {
     Map6ElyvorgIngameCutsceneBeforeFight,
     Map6ElyvorgIngameCutsceneAfterFight
-} from "./cutscene/elyvorgInGameCutscenes.js";
+} from "./cutscene/elyvorgCutscenes.js";
 
 window.addEventListener('load', function () {
     const canvas = document.getElementById('canvas1');
@@ -62,6 +61,7 @@ window.addEventListener('load', function () {
 
     class Game {
         constructor(width, height) {
+            this.canvas = canvas;
             this.width = width;
             this.height = height;
             // player related
@@ -76,23 +76,27 @@ window.addEventListener('load', function () {
             this.notEnoughCoins = false;
             this.time = 0;
             this.hiddenTime = 0;
-            this.maxTime = 601000;
-            this.maxParticles = 100;
+            this.maxTime = 450000;
+            this.maxParticles = 210;
             this.maxEnemies = 6;
             this.enemyTimer = 0;
             this.enemyInterval = 1000;
+            this.nonEnemyTimer = 0;
+            this.nonEnemyInterval = 1000;
             this.invisibleColourOpacity = 0;
             this.gameOver = false;
             this.debug = false;
-            // player/audio handler/menus/etc classes and vars...
+            // player/audio handlers/menus/etc classes and vars...
             this.player = new Player(this);
             this.player.currentState = this.player.states[0];
             this.player.currentState.enter();
             this.input = new InputHandler(this);
             this.UI = new UI(this);
+            this.background = null;
+            this.cabin = null;
+            this.penguini = null;
             this.fontColor = 'black';
             this.isDarkWhiteBorder = false;
-            this.ingamePauseMenu = new IngamePauseMenu(this);
             this.resetInstance = new Reset(this);
             this.audioHandler = {
                 mapSoundtrack: new MapSoundtrackAudioHandler(this),
@@ -105,14 +109,24 @@ window.addEventListener('load', function () {
                 explosionSFX: new ExplosionSFXAudioHandler(this),
                 powerUpAndDownSFX: new PowerUpAndDownSFXAudioHandler(this)
             };
-            this.menuInstances = {
-                mainMenu: new MainMenu(this), audioSettingsMenu: new AudioSettingsMenu(this), ingameAudioSettingsMenu: new IngameAudioSettingsMenu(this),
-                levelDifficultyMenu: new LevelDifficultyMenu(this), forestMapMenu: new ForestMapMenu(this, 0), howToPlayMenu: new HowToPlayMenu(this),
-                deleteProgress: new DeleteProgress(this), deleteProgress2: new DeleteProgress2(this), skins: new Skins(this),
+            this.menu = {
+                main: new MainMenu(this),
+                forestMap: new ForestMapMenu(this),
+                skins: new Skins(this),
+                levelDifficulty: new LevelDifficultyMenu(this),
+                howToPlay: new HowToPlayMenu(this),
+                audioSettings: new AudioSettingsMenu(this),
+                ingameAudioSettings: new IngameAudioSettingsMenu(this),
+                deleteProgress: new DeleteProgress(this),
+                deleteProgress2: new DeleteProgress2(this),
+                pause: new PauseMenu(this),
+                gameOver: new GameOverMenu(this),
             };
+            this.currentMenu = this.menu.main;
+            this.canSelect = true;
+            this.canSelectForestMap = true;
             this.mapSelected = Array(6).fill(false);
             this.selectedDifficulty = "Normal";
-            this.currentMenu = this.menuInstances.mainMenu;
             this.map1Unlocked = true;
             this.map2Unlocked = false;
             this.map3Unlocked = false;
@@ -133,9 +147,9 @@ window.addEventListener('load', function () {
             this.penguins = [];
             this.cutscenes = [];
             // cutscene
-            this.enterDuringBackgroundTransition = true;
             this.cutsceneActive = false;
             this.currentCutscene = null;
+            this.enterDuringBackgroundTransition = true;
             this.isEndCutscene = false;
             this.fadingIn = false;
             this.waitForFadeInOpacity = false;
@@ -167,37 +181,7 @@ window.addEventListener('load', function () {
                 this.mapSelected[i] = true;
             }
         }
-        setMap(map) {
-            this.background = map;
-            let cabinImageId;
-            const cabinY = this.height - 375;
-            if (map instanceof Map1) {
-                cabinImageId = 'map1cabin';
-                this.cabin = new Cabin(this, cabinImageId, 630, 375, cabinY);
-                this.penguin = new Penguini(this, 105.52380952380952380952380952381, 165, 'penguinBatSprite', 20);
-            } else if (map instanceof Map2) {
-                cabinImageId = 'map2cabin'
-                this.cabin = new Cabin(this, cabinImageId, 630, 375, cabinY);
-                this.penguin = new Penguini(this, 105.52380952380952380952380952381, 165, 'penguinBatSprite', 20);
-            } else if (map instanceof Map3) {
-                cabinImageId = 'map3submarine';
-                this.cabin = new Cabin(this, cabinImageId, 903, 329, this.height - 411);
-                this.penguin = new Penguini(this, 105.52380952380952380952380952381, 165, 'penguinBatSprite', 20);
-            } else if (map instanceof Map4) {
-                cabinImageId = 'map4cabin';
-                this.cabin = new Cabin(this, cabinImageId, 630, 375, cabinY);
-                this.penguin = new Penguini(this, 139.325, 140, 'penguinPistolSprite', 39);
-            } else if (map instanceof Map5) {
-                cabinImageId = 'map5cabin';
-                this.cabin = new Cabin(this, cabinImageId, 630, 375, cabinY);
-                this.penguin = new Penguini(this, 139.325, 140, 'penguinPistolSprite', 39);
-            } else if (map instanceof Map6) {
-                cabinImageId = 'map6cave';
-                this.cabin = new Cabin(this, cabinImageId, 913, 618, 0);
-                this.penguin = new Penguini(this, 185, 80, 'penguinDead', 0);
-                this.penguin.y = this.height - this.penguin.height - this.groundMargin;
-            }
-        }
+
         startCutscene(cutscene) {
             this.fadingIn = true;
             this.cutsceneActive = true;
@@ -206,50 +190,38 @@ window.addEventListener('load', function () {
         endCutscene() {
             this.cutsceneActive = false;
             this.currentCutscene = null;
-            this.currentMenu = false;
+            this.currentMenu = null;
             if (this.player.x + this.player.width >= this.cabin.x + 190 &&
                 this.player.x <= this.cabin.x + this.cabin.width) {
                 this.reset();
                 this.isPlayerInGame = false;
                 if (!(this.background instanceof Map6)) {
-                    this.menuInstances.forestMapMenu.canSelect = false;
-                    this.currentMenu = this.menuInstances.forestMapMenu;
-                    this.menuInstances.forestMapMenu.showSavingSprite = true;
+                    this.canSelectForestMap = false;
+                    this.currentMenu = this.menu.forestMap;
+                    this.menu.forestMap.showSavingSprite = true;
                     setTimeout(() => {
-                        this.menuInstances.forestMapMenu.canSelect = true;
-                        this.menuInstances.forestMapMenu.showSavingSprite = false;
-                        this.menuInstances.forestMapMenu.selectedCircleIndex++;
+                        this.canSelectForestMap = true;
+                        this.menu.forestMap.showSavingSprite = false;
+                        this.menu.forestMap.selectedCircleIndex++;
                     }, 4000);
                 } else {
-                    this.menuInstances.mainMenu.showSavingSprite = true;
-                    this.menuInstances.deleteProgress2.canSelect = false;
-                    this.currentMenu = this.menuInstances.mainMenu;
+                    this.menu.main.showSavingSprite = true;
+                    this.canSelect = false;
+                    this.currentMenu = this.menu.main;
                     setTimeout(() => {
-                        this.menuInstances.mainMenu.showSavingSprite = false;
-                        this.menuInstances.deleteProgress2.canSelect = true;
+                        this.menu.main.showSavingSprite = false;
+                        this.canSelect = true;
                     }, 4000);
                 }
             }
         }
-        cutsceneBackgroundChange(fadein, stay, fadeout) {
-            this.enterDuringBackgroundTransition = false;
-            fadeInAndOut(canvas, fadein, stay, fadeout, () => {
-                this.enterDuringBackgroundTransition = true;
-            });
-        }
-        deleteProgessionAnimation() {
-            this.menuInstances.deleteProgress2.canSelect = false;
-            this.menuInstances.deleteProgress2.showSavingSprite = true;
-            fadeIn(canvas, 4000, () => {
-                this.menuInstances.deleteProgress2.canSelect = true;
-                this.menuInstances.deleteProgress2.showSavingSprite = false;
-            });
-        }
+
         reset() {
             this.resetInstance.reset();
         }
+
         update(deltaTime) {
-            if (!this.ingamePauseMenu.isPaused) {
+            if (!this.menu.pause.isPaused) {
                 if (this.cabin.isFullyVisible) {
                     this.time = this.time;
                 } else if (!this.gameOver) {
@@ -261,15 +233,22 @@ window.addEventListener('load', function () {
 
                 this.background.update(deltaTime);
                 if (!this.cabin.isFullyVisible) {
+                    //enemy
                     if (this.enemyTimer > this.enemyInterval) {
                         this.addEnemy();
+                        this.enemyTimer = 0;
+                    } else {
+                        this.enemyTimer += deltaTime;
+                    }
+                    //other entities
+                    if (this.nonEnemyTimer > this.nonEnemyInterval) {
                         this.addPowerUp();
                         this.addPowerDown();
                         this.addCabin();
                         this.addPenguin();
-                        this.enemyTimer = 0;
+                        this.nonEnemyTimer = 0;
                     } else {
-                        this.enemyTimer += deltaTime;
+                        this.nonEnemyTimer += deltaTime;
                     }
                 }
 
@@ -379,7 +358,7 @@ window.addEventListener('load', function () {
                     this.player.isInvisible = false;
                     this.player.invisibleTimer = this.player.invisibleCooldown;
                     this.player.invisibleActiveCooldownTimer = 5000;
-                    this.menuInstances.levelDifficultyMenu.setDifficulty(this.selectedDifficulty);
+                    this.menu.levelDifficulty.setDifficulty(this.selectedDifficulty);
                     const map6ElyvorgBeforeFightCutscene = new Map6ElyvorgIngameCutsceneBeforeFight(this);
                     this.startCutscene(map6ElyvorgBeforeFightCutscene);
                     map6ElyvorgBeforeFightCutscene.displayDialogue(Map6ElyvorgIngameCutsceneBeforeFight);
@@ -412,6 +391,7 @@ window.addEventListener('load', function () {
                     this.cabin.isFullyVisible) {
 
                     this.audioHandler.cutsceneSFX.playSound(this.openDoor);
+                    this.audioHandler.firedogSFX.stopAllSounds();
 
                     const mapCutsceneMapping = {
                         Map1: Map1EndCutscene,
@@ -491,8 +471,6 @@ window.addEventListener('load', function () {
             });
 
             this.UI.draw(context);
-
-            this.ingamePauseMenu.draw(context);
         }
         addEnemy() {
             if (this.gameOver || this.background.totalDistanceTraveled >= this.maxDistance - 5) {
@@ -501,12 +479,13 @@ window.addEventListener('load', function () {
             const enemyTypes = {
                 Map1: [
                     { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                    { type: FlyEnemy, probability: 0.3, spawningDistance: 0 },
-                    { type: VerticalBat, probability: 0.3, spawningDistance: 0 },
+                    { type: FlyEnemy, probability: 0.35, spawningDistance: 0 },
+                    { type: VerticalBat, probability: 0.35, spawningDistance: 0 },
                     { type: BatEnemy, probability: 0.3, spawningDistance: 0 },
-                    { type: RavenEnemy, probability: 0.2, spawningDistance: 0 },
-                    { type: RunningSkeleton, probability: 0.2, spawningDistance: 50 },
-                    { type: SpinningEnemy, probability: 0.05, spawningDistance: 100 },
+                    { type: RavenEnemy, probability: 0.3, spawningDistance: 0 },
+                    { type: MeatSoldier, probability: 0.1, spawningDistance: 0 },
+                    { type: RunningSkeleton, probability: 0.25, spawningDistance: 50 },
+                    { type: SpinningEnemy, probability: 0.06, spawningDistance: 100 },
                     { type: OrangeFlyMonster, probability: 0.1, spawningDistance: 150 },
                 ],
                 Map2: [
@@ -526,7 +505,7 @@ window.addEventListener('load', function () {
                     { type: JetFish, probability: 0.05, spawningDistance: 0 },
                     { type: Piper, probability: 0.2, spawningDistance: 50 },
                     { type: ElectricEel, probability: 0.08, spawningDistance: 100 },
-                    { type: OneEyeOcto, probability: 0.01, spawningDistance: 100 },
+                    { type: OneEyeOcto, probability: 0.07, spawningDistance: 100 },
                 ],
                 Map4: [
                     { type: Goblin, probability: 0.05, spawningDistance: 0 },
@@ -549,10 +528,11 @@ window.addEventListener('load', function () {
                     { type: PowderFlower, probability: 0.1, spawningDistance: 0 },
                     { type: OrangeCyclop, probability: 0.3, spawningDistance: 0 },
                     { type: Tauro, probability: 0.05, spawningDistance: 0 },
-                    { type: this.background.isRaining ? AngryBeeEnemy : BeeEnemy, probability: this.background.isRaining ? 0.04 : 0.07, spawningDistance: 0 },
+                    { type: this.background.isRaining ? AngryBeeEnemy : BeeEnemy, probability: this.background.isRaining ? 0.06 : 0.07, spawningDistance: 0 },
                     { type: ClimbingPurpleSpider, probability: 0.05, spawningDistance: 0 },
                 ],
                 Map6: [
+                    { type: Goblin, probability: 0.05, spawningDistance: 0 },
                     { type: Cactus, probability: 0.1, spawningDistance: 0 },
                     { type: RockPlant, probability: 0.1, spawningDistance: 0 },
                     { type: LazyOneEyePlant, probability: 0.05, spawningDistance: 0 },
@@ -562,7 +542,7 @@ window.addEventListener('load', function () {
                     { type: VolcanoWasp, probability: 0.03, spawningDistance: 0 },
                     { type: RedHedgehog, probability: 0.1, spawningDistance: 0 },
                     { type: Dragon, probability: 0.05, spawningDistance: 0 },
-                    { type: Elyvorg, probability: 0.7, spawningDistance: 0 },
+                    { type: Elyvorg, probability: 0.85, spawningDistance: 0 },
                 ],
             };
             const currentMap = this.background.constructor.name;
@@ -655,7 +635,7 @@ window.addEventListener('load', function () {
         }
         addPenguin() {
             if (this.background.totalDistanceTraveled >= this.maxDistance && !this.penguinAppeared) {
-                this.penguins.push(this.penguin);
+                this.penguins.push(this.penguini);
                 this.penguinAppeared = true;
                 this.fixedPenguinX = this.width - this.cabin.width - 100;
                 this.talkToPenguin = true;
@@ -673,9 +653,9 @@ window.addEventListener('load', function () {
                 map5Unlocked: this.map5Unlocked,
                 map6Unlocked: this.map6Unlocked,
                 gameCompleted: this.gameCompleted,
-                audioSettingsMenuState: this.menuInstances.audioSettingsMenu.getState(),
-                ingameAudioSettingsMenuState: this.menuInstances.ingameAudioSettingsMenu.getState(),
-                currentSkin: this.menuInstances.skins.currentSkin.id,
+                audioSettingsState: this.menu.audioSettings.getState(),
+                ingameAudioSettingsState: this.menu.ingameAudioSettings.getState(),
+                currentSkin: this.menu.skins.currentSkin.id,
                 selectedDifficulty: this.selectedDifficulty
             };
             localStorage.setItem('gameState', JSON.stringify(gameState));
@@ -691,18 +671,18 @@ window.addEventListener('load', function () {
                 this.map5Unlocked = gameState.map5Unlocked !== undefined ? gameState.map5Unlocked : this.map5Unlocked;
                 this.map6Unlocked = gameState.map6Unlocked !== undefined ? gameState.map6Unlocked : this.map6Unlocked;
                 this.gameCompleted = gameState.gameCompleted !== undefined ? gameState.gameCompleted : this.gameCompleted;
-                if (gameState.audioSettingsMenuState) {
-                    this.menuInstances.audioSettingsMenu.setState(gameState.audioSettingsMenuState);
+                if (gameState.audioSettingsState) {
+                    this.menu.audioSettings.setState(gameState.audioSettingsState);
                 }
-                if (gameState.ingameAudioSettingsMenuState) {
-                    this.menuInstances.ingameAudioSettingsMenu.setState(gameState.ingameAudioSettingsMenuState);
+                if (gameState.ingameAudioSettingsState) {
+                    this.menu.ingameAudioSettings.setState(gameState.ingameAudioSettingsState);
                 }
                 if (gameState.currentSkin) {
                     const skinId = gameState.currentSkin;
-                    this.menuInstances.skins.setCurrentSkinById(skinId);
+                    this.menu.skins.setCurrentSkinById(skinId);
                 }
                 if (gameState.selectedDifficulty) {
-                    this.menuInstances.levelDifficultyMenu.setDifficulty(gameState.selectedDifficulty);
+                    this.menu.levelDifficulty.setDifficulty(gameState.selectedDifficulty);
                 }
             }
         }
@@ -715,25 +695,22 @@ window.addEventListener('load', function () {
             this.map6Unlocked = false;
             this.gameCompleted = false;
 
-            this.menuInstances.forestMapMenu.resetSelectedCircleIndex();
-            this.menuInstances.levelDifficultyMenu.setDifficulty('Normal');
+            this.menu.forestMap.resetSelectedCircleIndex();
+            this.menu.levelDifficulty.setDifficulty('Normal');
 
-            this.menuInstances.skins.selectedSkinIndex = 0;
-            this.menuInstances.skins.menuOptions.forEach((option, index) => {
-                this.menuInstances.skins.menuOptions[index] = option.replace(' - Selected', '');
-            });
-            this.menuInstances.skins.menuOptions[0] += ' - Selected';
-            this.menuInstances.skins.setCurrentSkinById('player');
+            this.menu.skins.currentSkin = this.menu.skins.defaultSkin;
+            this.menu.skins.setCurrentSkinById('player');
+
             localStorage.removeItem('gameState');
-            this.menuInstances.audioSettingsMenu.setState({
-                volumeLevels: [75, 10, 90, 90, 70, 60, null], // sets the default volume levels
+            this.menu.audioSettings.setState({
+                volumeLevels: [75, 10, 90, 90, 70, 60, null],
             });
-            this.menuInstances.ingameAudioSettingsMenu.setState({
-                volumeLevels: [30, 80, 60, 40, 80, 65, null], // sets the default volume levels
+            this.menu.ingameAudioSettings.setState({
+                volumeLevels: [30, 80, 60, 40, 80, 65, null],
             });
         }
     }
-// ------------------------------------------------------------ Game function ------------------------------------------------------------
+// ------------------------------------------------------------ Game Function ------------------------------------------------------------
     const game = new Game(canvas.width, canvas.height);
     let lastTime = 0;
 
@@ -753,30 +730,20 @@ window.addEventListener('load', function () {
             } else {
                 game.currentCutscene.draw(ctx);
             }
-        }
-        else if (game.currentMenu) {
-            if (game.isPlayerInGame && game.currentMenu === game.menuInstances.ingameAudioSettingsMenu) {
-                game.update(deltaTime);
-                game.draw(ctx);
-                game.currentMenu.menuActive = true;
-                game.currentMenu.draw(ctx);
-                game.currentMenu.update(deltaTime);
-            } else {
-                game.isPlayerInGame = false;
+        } else if (game.currentMenu && game.currentMenu.menuInGame === false) {
+            game.isPlayerInGame = false;
+            game.currentMenu.menuActive = true;
+            game.currentMenu.draw(ctx);
+            game.currentMenu.update(deltaTime);
+        } else if (game.isPlayerInGame) {
+            game.update(deltaTime);
+            game.draw(ctx);
+            if (game.currentMenu || game.gameOver) {
                 game.currentMenu.menuActive = true;
                 game.currentMenu.draw(ctx);
                 game.currentMenu.update(deltaTime);
             }
-        } else if (game.isPlayerInGame) {
-            game.update(deltaTime);
-            game.draw(ctx);
         }
-        if (game.currentMenu.menuActive && (game.currentMenu != game.menuInstances.forestMapMenu) && !game.isPlayerInGame) {
-            game.audioHandler.menu.playSound('soundtrack');
-        } else {
-            game.audioHandler.menu.stopSound('soundtrack');
-        }
-
         requestAnimationFrame(animate);
     }
     animate(0);

@@ -8,8 +8,10 @@ import { HealthLive, RedPotion, BluePotion, Coin, OxygenTank } from './powerUp.j
 import { BlackHole, Cauldron, Drink } from './powerDown.js';
 import { FloatingMessage } from '../animations/floatingMessages.js';
 import { Fireball, CoinLoss } from '../animations/particles.js';
-import { AngryBeeEnemy, BeeEnemy, RunningSkeleton, PoisonSpit, Goblin, BigSlug, ElectricEel, Tauro, RunningSkeletonSmall, 
-    Aura, KarateCroco, SpearFish, TheRock, LilHornet, Cactus, IceBall, OneEyeOcto, RockProjectile, VolcanoWasp, Turtle } from './enemies/enemies.js';
+import {
+    AngryBeeEnemy, BeeEnemy, RunningSkeleton, PoisonSpit, Goblin, BigSlug, ElectricEel, Tauro, RunningSkeletonSmall,
+    Aura, KarateCroco, SpearFish, TheRock, LilHornet, Cactus, IceBall, OneEyeOcto, RockProjectile, VolcanoWasp, Turtle
+} from './enemies/enemies.js';
 import { InkSplash } from '../animations/ink.js';
 import { DamageIndicator } from '../animations/damageIndicator.js';
 import { TunnelVision } from '../animations/tunnelVision.js';
@@ -68,6 +70,7 @@ export class Player {
         //blue potion
         this.blueFireTimer = 0;
         this.isBluePotionActive = false
+        this.bluePotionSpeed = 22;
         this.isRedPotionActive = false;
         this.redPotionTimer = 0;
         //poison
@@ -183,20 +186,20 @@ export class Player {
         }
 
         // draws the player based on the current skin
-        switch (this.game.menuInstances.skins.currentSkin) {
-            case this.game.menuInstances.skins.defaultSkin:
+        switch (this.game.menu.skins.currentSkin) {
+            case this.game.menu.skins.defaultSkin:
                 context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
                 break;
-            case this.game.menuInstances.skins.hatSkin:
+            case this.game.menu.skins.hatSkin:
                 context.drawImage(this.hatImage, this.frameX * this.width, this.frameY * this.height, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
                 break;
-            case this.game.menuInstances.skins.choloSkin:
+            case this.game.menu.skins.choloSkin:
                 context.drawImage(this.choloImage, this.frameX * this.width, this.frameY * this.height, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
                 break;
-            case this.game.menuInstances.skins.zabkaSkin:
+            case this.game.menu.skins.zabkaSkin:
                 context.drawImage(this.zabkaImage, this.frameX * this.width, this.frameY * this.height, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
                 break;
-            case this.game.menuInstances.skins.shinySkin:
+            case this.game.menu.skins.shinySkin:
                 context.drawImage(this.shinyImage, this.frameX * this.width, this.frameY * this.height, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
                 break;
         }
@@ -217,10 +220,14 @@ export class Player {
             this.energy = Math.min(100, this.energy + 0.4);
         }
         //blue potion
-        if (this.isBluePotionActive) {
+        if (this.isBluePotionActive && this.currentState === this.states[4]) {
+            this.game.enemyInterval = 10;
+            this.energyReachedZero = false;
+            this.noEnergyLeftSound = false;
             this.isPoisonedActive = false;
             this.energy = Math.min(100, this.energy + 0.1);
         } else {
+            this.game.enemyInterval = 1000;
             this.energyInterval = 70;
         }
         if (this.energyReachedZero === true && this.energy >= 20) {
@@ -258,6 +265,20 @@ export class Player {
             this.isPoisonedActive = false;
         }
     }
+    isPoisonActiveChecker() {
+        if (this.energyReachedZero || this.isBluePotionActive) {
+            return this.isPoisonedActive = false;
+        } else {
+            return this.isPoisonedActive = true;
+        }
+    }
+    isPoisonTimerChecker(x) {
+        if (this.energyReachedZero || this.isBluePotionActive) {
+            return this.poisonTimer = 0;
+        } else {
+            return this.poisonTimer = x;
+        }
+    }
     drainEnergy() {
         if (!this.isBluePotionActive) {
             const energyDrainAmount = 0.4;
@@ -280,7 +301,7 @@ export class Player {
         if (this.currentState === this.states[0] || this.currentState === this.states[1] || this.currentState === this.states[2] ||
             this.currentState === this.states[3] || this.currentState === this.states[8]) {
             if (this.game.player.energyReachedZero === false && this.fireballTimer >= this.fireballCooldown) {
-                if (input.includes('q') && !this.game.cabin.isFullyVisible) {
+                if ((this.game.input.qOrLeftClick(input)) && !this.game.cabin.isFullyVisible) {
                     if (!this.isUnderwater) {
                         if (this.isRedPotionActive) {
                             this.game.audioHandler.firedogSFX.playSound('fireballRedPotionActiveSFX', false, true);
@@ -338,7 +359,7 @@ export class Player {
         this.invisibleTimer += deltaTime;
         this.invisibleTimer = Math.min(this.invisibleTimer, this.invisibleCooldown);
 
-        if (input.includes('e') && this.isInvisible === false && !this.game.gameOver) {
+        if ((this.game.input.eOrScrollClick(input)) && this.isInvisible === false && !this.game.gameOver) {
             if (this.invisibleTimer === this.invisibleCooldown) {
                 this.isInvisible = true;
                 this.game.audioHandler.firedogSFX.playSound('invisibleInSFX');
@@ -361,9 +382,12 @@ export class Player {
     playerSFXAudios() {
         //rolling
         if (this.rollingOrDiving()) {
+            const rollingSoundName = this.isUnderwater ? 'rollingUnderwaterSFX' : 'rollingSFX';
             if (!this.isRolling) {
                 this.isRolling = true;
-                const rollingSoundName = this.isUnderwater ? 'rollingUnderwaterSFX' : 'rollingSFX';
+                this.rollingSound = this.game.audioHandler.firedogSFX.playSound(rollingSoundName, true, true);
+            }
+            if (this.currentState === this.states[5] && this.onGround()) {
                 this.rollingSound = this.game.audioHandler.firedogSFX.playSound(rollingSoundName, true, true);
             }
         } else {
@@ -406,7 +430,11 @@ export class Player {
         this.previousState = this.currentState;
         this.currentState = this.states[state];
         if (!this.game.isElyvorgFullyVisible) {
-            this.game.speed = this.game.normalSpeed * speed;
+            if (this.isBluePotionActive && this.currentState === this.states[4]) {
+                this.game.speed = this.bluePotionSpeed;
+            } else {
+                this.game.speed = this.game.normalSpeed * speed;
+            }
         } else {
             this.game.speed = 0;
         }
@@ -540,7 +568,13 @@ export class Player {
         if (input.includes('d') && this.currentState !== this.states[6]) {
             this.speed = this.maxSpeed;
         } else if (input.includes('a') && this.currentState !== this.states[6]) {
-            this.speed = -this.maxSpeed;
+            if (this.game.isElyvorgFullyVisible) {
+                this.speed = -this.maxSpeed;
+            } else if (this.currentState === this.states[4]) {
+                this.speed = -this.maxSpeed * 1.7;
+            } else {
+                this.speed = -this.maxSpeed * 1.3;
+            }
         } else {
             this.speed = 0;
         }
@@ -561,7 +595,7 @@ export class Player {
             this.vy = 0;
         }
         if (this.isUnderwater) {
-            if (input.includes('Enter') && input.includes('w') && this.currentState === this.states[4]) {
+            if (this.game.input.enterOrRightClick(input) && input.includes('w') && this.currentState === this.states[4]) {
                 this.buoyancy -= 1;
                 this.y -= 4
             }
@@ -579,7 +613,7 @@ export class Player {
     firedogMeetsElyvorg(input) {
         if (this.game.isElyvorgFullyVisible && this.currentState === this.states[4]) {
             if (this.facingRight) {
-                if (input.includes('Enter') && !input.includes('a') && !input.includes('d')) {
+                if (this.game.input.enterOrRightClick(input) && !input.includes('a') && !input.includes('d')) {
                     this.x = this.x;
                 } else if (input.includes('a')) {
                     this.x -= 6;
@@ -587,7 +621,7 @@ export class Player {
                     this.x += 6;
                 }
             } else if (this.facingLeft) {
-                if (input.includes('Enter') && !input.includes('a') && !input.includes('d')) {
+                if (this.game.input.enterOrRightClick(input) && !input.includes('a') && !input.includes('d')) {
                     this.x = this.x;
                 } else if (input.includes('d')) {
                     this.x += 6;
@@ -758,6 +792,7 @@ export class Player {
             },
             PoisonSpit: () => {
                 this.game.collisions.push(new PoisonSpitSplash(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
+                this.game.audioHandler.explosionSFX.playSound('poofSound', false, true);
             },
             Elyvorg: () => {
                 if (enemy.isBarrierActive === false) {
@@ -826,8 +861,8 @@ export class Player {
             );
             checkPowerCollision(this.game.powerDowns.filter(pd => pd instanceof Cauldron), cauldron => {
                 this.game.audioHandler.powerUpAndDownSFX.playSound('cauldronSoundEffect', false, true);
-                this.isPoisonedActive = true;
-                this.poisonTimer = 2500;
+                this.isPoisonActiveChecker();
+                this.isPoisonTimerChecker(2500);
             }, true
             );
             checkPowerCollision(this.game.powerDowns.filter(pd => pd instanceof BlackHole), blackhole => {
@@ -863,36 +898,30 @@ export class Player {
             checkPowerCollision(this.game.powerUps.filter(pu => pu instanceof BluePotion), bluePotion => {
                 if (this.currentState === this.states[4] || this.currentState === this.states[5]) {
                     this.game.audioHandler.powerUpAndDownSFX.playSound('bluePotionSound', false, true);
-                    if (this.isUnderwater) {
-                        this.particleImage = 'bluebubble';
-                        this.splashImage = 'bluebubble';
-                    } else {
-                        this.particleImage = 'bluefire';
-                        this.splashImage = 'bluefire';
-                    }
-                    if (this.currentState === this.states[4]) {
-                        this.game.speed += 10;
-                    }
-                    this.blueFireTimer = 4500;
-                    this.isBluePotionActive = true;
-                    this.energy = Math.min(100, this.energy + 50);
-                    this.game.floatingMessages.push(new FloatingMessage('+50', bluePotion.x, bluePotion.y, 160, 120, 30, 'blue'));
                 } else {
                     this.game.audioHandler.powerUpAndDownSFX.playSound('bluePotionSound2', false, true);
-                    this.energy = Math.min(100, this.energy + 50);
-                    this.game.floatingMessages.push(new FloatingMessage('+50', bluePotion.x, bluePotion.y, 160, 120, 30, 'blue'));
                 }
+
+                this.game.audioHandler.firedogSFX.playSound('bluePotionEnergyGoingUp');
+
+                if (this.isUnderwater) {
+                    this.particleImage = 'bluebubble';
+                    this.splashImage = 'bluebubble';
+                } else {
+                    this.particleImage = 'bluefire';
+                    this.splashImage = 'bluefire';
+                }
+                if (this.currentState === this.states[4]) {
+                    this.game.speed = this.bluePotionSpeed;
+                }
+                this.blueFireTimer = 5000;
+                this.isBluePotionActive = true;
             }, false
             );
         }
 
         if (this.blueFireTimer > 0) {
             this.blueFireTimer -= deltaTime;
-
-            if (!(this.currentState === this.states[4]) && !(this.currentState === this.states[5])) {
-                this.blueFireTimer = 0;
-                this.isBluePotionActive = false;
-            }
 
             if (this.blueFireTimer <= 0) {
                 if (this.isUnderwater) {
@@ -904,9 +933,12 @@ export class Player {
                 }
 
                 this.isBluePotionActive = false;
+                this.game.audioHandler.firedogSFX.stopSound('bluePotionEnergyGoingUp');
 
-                if (this.game.speed > 10) {
-                    this.game.speed -= 10;
+                if (this.isBluePotionActive === false && this.currentState === this.states[4]) {
+                    this.game.speed = 12;
+                } else {
+                    this.game.speed = 6;
                 }
             }
         }
@@ -1035,13 +1067,13 @@ export class CollisionLogic {
             case enemy instanceof PoisonSpit:
             case enemy instanceof PoisonDrop:
                 if (this.player.isInvisible === false) {
-                    this.player.isPoisonedActive = true;
+                    this.player.isPoisonActiveChecker();
                     this.player.hit(enemy);
                     this.player.collisionAnimationBasedOnEnemy(enemy);
                     if (enemy instanceof PoisonSpit) {
-                        this.player.poisonTimer = 1500;
+                        this.player.isPoisonTimerChecker(1500);
                     } else {
-                        this.player.poisonTimer = 2500;
+                        this.player.isPoisonTimerChecker(2500);
                     }
                 }
                 break;
@@ -1110,9 +1142,9 @@ export class CollisionLogic {
                     } else if (imageId === 'greenArrow') {
                         this.player.hit(enemy);
                         this.player.bloodOrPoof(enemy);
-                        this.player.isPoisonedActive = true;
+                        this.player.isPoisonActiveChecker();
+                        this.player.isPoisonTimerChecker(1500);
                         this.game.audioHandler.enemySFX.playSound('acidSoundEffect', false, true);
-                        this.player.poisonTimer = 1500;
                     }
                 }
                 break;
@@ -1166,12 +1198,12 @@ export class CollisionLogic {
             case enemy instanceof PoisonSpit:
             case enemy instanceof PoisonDrop:
                 if (this.player.isInvisible === false) {
-                    this.player.isPoisonedActive = true;
+                    this.player.isPoisonActiveChecker();
                     this.player.hit(enemy);
                     if (enemy instanceof PoisonSpit) {
-                        this.player.poisonTimer = 1500;
+                        this.player.isPoisonTimerChecker(1500);
                     } else {
-                        this.player.poisonTimer = 2500;
+                        this.player.isPoisonTimerChecker(2500);
                     }
                 }
                 this.player.collisionAnimationBasedOnEnemy(enemy);
@@ -1237,9 +1269,9 @@ export class CollisionLogic {
                     }
                 } else if (imageId === "greenArrow") {
                     if (this.player.isInvisible === false) {
-                        this.player.isPoisonedActive = true;
+                        this.player.isPoisonActiveChecker();
+                        this.player.isPoisonTimerChecker(1500);
                         this.game.audioHandler.enemySFX.playSound('acidSoundEffect', false, true);
-                        this.player.poisonTimer = 1500;
                     }
                     this.player.bloodOrPoof(enemy);
                 }

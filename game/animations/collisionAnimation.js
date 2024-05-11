@@ -1,4 +1,4 @@
-import { RunningSkeleton, RunningSkeletonSmall } from "../entities/enemies/enemies.js";
+import { RunningSkeleton, RunningSkeletonSmall, SpinningEnemy } from "../entities/enemies/enemies.js";
 import { FloatingMessage } from "./floatingMessages.js";
 
 export class Collision {
@@ -82,6 +82,9 @@ export class ExplosionCollisionAnimation extends Collision {
                     this.game.collisions.push(new ExplosionCollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5, this.enemyId));
                     this.game.audioHandler.enemySFX.stopSound('skeletonRattlingSound');
                     this.game.audioHandler.explosionSFX.playSound('explosionCollision', false, true);
+                }
+                if (enemy instanceof SpinningEnemy) {
+                    this.game.audioHandler.enemySFX.stopSound('spinningChainsaw');
                 }
             }
         });

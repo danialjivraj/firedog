@@ -20,6 +20,7 @@ class State {
     }
     gameOver() {
         if (this.game.gameOver) {
+            this.game.menu.gameOver.activateMenu();
             this.game.player.setState(states.DYING, 1);
         }
     }
@@ -40,7 +41,7 @@ export class Sitting extends State {
             this.game.player.setState(states.RUNNING, 1);
         } else if (input.includes('w')) {
             this.game.player.setState(states.JUMPING, 1);
-        } else if (input.includes('Enter') && !this.game.cabin.isFullyVisible) {
+        } else if (this.game.input.enterOrRightClick(input) && !this.game.cabin.isFullyVisible) {
             if (this.game.isElyvorgFullyVisible) {
                 if (this.game.player.energyReachedZero === true) {
                 } else {
@@ -93,7 +94,7 @@ export class Running extends State {
             // do nothing
         } else if (input.includes('w')) {
             this.game.player.setState(states.JUMPING, 1);
-        } else if (input.includes('Enter')) {
+        } else if (this.game.input.enterOrRightClick(input)) {
             if (this.game.isElyvorgFullyVisible === true) {
                 if (this.game.player.energyReachedZero === false) {
                     this.game.player.setState(states.ROLLING, 2);
@@ -112,7 +113,7 @@ export class Running extends State {
         } else if (input.includes('s')) {
             this.game.player.setState(states.SITTING, 0);
         } else if (this.game.isElyvorgFullyVisible === true && this.game.player.energyReachedZero === true &&
-            input.includes('Enter') && (input.includes('a') || input.includes('d'))) {
+            this.game.input.enterOrRightClick(input) && (input.includes('a') || input.includes('d'))) {
         }
     }
 }
@@ -161,7 +162,7 @@ export class Jumping extends State {
         } else if (input.includes('s') && this.game.player.divingTimer >= this.game.player.divingCooldown) {
             this.game.player.divingTimer = 0;
             this.game.player.setState(states.DIVING, 0);
-        } else if (input.includes('Enter') && !this.game.cabin.isFullyVisible) {
+        } else if (this.game.input.enterOrRightClick(input) && !this.game.cabin.isFullyVisible) {
             if (this.game.player.energyReachedZero === false) {
                 this.game.player.setState(states.ROLLING, 2);
             } else if (this.game.player.energyReachedZero === true && input.includes('s') && this.game.player.divingTimer >= this.game.player.divingCooldown) {
@@ -184,7 +185,11 @@ export class Falling extends State {
     handleInput(input) {
         this.gameOver();
         if (this.game.player.isUnderwater === true) {
-
+            this.game.particles.unshift(new Bubble(
+                this.game,
+                this.game.player.x + this.game.player.width * 0.8,
+                this.game.player.y + this.game.player.height
+            ));
             if (input.includes('w')) {
                 this.game.input.isWKeyPressed = true;
                 this.game.player.y = this.game.player.y - 4;
@@ -201,7 +206,7 @@ export class Falling extends State {
             }
         }
 
-        if (input.includes('Enter') && this.game.player.onGround() && this.game.cabin.isFullyVisible) {
+        if (this.game.input.enterOrRightClick(input) && this.game.player.onGround() && this.game.cabin.isFullyVisible) {
             this.game.player.setState(states.STANDING, 0);
         } else if (this.game.player.onGround()) {
             this.game.audioHandler.firedogSFX.playSound('fallingSFX');
@@ -209,9 +214,9 @@ export class Falling extends State {
         } else if (input.includes('s') && this.game.player.divingTimer >= this.game.player.divingCooldown) {
             this.game.player.divingTimer = 0;
             this.game.player.setState(states.DIVING, 0);
-        } if (input.includes('Enter') && this.game.isElyvorgFullyVisible && this.game.player.onGround()) {
+        } if (this.game.input.enterOrRightClick(input) && this.game.isElyvorgFullyVisible && this.game.player.onGround()) {
             this.game.player.setState(states.STANDING, 0);
-        } else if (input.includes('Enter') && !this.game.cabin.isFullyVisible) {
+        } else if (this.game.input.enterOrRightClick(input) && !this.game.cabin.isFullyVisible) {
             if (this.game.player.energy > 0) {
                 if (this.game.player.energyReachedZero === false) {
                     this.game.player.setState(states.ROLLING, 2);
@@ -249,11 +254,11 @@ export class Rolling extends State {
                         this.game.player.x + this.game.player.width * 0.5,
                         this.game.player.y + this.game.player.height * 0.5));
 
-                    if (!input.includes('Enter') && this.game.player.onGround()) {
+                    if (!this.game.input.enterOrRightClick(input) && this.game.player.onGround()) {
                         this.game.player.setState(states.RUNNING, 1);
-                    } else if (!input.includes('Enter') && !this.game.player.onGround()) {
+                    } else if (!this.game.input.enterOrRightClick(input) && !this.game.player.onGround()) {
                         this.game.player.setState(states.FALLING, 1);
-                    } else if (input.includes('Enter') && input.includes('w') && this.game.player.onGround()) {
+                    } else if (this.game.input.enterOrRightClick(input) && input.includes('w') && this.game.player.onGround()) {
                         this.game.player.vy -= 27;
                     } else if (input.includes('s') && this.game.player.divingTimer >= this.game.player.divingCooldown && !this.game.player.onGround()) {
                         this.game.player.divingTimer = 0;
@@ -295,28 +300,30 @@ export class Diving extends State {
             this.game.player.x + this.game.player.width * 0.5,
             this.game.player.y + this.game.player.height * 0.5));
         const isBlueParticle = this.game.player.particleImage === 'bluefire' || this.game.player.particleImage === 'bluebubble';
-        let numberOfParticles = isBlueParticle ? 130 : 30;
+        let numberOfParticles = isBlueParticle ? 90 : 30;
         if (this.game.player.onGround()) {
             this.game.audioHandler.firedogSFX.playSound('divingSFX', false, true);
-            this.game.player.setState(states.RUNNING, 1);
+            if (this.game.player.onGround() && input.includes('w')) {
+                this.game.player.setState(states.JUMPING, 1);
+            } else {
+                this.game.player.setState(states.RUNNING, 1);
+            }
             for (let i = 0; i < numberOfParticles; i++) {
                 this.game.particles.unshift(new Splash(this.game,
                     this.game.player.x + this.game.player.width * -0.1,
                     this.game.player.y)
                 );
             }
-        } else if (input.includes('Enter') && this.game.player.onGround() && !this.game.cabin.isFullyVisible) {
+        } else if (this.game.input.enterOrRightClick(input) && this.game.player.onGround() && !this.game.cabin.isFullyVisible) {
+            this.game.audioHandler.firedogSFX.playSound('divingSFX', false, true);
             this.game.player.setState(states.ROLLING, 2);
         }
-        if (input.includes('Enter') && this.game.player.onGround() && this.game.cabin.isFullyVisible) {
+        if (this.game.input.enterOrRightClick(input) && this.game.player.onGround() && this.game.cabin.isFullyVisible) {
             this.game.player.setState(states.STANDING, 0);
         }
         if (this.game.player.isUnderwater === true) {
-            if (input.includes('Enter') && input.includes('w')) {
+            if (this.game.input.enterOrRightClick(input) && input.includes('w')) {
                 this.game.player.setState(states.ROLLING, 2);
-                if (this.game.player.isBluePotionActive) {
-                    this.game.speed += 10;
-                }
             } else if (input.includes('w')) {
                 this.game.player.setState(states.JUMPING, 1);
             }
@@ -383,13 +390,13 @@ export class Standing extends State {
         this.gameOver();
 
         if (this.game.player.isUnderwater === true) {
-            if (input.includes('Enter') && !this.game.player.onGround()) {
+            if (this.game.input.enterOrRightClick(input) && !this.game.player.onGround()) {
                 this.game.player.setState(states.FALLING, 1);
             }
         }
 
         if (this.game.isElyvorgFullyVisible) {
-            if (input.includes('Enter') && this.game.player.energyReachedZero === false) {
+            if (this.game.input.enterOrRightClick(input) && this.game.player.energyReachedZero === false) {
                 this.game.player.setState(states.ROLLING, 0);
             }
 
@@ -431,4 +438,3 @@ export class Dying extends State {
         }
     }
 }
-

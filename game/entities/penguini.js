@@ -25,17 +25,17 @@ export class Penguini {
         } else {
             this.frameTimer += deltaTime;
         }
-        if (!this.game.cabin.isFullyVisible) { 
+        if (!this.game.cabin.isFullyVisible) {
             this.x -= this.game.speed;
-       
+
             if (this.x <= this.game.fixedPenguinX) {
                 this.isFullyVisible = true;
                 this.x = this.game.fixedPenguinX;
             }
         }
 
-        if ((this.game.talkToPenguin || this.game.notEnoughCoins) && this.game.penguin && this.game.player.x + this.game.player.width >= this.game.penguin.x + 10) {
-            this.game.player.x = this.game.penguin.x + 10 - this.game.player.width;
+        if ((this.game.talkToPenguin || this.game.notEnoughCoins) && this.game.penguini && this.game.player.x + this.game.player.width >= this.game.penguini.x + 10) {
+            this.game.player.x = this.game.penguini.x + 10 - this.game.player.width;
         } else {
             this.game.enterToTalkToPenguin = false;
         }

@@ -48,12 +48,12 @@ export class Reset {
         this.game.endCutscene();
         this.game.cutscenes = [];
         this.game.isEndCutscene = false;
+        this.game.input.keys = [];
         // cabin
         this.game.cabinAppeared = false;
         this.game.cabin.isFullyVisible = false;
         this.game.cabin.x = this.game.width;
         // penguin
-        this.game.ingamePauseMenu.canPauseInPenguinCutscene = true;
         this.game.penguinAppeared = false;
         this.game.talkToPenguin = false;
         this.game.enterToTalkToPenguin = false;
@@ -74,7 +74,7 @@ export class Reset {
         this.game.poisonScreen = false;
         this.game.poisonColourOpacity = 0;
         // level difficulty
-        this.game.menuInstances.levelDifficultyMenu.setDifficulty(this.game.selectedDifficulty);
+        this.game.menu.levelDifficulty.setDifficulty(this.game.selectedDifficulty);
         // selecting map
         let selectedMap;
         switch (this.game.background.constructor) {
@@ -102,7 +102,7 @@ export class Reset {
             default:
                 break;
         }
-        this.game.setMap(selectedMap);
+        this.game.menu.forestMap.setMap(selectedMap);
         this.game.player.underwaterOrNot();
     }
 }

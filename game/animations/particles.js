@@ -41,7 +41,7 @@ export class Dust extends Particle {
             context.drawImage(this.image, this.x - this.size, this.y - this.size / 1.3, this.size, this.size);
         }
 
-        if (!this.game.ingamePauseMenu.isPaused && this.createBubble) {
+        if (!this.game.menu.pause.isPaused && this.createBubble) {
             if (this.isUnderwater === true) {
                 this.y -= 2;
             }
@@ -90,7 +90,7 @@ export class Bubble extends Particle {
             context.drawImage(this.image, this.x - this.size, this.y - this.size / 1.3, this.size, this.size);
         }
 
-        if (!this.game.ingamePauseMenu.isPaused && this.createBubble) {
+        if (!this.game.menu.pause.isPaused && this.createBubble) {
             if (this.isUnderwater === true) {
                 this.y -= 2;
             }

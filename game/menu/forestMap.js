@@ -1,10 +1,12 @@
 import { BaseMenu } from './baseMenu.js';
-import { Map1Cutscene, Map2Cutscene, Map3Cutscene, Map4Cutscene, Map5Cutscene, Map6Cutscene } from '../cutscene/cutscenes.js';
+import { Map1Cutscene, Map2Cutscene, Map3Cutscene, Map4Cutscene, Map5Cutscene, Map6Cutscene } from '../cutscene/storyCutscenes.js';
 import { Map1, Map2, Map3, Map4, Map5, Map6 } from '../background/background.js';
 import { SavingAnimation, SavingBookAnimation } from '../animations/savingAnimation.js';
+import { Cabin } from '../entities/cabin.js';
+import { Penguini } from '../entities/penguini.js';
 
 export class ForestMapMenu extends BaseMenu {
-    constructor(game, preselectedLocationIndex = 0) {
+    constructor(game) {
         const circleOptions = [
             { x: 700, y: 200, radius: 20 }, // Map 1
             { x: 950, y: 200, radius: 20 }, // Map 2
@@ -24,12 +26,11 @@ export class ForestMapMenu extends BaseMenu {
             6: "Infernal Crater Peak",
         };
         this.circleOptions = circleOptions;
-        this.selectedCircleIndex = preselectedLocationIndex;
+        this.selectedCircleIndex = 0;
         this.showSavingSprite = false;
         this.savingAnimation = new SavingAnimation(this.game);
         this.savingBookAnimation = new SavingBookAnimation(this.game);
 
-        this.canSelect = true;
         this.backgroundImage = document.getElementById('forestmap');
         this.backgroundImageNight = document.getElementById('forestmapNight');
 
@@ -38,7 +39,68 @@ export class ForestMapMenu extends BaseMenu {
         this.forestmapCholoFiredog = document.getElementById('forestmapCholoFiredog');
         this.forestmapZabkaFiredog = document.getElementById('forestmapZabkaFiredog');
         this.forestmapFiredogShiny = document.getElementById('forestmapFiredogShiny');
+
+        document.addEventListener('wheel', this.handleMouseWheel.bind(this));
     }
+    handleMouseWheel(event) {
+        if (this.menuActive && this.game.canSelectForestMap) {
+            const delta = Math.sign(event.deltaY);
+
+            const unlockedCircles = this.circleOptions
+                .filter((circle, index) => this.game[`map${index + 1}Unlocked`]);
+
+            if (this.game.canSelectForestMap && unlockedCircles.length > 0) {
+                const indexChange = delta > 0 ? -1 : 1;
+
+                if (!this.scrollCooldown) {
+                    let newIndex = this.selectedCircleIndex + indexChange;
+
+                    newIndex = Math.max(0, Math.min(unlockedCircles.length - 1, newIndex));
+
+                    if (newIndex !== 0 && newIndex !== unlockedCircles.length - 1) {
+                        this.selectedCircleIndex = newIndex;
+                    } else if (newIndex === 0 && this.selectedCircleIndex !== 0) {
+                        this.selectedCircleIndex = 0;
+                    } else if (newIndex === unlockedCircles.length - 1 && this.selectedCircleIndex !== unlockedCircles.length - 1) {
+                        this.selectedCircleIndex = unlockedCircles.length - 1;
+                    }
+
+                    this.scrollCooldown = true;
+                    setTimeout(() => {
+                        this.scrollCooldown = false;
+                    }, 20);
+                }
+            }
+        }
+    }
+
+    handleMouseMove(event) {
+        if (this.menuActive && this.game.canSelectForestMap) {
+            const rect = this.game.canvas.getBoundingClientRect();
+            const scaleX = this.game.canvas.width / rect.width;
+            const scaleY = this.game.canvas.height / rect.height;
+
+            const mouseX = (event.clientX - rect.left) * scaleX;
+            const mouseY = (event.clientY - rect.top) * scaleY;
+
+            const unlockedCircles = this.circleOptions
+                .filter((circle, index) => this.game[`map${index + 1}Unlocked`]);
+
+            // checks if the mouse is hovering over any unlocked circle
+            for (let i = 0; i < unlockedCircles.length; i++) {
+                const circle = unlockedCircles[i];
+                const distanceSquared = (mouseX - circle.x) ** 2 + (mouseY - circle.y) ** 2;
+                const radiusSquared = circle.radius ** 2;
+
+                if (distanceSquared <= radiusSquared) {
+                    // mouse is inside this circle
+                    this.selectedCircleIndex = this.circleOptions.indexOf(circle);
+                    break;
+                }
+            }
+        }
+    }
+
     resetSelectedCircleIndex() {
         this.selectedCircleIndex = 0;
     }
@@ -46,7 +108,7 @@ export class ForestMapMenu extends BaseMenu {
         if (this.menuActive) {
             const unlockedCircles = this.circleOptions
                 .filter((circle, index) => this.game[`map${index + 1}Unlocked`]);
-            if (this.canSelect) {
+            if (this.game.canSelectForestMap) {
                 if (event.key === 'ArrowLeft') {
                     // checks if the current circle is the first one
                     if (this.selectedCircleIndex > 0) {
@@ -66,6 +128,31 @@ export class ForestMapMenu extends BaseMenu {
         }
     }
 
+    setMap(map) {
+        this.game.background = map;
+        const cabinY = this.game.height - 375;
+        if (map instanceof Map1) {
+            this.game.cabin = new Cabin(this.game, 'map1cabin', 630, 375, cabinY);
+            this.game.penguini = new Penguini(this.game, 105.52380952380952380952380952381, 165, 'penguinBatSprite', 20);
+        } else if (map instanceof Map2) {
+            this.game.cabin = new Cabin(this.game, 'map2cabin', 630, 375, cabinY);
+            this.game.penguini = new Penguini(this.game, 105.52380952380952380952380952381, 165, 'penguinBatSprite', 20);
+        } else if (map instanceof Map3) {
+            this.game.cabin = new Cabin(this.game, 'map3submarine', 903, 329, this.game.height - 411);
+            this.game.penguini = new Penguini(this.game, 105.52380952380952380952380952381, 165, 'penguinBatSprite', 20);
+        } else if (map instanceof Map4) {
+            this.game.cabin = new Cabin(this.game, 'map4cabin', 630, 375, cabinY);
+            this.game.penguini = new Penguini(this.game, 139.325, 140, 'penguinPistolSprite', 39);
+        } else if (map instanceof Map5) {
+            this.game.cabin = new Cabin(this.game, 'map5cabin', 630, 375, cabinY);
+            this.game.penguini = new Penguini(this.game, 139.325, 140, 'penguinPistolSprite', 39);
+        } else if (map instanceof Map6) {
+            this.game.cabin = new Cabin(this.game, 'map6cave', 913, 618, 0);
+            this.game.penguini = new Penguini(this.game, 185, 80, 'penguinDead', 0);
+            this.game.penguini.y = this.game.height - this.game.penguini.height - this.game.groundMargin;
+        }
+    }
+
     handleMenuSelection() {
         const selectedCircle = this.circleOptions[this.selectedCircleIndex];
         super.handleMenuSelection();
@@ -74,12 +161,12 @@ export class ForestMapMenu extends BaseMenu {
         this.game.player.isDarkWhiteBorder = false;
 
         const mapOptions = [
-            { index: 1, underwater: false, darkWhiteBorder: false, maxDistance: 300, winningCoins: 370, Cutscene: Map1Cutscene, Map: Map1 },
-            { index: 2, underwater: false, darkWhiteBorder: true, maxDistance: 340, winningCoins: 430, Cutscene: Map2Cutscene, Map: Map2 },
-            { index: 3, underwater: true, darkWhiteBorder: true, maxDistance: 370, winningCoins: 320, Cutscene: Map3Cutscene, Map: Map3 },
-            { index: 4, underwater: false, darkWhiteBorder: false, maxDistance: 340, winningCoins: 500, Cutscene: Map4Cutscene, Map: Map4 },
-            { index: 5, underwater: false, darkWhiteBorder: false, maxDistance: 350, winningCoins: 550, Cutscene: Map5Cutscene, Map: Map5 },
-            { index: 6, underwater: false, darkWhiteBorder: false, maxDistance: 9999999, winningCoins: 150, Cutscene: Map6Cutscene, Map: Map6 }
+            { index: 1, underwater: false, darkWhiteBorder: false, maxDistance: 200, winningCoins: 230, Cutscene: Map1Cutscene, Map: Map1 },
+            { index: 2, underwater: false, darkWhiteBorder: true, maxDistance: 240, winningCoins: 270, Cutscene: Map2Cutscene, Map: Map2 },
+            { index: 3, underwater: true, darkWhiteBorder: true, maxDistance: 270, winningCoins: 200, Cutscene: Map3Cutscene, Map: Map3 },
+            { index: 4, underwater: false, darkWhiteBorder: false, maxDistance: 240, winningCoins: 280, Cutscene: Map4Cutscene, Map: Map4 },
+            { index: 5, underwater: false, darkWhiteBorder: false, maxDistance: 250, winningCoins: 300, Cutscene: Map5Cutscene, Map: Map5 },
+            { index: 6, underwater: false, darkWhiteBorder: false, maxDistance: 9999999, winningCoins: 70, Cutscene: Map6Cutscene, Map: Map6 }
         ];
 
         const { index, underwater, darkWhiteBorder, maxDistance, winningCoins, Cutscene, Map } = mapOptions[circleIndex];
@@ -95,14 +182,15 @@ export class ForestMapMenu extends BaseMenu {
         mapCutscene.displayDialogue(Cutscene);
 
         const map = new Map(this.game);
-        this.game.setMap(map);
+        this.setMap(map);
 
         this.game.player.underwaterOrNot();
-        this.menuActive = false;
-        this.game.currentMenu = false;
+        this.game.menu.main.closeAllMenus();
     }
 
     update(deltaTime) {
+        this.game.audioHandler.menu.stopSound('soundtrack');
+
         if (this.showSavingSprite) {
             this.savingAnimation.update(deltaTime);
             this.savingBookAnimation.update(deltaTime);
@@ -181,15 +269,15 @@ export class ForestMapMenu extends BaseMenu {
                                 context.shadowColor = 'white';
                             }
                             context.shadowBlur = 10;
-                            if (this.game.menuInstances.skins.currentSkin === this.game.menuInstances.skins.defaultSkin) {
+                            if (this.game.menu.skins.currentSkin === this.game.menu.skins.defaultSkin) {
                                 context.drawImage(this.firedogImage, circle.x - this.firedogImage.width / 2, circle.y - this.firedogImage.height / 2 - 10);
-                            } else if (this.game.menuInstances.skins.currentSkin === this.game.menuInstances.skins.hatSkin) {
+                            } else if (this.game.menu.skins.currentSkin === this.game.menu.skins.hatSkin) {
                                 context.drawImage(this.firedogHatImage, circle.x - this.firedogHatImage.width / 2, circle.y - this.firedogHatImage.height / 2 - 10);
-                            } else if (this.game.menuInstances.skins.currentSkin === this.game.menuInstances.skins.choloSkin) {
+                            } else if (this.game.menu.skins.currentSkin === this.game.menu.skins.choloSkin) {
                                 context.drawImage(this.forestmapCholoFiredog, circle.x - this.forestmapCholoFiredog.width / 2, circle.y - this.forestmapCholoFiredog.height / 2 - 10);
-                            } else if (this.game.menuInstances.skins.currentSkin === this.game.menuInstances.skins.zabkaSkin) {
+                            } else if (this.game.menu.skins.currentSkin === this.game.menu.skins.zabkaSkin) {
                                 context.drawImage(this.forestmapZabkaFiredog, circle.x - this.forestmapZabkaFiredog.width / 2, circle.y - this.forestmapZabkaFiredog.height / 2 - 10);
-                            } else if (this.game.menuInstances.skins.currentSkin === this.game.menuInstances.skins.shinySkin) {
+                            } else if (this.game.menu.skins.currentSkin === this.game.menu.skins.shinySkin) {
                                 context.drawImage(this.forestmapFiredogShiny, circle.x - this.forestmapFiredogShiny.width / 2, circle.y - this.forestmapFiredogShiny.height / 2 - 10);
                             }
                             context.restore();

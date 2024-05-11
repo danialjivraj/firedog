@@ -98,9 +98,7 @@ export class Skins extends BaseMenu {
             this.selectedSkinIndex = 3;
             this.setCurrentSkin('Zabka Firedog');
         } else if (selectedOption === 'Go Back') {
-            this.game.currentMenu = this.game.menuInstances.mainMenu;
-            this.menuActive = false;
-            this.selectedOption = 0;
+            this.game.menu.main.activateMenu(1);
         }
         this.menuOptions[this.selectedSkinIndex] += ' - Selected';
     }

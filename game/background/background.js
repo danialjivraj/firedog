@@ -239,8 +239,7 @@ export class Map5 extends Background {
         let raindropLayer = this.backgroundLayers.find(layer => layer instanceof RaindropAnimation);
         if (this.totalDistanceTraveled > 30 && this.totalDistanceTraveled <= 60 ||
             this.totalDistanceTraveled > 120 && this.totalDistanceTraveled <= 160 ||
-            this.totalDistanceTraveled > 250 && this.totalDistanceTraveled <= 290 ||
-            this.totalDistanceTraveled > 330) {
+            this.totalDistanceTraveled > 220) {
             if (raindropLayer) {
                 raindropLayer.isRaining = true;
                 this.isRaining = true;

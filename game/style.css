@@ -2,6 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    cursor: url('./assets/cursor.png'), auto;
 }
 
 body {
@@ -21,13 +22,13 @@ body {
 /* icon */
 #firedogHead, 
 /* menu images */ 
-#mainmenubackground, #skinStage, #greenCompleted, 
+#mainmenubackground, #mainmenubackgroundhowtoplay, #skinStage, #greenCompleted, 
     /* forest images */ 
     #forestmap, #forestmapNight, #forestmapFiredog, #forestmapHatFiredog, #forestmapCholoFiredog, #forestmapZabkaFiredog, #forestmapFiredogShiny, 
     /* saving images */ 
     #savingAnimation, #savingBookAnimation, #deleteProgressAnimation, #deleteProgressBookAnimation,  
 /* how to play */ 
-#howToPlay, #howToPlay2, #howToPlay3, #howToPlay4, #howToPlay5, #howToPlay6, #howToPlay7, #howToPlay8, 
+#howToPlay1, #howToPlay2, #howToPlay3, #howToPlay4, #howToPlay5, #howToPlay6, #howToPlay7, #howToPlay8, #howToPlay9, 
 /* ability UI */
     /* firedog UI */
     #fireballUI, #fireballRedPotionUI, #divingUI, #fireballUIWhiteBorder, #divingUIWhiteBorder, #invisibleUI, #invisibleUIWhiteBorder, 
@@ -50,7 +51,7 @@ body {
         /* goblin */
         #goblinRun, #goblinSteal, #goblinJump, 
         /* map1 */
-        #spinning_enemy, #enemy_fly, #vertical_bat, #enemy_bat, #skeletonBomb, #runningSkeleton, #enemy_raven, #orangeFlyMonsterWalk, #orangeFlyMonsterAttack, 
+        #spinning_enemy, #enemy_fly, #vertical_bat, #enemy_bat, #skeletonBomb, #meatSoldier, #runningSkeleton, #enemy_raven, #orangeFlyMonsterWalk, #orangeFlyMonsterAttack, 
         /* map2 */
         #enemy_nightPlant, #enemy_spider, #enemy_ghost, #enemy_dollGhost, #aura, #vertical_ghost,
         /* map3 */

@@ -2,10 +2,15 @@ import { BaseMenu } from './baseMenu.js';
 
 export class HowToPlayMenu extends BaseMenu {
     constructor(game) {
-        const menuOptions = ['Next', 'Go Back'];
-        super(game, menuOptions, 'How To Play');
+        const menuOptions = ['Next', 'Previous', 'Go Back'];
+        super(game, menuOptions, '');
+        this.backgroundImage = document.getElementById('mainmenubackgroundhowtoplay');
+
+        this.centerX = this.game.width - 90;
+        this.positionOffset = -115;
+
         this.howToPlayImages = [
-            document.getElementById('howToPlay'),
+            document.getElementById('howToPlay1'),
             document.getElementById('howToPlay2'),
             document.getElementById('howToPlay3'),
             document.getElementById('howToPlay4'),
@@ -13,20 +18,36 @@ export class HowToPlayMenu extends BaseMenu {
             document.getElementById('howToPlay6'),
             document.getElementById('howToPlay7'),
             document.getElementById('howToPlay8'),
+            document.getElementById('howToPlay9'),
         ];
         this.currentImageIndex = 0;
     }
 
+    handleKeyDown(event) {
+        super.handleKeyDown(event);
+        if (this.menuActive) {
+            if (event.key === 'ArrowLeft' && this.currentImageIndex > 0) {
+                this.currentImageIndex--;
+                super.handleMenuSelection();
+            } else if (event.key === 'ArrowRight' && this.currentImageIndex < this.howToPlayImages.length - 1) {
+                this.currentImageIndex++;
+                super.handleMenuSelection();
+            }
+        }
+    }
+
     handleMenuSelection() {
         const selectedOption = this.menuOptions[this.selectedOption];
-
-        super.handleMenuSelection();
-        if (selectedOption === 'Next') {
-            this.currentImageIndex = (this.currentImageIndex + 1) % this.howToPlayImages.length;
+        if (selectedOption === 'Next' && this.currentImageIndex < this.howToPlayImages.length - 1) {
+            this.currentImageIndex++;
+            super.handleMenuSelection();
+        } else if (selectedOption === 'Previous' && this.currentImageIndex > 0) {
+            this.currentImageIndex--;
+            super.handleMenuSelection();
         } else if (selectedOption === 'Go Back') {
             this.currentImageIndex = 0;
-            this.menuActive = false;
-            this.game.currentMenu = this.game.menuInstances.mainMenu;
+            super.handleMenuSelection();
+            this.game.menu.main.activateMenu(3);
         }
     }
 

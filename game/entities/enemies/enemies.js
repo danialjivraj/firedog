@@ -9,7 +9,10 @@ export class Enemy {
         this.lives = 1;
         this.id = Math.random().toString(36).substring(2, 11);
         this.soundId;
+        this.isStunEnemy = false;
+        this.isRedEnemy = false;
     }
+
     isOnScreen() {
         return (
             this.x + this.width >= 0 && this.y + this.height >= 0 &&
@@ -17,6 +20,7 @@ export class Enemy {
             this.y + this.height / 2 <= this.game.height
         );
     }
+
     update(deltaTime) {
         //movement
         if (!this.game.cabin.isFullyVisible) {
@@ -43,15 +47,26 @@ export class Enemy {
             if (this.isOnScreen()) {
                 this.game.audioHandler.enemySFX.playSound(this.soundId);
             }
-
         }
     }
 
     draw(context) {
         if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
+        if (this.isStunEnemy) {
+            context.shadowColor = 'yellow';
+            context.shadowBlur = 10;
+        } else if (this.isRedEnemy) {
+            context.shadowColor = 'red';
+            context.shadowBlur = 10;
+        }
         context.drawImage(this.image, this.frameX * this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height);
+
+        context.shadowColor = 'transparent';
+        context.shadowBlur = 0;
     }
+
 }
+
 
 // Types of enemies ---------------------------------------------------------------------------------------------------------------------------
 class FlyingEnemy extends Enemy {
@@ -204,6 +219,7 @@ export class Bee extends FlyingEnemy {
         this.speed = speed;
         this.fps = fps;
         this.frameInterval = 1000 / this.fps;
+        this.isStunEnemy = true;
     }
 
     update(deltaTime) {
@@ -246,6 +262,8 @@ export class Bee extends FlyingEnemy {
 export class RunningSkeletonSizes extends MovingGroundEnemy {
     constructor(game, width, height, runningSkeletonImage, sleepingAnimationWidth, sleepingAnimationHeight, sleepingAnimationFrames, sleepingAnimationImage) {
         super(game, width, height, 12, runningSkeletonImage);
+        this.isStunEnemy = true;
+        this.y = this.game.height - this.height - this.game.groundMargin + 15;
         this.width = width;
         this.height = height;
         this.state = 'sleeping';
@@ -256,10 +274,6 @@ export class RunningSkeletonSizes extends MovingGroundEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        if (this.y >= this.game.height - this.height - this.game.groundMargin) {
-            this.y = this.game.height - this.height - this.game.groundMargin;
-            this.speedY = 0;
-        }
         if (this.state === 'sleeping') {
             this.game.audioHandler.enemySFX.playSound('fuseSound');
             const playerDistance = Math.abs(this.game.player.x - this.x);
@@ -292,7 +306,11 @@ export class RunningSkeletonSizes extends MovingGroundEnemy {
         if (this.state === 'running') {
             super.draw(context);
         } else {
+            context.save();
+            context.shadowColor = 'yellow';
+            context.shadowBlur = 10;
             this.sleepingAnimation.draw(context);
+            context.restore();
         }
     }
 }
@@ -435,6 +453,10 @@ export class IceBall extends Projectile {
     }
     draw(context) {
         context.save();
+
+        context.shadowColor = 'blue';
+        context.shadowBlur = 10;
+
         context.translate(this.x + this.size / 2, this.y + this.size / 2);
         context.rotate(this.rotationAngle);
 
@@ -513,6 +535,8 @@ export class RockProjectile extends Projectile {
 
     draw(context) {
         context.save();
+        context.shadowColor = 'yellow';
+        context.shadowBlur = 10;
         context.translate(this.x + this.width / 2, this.y + this.height / 2);
         context.rotate(this.rotation);
         context.drawImage(this.image, this.frameX * this.width, 0, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
@@ -716,6 +740,32 @@ export class RunningSkeleton extends RunningSkeletonSizes {
     constructor(game) {
         super(game, 104.23076923076923076923076923077, 70, 'runningSkeleton', 57, 57, 10, 'skeletonBomb');
     }
+    update(deltaTime) {
+        super.update(deltaTime);
+        if (this.state === 'running') {
+            this.y = this.game.height - this.height - this.game.groundMargin + 5;
+        }
+    }
+}
+
+export class MeatSoldier extends GroundEnemy {
+    constructor(game) {
+        super(game, 67.625, 80, 15, 'meatSoldier');
+        this.fps = 60;
+        this.frameInterval = 1000 / this.fps;
+        this.xSpeed = Math.floor(Math.random() * 2) + 1;
+        this.playSoundOnce = true;
+
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime);
+        if (this.playSoundOnce) {
+            this.playSoundOnce = false;
+            this.game.audioHandler.enemySFX.playSound('meatSoldierSound');
+        }
+        this.x -= this.xSpeed;
+    }
 }
 
 export class SpinningEnemy extends FlyingEnemy {
@@ -732,7 +782,7 @@ export class SpinningEnemy extends FlyingEnemy {
         this.y += Math.sin(this.angle) * this.radius;
 
         if (this.x + this.width < 0 || this.lives <= 0) {
-            this.game.audioHandler.enemySFX.stopSound('hedgehogRollingSound');
+            this.game.audioHandler.enemySFX.stopSound('spinningChainsaw');
         }
     }
 }
@@ -987,6 +1037,7 @@ export class VerticalGhost extends VerticalEnemy {
 export class Aura extends FlyingEnemy {
     constructor(game) {
         super(game, 52, 50, 0, 'aura');
+        this.isStunEnemy = true;
         this.currentSpeed = 5;
         this.chaseDistance = this.game.width;
         this.passedPlayer = false;
@@ -1244,6 +1295,7 @@ export class SkeletonFish extends UnderwaterEnemy {
 export class SpearFish extends MovingGroundEnemy {
     constructor(game) {
         super(game, 91.875, 110, 7, 'spearFish');
+        this.isRedEnemy = true;
         this.lives = 2;
         this.fps = 60;
         this.frameInterval = 1000 / this.fps;
@@ -1311,6 +1363,7 @@ export class Piper extends ImmobileGroundEnemy {
 export class ElectricEel extends FallingEnemy {
     constructor(game) {
         super(game, 107, 87, 4, 'electricEel');
+        this.isStunEnemy = true;
         this.chaseDistance = 900;
         this.initialSpeed = 3;
         this.currentSpeed = this.initialSpeed;
@@ -1447,6 +1500,7 @@ export class GreenFlappyBird extends FlyingEnemy {
 export class LilHornet extends FlyingEnemy {
     constructor(game) {
         super(game, 56, 47, 1, 'lilHornet');
+        this.isStunEnemy = true;
         this.playsOnce = true;
     }
     update(deltaTime) {
@@ -1462,6 +1516,7 @@ export class LilHornet extends FlyingEnemy {
 export class KarateCroco extends MovingGroundEnemy {
     constructor(game) {
         super(game, 152.75, 110, 3, 'karateCrocodileIdle');
+        this.isRedEnemy = true;
         this.state = "idle";
         this.lives = 2;
         this.flyKickAnimation = new MovingGroundEnemy(game, 153, 110, 2, 'karateCrocodileFlyKick');
@@ -1496,9 +1551,13 @@ export class KarateCroco extends MovingGroundEnemy {
         if (this.state === 'idle') {
             super.draw(context);
         } else if (this.state === 'flykick') {
+            context.save();
+            context.shadowColor = 'red';
+            context.shadowBlur = 10;
             this.flyKickAnimation.x = this.x;
             this.flyKickAnimation.y = this.y;
             this.flyKickAnimation.draw(context);
+            context.restore();
         }
     }
 }
@@ -1698,6 +1757,16 @@ export class PurpleSpider extends MovingGroundEnemy {
 export class RunningSkeletonSmall extends RunningSkeletonSizes {
     constructor(game) {
         super(game, 81.923076923076923076923076923077, 55, 'runningSkeletonSmall', 42, 42, 10, 'skeletonBombSmall');
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        if (this.y >= this.game.height - this.height - this.game.groundMargin + 5 && this.state === 'sleeping') {
+            this.y = this.game.height - this.height - this.game.groundMargin + 5;
+            this.speedY = 0;
+        }
+        if (this.state === 'running') {
+            this.y = this.game.height - this.height - this.game.groundMargin - 5;
+        }
     }
 }
 export class FlyingBomber extends FlyingEnemy {
@@ -1926,6 +1995,7 @@ export class OrangeCyclop extends ImmobileGroundEnemy {
 export class Tauro extends MovingGroundEnemy {
     constructor(game) {
         super(game, 151, 132, 2, 'tauro');
+        this.isRedEnemy = true;
         this.lives = 2;
         this.fps = 15;
         this.frameInterval = 1000 / this.fps;
@@ -1946,7 +2016,7 @@ export class BeeEnemy extends Bee {
 
 export class AngryBeeEnemy extends Bee {
     constructor(game) {
-        super(game, 55.23, 57, 12, 'angry_enemy_bee', 1100, 3, 14, 140);
+        super(game, 55.23, 57, 12, 'angry_enemy_bee', 1100, 3, 12, 140);
         this.soundId = 'angryBeeBuzzing';
     }
 }
@@ -2006,6 +2076,7 @@ export class ClimbingPurpleSpider extends ClimbingEnemy {
 export class Cactus extends ImmobileGroundEnemy {
     constructor(game) {
         super(game, 71, 90, 0, 'singleCactus');
+        this.isStunEnemy = true;
     }
 }
 
@@ -2097,6 +2168,7 @@ export class RedOneEyeFly extends FlyingEnemy {
 export class Turtle extends MovingGroundEnemy {
     constructor(game) {
         super(game, 177, 107, 5, 'turtle');
+        this.isRedEnemy = true;
         this.lives = 2;
         this.fps = 5;
         this.frameInterval = 1000 / this.fps;
@@ -2112,6 +2184,7 @@ export class Turtle extends MovingGroundEnemy {
 export class TheRock extends MovingGroundEnemy {
     constructor(game) {
         super(game, 132, 132, 11, 'theRock');
+        this.isRedEnemy = true;
         this.state = "idle";
 
         this.playSmashOnce = true;
@@ -2161,7 +2234,7 @@ export class TheRock extends MovingGroundEnemy {
 
 export class VolcanoWasp extends Bee {
     constructor(game) {
-        super(game, 113, 125, 1, 'volcanoWasp', 1100, 3, 14, 140);
+        super(game, 113, 125, 1, 'volcanoWasp', 1100, 3, 12, 140);
         this.soundId = 'angryBeeBuzzing';
     }
 }
