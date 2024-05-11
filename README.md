@@ -61,7 +61,7 @@ You can download the game by clicking one of the following links:
 - [Download (347.32MB)](https://www.mediafire.com/file/d89ceq050tjd62n/Firedog-win32-x64.rar/file)
 
 #### For MacOS
-- [Download (369.46MB)](https://www.mediafire.com/file/h2m3ndrrl76ovcb/Firedog-darwin-x64.zip/file)
+- [Download (369.46MB)](https://mediafire.com/file/p7g7cnngva0rgd1/Firedog-darwin-x64.zip/file)
 
 #### For Linux
 - [Download (342.10MB)](https://www.mediafire.com/file/k0byxvv5ah15nsg/Firedog-linux-x64.rar/file)
