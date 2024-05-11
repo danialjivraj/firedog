@@ -200,7 +200,7 @@ export class AudioMenu extends BaseMenu {
     }
 
     initializeVolumeLevels() {
-        this.volumeLevels = new Array(this.menuOptions.length).fill(null);
+        throw new Error('initializeVolumeLevels method must be implemented in subclasses');
     }
 
     initializeAudioMap() {

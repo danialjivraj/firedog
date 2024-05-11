@@ -6,6 +6,11 @@ export class IngameAudioSettingsMenu extends AudioMenu {
         super(game, options, 'Ingame Audio Settings');
         this.menuInGame = true;
     }
+
+    initializeVolumeLevels() {
+        this.volumeLevels = [30, 80, 60, 40, 80, 65, null];
+    }
+
     initializeAudioMap() {
         this.audioMap = {
             'In-game Master Volume': {

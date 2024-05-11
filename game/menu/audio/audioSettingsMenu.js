@@ -5,6 +5,11 @@ export class AudioSettingsMenu extends AudioMenu {
         const options = ['Master Volume', 'Menu Music', 'Option Selected', 'Cutscene Music', 'Cutscene SFX', 'Cutscene Dialogue', 'Go Back'];
         super(game, options, 'Audio Settings');
     }
+
+    initializeVolumeLevels() {
+        this.volumeLevels = [75, 10, 90, 90, 70, 60, null];
+    }
+
     initializeAudioMap() {
         this.audioMap = {
             'Master Volume': {

@@ -662,6 +662,7 @@ window.addEventListener('load', function () {
         }
         loadGameState() {
             const savedGameState = localStorage.getItem('gameState');
+            
             if (savedGameState) {
                 const gameState = JSON.parse(savedGameState);
                 this.map1Unlocked = gameState.map1Unlocked !== undefined ? gameState.map1Unlocked : this.map1Unlocked;
@@ -687,6 +688,8 @@ window.addEventListener('load', function () {
             }
         }
         clearSavedData() {
+            localStorage.removeItem('gameState');
+
             this.map1Unlocked = true;
             this.map2Unlocked = false;
             this.map3Unlocked = false;
@@ -701,7 +704,6 @@ window.addEventListener('load', function () {
             this.menu.skins.currentSkin = this.menu.skins.defaultSkin;
             this.menu.skins.setCurrentSkinById('player');
 
-            localStorage.removeItem('gameState');
             this.menu.audioSettings.setState({
                 volumeLevels: [75, 10, 90, 90, 70, 60, null],
             });
