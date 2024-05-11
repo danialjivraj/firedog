@@ -40,4 +40,4 @@ app.on('activate', function () {
 // for windows/linux
 // electron-packager . Firedog --platform=all --asar --icon=./game/assets/icons/firedogHeadIcon.ico
 // for mac
-// electron-packager . Firedog --platform=darwin --asar --icon=./game/assets/icons/firedogHeadMIconMac.icns
+// electron-packager . Firedog --platform=darwin --asar --icon=./game/assets/icons/firedogHeadIconMac.icns
