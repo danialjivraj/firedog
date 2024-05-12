@@ -620,7 +620,7 @@ window.addEventListener('load', function () {
                     if (Math.random() < 0.005) {
                         this.powerDowns.push(new Cauldron(this));
                     }
-                    if (Math.random() < 0.005) {
+                    if (Math.random() < 0.005 && this.player.isBlackHoleActive === false) {
                         this.powerDowns.push(new BlackHole(this));
                     }
                 }

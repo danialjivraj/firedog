@@ -785,7 +785,7 @@ export class OrangeFlyMonster extends FlyingEnemy {
         this.attackFps = 120;
         this.frameInterval = 1000 / this.walkFps;
         this.state = 'walk';
-        this.attackAnimation = new MovingGroundEnemy(game, 191.68, 130, 24, 'orangeFlyMonsterAttack');
+        this.attackAnimation = new FlyingEnemy(game, 191.68, 130, 24, 'orangeFlyMonsterAttack');
         this.attackAnimation.fps = this.attackFps;
         this.attackAnimation.frameInterval = 1000 / this.attackFps;
         this.attackAnimation.frameX = 0;

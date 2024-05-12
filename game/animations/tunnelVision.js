@@ -38,6 +38,7 @@ export class TunnelVision {
                 this.alpha = 1.0 - fadeOutProgress;
             } else if (this.elapsedTime >= this.fadeOutStartTime + this.fadeOutDuration) {
                 this.game.collisions = this.game.collisions.filter(collision => collision !== this);
+                this.game.player.isBlackHoleActive = false;
             }
         }
     }

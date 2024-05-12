@@ -76,6 +76,8 @@ export class Player {
         //poison
         this.isPoisonedActive = false;
         this.poisonTimer = 0;
+        //blackHole
+        this.isBlackHoleActive = false;
         //slow down
         this.isSlowed = false;
         this.slowedTimer = 0;
@@ -222,7 +224,6 @@ export class Player {
         //blue potion
         if (this.isBluePotionActive && this.currentState === this.states[4]) {
             this.game.enemyInterval = 10;
-            this.energyReachedZero = false;
             this.noEnergyLeftSound = false;
             this.isPoisonedActive = false;
             this.energy = Math.min(100, this.energy + 0.1);
@@ -866,6 +867,7 @@ export class Player {
             }, true
             );
             checkPowerCollision(this.game.powerDowns.filter(pd => pd instanceof BlackHole), blackhole => {
+                this.isBlackHoleActive = true;
                 this.game.player.triggerTunnelVision();
                 this.game.audioHandler.powerUpAndDownSFX.playSound('darkHoleLaughSound');
             }, true
@@ -903,6 +905,8 @@ export class Player {
                 }
 
                 this.game.audioHandler.firedogSFX.playSound('bluePotionEnergyGoingUp');
+
+                this.energyReachedZero = false;
 
                 if (this.isUnderwater) {
                     this.particleImage = 'bluebubble';
