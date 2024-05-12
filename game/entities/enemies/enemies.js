@@ -739,7 +739,7 @@ export class RunningSkeleton extends RunningSkeletonSizes {
     }
 }
 
-export class MeatSoldier extends GroundEnemy {
+export class MeatSoldier extends MovingGroundEnemy {
     constructor(game) {
         super(game, 67.625, 80, 15, 'meatSoldier');
         this.fps = 60;
