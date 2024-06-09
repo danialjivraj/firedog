@@ -1115,7 +1115,7 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //69
             `${this.valdorin}`,
-            `I looked behing and a dark-hooded figure knocked me down with some sort of electric attack before I could use any of my abilities.`,
+            `I looked behind and a dark-hooded figure knocked me down with some sort of electric attack before I could use any of my abilities.`,
             this.addImage('valdorinSurprised', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //70
@@ -1190,7 +1190,7 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //83
             `${this.valdorin}`,
-            `They saw the this intense bright object falling from the sky. The ${this.cryptic} ${this.token}.`,
+            `They noticed an intense bright object falling from the sky. The ${this.cryptic} ${this.token}.`,
             this.addImage('valdorinNormal', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //84
@@ -1417,7 +1417,7 @@ export class Map1Cutscene extends StoryCutscene {
             this.addImage('valdorinFistUp', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //127
-            `${this.quilzorin}`,
+            `${this.valdorin}`,
             `${this.galadon}, you can go ahead and follow the trail to ${this.infernal} ${this.crater} ${this.peak}, we can't waste much time.`,
             this.addImage('valdorinNormal', 1, 1300, 79, 590, 610),
         );
