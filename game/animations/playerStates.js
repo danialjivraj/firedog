@@ -161,7 +161,11 @@ export class Jumping extends State {
             this.game.player.setState(states.FALLING, 1);
         } else if (input.includes('s') && this.game.player.divingTimer >= this.game.player.divingCooldown) {
             this.game.player.divingTimer = 0;
-            this.game.player.setState(states.DIVING, 0);
+            if (input.includes('a') || input.includes('d')) {
+                this.game.player.setState(states.DIVING, 1);
+            } else {
+                this.game.player.setState(states.DIVING, 0);
+            }
         } else if (this.game.input.enterOrRightClick(input) && !this.game.cabin.isFullyVisible) {
             if (this.game.player.energyReachedZero === false) {
                 this.game.player.setState(states.ROLLING, 2);
@@ -262,7 +266,15 @@ export class Rolling extends State {
                         this.game.player.vy -= 27;
                     } else if (input.includes('s') && this.game.player.divingTimer >= this.game.player.divingCooldown && !this.game.player.onGround()) {
                         this.game.player.divingTimer = 0;
-                        this.game.player.setState(states.DIVING, 0);
+                        if (input.includes('a') || input.includes('d')) {
+                            if (this.game.player.isBluePotionActive) {
+                                this.game.player.setState(states.DIVING, 4);
+                            } else {
+                                this.game.player.setState(states.DIVING, 2);
+                            }
+                        } else {
+                            this.game.player.setState(states.DIVING, 0);
+                        }
                     }
                 }
             } else if (this.game.player.energyReachedZero === true && this.game.player.isUnderwater === false) {
