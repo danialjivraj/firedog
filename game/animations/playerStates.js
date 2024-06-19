@@ -217,7 +217,11 @@ export class Falling extends State {
             this.game.player.setState(states.RUNNING, 1);
         } else if (input.includes('s') && this.game.player.divingTimer >= this.game.player.divingCooldown) {
             this.game.player.divingTimer = 0;
-            this.game.player.setState(states.DIVING, 0);
+            if (input.includes('a') || input.includes('d')) {
+                this.game.player.setState(states.DIVING, 1);
+            } else {
+                this.game.player.setState(states.DIVING, 0);
+            }
         } if (this.game.input.enterOrRightClick(input) && this.game.isElyvorgFullyVisible && this.game.player.onGround()) {
             this.game.player.setState(states.STANDING, 0);
         } else if (this.game.input.enterOrRightClick(input) && !this.game.cabin.isFullyVisible) {
