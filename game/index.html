@@ -104,6 +104,7 @@
 <audio id="dreamSoundInGame" src="assets/audio/player/dreamSoundInGame.mp3" preload="auto"></audio>
 <audio id="invisibleInSFX" src="assets/audio/player/invisibleInSFX.mp3" preload="auto"></audio>
 <audio id="invisibleOutSFX" src="assets/audio/player/invisibleOutSFX.mp3" preload="auto"></audio>
+<audio id="barkSound" src="assets/audio/player/barkSound.mp3" preload="auto"></audio>
 <!-- collision audio -->
 <audio id="poofSound" src="assets/audio/collision/poofSound.mp3" preload="auto"></audio>
 <audio id="explosionCollision" src="assets/audio/collision/explosionCollision.mp3" preload="auto"></audio>
@@ -248,6 +249,7 @@
 <img id="howToPlay7" src="assets/menu/howToPlayImages/howToPlay7.png">
 <img id="howToPlay8" src="assets/menu/howToPlayImages/howToPlay8.png">
 <img id="howToPlay9" src="assets/menu/howToPlayImages/howToPlay9.png">
+<img id="howToPlay10" src="assets/menu/howToPlayImages/howToPlay10.png">
 <!-- ability UI -->
     <!-- firedog UI -->
     <img id="fireballUI" src="assets/abilityUI/firedog/fireballUI.png">
@@ -472,56 +474,57 @@
 <img id="map6rocks1" src="assets/mapsBackground/Map6/map6rocks1.png">
 <img id="map6rocks2" src="assets/mapsBackground/Map6/map6rocks2.png">
 <img id="map6cactus" src="assets/mapsBackground/Map6/map6cactus.png">
-<!-- animations -->
-    <!-- collision animations -->
-    <img id="singleCoin" src="assets/animations/collisionAnimations/singleCoin.png">
-    <img id="collisionAnimation" src="assets/animations/collisionAnimations/collisionAnimation.png">
-    <img id="explosionCollisionAnimation" src="assets/animations/collisionAnimations/explosionCollisionAnimation.png">
-    <img id="meteorExplosion" src="assets/animations/collisionAnimations/meteorExplosion.png">
-    <img id="electricityCollision" src="assets/animations/collisionAnimations/electricityCollision.png">
-    <img id="darkExplosion" src="assets/animations/collisionAnimations/darkExplosion.png">
-    <img id="redFireballCollision" src="assets/animations/collisionAnimations/redFireballCollision.png">
-    <img id="purpleFireballCollision" src="assets/animations/collisionAnimations/purpleFireballCollision.png">
-    <img id="blueCollisionAnimation" src="assets/animations/collisionAnimations/blueCollisionAnimation.png">
-    <img id="poisonSpitSplash" src="assets/animations/collisionAnimations/poisonSpitSplash.png">
-    <img id="poisonDropCollision" src="assets/animations/collisionAnimations/poisonDropCollision.png">
-    <img id="blackInk" src="assets/animations/collisionAnimations/blackInk.png">
-    <img id="inkBombCollision" src="assets/animations/collisionAnimations/inkBombCollision.png">
-    <img id="blood" src="assets/animations/collisionAnimations/blood.png">
-    <img id="raindropSplash" src="assets/animations/collisionAnimations/raindropSplash.png">
-    <img id="poisonDropGroundCollision" src="assets/animations/collisionAnimations/poisonDropGroundCollision.png">
-    <!-- ink -->
-    <img id="paint_splatter_1" src="assets/animations/ink/paint-splatter-1.png">
-    <img id="paint_splatter_2" src="assets/animations/ink/paint-splatter-2.png">
-    <img id="paint_splatter_3" src="assets/animations/ink/paint-splatter-3.png">
-    <img id="paint_splatter_4" src="assets/animations/ink/paint-splatter-4.png">
-    <img id="paint_splatter_5" src="assets/animations/ink/paint-splatter-5.png">
-    <img id="paint_splatter_6" src="assets/animations/ink/paint-splatter-6.png">
-    <img id="paint_splatter_7" src="assets/animations/ink/paint-splatter-7.png">
-    <img id="paint_splatter_8" src="assets/animations/ink/paint-splatter-8.png">
-    <img id="paint_splatter_9" src="assets/animations/ink/paint-splatter-9.png">
-    <img id="paint_splatter_10" src="assets/animations/ink/paint-splatter-10.png">
-    <img id="paint_splatter_11" src="assets/animations/ink/paint-splatter-11.png">
-    <img id="paint_splatter_12" src="assets/animations/ink/paint-splatter-12.png">
-    <img id="paint_splatter_13" src="assets/animations/ink/paint-splatter-13.png">
-    <img id="paint_splatter_14" src="assets/animations/ink/paint-splatter-14.png">
-    <img id="paint_splatter_15" src="assets/animations/ink/paint-splatter-15.png">
-    <img id="paint_splatter_16" src="assets/animations/ink/paint-splatter-16.png">
-    <img id="paint_splatter_17" src="assets/animations/ink/paint-splatter-17.png">
-    <img id="paint_splatter_18" src="assets/animations/ink/paint-splatter-18.png">
-    <!-- fish -->
-    <img id="jellyfish" src="assets/animations/fish/jellyfish.png">
-    <img id="fish" src="assets/animations/fish/fish.png">
-    <img id="fish2" src="assets/animations/fish/fish2.png">
-    <img id="fish3" src="assets/animations/fish/fish3.png">
-    <img id="fish4" src="assets/animations/fish/fish4.png">
-    <img id="fish5" src="assets/animations/fish/fish5.png">
-    <img id="fish6" src="assets/animations/fish/fish6.png">
-    <img id="fish7" src="assets/animations/fish/fish7.png">
-    <img id="fish8" src="assets/animations/fish/fish8.png">
-    <img id="fish9" src="assets/animations/fish/fish9.png">
-    <img id="fish10" src="assets/animations/fish/fish10.png">
-    <img id="fish11" src="assets/animations/fish/fish11.png">
+<!-- fish -->
+<img id="jellyfish" src="assets/mapsBackground/fish/jellyfish.png">
+<img id="fish" src="assets/mapsBackground/fish/fish.png">
+<img id="fish2" src="assets/mapsBackground/fish/fish2.png">
+<img id="fish3" src="assets/mapsBackground/fish/fish3.png">
+<img id="fish4" src="assets/mapsBackground/fish/fish4.png">
+<img id="fish5" src="assets/mapsBackground/fish/fish5.png">
+<img id="fish6" src="assets/mapsBackground/fish/fish6.png">
+<img id="fish7" src="assets/mapsBackground/fish/fish7.png">
+<img id="fish8" src="assets/mapsBackground/fish/fish8.png">
+<img id="fish9" src="assets/mapsBackground/fish/fish9.png">
+<img id="fish10" src="assets/mapsBackground/fish/fish10.png">
+<img id="fish11" src="assets/mapsBackground/fish/fish11.png">
+<img id="shark" src="assets/mapsBackground/fish/shark.png">
+<img id="whale" src="assets/mapsBackground/fish/whale.png">
+<!-- ink -->
+<img id="paint_splatter_1" src="assets/mapsBackground/ink/paint-splatter-1.png">
+<img id="paint_splatter_2" src="assets/mapsBackground/ink/paint-splatter-2.png">
+<img id="paint_splatter_3" src="assets/mapsBackground/ink/paint-splatter-3.png">
+<img id="paint_splatter_4" src="assets/mapsBackground/ink/paint-splatter-4.png">
+<img id="paint_splatter_5" src="assets/mapsBackground/ink/paint-splatter-5.png">
+<img id="paint_splatter_6" src="assets/mapsBackground/ink/paint-splatter-6.png">
+<img id="paint_splatter_7" src="assets/mapsBackground/ink/paint-splatter-7.png">
+<img id="paint_splatter_8" src="assets/mapsBackground/ink/paint-splatter-8.png">
+<img id="paint_splatter_9" src="assets/mapsBackground/ink/paint-splatter-9.png">
+<img id="paint_splatter_10" src="assets/mapsBackground/ink/paint-splatter-10.png">
+<img id="paint_splatter_11" src="assets/mapsBackground/ink/paint-splatter-11.png">
+<img id="paint_splatter_12" src="assets/mapsBackground/ink/paint-splatter-12.png">
+<img id="paint_splatter_13" src="assets/mapsBackground/ink/paint-splatter-13.png">
+<img id="paint_splatter_14" src="assets/mapsBackground/ink/paint-splatter-14.png">
+<img id="paint_splatter_15" src="assets/mapsBackground/ink/paint-splatter-15.png">
+<img id="paint_splatter_16" src="assets/mapsBackground/ink/paint-splatter-16.png">
+<img id="paint_splatter_17" src="assets/mapsBackground/ink/paint-splatter-17.png">
+<img id="paint_splatter_18" src="assets/mapsBackground/ink/paint-splatter-18.png">
+<!-- collision animations -->
+<img id="singleCoin" src="assets/collisionAnimations/singleCoin.png">
+<img id="collisionAnimation" src="assets/collisionAnimations/collisionAnimation.png">
+<img id="explosionCollisionAnimation" src="assets/collisionAnimations/explosionCollisionAnimation.png">
+<img id="meteorExplosion" src="assets/collisionAnimations/meteorExplosion.png">
+<img id="electricityCollision" src="assets/collisionAnimations/electricityCollision.png">
+<img id="darkExplosion" src="assets/collisionAnimations/darkExplosion.png">
+<img id="redFireballCollision" src="assets/collisionAnimations/redFireballCollision.png">
+<img id="purpleFireballCollision" src="assets/collisionAnimations/purpleFireballCollision.png">
+<img id="blueCollisionAnimation" src="assets/collisionAnimations/blueCollisionAnimation.png">
+<img id="poisonSpitSplash" src="assets/collisionAnimations/poisonSpitSplash.png">
+<img id="poisonDropCollision" src="assets/collisionAnimations/poisonDropCollision.png">
+<img id="blackInk" src="assets/collisionAnimations/blackInk.png">
+<img id="inkBombCollision" src="assets/collisionAnimations/inkBombCollision.png">
+<img id="blood" src="assets/collisionAnimations/blood.png">
+<img id="raindropSplash" src="assets/collisionAnimations/raindropSplash.png">
+<img id="poisonDropGroundCollision" src="assets/collisionAnimations/poisonDropGroundCollision.png">
 <!-- cutscene images -->
     <!-- background images -->
         <img id="toBeContinued" src="assets/cutscenes/background/toBeContinued.png">
@@ -592,6 +595,8 @@
     <img id="scrollLetterMessageGaladonClosed" src="assets/cutscenes/scrollLetterMessageGaladonClosed.png">
     <img id="crypticTokenShining" src="assets/cutscenes/crypticTokenShining.png">
     <img id="textBox" src="assets/cutscenes/textBox.png">
+    <img id="reminderToSkipWithTab" src="assets/cutscenes/reminderToSkipWithTab.png">
+    <img id="enterToTalkToPenguini" src="assets/cutscenes/enterToTalkToPenguini.png">
     <!-- character images -->
         <!-- firedog images -->
             <!-- default images -->

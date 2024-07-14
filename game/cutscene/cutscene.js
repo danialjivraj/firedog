@@ -12,7 +12,7 @@ export class Cutscene {
         this.lastSoundPlayed = false;
         this.lastSound2Played = false;
         this.playSound2OnDotPause = false;
-        this.silent = false;
+        this.dontShowTextBoxAndSound = false;
         this.dialogueText = '';
         this.isEnterPressed = false;
         this.isTabPressed = true;
@@ -26,7 +26,6 @@ export class Cutscene {
         this.halfASecond = 500;
         this.groundShaking = false;
         this.playerCoins = this.game.coins;
-        this.playerWinningCoins = this.game.winningCoins;
         this.textBoxWidth = 870;
         this.coinText = "coin";
         this.coinsText = "coins";
@@ -66,7 +65,7 @@ export class Cutscene {
         this.genesis = "Genesis";
         this.characterColors = {
             // coin colours
-            [this.playerWinningCoins]: 'orange',
+            [this.game.winningCoins]: 'orange',
             [this.playerCoins]: 'orange',
             [this.coinText]: 'orange',
             [this.coinsText]: 'orange',
@@ -115,6 +114,8 @@ export class Cutscene {
             [this.temporal]: 'GoldenRod',
             [this.timber]: 'GoldenRod',
         };
+        this.reminderImage = document.getElementById("reminderToSkipWithTab");
+        this.reminderImageStartTime = null;
     }
 
     splitDialogueIntoWords(dialogueText) {
@@ -158,6 +159,8 @@ export class Cutscene {
 
         this.dialogueIndex++;
         this.addEventListeners();
+
+        this.reminderImageStartTime = performance.now();
     }
 
     draw(context) {
@@ -202,9 +205,15 @@ export class Cutscene {
                         context.globalAlpha = 1;
                     });
                 }
-                if (this.silent === false) {
+                if (this.dontShowTextBoxAndSound === false) {
                     context.drawImage(document.getElementById("textBox"), 0 + 15, this.game.height - 70, this.textBoxWidth, 96);
                 }
+            }
+
+            const currentTime = performance.now();
+            if (this.reminderImageStartTime !== null && (currentTime - this.reminderImageStartTime) < 7000 &&
+                (this.game.cutsceneActive && !this.game.talkToPenguin && !this.game.talkToElyvorg)) {
+                context.drawImage(this.reminderImage, this.game.width - 500, this.game.height - 100);
             }
 
             const characterColor = this.characterColors[character] || 'white';
@@ -272,7 +281,7 @@ export class Cutscene {
 
             if (this.textIndex >= dialogue.length && !this.lastSoundPlayed) {
                 this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
-                if (!this.lastSound2Played && this.silent === false) {
+                if (!this.lastSound2Played && this.dontShowTextBoxAndSound === false) {
                     this.playEightBitSound('bit2');
                     this.lastSound2Played = true;
                 }

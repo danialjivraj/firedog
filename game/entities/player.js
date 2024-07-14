@@ -652,7 +652,11 @@ export class Player {
     }
     checkIfFiredogIsDead() {
         if (this.game.lives <= 0) {
-            this.game.gameOver = true;
+            if (this.game.noDamageDuringTutorial) {
+                this.game.menu.levelDifficulty.setDifficulty(this.game.selectedDifficulty);
+            } else {
+                this.game.gameOver = true;
+            }
         }
         if (this.currentState.deathAnimation && this.isUnderwater) {
             if (this.game.player.onGround()) {
@@ -1081,7 +1085,7 @@ export class CollisionLogic {
                     }
                 }
                 break;
-            // can only damage during diving state enemies
+            // red enemies
             case enemy instanceof KarateCroco:
             case enemy instanceof Tauro:
             case enemy instanceof SpearFish:
@@ -1212,7 +1216,7 @@ export class CollisionLogic {
                 }
                 this.player.collisionAnimationBasedOnEnemy(enemy);
                 break;
-            // can only damage during diving state enemies
+            // red enemies
             case enemy instanceof Tauro:
             case enemy instanceof KarateCroco:
             case enemy instanceof SpearFish:

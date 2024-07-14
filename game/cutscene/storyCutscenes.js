@@ -696,7 +696,7 @@ export class StoryCutscene extends Cutscene {
                         }, this.halfASecond * 2 + 100);
                     } else if (this.dialogueIndex === 67) {
                         this.removeEventListeners();
-                        this.silent = true;
+                        this.dontShowTextBoxAndSound = true;
                         this.game.audioHandler.cutsceneMusic.fadeOutAndStop('groundShakingSound');
                         this.cutsceneBackgroundChange(this.halfASecond * 4, this.halfASecond * 2, this.halfASecond * 7);
                         setTimeout(() => {

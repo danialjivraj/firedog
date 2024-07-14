@@ -17,6 +17,10 @@ export class Reset {
         if (this.game.currentCutscene !== null) {
             this.game.currentCutscene.removeEventListeners();
         }
+        // tutorial
+        this.game.tutorial.elapsedTime = 0;
+        this.game.tutorial.currentStepIndex = 0;
+        this.game.tutorial.tutorialPause = true;
         // game variables
         this.game.speed = 0;
         this.game.time = 0;

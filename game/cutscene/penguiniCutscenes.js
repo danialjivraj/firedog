@@ -4,12 +4,12 @@ import { Cutscene } from "./cutscene.js";
 export class PenguiniCutscene extends Cutscene {
     constructor(game) {
         super(game);
+        this.game.talkToPenguinOneTimeOnly = false;
     }
 
     enterOrLeftClick(cutscene) {
         this.isEnterPressed = true;
         this.playSound2OnDotPause = false;
-        this.game.talkToPenguinOneTimeOnly = false;
 
         const cashOutDialogue = this.dialogue[this.dialogueIndex];
         if (cashOutDialogue.dialogue.includes("That's good enough, give me that!") && this.lastSound2Played) {
@@ -157,7 +157,7 @@ export class Map1PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //9
             `${this.penguini}`,
-            `I will need ${this.playerWinningCoins} ${this.coinsText}.`,
+            `I will need ${this.game.winningCoins} ${this.coinsText}.`,
             this.addImage(this.setfiredogSadBorder(), 0.7, 100, 400, 200, 200),
             this.addImage('penguinBatTalkNormalBorder', 1, 1400, 400, 200, 200),
         );
@@ -296,7 +296,7 @@ export class Map2PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //10
             `${this.penguini}`,
-            `I will need ${this.playerWinningCoins} ${this.coinsText} in my pocket this time fool!`,
+            `I will need ${this.game.winningCoins} ${this.coinsText} in my pocket this time fool!`,
             this.addImage(this.setfiredogPhewBorder(), 0.7, 100, 400, 200, 200),
             this.addImage('penguinBatTalkNormalBorder', 1, 1400, 400, 200, 200),
         );
@@ -446,7 +446,7 @@ export class Map3PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //13
             `${this.penguini}`,
-            `I will need ${this.playerWinningCoins} ${this.coinsText} for you to get a trip inside this beast of a sub!`,
+            `I will need ${this.game.winningCoins} ${this.coinsText} for you to get a trip inside this beast of a sub!`,
             this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
             this.addImage('penguinBatTalkNormalBorder', 1, 1200, 400, 200, 200),
         );
@@ -555,7 +555,7 @@ export class Map4PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //8
             `${this.penguini}`,
-            `I will need ${this.playerWinningCoins} ${this.coinsText} for you to stay in this verdant cabin!`,
+            `I will need ${this.game.winningCoins} ${this.coinsText} for you to stay in this verdant cabin!`,
             this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
             this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
         );
@@ -736,7 +736,7 @@ export class Map5PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //14
             `${this.penguini}`,
-            `I will need ${this.playerWinningCoins} ${this.coinsText} for you to stay in this summery cabin!`,
+            `I will need ${this.game.winningCoins} ${this.coinsText} for you to stay in this summery cabin!`,
             this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
             this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
         );

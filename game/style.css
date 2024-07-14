@@ -28,7 +28,7 @@ body {
     /* saving images */ 
     #savingAnimation, #savingBookAnimation, #deleteProgressAnimation, #deleteProgressBookAnimation,  
 /* how to play */ 
-#howToPlay1, #howToPlay2, #howToPlay3, #howToPlay4, #howToPlay5, #howToPlay6, #howToPlay7, #howToPlay8, #howToPlay9, 
+#howToPlay1, #howToPlay2, #howToPlay3, #howToPlay4, #howToPlay5, #howToPlay6, #howToPlay7, #howToPlay8, #howToPlay9, #howToPlay10, 
 /* ability UI */
     /* firedog UI */
     #fireballUI, #fireballRedPotionUI, #divingUI, #fireballUIWhiteBorder, #divingUIWhiteBorder, #invisibleUI, #invisibleUIWhiteBorder, 
@@ -80,14 +80,13 @@ body {
 #map5Background, #map5Ground, #map5Flowers1, #map5Flowers2, #map5Bush1, #map5Bush2, #map5Trees1, #map5Trees2, #map5Trees3, #map5Trees4, #map5Trees5, 
 /* map6 */ 
 #map6Background, #map6Ground, #map6spikeStones, #map6rocks1, #map6rocks2, #map6cactus, 
-/* animations */ 
-    /* collision animations */ 
-    #singleCoin, #collisionAnimation, #explosionCollisionAnimation, #darkExplosion, #redFireballCollision, #purpleFireballCollision, #meteorExplosion, #electricityCollision, #blueCollisionAnimation, #poisonSpitSplash, #poisonDropCollision, #blackInk, #inkBombCollision, #blood, #raindropSplash, #poisonDropGroundCollision, 
-    /* ink */ 
-    #paint_splatter_1, #paint_splatter_2, #paint_splatter_3, #paint_splatter_4, #paint_splatter_5, #paint_splatter_6, #paint_splatter_7, #paint_splatter_8, #paint_splatter_9, 
-    #paint_splatter_10, #paint_splatter_11, #paint_splatter_12, #paint_splatter_13, #paint_splatter_14, #paint_splatter_15, #paint_splatter_16, #paint_splatter_17, #paint_splatter_18,
-    /* fish */ 
-    #jellyfish, #fish, #fish2, #fish3, #fish4, #fish5, #fish6, #fish7, #fish8, #fish9, #fish10, #fish11, 
+/* fish */ 
+#jellyfish, #fish, #fish2, #fish3, #fish4, #fish5, #fish6, #fish7, #fish8, #fish9, #fish10, #fish11, #shark, #whale, 
+/* ink */ 
+#paint_splatter_1, #paint_splatter_2, #paint_splatter_3, #paint_splatter_4, #paint_splatter_5, #paint_splatter_6, #paint_splatter_7, #paint_splatter_8, #paint_splatter_9, 
+#paint_splatter_10, #paint_splatter_11, #paint_splatter_12, #paint_splatter_13, #paint_splatter_14, #paint_splatter_15, #paint_splatter_16, #paint_splatter_17, #paint_splatter_18,
+/* collision animations */ 
+#singleCoin, #collisionAnimation, #explosionCollisionAnimation, #darkExplosion, #redFireballCollision, #purpleFireballCollision, #meteorExplosion, #electricityCollision, #blueCollisionAnimation, #poisonSpitSplash, #poisonDropCollision, #blackInk, #inkBombCollision, #blood, #raindropSplash, #poisonDropGroundCollision, 
 /* cutscene images */
     /* background images */
     #toBeContinued, #madeByDanial,
@@ -105,7 +104,7 @@ body {
         /* map6 cutscene images */
             #map6VolcanoWalkUp, #map6insideCaveLava, #map6insideCaveLavaEarthquake, #map6insideCaveLavaEarthquakeHat, #map6insideCaveLavaEarthquakeCholo, #map6insideCaveLavaEarthquakeZabka, #map6insideCaveLavaEarthquakeShiny, #map6elyvorgTokenPlaceFind, #map6elyvorgTokenPlace, #map6elyvorgTokenPlaceActive, #map6stone, #map6stone2, #map6stone3, 
     /* normal images */
-    #scrollLetterMessageGaladon, #scrollLetterMessageGaladonClosed, #crypticTokenShining, #textBox, 
+    #scrollLetterMessageGaladon, #scrollLetterMessageGaladonClosed, #crypticTokenShining, #textBox, #reminderToSkipWithTab, #enterToTalkToPenguini, 
     /* character images */
         /* firedog */
             /* default */

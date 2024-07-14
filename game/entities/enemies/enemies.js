@@ -2233,6 +2233,7 @@ export class VolcanoWasp extends Bee {
 export class RedHedgehog extends MovingGroundEnemy {
     constructor(game) {
         super(game, 125, 85, 2, 'redHedgehogNormal');
+        this.lives = 2;
         this.state = "idle";
         this.fps = 3;
         this.frameInterval = 1000 / this.fps;

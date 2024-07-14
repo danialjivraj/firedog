@@ -20,6 +20,7 @@ import { GameOverMenu } from "./menu/gameOverMenu.js";
 //ui
 import { InputHandler } from "./interface/input.js";
 import { UI } from "./interface/UI.js";
+import { Tutorial } from "./interface/tutorial.js";
 import { Map3, Map6 } from './background/background.js';
 //menus
 import { MainMenu } from "./menu/mainMenu.js";
@@ -109,6 +110,9 @@ window.addEventListener('load', function () {
                 explosionSFX: new ExplosionSFXAudioHandler(this),
                 powerUpAndDownSFX: new PowerUpAndDownSFXAudioHandler(this)
             };
+            this.isTutorialActive = true;
+            this.noDamageDuringTutorial = false;
+            this.tutorial = new Tutorial(this);
             this.menu = {
                 main: new MainMenu(this),
                 forestMap: new ForestMapMenu(this),
@@ -174,7 +178,7 @@ window.addEventListener('load', function () {
             // loading game state
             this.loadGameState();
         }
-// ------------------------------------------------------------ Game Class logic ------------------------------------------------------------
+        // ------------------------------------------------------------ Game Class logic ------------------------------------------------------------
         updateMapSelection(i) {
             if (i >= 1 && i <= this.mapSelected.length) {
                 this.mapSelected = Array(6).fill(false);
@@ -221,7 +225,16 @@ window.addEventListener('load', function () {
         }
 
         update(deltaTime) {
-            if (!this.menu.pause.isPaused) {
+            //handle tutorial
+            if (this.isTutorialActive && this.mapSelected[1]) {
+                this.tutorial.update(deltaTime);
+                this.noDamageDuringTutorial = true;
+            } else {
+                this.tutorial.tutorialPause = false;
+                this.noDamageDuringTutorial = false;
+            }
+
+            if (!this.menu.pause.isPaused && this.tutorial.tutorialPause === false) {
                 if (this.cabin.isFullyVisible) {
                     this.time = this.time;
                 } else if (!this.gameOver) {
@@ -235,15 +248,19 @@ window.addEventListener('load', function () {
                 if (!this.cabin.isFullyVisible) {
                     //enemy
                     if (this.enemyTimer > this.enemyInterval) {
-                        this.addEnemy();
+                        if (this.isTutorialActive === false || this.isTutorialActive && this.mapSelected[1] === false) {
+                            this.addEnemy();
+                        }
                         this.enemyTimer = 0;
                     } else {
                         this.enemyTimer += deltaTime;
                     }
                     //other entities
                     if (this.nonEnemyTimer > this.nonEnemyInterval) {
-                        this.addPowerUp();
-                        this.addPowerDown();
+                        if (this.isTutorialActive === false || this.isTutorialActive && this.mapSelected[1] === false) {
+                            this.addPowerUp();
+                            this.addPowerDown();
+                        }
                         this.addCabin();
                         this.addPenguin();
                         this.nonEnemyTimer = 0;
@@ -354,7 +371,7 @@ window.addEventListener('load', function () {
                     this.elyvorgPreFight = true;
                     this.elyvorgPostFight = false;
                     this.elyvorgDialogueBeforeDialoguePlayOnce = false;
-                    this.player.energy += 100;
+                    this.player.energy = 100;
                     this.player.isInvisible = false;
                     this.player.invisibleTimer = this.player.invisibleCooldown;
                     this.player.invisibleActiveCooldownTimer = 5000;
@@ -369,7 +386,7 @@ window.addEventListener('load', function () {
                     this.elyvorgPostFight = true;
                     this.elyvorgDialogueAfterDialoguePlayOnce = false;
                     this.elyvorgDialogueAfterDialogueLeaving = true;
-                    this.player.energy += 100;
+                    this.player.energy = 100;
                     const map6ElyvorgAfterFightCutscene = new Map6ElyvorgIngameCutsceneAfterFight(this);
                     this.startCutscene(map6ElyvorgAfterFightCutscene);
                     map6ElyvorgAfterFightCutscene.displayDialogue(Map6ElyvorgIngameCutsceneAfterFight);
@@ -469,6 +486,10 @@ window.addEventListener('load', function () {
             this.cutscenes.forEach(cutscene => {
                 cutscene.draw(context);
             });
+
+            if (this.isTutorialActive && this.mapSelected[1]) {
+                this.tutorial.draw(context);
+            }
 
             this.UI.draw(context);
         }
@@ -641,11 +662,12 @@ window.addEventListener('load', function () {
                 this.talkToPenguin = true;
             }
         }
-// ------------------------------------------------------------ Saving logic ------------------------------------------------------------
+        // ------------------------------------------------------------ Saving logic ------------------------------------------------------------
         saveGameState() {
             const gameState = {
                 mapSelected: this.mapSelected,
                 coins: this.coins,
+                isTutorialActive: this.isTutorialActive,
                 map1Unlocked: this.map1Unlocked,
                 map2Unlocked: this.map2Unlocked,
                 map3Unlocked: this.map3Unlocked,
@@ -656,15 +678,16 @@ window.addEventListener('load', function () {
                 audioSettingsState: this.menu.audioSettings.getState(),
                 ingameAudioSettingsState: this.menu.ingameAudioSettings.getState(),
                 currentSkin: this.menu.skins.currentSkin.id,
-                selectedDifficulty: this.selectedDifficulty
+                selectedDifficulty: this.selectedDifficulty,
             };
             localStorage.setItem('gameState', JSON.stringify(gameState));
         }
         loadGameState() {
             const savedGameState = localStorage.getItem('gameState');
-            
+
             if (savedGameState) {
                 const gameState = JSON.parse(savedGameState);
+                this.isTutorialActive = gameState.isTutorialActive !== undefined ? gameState.isTutorialActive : this.isTutorialActive;
                 this.map1Unlocked = gameState.map1Unlocked !== undefined ? gameState.map1Unlocked : this.map1Unlocked;
                 this.map2Unlocked = gameState.map2Unlocked !== undefined ? gameState.map2Unlocked : this.map2Unlocked;
                 this.map3Unlocked = gameState.map3Unlocked !== undefined ? gameState.map3Unlocked : this.map3Unlocked;
@@ -689,6 +712,7 @@ window.addEventListener('load', function () {
         }
         clearSavedData() {
             localStorage.removeItem('gameState');
+            this.isTutorialActive = true;
 
             this.map1Unlocked = true;
             this.map2Unlocked = false;
@@ -712,7 +736,7 @@ window.addEventListener('load', function () {
             });
         }
     }
-// ------------------------------------------------------------ Game Function ------------------------------------------------------------
+    // ------------------------------------------------------------ Game Function ------------------------------------------------------------
     const game = new Game(canvas.width, canvas.height);
     let lastTime = 0;
 

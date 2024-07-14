@@ -25,8 +25,19 @@ export class InputHandler {
                 }
             }
 
+            if (e.key === 'b' && this.game.isPlayerInGame && this.game.menu.pause.isPaused === false && this.game.tutorialPause === false && this.game.gameOver === false) {
+                this.game.audioHandler.firedogSFX.playSound('barkSound');
+            }
+
             if (e.key === 'm') {
                 //this.game.debug = !this.game.debug; //uncomment for debug mode
+            }
+
+            if (e.key === 't' && this.game.currentMenu === this.game.menu.howToPlay) {
+                this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
+                this.game.isTutorialActive = !this.game.isTutorialActive;
+                this.game.tutorialPause = !this.game.tutorialPause;
+                this.game.saveGameState();
             }
 
             if (lowercaseKey === 'w' && this.game.player.isUnderwater) {
