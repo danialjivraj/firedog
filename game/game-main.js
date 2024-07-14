@@ -178,7 +178,7 @@ window.addEventListener('load', function () {
             // loading game state
             this.loadGameState();
         }
-        // ------------------------------------------------------------ Game Class logic ------------------------------------------------------------
+// ------------------------------------------------------------ Game Class logic ------------------------------------------------------------
         updateMapSelection(i) {
             if (i >= 1 && i <= this.mapSelected.length) {
                 this.mapSelected = Array(6).fill(false);
@@ -662,7 +662,7 @@ window.addEventListener('load', function () {
                 this.talkToPenguin = true;
             }
         }
-        // ------------------------------------------------------------ Saving logic ------------------------------------------------------------
+// ------------------------------------------------------------ Saving logic ------------------------------------------------------------
         saveGameState() {
             const gameState = {
                 mapSelected: this.mapSelected,
@@ -736,7 +736,7 @@ window.addEventListener('load', function () {
             });
         }
     }
-    // ------------------------------------------------------------ Game Function ------------------------------------------------------------
+// ------------------------------------------------------------ Game Function ------------------------------------------------------------
     const game = new Game(canvas.width, canvas.height);
     let lastTime = 0;
 

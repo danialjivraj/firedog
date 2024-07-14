@@ -205,7 +205,7 @@ export class Tutorial {
                 key: 'q',
                 condition: () => {
                     const meatSoldier = this.game.enemies.find(enemy => enemy instanceof RunningSkeleton);
-                    return this.isPlayerNearEnemy(meatSoldier, 1200) && this.game.player.fireballTimer >= this.game.player.fireballCooldown && this.game.player.energyReachedZero === false;
+                    return this.isPlayerNearEnemy(meatSoldier, 1200) && this.game.player.fireballTimer >= this.game.player.fireballCooldown && this.game.player.energyReachedZero === false && this.game.player.onGround();
                 },
                 timerDuration: 2000,
                 spawnEnemy: (deltaTime) => {
