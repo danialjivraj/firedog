@@ -1,4 +1,4 @@
-import { MeatSoldier, Piper, RunningSkeleton, SpearFish } from "../entities/enemies/enemies.js";
+import { FlyEnemy, MeatSoldier, Piper, RunningSkeleton, SpearFish } from "../entities/enemies/enemies.js";
 
 export class Tutorial {
     constructor(game) {
@@ -38,10 +38,10 @@ export class Tutorial {
                 message: "To sit down \npress S!",
                 key: 's',
                 condition: () => this.game.player.onGround(),
-                timerDuration: 0
+                timerDuration: 500
             },
             {
-                message: "That's a Meat Soldier up ahead!\nHold Enter to kill him!\nKeep in mind your Energy will keep \ndraining while you hold the key!",
+                message: "That's a Meat Soldier up ahead!\nLet's use Roll Attack!\nHold Enter to kill him!\nKeep in mind your Energy will keep \ndraining while you hold the key!",
                 key: 'Enter',
                 condition: () => {
                     const meatSoldier = this.game.enemies.find(enemy => enemy instanceof MeatSoldier);
@@ -49,19 +49,19 @@ export class Tutorial {
                 },
                 timerDuration: 2000,
                 spawnEnemy: (deltaTime) => {
-                    if (this.game.enemies.length < 1) {
-                        if (this.spawnTimer === undefined) {
-                            this.spawnTimer = 0;
-                        }
-
-                        this.spawnTimer += deltaTime;
-
-                        if (this.spawnTimer >= 2000) {
-                            const newEnemy = new MeatSoldier(this.game);
-                            this.game.enemies.push(newEnemy);
-                            this.spawnTimer = undefined;
-                        }
-                    }
+                    this.createSpawnEnemy(MeatSoldier, deltaTime);
+                }
+            },
+            {
+                message: "That's a Dotter up ahead!\nLet's use Roll Attack while jumping this time!\nPress W to jump and once you're near the enemy, hold Enter!",
+                key: 'w',
+                condition: () => {
+                    const meatSoldier = this.game.enemies.find(enemy => enemy instanceof FlyEnemy);
+                    return this.isPlayerNearEnemy(meatSoldier, 1200) && this.game.player.energyReachedZero === false;
+                },
+                timerDuration: 2000,
+                spawnEnemy: (deltaTime) => {
+                    this.createSpawnEnemy(FlyEnemy, deltaTime, this.game.height - 400);
                 }
             },
             {
@@ -73,19 +73,7 @@ export class Tutorial {
                 },
                 timerDuration: 3000,
                 spawnEnemy: (deltaTime) => {
-                    if (this.game.enemies.length < 1) {
-                        if (this.spawnTimer === undefined) {
-                            this.spawnTimer = 0;
-                        }
-
-                        this.spawnTimer += deltaTime;
-
-                        if (this.spawnTimer >= 2000) {
-                            const newEnemy = new MeatSoldier(this.game);
-                            this.game.enemies.push(newEnemy);
-                            this.spawnTimer = undefined;
-                        }
-                    }
+                    this.createSpawnEnemy(MeatSoldier, deltaTime);
                 }
             },
             {
@@ -99,19 +87,7 @@ export class Tutorial {
                 },
                 timerDuration: 0,
                 spawnEnemy: (deltaTime) => {
-                    if (this.game.enemies.length < 1) {
-                        if (this.spawnTimer === undefined) {
-                            this.spawnTimer = 0;
-                        }
-
-                        this.spawnTimer += deltaTime;
-
-                        if (this.spawnTimer >= 2000) {
-                            const newEnemy = new MeatSoldier(this.game);
-                            this.game.enemies.push(newEnemy);
-                            this.spawnTimer = undefined;
-                        }
-                    }
+                    this.createSpawnEnemy(MeatSoldier, deltaTime);
                 }
             },
             {
@@ -121,7 +97,7 @@ export class Tutorial {
                 timerDuration: 0
             },
             {
-                message: "Good job! Now you will try a more advanced way of using Dive Attack.\nPress A to go all the way to the left!",
+                message: "Good job!\nNow you will try a more advanced way of using Dive Attack.\nPress A to go all the way to the left!",
                 key: 'a',
                 condition: () => true,
                 timerDuration: 2000
@@ -135,19 +111,7 @@ export class Tutorial {
                 },
                 timerDuration: 3000,
                 spawnEnemy: (deltaTime) => {
-                    if (this.game.enemies.length < 1) {
-                        if (this.spawnTimer === undefined) {
-                            this.spawnTimer = 0;
-                        }
-
-                        this.spawnTimer += deltaTime;
-
-                        if (this.spawnTimer >= 2000) {
-                            const newEnemy = new MeatSoldier(this.game);
-                            this.game.enemies.push(newEnemy);
-                            this.spawnTimer = undefined;
-                        }
-                    }
+                    this.createSpawnEnemy(MeatSoldier, deltaTime);
                 }
             },
             {
@@ -161,19 +125,7 @@ export class Tutorial {
                 },
                 timerDuration: 0,
                 spawnEnemy: (deltaTime) => {
-                    if (this.game.enemies.length < 1) {
-                        if (this.spawnTimer === undefined) {
-                            this.spawnTimer = 0;
-                        }
-
-                        this.spawnTimer += deltaTime;
-
-                        if (this.spawnTimer >= 2000) {
-                            const newEnemy = new MeatSoldier(this.game);
-                            this.game.enemies.push(newEnemy);
-                            this.spawnTimer = undefined;
-                        }
-                    }
+                    this.createSpawnEnemy(MeatSoldier, deltaTime);
                 }
             },
             {
@@ -209,19 +161,7 @@ export class Tutorial {
                 },
                 timerDuration: 2000,
                 spawnEnemy: (deltaTime) => {
-                    if (this.game.enemies.length < 1) {
-                        if (this.spawnTimer === undefined) {
-                            this.spawnTimer = 0;
-                        }
-
-                        this.spawnTimer += deltaTime;
-
-                        if (this.spawnTimer >= 2000) {
-                            const newEnemy = new RunningSkeleton(this.game);
-                            this.game.enemies.push(newEnemy);
-                            this.spawnTimer = undefined;
-                        }
-                    }
+                    this.createSpawnEnemy(RunningSkeleton, deltaTime);
                 }
             },
             {
@@ -233,19 +173,7 @@ export class Tutorial {
                 },
                 timerDuration: 2000,
                 spawnEnemy: (deltaTime) => {
-                    if (this.game.enemies.length < 1) {
-                        if (this.spawnTimer === undefined) {
-                            this.spawnTimer = 0;
-                        }
-
-                        this.spawnTimer += deltaTime;
-
-                        if (this.spawnTimer >= 2000) {
-                            const newEnemy = new RunningSkeleton(this.game);
-                            this.game.enemies.push(newEnemy);
-                            this.spawnTimer = undefined;
-                        }
-                    }
+                    this.createSpawnEnemy(RunningSkeleton, deltaTime);
                 }
             },
             {
@@ -257,20 +185,7 @@ export class Tutorial {
                 },
                 timerDuration: 2000,
                 spawnEnemy: (deltaTime) => {
-                    if (this.game.enemies.length < 1) {
-                        if (this.spawnTimer === undefined) {
-                            this.spawnTimer = 0;
-                        }
-
-                        this.spawnTimer += deltaTime;
-
-                        if (this.spawnTimer >= 2000) {
-                            const newEnemy = new SpearFish(this.game);
-                            newEnemy.lives = 1;
-                            this.game.enemies.push(newEnemy);
-                            this.spawnTimer = undefined;
-                        }
-                    }
+                    this.createSpawnEnemy(SpearFish, deltaTime, null, { lives: 1 });
                 }
             },
             {
@@ -282,20 +197,7 @@ export class Tutorial {
                 },
                 timerDuration: 4000,
                 spawnEnemy: (deltaTime) => {
-                    if (this.game.enemies.length < 1) {
-                        if (this.spawnTimer === undefined) {
-                            this.spawnTimer = 0;
-                        }
-
-                        this.spawnTimer += deltaTime;
-
-                        if (this.spawnTimer >= 2000) {
-                            const newEnemy = new SpearFish(this.game);
-                            newEnemy.lives = 1;
-                            this.game.enemies.push(newEnemy);
-                            this.spawnTimer = undefined;
-                        }
-                    }
+                    this.createSpawnEnemy(SpearFish, deltaTime, null, { lives: 1 });
                 }
             },
             {
@@ -307,19 +209,7 @@ export class Tutorial {
                 },
                 timerDuration: 4000,
                 spawnEnemy: (deltaTime) => {
-                    if (this.game.enemies.length < 1) {
-                        if (this.spawnTimer === undefined) {
-                            this.spawnTimer = 0;
-                        }
-
-                        this.spawnTimer += deltaTime;
-
-                        if (this.spawnTimer >= 2000) {
-                            const newEnemy = new Piper(this.game);
-                            this.game.enemies.push(newEnemy);
-                            this.spawnTimer = undefined;
-                        }
-                    }
+                    this.createSpawnEnemy(Piper, deltaTime);
                 }
             },
             {
@@ -327,28 +217,13 @@ export class Tutorial {
                 key: 'e',
                 condition: () => {
                     const runningSkeleton = this.game.enemies.find(enemy => enemy instanceof RunningSkeleton);
+                    this.game.player.invisibleTimer = this.game.player.invisibleCooldown;
+                    this.game.player.isInvisible = false;
                     return this.isPlayerNearEnemy(runningSkeleton, 1200);
                 },
                 timerDuration: 3000,
                 spawnEnemy: (deltaTime) => {
-                    if (this.game.enemies.length < 1) {
-                        if (this.spawnTimer === undefined) {
-                            this.spawnTimer = 0;
-                        }
-                        this.game.player.invisibleTimer = this.game.player.invisibleCooldown;
-                        this.spawnTimer += deltaTime;
-
-                        if (this.spawnTimer >= 1000) {
-                            const newEnemy = new RunningSkeleton(this.game);
-                            this.game.enemies.push(newEnemy);
-                            this.spawnTimer = undefined;
-                        }
-                        if (this.spawnTimer >= 2000) {
-                            const newEnemy = new RunningSkeleton(this.game);
-                            this.game.enemies.push(newEnemy);
-                            this.spawnTimer = undefined;
-                        }
-                    }
+                    this.createSpawnEnemy(RunningSkeleton, deltaTime);
                 }
             },
             {
@@ -366,6 +241,28 @@ export class Tutorial {
         ];
     }
 
+    createSpawnEnemy(enemyClass, deltaTime, initialY = null, additionalConfig = {}) {
+        if (this.game.enemies.length < 1) {
+            if (this.spawnTimer === undefined) {
+                this.spawnTimer = 0;
+            }
+
+            this.spawnTimer += deltaTime;
+
+            if (this.spawnTimer >= 2000) {
+                const newEnemy = new enemyClass(this.game);
+                if (initialY !== null) {
+                    newEnemy.y = initialY;
+                }
+                if (additionalConfig) {
+                    Object.assign(newEnemy, additionalConfig);
+                }
+                this.game.enemies.push(newEnemy);
+                this.spawnTimer = undefined;
+            }
+        }
+    }
+    
     update(deltaTime) {
         if (this.game.menu.pause.isPaused) {
             return;
@@ -452,7 +349,7 @@ export class Tutorial {
                 'Red Enemy': { fill: 'red', stroke: 'black' },
                 'Stun Enemy': { fill: 'yellow', stroke: 'black' },
                 '1 Life': { fill: 'black', stroke: 'MediumSeaGreen' },
-                'How to Play Menu': { fill: 'LightSeaGreen', stroke: 'black' },
+                'How to Play': { fill: 'LightSeaGreen', stroke: 'black' },
                 //keys
                 'Q': { fill: 'orange', stroke: 'black' },
                 'E': { fill: 'orange', stroke: 'black' },
@@ -463,6 +360,7 @@ export class Tutorial {
                 'Enter': { fill: 'orange', stroke: 'black' },
                 //enemies
                 'Meat Soldier': { fill: 'FireBrick', stroke: 'black' },
+                'Dotter': { fill: 'FireBrick', stroke: 'black' },
                 'Skeleton Bomb': { fill: 'FireBrick', stroke: 'black' },
                 'Spear Fish': { fill: 'FireBrick', stroke: 'black' },
                 //abilities
@@ -475,7 +373,7 @@ export class Tutorial {
             lines.forEach((line, index) => {
                 const y = this.game.height / 2 - (lines.length - 1) * lineHeight / 2 + index * lineHeight;
 
-                const tokens = line.split(/(\b(?:Tutorial|Energy|Red Enemy|Stun Enemy|1 Life|How to Play Menu|Q|E|W|A|S|D|Enter|Meat Soldier|Skeleton Bomb|Dive Attack|Roll Attack|Fireball Attack|Invisible)\b|[^\w\s])/).filter(Boolean);
+                const tokens = line.split(/(\b(?:Tutorial|Energy|Red Enemy|Stun Enemy|1 Life|How to Play|Q|E|W|A|S|D|Enter|Meat Soldier|Dotter|Skeleton Bomb|Dive Attack|Roll Attack|Fireball Attack|Invisible)\b|[^\w\s])/).filter(Boolean);
 
                 let x = this.game.width / 2 - context.measureText(line).width / 2;
 
