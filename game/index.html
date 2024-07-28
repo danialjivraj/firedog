@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Love+Ya+Like+A+Sister&family=Pangolin&display=swap"
         rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="assets/howToPlay.png">
 
     <link rel="stylesheet" href="style.css">
@@ -21,6 +22,7 @@
 <audio id="soundtrack" src="assets/audio/menu/criminality.mp3"></audio>
 <audio id="optionSelectedSound" src="assets/audio/menu/optionSelectedSound.mp3"></audio>
 <audio id="mapOpening" src="assets/audio/menu/mapOpening.mp3"></audio>
+<audio id="bookFlip" src="assets/audio/menu/bookFlip.mp3"></audio>
 <audio id="shinySkinRizzSound" src="assets/audio/menu/shinySkinRizzSound.mp3" preload="auto"></audio>
 <!-- cutscene audio -->
     <!-- background audio -->
@@ -147,60 +149,61 @@
     <audio id="frozenSound" src="assets/audio/enemies/0projectiles/frozenSound.mp3" preload="auto"></audio>
     <audio id="staticSound" src="assets/audio/enemies/0projectiles/staticSound.mp3" preload="auto"></audio>
     <audio id="rockAttackSound" src="assets/audio/enemies/0projectiles/rockAttackSound.mp3" preload="auto"></audio>
-    <!-- goblin audio -->
-    <audio id="goblinDie" src="assets/audio/enemies/goblin/goblinDie.mp3" preload="auto"></audio>
-    <audio id="goblinStealing" src="assets/audio/enemies/goblin/goblinStealing.mp3" preload="auto"></audio>
-    <audio id="goblinRunSound" src="assets/audio/enemies/goblin/goblinRunSound.mp3" preload="auto"></audio>
-    <audio id="goblinJumpSound" src="assets/audio/enemies/goblin/goblinJumpSound.mp3" preload="auto"></audio>
-    <!-- smallFly audio -->
+    <!-- goblito audio -->
+    <audio id="goblinDie" src="assets/audio/enemies/goblito/goblinDie.mp3" preload="auto"></audio>
+    <audio id="goblinStealing" src="assets/audio/enemies/goblito/goblinStealing.mp3" preload="auto"></audio>
+    <audio id="goblinRunSound" src="assets/audio/enemies/goblito/goblinRunSound.mp3" preload="auto"></audio>
+    <audio id="goblinJumpSound" src="assets/audio/enemies/goblito/goblinJumpSound.mp3" preload="auto"></audio>
+    <!-- dotter, lilHornet, redFlyer, purpleFlyer, lazyMosquito audio -->
     <audio id="buzzingFly" src="assets/audio/enemies/smallFly/buzzingFly.mp3" preload="auto"></audio>
     <!-- meatSoldier audio -->
     <audio id="meatSoldierSound" src="assets/audio/enemies/meatSoldier/meatSoldierSound.mp3" preload="auto"></audio>
-    <!-- spinningEnemy audio -->
-    <audio id="spinningChainsaw" src="assets/audio/enemies/spinningEnemy/spinningChainsaw.mp3" preload="auto"></audio>
-    <!-- raven audio -->
-    <audio id="ravenCallAudio" src="assets/audio/enemies/raven/ravenCallAudio.mp3" preload="auto"></audio>
-    <audio id="ravenSingleFlap" src="assets/audio/enemies/raven/ravenSingleFlap.mp3" preload="auto"></audio>
-    <!-- ghost audio -->
-    <audio id="ghostHmAudio" src="assets/audio/enemies/ghost/ghostHmAudio.mp3" preload="auto"></audio>
-    <!-- bat audio -->
-    <audio id="batFlapAudio" src="assets/audio/enemies/bat/batFlapAudio.mp3" preload="auto"></audio>
+    <!-- abyssaw audio -->
+    <audio id="spinningChainsaw" src="assets/audio/enemies/abyssaw/spinningChainsaw.mp3" preload="auto"></audio>
+    <!-- ravengloom audio -->
+    <audio id="ravenCallAudio" src="assets/audio/enemies/ravengloom/ravenCallAudio.mp3" preload="auto"></audio>
+    <audio id="ravenSingleFlap" src="assets/audio/enemies/ravengloom/ravenSingleFlap.mp3" preload="auto"></audio>
+    <!-- walterTheGhost audio -->
+    <audio id="ghostHmAudio" src="assets/audio/enemies/walterTheGhost/ghostHmAudio.mp3" preload="auto"></audio>
+    <!-- ghobat audio -->
+    <audio id="ghobatFlapAudio" src="assets/audio/enemies/ghobat/ghobatFlapAudio.mp3" preload="auto"></audio>
     <!-- bee audio -->
     <audio id="beeBuzzing" src="assets/audio/enemies/bee/beeBuzzing.mp3" preload="auto"></audio>
+    <!-- angryBee, volcanoWasp audio -->
     <audio id="angryBeeBuzzing" src="assets/audio/enemies/bee/angryBeeBuzzing.mp3" preload="auto"></audio>
     <!-- doll audio -->
-    <audio id="auraSoundEffect" src="assets/audio/enemies/dollGhost/auraSoundEffect.mp3" preload="auto"></audio>
-    <audio id="dollHumming" src="assets/audio/enemies/dollGhost/dollHumming.mp3" preload="auto"></audio>
-    <!-- flyingBomber audio -->
-    <audio id="kiteSound" src="assets/audio/enemies/flyingBomber/kiteSound.mp3" preload="auto"></audio>
-    <audio id="throwingBombSound" src="assets/audio/enemies/flyingBomber/throwingBombSound.mp3" preload="auto"></audio>
-    <!-- nightPlant/greenPlant audio -->
-    <audio id="teethChatteringSound" src="assets/audio/enemies/nightPlant/teethChatteringSound.mp3" preload="auto"></audio>
-    <!-- skeleton audio -->
-    <audio id="fuseSound" src="assets/audio/enemies/skeleton/fuseSound.mp3" preload="auto"></audio>
-    <audio id="skeletonRattlingSound" src="assets/audio/enemies/skeleton/skeletonRattlingSound.mp3" preload="auto"></audio>
-    <!-- slug audio -->
+    <audio id="auraSoundEffect" src="assets/audio/enemies/dolly/auraSoundEffect.mp3" preload="auto"></audio>
+    <audio id="dollHumming" src="assets/audio/enemies/dolly/dollHumming.mp3" preload="auto"></audio>
+    <!-- jerry audio -->
+    <audio id="kiteSound" src="assets/audio/enemies/jerry/kiteSound.mp3" preload="auto"></audio>
+    <audio id="throwingBombSound" src="assets/audio/enemies/jerry/throwingBombSound.mp3" preload="auto"></audio>
+    <!-- duskPlant, bigGreener, petroPlant audio -->
+    <audio id="teethChatteringSound" src="assets/audio/enemies/plants/teethChatteringSound.mp3" preload="auto"></audio>
+    <!-- skulnap audio -->
+    <audio id="fuseSound" src="assets/audio/enemies/skulnap/fuseSound.mp3" preload="auto"></audio>
+    <audio id="skeletonRattlingSound" src="assets/audio/enemies/skulnap/skeletonRattlingSound.mp3" preload="auto"></audio>
+    <!-- sluggie, snailey audio -->
     <audio id="slimyWalkSound" src="assets/audio/enemies/slug/slimyWalkSound.mp3" preload="auto"></audio>
-    <!-- nightSpider audio -->
-    <audio id="nightSpiderSound" src="assets/audio/enemies/nightSpider/nightSpiderSound.mp3" preload="auto"></audio>
-    <!-- frog audio -->
-    <audio id="frogSound" src="assets/audio/enemies/frog/frogSound.mp3" preload="auto"></audio>
-    <audio id="landingJumpSound" src="assets/audio/enemies/frog/landingJumpSound.mp3" preload="auto"></audio>
-    <!-- purpleSpider audio -->
-    <audio id="purpleSpiderWalking" src="assets/audio/enemies/purpleSpider/purpleSpiderWalking.mp3" preload="auto"></audio>
-    <!-- orangeMonster audio -->
-    <audio id="orangeMonsterFlap" src="assets/audio/enemies/orangeMonster/orangeMonsterFlap.mp3" preload="auto"></audio>
-    <!-- verticalEnemyBat audio -->
-    <audio id="wooshBat" src="assets/audio/enemies/verticalEnemyBat/wooshBat.mp3" preload="auto"></audio>
-    <!-- verticalGhost audio -->
-    <audio id="verticalGhostSound" src="assets/audio/enemies/verticalGhost/verticalGhostSound.mp3" preload="auto"></audio>
-    <audio id="batPitch" src="assets/audio/enemies/verticalEnemyBat/batPitch.mp3" preload="auto"></audio>
+    <!-- silknoir audio -->
+    <audio id="nightSpiderSound" src="assets/audio/enemies/silknoir/nightSpiderSound.mp3" preload="auto"></audio>
+    <!-- zabkous audio -->
+    <audio id="frogSound" src="assets/audio/enemies/zabkous/frogSound.mp3" preload="auto"></audio>
+    <audio id="landingJumpSound" src="assets/audio/enemies/zabkous/landingJumpSound.mp3" preload="auto"></audio>
+    <!-- spidoLazer audio -->
+    <audio id="spidoLazerWalking" src="assets/audio/enemies/spidoLazer/spidoLazerWalking.mp3" preload="auto"></audio>
+    <!-- glidospike audio -->
+    <audio id="flyMonsterFlap" src="assets/audio/enemies/glidospike/flyMonsterFlap.mp3" preload="auto"></audio>
+    <!-- vertibat audio -->
+    <audio id="wooshBat" src="assets/audio/enemies/vertibat/wooshBat.mp3" preload="auto"></audio>
+    <audio id="batPitch" src="assets/audio/enemies/vertibat/batPitch.mp3" preload="auto"></audio>
+    <!-- ben audio -->
+    <audio id="verticalGhostSound" src="assets/audio/enemies/ben/verticalGhostSound.mp3" preload="auto"></audio>
     <!-- piranha audio -->
     <audio id="crunchSound" src="assets/audio/enemies/piranha/crunchSound.mp3" preload="auto"></audio>
     <!-- skeletonFish audio -->
     <audio id="skeletonCrunshSound" src="assets/audio/enemies/skeletonFish/skeletonCrunshSound.mp3" preload="auto"></audio>
     <!-- electicEel audio -->
-    <audio id="electricitySound" src="assets/audio/enemies/electricEel/electricitySound.mp3" preload="auto"></audio>
+    <audio id="electricitySound" src="assets/audio/enemies/voltzeel/electricitySound.mp3" preload="auto"></audio>
     <!-- jetFish audio -->
     <audio id="rocketLauncherSound" src="assets/audio/enemies/jetFish/rocketLauncherSound.mp3" preload="auto"></audio>
     <!-- spearFish audio -->
@@ -209,16 +212,16 @@
     <audio id="stomp" src="assets/audio/enemies/tauro/stomp.mp3" preload="auto"></audio>
     <!-- karateCroco audio -->
     <audio id="ahhhSound" src="assets/audio/enemies/karateCroco/ahhhSound.mp3" preload="auto"></audio>
-    <!-- purpleFly audio -->
-    <audio id="iceballThrowSound" src="assets/audio/enemies/purpleFly/iceballThrowSound.mp3" preload="auto"></audio>
-    <!-- powderFlower audio -->
-    <audio id="yellowLaserBeamSound" src="assets/audio/enemies/powderFlower/yellowLaserBeamSound.mp3" preload="auto"></audio>
+    <!-- purpleFlyer audio -->
+    <audio id="iceballThrowSound" src="assets/audio/enemies/purpleFlyer/iceballThrowSound.mp3" preload="auto"></audio>
+    <!-- sunflora audio -->
+    <audio id="yellowLaserBeamSound" src="assets/audio/enemies/sunflora/yellowLaserBeamSound.mp3" preload="auto"></audio>
     <!-- piper audio -->
     <audio id="extendingSound" src="assets/audio/enemies/piper/extendingSound.mp3" preload="auto"></audio>
     <!-- theRock audio -->
     <audio id="theRockStomp" src="assets/audio/enemies/theRock/theRockStomp.mp3" preload="auto"></audio>
-    <!-- redHedgehog audio -->
-    <audio id="hedgehogRollingSound" src="assets/audio/enemies/redHedgehog/hedgehogRollingSound.mp3" preload="auto"></audio>
+    <!-- rollhog audio -->
+    <audio id="rollhogRollSound" src="assets/audio/enemies/rollhog/rollhogRollSound.mp3" preload="auto"></audio>
 <!-- icon image -->
 <img id="firedogHead" src="assets/icons/firedogHead.png">
 <!-- menu images -->
@@ -226,6 +229,11 @@
 <img id="mainmenubackgroundhowtoplay" src="assets/menu/mainmenubackgroundhowtoplay.png">
 <img id="skinStage" src="assets/menu/skinStage.png">
 <img id="greenCompleted" src="assets/menu/greenCompleted.png">
+<!-- enemy lore images -->
+<img id="enemyLoreBookBackground" src="assets/menu/enemyLore/enemyLoreBookBackground.png">
+<img id="enemyLoreLeftPageBackground" src="assets/menu/enemyLore/enemyLoreLeftPageBackground.png">
+<img id="enemyLoreRightPageBackground" src="assets/menu/enemyLore/enemyLoreRightPageBackground.png">
+<img id="blackLine" src="assets/menu/enemyLore/blackLine.png">
     <!-- forest images -->
     <img id="forestmap" src="assets/menu/forestMap/forestmap.png">
     <img id="forestmapNight" src="assets/menu/forestMap/forestmapNight.png">
@@ -332,73 +340,71 @@
             <img id="yellowArrow" src="assets/entities/enemies/Elyvorg/abilities/yellowArrow.png">
             <img id="greenArrow" src="assets/entities/enemies/Elyvorg/abilities/greenArrow.png">
         <!-- goblin -->
-        <img id="goblinRun" src="assets/entities/enemies/goblinRun.png">
-        <img id="goblinSteal" src="assets/entities/enemies/goblinSteal.png">
-        <img id="goblinJump" src="assets/entities/enemies/goblinJump.png">
+        <img id="goblinRun" src="assets/entities/enemies/Goblito/goblinRun.png">
+        <img id="goblinSteal" src="assets/entities/enemies/Goblito/goblinSteal.png">
+        <img id="goblinJump" src="assets/entities/enemies/Goblito/goblinJump.png">
         <!-- map1 -->
-        <img id="spinning_enemy" src="assets/entities/enemies/Map1/spinning_enemy.png">
-        <img id="enemy_fly" src="assets/entities/enemies/Map1/enemy_fly.png">
-        <img id="vertical_bat" src="assets/entities/enemies/Map1/vertical_bat.png">
-        <img id="enemy_bat" src="assets/entities/enemies/Map1/enemy_bat.png">
-        <img id="skeletonBomb" src="assets/entities/enemies/Map1/skeletonBomb.png">
+        <img id="abyssaw" src="assets/entities/enemies/Map1/abyssaw.png">
+        <img id="dotter" src="assets/entities/enemies/Map1/dotter.png">
+        <img id="vertibat" src="assets/entities/enemies/Map1/vertibat.png">
+        <img id="ghobat" src="assets/entities/enemies/Map1/ghobat.png">
+        <img id="skulnapSleep" src="assets/entities/enemies/Map1/skulnapSleep.png">
         <img id="meatSoldier" src="assets/entities/enemies/Map1/meatSoldier.png">
-        <img id="runningSkeleton" src="assets/entities/enemies/Map1/runningSkeleton.png">
-        <img id="enemy_raven" src="assets/entities/enemies/Map1/enemy_raven.png">
-        <img id="orangeFlyMonsterWalk" src="assets/entities/enemies/Map1/orangeFlyMonsterWalk.png">
-        <img id="orangeFlyMonsterAttack" src="assets/entities/enemies/Map1/orangeFlyMonsterAttack.png">
+        <img id="skulnapAwake" src="assets/entities/enemies/Map1/skulnapAwake.png">
+        <img id="ravengloom" src="assets/entities/enemies/Map1/ravengloom.png">
+        <img id="glidoSpikeFly" src="assets/entities/enemies/Map1/glidoSpikeFly.png">
+        <img id="glidoSpikeAttack" src="assets/entities/enemies/Map1/glidoSpikeAttack.png">
         <!-- map2 -->
-        <img id="enemy_nightPlant" src="assets/entities/enemies/Map2/enemy_nightPlant.png">
-        <img id="enemy_spider" src="assets/entities/enemies/Map2/enemy_spider.png">
-        <img id="enemy_ghost" src="assets/entities/enemies/Map2/enemy_ghost.png">
-        <img id="enemy_dollGhost" src="assets/entities/enemies/Map2/enemy_dollGhost.png">
+        <img id="duskPlant" src="assets/entities/enemies/Map2/duskPlant.png">
+        <img id="silknoir" src="assets/entities/enemies/Map2/silknoir.png">
+        <img id="walterTheGhost" src="assets/entities/enemies/Map2/walterTheGhost.png">
+        <img id="dolly" src="assets/entities/enemies/Map2/dolly.png">
         <img id="aura" src="assets/entities/enemies/Map2/aura.png">
-        <img id="vertical_ghost" src="assets/entities/enemies/Map2/vertical_ghost.png">
+        <img id="ben" src="assets/entities/enemies/Map2/ben.png">
         <!-- map3 -->
         <img id="piranha" src="assets/entities/enemies/Map3/piranha.png">
         <img id="skeletonFish" src="assets/entities/enemies/Map3/skeletonFish.png">
         <img id="spearFish" src="assets/entities/enemies/Map3/spearFish.png">
-        <img id="electricEel" src="assets/entities/enemies/Map3/electricEel.png">
+        <img id="voltzeel" src="assets/entities/enemies/Map3/voltzeel.png">
         <img id="jetFish" src="assets/entities/enemies/Map3/jetFish.png">
         <img id="piperIdle" src="assets/entities/enemies/Map3/piperIdle.png">
         <img id="piperExtended" src="assets/entities/enemies/Map3/piperExtended.png">
-        <img id="oneEyeOcto" src="assets/entities/enemies/Map3/oneEyeOcto.png">
+        <img id="garry" src="assets/entities/enemies/Map3/garry.png">
         <!-- map4 -->
-        <img id="enemy_slug" src="assets/entities/enemies/Map4/enemy_slug.png">
-        <img id="enemy_greenPlant" src="assets/entities/enemies/Map4/enemy_greenPlant.png">
-        <img id="spider_walk" src="assets/entities/enemies/Map4/spider_walk.png">
-        <img id="spider_laser_attack" src="assets/entities/enemies/Map4/spider_laser_attack.png">
-        <img id="flyingBomber" src="assets/entities/enemies/Map4/flyingBomber.png">
-        <img id="greenFlappyBird" src="assets/entities/enemies/Map4/greenFlappyBird.png">
+        <img id="sluggie" src="assets/entities/enemies/Map4/sluggie.png">
+        <img id="bigGreener" src="assets/entities/enemies/Map4/bigGreener.png">
+        <img id="spidoLazerWalk" src="assets/entities/enemies/Map4/spidoLazerWalk.png">
+        <img id="spidoLazerAttack" src="assets/entities/enemies/Map4/spidoLazerAttack.png">
+        <img id="jerry" src="assets/entities/enemies/Map4/jerry.png">
+        <img id="chiquita" src="assets/entities/enemies/Map4/chiquita.png">
         <img id="lilHornet" src="assets/entities/enemies/Map4/lilHornet.png">
-        <img id="skeletonBombSmall" src="assets/entities/enemies/Map4/skeletonBombSmall.png">
-        <img id="runningSkeletonSmall" src="assets/entities/enemies/Map4/runningSkeletonSmall.png">
-        <img id="karateCrocodileIdle" src="assets/entities/enemies/Map4/karateCrocodileIdle.png">
-        <img id="karateCrocodileFlyKick" src="assets/entities/enemies/Map4/karateCrocodileFlyKick.png">
-        <img id="enemy_frog_run" src="assets/entities/enemies/Map4/enemy_frog_run.png">
-        <img id="enemy_frog_poison_attack" src="assets/entities/enemies/Map4/enemy_frog_poison_attack.png">
+        <img id="karateCrocoIdle" src="assets/entities/enemies/Map4/karateCrocoIdle.png">
+        <img id="karateCrocoFlyKick" src="assets/entities/enemies/Map4/karateCrocoFlyKick.png">
+        <img id="zabkousJump" src="assets/entities/enemies/Map4/zabkousJump.png">
+        <img id="zabkousAttack" src="assets/entities/enemies/Map4/zabkousAttack.png">
         <!-- map5 -->
-        <img id="enemy_bee" src="assets/entities/enemies/Map5/enemy_bee.png">
-        <img id="angry_enemy_bee" src="assets/entities/enemies/Map5/angry_enemy_bee.png">
-        <img id="spider_laser_attack_climbing" src="assets/entities/enemies/Map5/spider_laser_attack_climbing.png">
+        <img id="bee" src="assets/entities/enemies/Map5/bee.png">
+        <img id="angryBee" src="assets/entities/enemies/Map5/angryBee.png">
+        <img id="hangingSpidoLazer" src="assets/entities/enemies/Map5/hangingSpidoLazer.png">
         <img id="tauro" src="assets/entities/enemies/Map5/tauro.png">
-        <img id="spikeySnail" src="assets/entities/enemies/Map5/spikeySnail.png">
-        <img id="oneEyeFly" src="assets/entities/enemies/Map5/oneEyeFly.png">
-        <img id="purpleFly" src="assets/entities/enemies/Map5/purpleFly.png">
+        <img id="snailey" src="assets/entities/enemies/Map5/snailey.png">
+        <img id="redFlyer" src="assets/entities/enemies/Map5/redFlyer.png">
+        <img id="purpleFlyer" src="assets/entities/enemies/Map5/purpleFlyer.png">
         <img id="lazyMosquito" src="assets/entities/enemies/Map5/lazyMosquito.png">
         <img id="leafSlug" src="assets/entities/enemies/Map5/leafSlug.png">
-        <img id="powderFlower" src="assets/entities/enemies/Map5/powderFlower.png">
-        <img id="orangeCyclop" src="assets/entities/enemies/Map5/orangeCyclop.png">
+        <img id="sunflora" src="assets/entities/enemies/Map5/sunflora.png">
+        <img id="cyclorange" src="assets/entities/enemies/Map5/cyclorange.png">
         <!-- map6 -->
         <img id="theRock" src="assets/entities/enemies/Map6/theRock.png">
         <img id="theRockSmash" src="assets/entities/enemies/Map6/theRockSmash.png">
         <img id="dragon" src="assets/entities/enemies/Map6/dragon.png">
-        <img id="singleCactus" src="assets/entities/enemies/Map6/singleCactus.png">
-        <img id="rockPlant" src="assets/entities/enemies/Map6/rockPlant.png">
-        <img id="lazyOneEyePlant" src="assets/entities/enemies/Map6/lazyOneEyePlant.png">
-        <img id="redOneEyeFly" src="assets/entities/enemies/Map6/redOneEyeFly.png">
-        <img id="turtle" src="assets/entities/enemies/Map6/turtle.png">
-        <img id="redHedgehogNormal" src="assets/entities/enemies/Map6/redHedgehogNormal.png">
-        <img id="redHedgehogRolling" src="assets/entities/enemies/Map6/redHedgehogRolling.png">
+        <img id="cactus" src="assets/entities/enemies/Map6/cactus.png">
+        <img id="petroPlant" src="assets/entities/enemies/Map6/petroPlant.png">
+        <img id="plazer" src="assets/entities/enemies/Map6/plazer.png">
+        <img id="veynoculus" src="assets/entities/enemies/Map6/veynoculus.png">
+        <img id="volcanurtle" src="assets/entities/enemies/Map6/volcanurtle.png">
+        <img id="rollhogWalk" src="assets/entities/enemies/Map6/rollhogWalk.png">
+        <img id="rollhogRoll" src="assets/entities/enemies/Map6/rollhogRoll.png">
         <img id="volcanoWasp" src="assets/entities/enemies/Map6/volcanoWasp.png">
     <!-- cabin -->
     <img id="map1cabin" src="assets/entities/cabin/map1cabin.png">

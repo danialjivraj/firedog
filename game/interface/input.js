@@ -29,6 +29,16 @@ export class InputHandler {
                 this.game.audioHandler.firedogSFX.playSound('barkSound');
             }
 
+            if (e.key === 'Tab') {
+                if (this.game.currentMenu === this.game.menu.forestMap) {
+                    this.game.menu.enemyLore.activateMenu();
+                    this.game.audioHandler.menu.playSound('bookFlip');
+                } else if (this.game.currentMenu === this.game.menu.enemyLore) {
+                    this.game.menu.forestMap.activateMenu();
+                    this.game.audioHandler.menu.playSound('bookFlip');
+                }
+            }
+
             if (e.key === 'm') {
                 //this.game.debug = !this.game.debug; //uncomment for debug mode
             }
@@ -127,15 +137,19 @@ export class InputHandler {
 
     handleEscapeKey() {
         if (this.game.currentMenu.menuInGame === false) {
-            for (const menuKey in this.game.menu) {
-                const menu = this.game.menu[menuKey];
-                if (menu.menuActive) {
-                    menu.activateMenu(0);
-                    break;
+            if (this.game.currentMenu !== this.game.menu.enemyLore) {
+                for (const menuKey in this.game.menu) {
+                    const menu = this.game.menu[menuKey];
+                    if (menu.menuActive) {
+                        menu.activateMenu(0);
+                        break;
+                    }
                 }
+                this.game.menu.howToPlay.currentImageIndex = 0;
+                this.game.currentMenu = this.game.menu.main;
+            } else {
+                this.game.menu.forestMap.activateMenu();
             }
-            this.game.menu.howToPlay.currentImageIndex = 0;
-            this.game.currentMenu = this.game.menu.main;
         } else {
             if (this.game.menu.pause.canEscape && !this.game.gameOver) {
                 this.game.menu.pause.canEscape = false;

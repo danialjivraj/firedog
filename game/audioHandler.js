@@ -148,6 +148,7 @@ export class MenuAudioHandler extends AudioHandler {
       soundtrack: 'soundtrack',
       optionSelectedSound: 'optionSelectedSound',
       mapOpening: 'mapOpening',
+      bookFlip: 'bookFlip',
       shinySkinRizzSound: 'shinySkinRizzSound',
     };
     this.initializeSounds();
@@ -335,59 +336,60 @@ export class EnemySFXAudioHandler extends AudioHandler {
       staticSound: 'staticSound',
       rockAttackSound: 'rockAttackSound',
       //enemies
-      //goblin
+      //goblito
       goblinDie: 'goblinDie',
       goblinStealing: 'goblinStealing',
       goblinRunSound: 'goblinRunSound',
       goblinJumpSound: 'goblinJumpSound',
-      //smallFly
+      //dotter, lilHornet, redFlyer, purpleFlyer, lazyMosquito
       buzzingFly: 'buzzingFly',
       //meatSoldier
       meatSoldierSound: 'meatSoldierSound',
-      //spinningEnemy
+      //abyssaw
       spinningChainsaw: 'spinningChainsaw',
-      //raven
+      //ravengloom
       ravenCallAudio: 'ravenCallAudio',
       ravenSingleFlap: 'ravenSingleFlap',
-      //ghost
+      //walterTheGhost
       ghostHmAudio: 'ghostHmAudio',
-      //bat
-      batFlapAudio: 'batFlapAudio',
+      //ghobat
+      ghobatFlapAudio: 'ghobatFlapAudio',
       //bee
       beeBuzzing: 'beeBuzzing',
+      //angryBee, volcanoWasp
       angryBeeBuzzing: 'angryBeeBuzzing',
-      //doll
+      //dolly
       auraSoundEffect: 'auraSoundEffect',
       dollHumming: 'dollHumming',
-      //flyingBomber
+      //jerry
       throwingBombSound: 'throwingBombSound',
       kiteSound: 'kiteSound',
-      //nightPlant
+      //duskPlant, bigGreener, petroPlant
       teethChatteringSound: 'teethChatteringSound',
-      //skeleton
+      //skulnap
       fuseSound: 'fuseSound',
       skeletonRattlingSound: 'skeletonRattlingSound',
-      //slug
+      //sluggie, snailey
       slimyWalkSound: 'slimyWalkSound',
-      //nightSpider
+      //silknoir
       nightSpiderSound: 'nightSpiderSound',
-      //frog
+      //zabkous
       frogSound: 'frogSound',
       landingJumpSound: 'landingJumpSound',
-      //purpleSpider
-      purpleSpiderWalking: 'purpleSpiderWalking',
-      //orangeMonster
-      orangeMonsterFlap: 'orangeMonsterFlap',
-      //verticalEnemyBat
+      //spidoLazer
+      spidoLazerWalking: 'spidoLazerWalking',
+      //glidospike, dragon
+      flyMonsterFlap: 'flyMonsterFlap',
+      //vertibat
       wooshBat: 'wooshBat',
-      //verticalGhost
-      verticalGhostSound: 'verticalGhostSound',
       batPitch: 'batPitch',
+      //ben
+      verticalGhostSound: 'verticalGhostSound',
       //piranha
       crunchSound: 'crunchSound',
       //skeletonFish
       skeletonCrunshSound: 'skeletonCrunshSound',
-      //electricEel
+      //voltzeel
       electricitySound: 'electricitySound',
       //jetFish
       rocketLauncherSound: 'rocketLauncherSound',
@@ -397,16 +399,16 @@ export class EnemySFXAudioHandler extends AudioHandler {
       stomp: 'stomp',
       //karateCroco
       ahhhSound: 'ahhhSound',
-      //purpleFly
+      //purpleFlyer
       iceballThrowSound: 'iceballThrowSound',
-      //powderFlower
+      //sunflora
       yellowLaserBeamSound: 'yellowLaserBeamSound',
       //piper
       extendingSound: 'extendingSound',
       //theRock
       theRockStomp: 'theRockStomp',
-      //redHedgehog
-      hedgehogRollingSound: 'hedgehogRollingSound',
+      //rollhog
+      rollhogRollSound: 'rollhogRollSound',
     };
     this.initializeSounds();
   }

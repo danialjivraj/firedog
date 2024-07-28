@@ -66,8 +66,6 @@ export class Enemy {
     }
 
 }
-
-
 // Types of enemies ---------------------------------------------------------------------------------------------------------------------------
 class FlyingEnemy extends Enemy {
     constructor(game, width, height, maxFrame, imageId) {
@@ -203,7 +201,7 @@ class UnderwaterEnemy extends Enemy {
     }
 }
 
-export class Bee extends FlyingEnemy {
+export class BeeInstances extends FlyingEnemy {
     constructor(game, width, height, maxFrame, imageName, chaseDistance, initialSpeed, speed, fps) {
         super(game, width, height, maxFrame, imageName);
         this.width = width;
@@ -256,61 +254,6 @@ export class Bee extends FlyingEnemy {
     }
 }
 
-export class RunningSkeletonSizes extends MovingGroundEnemy {
-    constructor(game, width, height, runningSkeletonImage, sleepingAnimationWidth, sleepingAnimationHeight, sleepingAnimationFrames, sleepingAnimationImage) {
-        super(game, width, height, 12, runningSkeletonImage);
-        this.isStunEnemy = true;
-        this.y = this.game.height - this.height - this.game.groundMargin + 15;
-        this.width = width;
-        this.height = height;
-        this.state = 'sleeping';
-        this.sleepingAnimation = new MovingGroundEnemy(game, sleepingAnimationWidth, sleepingAnimationHeight, sleepingAnimationFrames, sleepingAnimationImage);
-        this.sleepingAnimation.frameX = 0;
-        this.sleepingAnimation.frameY = 0;
-        this.soundId;
-    }
-    update(deltaTime) {
-        super.update(deltaTime);
-        if (this.state === 'sleeping') {
-            this.game.audioHandler.enemySFX.playSound('fuseSound');
-            const playerDistance = Math.abs(this.game.player.x - this.x);
-            if (playerDistance < 900 && this.y >= this.game.height - this.height - this.game.groundMargin) { // ground margin logic is for flying bomber
-                this.soundId = 'skeletonRattlingSound';
-                this.state = 'running';
-                this.frameX = 0;
-                this.runningSpeed = 3;
-            }
-        }
-
-        if (this.state === 'running') {
-            this.x -= this.runningSpeed;
-            if (this.frameTimer > this.frameInterval) {
-                this.frameTimer = 0;
-                if (this.frameX < this.maxFrame) this.frameX++;
-                else this.frameX = 0;
-            } else {
-                this.frameTimer += deltaTime;
-            }
-
-        } else {
-            this.sleepingAnimation.x = this.x;
-            this.sleepingAnimation.y = this.y;
-            this.sleepingAnimation.update(deltaTime);
-        }
-    }
-
-    draw(context) {
-        if (this.state === 'running') {
-            super.draw(context);
-        } else {
-            context.save();
-            context.shadowColor = 'yellow';
-            context.shadowBlur = 10;
-            this.sleepingAnimation.draw(context);
-            context.restore();
-        }
-    }
-}
 // Projectiles --------------------------------------------------------------------------------------------------------------------------------
 export class Projectile extends Enemy {
     constructor(game, x, y, width, height, maxFrame, imageId, speedX, fps) {
@@ -652,9 +595,9 @@ export class Goblin extends MovingGroundEnemy {
 }
 
 // Map 1 --------------------------------------------------------------------------------------------------------------------------------------
-export class FlyEnemy extends FlyingEnemy {
+export class Dotter extends FlyingEnemy {
     constructor(game) {
-        super(game, 60, 44, 5, 'enemy_fly');
+        super(game, 60, 44, 5, 'dotter');
         this.playsOnce = true;
     }
     update(deltaTime) {
@@ -667,9 +610,9 @@ export class FlyEnemy extends FlyingEnemy {
     }
 }
 
-export class VerticalBat extends VerticalEnemy {
+export class Vertibat extends VerticalEnemy {
     constructor(game) {
-        super(game, 151.16666666, 90, 5, 'vertical_bat');
+        super(game, 151.16666666, 90, 5, 'vertibat');
         this.angle = 0;
         this.va = Math.random() * 0.1 + 0.1;
         this.amplitude = 3;
@@ -695,9 +638,9 @@ export class VerticalBat extends VerticalEnemy {
     }
 }
 
-export class BatEnemy extends FlyingEnemy {
+export class Ghobat extends FlyingEnemy {
     constructor(game) {
-        super(game, 134.33, 84, 5, 'enemy_bat');
+        super(game, 134.33, 84, 5, 'ghobat');
     }
     update(deltaTime) {
         super.update(deltaTime);
@@ -708,9 +651,9 @@ export class BatEnemy extends FlyingEnemy {
     }
 }
 
-export class RavenEnemy extends FlyingEnemy {
+export class Ravengloom extends FlyingEnemy {
     constructor(game) {
-        super(game, 139.66, 100, 5, 'enemy_raven');
+        super(game, 139.66, 100, 5, 'ravengloom');
         this.playsOnce = true;
     }
     update(deltaTime) {
@@ -727,17 +670,7 @@ export class RavenEnemy extends FlyingEnemy {
     }
 }
 
-export class RunningSkeleton extends RunningSkeletonSizes {
-    constructor(game) {
-        super(game, 104.23076923076923076923076923077, 70, 'runningSkeleton', 57, 57, 10, 'skeletonBomb');
-    }
-    update(deltaTime) {
-        super.update(deltaTime);
-        if (this.state === 'running') {
-            this.y = this.game.height - this.height - this.game.groundMargin + 5;
-        }
-    }
-}
+
 
 export class MeatSoldier extends MovingGroundEnemy {
     constructor(game) {
@@ -759,9 +692,76 @@ export class MeatSoldier extends MovingGroundEnemy {
     }
 }
 
-export class SpinningEnemy extends FlyingEnemy {
+export class Skulnap extends MovingGroundEnemy {
+    constructor(game, scale = 1) {
+        super(game, 104.23076923076923076923076923077 * scale, 70 * scale, 12, 'skulnapAwake');
+        this.isStunEnemy = true;
+        this.y = this.game.height - this.height - this.game.groundMargin + 15;
+        this.state = 'sleeping';
+        this.scale = scale;
+        this.sleepingAnimation = new GroundEnemy(game, 57 * scale, 57 * scale, 10, 'skulnapSleep');
+        this.sleepingAnimation.frameX = 0;
+        this.sleepingAnimation.frameY = 0;
+        this.soundId;
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime);
+        if (this.y >= this.game.height - this.height - this.game.groundMargin + 15) {
+            this.y = this.game.height - this.height - this.game.groundMargin + 15;
+        }
+
+        if (this.state === 'sleeping') {
+            this.game.audioHandler.enemySFX.playSound('fuseSound');
+            const playerDistance = Math.abs(this.game.player.x - this.x);
+            if (playerDistance < 900 && this.y >= this.game.height - this.height - this.game.groundMargin) { // ground margin logic is for flying bomber
+                this.soundId = 'skeletonRattlingSound';
+                this.state = 'running';
+                this.frameX = 0;
+                this.runningSpeed = 3;
+            }
+        }
+
+        if (this.state === 'running') {
+            this.x -= this.runningSpeed;
+            this.y = this.game.height - this.height - this.game.groundMargin + 5;
+            if (this.frameTimer > this.frameInterval) {
+                this.frameTimer = 0;
+                if (this.frameX < this.maxFrame) this.frameX++;
+                else this.frameX = 0;
+            } else {
+                this.frameTimer += deltaTime;
+            }
+        } else {
+            this.sleepingAnimation.x = this.x + 13;
+            this.sleepingAnimation.y = this.y;
+            this.sleepingAnimation.update(deltaTime);
+        }
+    }
+
+    draw(context) {
+        const drawImageWithScale = (image, frameX, x, y, width, height, scale) => {
+            context.save();
+            context.translate(x, y);
+            context.scale(scale, scale);
+            context.translate(-x, -y);
+            context.shadowColor = 'yellow';
+            context.shadowBlur = 10;
+            context.drawImage(image, frameX * (width / scale), 0, width / scale, height / scale, x, y, width, height);
+            context.restore();
+        };
+
+        if (this.state === 'running') {
+            drawImageWithScale(this.image, this.frameX, this.x, this.y, this.width, this.height, this.scale);
+        } else {
+            drawImageWithScale(this.sleepingAnimation.image, this.sleepingAnimation.frameX, this.sleepingAnimation.x, this.sleepingAnimation.y, this.sleepingAnimation.width, this.sleepingAnimation.height, this.scale);
+        }
+    }
+}
+
+export class Abyssaw extends FlyingEnemy {
     constructor(game) {
-        super(game, 100.44, 100, 8, 'spinning_enemy');
+        super(game, 100.44, 100, 8, 'abyssaw');
         this.soundId = 'spinningChainsaw';
         this.radius = Math.random() * 2 + 6;
     }
@@ -778,14 +778,14 @@ export class SpinningEnemy extends FlyingEnemy {
     }
 }
 
-export class OrangeFlyMonster extends FlyingEnemy {
+export class GlidoSpike extends FlyingEnemy {
     constructor(game) {
-        super(game, 191.68, 130, 24, 'orangeFlyMonsterWalk');
+        super(game, 191.68, 130, 24, 'glidoSpikeFly');
         this.walkFps = 120;
         this.attackFps = 120;
         this.frameInterval = 1000 / this.walkFps;
         this.state = 'walk';
-        this.attackAnimation = new FlyingEnemy(game, 191.68, 130, 24, 'orangeFlyMonsterAttack');
+        this.attackAnimation = new FlyingEnemy(game, 191.68, 130, 24, 'glidoSpikeAttack');
         this.attackAnimation.fps = this.attackFps;
         this.attackAnimation.frameInterval = 1000 / this.attackFps;
         this.attackAnimation.frameX = 0;
@@ -851,7 +851,7 @@ export class OrangeFlyMonster extends FlyingEnemy {
             this.state = 'walk';
         }
         if (this.frameX === 11 && this.isOnScreen()) {
-            this.game.audioHandler.enemySFX.playSound('orangeMonsterFlap');
+            this.game.audioHandler.enemySFX.playSound('flyMonsterFlap');
         }
     }
 
@@ -867,9 +867,9 @@ export class OrangeFlyMonster extends FlyingEnemy {
 }
 
 // Map 2 --------------------------------------------------------------------------------------------------------------------------------------
-export class NightPlant extends ImmobileGroundEnemy {
+export class DuskPlant extends ImmobileGroundEnemy {
     constructor(game) {
-        super(game, 60, 87, 1, 'enemy_nightPlant');
+        super(game, 60, 87, 1, 'duskPlant');
         this.soundId = 'teethChatteringSound';
         this.leafAttackConfig = {
             width: 35.416,
@@ -908,9 +908,9 @@ export class NightPlant extends ImmobileGroundEnemy {
     }
 }
 
-export class NightSpider extends ClimbingEnemy {
+export class Silknoir extends ClimbingEnemy {
     constructor(game) {
-        super(game, 120, 144, 5, 'enemy_spider');
+        super(game, 120, 144, 5, 'silknoir');
         this.angle = 0;
         this.va = Math.random() * 0.1 + 0.09;
         this.soundId = 'nightSpiderSound';
@@ -922,9 +922,9 @@ export class NightSpider extends ClimbingEnemy {
     }
 }
 
-export class GhostEnemy extends FlyingEnemy {
+export class WalterTheGhost extends FlyingEnemy {
     constructor(game) {
-        super(game, 104.83, 84, 5, 'enemy_ghost');
+        super(game, 104.83, 84, 5, 'walterTheGhost');
         this.curve = Math.random() * 5;
         this.playsOnce = true;
         this.currentSpeed = 6;
@@ -979,9 +979,9 @@ export class GhostEnemy extends FlyingEnemy {
     }
 }
 
-export class VerticalGhost extends VerticalEnemy {
+export class Ben extends VerticalEnemy {
     constructor(game) {
-        super(game, 61.5, 50, 5, 'vertical_ghost');
+        super(game, 61.5, 50, 5, 'ben');
         this.initialSpeed = 3;
         this.currentSpeed = 4;
         this.chaseDistance = this.game.width;
@@ -1079,9 +1079,9 @@ export class Aura extends FlyingEnemy {
         context.restore();
     }
 }
-export class DollGhost extends FlyingEnemy {
+export class Dolly extends FlyingEnemy {
     constructor(game) {
-        super(game, 88.2, 120, 29, 'enemy_dollGhost');
+        super(game, 88.2, 120, 29, 'dolly');
         this.auraTimer = 0;
     }
 
@@ -1112,6 +1112,7 @@ export class DollGhost extends FlyingEnemy {
         context.restore();
     }
 }
+
 // Map 3 --------------------------------------------------------------------------------------------------------------------------------------
 export class Piranha extends UnderwaterEnemy {
     constructor(game) {
@@ -1351,9 +1352,9 @@ export class Piper extends ImmobileGroundEnemy {
     }
 }
 
-export class ElectricEel extends FallingEnemy {
+export class Voltzeel extends FallingEnemy {
     constructor(game) {
-        super(game, 107, 87, 4, 'electricEel');
+        super(game, 107, 87, 4, 'voltzeel');
         this.isStunEnemy = true;
         this.chaseDistance = 900;
         this.initialSpeed = 3;
@@ -1400,29 +1401,16 @@ export class ElectricEel extends FallingEnemy {
     }
 }
 
-export class OneEyeOcto extends ImmobileGroundEnemy {
+export class Garry extends ImmobileGroundEnemy {
     constructor(game) {
-        super(game, 165, 122, 3, 'oneEyeOcto');
+        super(game, 165, 122, 3, 'garry');
     }
 }
 
 // Map 4 --------------------------------------------------------------------------------------------------------------------------------------
-export class BigSlug extends MovingGroundEnemy {
+export class BigGreener extends ImmobileGroundEnemy {
     constructor(game) {
-        super(game, 147.33, 110, 5, 'enemy_slug');
-        this.xSpeed = Math.floor(Math.random() * 5) + 1;
-        this.soundId = 'slimyWalkSound';
-    }
-
-    update(deltaTime) {
-        super.update(deltaTime);
-        this.x -= this.xSpeed;
-    }
-}
-
-export class GreenPlant extends ImmobileGroundEnemy {
-    constructor(game) {
-        super(game, 113, 150, 1, 'enemy_greenPlant');
+        super(game, 113, 150, 1, 'bigGreener');
         this.leafAttackConfig = {
             width: 35.416,
             height: 45,
@@ -1467,9 +1455,9 @@ export class GreenPlant extends ImmobileGroundEnemy {
     }
 }
 
-export class GreenFlappyBird extends FlyingEnemy {
+export class Chiquita extends FlyingEnemy {
     constructor(game) {
-        super(game, 118.82352941176470588235294117647, 85, 16, 'greenFlappyBird');
+        super(game, 118.82352941176470588235294117647, 85, 16, 'chiquita');
         this.fps = 120;
         this.frameInterval = 1000 / this.fps;
         this.playsOnce = true;
@@ -1485,6 +1473,19 @@ export class GreenFlappyBird extends FlyingEnemy {
         if (this.frameX === 7 && this.isOnScreen()) {
             this.game.audioHandler.enemySFX.playSound('ravenSingleFlap');
         }
+    }
+}
+
+export class Sluggie extends MovingGroundEnemy {
+    constructor(game) {
+        super(game, 147.33, 110, 5, 'sluggie');
+        this.xSpeed = Math.floor(Math.random() * 5) + 1;
+        this.soundId = 'slimyWalkSound';
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.x -= this.xSpeed;
     }
 }
 
@@ -1506,11 +1507,11 @@ export class LilHornet extends FlyingEnemy {
 
 export class KarateCroco extends MovingGroundEnemy {
     constructor(game) {
-        super(game, 152.75, 110, 3, 'karateCrocodileIdle');
+        super(game, 152.75, 110, 3, 'karateCrocoIdle');
         this.isRedEnemy = true;
         this.state = "idle";
         this.lives = 2;
-        this.flyKickAnimation = new MovingGroundEnemy(game, 153, 110, 2, 'karateCrocodileFlyKick');
+        this.flyKickAnimation = new MovingGroundEnemy(game, 153, 110, 2, 'karateCrocoFlyKick');
         this.playsOnce = true;
     }
 
@@ -1553,10 +1554,10 @@ export class KarateCroco extends MovingGroundEnemy {
     }
 }
 
-export class Frog extends MovingGroundEnemy {
+export class Zabkous extends MovingGroundEnemy {
     constructor(game) {
-        super(game, 316, 202, 16, 'enemy_frog_run');
-        this.image = document.getElementById('enemy_frog_run');
+        super(game, 316, 202, 16, 'zabkousJump');
+        this.image = document.getElementById('zabkousJump');
         this.lives = 2;
         this.fps = 60;
         this.frameInterval = 1000 / this.fps;
@@ -1606,7 +1607,7 @@ export class Frog extends MovingGroundEnemy {
             this.game.audioHandler.enemySFX.playSound('landingJumpSound', false, true);
             if (this.game.gameOver) {
                 this.state = 'run';
-                this.image = document.getElementById('enemy_frog_run');
+                this.image = document.getElementById('zabkousJump');
                 this.width = 316;
                 this.height = 202;
                 this.frameX = 0;
@@ -1614,7 +1615,7 @@ export class Frog extends MovingGroundEnemy {
                 this.jumpedBeforeDistanceLogic = false;
             } else if (playerDistance <= 1500) {
                 this.state = 'attack';
-                this.image = document.getElementById('enemy_frog_poison_attack');
+                this.image = document.getElementById('zabkousAttack');
                 this.width = 177;
                 this.height = 132;
                 this.frameX = 0;
@@ -1623,7 +1624,7 @@ export class Frog extends MovingGroundEnemy {
                 this.poisonSpitThrown = false;
             } else {
                 this.state = 'run';
-                this.image = document.getElementById('enemy_frog_run');
+                this.image = document.getElementById('zabkousJump');
                 this.width = 316;
                 this.height = 202;
                 this.frameX = 0;
@@ -1639,7 +1640,7 @@ export class Frog extends MovingGroundEnemy {
         }
         if (this.state === 'attack' && this.frameX >= this.maxFrame) {
             this.state = 'run';
-            this.image = document.getElementById('enemy_frog_run');
+            this.image = document.getElementById('zabkousJump');
             this.width = 316;
             this.height = 202;
             this.frameX = 0;
@@ -1662,15 +1663,15 @@ export class Frog extends MovingGroundEnemy {
     }
 }
 
-export class PurpleSpider extends MovingGroundEnemy {
+export class SpidoLazer extends MovingGroundEnemy {
     constructor(game) {
-        super(game, 161.33, 144, 18, 'spider_walk');
+        super(game, 161.33, 144, 18, 'spidoLazerWalk');
         this.lives = 2;
         this.walkFps = 60;
         this.attackFps = 120;
         this.frameInterval = 1000 / this.walkFps;
         this.state = 'walk';
-        this.attackAnimation = new MovingGroundEnemy(game, 161.33, 144, 59, 'spider_laser_attack');
+        this.attackAnimation = new MovingGroundEnemy(game, 161.33, 144, 59, 'spidoLazerAttack');
         this.attackAnimation.fps = this.attackFps;
         this.attackAnimation.frameInterval = 1000 / this.attackFps;
         this.attackAnimation.frameX = 0;
@@ -1730,7 +1731,7 @@ export class PurpleSpider extends MovingGroundEnemy {
         }
 
         if (this.frameX === 0 || this.frameX === 9 && this.isOnScreen()) {
-            this.game.audioHandler.enemySFX.playSound('purpleSpiderWalking');
+            this.game.audioHandler.enemySFX.playSound('spidoLazerWalking');
         }
     }
 
@@ -1745,24 +1746,9 @@ export class PurpleSpider extends MovingGroundEnemy {
     }
 }
 
-export class RunningSkeletonSmall extends RunningSkeletonSizes {
+export class Jerry extends FlyingEnemy {
     constructor(game) {
-        super(game, 81.923076923076923076923076923077, 55, 'runningSkeletonSmall', 42, 42, 10, 'skeletonBombSmall');
-    }
-    update(deltaTime) {
-        super.update(deltaTime);
-        if (this.y >= this.game.height - this.height - this.game.groundMargin + 5 && this.state === 'sleeping') {
-            this.y = this.game.height - this.height - this.game.groundMargin + 5;
-            this.speedY = 0;
-        }
-        if (this.state === 'running') {
-            this.y = this.game.height - this.height - this.game.groundMargin - 5;
-        }
-    }
-}
-export class FlyingBomber extends FlyingEnemy {
-    constructor(game) {
-        super(game, 185, 103, 4, 'flyingBomber');
+        super(game, 185, 103, 4, 'jerry');
         this.y = Math.random() * this.game.height * 0.05;
         this.fps = 5;
         this.frameInterval = 1000 / this.fps;
@@ -1783,12 +1769,12 @@ export class FlyingBomber extends FlyingEnemy {
             this.maxFrameReached = true;
 
             if (this.skeletonCount < 5) {
-                let runningSkeleton = new RunningSkeletonSmall(this.game);
-                runningSkeleton.x = this.x + 60;
-                runningSkeleton.y = this.y + 60;
-                runningSkeleton.speedY = 10;
+                let skulnap = new Skulnap(this.game, 0.89);
+                skulnap.x = this.x + 60;
+                skulnap.y = this.y + 60;
+                skulnap.speedY = 10;
                 if (this.x < this.game.width - 50) {
-                    this.game.enemies.push(runningSkeleton);
+                    this.game.enemies.push(skulnap);
                     this.game.audioHandler.enemySFX.playSound('throwingBombSound');
                     this.skeletonCount++;
                     if (this.skeletonCount >= 5) {
@@ -1796,7 +1782,6 @@ export class FlyingBomber extends FlyingEnemy {
                     }
                 }
             }
-
         }
 
         if (this.frameX === 1) {
@@ -1817,9 +1802,9 @@ export class FlyingBomber extends FlyingEnemy {
 }
 
 // Map 5 --------------------------------------------------------------------------------------------------------------------------------------
-export class SpikeySnail extends MovingGroundEnemy {
+export class Snailey extends MovingGroundEnemy {
     constructor(game) {
-        super(game, 103, 74, 9, 'spikeySnail');
+        super(game, 103, 74, 9, 'snailey');
         this.xSpeed = Math.floor(Math.random() * 5) + 1;
         this.soundId = 'slimyWalkSound';
     }
@@ -1830,9 +1815,9 @@ export class SpikeySnail extends MovingGroundEnemy {
     }
 }
 
-export class OneEyeFly extends FlyingEnemy {
+export class RedFlyer extends FlyingEnemy {
     constructor(game) {
-        super(game, 79.333333333333333333333333333333, 65, 14, 'oneEyeFly');
+        super(game, 79.333333333333333333333333333333, 65, 14, 'redFlyer');
         this.playsOnce = true;
         this.darkLaserTimer = 2800;
     }
@@ -1873,9 +1858,9 @@ export class OneEyeFly extends FlyingEnemy {
     }
 }
 
-export class PurpleFly extends FlyingEnemy {
+export class PurpleFlyer extends FlyingEnemy {
     constructor(game) {
-        super(game, 83.333333333333333333333333333333, 65, 14, 'purpleFly');
+        super(game, 83.333333333333333333333333333333, 65, 14, 'purpleFlyer');
         this.playsOnce = true;
         this.iceballTimer = 200;
     }
@@ -1948,9 +1933,9 @@ export class LeafSlug extends MovingGroundEnemy {
     }
 }
 
-export class PowderFlower extends ImmobileGroundEnemy {
+export class Sunflora extends ImmobileGroundEnemy {
     constructor(game) {
-        super(game, 132, 137, 3, 'powderFlower');
+        super(game, 132, 137, 3, 'sunflora');
         this.lives = 2;
         this.fps = 15;
         this.frameInterval = 1000 / this.fps;
@@ -1975,9 +1960,9 @@ export class PowderFlower extends ImmobileGroundEnemy {
     }
 }
 
-export class OrangeCyclop extends ImmobileGroundEnemy {
+export class Cyclorange extends ImmobileGroundEnemy {
     constructor(game) {
-        super(game, 57, 71, 2, 'orangeCyclop');
+        super(game, 57, 71, 2, 'cyclorange');
         this.fps = 10;
         this.frameInterval = 1000 / this.fps;
     }
@@ -1998,23 +1983,23 @@ export class Tauro extends MovingGroundEnemy {
     }
 }
 
-export class BeeEnemy extends Bee {
+export class Bee extends BeeInstances {
     constructor(game) {
-        super(game, 55.23, 57, 12, 'enemy_bee', 800, 3, 10, 20);
+        super(game, 55.23, 57, 12, 'bee', 800, 3, 10, 20);
         this.soundId = 'beeBuzzing';
     }
 }
 
-export class AngryBeeEnemy extends Bee {
+export class AngryBee extends BeeInstances {
     constructor(game) {
-        super(game, 55.23, 57, 12, 'angry_enemy_bee', 1100, 3, 12, 140);
+        super(game, 55.23, 57, 12, 'angryBee', 1100, 3, 12, 140);
         this.soundId = 'angryBeeBuzzing';
     }
 }
 
-export class ClimbingPurpleSpider extends ClimbingEnemy {
+export class HangingSpidoLazer extends ClimbingEnemy {
     constructor(game) {
-        super(game, 161.33, 144, 59, 'spider_laser_attack_climbing');
+        super(game, 161.33, 144, 59, 'hangingSpidoLazer');
         this.lives = 2;
         this.fps = 120;
         this.frameInterval = 1000 / this.fps;
@@ -2066,14 +2051,14 @@ export class ClimbingPurpleSpider extends ClimbingEnemy {
 // Map 6 --------------------------------------------------------------------------------------------------------------------------------------
 export class Cactus extends ImmobileGroundEnemy {
     constructor(game) {
-        super(game, 71, 90, 0, 'singleCactus');
+        super(game, 71, 90, 0, 'cactus');
         this.isStunEnemy = true;
     }
 }
 
-export class RockPlant extends ImmobileGroundEnemy {
+export class PetroPlant extends ImmobileGroundEnemy {
     constructor(game) {
-        super(game, 91.555555555555555555555555555556, 100, 1, 'rockPlant');
+        super(game, 91.555555555555555555555555555556, 100, 1, 'petroPlant');
         this.rockAttackConfig = {
             width: 37,
             height: 40,
@@ -2118,9 +2103,9 @@ export class RockPlant extends ImmobileGroundEnemy {
     }
 }
 
-export class LazyOneEyePlant extends ImmobileGroundEnemy {
+export class Plazer extends ImmobileGroundEnemy {
     constructor(game) {
-        super(game, 75, 89, 2, 'lazyOneEyePlant');
+        super(game, 75, 89, 2, 'plazer');
         this.fps = 6;
         this.frameInterval = 1000 / this.fps;
         this.canAttack = true;
@@ -2150,15 +2135,15 @@ export class LazyOneEyePlant extends ImmobileGroundEnemy {
     }
 }
 
-export class RedOneEyeFly extends FlyingEnemy {
+export class Veynoculus extends FlyingEnemy {
     constructor(game) {
-        super(game, 57, 37, 4, 'redOneEyeFly');
+        super(game, 57, 37, 4, 'veynoculus');
     }
 }
 
-export class Turtle extends MovingGroundEnemy {
+export class Volcanurtle extends MovingGroundEnemy {
     constructor(game) {
-        super(game, 177, 107, 5, 'turtle');
+        super(game, 177, 107, 5, 'volcanurtle');
         this.isRedEnemy = true;
         this.lives = 2;
         this.fps = 5;
@@ -2223,21 +2208,21 @@ export class TheRock extends MovingGroundEnemy {
     }
 }
 
-export class VolcanoWasp extends Bee {
+export class VolcanoWasp extends BeeInstances {
     constructor(game) {
         super(game, 113, 125, 1, 'volcanoWasp', 1100, 3, 12, 140);
         this.soundId = 'angryBeeBuzzing';
     }
 }
 
-export class RedHedgehog extends MovingGroundEnemy {
+export class Rollhog extends MovingGroundEnemy {
     constructor(game) {
-        super(game, 125, 85, 2, 'redHedgehogNormal');
+        super(game, 125, 85, 2, 'rollhogWalk');
         this.lives = 2;
         this.state = "idle";
         this.fps = 3;
         this.frameInterval = 1000 / this.fps;
-        this.image = document.getElementById('redHedgehogNormal');
+        this.image = document.getElementById('rollhogWalk');
         this.playOnce = true;
     }
 
@@ -2253,7 +2238,7 @@ export class RedHedgehog extends MovingGroundEnemy {
         const playerDistance = Math.abs(this.game.player.x - this.x);
         if (playerDistance < 1100) {
             this.state = 'roll';
-            this.image = document.getElementById('redHedgehogRolling');
+            this.image = document.getElementById('rollhogRoll');
             this.width = 97;
             this.height = 92;
             this.y = this.game.height - this.height - this.game.groundMargin;
@@ -2264,7 +2249,7 @@ export class RedHedgehog extends MovingGroundEnemy {
             this.frameInterval = 1000 / this.fps;
             if (this.playOnce) {
                 this.playOnce = false;
-                this.game.audioHandler.enemySFX.playSound('hedgehogRollingSound', false, true);
+                this.game.audioHandler.enemySFX.playSound('rollhogRollSound', false, true);
             }
             if (this.frameX === 10) {
                 this.frameX = 9;
@@ -2272,7 +2257,7 @@ export class RedHedgehog extends MovingGroundEnemy {
         }
 
         if (this.x + this.width < 0 || this.lives <= 0) {
-            this.game.audioHandler.enemySFX.stopSound('hedgehogRollingSound');
+            this.game.audioHandler.enemySFX.stopSound('rollhogRollSound');
         }
     }
 }
@@ -2326,7 +2311,7 @@ export class Dragon extends FlyingEnemy {
         }
         if (this.frameX === 0 && this.isOnScreen()) {
             this.game.audioHandler.enemySFX.playSound('ravenSingleFlap');
-            this.game.audioHandler.enemySFX.playSound('orangeMonsterFlap');
+            this.game.audioHandler.enemySFX.playSound('flyMonsterFlap');
         }
     }
 }

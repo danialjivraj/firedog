@@ -23,6 +23,8 @@ body {
 #firedogHead, 
 /* menu images */ 
 #mainmenubackground, #mainmenubackgroundhowtoplay, #skinStage, #greenCompleted, 
+/* enemy lore images */ 
+#enemyLoreBookBackground, #enemyLoreLeftPageBackground, #enemyLoreRightPageBackground, #blackLine, 
     /* forest images */ 
     #forestmap, #forestmapNight, #forestmapFiredog, #forestmapHatFiredog, #forestmapCholoFiredog, #forestmapZabkaFiredog, #forestmapFiredogShiny, 
     /* saving images */ 
@@ -51,17 +53,17 @@ body {
         /* goblin */
         #goblinRun, #goblinSteal, #goblinJump, 
         /* map1 */
-        #spinning_enemy, #enemy_fly, #vertical_bat, #enemy_bat, #skeletonBomb, #meatSoldier, #runningSkeleton, #enemy_raven, #orangeFlyMonsterWalk, #orangeFlyMonsterAttack, 
+        #abyssaw, #dotter, #vertibat, #ghobat, #skulnapSleep, #meatSoldier, #skulnapAwake, #ravengloom, #glidoSpikeFly, #glidoSpikeAttack, 
         /* map2 */
-        #enemy_nightPlant, #enemy_spider, #enemy_ghost, #enemy_dollGhost, #aura, #vertical_ghost,
+        #duskPlant, #silknoir, #walterTheGhost, #dolly, #aura, #ben,
         /* map3 */
-        #piranha, #skeletonFish, #spearFish, #electricEel, #jetFish, #piperIdle, #piperExtended, #oneEyeOcto, 
+        #piranha, #skeletonFish, #spearFish, #voltzeel, #jetFish, #piperIdle, #piperExtended, #garry, 
         /* map4 */
-        #enemy_slug, #enemy_greenPlant, #spider_walk, #spider_laser_attack, #flyingBomber, #greenFlappyBird, #lilHornet, #skeletonBombSmall, #runningSkeletonSmall, #karateCrocodileIdle, #karateCrocodileFlyKick, #enemy_frog_run, #enemy_frog_poison_attack, 
+        #sluggie, #bigGreener, #spidoLazerWalk, #spidoLazerAttack, #jerry, #chiquita, #lilHornet, #karateCrocoIdle, #karateCrocoFlyKick, #zabkousJump, #zabkousAttack, 
         /* map5 */
-        #enemy_bee, #angry_enemy_bee, #spider_laser_attack_climbing, #tauro, #spikeySnail, #oneEyeFly, #purpleFly, #lazyMosquito, #leafSlug, #powderFlower, #orangeCyclop, 
+        #bee, #angryBee, #hangingSpidoLazer, #tauro, #snailey, #redFlyer, #purpleFlyer, #lazyMosquito, #leafSlug, #sunflora, #cyclorange, 
         /* map6 */
-        #theRock, #theRockSmash, #dragon, #singleCactus, #rockPlant, #lazyOneEyePlant, #redOneEyeFly, #turtle, #redHedgehogNormal, #redHedgehogRolling, #volcanoWasp,  
+        #theRock, #theRockSmash, #dragon, #cactus, #petroPlant, #plazer, #veynoculus, #volcanurtle, #rollhogWalk, #rollhogRoll, #volcanoWasp,  
     /* cabin */
     #map1cabin, #map2cabin, #map3submarine, #map4cabin, #map5cabin, #map6cave,
     /* power up */ 

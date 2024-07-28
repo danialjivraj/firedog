@@ -9,8 +9,8 @@ import { BlackHole, Cauldron, Drink } from './powerDown.js';
 import { FloatingMessage } from '../animations/floatingMessages.js';
 import { Fireball, CoinLoss } from '../animations/particles.js';
 import {
-    AngryBeeEnemy, BeeEnemy, RunningSkeleton, PoisonSpit, Goblin, BigSlug, ElectricEel, Tauro, RunningSkeletonSmall,
-    Aura, KarateCroco, SpearFish, TheRock, LilHornet, Cactus, IceBall, OneEyeOcto, RockProjectile, VolcanoWasp, Turtle
+    AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Tauro,
+    Aura, KarateCroco, SpearFish, TheRock, LilHornet, Cactus, IceBall, Garry, RockProjectile, VolcanoWasp, Volcanurtle
 } from './enemies/enemies.js';
 import { InkSplash } from '../animations/ink.js';
 import { DamageIndicator } from '../animations/damageIndicator.js';
@@ -467,7 +467,7 @@ export class Player {
         if (this.isInvisible === false) {
             this.game.audioHandler.firedogSFX.playSound('stunnedSound', false, true);
             this.setState(6, 0);
-            if (!(enemy instanceof RunningSkeleton) && !(enemy instanceof RunningSkeletonSmall) && !(enemy instanceof ElectricWheel)) {
+            if (!(enemy instanceof Skulnap) && !(enemy instanceof ElectricWheel)) {
                 this.bloodOrPoof(enemy);
             }
             this.game.coins -= 1;
@@ -775,15 +775,11 @@ export class Player {
                 this.game.audioHandler.explosionSFX.playSound('poofSound', false, true);
                 enemy.lives = 0;
             },
-            RunningSkeleton: () => {
+            Skulnap: () => {
                 this.game.collisions.push(new ExplosionCollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5, enemy.id));
                 this.game.audioHandler.explosionSFX.playSound('explosionCollision', false, true);
             },
-            RunningSkeletonSmall: () => {
-                this.game.collisions.push(new ExplosionCollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5, enemy.id));
-                this.game.audioHandler.explosionSFX.playSound('explosionCollision', false, true);
-            },
-            BigSlug: () => {
+            Sluggie: () => {
                 this.game.collisions.push(new InkSplashCollision(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
                 this.game.audioHandler.explosionSFX.playSound('slugExplosion', false, true);
             },
@@ -791,7 +787,7 @@ export class Player {
                 this.game.collisions.push(new InkBombCollision(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
                 this.game.audioHandler.explosionSFX.playSound('slugExplosion', false, true);
             },
-            OneEyeOcto: () => {
+            Garry: () => {
                 this.game.collisions.push(new InkSplashCollision(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
                 this.game.audioHandler.explosionSFX.playSound('slugExplosion', false, true);
             },
@@ -954,15 +950,15 @@ export class Player {
 
     collisionAnimationBasedOnEnemy(enemy) {
         switch (true) {
-            case enemy instanceof BigSlug || enemy instanceof InkBomb || enemy instanceof OneEyeOcto:
+            case enemy instanceof Sluggie || enemy instanceof InkBomb || enemy instanceof Garry:
                 this.game.audioHandler.explosionSFX.playSound('slugExplosion', false, true);
-                if (enemy instanceof BigSlug || enemy instanceof OneEyeOcto) {
+                if (enemy instanceof Sluggie || enemy instanceof Garry) {
                     this.game.collisions.push(new InkSplashCollision(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
                 } else {
                     this.game.collisions.push(new InkBombCollision(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
                 }
                 break;
-            case enemy instanceof RunningSkeleton || enemy instanceof RunningSkeletonSmall:
+            case enemy instanceof Skulnap:
                 this.game.audioHandler.explosionSFX.playSound('explosionCollision', false, true);
                 this.game.collisions.push(new ExplosionCollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5, enemy.id));
                 break;
@@ -1035,28 +1031,27 @@ export class CollisionLogic {
                 }
                 break;
             // ink enemies
-            case enemy instanceof BigSlug:
+            case enemy instanceof Sluggie:
             case enemy instanceof InkBomb:
-            case enemy instanceof OneEyeOcto:
+            case enemy instanceof Garry:
                 this.player.hit(enemy);
                 this.player.triggerInkSplash();
                 if (this.player.isInvisible === false) {
                     this.player.collisionAnimationBasedOnEnemy(enemy);
                 }
                 break;
-            case enemy instanceof RunningSkeleton:
-            case enemy instanceof RunningSkeletonSmall:
+            case enemy instanceof Skulnap:
                 this.player.stunned(enemy);
                 if (this.player.isInvisible === false) {
                     this.player.collisionAnimationBasedOnEnemy(enemy);
                 }
                 break;
             // stun enemies
-            case enemy instanceof BeeEnemy:
-            case enemy instanceof AngryBeeEnemy:
+            case enemy instanceof Bee:
+            case enemy instanceof AngryBee:
             case enemy instanceof VolcanoWasp:
             case enemy instanceof LilHornet:
-            case enemy instanceof ElectricEel:
+            case enemy instanceof Voltzeel:
             case enemy instanceof Aura:
             case enemy instanceof Cactus:
             case enemy instanceof RockProjectile:
@@ -1090,7 +1085,7 @@ export class CollisionLogic {
             case enemy instanceof Tauro:
             case enemy instanceof SpearFish:
             case enemy instanceof TheRock:
-            case enemy instanceof Turtle:
+            case enemy instanceof Volcanurtle:
                 this.player.hit(enemy);
                 if (this.player.isInvisible === false) {
                     this.player.bloodOrPoof(enemy);
@@ -1170,22 +1165,21 @@ export class CollisionLogic {
                 this.player.bloodOrPoof(enemy);
                 break;
             // ink enemies
-            case enemy instanceof BigSlug:
+            case enemy instanceof Sluggie:
             case enemy instanceof InkBomb:
-            case enemy instanceof OneEyeOcto:
+            case enemy instanceof Garry:
                 this.player.triggerInkSplash();
                 this.player.collisionAnimationBasedOnEnemy(enemy);
                 break;
-            case enemy instanceof RunningSkeleton:
-            case enemy instanceof RunningSkeletonSmall:
+            case enemy instanceof Skulnap:
                 this.player.stunned(enemy);
                 this.player.collisionAnimationBasedOnEnemy(enemy);
                 break;
             // stun enemies
-            case enemy instanceof BeeEnemy:
-            case enemy instanceof AngryBeeEnemy:
+            case enemy instanceof Bee:
+            case enemy instanceof AngryBee:
             case enemy instanceof VolcanoWasp:
-            case enemy instanceof ElectricEel:
+            case enemy instanceof Voltzeel:
             case enemy instanceof Aura:
             case enemy instanceof LilHornet:
             case enemy instanceof Cactus:
@@ -1221,7 +1215,7 @@ export class CollisionLogic {
             case enemy instanceof KarateCroco:
             case enemy instanceof SpearFish:
             case enemy instanceof TheRock:
-            case enemy instanceof Turtle:
+            case enemy instanceof Volcanurtle:
                 if (this.player.currentState === this.player.states[4]) {
                     this.player.hit(enemy);
                 }

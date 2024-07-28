@@ -1,4 +1,4 @@
-import { RunningSkeleton, RunningSkeletonSmall, SpinningEnemy } from "../entities/enemies/enemies.js";
+import { Skulnap, Abyssaw } from "../entities/enemies/enemies.js";
 import { FloatingMessage } from "./floatingMessages.js";
 
 export class Collision {
@@ -69,21 +69,17 @@ export class ExplosionCollisionAnimation extends Collision {
                 enemy.y + enemy.height > this.y && !this.game.gameOver
             ) {
                 enemy.markedForDeletion = true;
-                if (!(enemy instanceof RunningSkeleton || enemy instanceof RunningSkeletonSmall)) {
+                if (!(enemy instanceof Skulnap)) {
                     this.game.audioHandler.explosionSFX.playSound('poofSound', false, true);
                     this.game.collisions.push(new CollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
                     this.game.floatingMessages.push(new FloatingMessage('+1', enemy.x, enemy.y, 150, 50, 20));
                     this.game.coins++;
-                } else if (enemy instanceof RunningSkeleton && enemy.id !== this.enemyId) {
-                    this.game.collisions.push(new ExplosionCollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5, this.enemyId));
-                    this.game.audioHandler.enemySFX.stopSound('skeletonRattlingSound');
-                    this.game.audioHandler.explosionSFX.playSound('explosionCollision', false, true);
-                } else if (enemy instanceof RunningSkeletonSmall && enemy.id !== this.enemyId) {
+                } else if (enemy instanceof Skulnap && enemy.id !== this.enemyId) {
                     this.game.collisions.push(new ExplosionCollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5, this.enemyId));
                     this.game.audioHandler.enemySFX.stopSound('skeletonRattlingSound');
                     this.game.audioHandler.explosionSFX.playSound('explosionCollision', false, true);
                 }
-                if (enemy instanceof SpinningEnemy) {
+                if (enemy instanceof Abyssaw) {
                     this.game.audioHandler.enemySFX.stopSound('spinningChainsaw');
                 }
             }

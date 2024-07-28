@@ -1,4 +1,4 @@
-import { FlyEnemy, MeatSoldier, Piper, RunningSkeleton, SpearFish } from "../entities/enemies/enemies.js";
+import { Dotter, MeatSoldier, Piper, Skulnap, SpearFish } from "../entities/enemies/enemies.js";
 
 export class Tutorial {
     constructor(game) {
@@ -56,12 +56,12 @@ export class Tutorial {
                 message: "That's a Dotter up ahead!\nLet's use Roll Attack while jumping this time!\nPress W to jump and once you're near the enemy, hold Enter!",
                 key: 'w',
                 condition: () => {
-                    const meatSoldier = this.game.enemies.find(enemy => enemy instanceof FlyEnemy);
-                    return this.isPlayerNearEnemy(meatSoldier, 1200) && this.game.player.energyReachedZero === false;
+                    const dotter = this.game.enemies.find(enemy => enemy instanceof Dotter);
+                    return this.isPlayerNearEnemy(dotter, 1200) && this.game.player.energyReachedZero === false;
                 },
                 timerDuration: 2000,
                 spawnEnemy: (deltaTime) => {
-                    this.createSpawnEnemy(FlyEnemy, deltaTime, this.game.height - 400);
+                    this.createSpawnEnemy(Dotter, deltaTime, this.game.height - 400);
                 }
             },
             {
@@ -156,24 +156,24 @@ export class Tutorial {
                 message: "Up ahead is a Skeleton Bomb (a Stun Enemy)!\nIf you make contact with any enemy that glows yellow,\nyou will get stunned for a split second and take damage.\nUse Q instead!",
                 key: 'q',
                 condition: () => {
-                    const meatSoldier = this.game.enemies.find(enemy => enemy instanceof RunningSkeleton);
-                    return this.isPlayerNearEnemy(meatSoldier, 1200) && this.game.player.fireballTimer >= this.game.player.fireballCooldown && this.game.player.energyReachedZero === false && this.game.player.onGround();
+                    const skulnap = this.game.enemies.find(enemy => enemy instanceof Skulnap);
+                    return this.isPlayerNearEnemy(skulnap, 1200) && this.game.player.fireballTimer >= this.game.player.fireballCooldown && this.game.player.energyReachedZero === false && this.game.player.onGround();
                 },
                 timerDuration: 2000,
                 spawnEnemy: (deltaTime) => {
-                    this.createSpawnEnemy(RunningSkeleton, deltaTime);
+                    this.createSpawnEnemy(Skulnap, deltaTime);
                 }
             },
             {
                 message: "Now let's try to use Enter against the Skeleton Bomb\nso that you can see the stunning animation!",
                 key: 'Enter',
                 condition: () => {
-                    const meatSoldier = this.game.enemies.find(enemy => enemy instanceof RunningSkeleton);
-                    return this.isPlayerNearEnemy(meatSoldier, this.game.width) && this.game.player.energyReachedZero === false;
+                    const skulnap = this.game.enemies.find(enemy => enemy instanceof Skulnap);
+                    return this.isPlayerNearEnemy(skulnap, this.game.width) && this.game.player.energyReachedZero === false;
                 },
                 timerDuration: 2000,
                 spawnEnemy: (deltaTime) => {
-                    this.createSpawnEnemy(RunningSkeleton, deltaTime);
+                    this.createSpawnEnemy(Skulnap, deltaTime);
                 }
             },
             {
@@ -216,14 +216,14 @@ export class Tutorial {
                 message: "Press E to go Invisible for 5 seconds!\nDuring this time, you can pass through any type of enemy\nas well as kill them without taking any damage!",
                 key: 'e',
                 condition: () => {
-                    const runningSkeleton = this.game.enemies.find(enemy => enemy instanceof RunningSkeleton);
+                    const skulnap = this.game.enemies.find(enemy => enemy instanceof Skulnap);
                     this.game.player.invisibleTimer = this.game.player.invisibleCooldown;
                     this.game.player.isInvisible = false;
-                    return this.isPlayerNearEnemy(runningSkeleton, 1200);
+                    return this.isPlayerNearEnemy(skulnap, 1200);
                 },
                 timerDuration: 3000,
                 spawnEnemy: (deltaTime) => {
-                    this.createSpawnEnemy(RunningSkeleton, deltaTime);
+                    this.createSpawnEnemy(Skulnap, deltaTime);
                 }
             },
             {
