@@ -1,5 +1,5 @@
 # firedog
-Firedog is a 2D game built from scratch with over 18.8k lines of code and over 653 different assets (502 images and 151 audio files).
+Firedog is a 2D game built from scratch with over 20k lines of code and over 662 different assets (509 images and 153 audio files).
 
 This game was created by using HTML Canvas and pure Javascript without relying on external frameworks except for 
 Electron, which was utilized to transform it into a Desktop application.
@@ -13,17 +13,20 @@ Your objective on each map is to eliminate as many enemies as you can, gathering
 Your progress/game settings will be automatically saved whenever you complete a map or adjust your settings (such as audio, skin selection, or level difficulty).
 
 ## Preview
-https://github.com/danialjivraj/firedog/assets/61945058/08cbec3d-63b2-49af-a379-b56664a5d041
+https://github.com/user-attachments/assets/a44432c3-0bab-47f5-9ed1-9c03fc67436a
 
-![image](https://github.com/danialjivraj/firedog/assets/61945058/93dfb886-7d84-490f-a095-22a72345d674)
-![image](https://github.com/danialjivraj/firedog/assets/61945058/a0748eec-72bc-4c61-9d9b-bd70c2bdffc9)
-![image](https://github.com/danialjivraj/firedog/assets/61945058/87ae694b-1994-43bd-894d-a1a64a4b2ee9)
-![image](https://github.com/danialjivraj/firedog/assets/61945058/f6c70d35-3dc0-4bd0-bfae-a08323b2cc7d)
-![image](https://github.com/danialjivraj/firedog/assets/61945058/2785bda6-3c34-41c3-b809-8c0956453ee3)
-![image](https://github.com/danialjivraj/firedog/assets/61945058/87d61289-d150-4b47-b1b9-6d14b677fd0e)
-![image](https://github.com/danialjivraj/firedog/assets/61945058/69e747d4-1883-4b70-9e36-774001fc359a)
-![image](https://github.com/danialjivraj/firedog/assets/61945058/f64e695d-3c8d-4772-9216-851af829b6f9)
-![image](https://github.com/danialjivraj/firedog/assets/61945058/a8cfbd96-f585-423b-a17d-7f6e9ffbe7f8)
+https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
+
+![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview1.png)
+![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview2.png)
+![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview3.png)
+![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview4.png)
+![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview5.png)
+![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview6.png)
+![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview7.png)
+![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview8.png)
+![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview9.png)
+![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview10.png)
 
 ## Controls
 - **Menus**
@@ -32,6 +35,7 @@ https://github.com/danialjivraj/firedog/assets/61945058/08cbec3d-63b2-49af-a379-
   - Arrow Right: Move Right
   - Arrow Left: Move Left
   - Enter / Left Click: Select Option
+  - Tab: Open/Close Enemy Lore
   - Esc / Right Click: Return to Main Menu/Game
 
 - **Cutscenes**
