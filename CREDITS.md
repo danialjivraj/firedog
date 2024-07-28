@@ -62,7 +62,7 @@ Below, only soundtracks will be credited.
 - [Criminality Winter 2023 Intro](https://www.youtube.com/watch?v=RXz5zJiRR-A&t=)
 ### Cutscene
 - **Echoes of Time v2 by** [Kevin MacLeod](https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300029)
-- **Exale by** [Deskant](https://www.youtube.com/watch?v=lj8OJF7rqd8)
+- **Exale by** [Deskant](https://www.youtube.com/watch?v=T7jQ8URIuIc&ab_channel=Deskant-Topic)
 - **Grand Theft Auto IV Theme Song Edit by**
     [Raul Apxpei](https://www.youtube.com/watch?v=0bAF189Rf2U)
 - **Pokémon Mystery Dungeon**
