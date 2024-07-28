@@ -262,7 +262,7 @@ export class Tutorial {
             }
         }
     }
-    
+
     update(deltaTime) {
         if (this.game.menu.pause.isPaused) {
             return;
