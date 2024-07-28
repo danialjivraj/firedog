@@ -11,7 +11,7 @@ function createWindow() {
     icon: path.join(__dirname, 'game', 'assets', 'icons', 'firedogHead.png'),
   });
 
-  mainWindow.removeMenu()
+  //mainWindow.removeMenu()
 
   mainWindow.loadURL(url.format({
     pathname: path.join(__dirname, 'game', 'index.html'),

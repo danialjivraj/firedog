@@ -1,0 +1,577 @@
+DONE:
+Firefly animation for the chill vibes
+pause game my freezing everything
+restart key to restart game
+menu screen fixed
+when player wins option to go back to main menu
+created sound settings menu
+Add soundtrack loudness selection - make it work for both key and using mouse- Master Volume, sound effects volume, music volume, menu music volume
+give another special attack, like a wind or fire attack projectile. - DONE FIRE PROJECTILE
+health live powerup - done, change image and animation when touching it.
+red potion powerup - done, change image and the name to something more suitable, like a coin or something and animation when touching it.
+forest map done, circles positioned now, need to make them clickable.
+add cutscene background image. dont start game until cutscene if finished.
+have a look at whole code. it is probably best to restructure all menus again - DONE
+BUG= WHEN STEP IN BLUE POTION AND CANCEL ANIMATION, PLAYER GETS SLOW AFTER 10 SECONDS. FIXED
+Esc for menu - done
+sorting image names and directories - done
+track distance first. - done
+added cabin - done
+when cabin appears, it should stop moving.
+player stops when cabin is fully shown, and no roll state allowed.
+fix using down and left/right animation
+fixed w and s spam animation - added a timer.
+add a cutscene after every game is completed.
+fix the div first. it should be inside the canvas.
+add the mystery.d.s.Sky soundtrack
+try to make the letters come one by one along with the soundtrack playing.
+pressing enter mid dialogue animation will show the whole text - done
+prevent 'Enter' long press which skips dialogue super fast- fixed
+add placeholder images, when player is talking it highlights them - done
+quick code clean up - done
+Create different 3 different variants of cabin. - done
+And make each map have it's own end dialogue cutscene specific for after that map. - done
+add a fadein fadeout animation function that can be used whenever it is called - Halfway done, need to make hotkeys unclickable while animation active - done for cabin enter animation
+door opening sound when getting into the cabin, map sound added - try to see another better map sound.
+player goes behind cabin problem - fixed
+when player dies, use the die animation sprite, before game freezes or something - Done
+Add a 1.5 Map - Dark map
+fixed fireflies y axis
+have energy UI 0-100, if the energy bar is 0, you cannot do the ROLL attack. - Done
+when blue potion touched in roll, UI should be blue, and player does not lose energy while during buff. If player only touches the potion, gains 50 energy. - Done
+fix fireball cooldown to apply to all states and not individually. fixed
+try to solver problem of 's' and 'w' spam/fix jumping diving spam bug - fixed by adding a timer.
+energy text shakes when in blue potion mode
+q fireball attack costs energy now, and if it goes below 0 the reachedBelowZero check will trigger
+Create a hit and stunned cc animation.
+create a collision animation where collision and explosion animation can extend from - Done
+Fix q attack explosion on skeleton with explosion collision animation sprite- done
+test explosion size tomorrow and decide - Done.
+when in blue state it should be a different collision image - done
+fix movement of potions and enemies when reaching cabin as potions move when enemy moves, same with enemies - fixed
+health, blue potion and red potion sprite and images fixed.
+fix leave cooldown problem it uses real time not delta time - fixed
+photoshop fix the Zabkous, make it all the same size, fix cropping, 1 row sprite to avoid writing stupid code. Done
+Poison should make player energy go down. take into consideration when in red mode.
+Add splash to poison attack- done
+make poison attack lose energy and make UI green - done
+Make Type1 enemies have 1 live. - Done
+If player uses fireball take one live away from enemy, if live is 0, collision animation triggers - Done
+Make enemies have different id's, to know which ones can still damage player and which ones can't during the cooldown period.- Done
+BUG: LaserBeam goes from 1 live to 0 to 1 sometimes on collision. Fixed
+BUG: Tornado sending twice. Fixed
+fixed if sitting and getting damaged go back to sitting.
+fixed other skeleton exploding. explosion does twice for skeleton. couldn't find a way to remove it so i made it so that the 2 explosions have different fps to have some variety.
+Added a vertical enemy class, where enemies fall from the sky.
+underwater map maybe? - made player float when jumping, made player be able to jump while in ROLLING, and changed fire to bubbles.
+Added Map3. Added images. Added "blue" screen. 
+               Something is wrong with the background doing a small bug going backwards every rotation. FIXED
+Add dust "bubbles" particles when running in water map. DONE-
+      Also fixed dust particles, now it is dust image and not a circle.
+Change fireflies to be be more generic. If underwater it should show fish. if not it will be fireflies. Make the speed change dependant on player speed. Done
+    Have a look tomorrow and see if entityAnimation.js needs any change in the names. Done
+    Fix them spawning from left side of screen. Make an array and put them inside of it in game.
+Fixed low quality bubble projectile
+Make animation layer entity part of the layers in background instead of having entityAnimation.js. This way animation layer can get "behind" other images instead of being
+            in front of every image. DONE
+find a way to reset properly. DONE
+made 3d depth on fish, and fixed fireflies
+added rain on map5. needs fixing when player dies. fixed. made rain start and stop at specific distance range. Done
+Fix time lose condition in underwater map, and make player sink down if player is not on ground.
+before game starts there's a fadeIn transition - Done
+try creating rain splash drops for map5. - Done / Maybe have a look at a better way to create the splash but this look good as well. Added splash sprite. Done
+create "submarine" cabin for underwater map - Done
+Fix when CAPS LOCK, player can't move. FIXED
+fix when pausing again should pre select option 0 - FIXED
+create a AudioHandler file which will handle audios easier. Done
+IDEA: Make Score to be Money instead. When reaching the cabin, penguin will see how many coins you have. If you have less than x amount, player needs to restart game. Done
+CREATE the penguin sprite. Creted - Now appears in front of cabin. Need to create interaction dialogue and coin condition. Dialogue while in game still in progress. Done
+Dialogue fixed- Now gives different dialogues when coin condition is different. Done
+    Still to do: create a lookalike pause menu that will show when coins<maxCoins, with the options "Retry", "Sound Settings", "Back to Main Menu", when player loses. Done
+    when retry is pressed, player is left with 10% of the coins from last game. Done
+    This specific pause menu will not pause the background from being drawn - Done
+    Player cannot leave the notEnoughCoins pause menu- Done
+    Perhaps add a "money sound cash" animation when player has enough coins to rent the cabin. Done
+change penguin to bat and to gun depending on map. Done
+file clean up in html, css. done. fix map names. done
+some code cleanup - done
+Fix penguinBat sprite - Done
+Have a look at setMap tomorrow. can use that to reduce some code that uses instaceof Map. Needs to be in game class.
+create a oxygen tank power up, adds seconds to the timer in isUnderwater - Done
+power down file, and intialized created.
+drink power down create- Done
+red opacity around screen when getting hit. Done - Make it reset if it hasn't finished and player gets hit again - done
+    in underwater, make the last 1 minute loop. Done
+    Make undewater damageIndicator stronger since it's harder to see. Done
+time should stop when cabin is visible - done
+skulnapSleep - have a look at the double explosion and see if you wanna keep it or not. Only explodes once - Fixed
+BUG: Enemies are spawning and touching width's, specially ground enemies since they don't move, and if player moved there is multiple ground enemies in the same x. Fixed
+fix when player in standing and uses roll or even running, the particles move when player also moves, this should not happen because player is in standing state. Done
+change fireball image. make it a sprite maybe. done
+add a dive attack UI check , add a fireball attack UI check - Half done, need timer and black and white when in cooldown.  - like league UI - Done Fixed debug draw - Done
+Fix standing spritesheet - Fixed
+Fix audioSettingsMenu, make it look cleaner, reuse better code. Done 
+    Added array where multiple sounds can be lowered at the same time now.
+    Initializing a sound with x% volume will activate that %.
+    sliders changed.
+    fixed circle staying within slider.
+add stroke to cutscenes text.done
+separate pause menu from UI by creating a seperate pause file. done
+make not enough coins and game over the same logic- done
+seperate not enough coins from pause menu as it does not make sense being there. done- needs a bit more testing to ensure everything is correct.
+connecting audio settings menu to be able to open it during game-
+    enter key making multiple calls when going back from audio to default.
+    problem is not in: input.js, not in audioSettingsMenu.js, not in basemenu.
+    fixed it. made a quick timer and boolean to prevent it to go to resume instantly from audio settings in game when pressing go back.
+use step 2 when player does not let go of arrow left or right to make volume go faster. done
+when player has more than 1 live, make the collision animation different. Done
+Put the soundtrack in the ingame options as well. distanceToPlayer
+make tauro only killable with dive - Done, also made fireball not give points until enemy is killed
+make a master volume, which adapts to the rest of the audios as well as the audios adapting to the master volume - Done
+Goal for today - fix forestMap to only show the maps that are unlocked. Done
+add power down - black hole sprite? done - Added tunnel vision effect - done
+Add glow behind each enemy/powerup/powerdown. done
+create how to play- DONE
+try and see if having an auto-save option is possible done
+add colour parameter to floating points. done
+Improve the hitbox for everything. only Zabkous needed it. rest is alright.
+add a saving animation so player knows game has been saved. done
+make how to play a bit more comprehensive - done
+create a menu option to hard reset game. Done
+when selecting a map, should have a text indicating the map number. - done
+    Include firedog in forest map on top of selected circle - done
+    create bridge between visible circles - done
+    restriction on map 1 and last map to not go from map 1 to last map and viceversa - done
+add different skins for player - done- have a look to fix sitting state on cholo.
+    find a way to save skin when player closes game.done
+create zabka skin - done
+create shiny skin which is interlinked with default skin - done
+fix rolling audio loudness.
+increase steps loudness.
+poof sound for explosion when hitting power up and down - done
+add map soundtracks 
+    map1- done
+    map2- done
+    Map3- done
+    map4- done
+    map5- done
+    map6- done
+Fix player audios - done
+fix enemy audios - in progress - done
+fix collision audios - to do - done
+powerup powerdown sounds on collision - to do done
+have an audio handler for power up/down sfx done
+fix jump when in underwater done
+make cauldron use power up and down audio handler done
+drink powerdown sound effect needed maybe. done
+oxygen tank needs new image and sound perhaps? done
+add aura audio. done 
+red potion needs to do something. and needs soundtrack too.
+    red potion creates 7 fireballs - done
+    need soundtrack - to do done
+    need a UI indicator for when redpotion is active - done
+bubble in blue potion effect  image? - bluebubble added
+redpotion cd stops when player dies. done
+fix score with fireball redpotion mode - bug: 7 fireballs hitting 1 same enemy gives 7 coins - fixed
+cutscene dialogue make text stop, and enter to continue. fixing enter bug too - done
+add character colour to each character - done
+if dialogue is too big, should go to next line.
+    to fix: incomplete word filling line before moving to next line - fixed
+also make sure 8bit2 plays on each "..." - done
+Make the same logic found in cutscene the same in penguin cutscene file logic.
+ moved logic correctly, works on both cutscenes now- fixed
+bug: normal fireball released -> picks up red potion -> normal fireball released has "red potion mode" properties
+     same with red potion mode. if it wears off the fireball becomes "normal" in properties - fixed
+energy 0 sound needs changing. - done
+added red bubble mode - fixed red bubble image and size functionality added. audio added - done
+underwater map:  make rolling more easy to control with 'w' - Done.
+map 6 penguin on the floor - Done
+Update border background colour photoshops - Done
+changed cave image. added submarine and cave entering sound. fixed entering x position. fixed cabin names, cabin folder organized make penguin on floor. find new cave image. - done
+check when a name is mentioned in dialogue, the colour matches the name - 80% done . fix punctuation also getting colored.- Fixed
+    DO the same for penguincutscene logic - done, added coin colour - Done
+add saving book animation sprite - done
+add delete progress animation sprite - done
+    method in main for fadein and block keys until animation is over - done
+fix damage indicator when resetting should disappear - done
+add skin menu background stage - done
+fix distanceTraveled and remove unnecessary const cabin in background file - done
+create how to play explanation of player collision with different types of enemies - done
+Make ingame cutscenes pausable - Done
+    fix bugs when pausing and clicking any options while during cutscene - done
+    penguin bug when restarting is not interactable anymore -  fixed
+make cutscenes dialogues more modular and easier to create - done
+    bug: fix problem where 2 images are not being shown at the same time for checkCoins condition - fixed
+    fix coin condition where different dialogue shows if player has not enough coins - fixed
+    elyvorg cutscene 8bit1 sound is playing over and over when going through "..." - fixed
+    bug: coin number colour affects other text that might have same number. e.g: map 2 (2 is in orange because player has 2 coins, this is wrong) - lazy fix but done
+create dialogue file for elyvorg - Done
+    bug: have a look if player x is already 0 when seeing half of elyvorg it stops. - fixed in input file
+fix push enemies logic - only dont push collisions of the same type. 
+    if the enemies are different but touching it should still push - fixed
+in cutscenes file find a way to switch background image depending on the dialogue currently at
+    and perhaps give a fadeout effect along for it - done
+    make it distinguish from the first cutscene and last cutscene- done
+    make dialogue stop - done
+        concern: a console.log in draw fixed the problem where enter couldn't be pressed, but the console.log fixed it somehow.
+        perhaps have a look why and if there is a better way to fix that. - fixed
+add names for each map - done
+create an object initializer for all the audio handlers and change the names from all files accordingly to make easier to read - done
+fix line in cutscenes - done
+add made by at the end - done
+create logic after defeating elyvorg:
+    add after fight dialogue - done
+    fix reset - done
+    make it run away after dialogue finishes - done
+    fix penguin bug as nothing happened when pressing enter - done
+    battle starting sound and fade animation - done
+    make esc not pressable when sound is playing - done
+save level difficulty - Done
+bug: caps lock 'w' underwater not working. - fixed
+Finish adding parallax images:
+        Map 1: done
+        Map 2: done
+        Map 3: done
+        Map 4: done
+        Map 5: done
+        Map 6: done
+rename all map item names in the files - done
+fix Zabkous hibox using logic that was used in Piper - done
+bug: distance travelled needs to be calculated with only the ground layer, but it is calculated using all layers, causing inconsistency amongst different maps - fixed
+final boss soundtrack - done
+fix fadeout for background - done
+stop all sounds when pressing tab - fixed
+rain freezes in the air when cabin is fully visible - fixed
+
+create/find cutscene images:
+    galadon - found - photshopped - done
+    quilzorin - found - photshopped - done
+    valdorin - found - photoshopped - done
+    sorcerer - found - photshopped - done
+    duskmaw - found - photshopped - done
+    firedog - created - photshopped - done
+    penguin - found - photshopped - done
+
+Create the dialogue story.
+    DIALOGUES:
+        Map 1:
+            Start Cutscene - done - re-reading and changing - done
+            Penguin Cutscene - done - re-reading and changing - done
+            EndCutscene - done - re-reading and changing - done
+        Map 2:
+            Start Cutscene - done - re-reading and changing - done
+            Penguin Cutscene - done - re-reading and changing - done
+            EndCutscene - done  - re-reading and changing - done
+        Map 3:
+            Start Cutscene - done - re-reading and changing - done
+            Penguin Cutscene - done - re-reading and changing - done
+            EndCutscene - done - re-reading and changing - done
+        Map 4:
+            Start Cutscene - done - re-reading and changing - done
+            Penguin Cutscene - done - re-reading and changing - done
+            EndCutscene - done - re-reading and changing - done
+        Map 5:
+            Start Cutscene - done - re-reading and changing - done
+            Penguin Cutscene - done - re-reading and changing - done
+            EndCutscene - done - re-reading and changing - done
+        Map 6:
+            Start Cutscene - done - re-reading and changing - done
+            Elyvorg Cutscene - done - re-reading and changing - done (add half to the end of battle) - done
+            Penguin Cutscene - done - re-reading and changing - done
+            EndCutscene - done - re-reading and changing - done
+    IMAGES:
+        Map 1 - done - Map1EndCutscene - done - PenguinCutscene - done
+        Map 2 - done - Map1EndCutscene - done - PenguinCutscene - done
+        Map 3 - done - Map1EndCutscene - done - PenguinCutscene - done
+        Map 4 - done - Map1EndCutscene - done - PenguinCutscene - done
+        Map 5 - done - Map1EndCutscene - done - PenguinCutscene - done
+        Map 6 - done - Map1EndCutscene - done - PenguinCutscene - done - ElyvorgCutscene - done
+    BORDER IMAGES - done
+    
+    found 2d crown for valdorin, change penguin gun up - done
+    add tab to skip all dialogue and jump to game - done
+    add fade in fade out into game animation for this - done
+    create an sfx cutscene audio handler - done
+    addings background sound - done
+    spell-check once all dialogues are completed - done..?
+barrier is kinda buggy. it doesn't center perfectly on elyvorg when running. - fixed
+    ideally if electricWheel and barrier are active electric wheel should cover barrier. - fixed
+refactor player collision logic - done
+    when invisible, stunned enemies during roll do nothing. goes right through maybe? - done
+    fix elyvorg and barrier logic - done
+UI for firedog - invisibility cloak - done
+    make background fade in blue or something during invisible - done
+    bug: cloak timer moves when float message gets near it? - fixed
+poison drop attack needs green indicator? - done
+fix electricityWheel by creating an audio cue, so player knows next state will be electricityWheel. - done
+    maybe add a state counter as well? - done
+    check purple indicator testing again when getting physically hit before it gets shot while running and before animation.
+    after counter a timer sets up of which electric wheel will spawn randomly.
+create elyvorg UI with timer cooldowns
+    poison drop - done
+    gravity wheel - done
+    electricity wheel - done
+create a slash attack if player gets near elyvorg. 
+     run state done
+     make reverse work too - done
+     UI indicator - done
+add a timer before switching to another state-
+    rest sprite implemented - perhaps make rest happen every x states? or not. - done
+textBox added for all cutscenes and fixed sizing for all dialogues - done
+add a jump and arrow attack - Added 
+    draw direction - fixed
+    need:
+        different arrow colours (blue, yellow and green)
+        blue - make player slower - done - added ice crystal ANIMATION- done 
+        yellow - stun - done
+        green - poison - done
+grammar fix: 
+    map 1 - done
+    map 2 - done
+    map 3 - done
+    map 4 - done
+    map 5 - done
+    map 6 - done
+decide where each enemy goes in which map and move it to the right folder - done
+define winning coins for each map - done
+define audio settings started volume - done
+creating a way to save game. logic done- Once the game is finished have a look at important things to save - done
+At the end:
+perhaps draw UML for the repo - done
+    main overview - done
+    cutscenes - done
+    audio handlers - done
+    menus - done
+    background/maps - done
+    entities - done
+        enemies - done
+        elyvorg - done
+    player states - done
+____________________________________________________
+Enemies to be done -
+Goblin - find goblin enemy which will steal score. In progress. Add coin loss when goblin touched player- Done. Make goblin smarter, make it jump if player tries to avoid it-
+        fix stuck in the air problem. Fixed - Added jump sprite - Done
+Map 1:
+  Fly - Done
+  Skeleton - Fixed size issue. Runs towards player from sleep to running state. Create 3rd animation which is explosion. Done. Make the explosion hit nearby enemies 
+             if player q's on the skeleton, or if player gets hit by the skeleton. create a more epic explosion sprite than the current one. too epic, need fix.
+  ravengloom - Done
+  GlidoSpike - Done - Throws WindAttack projectile. Look at Zabkous to see how to stop spam. Done
+  Slug - Make it splash black ink all over player screen. Done, Maybe make the splash where the player x is - Done
+  Abyssaw -  Done
+  VerticalBat - done
+  Ben - done
+Map 2:
+  Ghost - Done - Default movement, no changes needed.
+  Spider - done - Default movement, maybe change speed or webstring colour.
+  Bat - Done - Make it throw a projectile in the players direction and change colour.
+  Dolly - Done - Make it spawn on top of screen and make it should shoot into the players direction, not too fast but relatively fast.
+  DuskPlant - Done - Default movement, no changes needed.
+  Tauro - Done
+Map 3:
+    piranha - Done
+    skeletonFish - Done - Added 2 logics to it.
+    spearFish - Done
+    Electric Eel - Blockade logic to be done. needs to come from the top. Done
+    Piper - logic needs fixing - fixed - done
+Map 4:
+  BigGreener - Done - Make it throw leave projectile. Done 
+  Zabkous - Done - Type 2 - Throws poison - Affects energy - Done
+  karate croc - done
+Map 5:
+  Bee - Done - Make bee shoot in player direction really fast. Done.
+  Angry Bee - Done - An even angier bee.... Done.
+  SpidoLazer - In progress - Mechanics - Done - LaserBeam position/animation perhaps needs fixing. Done
+  ClimbingSpidoLazer - In progress - Mechanics - Done
+Map 6:
+final boss logic on map 6.
+    sprite spacing fixed. photoshop done. 
+    fix potions moving when jumping falling etc. - Fixed
+    make elyvorg facing player all the time - done - reverted- do it when all states logic is done
+    make player face elyvorg depending on position - done
+        fix fireball position when facing left - done
+    make roll attack go fast - done
+    bug: fireball released in right direction -> player switches position while fireball is ongoing -> fireball changes direction while in air - fixed
+    create the elyvorg logic - done
+    make elyvorg eye red when using laser attack - done
+    add a barrier defense to elyvorg - Done - Add crack indicator - Done - Need sound fix when finished - done- cooldown logic - done
+    add meteor attack - eye turns orange makes rocks fall from sky - done
+    add electricity wheel that should stun when touching. cannot be destroyed. - done
+    add a ghost elyvorg copy. which will have the exact moves but different shade colour and only 1 live - done
+    add state randomiser - done
+    fix meteor x position - done
+    fix laser direction - done
+    State randomiser to create - Done
+        90% of happening:
+        ____________________________
+        idle > laser > idle > run
+        idle > laser > idle > meteor
+        ____________________________
+        10% of happening (repeating state will be more rare but still possible):
+        ____________________________
+        idle > laser > idle > laser
+        idle > meteor> idle > meteor
+        ____________________________
+        Every 4 - 6 (chooses a number of either 4,5 or 6) states the next state will be state'run' 100%
+        ________________________
+        if idle > run > idle > (meteor) BUT if it's number 6, then, not meteor but rather:  
+        idle > run > idle > run
+        ________________________ - Done
+    created ghost state and added logic - done
+    created gravity state and added logic - done
+    create ink state - done
+    create purple fireball - done
+    
+    to fix ASAP: 
+    barrier doesn't protect when elyvorg is running from right to left.
+    to fix:
+        find a way to keep the sprite following the enemy in some cases like blood and electricityCollision - Done
+        playerStates - enter and 's' causing flicking. - fixed
+        added electricityCollision sprite. needs sound. - done
+        if there is a chance that elyvorg runs with electricWheel, when reaching edge it will throw at wrong direction - fixed
+        electricWheel spawn logic needs to be fixed, sometimes 2 wheels are on screen - fixed
+        laser sprite horiztonal inversion when on the left side of player - fixed
+        laser sprite plays first time but no laser is thrown - fixed
+        idle > run > idle > other state bug happens instantly - fixed
+        bug = using rolling before seeing elyvorg keeps moving. - Fixed
+        run state flicks the other way before facing the right way - fixed
+        bug: player collision and electric wheel causes collision animation to be between wheel and elyvorg - Fixed
+            when jumping same issue. very buggy, needs fixing again - fixed
+        gap happens because player keeps holding 'd' or 's'. - fixed
+        make gravity follow elyvorg more accurately and be slighly in front of elyvorg - done
+            fix bug where gravity stops when passing player x - fixed
+        fix LaserBeam sprite for other enemies - fixed
+        make it so that if barrier/electricity wheel hits player, elyvorg+barrier or elyvorg+wheel does not damage player as well. - Done. check for bugs
+            rolling and diving do no dmg to elyvorg / fixed - still some bugs.
+        bug: when pressing a or a and q, q still shoots, and a still makes firedog run only happens when player is at x 0 already - fixed
+        bug: running not working when elyvorg runs away - fixed
+        bug: being on edge of screen while pressing a and meeting elyvorg causes player to run - fixed
+        bug: playerStates, when fighting elyvorg can't press a or d + Enter. does nothing, but if let go and pressing again works -
+
+damage indicator underwater fix with the clock sound in sync - fixed
+problem: the longer the fight goes the slower the game becomes -
+    maybe a process is being filled and making game slow - debug and find out what
+    is causing the problem.
+    It seems that the longer a game goes the slower it gets - performance issue?
+    Yet to figure out fix - firedogAbilityUI(context) is making it slow. - fixed
+once all enemies are set and gameplay has been tested, organize the enemies file
+    for each map with their respective enemies - done
+comment out debug mode - done
+
+TO DO:
+gameplay test:
+map 1 - done
+map 2 - done
+map 3 - done
+map 4 - done
+map 5 - done
+map 6 - done
+
+Things to fix after release:
+
+progressBar UI - done
+
+Refactor menus - done
+refactor cutscene - done
+
+Mouse input in :
+    gameplay - done
+    menu - done
+    cutscene - done
+
+add skip cutscene for penguin - done
+
+to fix: 
+        fadeIn opacity when alt tabbed needs to go back to 1 - fixed
+        deleting progress, and closing game and opening before opening any tabs bugs out as it does not clear properly
+            audio settings and forest map - fixed
+
+re-do howToPlay menu and include combos section - done
+    add arrow left right logic - done
+    add restrictions - done
+
+maybe special enemies should have a different glow, for example stun enemy -> yellow glow - done
+____________________________________________________
+
+fix jump and dive background stopping while pressing 'a' or 'd' - done
+tutorial when getting in the map 1 - done
+    screen pauses and text appears on screen, pressing a key will unfreeze game - done
+    control the spawn of enemies - done
+    hide progressBar and reset UI stats once tutorial is finished - done
+    an option to activate tutorial mode, perhaps in how to play menu? - done
+    add colour for specific words - done
+    add d + w + s combo step - done
+    q+Enter combo for > 1 live enemies - done
+
+fix background firefly/fish logic - fixed - done
+b for bark lmao? - done
+during cutscene have a TAB indicator to skip dialogue - done
+when reaching cabin have a Enter indicator - done
+
+monster wiki lore menu to explain the monsters for each map - 
+    book cover - done
+    vintage pages - done
+    text format - done
+    colour on certain words within text - done
+    image logic - done
+    keyboard and mouse click logic - done
+    show "???" - for maps not unlocked - done
+    skeleton text - done
+    create actual lore for every enemy - done
+    fix map name styling when the name of map is in 2 different lines - ignore it for now
+
+bug: enemy lore seems to cause the gameplay to be slow somehow? - 
+     leaving key pressed as Tab is pressed in cutscene gets that key stuck -
+
+make the story shorter - beginning a lot to take in 
+Leave it as it is:
+    Add a ROLLING cooldown, maybe use the diving cooldown. Leave it as it is.
+    make dive waste energy? probably not a good idea, leave it as it is now.
+    idea: when in blue mode, if player dives, make fireballs spread out around player.
+    maybe make enemies spawn things when they die? is this powerups maybe or extra coins?
+    IDEA : sky fight dragon ball style
+    Zabkous enemy player collision feels weird and buggy. needs fixing?
+    have a look to make blood indicator to be drawn direcly instead of using a fixed sized image - no need for this anymore
+
+    improvements that could be made but not necessary:
+    make cutscenes extendable to make it easier to manage
+    make damage indicator use the draw() instead of pushing an image
+        which connects on map 3 with the ticking sound
+    make audio and ingame audio extendable
+    make entityAnimation in backgroundfile more readeable
+    make tests
+    player stood up when he died, rare bug but look into it.
+    add levels of difficulty. easy, medimum, hard - make enemies spawn more the harder the level- half done - finish this at the end.
+    after all audios are in game, try to find a way to make the audios the same decibels at same percentage
+    small bug - when hit by electricwheel and barrier at the same time and falling
+            on elyvorg, barrier looses 2 health bars while firedog gets hit once from it.
+    during cutscene when coming out of pause by using leftClick/Enter it also triggers the cutscene text - 
+_______________________________________________________________________________________________________________
+STORYLINE: 
+To collect all cryptic symbols.
+[LOGIC] - PLAYER CAN PRESS "NEW GAME". IF THERE IS ALREADY A GAME, IT SHOULD SAY "CONTINUE GAME".
+Start the game with a cut-scene text based diologue only.
+Firedog talks with Elyvorg. Explanations about cryptic tokens need to be collected after being stolen by Dusker. 
+Elyvorg explains that if the cryptic tokens are not collected in time then the space-time balance will be disturbed. ~
+[CUTSCENE END]
+[Include a visible road map?] and after pressing enter get into the game.
+[GAME 1] - Get through the jungle. Player needs 1000 score before 5 minutes or player will have to restart.
+There should be something by the end of game 1 to indicate player has reached the end point.
+[CUTSCENE START] Monodialogue - Firedog explains more about the situation, and little backstory about Elyvorg, he should also mention the direction he should 
+go next as he is chasing Dusker, and that he should head in the direction of the thick green forest.
+[CUTSCENE END]
+[Include a visible road map] pressing enter to get into the game.
+[GAME 2] - get through thick green jungle (add green monsters with new abilities) - 1100 score before 5 minutes
+reach the end point.
+[CUTSCENE START] Firedog caught up with Dusker, as he saw him going through another forest. Firedog says hold up, and says to himself, i better catch up to him!
+[CUTSCENE END]
+[Include a visible road map]
+[GAME 3] - Raining map, and thunder ocasionally. Rain monsters. 1200 score before 5 minutes
+[CUTSCENE START] Diologue between Firedog and Dusker. Firedog says there is no place to hide.
+[GAME 4] - Final boss map, it will be a 1v1 between Firedog and Dusker as Firedog runs forward.
+[CUTSCENE START] Defeating Dusker he lets go of the cryptic tokens, as he struggles to talk, Firedog takes them, but as he is about to take them
+Elyvorg appears and takes them. Firedog asks what elyvorg is doing, and then he reveals his true intention, that he used Firedog to 
+defeat Dusker, so he could take the cryptic tokens for himself. he begins to puzzle the cryptic tokens in the wrong order, which Firedog
+panics and asks him why is he putting them in the wrong order and that it will cause catastrophic things, then the screen flashes slowly...
+
+The End.
