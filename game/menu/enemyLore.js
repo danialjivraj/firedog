@@ -17,6 +17,18 @@ export class EnemyLore extends BaseMenu {
         this.bookX = (this.game.width - 2 * this.pageWidth) / 2;
         this.bookY = (this.game.height - this.pageHeight) / 2;
 
+        this.phraseColors = {
+            "EVERYWHERE": { fill: 'black', stroke: 'white', strokeBlur: 5 },
+            "LUNAR MOONLIT GLADE": { fill: 'blue', stroke: 'green', strokeBlur: 5 },
+            "NIGHTFALL CITY PHANTOM": { fill: 'purple', stroke: 'black', strokeBlur: 5 },
+            "CORAL ABYSS": { fill: 'dodgerblue', stroke: 'darkblue', strokeBlur: 5 },
+            "VERDANT VINE": { fill: 'seagreen', stroke: 'black', strokeBlur: 15 },
+            "SPRINGLY LEMONY": { fill: 'yellow', stroke: 'orange', strokeBlur: 5 },
+            "INFERNAL CRATER PEAK": { fill: 'red', stroke: 'black', strokeBlur: 10 },
+            "RED": { fill: 'red', stroke: 'black', strokeBlur: 1 },
+            "STUN": { fill: 'yellow', stroke: 'black', strokeBlur: 1 },
+        };
+
         this.pages = [];
 
         // map 1
@@ -129,7 +141,7 @@ export class EnemyLore extends BaseMenu {
             this.createImage('piperExtended', 82, 234, 10, this.pageWidth - 150, this.pageHeight - 275, 1),
         ]);
         //20
-        this.createPage("VOLTZEEL", "FALLING & STUN", "CORAL ABYSS", "AMONG THE MOST DANGEROUS ENEMIES, VOLTZEEL WILL STRIKE FROM ABOVE WHEN YOU LEAST EXPECT IT!\n"
+        this.createPage("VOLTZEEL", "FALL & STUN", "CORAL ABYSS", "AMONG THE MOST DANGEROUS ENEMIES, VOLTZEEL WILL STRIKE FROM ABOVE WHEN YOU LEAST EXPECT IT!\n"
             + "IT IS RUMORED THAT HIS INTENSE ELECTRICAL AURA IS THE RESULT OF EXPERIMENTS CARRIED OUT BY THE INHABITANTS OF CORAL ABYSS.", [
             this.createImage('voltzeel', 107, 87, 4, this.pageWidth - 160, 70, 1, 'stun')
         ]);
@@ -343,82 +355,6 @@ export class EnemyLore extends BaseMenu {
         };
     }
 
-    applyStyledText(context, text, startX, startY, styles) {
-        const punctuation = [',', '.', '!', '?'];
-
-        let currentX = startX;
-        let currentY = startY;
-
-        while (text.length > 0) {
-            context.save();
-
-            let matchFound = false;
-            for (const [name, style] of Object.entries(styles)) {
-                const regex = new RegExp(`\\b${name}\\b`);
-                const index = text.search(regex);
-                if (index !== -1) {
-                    const beforeText = text.substring(0, index);
-                    const styledText = text.match(regex)[0];
-                    let afterText = text.substring(index + styledText.length);
-
-                    context.fillStyle = 'black';
-                    context.fillText(beforeText, currentX, currentY);
-                    currentX += context.measureText(beforeText).width;
-
-                    context.fillStyle = style.fill;
-                    context.strokeStyle = style.stroke;
-                    context.lineWidth = 4;
-                    context.shadowColor = style.stroke;
-                    context.shadowBlur = style.strokeBlur;
-
-                    context.strokeText(styledText, currentX, currentY);
-                    context.fillText(styledText, currentX, currentY);
-
-                    currentX += context.measureText(styledText).width;
-
-                    if (afterText.length > 0 && punctuation.includes(afterText[0])) {
-                        context.fillStyle = 'black';
-                        context.fillText(afterText[0], currentX, currentY);
-                        currentX += context.measureText(afterText[0]).width;
-                        afterText = afterText.substring(1);
-                    }
-
-                    text = afterText;
-                    matchFound = true;
-                    break;
-                }
-            }
-
-            if (!matchFound) {
-                context.fillStyle = 'black';
-                context.fillText(text, currentX, currentY);
-                break;
-            }
-            context.restore();
-        }
-    }
-
-    applyTextStyles(context, text, startX, startY) {
-        const styles = {
-            "EVERYWHERE": { fill: 'black', stroke: 'white', strokeBlur: 5 },
-            "LUNAR MOONLIT GLADE": { fill: 'blue', stroke: 'green', strokeBlur: 5 },
-            "NIGHTFALL CITY PHANTOM": { fill: 'purple', stroke: 'black', strokeBlur: 5 },
-            "CORAL ABYSS": { fill: 'dodgerblue', stroke: 'darkblue', strokeBlur: 5 },
-            "VERDANT VINE": { fill: 'seagreen', stroke: 'black', strokeBlur: 15 },
-            "SPRINGLY LEMONY": { fill: 'yellow', stroke: 'orange', strokeBlur: 5 },
-            "INFERNAL CRATER PEAK": { fill: 'red', stroke: 'black', strokeBlur: 10 }
-        };
-        this.applyStyledText(context, text, startX, startY, styles);
-    }
-
-    applyTypeTextStyles(context, text, startX, startY) {
-        const styles = {
-            "RED": { fill: 'red', stroke: 'black', strokeBlur: 1 },
-            "STUN": { fill: 'yellow', stroke: 'black', strokeBlur: 1 },
-        };
-        this.applyStyledText(context, text, startX, startY, styles);
-    }
-
     drawPageContent(context, pageIndex, x, y) {
         const page = this.pages[pageIndex];
         context.font = 'bold 21px "Gloria Hallelujah"';
@@ -489,25 +425,8 @@ export class EnemyLore extends BaseMenu {
 
         let offsetY = 50;
 
-        if (locked) {
-            context.fillText(`NAME: ???`, x + 20, y + offsetY);
-            offsetY += lineHeight + gapHeight;
-            context.fillText(`TYPE: ??? & ???`, x + 20, y + offsetY);
-            offsetY += lineHeight + gapHeight;
-            context.fillText(`FOUND AT: ???`, x + 20, y + offsetY);
-            offsetY += lineHeight + gapHeight;
-            context.fillText(`DESCRIPTION: ???`, x + 20, y + offsetY);
-        } else {
-            context.fillText(`NAME: ${page.name}`, x + 20, y + offsetY);
-            offsetY += lineHeight + gapHeight;
-            this.applyTypeTextStyles(context, `TYPE: ${page.type}`, x + 20, y + offsetY);
-            offsetY += lineHeight + gapHeight;
-            this.applyTextStyles(context, `FOUND AT: ${page.foundAt}`, x + 20, y + offsetY);
-            offsetY += lineHeight + gapHeight;
-            context.fillText(`DESCRIPTION:`, x + 20, y + offsetY);
-            offsetY += lineHeight;
-
-            const words = page.description.split(' ');
+        const renderText = (text, startX, startY) => {
+            const words = text.split(' ');
             let line = '';
             let lines = [];
 
@@ -541,10 +460,54 @@ export class EnemyLore extends BaseMenu {
             }
 
             lines.forEach((line, index) => {
-                this.applyTextStyles(context, line, x + 20, y + offsetY + index * lineHeight, maxWidth);
-            });
+                const tokens = line.split(/(\b(?:EVERYWHERE|LUNAR MOONLIT GLADE|NIGHTFALL CITY PHANTOM|CORAL ABYSS|VERDANT VINE|SPRINGLY LEMONY|INFERNAL CRATER PEAK|RED|STUN)\b|[^\w\s])/).filter(Boolean);
+                let offsetX = startX;
 
-            offsetY += lines.length * lineHeight;
+                tokens.forEach((token) => {
+                    let fillStyle = 'black';
+                    let strokeStyle = 'transparent';
+                    let strokeBlur = 0;
+
+                    if (token in this.phraseColors) {
+                        fillStyle = this.phraseColors[token].fill;
+                        strokeStyle = this.phraseColors[token].stroke;
+                        strokeBlur = this.phraseColors[token].strokeBlur || 0;
+                    }
+
+                    context.fillStyle = fillStyle;
+                    context.strokeStyle = strokeStyle;
+                    context.lineWidth = 4;
+                    context.shadowBlur = strokeBlur;
+                    context.shadowColor = strokeStyle;
+
+                    context.strokeText(token, offsetX, startY);
+                    context.fillText(token, offsetX, startY);
+
+                    offsetX += context.measureText(token).width;
+                });
+
+                startY += lineHeight;
+            });
+        };
+
+        if (locked) {
+            context.fillText(`NAME: ???`, x + 20, y + offsetY);
+            offsetY += lineHeight + gapHeight;
+            context.fillText(`TYPE: ??? & ???`, x + 20, y + offsetY);
+            offsetY += lineHeight + gapHeight;
+            context.fillText(`FOUND AT: ???`, x + 20, y + offsetY);
+            offsetY += lineHeight + gapHeight;
+            context.fillText(`DESCRIPTION: ???`, x + 20, y + offsetY);
+        } else {
+            renderText(`NAME: ${page.name}`, x + 20, y + offsetY);
+            offsetY += lineHeight + gapHeight;
+            renderText(`TYPE: ${page.type}`, x + 20, y + offsetY);
+            offsetY += lineHeight + gapHeight;
+            renderText(`FOUND AT: ${page.foundAt}`, x + 20, y + offsetY);
+            offsetY += lineHeight + gapHeight;
+            renderText(`DESCRIPTION:`, x + 20, y + offsetY);
+            offsetY += lineHeight;
+            renderText(page.description, x + 20, y + offsetY);
         }
     }
 
