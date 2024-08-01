@@ -9,6 +9,35 @@ export class Tutorial {
         this.elapsedTime = 0;
         this.tutorialPause = true;
         this.cooldownTime = 0;
+
+        this.phraseColors = {
+            //words
+            'Tutorial': { fill: 'green', stroke: 'black' },
+            'Energy': { fill: 'black', stroke: 'DodgerBlue' },
+            'Red Enemy': { fill: 'red', stroke: 'black' },
+            'Stun Enemy': { fill: 'yellow', stroke: 'black' },
+            '1 Life': { fill: 'black', stroke: 'MediumSeaGreen' },
+            'How to Play': { fill: 'LightSeaGreen', stroke: 'black' },
+            //keys
+            'Q': { fill: 'orange', stroke: 'black' },
+            'E': { fill: 'orange', stroke: 'black' },
+            'W': { fill: 'orange', stroke: 'black' },
+            'A': { fill: 'orange', stroke: 'black' },
+            'S': { fill: 'orange', stroke: 'black' },
+            'D': { fill: 'orange', stroke: 'black' },
+            'Enter': { fill: 'orange', stroke: 'black' },
+            //enemies
+            'Meat Soldier': { fill: 'FireBrick', stroke: 'black' },
+            'Dotter': { fill: 'FireBrick', stroke: 'black' },
+            'Skeleton Bomb': { fill: 'FireBrick', stroke: 'black' },
+            'Spear Fish': { fill: 'FireBrick', stroke: 'black' },
+            //abilities
+            'Dive Attack': { fill: 'DodgerBlue', stroke: 'black' },
+            'Roll Attack': { fill: 'DodgerBlue', stroke: 'black' },
+            'Fireball Attack': { fill: 'DodgerBlue', stroke: 'black' },
+            'Invisible': { fill: 'DodgerBlue', stroke: 'black' },
+        };
+
         this.steps = [
             {
                 message: "Welcome to the Tutorial!\nPress Enter to continue.",
@@ -342,38 +371,12 @@ export class Tutorial {
             const lines = message.split('\n');
             const lineHeight = parseInt(this.fontSize);
 
-            const phraseColors = {
-                //words
-                'Tutorial': { fill: 'green', stroke: 'black' },
-                'Energy': { fill: 'black', stroke: 'DodgerBlue' },
-                'Red Enemy': { fill: 'red', stroke: 'black' },
-                'Stun Enemy': { fill: 'yellow', stroke: 'black' },
-                '1 Life': { fill: 'black', stroke: 'MediumSeaGreen' },
-                'How to Play': { fill: 'LightSeaGreen', stroke: 'black' },
-                //keys
-                'Q': { fill: 'orange', stroke: 'black' },
-                'E': { fill: 'orange', stroke: 'black' },
-                'W': { fill: 'orange', stroke: 'black' },
-                'A': { fill: 'orange', stroke: 'black' },
-                'S': { fill: 'orange', stroke: 'black' },
-                'D': { fill: 'orange', stroke: 'black' },
-                'Enter': { fill: 'orange', stroke: 'black' },
-                //enemies
-                'Meat Soldier': { fill: 'FireBrick', stroke: 'black' },
-                'Dotter': { fill: 'FireBrick', stroke: 'black' },
-                'Skeleton Bomb': { fill: 'FireBrick', stroke: 'black' },
-                'Spear Fish': { fill: 'FireBrick', stroke: 'black' },
-                //abilities
-                'Dive Attack': { fill: 'DodgerBlue', stroke: 'black' },
-                'Roll Attack': { fill: 'DodgerBlue', stroke: 'black' },
-                'Fireball Attack': { fill: 'DodgerBlue', stroke: 'black' },
-                'Invisible': { fill: 'DodgerBlue', stroke: 'black' },
-            };
+            const phraseColorKeysPattern = `\\b(?:${Object.keys(this.phraseColors).join('|')})\\b|[^\\w\\s]`;
 
             lines.forEach((line, index) => {
                 const y = this.game.height / 2 - (lines.length - 1) * lineHeight / 2 + index * lineHeight;
 
-                const tokens = line.split(/(\b(?:Tutorial|Energy|Red Enemy|Stun Enemy|1 Life|How to Play|Q|E|W|A|S|D|Enter|Meat Soldier|Dotter|Skeleton Bomb|Dive Attack|Roll Attack|Fireball Attack|Invisible)\b|[^\w\s])/).filter(Boolean);
+                const tokens = line.split(new RegExp(`(${phraseColorKeysPattern})`)).filter(Boolean);
 
                 let x = this.game.width / 2 - context.measureText(line).width / 2;
 
@@ -381,9 +384,9 @@ export class Tutorial {
                     let fillStyle = 'white';
                     let strokeStyle = 'black';
 
-                    if (token in phraseColors) {
-                        fillStyle = phraseColors[token].fill;
-                        strokeStyle = phraseColors[token].stroke;
+                    if (token in this.phraseColors) {
+                        fillStyle = this.phraseColors[token].fill;
+                        strokeStyle = this.phraseColors[token].stroke;
                     }
 
                     context.fillStyle = fillStyle;

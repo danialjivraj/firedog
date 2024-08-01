@@ -425,6 +425,8 @@ export class EnemyLore extends BaseMenu {
 
         let offsetY = 50;
 
+        const phraseColorKeysPattern = `\\b(?:${Object.keys(this.phraseColors).join('|')})\\b|[^\\w\\s]`;
+
         const renderText = (text, startX, startY) => {
             const words = text.split(' ');
             let line = '';
@@ -460,7 +462,7 @@ export class EnemyLore extends BaseMenu {
             }
 
             lines.forEach((line, index) => {
-                const tokens = line.split(/(\b(?:EVERYWHERE|LUNAR MOONLIT GLADE|NIGHTFALL CITY PHANTOM|CORAL ABYSS|VERDANT VINE|SPRINGLY LEMONY|INFERNAL CRATER PEAK|RED|STUN)\b|[^\w\s])/).filter(Boolean);
+                const tokens = line.split(new RegExp(`(${phraseColorKeysPattern})`)).filter(Boolean);
                 let offsetX = startX;
 
                 tokens.forEach((token) => {
