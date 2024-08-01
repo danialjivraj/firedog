@@ -137,19 +137,21 @@ export class UI {
         const shakeFrequency = 0.1;
         const shakeDirectionX = Math.random() > 0.5 ? 1 : -1;
         const shakeDirectionY = Math.random() > 0.5 ? 1 : -1;
-        const offsetX = shakeAmount * shakeDirectionX * Math.sin(Date.now() * shakeFrequency);
-        const offsetY = shakeAmount * shakeDirectionY * Math.cos(Date.now() * shakeFrequency);
 
+        let offsetX = 0;
+        let offsetY = 0;
+        
+        if (!this.game.menu.pause.isPaused) {
+            offsetX = shakeAmount * shakeDirectionX * Math.sin(Date.now() * shakeFrequency);
+            offsetY = shakeAmount * shakeDirectionY * Math.cos(Date.now() * shakeFrequency);
+        }
+        
         context.font = this.fontSize * 1.2 + 'px ' + this.fontFamily;
         context.fillStyle = textColor;
         context.shadowColor = shadowColor;
-
-        if (!this.game.menu.pause.isPaused) {
-            context.fillText('Energy: ' + this.game.player.energy.toFixed(1), 20 + offsetX, 130 + offsetY);
-        } else {
-            context.fillText('Energy: ' + this.game.player.energy.toFixed(1), 20, 130);
-        }
-
+        
+        context.fillText('Energy: ' + this.game.player.energy.toFixed(1), 20 + offsetX, 130 + offsetY);
+        
         context.restore();
     }
     timer(context) {
@@ -206,6 +208,39 @@ export class UI {
             this.game.audioHandler.mapSoundtrack.resumeSound(timeTickingSound);
         }
         if (this.game.player.isUnderwater) {
+            context.restore();
+        }
+
+        if (this.game.player.isBluePotionActive) {
+            context.save();
+        
+            const shakeAmount = 3;
+            const shakeFrequency = 0.1;
+            
+            let offsetX = 0;
+            let offsetY = 0;
+        
+            if (!this.game.menu.pause.isPaused) {
+                const shakeDirectionX = Math.random() > 0.5 ? 1 : -1;
+                const shakeDirectionY = Math.random() > 0.5 ? 1 : -1;
+                offsetX = shakeAmount * shakeDirectionX * Math.sin(Date.now() * shakeFrequency);
+                offsetY = shakeAmount * shakeDirectionY * Math.cos(Date.now() * shakeFrequency);
+            }
+        
+            const blueFireTime = (this.game.player.blueFireTimer / 1000).toFixed(1);
+        
+            context.fillStyle = 'blue';
+            context.shadowColor = 'white';
+            context.textAlign = 'center';
+        
+            context.font = this.fontSize * 2 + 'px ' + this.fontFamily;
+            context.fillText(blueFireTime, this.game.width / 2 + offsetX, 90 + offsetY);
+        
+            const textMetrics = context.measureText(blueFireTime);
+            const blueFireTimeWidth = textMetrics.width;
+            context.font = this.fontSize * 1.2 + 'px ' + this.fontFamily;
+            context.fillText(' s', this.game.width / 2 + offsetX + blueFireTimeWidth / 2 + 5, 90 + offsetY);
+        
             context.restore();
         }
     }
