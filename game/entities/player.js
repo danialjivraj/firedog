@@ -569,7 +569,7 @@ export class Player {
         if (input.includes('d') && this.currentState !== this.states[6]) {
             this.speed = this.maxSpeed;
         } else if (input.includes('a') && this.currentState !== this.states[6]) {
-            if (this.game.isElyvorgFullyVisible) {
+            if (this.game.isElyvorgFullyVisible || this.game.cabin.isFullyVisible) {
                 this.speed = -this.maxSpeed;
             } else if (this.currentState === this.states[4]) {
                 this.speed = -this.maxSpeed * 1.7;

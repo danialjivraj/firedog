@@ -5,6 +5,8 @@ export class UI {
         this.game = game;
         this.fontSize = 30;
         this.fontFamily = 'Love Ya Like A Sister';
+        this.barWidth = 500;
+
         this.livesImage = document.getElementById('firedogHead');
         this.fireballUI = document.getElementById('fireballUI');
         this.fireballUIWhiteBorder = document.getElementById('fireballUIWhiteBorder');
@@ -19,11 +21,11 @@ export class UI {
         this.slashWarningUI = document.getElementById('slashWarningUI');
         this.electricUI = document.getElementById('electricUI');
         this.electricWarningUI = document.getElementById('electricWarningUI');
-        this.width = this.game.width;
-        this.height = this.game.height;
+
         this.secondsLeft = 60000;
         this.secondsLeftActivated = false;
     }
+
     draw(context) {
         context.save();
         context.shadowOffsetX = 2;
@@ -35,8 +37,9 @@ export class UI {
         context.fillStyle = this.game.fontColor;
         //coins score
         context.fillText('Coins: ' + this.game.coins, 20, 50);
-        //progress bar
-        this.progressBar(context);
+        //bars
+        this.distanceBar(context);
+        this.elyvorgHealthBar(context);
         //time
         this.timer(context);
         //energy
@@ -50,70 +53,98 @@ export class UI {
         this.firedogAbilityUI(context)
         this.elyvorgAbilityUI(context);
     }
-    progressBar(context) {
+
+    progressBar(context, percentage, filledWidth, barOrFilledWidth, colour) {
+        this.percentage = percentage;
+        const barHeight = 10;
+        const barX = (this.game.width / 2) - (this.barWidth / 2);
+        const barY = 10;
+
+        context.save();
+        context.font = '18px ' + this.fontFamily;
+        context.fillStyle = this.game.fontColor;
+        context.textAlign = 'left';
+        context.fillText(Math.floor(percentage) + '%', barX + this.barWidth + 5, barY + barHeight);
+
+        context.shadowColor = 'rgba(0, 0, 0, 0)';
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+        context.shadowBlur = 0;
+
+        context.fillStyle = 'rgba(255, 255, 255, 0.25)';
+        context.beginPath();
+        context.moveTo(barX + 5, barY);
+        context.lineTo(barX + this.barWidth - 5, barY);
+        context.arcTo(barX + this.barWidth, barY, barX + this.barWidth, barY + 5, 5);
+        context.lineTo(barX + this.barWidth, barY + barHeight - 5);
+        context.arcTo(barX + this.barWidth, barY + barHeight, barX + this.barWidth - 5, barY + barHeight, 5);
+        context.lineTo(barX + 5, barY + barHeight);
+        context.arcTo(barX, barY + barHeight, barX, barY + barHeight - 5, 5);
+        context.lineTo(barX, barY + 5);
+        context.arcTo(barX, barY, barX + 5, barY, 5);
+        context.closePath();
+        context.fill();
+
+        this.filledWidth = filledWidth;
+
+        context.beginPath();
+        context.moveTo(barX + 5, barY);
+        context.lineTo(barX + barOrFilledWidth - 5, barY);
+        context.arcTo(barX + barOrFilledWidth, barY, barX + barOrFilledWidth, barY + 5, 5);
+        context.lineTo(barX + barOrFilledWidth, barY + barHeight - 5);
+        context.arcTo(barX + barOrFilledWidth, barY + barHeight, barX + barOrFilledWidth - 5, barY + barHeight, 5);
+        context.lineTo(barX + 5, barY + barHeight);
+        context.arcTo(barX, barY + barHeight, barX, barY + barHeight - 5, 5);
+        context.lineTo(barX, barY + 5);
+        context.arcTo(barX, barY, barX + 5, barY, 5);
+        context.closePath();
+        context.clip();
+
+        context.fillStyle = colour;
+        context.beginPath();
+        context.moveTo(barX + 10, barY);
+        context.lineTo(barX + this.filledWidth - 5, barY);
+        context.arcTo(barX + this.filledWidth, barY, barX + this.filledWidth, barY + 5, 5);
+        context.lineTo(barX + this.filledWidth, barY + barHeight - 5);
+        context.arcTo(barX + this.filledWidth, barY + barHeight, barX + this.filledWidth - 5, barY + barHeight, 5);
+        context.lineTo(barX + 5, barY + barHeight);
+        context.arcTo(barX, barY + barHeight, barX, barY + barHeight - 5, 5);
+        context.lineTo(barX, barY + 5);
+        context.arcTo(barX, barY, barX + 10, barY, 5);
+        context.closePath();
+        context.fill();
+        context.restore();
+    }
+
+    distanceBar(context) {
         if (!this.game.mapSelected[6]) {
-            const percentage = Math.min((this.game.background.totalDistanceTraveled / this.game.maxDistance) * 100, 100);
-            const barWidth = 500;
-            const barHeight = 10;
-            const barX = (this.game.width / 2) - (barWidth / 2);
-            const barY = 10;
-
-            context.save();
-            context.font = '18px ' + this.fontFamily;
-            context.fillStyle = this.game.fontColor;
-            context.textAlign = 'left';
-            context.fillText(Math.floor(percentage) + '%', barX + barWidth + 5, barY + barHeight);
-
-            context.shadowColor = 'rgba(0, 0, 0, 0)';
-            context.shadowOffsetX = 0;
-            context.shadowOffsetY = 0;
-            context.shadowBlur = 0;
-
-            context.fillStyle = 'rgba(255, 255, 255, 0.25)';
-            context.beginPath();
-            context.moveTo(barX + 5, barY);
-            context.lineTo(barX + barWidth - 5, barY);
-            context.arcTo(barX + barWidth, barY, barX + barWidth, barY + 5, 5);
-            context.lineTo(barX + barWidth, barY + barHeight - 5);
-            context.arcTo(barX + barWidth, barY + barHeight, barX + barWidth - 5, barY + barHeight, 5);
-            context.lineTo(barX + 5, barY + barHeight);
-            context.arcTo(barX, barY + barHeight, barX, barY + barHeight - 5, 5);
-            context.lineTo(barX, barY + 5);
-            context.arcTo(barX, barY, barX + 5, barY, 5);
-            context.closePath();
-            context.fill();
-
-            const filledWidth = (this.game.background.totalDistanceTraveled / this.game.maxDistance) * barWidth;
-
-            context.beginPath();
-            context.moveTo(barX + 5, barY);
-            context.lineTo(barX + barWidth - 5, barY);
-            context.arcTo(barX + barWidth, barY, barX + barWidth, barY + 5, 5);
-            context.lineTo(barX + barWidth, barY + barHeight - 5);
-            context.arcTo(barX + barWidth, barY + barHeight, barX + barWidth - 5, barY + barHeight, 5);
-            context.lineTo(barX + 5, barY + barHeight);
-            context.arcTo(barX, barY + barHeight, barX, barY + barHeight - 5, 5);
-            context.lineTo(barX, barY + 5);
-            context.arcTo(barX, barY, barX + 5, barY, 5);
-            context.closePath();
-            context.clip();
-
-            context.fillStyle = '#2ecc71';
-            context.beginPath();
-            context.moveTo(barX + 10, barY);
-            context.lineTo(barX + filledWidth - 5, barY);
-            context.arcTo(barX + filledWidth, barY, barX + filledWidth, barY + 5, 5);
-            context.lineTo(barX + filledWidth, barY + barHeight - 5);
-            context.arcTo(barX + filledWidth, barY + barHeight, barX + filledWidth - 5, barY + barHeight, 5);
-            context.lineTo(barX + 5, barY + barHeight);
-            context.arcTo(barX, barY + barHeight, barX, barY + barHeight - 5, 5);
-            context.lineTo(barX, barY + 5);
-            context.arcTo(barX, barY, barX + 10, barY, 5);
-            context.closePath();
-            context.fill();
-            context.restore();
+            this.progressBar(
+                context,
+                Math.min((this.game.background.totalDistanceTraveled / this.game.maxDistance) * 100, 100),
+                (this.game.background.totalDistanceTraveled / this.game.maxDistance) * this.barWidth,
+                this.barWidth,
+                '#2ecc71',
+            );
         }
     }
+
+    elyvorgHealthBar(context) {
+        if (this.game.elyvorgInFight) {
+            const enemy = this.game.enemies.find(e => e instanceof Elyvorg);
+            if (!enemy) return;
+
+            let elyvorgLives = enemy.lives - enemy.livesDefeatedAt;
+
+            this.progressBar(
+                context,
+                enemy.lives > 0 ? Math.max((elyvorgLives / enemy.maxLives) * 100, 1) : 0,
+                elyvorgLives > 0 ? Math.max((elyvorgLives / enemy.maxLives) * this.barWidth, 0.01 * this.barWidth) : 0,
+                elyvorgLives > 0 ? Math.max((elyvorgLives / enemy.maxLives) * this.barWidth, 0.01 * this.barWidth) : 0,
+                'red',
+            );
+        }
+    }
+
     energy(context) {
         let textColor = 'black';
         let shadowColor = 'white';
@@ -140,20 +171,21 @@ export class UI {
 
         let offsetX = 0;
         let offsetY = 0;
-        
+
         if (!this.game.menu.pause.isPaused) {
             offsetX = shakeAmount * shakeDirectionX * Math.sin(Date.now() * shakeFrequency);
             offsetY = shakeAmount * shakeDirectionY * Math.cos(Date.now() * shakeFrequency);
         }
-        
+
         context.font = this.fontSize * 1.2 + 'px ' + this.fontFamily;
         context.fillStyle = textColor;
         context.shadowColor = shadowColor;
-        
+
         context.fillText('Energy: ' + this.game.player.energy.toFixed(1), 20 + offsetX, 130 + offsetY);
-        
+
         context.restore();
     }
+
     timer(context) {
         context.font = this.fontSize * 1 + 'px ' + this.fontFamily;
         let formattedTime;
@@ -213,34 +245,34 @@ export class UI {
 
         if (this.game.player.isBluePotionActive) {
             context.save();
-        
+
             const shakeAmount = 3;
             const shakeFrequency = 0.1;
-            
+
             let offsetX = 0;
             let offsetY = 0;
-        
+
             if (!this.game.menu.pause.isPaused) {
                 const shakeDirectionX = Math.random() > 0.5 ? 1 : -1;
                 const shakeDirectionY = Math.random() > 0.5 ? 1 : -1;
                 offsetX = shakeAmount * shakeDirectionX * Math.sin(Date.now() * shakeFrequency);
                 offsetY = shakeAmount * shakeDirectionY * Math.cos(Date.now() * shakeFrequency);
             }
-        
+
             const blueFireTime = (this.game.player.blueFireTimer / 1000).toFixed(1);
-        
+
             context.fillStyle = 'blue';
             context.shadowColor = 'white';
             context.textAlign = 'center';
-        
+
             context.font = this.fontSize * 2 + 'px ' + this.fontFamily;
             context.fillText(blueFireTime, this.game.width / 2 + offsetX, 90 + offsetY);
-        
+
             const textMetrics = context.measureText(blueFireTime);
             const blueFireTimeWidth = textMetrics.width;
             context.font = this.fontSize * 1.2 + 'px ' + this.fontFamily;
             context.fillText(' s', this.game.width / 2 + offsetX + blueFireTimeWidth / 2 + 5, 90 + offsetY);
-        
+
             context.restore();
         }
     }

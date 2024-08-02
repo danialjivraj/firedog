@@ -303,7 +303,7 @@ export class ForestMapMenu extends BaseMenu {
             context.fillStyle = 'black';
             context.font = '50px Love Ya Like A Sister';
             context.fillText(`Map ${selectedMapNumber} - ${selectedMapName}`, 50, this.game.height - 30);
-            
+
             context.fillText("Tab for Enemy Lore", 50, this.game.height - 90);
             context.restore();
         }

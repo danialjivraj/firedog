@@ -52,7 +52,7 @@ export class Penguini {
         if (this.game.mapSelected[6]) {
             yPosition = this.y - 235;
         } else {
-            yPosition = this.y - 140;
+            yPosition = this.y - 170;
         }
         if (this.showEnterToTalkToPenguini && this.game.talkToPenguinOneTimeOnly) {
             context.drawImage(this.showPressEnterImage, this.x - 320, yPosition);

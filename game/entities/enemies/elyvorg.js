@@ -429,7 +429,9 @@ export class Elyvorg extends GroundEnemyBoss {
         this.originalY = this.y;
         this.fps = 30;
         this.frameInterval = 1000 / this.fps;
+        this.livesDefeatedAt = 5;
         this.lives = 150;
+        this.maxLives = this.lives - this.livesDefeatedAt;
         this.stateRandomiserTimer = 5000;
         this.stateRandomiserCooldown = 5000;
         // run
@@ -1020,7 +1022,7 @@ export class Elyvorg extends GroundEnemyBoss {
         }
     }
     checkIfDefeated() {
-        if (this.lives <= 5) {
+        if (this.lives <= this.livesDefeatedAt) {
             this.game.elyvorgInFight = false;
             this.lives = 110;
             this.cutsceneBackgroundChange(200, 600, 300);
