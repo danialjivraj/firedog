@@ -725,6 +725,7 @@ window.addEventListener('load', function () {
             this.gameCompleted = false;
 
             this.menu.forestMap.resetSelectedCircleIndex();
+            this.menu.enemyLore.currentPage = 0;
             this.menu.levelDifficulty.setDifficulty('Normal');
 
             this.menu.skins.currentSkin = this.menu.skins.defaultSkin;

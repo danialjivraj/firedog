@@ -526,8 +526,8 @@ export class EnemyLore extends BaseMenu {
             context.save();
             const bookBackgroundX = (this.game.width - this.enemyLoreBookBackground.width) / 2;
             const bookBackgroundY = (this.game.height - this.enemyLoreBookBackground.height) / 2;
-            context.drawImage(this.enemyLoreBookBackground, bookBackgroundX, bookBackgroundY);
 
+            context.drawImage(this.enemyLoreBookBackground, bookBackgroundX, bookBackgroundY);
             context.drawImage(this.leftPageBackground, this.bookX, this.bookY, this.pageWidth, this.pageHeight);
             context.drawImage(this.rightPageBackground, this.bookX + this.pageWidth, this.bookY, this.pageWidth, this.pageHeight);
 
