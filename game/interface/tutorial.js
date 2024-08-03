@@ -29,7 +29,7 @@ export class Tutorial {
             //enemies
             'Meat Soldier': { fill: 'FireBrick', stroke: 'black' },
             'Dotter': { fill: 'FireBrick', stroke: 'black' },
-            'Skeleton Bomb': { fill: 'FireBrick', stroke: 'black' },
+            'Skulnap': { fill: 'FireBrick', stroke: 'black' },
             'Spear Fish': { fill: 'FireBrick', stroke: 'black' },
             //abilities
             'Dive Attack': { fill: 'DodgerBlue', stroke: 'black' },
@@ -182,7 +182,7 @@ export class Tutorial {
                 timerDuration: 3000
             },
             {
-                message: "Up ahead is a Skeleton Bomb (a Stun Enemy)!\nIf you make contact with any enemy that glows yellow,\nyou will get stunned for a split second and take damage.\nUse Q instead!",
+                message: "Up ahead is a Skulnap (a Stun Enemy)!\nIf you make contact with any enemy that glows yellow,\nyou will get stunned for a split second and take damage.\nUse Q instead!",
                 key: 'q',
                 condition: () => {
                     const skulnap = this.game.enemies.find(enemy => enemy instanceof Skulnap);
@@ -194,7 +194,7 @@ export class Tutorial {
                 }
             },
             {
-                message: "Now let's try to use Enter against the Skeleton Bomb\nso that you can see the stunning animation!",
+                message: "Now let's try to use Enter against the Skulnap\nso that you can see the stunning animation!",
                 key: 'Enter',
                 condition: () => {
                     const skulnap = this.game.enemies.find(enemy => enemy instanceof Skulnap);
