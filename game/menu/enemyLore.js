@@ -367,7 +367,7 @@ export class EnemyLore extends BaseMenu {
             { mapUnlocked: this.game.map3Unlocked, pageLimit: 14 },
             { mapUnlocked: this.game.map4Unlocked, pageLimit: 21 },
             { mapUnlocked: this.game.map5Unlocked, pageLimit: 29 },
-            { mapUnlocked: this.game.map6Unlocked, pageLimit: 39 }
+            { mapUnlocked: this.game.map6Unlocked, pageLimit: 40 }
         ];
 
         let locked = false;
