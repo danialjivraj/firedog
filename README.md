@@ -62,13 +62,13 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 You can download the game by clicking one of the following links:
 
 #### For Windows
-- [Download (379.23MB)](https://www.mediafire.com/file/dv4r0a90712tnzs/Firedog-win32-x64.zip/file)
+- [Download (379.23MB)](https://www.mediafire.com/file/ysscnvkc4bqx9qm/Firedog-win32-x64.zip/file)
 
 #### For macOS
-- [Download (370.97MB)](https://www.mediafire.com/file/p4v3ua6eo3y27c7/Firedog-darwin-x64.zip/file)
+- [Download (370.97MB)](https://www.mediafire.com/file/qfkklg5rulm5ied/Firedog-darwin-x64.zip/file)
 
 #### For Linux
-- [Download (374.62MB)](https://www.mediafire.com/file/jubslw32l2xbuw8/Firedog-linux-x64.zip/file)
+- [Download (374.62MB)](https://www.mediafire.com/file/7qcoxtikee9qsaj/Firedog-linux-x64.zip/file)
 
 ## Dependencies
 Alternatively to downloading the game, you can clone the project and run it locally. <br>
