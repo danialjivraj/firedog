@@ -223,7 +223,7 @@ export class Player {
         }
         //blue potion
         if (this.isBluePotionActive && this.currentState === this.states[4]) {
-            this.game.enemyInterval = 10;
+            this.game.enemyInterval = 100;
             this.noEnergyLeftSound = false;
             this.isPoisonedActive = false;
             this.energy = Math.min(100, this.energy + 0.1);
