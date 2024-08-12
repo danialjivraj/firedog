@@ -32,10 +32,10 @@ export class InputHandler {
             if (e.key === 'Tab') {
                 if (this.game.currentMenu === this.game.menu.forestMap) {
                     this.game.menu.enemyLore.activateMenu();
-                    this.game.audioHandler.menu.playSound('bookFlip');
+                    this.game.audioHandler.menu.playSound('bookFlip', false, true);
                 } else if (this.game.currentMenu === this.game.menu.enemyLore) {
                     this.game.menu.forestMap.activateMenu();
-                    this.game.audioHandler.menu.playSound('bookFlip');
+                    this.game.audioHandler.menu.playSound('bookFlip', false, true);
                 }
             }
 
