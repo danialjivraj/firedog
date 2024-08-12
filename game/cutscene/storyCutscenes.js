@@ -564,12 +564,15 @@ export class StoryCutscene extends Cutscene {
                     } else if (this.dialogueIndex === 27) {
                         this.removeEventListeners();
                         this.game.audioHandler.cutsceneMusic.fadeOutAndStop('birdsChirping');
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 5, this.halfASecond);
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 7, this.halfASecond);
+                        setTimeout(() => {
+                            this.game.audioHandler.cutsceneSFX.playSound('walkingCutsceneSound');
+                        }, this.halfASecond + 100);
                         setTimeout(() => {
                             this.addEventListeners();
                             this.game.audioHandler.cutsceneMusic.playSound('bubblingVolcanoLavaSound', true);
                             this.backgroundImage = document.getElementById('map6VolcanoWalkUp');
-                        }, this.halfASecond * 5 + 100);
+                        }, this.halfASecond * 7 + 100);
                     } else if (this.dialogueIndex === 35) {
                         this.removeEventListeners();
                         this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
