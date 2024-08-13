@@ -110,6 +110,20 @@ export class ElyvorgCutscene extends Cutscene {
                     setTimeout(() => {
                         this.addEventListeners();
                     }, 1000);
+                } else if (this.dialogueIndex === 15) {
+                    this.removeEventListeners();
+                    this.game.audioHandler.firedogSFX.playSound('dreamSoundInGame');
+                    this.cutsceneBackgroundChange(500, 500, 500);
+                    setTimeout(() => {
+                        this.addEventListeners();
+                    }, 1000);
+                } else if (this.dialogueIndex === 17) {
+                    this.removeEventListeners();
+                    this.game.audioHandler.firedogSFX.playSound('dreamSoundInGame');
+                    this.cutsceneBackgroundChange(500, 500, 500);
+                    setTimeout(() => {
+                        this.addEventListeners();
+                    }, 1000);
                 }
             } else if (this.game.elyvorgPostFight === true) {
                 if (this.dialogueIndex === 2) {
@@ -222,29 +236,83 @@ export class Map6ElyvorgIngameCutsceneBeforeFight extends ElyvorgCutscene {
         );
         this.addDialogue( //15
             `${this.firedog}`,
-            `(Relax..)`,
+            `(This is not good... If I pass out here I'm sure to die..)`,
             this.addImage(this.setfiredogHeadacheBorder(), 1, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 0.7, 1560, 400, 200, 200),
         );
         this.addDialogue( //16
             `${this.firedog}`,
-            `(Okay.. I think it went away..)`,
-            this.addImage(this.setfiredogTiredBorder(), 1, 100, 400, 200, 200),
+            `...`,
+            this.addImage(this.setfiredogHeadacheBorder(), 1, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 0.7, 1560, 400, 200, 200),
         );
         this.addDialogue( //17
+            `${this.firedog}`,
+            `(Ugh... Why did the headache get so intense after seeing the ${this.cryptic} ${this.token}..?)`,
+            this.addImage(this.setfiredogHeadacheBorder(), 1, 100, 400, 200, 200),
+            this.addImage('elyvorgBorder', 0.7, 1560, 400, 200, 200),
+        );
+        this.addDialogue( //18
+            `${this.firedog}`,
+            `...`,
+            this.addImage(this.setfiredogHeadacheBorder(), 1, 100, 400, 200, 200),
+            this.addImage('elyvorgBorder', 0.7, 1560, 400, 200, 200),
+        );
+        this.addDialogue( //19
+            `${this.firedog}`,
+            `(My heart is beating so fast... just like in the dreams..)`,
+            this.addImage(this.setfiredogHeadacheBorder(), 1, 100, 400, 200, 200),
+            this.addImage('elyvorgBorder', 0.7, 1560, 400, 200, 200),
+        );
+        this.addDialogue( //20
+            `${this.firedog}`,
+            `(Relax..)`,
+            this.addImage(this.setfiredogHeadacheBorder(), 1, 100, 400, 200, 200),
+            this.addImage('elyvorgBorder', 0.7, 1560, 400, 200, 200),
+        );
+        this.addDialogue( //21
+            `${this.firedog}`,
+            `(I'm not going to lose now, after all the trouble I went through to get here!)`,
+            this.addImage(this.setfiredogHeadacheBorder(), 1, 100, 400, 200, 200),
+            this.addImage('elyvorgBorder', 0.7, 1560, 400, 200, 200),
+        );
+        this.addDialogue( //22
+            `${this.firedog}`,
+            `(Okay... I think it went away..)`,
+            this.addImage(this.setfiredogTiredBorder(), 1, 100, 400, 200, 200),
+            this.addImage('elyvorgBorder', 0.7, 1560, 400, 200, 200),
+        );
+        this.addDialogue( //23
+            `${this.elyvorg}`,
+            `Lost your words, huh? Are you regretting coming all the way here, now that death is all that awaits you? Hahaha!`,
+            this.addImage(this.setfiredogTiredBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('elyvorgBorder', 1, 1560, 400, 200, 200),
+        );
+        this.addDialogue( //24
             `${this.firedog}`,
             `I can't let you leave with what you stole. It all ends here.`,
             this.addImage(this.setfiredogAngryBorder(), 1, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 0.7, 1560, 400, 200, 200),
         );
-        this.addDialogue( //18
+        this.addDialogue( //25
+            `${this.elyvorg}`,
+            `You're right. It all ends here... for you.`,
+            this.addImage(this.setfiredogAngryBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('elyvorgBorder', 1, 1560, 400, 200, 200),
+        );
+        this.addDialogue( //26
+            `${this.firedog}`,
+            `You're wrong... I will take you down right here, right now!`,
+            this.addImage(this.setfiredogAngryBorder(), 1, 100, 400, 200, 200),
+            this.addImage('elyvorgBorder', 0.7, 1560, 400, 200, 200),
+        );
+        this.addDialogue( //27
             `${this.elyvorg}`,
             `You're confident, but that only takes you so far.`,
             this.addImage(this.setfiredogAngryBorder(), 0.7, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 1, 1560, 400, 200, 200),
         );
-        this.addDialogue( //19
+        this.addDialogue( //28
             `${this.elyvorg}`,
             `Show me what you've got.`,
             this.addImage(this.setfiredogAngryBorder(), 0.7, 100, 400, 200, 200),

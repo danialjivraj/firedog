@@ -393,6 +393,10 @@ export class UI {
             //electric
             let electricWheelTimer;
             let isElectricWheelActive;
+            //recharge
+            let stateRandomiserTimer;
+            let stateRandomiserCooldown;
+            let recharge;
 
             for (const enemy of this.game.enemies) {
                 if (enemy instanceof Elyvorg) {
@@ -411,8 +415,41 @@ export class UI {
                     //electric
                     electricWheelTimer = enemy.electricWheelTimer;
                     isElectricWheelActive = enemy.isElectricWheelActive;
+                    //recharge
+                    stateRandomiserTimer = enemy.stateRandomiserTimer;
+                    stateRandomiserCooldown = enemy.stateRandomiserCooldown + 1300;
+                    recharge = enemy.state === "recharge";
                     break;
                 }
+            }
+
+            if (recharge && stateRandomiserTimer < stateRandomiserCooldown) {
+                context.save();
+
+                const remainingTime = ((stateRandomiserCooldown - stateRandomiserTimer) / 1000).toFixed(1);
+
+                context.fillStyle = 'grey';
+                context.strokeStyle = 'white';
+                context.textAlign = 'center';
+
+                context.font = this.fontSize * 2 + 'px ' + this.fontFamily;
+                const text = `Recharge: ${remainingTime}`;
+
+                context.fillText(text, this.game.width / 2, 90);
+                context.strokeText(text, this.game.width / 2, 90);
+
+                const textMetrics = context.measureText(text);
+                const textWidth = textMetrics.width;
+
+                context.font = this.fontSize * 1.2 + 'px ' + this.fontFamily;
+
+                const sText = ' s';
+
+                const xPosition = this.game.width / 2 + textWidth / 2 + 5;
+                context.fillText(sText, xPosition, 90);
+                context.strokeText(sText, xPosition, 90);
+
+                context.restore();
             }
 
             const elyvorgBorderSize = 65;
