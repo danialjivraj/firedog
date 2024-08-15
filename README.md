@@ -13,7 +13,7 @@ Your objective on each map is to eliminate as many enemies as you can, gathering
 Your progress/game settings will be automatically saved whenever you complete a map or adjust your settings (such as audio, skin selection, or level difficulty).
 
 ## Preview
-https://github.com/user-attachments/assets/a44432c3-0bab-47f5-9ed1-9c03fc67436a
+https://github.com/user-attachments/assets/55bf2c6e-c610-45d1-9e82-eae1e124d480
 
 https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 
