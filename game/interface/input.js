@@ -25,7 +25,7 @@ export class InputHandler {
                 }
             }
 
-            if (e.key === 'b' && this.game.isPlayerInGame && this.game.menu.pause.isPaused === false && this.game.tutorialPause === false && this.game.gameOver === false) {
+            if (lowercaseKey === 'b' && this.game.isPlayerInGame && this.game.menu.pause.isPaused === false && this.game.tutorial.tutorialPause === false && this.game.gameOver === false) {
                 this.game.audioHandler.firedogSFX.playSound('barkSound');
             }
 
