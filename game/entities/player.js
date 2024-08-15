@@ -877,7 +877,7 @@ export class Player {
             checkPowerCollision(this.game.powerUps.filter(pu => pu instanceof OxygenTank), oxygenTank => {
                 this.game.time -= 10000;
                 this.game.audioHandler.powerUpAndDownSFX.playSound('oxygenTankSound', false, true);
-                this.game.floatingMessages.push(new FloatingMessage('+10', oxygenTank.x, oxygenTank.y, 115, 90, 30));
+                this.game.floatingMessages.push(new FloatingMessage('+10s', oxygenTank.x, oxygenTank.y, 115, 90, 30, 'white', 'black', true));
             }, false
             );
             checkPowerCollision(this.game.powerUps.filter(pu => pu instanceof HealthLive), healthLive => {
