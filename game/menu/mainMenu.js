@@ -3,8 +3,10 @@ import { DeleteProgressAnimation, DeleteProgressBookAnimation, SavingAnimation, 
 
 export class MainMenu extends BaseMenu {
     constructor(game) {
-        const menuOptions = ['Play', 'Skins', 'Level Difficulty', 'How to Play', 'Audio Settings', 'Delete Progress'];
+        const menuOptions = ['Play', 'Skins', 'Level Difficulty', 'How to Play', 'Audio Settings', 'Delete Progress', 'Exit'];
         super(game, menuOptions, 'Main Menu');
+        this.menuOptionsPositionOffset = 50;
+        this.positionOffset = 240;
         this.showSavingSprite = false;
         this.savingAnimation = new SavingAnimation(this.game);
         this.savingBookAnimation = new SavingBookAnimation(this.game);
@@ -35,6 +37,8 @@ export class MainMenu extends BaseMenu {
             } else if (selectedOption === 'Delete Progress') {
                 this.game.currentMenu = this.game.menu.deleteProgress;
                 this.game.menu.deleteProgress.activateMenu(1);
+            } else if (selectedOption === 'Exit') {
+                window.electronAPI.quitApp();
             }
         }
     }

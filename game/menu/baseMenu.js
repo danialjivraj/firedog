@@ -4,6 +4,7 @@ export class BaseMenu {
         this.game = game;
         this.centerX = this.game.width / 2;
         this.positionOffset = 220;
+        this.menuOptionsPositionOffset = 65;
         this.menuOptions = menuOptions;
         this.title = title;
         this.selectedOption = 0;
@@ -42,7 +43,7 @@ export class BaseMenu {
             context.font = '34px Arial';
 
             const optionHeight = 60;
-            const topY = this.game.height / 2 - this.positionOffset + 65;
+            const topY = this.game.height / 2 - this.positionOffset + this.menuOptionsPositionOffset;
 
             for (let i = 0; i < this.menuOptions.length; i++) {
                 const y = topY + (i * optionHeight);
@@ -146,7 +147,7 @@ export class BaseMenu {
             const mouseX = (event.clientX - rect.left) * scaleX;
             const mouseY = (event.clientY - rect.top) * scaleY;
 
-            const topY = this.game.height / 2 - this.positionOffset + 65;
+            const topY = this.game.height / 2 - this.positionOffset + this.menuOptionsPositionOffset;
 
             const optionHeight = 60;
 

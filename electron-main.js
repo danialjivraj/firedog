@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const url = require('url');
 
@@ -9,6 +9,12 @@ function createWindow() {
     width: 1920,
     height: 1080,
     icon: path.join(__dirname, 'game', 'assets', 'icons', 'firedogHead.png'),
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      enableRemoteModule: false,
+      nodeIntegration: false
+    }
   });
 
   mainWindow.removeMenu()
@@ -25,6 +31,10 @@ function createWindow() {
     mainWindow = null;
   });
 }
+
+ipcMain.on('quit-app', () => {
+  app.quit();
+});
 
 app.on('ready', createWindow);
 
