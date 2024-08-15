@@ -46,7 +46,11 @@ export class InputHandler {
             if (e.key === 't' && this.game.currentMenu === this.game.menu.howToPlay) {
                 this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
                 this.game.isTutorialActive = !this.game.isTutorialActive;
-                this.game.tutorialPause = !this.game.tutorialPause;
+                if (this.game.isTutorialActive === true) {
+                    this.game.tutorial.tutorialPause = true;
+                } else {
+                    this.game.tutorial.tutorialPause = false;
+                }
                 this.game.saveGameState();
             }
 
