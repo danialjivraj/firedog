@@ -798,7 +798,7 @@ export class Player {
             Elyvorg: () => {
                 if (enemy.isBarrierActive === false) {
                     enemy.lives--;
-                    this.bloodOrPoof(enemy)
+                    this.bloodOrPoof(enemy);
                 }
             },
             default: () => {
