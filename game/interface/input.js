@@ -148,6 +148,7 @@ export class InputHandler {
                 this.game.menu.howToPlay.currentImageIndex = 0;
                 this.game.currentMenu = this.game.menu.main;
             } else {
+                this.game.audioHandler.menu.playSound('bookFlip', false, true);
                 this.game.menu.forestMap.activateMenu();
             }
         } else {
