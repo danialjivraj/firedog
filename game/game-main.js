@@ -164,7 +164,7 @@ window.addEventListener('load', function () {
             this.enterToTalkToPenguin = false;
             this.talkToPenguinOneTimeOnly = true;
             // elyvorg
-            this.maxCoinsToFightElyvorg = 70;
+            this.maxCoinsToFightElyvorg = 100;
             this.isElyvorgFullyVisible = false;
             this.elyvorgSpawned = false;
             this.elyvorgDialogueBeforeDialoguePlayOnce = true;
