@@ -26,7 +26,7 @@ export class GameOverMenu extends BaseMenu {
     }
 
     draw(context) {
-        if (this.game.gameOver && this.game.isElyvorgFullyVisible) {
+        if (this.game.isElyvorgFullyVisible) {
             this.menuOptions = ['Retry Final Boss', 'Retry', 'Back to Main Menu'];
         } else {
             this.menuOptions = ['Retry', 'Back to Main Menu'];
