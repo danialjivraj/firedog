@@ -166,7 +166,7 @@ export class ForestMapMenu extends BaseMenu {
             { index: 3, underwater: true, darkWhiteBorder: true, maxDistance: 270, winningCoins: 200, Cutscene: Map3Cutscene, Map: Map3 },
             { index: 4, underwater: false, darkWhiteBorder: false, maxDistance: 240, winningCoins: 280, Cutscene: Map4Cutscene, Map: Map4 },
             { index: 5, underwater: false, darkWhiteBorder: false, maxDistance: 250, winningCoins: 300, Cutscene: Map5Cutscene, Map: Map5 },
-            { index: 6, underwater: false, darkWhiteBorder: false, maxDistance: 9999999, winningCoins: 70, Cutscene: Map6Cutscene, Map: Map6 }
+            { index: 6, underwater: false, darkWhiteBorder: false, maxDistance: 9999999, winningCoins: this.game.maxCoinsToFightElyvorg, Cutscene: Map6Cutscene, Map: Map6 }
         ];
 
         const { index, underwater, darkWhiteBorder, maxDistance, winningCoins, Cutscene, Map } = mapOptions[circleIndex];

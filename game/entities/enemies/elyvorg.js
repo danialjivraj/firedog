@@ -430,7 +430,7 @@ export class Elyvorg extends GroundEnemyBoss {
         this.fps = 30;
         this.frameInterval = 1000 / this.fps;
         this.livesDefeatedAt = 5;
-        this.lives = 150;
+        this.lives = 130;
         this.maxLives = this.lives - this.livesDefeatedAt;
         this.stateRandomiserTimer = 5000;
         this.stateRandomiserCooldown = 5000;

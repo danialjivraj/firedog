@@ -10,9 +10,12 @@ export class GameOverMenu extends BaseMenu {
 
     handleMenuSelection() {
         if (this.game.player.currentState.deathAnimation || this.game.notEnoughCoins) {
-            const selectedOption = this.menuOptions[this.selectedOption];
             super.handleMenuSelection();
-            if (selectedOption === 'Retry') {
+            const selectedOption = this.menuOptions[this.selectedOption];
+            if (selectedOption === 'Retry Final Boss Again') {
+                this.game.reset();
+                this.game.coins = this.game.maxCoinsToFightElyvorg;
+            } else if (selectedOption === 'Retry' || selectedOption === 'Retry Map 6 Again') {
                 this.game.reset();
             } else if (selectedOption === 'Back to Main Menu') {
                 this.game.reset();
@@ -23,6 +26,11 @@ export class GameOverMenu extends BaseMenu {
     }
 
     draw(context) {
+        if (this.game.gameOver && this.game.isElyvorgFullyVisible) {
+            this.menuOptions = ['Retry Final Boss Again', 'Retry Map 6 Again', 'Back to Main Menu'];
+        } else {
+            this.menuOptions = ['Retry', 'Back to Main Menu'];
+        }
         if (this.game.notEnoughCoins) {
             context.fillStyle = 'rgba(0, 0, 0, 0.5)';
             context.fillRect(0, 0, this.game.width, this.game.height);
