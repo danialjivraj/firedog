@@ -12,14 +12,14 @@ export class GameOverMenu extends BaseMenu {
         if (this.game.player.currentState.deathAnimation || this.game.notEnoughCoins) {
             super.handleMenuSelection();
             const selectedOption = this.menuOptions[this.selectedOption];
-            if (selectedOption === 'Retry Final Boss') {
-                this.game.reset();
-                this.game.coins = this.game.maxCoinsToFightElyvorg;
-            } else if (selectedOption === 'Retry') {
+            if (selectedOption === 'Retry') {
                 this.game.reset();
             } else if (selectedOption === 'Back to Main Menu') {
                 this.game.reset();
                 this.game.menu.main.activateMenu();
+            } else if (selectedOption === 'Retry Final Boss') {
+                this.game.reset();
+                this.game.coins = this.game.maxCoinsToFightElyvorg;
             }
             this.menuActive = false;
         }
