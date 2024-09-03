@@ -1,5 +1,5 @@
 # firedog
-Firedog is a 2D game built from scratch with over 20k lines of code and over 662 different assets (509 images and 153 audio files).
+Firedog is a 2D game built from scratch with over 20k lines of code and over 663 different assets (509 images and 154 audio files).
 
 This game was created by using HTML Canvas and pure JavaScript without relying on external frameworks except for 
 Electron, which was utilized to transform it into a Desktop application.
