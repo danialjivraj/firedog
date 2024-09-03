@@ -56,13 +56,9 @@ export class ForestMapMenu extends BaseMenu {
                     let newIndex = this.selectedCircleIndex + indexChange;
 
                     newIndex = Math.max(0, Math.min(unlockedCircles.length - 1, newIndex));
-
-                    if (newIndex !== 0 && newIndex !== unlockedCircles.length - 1) {
+                    if (newIndex !== this.selectedCircleIndex) {
                         this.selectedCircleIndex = newIndex;
-                    } else if (newIndex === 0 && this.selectedCircleIndex !== 0) {
-                        this.selectedCircleIndex = 0;
-                    } else if (newIndex === unlockedCircles.length - 1 && this.selectedCircleIndex !== unlockedCircles.length - 1) {
-                        this.selectedCircleIndex = unlockedCircles.length - 1;
+                        this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
                     }
 
                     this.scrollCooldown = true;
@@ -94,7 +90,13 @@ export class ForestMapMenu extends BaseMenu {
 
                 if (distanceSquared <= radiusSquared) {
                     // mouse is inside this circle
-                    this.selectedCircleIndex = this.circleOptions.indexOf(circle);
+                    const newSelectedCircleIndex = this.circleOptions.indexOf(circle);
+
+                    if (newSelectedCircleIndex !== this.selectedCircleIndex) {
+                        this.selectedCircleIndex = newSelectedCircleIndex;
+                        this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
+                    }
+
                     break;
                 }
             }
@@ -113,11 +115,13 @@ export class ForestMapMenu extends BaseMenu {
                     // checks if the current circle is the first one
                     if (this.selectedCircleIndex > 0) {
                         this.selectedCircleIndex = (this.selectedCircleIndex - 1) % unlockedCircles.length;
+                        this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
                     }
                 } else if (event.key === 'ArrowRight') {
                     // checks if the current circle is the last one
                     if (this.selectedCircleIndex < unlockedCircles.length - 1) {
                         this.selectedCircleIndex = (this.selectedCircleIndex + 1) % unlockedCircles.length;
+                        this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
                     }
                 } else if (event.key === 'Enter') {
                     if (unlockedCircles.length > 0) {

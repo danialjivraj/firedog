@@ -147,6 +147,7 @@ export class MenuAudioHandler extends AudioHandler {
     this.soundsMapping = {
       soundtrack: 'soundtrack',
       optionSelectedSound: 'optionSelectedSound',
+      optionHoveredSound: 'optionHoveredSound',
       mapOpening: 'mapOpening',
       bookFlip: 'bookFlip',
       shinySkinRizzSound: 'shinySkinRizzSound',

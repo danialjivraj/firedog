@@ -18,7 +18,10 @@ export class AudioSettingsMenu extends AudioMenu {
                 ...this.game.audioHandler.cutsceneSFX.getSoundsMapping(),
                 ...this.game.audioHandler.cutsceneDialogue.getSoundsMapping(),
             },
-            'Option Selected': this.game.audioHandler.menu.soundsMapping['optionSelectedSound'],
+            'Option Selected': [
+                this.game.audioHandler.menu.soundsMapping['optionSelectedSound'],
+                this.game.audioHandler.menu.soundsMapping['optionHoveredSound'],
+            ],
             'Menu Music': this.game.audioHandler.menu.soundsMapping['soundtrack'],
             'Cutscene Music': { ...this.game.audioHandler.cutsceneMusic.getSoundsMapping() },
             'Cutscene SFX': { ...this.game.audioHandler.cutsceneSFX.getSoundsMapping() },

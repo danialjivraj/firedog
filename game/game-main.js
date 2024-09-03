@@ -210,6 +210,7 @@ window.addEventListener('load', function () {
                         this.canSelectForestMap = true;
                         this.menu.forestMap.showSavingSprite = false;
                         this.menu.forestMap.selectedCircleIndex++;
+                        this.audioHandler.menu.playSound('optionHoveredSound', false, true);
                     }, 4000);
                 } else {
                     this.menu.main.showSavingSprite = true;

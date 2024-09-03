@@ -118,8 +118,10 @@ export class BaseMenu {
         if (this.menuActive && this.game.canSelect && this.game.canSelectForestMap) {
             if (event.key === 'ArrowUp') {
                 this.handleNavigation(-1);
+                this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
             } else if (event.key === 'ArrowDown') {
                 this.handleNavigation(1);
+                this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
             } else if (event.key === 'Enter') {
                 this.handleMenuSelection();
             }
@@ -130,6 +132,7 @@ export class BaseMenu {
         if (this.menuActive && this.game.canSelect && this.game.canSelectForestMap) {
             const delta = Math.sign(event.deltaY);
             this.handleNavigation(delta);
+            this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
         }
     }
     handleRightClick(event) {
@@ -148,8 +151,9 @@ export class BaseMenu {
             const mouseY = (event.clientY - rect.top) * scaleY;
 
             const topY = this.game.height / 2 - this.positionOffset + this.menuOptionsPositionOffset;
-
             const optionHeight = 60;
+
+            let newSelectedOption = this.selectedOption;
 
             for (let i = 0; i < this.menuOptions.length; i++) {
                 const x = this.centerX - this.optionWidth / 2;
@@ -157,9 +161,14 @@ export class BaseMenu {
 
                 if (mouseX >= x && mouseX <= x + this.optionWidth &&
                     mouseY >= y && mouseY <= y + optionHeight) {
-                    this.selectedOption = i;
+                    newSelectedOption = i;
                     break;
                 }
+            }
+
+            if (newSelectedOption !== this.selectedOption) {
+                this.selectedOption = newSelectedOption;
+                this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
             }
         }
     }

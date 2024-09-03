@@ -29,7 +29,7 @@ export class InputHandler {
                 this.game.audioHandler.firedogSFX.playSound('barkSound');
             }
 
-            if (e.key === 'Tab') {
+            if (e.key === 'Tab' && this.game.canSelectForestMap) {
                 if (this.game.currentMenu === this.game.menu.forestMap) {
                     this.game.menu.enemyLore.activateMenu();
                     this.game.audioHandler.menu.playSound('bookFlip', false, true);
