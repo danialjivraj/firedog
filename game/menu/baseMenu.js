@@ -62,7 +62,19 @@ export class BaseMenu {
 
             if (this.game.gameCompleted && this.menuInGame === false) {
                 context.globalAlpha = 0.75;
+
+                context.shadowColor = 'rgba(0, 0, 0, 1)';
+                context.shadowBlur = 4;
+                context.shadowOffsetX = 2;
+                context.shadowOffsetY = 2;
+    
                 context.drawImage(this.greenCompletedImage, 10, 10);
+    
+                context.shadowColor = 'transparent';
+                context.shadowBlur = 0;
+                context.shadowOffsetX = 0;
+                context.shadowOffsetY = 0;
+    
                 context.globalAlpha = 1;
             }
         }
@@ -350,7 +362,19 @@ export class AudioMenu extends BaseMenu {
 
         if (this.game.gameCompleted && this.menuInGame === false) {
             context.globalAlpha = 0.75;
+
+            context.shadowColor = 'rgba(0, 0, 0, 1)';
+            context.shadowBlur = 4;
+            context.shadowOffsetX = 2;
+            context.shadowOffsetY = 2;
+
             context.drawImage(this.greenCompletedImage, 10, 10);
+
+            context.shadowColor = 'transparent';
+            context.shadowBlur = 0;
+            context.shadowOffsetX = 0;
+            context.shadowOffsetY = 0;
+
             context.globalAlpha = 1;
         }
     }
