@@ -71,6 +71,7 @@ export class Player {
         this.blueFireTimer = 0;
         this.isBluePotionActive = false
         this.bluePotionSpeed = 22;
+        //red potion
         this.isRedPotionActive = false;
         this.redPotionTimer = 0;
         //poison
