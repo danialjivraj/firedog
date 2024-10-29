@@ -56,9 +56,18 @@ export class Player {
         this.loopDamageIndicator = true;
         this.buoyancy = 4;
         //states
-        this.states = [new Sitting(this.game), new Running(this.game), new Jumping(this.game),
-        new Falling(this.game), new Rolling(this.game), new Diving(this.game), new Stunned(this.game),
-        new Hit(this.game), new Standing(this.game), new Dying(this.game)];
+        this.states = [
+            new Sitting(this.game), //0
+            new Running(this.game), //1
+            new Jumping(this.game), //2
+            new Falling(this.game), //3
+            new Rolling(this.game), //4
+            new Diving(this.game), //5
+            new Stunned(this.game), //6
+            new Hit(this.game), //7
+            new Standing(this.game), //8
+            new Dying(this.game), //9
+        ];
         this.previousState = null;
         this.currentState = null;
         //energy
