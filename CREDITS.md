@@ -66,12 +66,12 @@ Below, only soundtracks will be credited.
 - **Grand Theft Auto IV Theme Song Edit by**
     [Raul Apxpei](https://www.youtube.com/watch?v=0bAF189Rf2U)
 - **Pokémon Mystery Dungeon**
-  - [In the Future](https://www.youtube.com/watch?v=boxhke2611E)
   - [On the Beach at Dusk](https://www.youtube.com/watch?v=_cys21Mq-Os)
+  - [In the Future](https://www.youtube.com/watch?v=boxhke2611E)
   - [Planet's Paralysis](https://www.youtube.com/watch?v=MGDmukO7Bmk)
 
 ### Ingame
-- **Map 1:** [Road to the Great Tower - Super Mario 3D World](https://www.youtube.com/watch?v=ldo1uoWwr50)
+- **Map 1:** [Road to the Great Tower - Super Mario 3D World](https://www.youtube.com/watch?v=PAlHBecPsiU)
 - **Map 2:** [Metroid Fusion - Original Soundtrack - 16. Environmental Sound (Silence 2)](https://www.youtube.com/watch?v=npSat0qe7bQ)
 - **Map 3:** [Pokémon Omega Ruby & Alpha Sapphire OST Dive Music](https://youtube.com/watch?v=SuSM_krLYME)
 - **Map 4:** [Tribal Jungle Music - Amazon Princess](https://www.youtube.com/watch?v=Uj5H4vJoCOw)
