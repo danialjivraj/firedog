@@ -573,7 +573,7 @@ export class EnemyLore extends BaseMenu {
     }
     clickPreviousPage() {
         if (this.currentPage > 0) {
-            this.currentPage -= 2;
+            this.currentPage = Math.max(0, this.currentPage - 2);
             this.game.audioHandler.menu.playSound('bookFlip', false, true);
         }
     }
