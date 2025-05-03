@@ -33,7 +33,7 @@ describe('IngameAudioSettingsMenu', () => {
             saveGameState: jest.fn(),
             canvas: {
                 width: 1920, height: 689,
-                getBoundingClientRect: () => ({ left: 0, top: 0, width: 800, height: 600 })
+                getBoundingClientRect: () => ({ left: 0, top: 0, width: 1920, height: 689 })
             },
             input: { handleEscapeKey: jest.fn() },
             canSelect: true,
