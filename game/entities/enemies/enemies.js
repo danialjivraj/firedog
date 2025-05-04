@@ -67,7 +67,7 @@ export class Enemy {
 
 }
 // Types of enemies ---------------------------------------------------------------------------------------------------------------------------
-class FlyingEnemy extends Enemy {
+export class FlyingEnemy extends Enemy {
     constructor(game, width, height, maxFrame, imageId) {
         super();
         this.game = game;
@@ -143,7 +143,7 @@ export class ClimbingEnemy extends Enemy {
     }
 }
 
-class VerticalEnemy extends Enemy {
+export class VerticalEnemy extends Enemy {
     constructor(game, width, height, maxFrame, imageId) {
         super();
         this.game = game;
@@ -178,7 +178,7 @@ export class FallingEnemy extends Enemy {
     }
 }
 
-class UnderwaterEnemy extends Enemy {
+export class UnderwaterEnemy extends Enemy {
     constructor(game, width, height, maxFrame, imageId) {
         super();
         this.game = game;
@@ -669,8 +669,6 @@ export class Ravengloom extends FlyingEnemy {
         }
     }
 }
-
-
 
 export class MeatSoldier extends MovingGroundEnemy {
     constructor(game) {
