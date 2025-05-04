@@ -383,7 +383,7 @@ describe('PenguiniCutscene & subclasses', () => {
                 .mockReturnValue([{ character: 'X', dialogue: 'D', images: [] }]);
             const m1 = new Map1PenguinIngameCutscene(game);
             expect(m1.dialogue.length).toBeGreaterThanOrEqual(14);
-            expect(m1.coinText).toBe(cutscene.coinsText);
+            expect(m1.coinText).toBe("coins");
             jest.restoreAllMocks();
         });
 
@@ -393,7 +393,7 @@ describe('PenguiniCutscene & subclasses', () => {
             jest.spyOn(CoinDialogueConditionCutscene.prototype, 'checkPlayerCoins')
                 .mockReturnValue([]);
             const m1 = new Map1PenguinIngameCutscene(game);
-            expect(m1.coinText).not.toBe(m1.coinsText);
+            expect(m1.coinText).toBe("coin");
             jest.restoreAllMocks();
         });
     });
