@@ -1,5 +1,5 @@
 # firedog
-Firedog is a 2D game built from scratch with over 20k lines of code and over 663 different assets (509 images and 154 audio files).
+Firedog is a 2D game built from scratch with over 20k lines of code (+14k for tests) and over 663 different assets (509 images and 154 audio files).
 
 This game was created by using HTML Canvas and pure JavaScript without relying on external frameworks except for 
 Electron, which was utilized to transform it into a Desktop application.
@@ -84,6 +84,20 @@ npm run start
 ```
 
 **Note:** Make sure you have [Node.js](https://nodejs.org/en/download) installed to be able to run the game locally.
+
+## Tests
+
+The project is thoroughly tested using Jest, with over **1.1k+ tests** and and average of **80% test coverage** across all files.<br>
+You need to install the testing dependencies before being able to run all tests.
+
+1. Install all dependencies by running in the root folder:
+```
+npm install
+```
+2. To run all tests use:
+```
+npm test
+```
 
 ## Diagrams
 [firedog.drawio](https://drive.google.com/file/d/1UzqG0iWC3djNO5h_WFIayjSSvS6cQqbG/view?usp=sharing)
