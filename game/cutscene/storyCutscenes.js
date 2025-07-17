@@ -5029,7 +5029,7 @@ export class Map6EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //38 change scenary
             `${this.elyvorg}`,
-            `But due to your lack of incompetence ${this.valdorin}, I can feel where it is.`,
+            `But due to your lack of competence ${this.valdorin}, I can feel where it is.`,
         );
         this.addDialogue( //39 change scenary
             `${this.elyvorg}`,
