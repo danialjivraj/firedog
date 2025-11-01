@@ -7,7 +7,7 @@ import {
 import { HealthLive, RedPotion, BluePotion, Coin, OxygenTank } from './powerUp.js';
 import { BlackHole, Cauldron, Drink } from './powerDown.js';
 import { FloatingMessage } from '../animations/floatingMessages.js';
-import { Fireball, CoinLoss } from '../animations/particles.js';
+import { Fireball, CoinLoss, PoisonBubbles, IceCrystalBubbles } from '../animations/particles.js';
 import {
     AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Tauro,
     Aura, KarateCroco, SpearFish, TheRock, LilHornet, Cactus, IceBall, Garry, RockProjectile, VolcanoWasp, Volcanurtle
@@ -91,6 +91,9 @@ export class Player {
         //slow down
         this.isSlowed = false;
         this.slowedTimer = 0;
+        //status blubbles
+        this.statusFxTimer = 0;
+        this.statusFxInterval = 120;
         //fireball cooldowns
         this.fireballTimer = 1000;
         this.fireballCooldown = 1000;
@@ -130,6 +133,8 @@ export class Player {
 
         this.firedogLivesLimit();
         this.energyLogic(deltaTime);
+        this.checkIfFiredogIsSlowed(deltaTime);
+        this.emitStatusParticles(deltaTime);
 
         this.divingAbility(deltaTime)
         this.fireballAbility(input, deltaTime);
@@ -144,7 +149,6 @@ export class Player {
             this.spriteAnimation(deltaTime);
             this.playerHorizontalMovement(input);
             this.playerVerticalMovement(input);
-            this.checkIfFiredogIsSlowed(deltaTime);
 
             this.collisionWithEnemies(deltaTime);
             this.collisionWithPowers(deltaTime);
@@ -192,29 +196,105 @@ export class Player {
         }
     }
 
+    getCurrentSkinImage() {
+        switch (this.game.menu.skins.currentSkin) {
+            case this.game.menu.skins.hatSkin:
+                return this.hatImage;
+            case this.game.menu.skins.choloSkin:
+                return this.choloImage;
+            case this.game.menu.skins.zabkaSkin:
+                return this.zabkaImage;
+            case this.game.menu.skins.shinySkin:
+                return this.shinyImage;
+            default:
+                return this.image;
+        }
+    }
+
+    getTintedFrameCanvas(img, sx, sy, sw, sh, dw, dh, tint) {
+        const OW = Math.max(1, Math.round(dw));
+        const OH = Math.max(1, Math.round(dh));
+
+        if (!this.tintCanvas) {
+            this.tintCanvas = document.createElement('canvas');
+            this.tintCtx = this.tintCanvas.getContext('2d');
+        }
+        const oc = this.tintCanvas, octx = this.tintCtx;
+        if (oc.width !== OW || oc.height !== OH) { oc.width = OW; oc.height = OH; }
+
+        octx.setTransform(1, 0, 0, 1, 0, 0);
+        octx.clearRect(0, 0, OW, OH);
+        octx.globalCompositeOperation = 'source-over';
+        octx.drawImage(img, sx, sy, sw, sh, 0, 0, OW, OH);
+
+        octx.globalCompositeOperation = 'source-atop';
+        if (typeof tint === 'string') {
+            octx.fillStyle = tint;
+        } else {
+            const grad = tint.dir === 'horizontal'
+                ? octx.createLinearGradient(0, 0, OW, 0)
+                : octx.createLinearGradient(0, 0, 0, OH);
+            for (const stop of tint.stops) grad.addColorStop(stop.offset, stop.color);
+            octx.fillStyle = grad;
+        }
+        octx.fillRect(0, 0, OW, OH);
+        octx.globalCompositeOperation = 'source-over';
+
+        return oc;
+    }
+
     drawPlayerWithCurrentSkin(context) {
-        if (this.isInvisible) {
-            context.globalAlpha = 0.5;
+        if (this.isInvisible) context.globalAlpha = 0.5;
+
+        const img = this.getCurrentSkinImage();
+
+        const sx = this.frameX * this.width;
+        const sy = this.frameY * this.height;
+        const sw = this.width, sh = this.height;
+        const dx = -this.width / 2, dy = -this.height / 2;
+        const dw = this.width, dh = this.height;
+
+        const slowed = this.isSlowed;
+        const poisoned = this.isPoisonedActive;
+
+        const drawGlow = (color, blur = 6) => {
+            context.save();
+            context.shadowColor = color;
+            context.shadowBlur = blur;
+            context.shadowOffsetX = 0;
+            context.shadowOffsetY = 0;
+            context.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+            context.restore();
+        };
+
+        if (slowed && poisoned) {
+            drawGlow('rgba(0,160,255,1)', 7);
+            const oc = this.getTintedFrameCanvas(
+                img, sx, sy, sw, sh, dw, dh,
+                {
+                    dir: 'horizontal',
+                    stops: [
+                        { offset: 0.00, color: 'rgba(0,100,0,0.40)' },
+                        { offset: 0.50, color: 'rgba(0,150,120,0.38)' },
+                        { offset: 1.00, color: 'rgba(0,120,255,0.35)' },
+                    ]
+                }
+            );
+            context.drawImage(oc, dx, dy, dw, dh);
+
+        } else if (poisoned) {
+            drawGlow('rgba(0,130,0,1)', 6);
+            const oc = this.getTintedFrameCanvas(img, sx, sy, sw, sh, dw, dh, 'rgba(0,100,0,0.40)');
+            context.drawImage(oc, dx, dy, dw, dh);
+        } else if (slowed) {
+            drawGlow('rgba(0,160,255,1)', 6);
+            const oc = this.getTintedFrameCanvas(img, sx, sy, sw, sh, dw, dh, 'rgba(0,120,255,0.35)');
+            context.drawImage(oc, dx, dy, dw, dh);
+        } else {
+            // normal
+            context.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
         }
 
-        // draws the player based on the current skin
-        switch (this.game.menu.skins.currentSkin) {
-            case this.game.menu.skins.defaultSkin:
-                context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
-                break;
-            case this.game.menu.skins.hatSkin:
-                context.drawImage(this.hatImage, this.frameX * this.width, this.frameY * this.height, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
-                break;
-            case this.game.menu.skins.choloSkin:
-                context.drawImage(this.choloImage, this.frameX * this.width, this.frameY * this.height, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
-                break;
-            case this.game.menu.skins.zabkaSkin:
-                context.drawImage(this.zabkaImage, this.frameX * this.width, this.frameY * this.height, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
-                break;
-            case this.game.menu.skins.shinySkin:
-                context.drawImage(this.shinyImage, this.frameX * this.width, this.frameY * this.height, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
-                break;
-        }
         context.globalAlpha = 1;
     }
 
@@ -558,6 +638,41 @@ export class Player {
 
         const tunnelVision = new TunnelVision(this.game);
         this.game.collisions.push(tunnelVision);
+    }
+    emitStatusParticles(deltaTime) {
+        this.statusFxTimer += deltaTime;
+        if (this.statusFxTimer < this.statusFxInterval) return;
+        this.statusFxTimer = 0;
+
+        const lineLeft = this.x + this.width * 0.20;
+        const lineRight = this.x + this.width * 0.80;
+        const spawnY = this.y + this.height * 0.5;
+
+        const jitter = 6;
+        const pickX = () =>
+            lineLeft + Math.random() * (lineRight - lineLeft) + (Math.random() * jitter - jitter / 2);
+
+        const spawnPoisonBubbles = (kind) => {
+            this.game.particles.unshift(new PoisonBubbles(this.game, pickX(), spawnY, kind));
+        };
+
+        const spawnIceCrystal = () => {
+            this.game.particles.unshift(new IceCrystalBubbles(this.game, pickX(), spawnY));
+        };
+
+        if (this.isPoisonedActive && this.isSlowed) {
+            spawnPoisonBubbles('poison');
+            spawnIceCrystal();
+            return;
+        }
+
+        if (this.isPoisonedActive) {
+            if (Math.random() < 0.75) spawnPoisonBubbles('poison');
+        }
+
+        if (this.isSlowed) {
+            if (Math.random() < 1.0) spawnIceCrystal();
+        }
     }
 
     // movement logic

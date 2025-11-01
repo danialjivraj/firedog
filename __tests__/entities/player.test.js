@@ -1,5 +1,5 @@
 import { Player, CollisionLogic } from '../../game/entities/player';
-import { Fireball, CoinLoss } from '../../game/animations/particles';
+import { Fireball, CoinLoss, PoisonBubbles, IceCrystalBubbles } from '../../game/animations/particles';
 import { Drink, Cauldron, BlackHole } from '../../game/entities/powerDown';
 import { OxygenTank, HealthLive, Coin, RedPotion, BluePotion } from '../../game/entities/powerUp';
 import { InkSplash } from '../../game/animations/ink';
@@ -64,7 +64,10 @@ jest.mock('../../game/animations/floatingMessages', () => ({
 }));
 
 jest.mock('../../game/animations/particles', () => ({
-    Fireball: jest.fn(), CoinLoss: jest.fn(),
+    Fireball: jest.fn(),
+    CoinLoss: jest.fn(),
+    PoisonBubbles: jest.fn(),
+    IceCrystalBubbles: jest.fn(),
 }));
 
 jest.mock('../../game/entities/enemies/enemies', () => ({
@@ -635,20 +638,25 @@ describe('Player', () => {
     test('update skips input-driven subsystems when deathAnimation is true', () => {
         const stubState = { deathAnimation: true, handleInput: jest.fn() };
         player.currentState = stubState;
-        const spies = [
+
+        const notCalled = [
             jest.spyOn(player, 'playerSFXAudios'),
             jest.spyOn(stubState, 'handleInput'),
             jest.spyOn(player, 'underwaterGravityAndIndicator'),
             jest.spyOn(player, 'spriteAnimation'),
             jest.spyOn(player, 'playerHorizontalMovement'),
             jest.spyOn(player, 'playerVerticalMovement'),
-            jest.spyOn(player, 'checkIfFiredogIsSlowed'),
             jest.spyOn(player, 'collisionWithEnemies'),
             jest.spyOn(player, 'collisionWithPowers'),
             jest.spyOn(player, 'firedogMeetsElyvorg'),
         ];
+
+        const slowedSpy = jest.spyOn(player, 'checkIfFiredogIsSlowed');
+
         player.update([], 16);
-        spies.forEach(spy => expect(spy).not.toHaveBeenCalled());
+
+        notCalled.forEach(spy => expect(spy).not.toHaveBeenCalled());
+        expect(slowedSpy).toHaveBeenCalledWith(16);
     });
 
     test('collisionWithPowers flags powerUps and powerDowns for deletion', () => {
@@ -1474,6 +1482,151 @@ describe('Player', () => {
         });
     });
 
+    describe('color tint & glow rendering', () => {
+        const fakeCanvas = (w = 10, h = 10) => ({
+            width: w,
+            height: h,
+            getContext: jest.fn(() => ({
+            })),
+        });
+
+        let ctx;
+        beforeEach(() => {
+        ctx = {
+            drawImage: jest.fn(),
+            save: jest.fn(),
+            restore: jest.fn(),
+        };
+        let _alpha = 1;
+        Object.defineProperty(ctx, 'globalAlpha', {
+            configurable: true,
+            get() { return _alpha; },
+            set(v) { _alpha = v; }
+        });
+
+        player.frameX = 0;
+        player.frameY = 0;
+        player.width = 100;
+        player.height = 90;
+        });
+
+        test('poisoned branch: uses green tint and draws base + oc', () => {
+            player.isPoisonedActive = true;
+            player.isSlowed = false;
+
+            const oc = fakeCanvas();
+            const tintSpy = jest.spyOn(player, 'getTintedFrameCanvas').mockReturnValue(oc);
+
+            player.drawPlayerWithCurrentSkin(ctx);
+
+            expect(tintSpy).toHaveBeenCalledWith(
+                player.getCurrentSkinImage(),
+                0, 0, player.width, player.height,
+                player.width, player.height,
+                'rgba(0,100,0,0.40)'
+            );
+
+            expect(ctx.drawImage).toHaveBeenNthCalledWith(
+                1,
+                player.getCurrentSkinImage(),
+                0, 0, player.width, player.height,
+                -player.width / 2, -player.height / 2, player.width, player.height
+            );
+            expect(ctx.drawImage).toHaveBeenNthCalledWith(
+                2, oc, -player.width / 2, -player.height / 2, player.width, player.height
+            );
+        });
+
+        test('slowed branch: uses blue tint and draws base + oc', () => {
+            player.isPoisonedActive = false;
+            player.isSlowed = true;
+
+            const oc = fakeCanvas();
+            const tintSpy = jest.spyOn(player, 'getTintedFrameCanvas').mockReturnValue(oc);
+
+            player.drawPlayerWithCurrentSkin(ctx);
+
+            expect(tintSpy).toHaveBeenCalledWith(
+                player.getCurrentSkinImage(),
+                0, 0, player.width, player.height,
+                player.width, player.height,
+                'rgba(0,120,255,0.35)'
+            );
+
+            expect(ctx.drawImage).toHaveBeenNthCalledWith(
+                1,
+                player.getCurrentSkinImage(),
+                0, 0, player.width, player.height,
+                -player.width / 2, -player.height / 2, player.width, player.height
+            );
+            expect(ctx.drawImage).toHaveBeenNthCalledWith(
+                2, oc, -player.width / 2, -player.height / 2, player.width, player.height
+            );
+        });
+
+        test('slowed + poisoned branch: gradient tint then oc (no masks)', () => {
+            player.isPoisonedActive = true;
+            player.isSlowed = true;
+
+            const oc = fakeCanvas();
+            const tintSpy = jest.spyOn(player, 'getTintedFrameCanvas').mockReturnValue(oc);
+
+            player.drawPlayerWithCurrentSkin(ctx);
+
+            expect(tintSpy).toHaveBeenCalled();
+            const tintArgs = tintSpy.mock.calls[0];
+            const tintObj = tintArgs[tintArgs.length - 1];
+            expect(tintObj).toEqual(
+                expect.objectContaining({
+                    dir: 'horizontal',
+                    stops: expect.any(Array),
+                })
+            );
+            expect(Array.isArray(tintObj.stops)).toBe(true);
+            expect(tintObj.stops.length).toBeGreaterThan(0);
+
+            expect(ctx.drawImage).toHaveBeenNthCalledWith(
+                1,
+                player.getCurrentSkinImage(),
+                0, 0, player.width, player.height,
+                -player.width / 2, -player.height / 2, player.width, player.height
+            );
+            expect(ctx.drawImage).toHaveBeenNthCalledWith(
+                2, oc, -player.width / 2, -player.height / 2, player.width, player.height
+            );
+        });
+
+        test('normal branch: draws base image only (no helpers)', () => {
+            player.isPoisonedActive = false;
+            player.isSlowed = false;
+
+            const tintSpy = jest.spyOn(player, 'getTintedFrameCanvas');
+
+            player.drawPlayerWithCurrentSkin(ctx);
+
+            expect(tintSpy).not.toHaveBeenCalled();
+            expect(ctx.drawImage).toHaveBeenCalledWith(
+                player.getCurrentSkinImage(),
+                0, 0, player.width, player.height,
+                -player.width / 2, -player.height / 2, player.width, player.height
+            );
+        });
+
+        test('respects invisibility alpha (0.5 then restore to 1)', () => {
+            player.isInvisible = true;
+            const alphas = [];
+            Object.defineProperty(ctx, 'globalAlpha', {
+                configurable: true,
+                set(v) { alphas.push(v); },
+                get() { return alphas[alphas.length - 1]; },
+            });
+
+            player.drawPlayerWithCurrentSkin(ctx);
+
+            expect(alphas).toEqual([0.5, 1]);
+        });
+    });
+
     describe('collisionAnimationFollowsEnemy – Blood branch', () => {
         test('calls updatePosition on a Blood collision matching the enemy', () => {
             const enemy = { id: 'eX' };
@@ -1544,5 +1697,173 @@ describe('Player', () => {
             expect(player.collisionWithEnemies).toHaveBeenCalled();
             expect(player.collisionWithPowers).toHaveBeenCalled();
         });
+    });
+});
+
+describe('emitStatusParticles (bubble status logic)', () => {
+    let game, player;
+    const origRandom = Math.random;
+
+    beforeEach(() => {
+        game = {
+            width: 1920,
+            height: 689,
+            groundMargin: 50,
+            lives: 3,
+            maxLives: 5,
+            normalSpeed: 6,
+            speed: 6,
+            enemyInterval: 1000,
+            input: {
+                qOrLeftClick: jest.fn().mockReturnValue(false),
+                eOrScrollClick: jest.fn().mockReturnValue(false),
+                enterOrRightClick: jest.fn().mockReturnValue(false),
+                keys: []
+            },
+            cabin: { isFullyVisible: false },
+            debug: false,
+            isElyvorgFullyVisible: false,
+            elyvorgInFight: false,
+            time: 0,
+            maxTime: 10000,
+            noDamageDuringTutorial: false,
+            selectedDifficulty: 'Easy',
+            mapSelected: [false, false, false, false],
+            UI: { secondsLeftActivated: false },
+            collisions: [],
+            floatingMessages: [],
+            behindPlayerParticles: [],
+            enemies: [],
+            powerUps: [],
+            powerDowns: [],
+            coins: 0,
+            particles: [],
+            audioHandler: {
+                firedogSFX: { playSound: jest.fn(), stopSound: jest.fn() },
+                explosionSFX: { playSound: jest.fn() },
+                enemySFX: { playSound: jest.fn() },
+                powerUpAndDownSFX: { playSound: jest.fn() }
+            },
+            gameOver: false,
+            menu: {
+                levelDifficulty: { setDifficulty: jest.fn() },
+                skins: {
+                    currentSkin: null,
+                    defaultSkin: null,
+                    hatSkin: null,
+                    choloSkin: null,
+                    zabkaSkin: null,
+                    shinySkin: null
+                }
+            }
+        };
+
+        player = new Player(game);
+        game.player = player;
+
+        player.currentState = { deathAnimation: false };
+
+        player.statusFxTimer = 0;
+        player.statusFxInterval = 120;
+
+        PoisonBubbles.mockClear();
+        IceCrystalBubbles.mockClear();
+        game.particles = [];
+    });
+
+    afterEach(() => {
+        Math.random = origRandom;
+    });
+
+    test('spawns BOTH poison bubbles and ice crystals when poisoned + slowed', () => {
+        player.isPoisonedActive = true;
+        player.isSlowed = true;
+
+        player.emitStatusParticles(player.statusFxInterval);
+
+        expect(PoisonBubbles).toHaveBeenCalledTimes(1);
+        expect(PoisonBubbles).toHaveBeenCalledWith(
+            game,
+            expect.any(Number),
+            expect.any(Number),
+            'poison'
+        );
+        expect(IceCrystalBubbles).toHaveBeenCalledTimes(1);
+        expect(IceCrystalBubbles).toHaveBeenCalledWith(
+            game,
+            expect.any(Number),
+            expect.any(Number)
+        );
+        expect(game.particles.length).toBe(2);
+    });
+
+    test('when ONLY poisoned: spawns PoisonBubbles with p≈0.75 (spawn case)', () => {
+        player.isPoisonedActive = true;
+        player.isSlowed = false;
+        Math.random = jest.fn().mockReturnValue(0.5);
+
+        player.emitStatusParticles(player.statusFxInterval);
+
+        expect(PoisonBubbles).toHaveBeenCalledTimes(1);
+        expect(IceCrystalBubbles).not.toHaveBeenCalled();
+        expect(game.particles.length).toBe(1);
+    });
+
+    test('when ONLY poisoned: may skip spawn (non-spawn case)', () => {
+        player.isPoisonedActive = true;
+        player.isSlowed = false;
+        Math.random = jest.fn().mockReturnValue(0.9);
+
+        player.emitStatusParticles(player.statusFxInterval);
+
+        expect(PoisonBubbles).not.toHaveBeenCalled();
+        expect(IceCrystalBubbles).not.toHaveBeenCalled();
+        expect(game.particles.length).toBe(0);
+    });
+
+    test('when ONLY slowed: always spawns IceCrystalBubbles', () => {
+        player.isPoisonedActive = false;
+        player.isSlowed = true;
+        Math.random = jest.fn().mockReturnValue(0.123);
+
+        player.emitStatusParticles(player.statusFxInterval);
+
+        expect(IceCrystalBubbles).toHaveBeenCalledTimes(1);
+        expect(PoisonBubbles).not.toHaveBeenCalled();
+        expect(game.particles.length).toBe(1);
+    });
+
+    test('when NEITHER slowed nor poisoned: spawns nothing', () => {
+        player.isPoisonedActive = false;
+        player.isSlowed = false;
+
+        player.emitStatusParticles(player.statusFxInterval);
+
+        expect(PoisonBubbles).not.toHaveBeenCalled();
+        expect(IceCrystalBubbles).not.toHaveBeenCalled();
+        expect(game.particles.length).toBe(0);
+    });
+
+    test('does emit when currentState.deathAnimation is true', () => {
+        player.currentState = { deathAnimation: true };
+        player.isPoisonedActive = true;
+        player.isSlowed = true;
+
+        player.emitStatusParticles(player.statusFxInterval);
+
+        expect(PoisonBubbles).toHaveBeenCalled();
+        expect(IceCrystalBubbles).toHaveBeenCalled();
+        expect(game.particles.length).toBe(2);
+    });
+
+    test('timer gate: delta below interval does not emit', () => {
+        player.isPoisonedActive = true;
+        player.isSlowed = true;
+
+        player.emitStatusParticles(player.statusFxInterval - 1);
+
+        expect(PoisonBubbles).not.toHaveBeenCalled();
+        expect(IceCrystalBubbles).not.toHaveBeenCalled();
+        expect(game.particles.length).toBe(0);
     });
 });

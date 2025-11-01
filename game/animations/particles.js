@@ -239,3 +239,100 @@ export class CoinLoss extends Particle {
         context.drawImage(this.image, this.x, this.y, this.size, this.size);
     }
 }
+
+class FloatingBubbleEffect extends Particle {
+    constructor(game, x, y, options = {}) {
+        super(game);
+        this.x = x;
+        this.y = y;
+
+        this.size = options.size ?? (Math.random() * 15 + 10);
+        this.speedY = options.speedY ?? -(1.4 + Math.random() * 0.6);
+        this.swayAngle = Math.random() * Math.PI * 2;
+        this.swaySpeed = options.swaySpeed ?? (0.1 + Math.random() * 0.05);
+        this.swayAmount = options.swayAmount ?? (0.6 + Math.random() * 0.4);
+
+        this.life = 1;
+        this.fadeSpeed = 0.012 + Math.random() * 0.01;
+    }
+
+    update() {
+        if (this.game.cabin.isFullyVisible || this.game.isElyvorgFullyVisible) {
+            this.x -= this.game.speed * (this.parallax ?? 0.0);
+        } else {
+            this.x -= this.game.speed * (this.parallax ?? 0.2);
+        }
+
+        this.swayAngle += this.swaySpeed;
+        this.x += Math.sin(this.swayAngle) * this.swayAmount;
+        this.y += this.speedY;
+
+        this.size *= 0.992;
+        this.life -= this.fadeSpeed;
+
+        if (this.size < 2 || this.life <= 0) this.markedForDeletion = true;
+    }
+}
+
+export class PoisonBubbles extends FloatingBubbleEffect {
+    constructor(game, x, y, kind = 'poison') {
+        super(game, x, y);
+        this.kind = kind;
+
+        this.speedX = (Math.random() * 0.6 - 0.3);
+        this.swaySpeed *= 0.016;
+
+        this.shadowBlur = 10;
+        const isPoison = kind === 'poison';
+        this.shadowColor = isPoison ? 'rgba(0,160,0,0.9)' : 'rgba(90,180,255,0.9)';
+        this.fill = isPoison ? 'rgba(0,200,0,0.8)' : 'rgba(120,200,255,0.8)';
+        this.stroke = isPoison ? 'rgba(0,255,0,0.9)' : 'rgba(160,220,255,0.9)';
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.life);
+
+        ctx.shadowColor = this.shadowColor;
+        ctx.shadowBlur = this.shadowBlur;
+
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size * 0.6, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fillStyle = this.fill;
+        ctx.fill();
+
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = this.stroke;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(this.x - this.size * 0.2, this.y - this.size * 0.2, this.size * 0.18, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.fill();
+
+        ctx.restore();
+    }
+}
+
+export class IceCrystalBubbles extends FloatingBubbleEffect {
+    constructor(game, x, y) {
+        super(game, x, y, { size: Math.random() * 25 + 10 });
+        this.image = document.getElementById('ice_crystal');
+        this.alpha = 1;
+    }
+
+    update() {
+        super.update();
+        this.alpha = this.life;
+    }
+    draw(ctx) {
+        if (!this.image || !this.image.complete || this.image.naturalWidth === 0) return;
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.alpha);
+        ctx.drawImage(this.image, this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
+        ctx.restore();
+    }
+}

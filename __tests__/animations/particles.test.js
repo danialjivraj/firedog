@@ -6,6 +6,8 @@ import {
     Fire,
     Fireball,
     CoinLoss,
+    PoisonBubbles,
+    IceCrystalBubbles,
 } from '../../game/animations/particles';
 
 const fakeImages = {
@@ -395,5 +397,171 @@ describe('CoinLoss', () => {
     it('draw() renders coin', () => {
         cl.draw(ctx);
         expect(ctx.drawImage).toHaveBeenCalled();
+    });
+});
+
+describe('PoisonBubbles', () => {
+    let game, ctx;
+
+    beforeEach(() => {
+        jest.spyOn(Math, 'random')
+            .mockReturnValueOnce(0.5)
+            .mockReturnValueOnce(0)
+            .mockReturnValueOnce(0)
+            .mockReturnValueOnce(0)
+            .mockReturnValueOnce(0)
+            .mockReturnValueOnce(0)
+            .mockReturnValueOnce(0.5);
+        jest.spyOn(Math, 'sin').mockReturnValue(0);
+
+        game = {
+            cabin: { isFullyVisible: false },
+            isElyvorgFullyVisible: false,
+            speed: 5,
+            player: {},
+            menu: { pause: { isPaused: false } },
+        };
+
+        ctx = {
+            save: jest.fn(),
+            restore: jest.fn(),
+            beginPath: jest.fn(),
+            closePath: jest.fn(),
+            arc: jest.fn(),
+            fill: jest.fn(),
+            stroke: jest.fn(),
+            set globalAlpha(val) { this.ga = val; },
+            get globalAlpha() { return this.ga; },
+            set shadowColor(val) { this.sc = val; },
+            get shadowColor() { return this.sc; },
+            set shadowBlur(val) { this.sb = val; },
+            get shadowBlur() { return this.sb; },
+            set fillStyle(val) { this.fs = val; },
+            get fillStyle() { return this.fs; },
+            set strokeStyle(val) { this.ss = val; },
+            get strokeStyle() { return this.ss; },
+            set lineWidth(val) { this.lw = val; },
+            get lineWidth() { return this.lw; },
+        };
+    });
+
+    afterEach(() => {
+        Math.random.mockRestore();
+        Math.sin.mockRestore();
+    });
+
+    it('update() applies parallax, vertical rise, shrink, and fade (not fully visible)', () => {
+        const p = new PoisonBubbles(game, 100, 200, 'poison');
+        const { size: isz } = p;
+        p.update();
+        expect(p.x).toBeCloseTo(100 - 5 * 0.2, 5);
+        expect(p.y).toBeCloseTo(200 - 1.4, 5);
+        expect(p.size).toBeCloseTo(isz * 0.992, 5);
+        expect(p.life).toBeCloseTo(1 - 0.012, 5);
+        expect(p.markedForDeletion).toBe(false);
+    });
+
+    it('update() uses zero parallax when cabin/isElyvorg fully visible', () => {
+        game.cabin.isFullyVisible = true;
+        const p = new PoisonBubbles(game, 50, 50);
+        p.update();
+        expect(p.x).toBeCloseTo(50, 5);
+    });
+
+    it('marks for deletion when too small or life depleted', () => {
+        const p1 = new PoisonBubbles(game, 0, 0);
+        p1.size = 1.9;
+        p1.update();
+        expect(p1.markedForDeletion).toBe(true);
+
+        const p2 = new PoisonBubbles(game, 0, 0);
+        p2.life = 0.001;
+        p2.update();
+        expect(p2.markedForDeletion).toBe(true);
+    });
+
+    it('draw() renders bubble body, stroke, and highlight', () => {
+        const p = new PoisonBubbles(game, 10, 20, 'poison');
+        p.draw(ctx);
+        expect(ctx.beginPath).toHaveBeenCalled();
+        expect(ctx.arc).toHaveBeenCalled();
+        expect(ctx.fill).toHaveBeenCalled();
+        expect(ctx.stroke).toHaveBeenCalled();
+        expect(ctx.save).toHaveBeenCalled();
+        expect(ctx.restore).toHaveBeenCalled();
+        expect(ctx.lineWidth).toBeGreaterThan(0);
+        expect(typeof ctx.fillStyle).toBe('string');
+        expect(typeof ctx.strokeStyle).toBe('string');
+    });
+});
+
+describe('IceCrystalBubbles', () => {
+    let game, ctx;
+
+    beforeEach(() => {
+        fakeImages.ice_crystal.complete = true;
+        fakeImages.ice_crystal.naturalWidth = 10;
+
+        jest.spyOn(Math, 'random')
+            .mockReturnValueOnce(0.4)
+            .mockReturnValueOnce(0)
+            .mockReturnValueOnce(0)
+            .mockReturnValueOnce(0)
+            .mockReturnValueOnce(0)
+            .mockReturnValueOnce(0);
+        jest.spyOn(Math, 'sin').mockReturnValue(0);
+
+        game = {
+            cabin: { isFullyVisible: false },
+            isElyvorgFullyVisible: false,
+            speed: 3,
+            player: {},
+            menu: { pause: { isPaused: false } },
+        };
+
+        ctx = {
+            save: jest.fn(),
+            restore: jest.fn(),
+            drawImage: jest.fn(),
+            set globalAlpha(val) { this.ga = val; },
+            get globalAlpha() { return this.ga; },
+        };
+    });
+
+    afterEach(() => {
+        Math.random.mockRestore();
+        Math.sin.mockRestore();
+    });
+
+    it('update() ties alpha to life and applies motion/shrink/fade', () => {
+        const icb = new IceCrystalBubbles(game, 100, 100);
+        const { size: isz } = icb;
+        icb.update();
+        expect(icb.x).toBeCloseTo(100 - 3 * 0.2, 5);
+        expect(icb.y).toBeCloseTo(100 - 1.4, 5);
+        expect(icb.size).toBeCloseTo(isz * 0.992, 5);
+        expect(icb.alpha).toBeCloseTo(icb.life, 5);
+    });
+
+    it('draw() renders the ice crystal sprite with alpha', () => {
+        const icb = new IceCrystalBubbles(game, 10, 20);
+        icb.size = 20;
+        icb.draw(ctx);
+        expect(ctx.drawImage).toHaveBeenCalledWith(
+            fakeImages.ice_crystal,
+            icb.x - icb.size / 2,
+            icb.y - icb.size / 2,
+            icb.size,
+            icb.size
+        );
+        expect(ctx.save).toHaveBeenCalled();
+        expect(ctx.restore).toHaveBeenCalled();
+    });
+
+    it('marks for deletion when life <= 0', () => {
+        const icb = new IceCrystalBubbles(game, 0, 0);
+        icb.life = 0.001;
+        icb.update();
+        expect(icb.markedForDeletion).toBe(true);
     });
 });
