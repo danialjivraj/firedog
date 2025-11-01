@@ -5,6 +5,299 @@ export class StoryCutscene extends Cutscene {
         super(game);
         this.characterLimit = 75;
         this.textBoxWidth = 1050;
+
+        this.actions = {
+            map1: {
+                start: {
+                    5: () => this.playSFX('slashSound'),
+                    6: () => this.transitionWithBg(this.halfASecond, this.halfASecond, this.halfASecond, 'map1TentFireplace', this.halfASecond + 100, null, () => {
+                        this.playMusic('cracklingMountainCampfirewithRelaxingRiver', true);
+                    }),
+                    7: () => this.playMusic('onTheBeachAtDusk', true),
+                    29: () => this.fadeOutMusic('onTheBeachAtDusk'),
+                    58: () => {
+                        this.removeEventListeners();
+                        this.fadeOutMusic('cracklingMountainCampfirewithRelaxingRiver');
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 4, this.halfASecond);
+                        setTimeout(() => {
+                            this.addEventListeners();
+                            this.backgroundImage = document.getElementById('map1outsideCastleDoor');
+                            this.playSFX('walkingCutsceneSound');
+                        }, this.halfASecond + 100);
+                    },
+                    60: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 4, this.halfASecond, 'map1KingsBedroom', this.halfASecond + 100, null, () => {
+                        this.playSFX('doorOpening');
+                    }),
+                    63: () => setTimeout(() => this.playMusic('inTheFuture', true), this.halfASecond + 100),
+                    66: () => this.transitionWithBg(this.halfASecond, this.halfASecond, this.halfASecond, 'map1SafeRoom', this.halfASecond + 100),
+                    73: () => this.transitionWithBg(this.halfASecond, this.halfASecond, this.halfASecond, 'map1crypticTokenWar', this.halfASecond + 100),
+                    93: () => this.transitionWithBg(this.halfASecond, this.halfASecond, this.halfASecond, 'map1Lab', this.halfASecond + 100),
+                    95: () => this.transitionWithBg(this.halfASecond, this.halfASecond, this.halfASecond, 'map1DestroyedTree', this.halfASecond + 100),
+                    97: () => this.transitionWithBg(this.halfASecond, this.halfASecond, this.halfASecond, 'map1RegeneratedTree', this.halfASecond + 100),
+                    100: () => this.transitionWithBg(this.halfASecond, this.halfASecond, this.halfASecond, 'map1KingsBedroom', this.halfASecond + 100),
+                    132: () => this.transitionWithBg(this.halfASecond, this.halfASecond, this.halfASecond, 'map1outsideCastleDoor', this.halfASecond + 100, null, () => {
+                        this.fadeOutMusic('inTheFuture');
+                    }),
+                    138: () => this.transitionWithBg(this.halfASecond, this.halfASecond, this.halfASecond, 'map1outsideLakeAndTrees', this.halfASecond + 100, null, () => {
+                        this.playMusic('windBreezeSound', true);
+                    }),
+                },
+                end: {
+                    0: () => { /* no cutscene changes here */ },
+                }
+            },
+
+            map2: {
+                start: {
+                    2: () => this.transitionWithBg(this.halfASecond * 2, this.halfASecond * 3, this.halfASecond, 'dreamLight1', this.halfASecond * 4, () => {
+                        this.playSFX('dreamSound');
+                    }, () => {
+                        this.playMusic('echoesOfTime', true);
+                    }),
+                    4: () => this.transitionWithBg(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2, 'dreamDark1', this.halfASecond + 700, () => {
+                        this.playSFX('dreamSound');
+                    }),
+                    28: () => this.transitionWithBg(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2, 'cabincutscene1_5', this.halfASecond * 2 + 700, () => {
+                        this.fadeOutMusic('echoesOfTime');
+                    }, () => {
+                        this.playMusic('exaleDeskant', true);
+                    }),
+                    35: () => this.transitionWithBg(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2, 'map2outsideCabin', this.halfASecond * 2 + 700, () => {
+                        this.fadeOutMusic('exaleDeskant');
+                    }, () => {
+                        this.playSFX('doorOpening');
+                        this.playMusic('windBreezeSound', true);
+                    }),
+                },
+                end: {
+                    6: () => this.playSFX('cutsceneMapOpening'),
+                    19: () => this.transitionWithBg(this.halfASecond, this.halfASecond, this.halfASecond, 'map1blackBackground', this.halfASecond),
+                    20: () => this.transitionWithBg(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2, 'dreamLight2', this.halfASecond * 2 + 700, () => {
+                        this.playSFX('dreamSound');
+                    }, () => {
+                        this.playMusic('echoesOfTime', true);
+                    }),
+                    24: () => this.transitionWithBg(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2, 'dreamDark2', this.halfASecond * 2 + 700, () => {
+                        this.playSFX('dreamSound');
+                    }),
+                    39: () => this.transitionWithBg(this.halfASecond, this.halfASecond, this.halfASecond, 'map1blackBackground', this.halfASecond, null, () => {
+                        this.fadeOutMusic('echoesOfTime');
+                    }),
+                }
+            },
+
+            map3: {
+                start: {
+                    7: () => this.playSFX('cutsceneMapOpening'),
+                    11: () => this.transitionWithBg(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2, 'map3OutsideCabin', this.halfASecond * 2 + 700, null, () => {
+                        this.playSFX('doorOpening');
+                        this.playMusic('windBreezeSound', true);
+                    }),
+                    32: () => this.transitionWithBg(this.halfASecond * 2, this.halfASecond * 5, this.halfASecond * 2, 'map3Sorcerer', this.halfASecond * 2 + 700, null, () => {
+                        this.playSFX('walkingCutsceneSound');
+                    }),
+                    50: () => this.transitionWithBg(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2, 'map3OutsideCabin', this.halfASecond * 2 + 700, () => {
+                        this.playSFX('sorcererEnteringMindSound');
+                        this.fadeOutMusic('birdsChirping');
+                        this.fadeOutMusic('windBreezeSound');
+                    }, () => {
+                        this.isCharacterBlackAndWhite = true;
+                        this.isBackgroundBlackAndWhite = true;
+                    }),
+                    57: () => { this.isCharacterBlackAndWhite = false; },
+                    60: () => this.transitionWithBg(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2, 'dreamLight3', this.halfASecond * 2 + 700, null, () => {
+                        this.isBackgroundBlackAndWhite = false;
+                        this.playMusic('echoesOfTime', true);
+                    }),
+                    64: () => this.transitionWithBg(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2, 'dreamDark3', this.halfASecond * 2 + 700),
+                    73: () => { this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond / 2, this.halfASecond / 2); this.playSFX('sorcererTeleportBackSound'); },
+                    74: () => this.transitionWithBg(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2, 'map3Sorcerer', this.halfASecond * 2 + 700, null, () => {
+                        this.fadeOutMusic('echoesOfTime');
+                        this.playMusic('birdsChirping', true);
+                        this.playMusic('windBreezeSound', true);
+                    }),
+                    89: () => this.playSFX('sorcererWaterSpellSound'),
+                    95: () => {
+                        this.removeEventListeners();
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 4, this.halfASecond);
+                        setTimeout(() => {
+                            this.addEventListeners();
+                            this.playSFX('waterSplashSound');
+                        }, this.halfASecond + 100);
+                    },
+                    98: () => {
+                        this.fadeOutMusic('birdsChirping');
+                        this.fadeOutMusic('windBreezeSound');
+                    },
+                },
+                end: {
+                    6: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, 'map1blackBackground', this.halfASecond + 100, () => {
+                        this.fadeOutMusic('submarineSonarUnderwaterSound');
+                    }),
+                    10: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 4, this.halfASecond * 2, 'map3InsideSubmarine', this.halfASecond + 100, null, () => {
+                        this.playMusic('submarineSonarUnderwaterSound');
+                    }),
+                    14: () => this.transitionWithBg(this.halfASecond * 2, this.halfASecond * 16, this.halfASecond * 2, 'map1blackBackground', this.halfASecond * 2 + 100, null, () => {
+                        this.playSFX('submarineRevving', true);
+                    }),
+                    16: () => { this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond); this.game.audioHandler.cutsceneSFX.fadeOutAndStop('submarineRevving'); },
+                    18: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, null, this.halfASecond + 100, null, () => {
+                        this.playSFX('submarineDoorOpening');
+                    }),
+                    19: () => this.transitionWithBg(this.halfASecond * 2, this.halfASecond * 4, this.halfASecond * 2, 'map3ForestRiver', this.halfASecond * 2 + 100, () => {
+                        this.fadeOutMusic('submarineSonarUnderwaterSound');
+                    }, () => {
+                        this.playMusic('windBreezeSound');
+                    }),
+                }
+            },
+
+            map4: {
+                start: {
+                    5: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, 'map4footsteps', this.halfASecond + 100),
+                    10: () => { this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond); this.playSFX('dreamSound', false, true); },
+                    12: () => { this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond); this.playSFX('dreamSound', false, true); },
+                    14: () => this.transitionWithBg(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2, 'dreamLight4', this.halfASecond * 4 + 100, () => {
+                        this.playSFX('dreamSound');
+                        this.fadeOutMusic('birdsChirping');
+                        this.fadeOutMusic('windBreezeSound');
+                    }, () => {
+                        this.playMusic('echoesOfTime', true);
+                    }),
+                    15: () => { this.playSFX('dreamSound'); this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond); },
+                    17: () => this.transitionWithBg(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2, 'dreamDark4', this.halfASecond * 2 + 100, () => {
+                        this.playSFX('dreamSound');
+                    }),
+                    37: () => this.transitionWithBg(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2, 'map4beginningForestView', this.halfASecond * 2 + 100, () => {
+                        this.fadeOutMusic('echoesOfTime');
+                    }, () => {
+                        this.playMusic('birdsChirping', true);
+                        this.playMusic('windBreezeSound', true);
+                    }),
+                    46: () => this.transitionWithBg(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2, 'map1KingsBedroom', this.halfASecond * 2 + 100, () => {
+                        this.fadeOutMusic('windBreezeSound');
+                        this.fadeOutMusic('birdsChirping');
+                        this.fadeOutMusic('windBreezeSound');
+                    }),
+                    54: () => setTimeout(() => this.playMusic('inTheFuture', true), this.halfASecond),
+                    56: () => this.transitionWithBg(this.halfASecond, this.halfASecond, this.halfASecond, 'map1crypticTokenWallpaper', this.halfASecond + 100),
+                    57: () => this.transitionWithBg(this.halfASecond, this.halfASecond, this.halfASecond, 'map4CloningLab', this.halfASecond + 100),
+                    60: () => this.transitionWithBg(this.halfASecond, this.halfASecond, this.halfASecond, 'map4ElyvorgFlames', this.halfASecond + 100),
+                    64: () => this.transitionWithBg(this.halfASecond, this.halfASecond, this.halfASecond, 'map4EvilElyvorg', this.halfASecond + 100),
+                    66: () => this.transitionWithBg(this.halfASecond, this.halfASecond, this.halfASecond, 'map4hospitalBedEmpty', this.halfASecond + 100),
+                    69: () => this.transitionWithBg(this.halfASecond, this.halfASecond, this.halfASecond, 'map1KingsBedroom', this.halfASecond + 100),
+                },
+                end: {
+                    16: () => this.playMusic('planetsParalysis', true),
+                    20: () => this.transitionWithBg(this.halfASecond, this.halfASecond, this.halfASecond, 'map1KingsBedroom', this.halfASecond + 100, null, () => {
+                        this.isCharacterBlackAndWhite = true;
+                        this.isBackgroundBlackAndWhite = true;
+                    }),
+                    21: () => this.transitionWithBg(this.halfASecond, this.halfASecond, this.halfASecond, 'map4CabinEndCutscene', this.halfASecond + 100, null, () => {
+                        this.isCharacterBlackAndWhite = false;
+                        this.isBackgroundBlackAndWhite = false;
+                    }),
+                    46: () => this.fadeOutMusic('planetsParalysis'),
+                }
+            },
+
+            map5: {
+                start: {
+                    0: () => { /* no cutscene changes here */ },
+                },
+                end: {
+                    0: () => { /* no cutscene changes here */ },
+                }
+            },
+
+            map6: {
+                start: {
+                    5: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, 'dreamLight5', this.halfASecond * 2 + 100, null, () => {
+                        this.playMusic('echoesOfTime', true);
+                    }),
+                    8: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, 'dreamDark5', this.halfASecond * 2 + 100, null, () => {
+                        this.playMusic('crypticTokenDarkAmbienceSound', true);
+                    }),
+                    12: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, 'map5insideCabin', this.halfASecond * 2 + 100, null, () => {
+                        this.fadeOutMusic('echoesOfTime');
+                        this.fadeOutMusic('crypticTokenDarkAmbienceSound');
+                        this.playMusic('birdsChirping', true);
+                    }),
+                    15: () => {
+                        this.playSFX('doorOpening');
+                        this.removeEventListeners();
+                        this.cutsceneBackgroundChange(this.halfASecond / 2, this.halfASecond / 2, this.halfASecond / 2);
+                        setTimeout(() => { this.addEventListeners(); }, this.halfASecond + 100);
+                    },
+                    27: () => {
+                        this.removeEventListeners();
+                        this.fadeOutMusic('birdsChirping');
+                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 7, this.halfASecond);
+                        setTimeout(() => { this.playSFX('walkingCutsceneSound'); }, this.halfASecond + 100);
+                        setTimeout(() => {
+                            this.addEventListeners();
+                            this.playMusic('bubblingVolcanoLavaSound', true);
+                            this.backgroundImage = document.getElementById('map6VolcanoWalkUp');
+                        }, this.halfASecond * 7 + 100);
+                    },
+                    35: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, null, this.halfASecond * 2 + 100),
+                },
+                end: {
+                    0: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond * 2, 'map6insideCaveLava', this.halfASecond * 2 + 100, null, () => {
+                        this.playMusic('bubblingVolcanoLavaSound', true);
+                    }),
+                    3: () => { this.playSFX('dreamSound'); this.removeEventListeners(); this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond); setTimeout(() => this.addEventListeners(), this.halfASecond + 100); },
+                    5: () => { this.playSFX('dreamSound'); this.removeEventListeners(); this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond); setTimeout(() => this.addEventListeners(), this.halfASecond + 100); },
+                    7: () => this.transitionWithBg(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2, 'dreamLight6', this.halfASecond * 3 + 300, () => {
+                        this.playSFX('dreamSound');
+                        this.fadeOutMusic('bubblingVolcanoLavaSound');
+                    }, () => {
+                        this.playMusic('echoesOfTime', true);
+                    }),
+                    9: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, 'dreamDark6', this.halfASecond * 2 + 100, () => {
+                        this.playSFX('dreamSound');
+                    }),
+                    32: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, 'map1blackBackground', this.halfASecond * 2 + 100, null, () => {
+                        this.fadeOutMusic('echoesOfTime');
+                    }),
+                    36: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, 'map6elyvorgTokenPlaceFind', this.halfASecond * 2 + 100, null, () => {
+                        this.playMusic('bubblingVolcanoLavaSound', true);
+                    }),
+                    38: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, 'map6elyvorgTokenPlace', this.halfASecond * 2 + 100),
+                    39: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, 'map6stone', this.halfASecond * 2 + 100),
+                    43: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, 'map6stone2', this.halfASecond * 2 + 100),
+                    44: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, 'map6stone3', this.halfASecond * 2 + 100, null, () => {
+                        this.playMusic('groundShakingSound', true);
+                        this.groundShaking = true;
+                    }),
+                    48: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, 'map6elyvorgTokenPlaceActive', this.halfASecond * 2 + 100),
+                    51: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, 'map1KingsBedroom', this.halfASecond * 2 + 100, () => {
+                        this.fadeOutMusic('bubblingVolcanoLavaSound');
+                    }),
+                    55: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, this.getmap6insideCaveLavaEarthquake(), this.halfASecond * 2 + 100, null, () => {
+                        this.playMusic('bubblingVolcanoLavaSound', true);
+                    }),
+                    59: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, 'dreamLight7', this.halfASecond * 2 + 100, () => {
+                        this.fadeOutMusic('bubblingVolcanoLavaSound');
+                    }),
+                    67: () => {
+                        this.removeEventListeners();
+                        this.dontShowTextBoxAndSound = true;
+                        this.fadeOutMusic('groundShakingSound');
+                        this.cutsceneBackgroundChange(this.halfASecond * 4, this.halfASecond * 2, this.halfASecond * 7);
+                        setTimeout(() => {
+                            this.playMusic('gta4Theme', true);
+                            this.groundShaking = false;
+                            this.backgroundImage = document.getElementById('toBeContinued');
+                        }, this.halfASecond * 4 + 100);
+                        setTimeout(() => { this.addEventListeners(); }, this.halfASecond * 13);
+                    },
+                    68: () => this.transitionWithBg(this.halfASecond * 4, this.halfASecond * 2, this.halfASecond * 7, 'madeByDanial', this.halfASecond * 4 + 100, null, () => {
+                        this.groundShaking = false;
+                    }),
+                }
+            },
+        };
     }
 
     enterOrLeftClick(cutscene) {
@@ -18,7 +311,6 @@ export class StoryCutscene extends Cutscene {
             this.continueDialogue = false;
         } else if (this.textIndex < this.dialogue[this.dialogueIndex].dialogue.length) {
             const dotIndices = this.getDotIndices(this.dialogue[this.dialogueIndex].dialogue);
-
             const nextDotIndex = dotIndices.find(index => index > this.textIndex);
             this.textIndex = nextDotIndex !== undefined ? nextDotIndex : this.dialogue[this.dialogueIndex].dialogue.length;
         } else if (this.dialogueIndex < this.dialogue.length - 1) {
@@ -40,9 +332,7 @@ export class StoryCutscene extends Cutscene {
                     this.game.isPlayerInGame = true;
                 }
                 this.game.input.keys = [];
-                this.game.audioHandler.cutsceneDialogue.stopAllSounds();
-                this.game.audioHandler.cutsceneSFX.stopAllSounds();
-                this.game.audioHandler.cutsceneMusic.stopAllSounds();
+                this.stopAllAudio();
                 this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
             }, 500);
         }
@@ -67,9 +357,7 @@ export class StoryCutscene extends Cutscene {
                     } else {
                         this.game.isPlayerInGame = true;
                     }
-                    this.game.audioHandler.cutsceneDialogue.stopAllSounds();
-                    this.game.audioHandler.cutsceneSFX.stopAllSounds();
-                    this.game.audioHandler.cutsceneMusic.stopAllSounds();
+                    this.stopAllAudio();
                     this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
                 }, 500);
             }
@@ -86,645 +374,17 @@ export class StoryCutscene extends Cutscene {
         super.displayDialogue(cutscene);
     }
 
-    cutsceneController() {
-        if (this.textIndex === this.dialogue[this.dialogueIndex].dialogue.length) {
-            if (this.game.mapSelected[1]) {
-                if (this.game.isEndCutscene === false) {
-                    if (this.dialogueIndex === 5) {
-                        this.game.audioHandler.cutsceneSFX.playSound('slashSound');
-                    } else if (this.dialogueIndex === 6) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map1TentFireplace');
-                            this.game.audioHandler.cutsceneMusic.playSound('cracklingMountainCampfirewithRelaxingRiver', true);
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 7) {
-                        this.game.audioHandler.cutsceneMusic.playSound('onTheBeachAtDusk', true);
-                    } else if (this.dialogueIndex === 29) {
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('onTheBeachAtDusk');
-                    } else if (this.dialogueIndex === 58) {
-                        this.removeEventListeners();
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('cracklingMountainCampfirewithRelaxingRiver');
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 4, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map1outsideCastleDoor');
-                            this.game.audioHandler.cutsceneSFX.playSound('walkingCutsceneSound');
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 60) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 4, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map1KingsBedroom');
-                            this.game.audioHandler.cutsceneSFX.playSound('doorOpening');
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 63) {
-                        setTimeout(() => {
-                            this.game.audioHandler.cutsceneMusic.playSound('inTheFuture', true);
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 66) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map1SafeRoom');
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 73) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map1crypticTokenWar');
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 93) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map1Lab');
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 95) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map1DestroyedTree');
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 97) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map1RegeneratedTree');
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 100) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map1KingsBedroom');
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 132) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map1outsideCastleDoor');
-                            this.game.audioHandler.cutsceneMusic.fadeOutAndStop('inTheFuture');
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 138) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.game.audioHandler.cutsceneMusic.playSound('windBreezeSound', true);
-                            this.backgroundImage = document.getElementById('map1outsideLakeAndTrees');
-                        }, this.halfASecond + 100);
-                    }
-                } else {
-                    // no cutscene changes here
-                }
-            } else if (this.game.mapSelected[2]) {
-                if (this.game.isEndCutscene === false) {
-                    if (this.dialogueIndex === 2) {
-                        this.removeEventListeners();
-                        this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
-                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 3, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('dreamLight1');
-                            this.game.audioHandler.cutsceneMusic.playSound('echoesOfTime', true);
-                        }, this.halfASecond * 4);
-                    } else if (this.dialogueIndex === 4) {
-                        this.removeEventListeners();
-                        this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
-                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('dreamDark1');
-                        }, this.halfASecond + 700);
-                    } else if (this.dialogueIndex === 28) {
-                        this.removeEventListeners();
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('echoesOfTime');
-                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.game.audioHandler.cutsceneMusic.playSound('exaleDeskant', true);
-                            this.backgroundImage = document.getElementById('cabincutscene1_5');
-                        }, this.halfASecond * 2 + 700);
-                    } else if (this.dialogueIndex === 35) {
-                        this.removeEventListeners();
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('exaleDeskant');
-                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.game.audioHandler.cutsceneSFX.playSound('doorOpening');
-                            this.game.audioHandler.cutsceneMusic.playSound('windBreezeSound', true);
-                            this.backgroundImage = document.getElementById('map2outsideCabin');
-                        }, this.halfASecond * 2 + 700);
-                    }
-                } else {
-                    if (this.dialogueIndex === 6) {
-                        this.game.audioHandler.cutsceneSFX.playSound('cutsceneMapOpening');
-                    } else if (this.dialogueIndex === 19) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map1blackBackground');
-                        }, this.halfASecond);
-                    } else if (this.dialogueIndex === 20) {
-                        this.removeEventListeners();
-                        this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
-                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.game.audioHandler.cutsceneMusic.playSound('echoesOfTime', true);
-                            this.backgroundImage = document.getElementById('dreamLight2');
-                        }, this.halfASecond * 2 + 700);
-                    } else if (this.dialogueIndex === 24) {
-                        this.removeEventListeners();
-                        this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
-                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('dreamDark2');
-                        }, this.halfASecond * 2 + 700);
-                    } else if (this.dialogueIndex === 39) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map1blackBackground');
-                            this.game.audioHandler.cutsceneMusic.fadeOutAndStop('echoesOfTime');
-                        }, this.halfASecond);
-                    }
-                }
-            } else if (this.game.mapSelected[3]) {
-                if (this.game.isEndCutscene === false) {
-                    if (this.dialogueIndex === 7) {
-                        this.game.audioHandler.cutsceneSFX.playSound('cutsceneMapOpening');
-                    } else if (this.dialogueIndex === 11) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.game.audioHandler.cutsceneSFX.playSound('doorOpening');
-                            this.game.audioHandler.cutsceneMusic.playSound('windBreezeSound', true);
-                            this.backgroundImage = document.getElementById('map3OutsideCabin');
-                        }, this.halfASecond * 2 + 700);
-                    } else if (this.dialogueIndex === 32) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 5, this.halfASecond * 2);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.game.audioHandler.cutsceneSFX.playSound('walkingCutsceneSound');
-                            this.backgroundImage = document.getElementById('map3Sorcerer');
-                        }, this.halfASecond * 2 + 700);
-                    } else if (this.dialogueIndex === 50) {
-                        this.removeEventListeners();
-                        this.game.audioHandler.cutsceneSFX.playSound('sorcererEnteringMindSound');
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('birdsChirping');
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('windBreezeSound');
-                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.isCharacterBlackAndWhite = true;
-                            this.isBackgroundBlackAndWhite = true;
-                            this.backgroundImage = document.getElementById('map3OutsideCabin');
-                        }, this.halfASecond * 2 + 700);
-                    } else if (this.dialogueIndex === 57) {
-                        this.isCharacterBlackAndWhite = false;
-                    } else if (this.dialogueIndex === 60) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.isBackgroundBlackAndWhite = false;
-                            this.game.audioHandler.cutsceneMusic.playSound('echoesOfTime', true);
-                            this.backgroundImage = document.getElementById('dreamLight3');
-                        }, this.halfASecond * 2 + 700);
-                    } else if (this.dialogueIndex === 64) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('dreamDark3');
-                        }, this.halfASecond * 2 + 700);
-                    } else if (this.dialogueIndex === 73) {
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond / 2, this.halfASecond / 2);
-                        this.game.audioHandler.cutsceneSFX.playSound('sorcererTeleportBackSound');
-                    } else if (this.dialogueIndex === 74) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.game.audioHandler.cutsceneMusic.fadeOutAndStop('echoesOfTime');
-                            this.game.audioHandler.cutsceneMusic.playSound('birdsChirping', true);
-                            this.game.audioHandler.cutsceneMusic.playSound('windBreezeSound', true);
-                            this.backgroundImage = document.getElementById('map3Sorcerer');
-                        }, this.halfASecond * 2 + 700);
-                    } else if (this.dialogueIndex === 89) {
-                        this.game.audioHandler.cutsceneSFX.playSound('sorcererWaterSpellSound');
-                    } else if (this.dialogueIndex === 95) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 4, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.game.audioHandler.cutsceneSFX.playSound('waterSplashSound');
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 98) {
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('birdsChirping');
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('windBreezeSound');
-                    }
-                } else {
-                    if (this.dialogueIndex === 6) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('submarineSonarUnderwaterSound');
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map1blackBackground');
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 10) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 4, this.halfASecond * 2);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.game.audioHandler.cutsceneMusic.playSound('submarineSonarUnderwaterSound');
-                            this.backgroundImage = document.getElementById('map3InsideSubmarine');
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 14) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 16, this.halfASecond * 2);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.game.audioHandler.cutsceneSFX.playSound('submarineRevving', true);
-                            this.backgroundImage = document.getElementById('map1blackBackground');
-                        }, this.halfASecond * 2 + 100);
-                    } else if (this.dialogueIndex === 16) {
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        this.game.audioHandler.cutsceneSFX.fadeOutAndStop('submarineRevving');
-                    } else if (this.dialogueIndex === 18) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.game.audioHandler.cutsceneSFX.playSound('submarineDoorOpening');
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 19) {
-                        this.removeEventListeners();
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('submarineSonarUnderwaterSound');
-                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 4, this.halfASecond * 2);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.game.audioHandler.cutsceneMusic.playSound('windBreezeSound');
-                            this.backgroundImage = document.getElementById('map3ForestRiver');
-                        }, this.halfASecond * 2 + 100);
-                    }
-                }
-            } else if (this.game.mapSelected[4]) {
-                if (this.game.isEndCutscene === false) {
-                    if (this.dialogueIndex === 5) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map4footsteps');
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 10) {
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        this.game.audioHandler.cutsceneSFX.playSound('dreamSound', false, true);
-                    } else if (this.dialogueIndex === 12) {
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        this.game.audioHandler.cutsceneSFX.playSound('dreamSound', false, true);
-                    } else if (this.dialogueIndex === 14) {
-                        this.removeEventListeners();
-                        this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('birdsChirping');
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('windBreezeSound');
-                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('dreamLight4');
-                            this.game.audioHandler.cutsceneMusic.playSound('echoesOfTime', true);
-                        }, this.halfASecond * 4 + 100);
-                    } else if (this.dialogueIndex === 15) {
-                        this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
-                    } else if (this.dialogueIndex === 17) {
-                        this.removeEventListeners();
-                        this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
-                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('dreamDark4');
-                        }, this.halfASecond * 2 + 100);
-                    } else if (this.dialogueIndex === 37) {
-                        this.removeEventListeners();
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('echoesOfTime');
-                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.game.audioHandler.cutsceneMusic.playSound('birdsChirping', true);
-                            this.game.audioHandler.cutsceneMusic.playSound('windBreezeSound', true);
-                            this.backgroundImage = document.getElementById('map4beginningForestView');
-                        }, this.halfASecond * 2 + 100);
-                    } else if (this.dialogueIndex === 46) {
-                        this.removeEventListeners();
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('windBreezeSound');
-                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('birdsChirping');
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('windBreezeSound');
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map1KingsBedroom');
-                        }, this.halfASecond * 2 + 100);
-                    } else if (this.dialogueIndex === 54) {
-                        setTimeout(() => {
-                            this.game.audioHandler.cutsceneMusic.playSound('inTheFuture', true);
-                        }, this.halfASecond);
-                    } else if (this.dialogueIndex === 56) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map1crypticTokenWallpaper');
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 57) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map4CloningLab');
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 60) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map4ElyvorgFlames');
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 64) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map4EvilElyvorg');
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 66) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map4hospitalBedEmpty');
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 69) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map1KingsBedroom');
-                        }, this.halfASecond + 100);
-                    }
-                } else {
-                    if (this.dialogueIndex === 16) {
-                        this.game.audioHandler.cutsceneMusic.playSound('planetsParalysis', true);
-                    } else if (this.dialogueIndex === 20) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.isCharacterBlackAndWhite = true;
-                            this.isBackgroundBlackAndWhite = true;
-                            this.backgroundImage = document.getElementById('map1KingsBedroom');
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 21) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.isCharacterBlackAndWhite = false;
-                            this.isBackgroundBlackAndWhite = false;
-                            this.backgroundImage = document.getElementById('map4CabinEndCutscene');
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 46) {
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('planetsParalysis');
+    resolveCutsceneAction() {
+        const isEnd = this.game.isEndCutscene ? 'end' : 'start';
+        const mapIndex = this.getSelectedMapIndex();
+        if (!mapIndex) return undefined;
 
-                    }
-                }
-            } else if (this.game.mapSelected[5]) {
-                if (this.game.isEndCutscene === false) {
-                    if (this.dialogueIndex === 0) {
-                        // no cutscene changes here
-                    }
-                } else {
-                    if (this.dialogueIndex === 0) {
-                        // no cutscene changes here
-                    }
-                }
-            } else if (this.game.mapSelected[6]) {
-                if (this.game.isEndCutscene === false) {
-                    if (this.dialogueIndex === 5) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('dreamLight5');
-                            this.game.audioHandler.cutsceneMusic.playSound('echoesOfTime', true);
-                        }, this.halfASecond * 2 + 100);
-                    } else if (this.dialogueIndex === 8) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.game.audioHandler.cutsceneMusic.playSound('crypticTokenDarkAmbienceSound', true);
-                            this.backgroundImage = document.getElementById('dreamDark5');
-                        }, this.halfASecond * 2 + 100);
-                    } else if (this.dialogueIndex === 12) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.game.audioHandler.cutsceneMusic.fadeOutAndStop('echoesOfTime');
-                            this.game.audioHandler.cutsceneMusic.fadeOutAndStop('crypticTokenDarkAmbienceSound');
-                            this.game.audioHandler.cutsceneMusic.playSound('birdsChirping', true);
-                            this.backgroundImage = document.getElementById('map5insideCabin');
-                        }, this.halfASecond * 2 + 100);
-                    } else if (this.dialogueIndex === 15) {
-                        this.game.audioHandler.cutsceneSFX.playSound('doorOpening');
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond / 2, this.halfASecond / 2, this.halfASecond / 2);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 27) {
-                        this.removeEventListeners();
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('birdsChirping');
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 7, this.halfASecond);
-                        setTimeout(() => {
-                            this.game.audioHandler.cutsceneSFX.playSound('walkingCutsceneSound');
-                        }, this.halfASecond + 100);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.game.audioHandler.cutsceneMusic.playSound('bubblingVolcanoLavaSound', true);
-                            this.backgroundImage = document.getElementById('map6VolcanoWalkUp');
-                        }, this.halfASecond * 7 + 100);
-                    } else if (this.dialogueIndex === 35) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                        }, this.halfASecond * 2 + 100);
-                    }
-                } else {
-                    if (this.dialogueIndex === 0) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond * 2);
-                        setTimeout(() => {
-                            this.game.audioHandler.cutsceneMusic.playSound('bubblingVolcanoLavaSound', true);
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map6insideCaveLava');
-                        }, this.halfASecond * 2 + 100);
-                    } else if (this.dialogueIndex === 3) {
-                        this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 5) {
-                        this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                        }, this.halfASecond + 100);
-                    } else if (this.dialogueIndex === 7) {
-                        this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('bubblingVolcanoLavaSound');
-                        this.cutsceneBackgroundChange(this.halfASecond * 2, this.halfASecond * 2, this.halfASecond * 2);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('dreamLight6');
-                            this.game.audioHandler.cutsceneMusic.playSound('echoesOfTime', true);
-                        }, this.halfASecond * 3 + 300);
-                    } else if (this.dialogueIndex === 9) {
-                        this.game.audioHandler.cutsceneSFX.playSound('dreamSound');
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('dreamDark6');
-                        }, this.halfASecond * 2 + 100);
-                    } else if (this.dialogueIndex === 32) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.game.audioHandler.cutsceneMusic.fadeOutAndStop('echoesOfTime');
-                            this.backgroundImage = document.getElementById('map1blackBackground');
-                        }, this.halfASecond * 2 + 100);
-                    } else if (this.dialogueIndex === 36) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.game.audioHandler.cutsceneMusic.playSound('bubblingVolcanoLavaSound', true);
-                            this.backgroundImage = document.getElementById('map6elyvorgTokenPlaceFind');
-                        }, this.halfASecond * 2 + 100);
-                    } else if (this.dialogueIndex === 38) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map6elyvorgTokenPlace');
-                        }, this.halfASecond * 2 + 100);
-                    } else if (this.dialogueIndex === 39) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map6stone');
-                        }, this.halfASecond * 2 + 100);
-                    } else if (this.dialogueIndex === 43) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map6stone2');
-                        }, this.halfASecond * 2 + 100);
-                    } else if (this.dialogueIndex === 44) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.game.audioHandler.cutsceneMusic.playSound('groundShakingSound', true);
-                            this.groundShaking = true;
-                            this.backgroundImage = document.getElementById('map6stone3');
-                        }, this.halfASecond * 2 + 100);
-                    } else if (this.dialogueIndex === 48) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map6elyvorgTokenPlaceActive');
-                        }, this.halfASecond * 2 + 100);
-                    } else if (this.dialogueIndex === 51) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('bubblingVolcanoLavaSound');
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('map1KingsBedroom');
-                        }, this.halfASecond * 2 + 100);
-                    } else if (this.dialogueIndex === 55) {
-                        this.removeEventListeners();
-                        this.game.audioHandler.cutsceneMusic.playSound('bubblingVolcanoLavaSound', true);
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById(this.getmap6insideCaveLavaEarthquake());
-                        }, this.halfASecond * 2 + 100);
-                    } else if (this.dialogueIndex === 59) {
-                        this.removeEventListeners();
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('bubblingVolcanoLavaSound');
-                        this.cutsceneBackgroundChange(this.halfASecond, this.halfASecond * 2, this.halfASecond);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.backgroundImage = document.getElementById('dreamLight7');
-                        }, this.halfASecond * 2 + 100);
-                    } else if (this.dialogueIndex === 67) {
-                        this.removeEventListeners();
-                        this.dontShowTextBoxAndSound = true;
-                        this.game.audioHandler.cutsceneMusic.fadeOutAndStop('groundShakingSound');
-                        this.cutsceneBackgroundChange(this.halfASecond * 4, this.halfASecond * 2, this.halfASecond * 7);
-                        setTimeout(() => {
-                            this.game.audioHandler.cutsceneMusic.playSound('gta4Theme', true);
-                            this.groundShaking = false;
-                            this.backgroundImage = document.getElementById('toBeContinued');
-                        }, this.halfASecond * 4 + 100);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                        }, this.halfASecond * 13);
-                    } else if (this.dialogueIndex === 68) {
-                        this.removeEventListeners();
-                        this.cutsceneBackgroundChange(this.halfASecond * 4, this.halfASecond * 2, this.halfASecond * 7);
-                        setTimeout(() => {
-                            this.addEventListeners();
-                            this.groundShaking = false;
-                            this.backgroundImage = document.getElementById('madeByDanial');
-                        }, this.halfASecond * 4 + 100);
-                    }
-                }
-            }
-        }
+        const table = this.actions[`map${mapIndex}`] && this.actions[`map${mapIndex}`][isEnd];
+        if (!table) return undefined;
+
+        return table[this.dialogueIndex];
     }
 }
-
 
 // Map 1 Cutscenes -----------------------------------------------------------------------------------------------------------------------------------------------------
 export class Map1Cutscene extends StoryCutscene {

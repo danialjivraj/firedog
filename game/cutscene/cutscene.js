@@ -136,6 +136,49 @@ export class Cutscene {
         document.removeEventListener('click', this.handleLeftClickUp);
     }
 
+    transitionWithBg(d1, d2, d3, bgId, afterDelay = this.halfASecond + 100, before = null, after = null) {
+        this.removeEventListeners();
+        if (typeof before === 'function') before();
+        this.cutsceneBackgroundChange(d1, d2, d3);
+        setTimeout(() => {
+            this.addEventListeners();
+            if (bgId) this.backgroundImage = document.getElementById(bgId);
+            if (typeof after === 'function') after();
+        }, afterDelay);
+    }
+
+    playSFX(...args) {
+        this.game.audioHandler.cutsceneSFX.playSound(...args);
+    }
+
+    playMusic(...args) {
+        this.game.audioHandler.cutsceneMusic.playSound(...args);
+    }
+
+    fadeOutMusic(name) {
+        this.game.audioHandler.cutsceneMusic.fadeOutAndStop(name);
+    }
+
+    stopAllAudio() {
+        this.game.audioHandler.cutsceneDialogue.stopAllSounds();
+        this.game.audioHandler.cutsceneSFX.stopAllSounds();
+        this.game.audioHandler.cutsceneMusic.stopAllSounds();
+    }
+
+    getSelectedMapIndex() {
+        return [1, 2, 3, 4, 5, 6].find(i => this.game.mapSelected && this.game.mapSelected[i]);
+    }
+
+    cutsceneController() {
+        if (this.textIndex !== this.dialogue[this.dialogueIndex].dialogue.length) return;
+
+        const resolver = typeof this.resolveCutsceneAction === 'function'
+            ? this.resolveCutsceneAction()
+            : undefined;
+
+        if (typeof resolver === 'function') resolver();
+    }
+
     displayDialogue(cutscene) {
         const currentDialogue = this.dialogue[this.dialogueIndex];
         const prefullWords = this.splitDialogueIntoWords(currentDialogue.dialogue);

@@ -15,8 +15,19 @@ export class PenguiniCutscene extends Cutscene {
         if (cashOutDialogue.dialogue.includes("That's good enough, give me that!") && this.lastSound2Played) {
             this.game.audioHandler.cutsceneSFX.playSound('cashOut');
             this.game.coins -= this.game.winningCoins;
-            this.game.floatingMessages.push(new FloatingMessage('-' + this.game.winningCoins, 150, 50, this.game.penguini.x + 75, this.game.penguini.y + 40, 40, 'green'));
+            this.game.floatingMessages.push(
+                new FloatingMessage(
+                    '-' + this.game.winningCoins,
+                    150,
+                    50,
+                    this.game.penguini.x + 75,
+                    this.game.penguini.y + 40,
+                    40,
+                    'green'
+                )
+            );
         }
+
         if (this.continueDialogue) {
             this.pause = false;
             this.textIndex++;
@@ -44,6 +55,7 @@ export class PenguiniCutscene extends Cutscene {
             }
             this.removeEventListeners();
         }
+
         const checkAnimationStatus = setInterval(() => {
             if (this.textIndex >= this.dialogue[this.dialogueIndex].dialogue.length) {
                 this.isEnterPressed = false;
@@ -57,25 +69,32 @@ export class PenguiniCutscene extends Cutscene {
             if (!this.game.menu.pause.isPaused && this.game.currentMenu !== this.game.menu.ingameAudioSettings) {
                 this.coinCheckIndex = this.dialogue.findIndex(dialogue => dialogue.dialogue.includes("It seems you have"));
 
-                if (event.key === 'Tab' && this.game.enterDuringBackgroundTransition && !this.isEnterPressed && this.dialogueIndex < this.coinCheckIndex) {
-                    this.removeEventListeners();
-                    this.cutsceneBackgroundChange(200, 300, 200);
-
-                    this.game.audioHandler.cutsceneDialogue.stopAllSounds();
-                    this.game.audioHandler.cutsceneSFX.stopAllSounds();
-                    this.game.audioHandler.cutsceneMusic.stopAllSounds();
-                    this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
-
-                    setTimeout(() => {
-                        this.dialogueIndex = this.coinCheckIndex;
-                        this.textIndex = 0;
-                        this.lastSound2Played = false;
-                        const currentDialogue = this.dialogue[this.dialogueIndex];
-                        const prefullWords = this.splitDialogueIntoWords(currentDialogue.dialogue);
-                        this.fullWordsColor = [];
-                        this.fullWordsColor = prefullWords;
-                        this.addEventListeners();
-                    }, 400);
+                if (
+                    event.key === 'Tab' &&
+                    this.game.enterDuringBackgroundTransition &&
+                    !this.isEnterPressed &&
+                    this.dialogueIndex < this.coinCheckIndex
+                ) {
+                    this.transitionWithBg(
+                        200,
+                        300,
+                        200,
+                        null,
+                        400,
+                        () => {
+                            this.stopAllAudio();
+                            this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
+                        },
+                        () => {
+                            this.dialogueIndex = this.coinCheckIndex;
+                            this.textIndex = 0;
+                            this.lastSound2Played = false;
+                            const currentDialogue = this.dialogue[this.dialogueIndex];
+                            const prefullWords = this.splitDialogueIntoWords(currentDialogue.dialogue);
+                            this.fullWordsColor = [];
+                            this.fullWordsColor = prefullWords;
+                        }
+                    );
                 }
 
                 if (event.key === 'Enter' && !this.isEnterPressed && this.game.enterDuringBackgroundTransition) {
@@ -83,16 +102,21 @@ export class PenguiniCutscene extends Cutscene {
                 }
             }
         };
+
         this.handleLeftClick = (event) => {
-            if (!this.isEnterPressed && this.game.enterDuringBackgroundTransition && !this.game.menu.pause.isPaused &&
-                this.game.currentMenu !== this.game.menu.ingameAudioSettings) {
+            if (
+                !this.isEnterPressed &&
+                this.game.enterDuringBackgroundTransition &&
+                !this.game.menu.pause.isPaused &&
+                this.game.currentMenu !== this.game.menu.ingameAudioSettings
+            ) {
                 this.enterOrLeftClick(cutscene);
             }
         };
+
         super.displayDialogue(cutscene);
     }
 }
-
 
 // Map 1 Penguini Cutscenes -----------------------------------------------------------------------------------------------------------------------------------------------------
 export class Map1PenguinIngameCutscene extends PenguiniCutscene {

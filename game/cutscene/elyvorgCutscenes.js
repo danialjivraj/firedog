@@ -3,6 +3,29 @@ import { Cutscene } from "./cutscene.js";
 export class ElyvorgCutscene extends Cutscene {
     constructor(game) {
         super(game);
+
+        this.dreamFlash = () => {
+            this.removeEventListeners();
+            this.game.audioHandler.firedogSFX.playSound('dreamSoundInGame');
+            this.cutsceneBackgroundChange(500, 500, 500);
+            setTimeout(() => { this.addEventListeners(); }, 1000);
+        };
+
+        this.actions = {
+            pre: {
+                1:  () => this.game.audioHandler.mapSoundtrack.playSound('crypticTokenDarkAmbienceSoundInGame', true),
+                5:  () => this.game.audioHandler.mapSoundtrack.fadeOutAndStop('crypticTokenDarkAmbienceSoundInGame'),
+                12: () => this.dreamFlash(),
+                15: () => this.dreamFlash(),
+                17: () => this.dreamFlash(),
+            },
+            post: {
+                2:  () => this.game.audioHandler.cutsceneMusic.playSound('unboundPurpose', true),
+                25: () => this.game.audioHandler.mapSoundtrack.playSound('crypticTokenDarkAmbienceSoundInGame', true),
+                29: () => this.game.audioHandler.mapSoundtrack.fadeOutAndStop('crypticTokenDarkAmbienceSoundInGame'),
+                35: () => this.game.audioHandler.cutsceneMusic.fadeOutAndStop('unboundPurpose'),
+            }
+        };
     }
 
     enterOrLeftClick(cutscene) {
@@ -65,9 +88,7 @@ export class ElyvorgCutscene extends Cutscene {
                         this.removeEventListeners();
                         this.cutsceneBackgroundChange(500, 2500, 200);
 
-                        this.game.audioHandler.cutsceneDialogue.stopAllSounds();
-                        this.game.audioHandler.cutsceneSFX.stopAllSounds();
-                        this.game.audioHandler.cutsceneMusic.stopAllSounds();
+                        this.stopAllAudio();
                         this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
 
                         this.game.audioHandler.cutsceneSFX.playSound('battleStarting');
@@ -96,47 +117,17 @@ export class ElyvorgCutscene extends Cutscene {
         super.displayDialogue(cutscene);
     }
 
-    cutsceneController() {
-        if (this.textIndex === this.dialogue[this.dialogueIndex].dialogue.length) {
-            if (this.game.elyvorgPreFight === true) {
-                if (this.dialogueIndex === 1) {
-                    this.game.audioHandler.mapSoundtrack.playSound('crypticTokenDarkAmbienceSoundInGame', true);
-                } else if (this.dialogueIndex === 5) {
-                    this.game.audioHandler.mapSoundtrack.fadeOutAndStop('crypticTokenDarkAmbienceSoundInGame');
-                } else if (this.dialogueIndex === 12) {
-                    this.removeEventListeners();
-                    this.game.audioHandler.firedogSFX.playSound('dreamSoundInGame');
-                    this.cutsceneBackgroundChange(500, 500, 500);
-                    setTimeout(() => {
-                        this.addEventListeners();
-                    }, 1000);
-                } else if (this.dialogueIndex === 15) {
-                    this.removeEventListeners();
-                    this.game.audioHandler.firedogSFX.playSound('dreamSoundInGame');
-                    this.cutsceneBackgroundChange(500, 500, 500);
-                    setTimeout(() => {
-                        this.addEventListeners();
-                    }, 1000);
-                } else if (this.dialogueIndex === 17) {
-                    this.removeEventListeners();
-                    this.game.audioHandler.firedogSFX.playSound('dreamSoundInGame');
-                    this.cutsceneBackgroundChange(500, 500, 500);
-                    setTimeout(() => {
-                        this.addEventListeners();
-                    }, 1000);
-                }
-            } else if (this.game.elyvorgPostFight === true) {
-                if (this.dialogueIndex === 2) {
-                    this.game.audioHandler.cutsceneMusic.playSound('unboundPurpose', true);
-                } else if (this.dialogueIndex === 25) {
-                    this.game.audioHandler.mapSoundtrack.playSound('crypticTokenDarkAmbienceSoundInGame', true);
-                } else if (this.dialogueIndex === 29) {
-                    this.game.audioHandler.mapSoundtrack.fadeOutAndStop('crypticTokenDarkAmbienceSoundInGame');
-                } else if (this.dialogueIndex === 35) {
-                    this.game.audioHandler.cutsceneMusic.fadeOutAndStop('unboundPurpose');
-                }
-            }
-        }
+    resolveCutsceneAction() {
+        const mode = this.game.elyvorgPreFight === true
+            ? 'pre'
+            : (this.game.elyvorgPostFight === true ? 'post' : null);
+
+        if (!mode) return undefined;
+
+        const table = this.actions[mode];
+        if (!table) return undefined;
+
+        return table[this.dialogueIndex];
     }
 }
 
@@ -314,7 +305,7 @@ export class Map6ElyvorgIngameCutsceneBeforeFight extends ElyvorgCutscene {
         );
         this.addDialogue( //28
             `${this.elyvorg}`,
-            `Show me what you've got.`,
+            `Show me what you've got!`,
             this.addImage(this.setfiredogAngryBorder(), 0.7, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 1, 1560, 400, 200, 200),
         );
