@@ -192,6 +192,12 @@ export class Game {
         this.cutsceneActive = false;
         this.currentCutscene = null;
         this.currentMenu = null;
+        if (this.input) {
+            this.input.keys = [];
+            this.input.arrowUpPressed = false;
+            this.input.arrowDownPressed = false;
+            this.input.isWKeyPressed = false;
+        }
         if (this.player.x + this.player.width >= this.cabin.x + 190 &&
             this.player.x <= this.cabin.x + this.cabin.width) {
             this.reset();
