@@ -315,8 +315,8 @@ describe('ElyvorgCutscene', () => {
                 expect(game.audioHandler.mapSoundtrack.fadeOutAndStop)
                     .toHaveBeenCalledWith('crypticTokenDarkAmbienceSoundInGame');
             });
-            it('dialogueIndex 35 fades out unboundPurpose', () => {
-                cut.dialogueIndex = 35;
+            it('dialogueIndex 37 fades out unboundPurpose', () => {
+                cut.dialogueIndex = 37;
                 cut.cutsceneController();
                 expect(game.audioHandler.cutsceneMusic.fadeOutAndStop)
                     .toHaveBeenCalledWith('unboundPurpose');
@@ -373,7 +373,7 @@ describe('Map6ElyvorgIngameCutsceneAfterFight', () => {
     });
 
     it('registers exactly 42 dialogues', () => {
-        expect(m6post.dialogue.length).toBe(42);
+        expect(m6post.dialogue.length).toBe(44);
     });
 
     it('sets game.elyvorgRunAway flag', () => {

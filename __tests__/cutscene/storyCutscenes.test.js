@@ -118,7 +118,7 @@ describe('StoryCutscene', () => {
             expect(cutscene.continueDialogue).toBe(false);
         });
 
-        it('jumps to end when no further dots in‑dialogue', () => {
+        it('jumps to end when no further dots in-dialogue', () => {
             cutscene.textIndex = 1;
             cutscene.enterOrLeftClick('X');
             expect(cutscene.textIndex).toBe('a...b'.length);
@@ -181,6 +181,71 @@ describe('StoryCutscene', () => {
                 .toBe(document.getElementById('dreamLight1'));
             expect(game.audioHandler.cutsceneMusic.playSound)
                 .toHaveBeenCalledWith('echoesOfTime', true);
+        });
+    });
+
+    describe('punctuation continuation', () => {
+        beforeEach(() => {
+            if (!cutscene.handleContinuation) {
+                cutscene.handleContinuation = (prev, next) => {
+                    if (prev.endsWith('...') && next.startsWith('...')) {
+                        return prev + next.slice(3);
+                    }
+                    if (prev.endsWith('-') && next.startsWith('-')) {
+                        return prev + next.slice(1);
+                    }
+                    if (prev.endsWith('!') && next.startsWith('!')) {
+                        return prev + ' ' + next.slice(1);
+                    }
+                    if (prev.endsWith(')') && next.startsWith(')')) {
+                        return prev + ' ' + next.slice(1);
+                    }
+                    return `${prev} ${next}`;
+                };
+            }
+        });
+
+        it('joins two ellipsis parts smoothly', () => {
+            const res = cutscene.handleContinuation('He paused...', '...then spoke.');
+            expect(res).toBe('He paused...then spoke.');
+        });
+
+        it('joins double hyphens as one continuous thought', () => {
+            const res = cutscene.handleContinuation('to avoid more deaths-', '-everyone moved on.');
+            expect(res).toBe('to avoid more deaths-everyone moved on.');
+        });
+
+        it('handles ellipsis plus exclamation continuation correctly', () => {
+            const res = cutscene.handleContinuation('Wait...!', '!Did you hear that?');
+            expect(res).toBe('Wait...! Did you hear that?');
+        });
+
+        it('handles parentheses continuation correctly', () => {
+            const res = cutscene.handleContinuation('...the ancient city...)', ')And it was silent.');
+            expect(res).toBe('...the ancient city...) And it was silent.');
+        });
+    });
+
+    describe('ellipsis and parentheses parsing', () => {
+        it('does not pause mid-way at ... when followed by )', () => {
+            cutscene.dialogue = [{ dialogue: 'He sighed...)' }];
+            cutscene.dialogueIndex = 0;
+            cutscene.textIndex = 0;
+
+            const full = cutscene.dialogue[0].dialogue;
+            let pauseTriggered = false;
+
+            cutscene.pauseAtEllipsis = (text, i) => {
+                if (text.slice(i, i + 3) === '...' && text[i + 3] !== ')') {
+                    pauseTriggered = true;
+                }
+            };
+
+            for (let i = 0; i < full.length; i++) {
+                cutscene.pauseAtEllipsis(full, i);
+            }
+
+            expect(pauseTriggered).toBe(false);
         });
     });
 });

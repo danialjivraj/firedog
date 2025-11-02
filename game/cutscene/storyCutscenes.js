@@ -305,22 +305,37 @@ export class StoryCutscene extends Cutscene {
 
         this.playSound2OnDotPause = false;
         this.isEnterPressed = true;
+
         if (this.continueDialogue) {
             this.pause = false;
             this.textIndex++;
             this.continueDialogue = false;
+
         } else if (this.textIndex < this.dialogue[this.dialogueIndex].dialogue.length) {
-            const dotIndices = this.getDotIndices(this.dialogue[this.dialogueIndex].dialogue);
+            const dlg = this.dialogue[this.dialogueIndex].dialogue;
+            const dotIndices = this.getDotIndices(dlg);
             const nextDotIndex = dotIndices.find(index => index > this.textIndex);
-            this.textIndex = nextDotIndex !== undefined ? nextDotIndex : this.dialogue[this.dialogueIndex].dialogue.length;
+
+            if (nextDotIndex !== undefined) {
+                if (this.ellipsisFollowedOnlyByTerminalPunct(dlg, nextDotIndex)) {
+                    this.textIndex = dlg.length;
+                } else {
+                    this.textIndex = nextDotIndex;
+                }
+            } else {
+                this.textIndex = dlg.length;
+            }
+
         } else if (this.dialogueIndex < this.dialogue.length - 1) {
             this.dialogueIndex++;
             this.textIndex = 0;
             this.lastSound2Played = false;
+
             const currentDialogue = this.dialogue[this.dialogueIndex];
             const prefullWords = this.splitDialogueIntoWords(currentDialogue.dialogue);
             this.fullWordsColor = [];
             this.fullWordsColor = prefullWords;
+
         } else {
             this.removeEventListeners();
             this.cutsceneBackgroundChange(400, 600, 400);
@@ -336,6 +351,7 @@ export class StoryCutscene extends Cutscene {
                 this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
             }, 500);
         }
+
         const checkAnimationStatus = setInterval(() => {
             if (this.textIndex >= this.dialogue[this.dialogueIndex].dialogue.length) {
                 this.isEnterPressed = false;
@@ -405,7 +421,7 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //3
             `${this.valdorin}`,
-            `How did you get past everyone without a single scratch... I can't allow you to get out of that door... Not with that in your hands..!`,
+            `How did you get past everyone without a single scratch... I can't allow you to get out of that door... Not with that in your hands...!`,
         );
         this.addDialogue( //4
             `${this.questionMark}`,
@@ -431,7 +447,7 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //9
             `${this.firedog}`,
-            `I... I kinda wish I could go out and explore outside this place. I do love ${this.lunar} ${this.moonlit} ${this.glade}, I mean it's my home after all...`,
+            `I... I kinda wish I could go out and explore outside this place. I do love ${this.lunarMoonlitGlade}, I mean it's my home after all...`,
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //10
@@ -550,7 +566,7 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //30
             `${this.galadon}`,
-            `Apparently about 2 weeks ago, during a scout around the borders of ${this.lunar} ${this.moonlit} ${this.glade}, some traps were discovered destroyed.`,
+            `Apparently about 2 weeks ago, during a scout around the borders of ${this.lunarMoonlitGlade}, some traps were discovered destroyed.`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('galadonOh', 1, 1300, 79, 590, 610),
         );
@@ -610,7 +626,7 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //40
             `${this.galadon}`,
-            `Well, as you know, ${this.lunar} ${this.moonlit} ${this.glade} keeps a very important item which resides at the center of the castle.`,
+            `Well, as you know, ${this.lunarMoonlitGlade} keeps a very important item which resides at the center of the castle.`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('galadonAmazed', 1, 1300, 79, 590, 610),
         );
@@ -629,6 +645,7 @@ export class Map1Cutscene extends StoryCutscene {
         this.addDialogue( //43
             `${this.firedog}`,
             `(How would anyone go unnoticed? I mean... I have heard about how secure our land is, but to destroy some traps without being spotted?)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
             this.addImage('galadonOh', 0.7, 1300, 79, 590, 610),
         );
@@ -688,7 +705,7 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //53
             `${this.galadon}`,
-            `Uh..? What about ${this.valdorin}?`,
+            `Uh...? What about ${this.valdorin}?`,
             this.addImage('quilzorinExplaining', 0.7, 0, 79, 590, 610),
             this.addImage('galadonSurprised', 1, 1300, 79, 590, 610),
         );
@@ -751,7 +768,7 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //64
             `${this.valdorin}`,
-            `The most precious item of ${this.lunar} ${this.moonlit} ${this.glade}... it has been stolen.`,
+            `The most precious item of ${this.lunarMoonlitGlade}... it has been stolen.`,
             this.addImage('galadonSurprised', 0.7, 0, 79, 590, 610),
             this.addImage('valdorinFistUp', 1, 1300, 79, 590, 610),
         );
@@ -763,7 +780,7 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //66 scenary switch
             `${this.valdorin}`,
-            `Yes... the ${this.cryptic} ${this.token} has been taken away from it's secret safe.`,
+            `Yes... the ${this.crypticToken} has been taken away from it's secret safe.`,
             this.addImage('valdorinNormal', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //67
@@ -794,7 +811,7 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //72
             `${this.firedog}`,
-            `What's gonna happen now that the ${this.cryptic} ${this.token} has been taken away from the safe?`,
+            `What's gonna happen now that the ${this.crypticToken} has been taken away from the safe?`,
             this.addImage(this.setfiredogNormalQuestionMark(), 1, 0, 79, 590, 610),
             this.addImage('galadonScared', 0.7, 1300, 79, 590, 610),
         );
@@ -821,12 +838,12 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //77
             `${this.valdorin}`,
-            `There wasn't a ${this.cryptic} ${this.token} back then.`,
+            `There wasn't a ${this.crypticToken} back then.`,
             this.addImage('valdorinNormal', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //78
             `${this.firedog}`,
-            `What do you mean there wasn't a ${this.cryptic} ${this.token}?`,
+            `What do you mean there wasn't a ${this.crypticToken}?`,
             this.addImage(this.setfiredogNormalQuestionMark(), 1, 0, 79, 590, 610),
             this.addImage('valdorinNormal', 0.7, 1300, 79, 590, 610),
         );
@@ -853,12 +870,12 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //83
             `${this.valdorin}`,
-            `They noticed an intense bright object falling from the sky. The ${this.cryptic} ${this.token}.`,
+            `They noticed an intense bright object falling from the sky. The ${this.crypticToken}.`,
             this.addImage('valdorinNormal', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //84
             `${this.valdorin}`,
-            `Its brightness was so intense that legends say that the ${this.cryptic} ${this.token} was shining 10x more intensively than the sun as it was floating in the air.`,
+            `Its brightness was so intense that legends say that the ${this.crypticToken} was shining 10x more intensively than the sun as it was floating in the air.`,
             this.addImage('valdorinNormal', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //85
@@ -868,12 +885,12 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //86
             `${this.valdorin}`,
-            `Our ancestors, however, were amazed. They walked close to the ${this.cryptic} ${this.token}.`,
+            `Our ancestors, however, were amazed. They walked close to the ${this.crypticToken}.`,
             this.addImage('valdorinNormal', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //87
             `${this.valdorin}`,
-            `They noticed that the ${this.cryptic} ${this.token} was attached to a wooden piece. They called it the ${this.temporal} ${this.timber}.`,
+            `They noticed that the ${this.crypticToken} was attached to a wooden piece. They called it the ${this.temporalTimber}.`,
             this.addImage('valdorinNormal', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //88
@@ -908,7 +925,7 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //94
             `${this.valdorin}`,
-            `He brought the ${this.cryptic} ${this.token} inside the castle and examined it.`,
+            `He brought the ${this.crypticToken} inside the castle and examined it.`,
             this.addImage('valdorinNormal', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //95 change scenary
@@ -933,7 +950,7 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //99
             `${this.valdorin}`,
-            `He also noticed that his spells were twice as powerful when keeping the ${this.cryptic} ${this.token} close to himself.`,
+            `He also noticed that his spells were twice as powerful when keeping the ${this.crypticToken} close to himself.`,
             this.addImage('valdorinNormal', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //100 scenary switch
@@ -943,7 +960,7 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //101
             `${this.valdorin}`,
-            `It seemed that the wooden piece, the ${this.temporal} ${this.timber} could come apart, and when it did, the token stopped shining as bright.`,
+            `It seemed that the wooden piece, the ${this.temporalTimber} could come apart, and when it did, the token stopped shining as bright.`,
             this.addImage('valdorinNormal', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //102
@@ -953,12 +970,12 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //103
             `${this.valdorin}`,
-            `${this.valdonotski} noticed he was not getting affected as much as his companions were when the ${this.cryptic} ${this.token} was connected to the ${this.temporal} ${this.timber}.`,
+            `${this.valdonotski} noticed he was not getting affected as much as his companions were when the ${this.crypticToken} was connected to the ${this.temporalTimber}.`,
             this.addImage('valdorinNormal', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //104
             `${this.valdorin}`,
-            `He deduced that a strong willed-soul would be able to control himself when near the ${this.cryptic} ${this.token}.`,
+            `He deduced that a strong willed-soul would be able to control himself when near the ${this.crypticToken}.`,
             this.addImage('valdorinNormal', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //105
@@ -980,7 +997,7 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //108
             `${this.valdorin}`,
-            `So it was likely that when the ${this.cryptic} ${this.token} was being brought back home with our ancestors, some enemies had spotted them with it.`,
+            `So it was likely that when the ${this.crypticToken} was being brought back home with our ancestors, some enemies had spotted them with it.`,
             this.addImage('valdorinNormal', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //109
@@ -990,12 +1007,12 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //110
             `${this.valdorin}`,
-            `So he decided to take the ${this.cryptic} ${this.token} apart from the ${this.temporal} ${this.timber}.`,
+            `So he decided to take the ${this.crypticToken} apart from the ${this.temporalTimber}.`,
             this.addImage('ValdorinTalking', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //111
             `${this.valdorin}`,
-            `The ${this.temporal} ${this.timber} by itself had no power, so they kept the wooden piece hidden outside the land.`,
+            `The ${this.temporalTimber} by itself had no power, so they kept the wooden piece hidden outside the land.`,
             this.addImage('ValdorinTalking', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //112
@@ -1005,7 +1022,7 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //113
             `${this.valdorin}`,
-            `But now... for the first time in centuries the ${this.cryptic} ${this.token} has been stolen.`,
+            `But now... for the first time in centuries the ${this.crypticToken} has been stolen.`,
             this.addImage('ValdorinTalking', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //114
@@ -1021,7 +1038,7 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //116
             `${this.valdorin}`,
-            `The ${this.cryptic} ${this.token} without the ${this.temporal} ${this.timber} is not even as half powerful as it is when they are both connected.`,
+            `The ${this.crypticToken} without the ${this.temporalTimber} is not even as half powerful as it is when they are both connected.`,
             this.addImage('galadonSurprised', 0.7, 0, 79, 590, 610),
             this.addImage('ValdorinTalking', 1, 1300, 79, 590, 610),
         );
@@ -1037,29 +1054,29 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //119
             `${this.valdorin}`,
-            `Because the ${this.temporal} ${this.timber} is hidden, I don't think the thief knows where it is... but we cannot sit here assuming things. We need to get it.`,
+            `Because the ${this.temporalTimber} is hidden, I don't think the thief knows where it is... but we cannot sit here assuming things. We need to get it.`,
             this.addImage('ValdorinTalking', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //120
             `${this.firedog}`,
-            `Where can the ${this.temporal} ${this.timber} be found? Is it near our land?`,
+            `Where can the ${this.temporalTimber} be found? Is it near our land?`,
             this.addImage(this.setfiredogNormalQuestionMark(), 1, 0, 79, 590, 610),
             this.addImage('ValdorinTalking', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //121
             `${this.valdorin}`,
-            `Unfortunately not... The ${this.temporal} ${this.timber} is inside a cave in ${this.infernal} ${this.crater} ${this.peak}..`,
+            `Unfortunately not... The ${this.temporalTimber} is inside a cave in ${this.infernalCraterPeak}..`,
             this.addImage(this.setfiredogNormalQuestionMark(), 0.7, 0, 79, 590, 610),
             this.addImage('ValdorinTalking', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //122
             `${this.valdorin}`,
-            `If the culprit gets there before we do the consequences will be huge. That's assuming they know the location of the ${this.temporal} ${this.timber}.`,
+            `If the culprit gets there before we do the consequences will be huge. That's assuming they know the location of the ${this.temporalTimber}.`,
             this.addImage('ValdorinTalking', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //123
             `${this.valdorin}`,
-            `Using the space-time abilities of the ${this.cryptic} ${this.token} evilly will distort reality completely, to the point where we might cease to exist.`,
+            `Using the space-time abilities of the ${this.crypticToken} evilly will distort reality completely, to the point where we might cease to exist.`,
             this.addImage('valdorinFistUp', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //124
@@ -1081,7 +1098,7 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //127
             `${this.valdorin}`,
-            `${this.galadon}, you can go ahead and follow the trail to ${this.infernal} ${this.crater} ${this.peak}, we can't waste much time.`,
+            `${this.galadon}, you can go ahead and follow the trail to ${this.infernalCraterPeak}, we can't waste much time.`,
             this.addImage('valdorinNormal', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //128
@@ -1127,7 +1144,7 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //135
             `${this.quilzorin}`,
-            `The path to ${this.infernal} ${this.crater} ${this.peak} is towards east for a couple lands, then south.`,
+            `The path to ${this.infernalCraterPeak} is towards east for a couple lands, then south.`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('quilzorinExplaining', 1, 1300, 79, 590, 610),
         );
@@ -1139,7 +1156,7 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //137
             `${this.quilzorin}`,
-            `The ${this.temporal} ${this.timber} will be inside the biggest cave. Be careful in there, there's active volcanos all the time in ${this.infernal} ${this.crater} ${this.peak}.`,
+            `The ${this.temporalTimber} will be inside the biggest cave. Be careful in there, there's active volcanos all the time in ${this.infernalCraterPeak}.`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('quilzorinExplaining', 1, 1300, 79, 590, 610),
         );
@@ -1224,48 +1241,56 @@ export class Map1Cutscene extends StoryCutscene {
         this.addDialogue( //151
             `${this.firedog}`,
             `(To even think that someone defeated ${this.valdorin} with ease... Can I even do this?)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
             this.addImage('quilzorinNormal', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //152
             `${this.firedog}`,
-            `(Only the higher-ups know about the situation... Apparently, the citizens are being kept in the dark. Well, it would be chaos if everyone knew.)`,
+            `(Only the higher-ups know about the situation... Apparently, the citizens are being kept in the dark. Well, it would be chaos if everyone knew...)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
             this.addImage('quilzorinNormal', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //153
             `${this.firedog}`,
-            `(This is why it's important to get the ${this.temporal} ${this.timber} from the cave in ${this.infernal} ${this.crater} ${this.peak} as soon as possible.)`,
+            `(This is why it's important to get the ${this.temporalTimber} from the cave in ${this.infernalCraterPeak} as soon as possible...)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
             this.addImage('quilzorinNormal', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //154
             `${this.firedog}`,
-            `(But how is this happening? Someone really got through the safe unnoticed and got the ${this.cryptic} ${this.token} that easily?)`,
+            `(But how is this happening? Someone really got through the safe unnoticed and got the ${this.crypticToken} that easily?)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
             this.addImage('quilzorinNormal', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //155
             `${this.firedog}`,
             `(Come to think of it... could this also be connected to what happened 2 weeks ago with the traps?)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
             this.addImage('quilzorinNormal', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //156
             `${this.firedog}`,
-            `(What exactly is going on..)`,
+            `(What exactly is going on...)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormalQuestionMark(), 1, 0, 79, 590, 610),
             this.addImage('quilzorinNormal', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //157
             `${this.firedog}`,
-            `(To be able to pass through the traps, the guards, get through the castle, and find the safe while being able to escape..)`,
+            `(To be able to pass through the traps, the guards, get through the castle, and find the safe while being able to escape...)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormalQuestionMark(), 1, 0, 79, 590, 610),
             this.addImage('quilzorinNormal', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //158
             `${this.firedog}`,
             `(Let's go now, the future of this land might well depend on it.)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
             this.addImage('quilzorinNormal', 0.7, 1300, 79, 590, 610),
         );
@@ -1277,7 +1302,7 @@ export class Map1Cutscene extends StoryCutscene {
         );
         this.addDialogue( //160
             `${this.firedog}`,
-            `Let's see if I can catch up to ${this.galadon}..!`,
+            `Let's see if I can catch up to ${this.galadon}...!`,
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
             this.addImage('quilzorinNormal', 0.7, 1300, 79, 590, 610),
         );
@@ -1347,12 +1372,14 @@ export class Map1EndCutscene extends StoryCutscene {
         this.addDialogue( //9
             `${this.firedog}`,
             `(Wait... it wouldn't be wise of me if I told this stranger why I'm here.)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormalExclamationMark(), 1, 0, 79, 590, 610),
             this.addImage('duskmawLaugh', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //10
             `${this.firedog}`,
-            `(Perhaps I can get him to give me some information about the land, that would be smart..!)`,
+            `(Perhaps I can get him to give me some information about the land, that would be smart...!)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormalExclamationMark(), 1, 0, 79, 590, 610),
             this.addImage('duskmawLaugh', 0.7, 1300, 79, 590, 610),
         );
@@ -1388,7 +1415,7 @@ export class Map1EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //16
             `${this.firedog}`,
-            `Decades? That's impressive... You've been everywhere? Have you ever explored caves before..?`,
+            `Decades? That's impressive... You've been everywhere? Have you ever explored caves before...?`,
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
             this.addImage('duskmawNormal', 0.7, 1300, 79, 590, 610),
         );
@@ -1412,7 +1439,7 @@ export class Map1EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //20
             `${this.duskmaw}`,
-            `However, the most dangerous caves reside in ${this.infernal} ${this.crater} ${this.peak}... That is one of the few places I have never actually been...`,
+            `However, the most dangerous caves reside in ${this.infernalCraterPeak}... That is one of the few places I have never actually been...`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('duskmawNormal', 1, 1300, 79, 590, 610),
         );
@@ -1454,25 +1481,26 @@ export class Map1EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //27
             `${this.firedog}`,
-            `(Well, that seems to be a quite dangerous place..)`,
+            `(Well, that seems to be a quite dangerous place...)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
             this.addImage('duskmawLiftingHat2', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //28
             `${this.duskmaw}`,
-            `I would suggest you to get your rest. ${this.nightfall} ${this.city} ${this.phantom} is known for being sort of... paranormal during the night...`,
+            `I would suggest you to get your rest. ${this.nightfallCityPhantom} is known for being sort of... paranormal during the night...`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('duskmawLiftingHat', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //29
             `${this.firedog}`,
-            `Paranormal..? ${this.nightfall} ${this.city} ${this.phantom}?`,
+            `Paranormal...? ${this.nightfallCityPhantom}?`,
             this.addImage(this.setfiredogNormalQuestionMark(), 1, 0, 79, 590, 610),
             this.addImage('duskmawLiftingHat', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //30
             `${this.duskmaw}`,
-            `Yes my friend, we're in ${this.nightfall} ${this.city} ${this.phantom} borders right now. You came just in time.`,
+            `Yes my friend, we're in ${this.nightfallCityPhantom} borders right now. You came just in time.`,
             this.addImage(this.setfiredogNormalQuestionMark(), 0.7, 0, 79, 590, 610),
             this.addImage('duskmawLiftingHat', 1, 1300, 79, 590, 610),
         );
@@ -1520,31 +1548,32 @@ export class Map1EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //38
             `${this.duskmaw}`,
-            `Many people died before a peace treaty was proposed. Nowadays the biggest land belongs to ${this.lunar} ${this.moonlit} ${this.glade}.`,
+            `Many people died before a peace treaty was proposed. Nowadays the biggest land belongs to ${this.lunarMoonlitGlade}.`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('duskmawNormal', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //39
             `${this.firedog}`,
-            `(That's my home..)`,
+            `(That's my home...)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormalExclamationMark(), 1, 0, 79, 590, 610),
             this.addImage('duskmawNormal', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //40
             `${this.duskmaw}`,
-            `Many other lands were frustrated, they were left with almost nothing, but to honor the peace treaty, and to avoid more deaths..`,
+            `Many other lands were frustrated, they were left with almost nothing, but to honor the peace treaty, and to avoid more deaths—`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('duskmawNormal', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //41
             `${this.duskmaw}`,
-            `.. everyone has tried to move on past the wars... As I had told before, we are currently inside the borders of ${this.nightfall} ${this.city} ${this.phantom}.`,
+            `—everyone has tried to move on past the wars... As I had told before, we are currently inside the borders of ${this.nightfallCityPhantom}.`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('duskmawNormal', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //42
             `${this.duskmaw}`,
-            `${this.nightfall} ${this.city} ${this.phantom} villagers managed to produce mass concrete. And thanks to this they managed to build big houses.`,
+            `${this.nightfallCityPhantom} villagers managed to produce mass concrete. And thanks to this they managed to build big houses.`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('duskmawNormal', 1, 1300, 79, 590, 610),
         );
@@ -1556,7 +1585,7 @@ export class Map1EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //44
             `${this.duskmaw}`,
-            `But there are many other lands, such as ${this.coral} ${this.abyss}, which is famous for its vast lakes and rivers.`,
+            `But there are many other lands, such as ${this.coralAbyss}, which is famous for its vast lakes and rivers.`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('duskmawNormal', 1, 1300, 79, 590, 610),
         );
@@ -1568,7 +1597,7 @@ export class Map1EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //46
             `${this.duskmaw}`,
-            `Then we have ${this.verdant} ${this.vine} which is known for its vast amount of vines that scatter throughout the whole land.`,
+            `Then we have ${this.verdantVine} which is known for its vast amount of vines that scatter throughout the whole land.`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('duskmawNormal', 1, 1300, 79, 590, 610),
         );
@@ -1586,13 +1615,13 @@ export class Map1EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //49
             `${this.duskmaw}`,
-            `Fun fact, the materials of all cabins came from ${this.verdant} ${this.vine}!`,
+            `Fun fact, the materials of all cabins came from ${this.verdantVine}!`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('duskmawNormal', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //50
             `${this.duskmaw}`,
-            `${this.springly} ${this.lemony} is known for its food and plants. It's always spring there, so they are able to collect honey, and their trees yield delicious fruits all year.`,
+            `${this.springlyLemony} is known for its food and plants. It's always spring there, so they are able to collect honey, and their trees yield delicious fruits all year.`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('duskmawNormal', 1, 1300, 79, 590, 610),
         );
@@ -1610,7 +1639,7 @@ export class Map1EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //53
             `${this.duskmaw}`,
-            `${this.infernal} ${this.crater} ${this.peak} used to be a rich land, richer than all of the others lands combined...`,
+            `${this.infernalCraterPeak} used to be a rich land, richer than all of the others lands combined...`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('duskmawNormal', 1, 1300, 79, 590, 610),
         );
@@ -1736,25 +1765,27 @@ export class Map1EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //74
             `${this.firedog}`,
-            `(${this.duskmaw} seems to know so much about the history of every land.)`,
+            `(${this.duskmaw} seems to know so much about the history of every land!)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
             this.addImage('duskmawNormal', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //75
             `${this.firedog}`,
-            `(Maybe I should ask about the ${this.cryptic} ${this.token}, I wonder what he knows about it.)`,
+            `(Maybe I should ask about the ${this.crypticToken}, I wonder what he knows about it!)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormalExclamationMark(), 1, 0, 79, 590, 610),
             this.addImage('duskmawNormal', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //76
             `${this.firedog}`,
-            `${this.duskmaw}, have you ever heard about a ${this.cryptic} ${this.token} before?`,
+            `${this.duskmaw}, have you ever heard about a ${this.crypticToken} before?`,
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
             this.addImage('duskmawNormal', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //77
             `${this.duskmaw}`,
-            `The ${this.cryptic} ${this.token}? I indeed have. But it is nothing but a fiction.`,
+            `The ${this.crypticToken}? I indeed have. But it is nothing but a fiction.`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('duskmawNormal', 1, 1300, 79, 590, 610),
         );
@@ -1772,13 +1803,15 @@ export class Map1EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //80
             `${this.firedog}`,
-            `(I see. It seems that people outside home don't know about the true story.)`,
+            `(I see. It seems that people outside home don't know about the true story...)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
             this.addImage('duskmawNormal', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //81
             `${this.firedog}`,
-            `(But if only ${this.lunar} ${this.moonlit} ${this.glade} knows about the token, then who would know about it and steal it?)`,
+            `(But if only ${this.lunarMoonlitGlade} knows about the token, then who would know about it and steal it...?)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
             this.addImage('duskmawNormal', 0.7, 1300, 79, 590, 610),
         );
@@ -1815,6 +1848,7 @@ export class Map1EndCutscene extends StoryCutscene {
         this.addDialogue( //87
             `${this.firedog}`,
             `(I'm super tired. Well, I guess I should rest now. I need all my energy for tomorrow.)`,
+            { whisper: true },
             this.addImage(this.setfiredogTired(), 1, 0, 79, 590, 610),
             this.addImage('duskmawNormal', 0.7, 1300, 79, 590, 610),
         );
@@ -1835,7 +1869,7 @@ export class Map2Cutscene extends StoryCutscene {
         );
         this.addDialogue( //1
             `${this.firedog}`,
-            `I need to get the ${this.cryptic} ${this.token} back...`,
+            `I need to get the ${this.crypticToken} back...`,
             this.addImage(this.setfiredogTired(), 1, 0, 79, 590, 610),
 
         );
@@ -1852,7 +1886,7 @@ export class Map2Cutscene extends StoryCutscene {
         );
         this.addDialogue( //4
             `${this.firedog}`,
-            `Am I... dreaming..?`,
+            `Am I... dreaming...?`,
             this.addImage(this.setfiredogHeadache(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //5
@@ -1862,7 +1896,7 @@ export class Map2Cutscene extends StoryCutscene {
         );
         this.addDialogue( //6
             `${this.firedog}`,
-            `I'm... I'm here again..?`,
+            `I'm... I'm here again...?`,
             this.addImage(this.setfiredogHeadache(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //7
@@ -1872,7 +1906,7 @@ export class Map2Cutscene extends StoryCutscene {
         );
         this.addDialogue( //8
             `${this.firedog}`,
-            `Wha-! What is that in that door... eyes..?`,
+            `Wha-! What is that in that door... eyes...?`,
             this.addImage(this.setfiredogHeadache(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //9
@@ -1902,12 +1936,14 @@ export class Map2Cutscene extends StoryCutscene {
         );
         this.addDialogue( //14
             `${this.firedog}`,
-            `(How does this feel so real... Wait... I can't move my body..)`,
+            `(How does this feel so real... Wait... I can't move my body...)`,
+            { whisper: true },
             this.addImage(this.setfiredogHeadache(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //15
             `${this.firedog}`,
             `(My heartbeat is going crazy... am I really dreaming?)`,
+            { whisper: true },
             this.addImage(this.setfiredogHeadache(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //16
@@ -1932,7 +1968,7 @@ export class Map2Cutscene extends StoryCutscene {
         );
         this.addDialogue( //20
             `${this.firedog}`,
-            `What? What place!? Are you talking about... ${this.lunar} ${this.moonlit} ${this.glade}?`,
+            `What? What place!? Are you talking about... ${this.lunarMoonlitGlade}?`,
             this.addImage(this.setfiredogNormalQuestionAndExlamationMark(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //21
@@ -1952,12 +1988,12 @@ export class Map2Cutscene extends StoryCutscene {
         );
         this.addDialogue( //24
             `${this.firedog}`,
-            `What..? I can't go now, specially during the night... this land is full of paranormal stuff... at least that's what ${this.duskmaw} told me.`,
+            `What...? I can't go now, specially during the night... this land is full of paranormal stuff... at least that's what ${this.duskmaw} told me.`,
             this.addImage(this.setfiredogNormalQuestionMark(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //25
             `${this.firedog}`,
-            `Who are you..? Why does this feel so real.`,
+            `Who are you...? Why does this feel so real.`,
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //26
@@ -1987,7 +2023,7 @@ export class Map2Cutscene extends StoryCutscene {
         );
         this.addDialogue( //31
             `${this.firedog}`,
-            `Why isn't he in the cabin? ... Should I really keep going east now..?`,
+            `Why isn't he in the cabin...? Should I really keep going east now...?`,
             this.addImage(this.setfiredogTired(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //32
@@ -1997,7 +2033,7 @@ export class Map2Cutscene extends StoryCutscene {
         );
         this.addDialogue( //33
             `${this.firedog}`,
-            `Okay... I'll go... The quicker I get to the ${this.temporal} ${this.timber} the better anyways.. despite being really tired...`,
+            `Okay... I'll go... The quicker I get to the ${this.temporalTimber} the better anyways.. despite being really tired...`,
             this.addImage(this.setfiredogTired(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //34
@@ -2041,7 +2077,7 @@ export class Map2Cutscene extends StoryCutscene {
         );
         this.addDialogue( //41
             `${this.firedog}`,
-            `${this.duskmaw}..?`,
+            `${this.duskmaw}...?`,
             this.addImage(this.setfiredogNormalQuestionMark(), 1, 0, 79, 590, 610),
             this.addImage('penguinBatTalkNormal', 0.7, 1300, 79, 590, 610),
         );
@@ -2060,12 +2096,14 @@ export class Map2Cutscene extends StoryCutscene {
         this.addDialogue( //44
             `${this.firedog}`,
             `(I was alone the whole time?)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormalQuestionMark(), 1, 0, 79, 590, 610),
             this.addImage('penguinBatUp', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //45
             `${this.firedog}`,
             `(Well.. ${this.penguini} doesn't seem to be joking as well... nothing here is making sense... shoot.. I'll figure all of this out later, I need to go now.)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
             this.addImage('penguinBatUp', 0.7, 1300, 79, 590, 610),
         );
@@ -2134,7 +2172,7 @@ export class Map2EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //3
             `${this.firedog}`,
-            `Huh? What's this..?`,
+            `Huh? What's this...?`,
             this.addImage(this.setfiredogNormalExclamationMark(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //4
@@ -2405,7 +2443,7 @@ export class Map3Cutscene extends StoryCutscene {
         );
         this.addDialogue( //14
             `${this.firedog}`,
-            `Oh okay... Anyways, do you know of an exalted sorcerer around that helps explorers to get past the waters of ${this.coral} ${this.abyss} by any chance?`,
+            `Oh okay... Anyways, do you know of an exalted sorcerer around that helps explorers to get past the waters of ${this.coralAbyss} by any chance?`,
             this.addImage(this.setfiredogPhew(), 1, 0, 79, 590, 610),
             this.addImage('penguinBatTalkNormal', 0.7, 1300, 79, 590, 610),
         );
@@ -2417,7 +2455,7 @@ export class Map3Cutscene extends StoryCutscene {
         );
         this.addDialogue( //16
             `${this.firedog}`,
-            `I think so..?`,
+            `I think so...?`,
             this.addImage(this.setfiredogNormalQuestionMark(), 1, 0, 79, 590, 610),
             this.addImage('penguinBatTalkNormal', 0.7, 1300, 79, 590, 610),
         );
@@ -2536,7 +2574,8 @@ export class Map3Cutscene extends StoryCutscene {
         );
         this.addDialogue( //36
             `${this.firedog}`,
-            `(Well ${this.penguini} was right, he does look like a sorcerer..)`,
+            `(Well ${this.penguini} was right, he does look like a sorcerer...)`,
+            { whisper: true },
             this.addImage(this.setfiredogLaugh(), 1, 0, 79, 590, 610),
             this.addImage('zephyrionNormal', 0.7, 1300, 79, 590, 610),
         );
@@ -2608,7 +2647,7 @@ export class Map3Cutscene extends StoryCutscene {
         );
         this.addDialogue( //48
             `${this.firedog}`,
-            `Your hand..?`,
+            `Your hand...?`,
             this.addImage(this.setfiredogNormalQuestionMark(), 1, 0, 79, 590, 610),
             this.addImage('zephyrionNormal', 0.7, 1300, 79, 590, 610),
         );
@@ -2765,6 +2804,7 @@ export class Map3Cutscene extends StoryCutscene {
         this.addDialogue( //77
             `${this.zephyrion}`,
             `(What was that? It was inside ${this.firedog}? Inside of his thoughts? His heart?)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormalQuestionMark(), 0.7, 0, 79, 590, 610),
             this.addImage('zephyrionDistraught', 1, 1300, 79, 590, 610),
         );
@@ -2800,7 +2840,7 @@ export class Map3Cutscene extends StoryCutscene {
         );
         this.addDialogue( //83
             `${this.zephyrion}`,
-            `If you surface back up you will get spotted by the guards of ${this.coral} ${this.abyss}, and they won't hesitate to kill you.`,
+            `If you surface back up you will get spotted by the guards of ${this.coralAbyss}, and they won't hesitate to kill you.`,
             this.addImage(this.setfiredogLaugh(), 0.7, 0, 79, 590, 610),
             this.addImage('zephyrionNormal', 1, 1300, 79, 590, 610),
         );
@@ -3014,7 +3054,7 @@ export class Map3EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //21
             `${this.firedog}`,
-            `Wow! It's so much greener here. I guess we're in ${this.verdant} ${this.vine}.`,
+            `Wow! It's so much greener here. I guess we're in ${this.verdantVine}.`,
             this.addImage(this.setfiredogNormalExclamationMark(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //22
@@ -3055,12 +3095,12 @@ export class Map4Cutscene extends StoryCutscene {
         );
         this.addDialogue( //3
             `${this.firedog}`,
-            `I really could be an explorer, and see every corner of every land. When I get back home, with the ${this.temporal} ${this.timber}, I wonder what life will be like.`,
+            `I really could be an explorer, and see every corner of every land. When I get back home, with the ${this.temporalTimber}, I wonder what life will be like.`,
             this.addImage(this.setfiredogHappy(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //4
             `${this.firedog}`,
-            `After all these amazing experiences, there is no way I want to be stuck again inside ${this.lunar} ${this.moonlit} ${this.glade}! Haha!`,
+            `After all these amazing experiences, there is no way I want to be stuck again inside ${this.lunarMoonlitGlade}! Haha!`,
             this.addImage(this.setfiredogLaugh(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //5
@@ -3136,6 +3176,7 @@ export class Map4Cutscene extends StoryCutscene {
         this.addDialogue( //19
             `${this.firedog}`,
             `(Okay, remain calm... let's figure out why this is happening.)`,
+            { whisper: true },
             this.addImage(this.setfiredogHeadache(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //20
@@ -3150,7 +3191,7 @@ export class Map4Cutscene extends StoryCutscene {
         );
         this.addDialogue( //22
             `${this.firedog}`,
-            `What..?`,
+            `What...?`,
             this.addImage(this.setfiredogHeadache(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //23
@@ -3170,7 +3211,7 @@ export class Map4Cutscene extends StoryCutscene {
         );
         this.addDialogue( //26
             `${this.questionMark}`,
-            `No. You wouldn't know. He used your body for his filthy experiments, with the ${this.cryptic} ${this.token}!`,
+            `No. You wouldn't know. He used your body for his filthy experiments, with the ${this.crypticToken}!`,
             this.addImage(this.setfiredogNormalQuestionAndExlamationMark(), 0.7, 0, 79, 590, 610),
         );
         this.addDialogue( //27
@@ -3190,22 +3231,22 @@ export class Map4Cutscene extends StoryCutscene {
         );
         this.addDialogue( //30
             `${this.firedog}`,
-            `Wait, no..! I still have more questions to ask... what you're saying about ${this.valdorin} makes no sense, he would never do such thing!`,
+            `Wait, no...! I still have more questions to ask... what you're saying about ${this.valdorin} makes no sense, he would never do such thing!`,
             this.addImage(this.setfiredogAngry(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //31
             `${this.firedog}`,
-            `The ${this.cryptic} ${this.token} was always kept in the safe, it was never used for... any experiment whatsoever!`,
+            `The ${this.crypticToken} was always kept in the safe, it was never used for... any experiment whatsoever!`,
             this.addImage(this.setfiredogAngry(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //32
             `${this.firedog}`,
-            `Why are you in my mind? Why have these dreams been happening ever since I left ${this.lunar} ${this.moonlit} ${this.glade}? Why are you doing this to me?`,
+            `Why are you in my mind? Why have these dreams been happening ever since I left ${this.lunarMoonlitGlade}? Why are you doing this to me?`,
             this.addImage(this.setfiredogAngry(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //33
             `${this.questionMark}`,
-            `Have you ever wondered why ${this.valdorin} kept you inside ${this.lunar} ${this.moonlit} ${this.glade}, fool? Now, don't waste my time any further.`,
+            `Have you ever wondered why ${this.valdorin} kept you inside ${this.lunarMoonlitGlade}, fool? Now, don't waste my time any further.`,
             this.addImage(this.setfiredogAngry(), 0.7, 0, 79, 590, 610),
         );
         this.addDialogue( //34
@@ -3240,12 +3281,12 @@ export class Map4Cutscene extends StoryCutscene {
         );
         this.addDialogue( //40
             `${this.firedog}`,
-            `I don't trust that voice one bit... But why would it lie to me..?`,
+            `I don't trust that voice one bit... But why would it lie to me...?`,
             this.addImage(this.setfiredogHeadache(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //41
             `${this.firedog}`,
-            `Ugh... is this voice the reason ${this.valdorin} kept me inside ${this.lunar} ${this.moonlit} ${this.glade} all this time?`,
+            `Ugh... is this voice the reason ${this.valdorin} kept me inside ${this.lunarMoonlitGlade} all this time?`,
             this.addImage(this.setfiredogHeadache(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //42
@@ -3265,12 +3306,12 @@ export class Map4Cutscene extends StoryCutscene {
         );
         this.addDialogue( //45
             `${this.firedog}`,
-            `I wonder how everyone is doing back home... ${this.valdorin}... ${this.quilzorin}... what is happening to me..?`,
+            `I wonder how everyone is doing back home... ${this.valdorin}... ${this.quilzorin}... what is happening to me...?`,
             this.addImage(this.setfiredogSad(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //46 switch scenary
             `${this.firedog}`,
-            `Okay... let's get through ${this.verdant} ${this.vine}, that's what I need to focus on now.`,
+            `Okay... let's get through ${this.verdantVine}, that's what I need to focus on now.`,
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //47
@@ -3328,18 +3369,18 @@ export class Map4Cutscene extends StoryCutscene {
         );
         this.addDialogue( //56
             `${this.quilzorin}`,
-            `The ${this.project} ${this.cryptoterra} ${this.genesis} experiments...`,
+            `The ${this.projectCryptoterraGenesis} experiments...`,
             this.addImage('quilzorinNormal', 1, 0, 79, 590, 610),
             this.addImage('valdorinCrossedArms', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //57
             `${this.valdorin}`,
-            `Indeed. I was so astonished by the ${this.cryptic} ${this.token} back then... that I had decided to create the ${this.project} ${this.cryptoterra} ${this.genesis}.`,
+            `Indeed. I was so astonished by the ${this.crypticToken} back then... that I had decided to create the ${this.projectCryptoterraGenesis}.`,
             this.addImage('valdorinCrossedArms', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //58
             `${this.valdorin}`,
-            `A project involving the implementation of the ${this.cryptic} ${this.token} inside children's hearts in order to create... a weapon of mass destruction.`,
+            `A project involving the implementation of the ${this.crypticToken} inside children's hearts in order to create... a weapon of mass destruction.`,
             this.addImage('valdorinCrossedArms', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //59
@@ -3354,7 +3395,7 @@ export class Map4Cutscene extends StoryCutscene {
         );
         this.addDialogue( //61
             `${this.valdorin}`,
-            `His body was the first one to adapt to the intense power of the ${this.cryptic} ${this.token}. I thought I had succeeded but then it all started going downhill.`,
+            `His body was the first one to adapt to the intense power of the ${this.crypticToken}. I thought I had succeeded but then it all started going downhill.`,
             this.addImage('valdorinCrossedArms', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //62
@@ -3379,7 +3420,7 @@ export class Map4Cutscene extends StoryCutscene {
         );
         this.addDialogue( //66
             `${this.valdorin}`,
-            `This is when I knew that he could no longer possess this power. We removed the ${this.cryptic} ${this.token} out of his heart.`,
+            `This is when I knew that he could no longer possess this power. We removed the ${this.crypticToken} out of his heart.`,
             this.addImage('valdorinFistUp', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //67
@@ -3405,7 +3446,7 @@ export class Map4Cutscene extends StoryCutscene {
         );
         this.addDialogue( //71
             `${this.valdorin}`,
-            `We continued with the ${this.project} ${this.cryptoterra} ${this.genesis} for one more year after that incident.`,
+            `We continued with the ${this.projectCryptoterraGenesis} for one more year after that incident.`,
             this.addImage('quilzorinNormal', 0.7, 0, 79, 590, 610),
             this.addImage('ValdorinTalking', 1, 1300, 79, 590, 610),
         );
@@ -3435,7 +3476,7 @@ export class Map4Cutscene extends StoryCutscene {
         );
         this.addDialogue( //76
             `${this.valdorin}`,
-            `So we removed the ${this.cryptic} ${this.token} from his heart. Before it caused any more harm.`,
+            `So we removed the ${this.crypticToken} from his heart. Before it caused any more harm.`,
             this.addImage('quilzorinNormal', 0.7, 0, 79, 590, 610),
             this.addImage('valdorinCrossedArms', 1, 1300, 79, 590, 610),
         );
@@ -3447,7 +3488,7 @@ export class Map4Cutscene extends StoryCutscene {
         );
         this.addDialogue( //78
             `${this.valdorin}`,
-            `We decided to put an end to the ${this.project} ${this.cryptoterra} ${this.genesis} for good.`,
+            `We decided to put an end to the ${this.projectCryptoterraGenesis} for good.`,
             this.addImage('quilzorinNormal', 0.7, 0, 79, 590, 610),
             this.addImage('valdorinCrossedArms', 1, 1300, 79, 590, 610),
         );
@@ -3477,13 +3518,13 @@ export class Map4Cutscene extends StoryCutscene {
         );
         this.addDialogue( //83
             `${this.valdorin}`,
-            `To this day no one understands how ${this.firedog} kept his fire powers, as the doctors had completely removed the ${this.cryptic} ${this.token} out of his heart.`,
+            `To this day no one understands how ${this.firedog} kept his fire powers, as the doctors had completely removed the ${this.crypticToken} out of his heart.`,
             this.addImage('quilzorinNormal', 0.7, 0, 79, 590, 610),
             this.addImage('valdorinCrossedArms', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //84
             `${this.valdorin}`,
-            `It was a shame that nothing could replace the original ${this.temporal} ${this.timber} from the ${this.cryptic} ${this.token}.`,
+            `It was a shame that nothing could replace the original ${this.temporalTimber} from the ${this.crypticToken}.`,
             this.addImage('quilzorinNormal', 0.7, 0, 79, 590, 610),
             this.addImage('valdorinCrossedArms', 1, 1300, 79, 590, 610),
         );
@@ -3507,7 +3548,7 @@ export class Map4Cutscene extends StoryCutscene {
         );
         this.addDialogue( //88
             `${this.valdorin}`,
-            `This was definitely a side effect from having the ${this.cryptic} ${this.token} inside of him.`,
+            `This was definitely a side effect from having the ${this.crypticToken} inside of him.`,
             this.addImage('quilzorinNormal', 0.7, 0, 79, 590, 610),
             this.addImage('valdorinCrossedArms', 1, 1300, 79, 590, 610),
         );
@@ -3519,7 +3560,7 @@ export class Map4Cutscene extends StoryCutscene {
         );
         this.addDialogue( //90
             `${this.valdorin}`,
-            `One of our sorcerers had came up with a solution. Currently, ${this.lunar} ${this.moonlit} ${this.glade} is surrounded by a protective layer built by our sorcerers.`,
+            `One of our sorcerers had came up with a solution. Currently, ${this.lunarMoonlitGlade} is surrounded by a protective layer built by our sorcerers.`,
             this.addImage('quilzorinNormal', 0.7, 0, 79, 590, 610),
             this.addImage('ValdorinTalking', 1, 1300, 79, 590, 610),
         );
@@ -3531,7 +3572,7 @@ export class Map4Cutscene extends StoryCutscene {
         );
         this.addDialogue( //92
             `${this.valdorin}`,
-            `This same exact magical layer is used to protect the safe room, where the ${this.cryptic} ${this.token} was.`,
+            `This same exact magical layer is used to protect the safe room, where the ${this.crypticToken} was.`,
             this.addImage('quilzorinNormal', 0.7, 0, 79, 590, 610),
             this.addImage('ValdorinTalking', 1, 1300, 79, 590, 610),
         );
@@ -3549,7 +3590,7 @@ export class Map4Cutscene extends StoryCutscene {
         );
         this.addDialogue( //95
             `${this.valdorin}`,
-            `The magical layer blocked the energy of the ${this.cryptic} ${this.token} from escaping the safe room.`,
+            `The magical layer blocked the energy of the ${this.crypticToken} from escaping the safe room.`,
             this.addImage('quilzorinNormal', 0.7, 0, 79, 590, 610),
             this.addImage('ValdorinTalking', 1, 1300, 79, 590, 610),
         );
@@ -3561,7 +3602,7 @@ export class Map4Cutscene extends StoryCutscene {
         );
         this.addDialogue( //97
             `${this.valdorin}`,
-            `No one truly understands it. Even after all these centuries, the ${this.cryptic} ${this.token} is still a mystery.`,
+            `No one truly understands it. Even after all these centuries, the ${this.crypticToken} is still a mystery.`,
             this.addImage('quilzorinNormal', 0.7, 0, 79, 590, 610),
             this.addImage('valdorinCrossedArms', 1, 1300, 79, 590, 610),
         );
@@ -3585,7 +3626,7 @@ export class Map4Cutscene extends StoryCutscene {
         );
         this.addDialogue( //101
             `${this.valdorin}`,
-            `If ${this.elyvorg} was indeed the individual who stole the ${this.cryptic} ${this.token}, it would explain why he wasn't detected by the magical layer.`,
+            `If ${this.elyvorg} was indeed the individual who stole the ${this.crypticToken}, it would explain why he wasn't detected by the magical layer.`,
             this.addImage('quilzorinNormal', 0.7, 0, 79, 590, 610),
             this.addImage('valdorinCrossedArms', 1, 1300, 79, 590, 610),
         );
@@ -3615,7 +3656,7 @@ export class Map4Cutscene extends StoryCutscene {
         );
         this.addDialogue( //106
             `${this.valdorin}`,
-            `I do regret the ${this.project} ${this.cryptoterra} ${this.genesis}. I do regret putting these children in pain, and many lives have been taken because of me.`,
+            `I do regret the ${this.projectCryptoterraGenesis}. I do regret putting these children in pain, and many lives have been taken because of me.`,
             this.addImage('quilzorinNormal', 0.7, 0, 79, 590, 610),
             this.addImage('valdorinFistUp', 1, 1300, 79, 590, 610),
         );
@@ -3661,7 +3702,7 @@ export class Map4EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //2
             `${this.firedog}`,
-            `WHAT HAPPENED!? Who... who could've done this to you!?`,
+            `What happened!? Who... who could've done this to you!?`,
             this.addImage(this.setfiredogCry(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //3
@@ -3678,7 +3719,7 @@ export class Map4EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //5
             `${this.galadon}`,
-            `I was trying to get through ${this.verdant} ${this.vine}...`,
+            `I was trying to get through ${this.verdantVine}...`,
             this.addImage(this.setfiredogCry(), 0.7, 0, 79, 590, 610),
             this.addImage('galadonHurt', 1, 1300, 79, 590, 610),
         );
@@ -3779,13 +3820,13 @@ export class Map4EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //22
             `${this.firedog}`,
-            `That's right! He was attacked by a dark-hooded figure, who used an electric attack as well..!`,
+            `That's right! He was attacked by a dark-hooded figure, who used an electric attack as well...!`,
             this.addImage(this.setfiredogNormalExclamationMark(), 1, 0, 79, 590, 610),
             this.addImage('galadonHurt', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //23
             `${this.firedog}`,
-            `So this means that you were most likely attacked by the same perpetrator..!`,
+            `So this means that you were most likely attacked by the same perpetrator...!`,
             this.addImage(this.setfiredogNormalExclamationMark(), 1, 0, 79, 590, 610),
             this.addImage('galadonHurt', 0.7, 1300, 79, 590, 610),
         );
@@ -3797,7 +3838,7 @@ export class Map4EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //25
             `${this.galadon}`,
-            `But if indeed it that was the thief who stole the ${this.cryptic} ${this.token}, then this is horrible news ${this.firedog}.`,
+            `But if indeed it that was the thief who stole the ${this.crypticToken}, then this is horrible news ${this.firedog}.`,
             this.addImage(this.setfiredogNormalExclamationMark(), 0.7, 0, 79, 590, 610),
             this.addImage('galadonHurt', 1, 1300, 79, 590, 610),
         );
@@ -3809,7 +3850,7 @@ export class Map4EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //27
             `${this.galadon}`,
-            `This hooded individual is going towards... ${this.infernal} ${this.crater} ${this.peak}.`,
+            `This hooded individual is going towards... ${this.infernalCraterPeak}.`,
             this.addImage(this.setfiredogNormalQuestionMark(), 0.7, 0, 79, 590, 610),
             this.addImage('galadonHurt', 1, 1300, 79, 590, 610),
         );
@@ -3821,7 +3862,7 @@ export class Map4EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //29
             `${this.galadon}`,
-            `Yep... that means that whoever is behind that hood most likely knows about the ${this.temporal} ${this.timber}, and even worse, its location.`,
+            `Yep... that means that whoever is behind that hood most likely knows about the ${this.temporalTimber}, and even worse, its location.`,
             this.addImage(this.setfiredogNormalExclamationMark(), 0.7, 0, 79, 590, 610),
             this.addImage('galadonHurt', 1, 1300, 79, 590, 610),
         );
@@ -3833,7 +3874,7 @@ export class Map4EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //31
             `${this.firedog}`,
-            `How do they know about the location of the ${this.temporal} ${this.timber}? How did they even know about the ${this.cryptic} ${this.token} in the first place...`,
+            `How do they know about the location of the ${this.temporalTimber}? How did they even know about the ${this.crypticToken} in the first place...`,
             this.addImage(this.setfiredogNormalQuestionMark(), 1, 0, 79, 590, 610),
             this.addImage('galadonHurt', 0.7, 1300, 79, 590, 610),
         );
@@ -3875,13 +3916,13 @@ export class Map4EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //38
             `${this.galadon}`,
-            `I don't think so. I'm pretty sure we're closer to the cave than any other individual from ${this.lunar} ${this.moonlit} ${this.glade} on this mission.`,
+            `I don't think so. I'm pretty sure we're closer to the cave than any other individual from ${this.lunarMoonlitGlade} on this mission.`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('galadonHurt', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //39
             `${this.galadon}`,
-            `We both took the shortcut underwater. That saved us at least a full day. I'm glad I sent you that letter back in ${this.coral} ${this.abyss}.`,
+            `We both took the shortcut underwater. That saved us at least a full day. I'm glad I sent you that letter back in ${this.coralAbyss}.`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('galadonHurt', 1, 1300, 79, 590, 610),
         );
@@ -3911,13 +3952,14 @@ export class Map4EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //44
             `${this.firedog}`,
-            `(Whoever did this to you, ${this.galadon}, is going to pay for it..)`,
+            `(Whoever did this to you, ${this.galadon}, is going to pay for it...)`,
+            { whisper: true },
             this.addImage(this.setfiredogAngry(), 1, 0, 79, 590, 610),
             this.addImage('galadonHurt', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //45
             `${this.firedog}`,
-            `${this.galadon}..`,
+            `${this.galadon}...`,
             this.addImage(this.setfiredogSad(), 1, 0, 79, 590, 610),
             this.addImage('galadonHurt', 0.7, 1300, 79, 590, 610),
         );
@@ -3951,19 +3993,22 @@ export class Map5Cutscene extends StoryCutscene {
         );
         this.addDialogue( //1
             `${this.firedog}`,
-            `(Oh, I just remembered.)`,
+            `(Oh, I just remembered...)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormalExclamationMark(), 1, 0, 79, 590, 610),
             this.addImage('galadonHurt', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //2
             `${this.firedog}`,
             `(I should ask ${this.galadon} about the dreams I'm having before I go.)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormalExclamationMark(), 1, 0, 79, 590, 610),
             this.addImage('galadonHurt', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //3
             `${this.firedog}`,
             `(Maybe he can help me understand what is going on with me.)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
             this.addImage('galadonHurt', 0.7, 1300, 79, 590, 610),
         );
@@ -3999,7 +4044,8 @@ export class Map5Cutscene extends StoryCutscene {
         );
         this.addDialogue( //9
             `${this.firedog}`,
-            `(Hm.. I had a feeling it was just me... but why me..)`,
+            `(Hm.. I had a feeling it was just me... but why me...)`,
+            { whisper: true },
             this.addImage(this.setfiredogSad(), 1, 0, 79, 590, 610),
             this.addImage('galadonHurt', 0.7, 1300, 79, 590, 610),
         );
@@ -4029,7 +4075,7 @@ export class Map5Cutscene extends StoryCutscene {
         );
         this.addDialogue( //14
             `${this.galadon}`,
-            `Be careful ${this.firedog}. ${this.springly} ${this.lemony} is known for it's tropical bipolar weather.`,
+            `Be careful ${this.firedog}. ${this.springlyLemony} is known for it's tropical bipolar weather.`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('galadonHurt', 1, 1300, 79, 590, 610),
         );
@@ -4059,13 +4105,15 @@ export class Map5Cutscene extends StoryCutscene {
         );
         this.addDialogue( //19
             `${this.firedog}`,
-            `(So after ${this.springly} ${this.lemony} I'll finally reach ${this.infernal} ${this.crater} ${this.peak}.)`,
+            `(So after ${this.springlyLemony} I'll finally reach ${this.infernalCraterPeak}.)`,
+            { whisper: true },
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
             this.addImage('galadonHurt', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //20
             `${this.firedog}`,
             `(We're almost there.)`,
+            { whisper: true },
             this.addImage(this.setfiredogAngry2(), 1, 0, 79, 590, 610),
             this.addImage('galadonHurt', 0.7, 1300, 79, 590, 610),
         );
@@ -4147,12 +4195,12 @@ export class Map5EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //9
             `${this.firedog}`,
-            `So, someone steals the ${this.cryptic} ${this.token} from the safe room. The guards and ${this.valdorin} get knocked out.`,
+            `So, someone steals the ${this.crypticToken} from the safe room. The guards and ${this.valdorin} get knocked out.`,
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //10
             `${this.firedog}`,
-            `Then on my way to the cave, near ${this.nightfall} ${this.city} ${this.phantom} is when I start getting these weird vivid dreams.`,
+            `Then on my way to the cave, near ${this.nightfallCityPhantom} is when I start getting these weird vivid dreams.`,
             this.addImage(this.setfiredogTired(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //11
@@ -4162,7 +4210,7 @@ export class Map5EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //12
             `${this.firedog}`,
-            `But then I had that vision when I left the submarine and was in ${this.verdant} ${this.vine}, when I found the footsteps.`,
+            `But then I had that vision when I left the submarine and was in ${this.verdantVine}, when I found the footsteps.`,
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //13
@@ -4182,22 +4230,22 @@ export class Map5EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //16
             `${this.firedog}`,
-            `Which could've been the thief that stole the ${this.cryptic} ${this.token}.`,
+            `Which could've been the thief that stole the ${this.crypticToken}.`,
             this.addImage(this.setfiredogNormalQuestionMark(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //17
             `${this.firedog}`,
-            `And if it was the thief, it seems they know where the ${this.temporal} ${this.timber} is... well, they are heading towards the direction of the cave. What are the odds?`,
+            `And if it was the thief, it seems they know where the ${this.temporalTimber} is... well, they are heading towards the direction of the cave. What are the odds?`,
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //18
             `${this.firedog}`,
-            `But only the higher-ups inside ${this.lunar} ${this.moonlit} ${this.glade} know where the ${this.temporal} ${this.timber} is.`,
+            `But only the higher-ups inside ${this.lunarMoonlitGlade} know where the ${this.temporalTimber} is.`,
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //19
             `${this.firedog}`,
-            `So perhaps whoever did this, used to, or still does live in ${this.lunar} ${this.moonlit} ${this.glade}?`,
+            `So perhaps whoever did this, used to, or still does live in ${this.lunarMoonlitGlade}?`,
             this.addImage(this.setfiredogNormalQuestionMark(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //20
@@ -4232,7 +4280,7 @@ export class Map5EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //26
             `${this.firedog}`,
-            `I'm starting to think that it cannot be a coincidence that the dreams and visions started happening right after I left ${this.lunar} ${this.moonlit} ${this.glade}.`,
+            `I'm starting to think that it cannot be a coincidence that the dreams and visions started happening right after I left ${this.lunarMoonlitGlade}.`,
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //27
@@ -4322,7 +4370,7 @@ export class Map6Cutscene extends StoryCutscene {
         );
         this.addDialogue( //5
             `${this.questionMark}`,
-            `Once we connect the ${this.cryptic} ${this.token} to the ${this.temporal} ${this.timber}, the world will be at your knees!`,
+            `Once we connect the ${this.crypticToken} to the ${this.temporalTimber}, the world will be at your knees!`,
         );
         this.addDialogue( //6
             `${this.questionMark}`,
@@ -4346,7 +4394,7 @@ export class Map6Cutscene extends StoryCutscene {
         );
         this.addDialogue( //11
             `${this.questionMark}`,
-            `It'll be even shinier once you find the ${this.temporal} ${this.timber}.`,
+            `It'll be even shinier once you find the ${this.temporalTimber}.`,
         );
         this.addDialogue( //12
             `${this.elyvorg}`,
@@ -4398,7 +4446,7 @@ export class Map6Cutscene extends StoryCutscene {
         );
         this.addDialogue( //21
             `${this.penguini}`,
-            `I see. Let me take you to the safest path. There's loads of dead ends in ${this.infernal} ${this.crater} ${this.peak}.`,
+            `I see. Let me take you to the safest path. There's loads of dead ends in ${this.infernalCraterPeak}.`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('penguinGunTalkNormal', 1, 1300, 79, 590, 610),
         );
@@ -4440,7 +4488,7 @@ export class Map6Cutscene extends StoryCutscene {
         );
         this.addDialogue( //28
             `${this.penguini}`,
-            `Okay, now that we've entered ${this.infernal} ${this.crater} ${this.peak}, this is the most optimal path to get to the other side.`,
+            `Okay, now that we've entered ${this.infernalCraterPeak}, this is the most optimal path to get to the other side.`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('penguinGunTalkNormal', 1, 1300, 79, 590, 610),
         );
@@ -4488,7 +4536,7 @@ export class Map6Cutscene extends StoryCutscene {
         );
         this.addDialogue( //36
             `${this.firedog}`,
-            `This is it. This is ${this.infernal} ${this.crater} ${this.peak}.`,
+            `This is it. This is ${this.infernalCraterPeak}.`,
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //37
@@ -4504,7 +4552,7 @@ export class Map6EndCutscene extends StoryCutscene {
         this.backgroundImage = document.getElementById('map1blackBackground');
         this.addDialogue( //0
             `${this.firedog}`,
-            `Where did ${this.elyvorg} go..? It's so dark in here. I can't see anything...`,
+            `Where did ${this.elyvorg} go...? It's so dark in here. I can't see anything...`,
             this.addImage(this.setfiredogTired(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //1
@@ -4519,7 +4567,7 @@ export class Map6EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //3 dream sound
             `${this.firedog}`,
-            `I've got no time to waste. Let's stop ${this.elyvorg} from getting to the ${this.temporal} ${this.timber} before it's too late.`,
+            `I've got no time to waste. Let's stop ${this.elyvorg} from getting to the ${this.temporalTimber} before it's too late.`,
             this.addImage(this.setfiredogNormal(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //4
@@ -4554,7 +4602,7 @@ export class Map6EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //10
             `${this.questionMark}`,
-            `You will soon be nothing but a sacrifice, and I will be reunited with the ${this.cryptic} ${this.token} once again after so long!`,
+            `You will soon be nothing but a sacrifice, and I will be reunited with the ${this.crypticToken} once again after so long!`,
             this.addImage(this.setfiredogHeadache(), 0.7, 0, 79, 590, 610),
         );
         this.addDialogue( //11
@@ -4574,7 +4622,7 @@ export class Map6EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //14
             `${this.firedog}`,
-            `So you want to kill me here... as long as I'm alive the ${this.cryptic} ${this.token} won't be as powerful...`,
+            `So you want to kill me here... as long as I'm alive the ${this.crypticToken} won't be as powerful...`,
             this.addImage(this.setfiredogHeadache(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //15
@@ -4599,7 +4647,7 @@ export class Map6EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //19
             `${this.questionMark}`,
-            `He'll use his body as a vessel for the ${this.cryptic} ${this.token} with its full power from the ${this.temporal} ${this.timber}.`,
+            `He'll use his body as a vessel for the ${this.crypticToken} with its full power from the ${this.temporalTimber}.`,
             this.addImage(this.setfiredogHeadache(), 0.7, 0, 79, 590, 610),
         );
         this.addDialogue( //20
@@ -4609,7 +4657,7 @@ export class Map6EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //21
             `${this.questionMark}`,
-            `There is nothing you can do to stop me. I can feel the energy of the ${this.temporal} ${this.timber} nearby...`,
+            `There is nothing you can do to stop me. I can feel the energy of the ${this.temporalTimber} nearby...`,
             this.addImage(this.setfiredogHeadache(), 0.7, 0, 79, 590, 610),
         );
         this.addDialogue( //22
@@ -4624,22 +4672,25 @@ export class Map6EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //24
             `${this.firedog}`,
-            `(This isn't good... I'm feeling less of myself the more time passes by..)`,
+            `(This isn't good... I'm feeling less of myself the more time passes by...)`,
+            { whisper: true },
             this.addImage(this.setfiredogHeadache(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //25
             `${this.firedog}`,
-            `(This can't be the end of me..)`,
+            `(This can't be the end of me...)`,
+            { whisper: true },
             this.addImage(this.setfiredogHeadache(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //26
             `${this.firedog}`,
-            `(I need to come back to reality..)`,
+            `(I need to come back to reality...)`,
+            { whisper: true },
             this.addImage(this.setfiredogHeadache(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //27
             `${this.questionMark}`,
-            `You can't! Hahahaha! You're stuck in here with me now. The sole presence of the ${this.temporal} ${this.timber} is resonating so much power to me.`,
+            `You can't! Hahahaha! You're stuck in here with me now. The sole presence of the ${this.temporalTimber} is resonating so much power to me.`,
             this.addImage(this.setfiredogHeadache(), 0.7, 0, 79, 590, 610),
         );
         this.addDialogue( //28
@@ -4659,17 +4710,19 @@ export class Map6EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //31
             `${this.firedog}`,
-            `(I can't snap out of it... my conciousness is slowly fading away..)`,
+            `(I can't snap out of it... my conciousness is slowly fading away...)`,
+            { whisper: true },
             this.addImage(this.setfiredogHeadache(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //32 change scenary
             `${this.firedog}`,
-            `(I'm sorry ${this.galadon}... but this might be it for me... I'm stuck in here..)`,
+            `(I'm sorry ${this.galadon}... but this might be it for me... I'm stuck in here...)`,
+            { whisper: true },
             this.addImage(this.setfiredogHeadache(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //33
             `${this.galadon}`,
-            `${this.penguini} are you okay? Your brother from ${this.springly} ${this.lemony} told me what happened. I was faster than your brothers but they'll arrive shortly.`,
+            `${this.penguini} are you okay? Your brother from ${this.springlyLemony} told me what happened. I was faster than your brothers but they'll arrive shortly.`,
         );
         this.addDialogue( //34
             `${this.penguini}`,
@@ -4682,10 +4735,11 @@ export class Map6EndCutscene extends StoryCutscene {
         this.addDialogue( //36 change scenary
             `${this.galadon}`,
             `(I hope you managed to stop him, ${this.firedog}. I'll be there soon.)`,
-        );
+            { whisper: true },);
+
         this.addDialogue( //37 
             `${this.elyvorg}`,
-            `They really tried to hide it away from me, as if that would make it harder to find the ${this.temporal} ${this.timber}.`,
+            `They really tried to hide it away from me, as if that would make it harder to find the ${this.temporalTimber}.`,
         );
         this.addDialogue( //38 change scenary
             `${this.elyvorg}`,
@@ -4697,7 +4751,7 @@ export class Map6EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //40
             `${this.elyvorg}`,
-            `So this is it... the ${this.temporal} ${this.timber}.`,
+            `So this is it... the ${this.temporalTimber}.`,
         );
         this.addDialogue( //41
             `${this.elyvorg}`,
@@ -4705,11 +4759,11 @@ export class Map6EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //42
             `${this.elyvorg}`,
-            `But I can activate the ${this.cryptic} ${this.token} now, and kill him later.`,
+            `But I can activate the ${this.crypticToken} now, and kill him later.`,
         );
         this.addDialogue( //43 change scenary
             `${this.elyvorg}`,
-            `So, let's fit the ${this.cryptic} ${this.token} here.`,
+            `So, let's fit the ${this.crypticToken} here.`,
         );
         this.addDialogue( //44 change scenary
             `${this.elyvorg}`,
@@ -4729,7 +4783,7 @@ export class Map6EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //48 change scenary
             `${this.elyvorg}`,
-            `Now the ${this.cryptic} ${this.token} is activated. The last step is to replace my own heart with it.`,
+            `Now the ${this.crypticToken} is activated. The last step is to replace my own heart with it.`,
         );
         this.addDialogue( //49
             `${this.elyvorg}`,
@@ -4737,7 +4791,7 @@ export class Map6EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //50
             `${this.elyvorg}`,
-            `Once you're dead the ${this.cryptic} ${this.token} will become whole again, and I will attain the power of a God!`,
+            `Once you're dead the ${this.crypticToken} will become whole again, and I will attain the power of a God!`,
         );
         this.addDialogue( //51 change scenary
             `${this.elyvorg}`,
@@ -4757,7 +4811,7 @@ export class Map6EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //54
             `${this.valdorin}`,
-            `Yes... ${this.elyvorg} managed to find the ${this.temporal} ${this.timber}...`,
+            `Yes... ${this.elyvorg} managed to find the ${this.temporalTimber}...`,
             this.addImage('quilzorinScared', 0.7, 0, 79, 590, 610),
             this.addImage('valdorinSurprised', 1, 1300, 79, 590, 610),
         );
@@ -4820,6 +4874,7 @@ export class Map6EndCutscene extends StoryCutscene {
         this.addDialogue( //66
             `${this.firedog}`,
             `(That's it... I'm going to snap out of it!)`,
+            { whisper: true },
             this.addImage(this.setfiredogTired(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //67 change scenary

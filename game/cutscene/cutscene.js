@@ -18,7 +18,6 @@ export class Cutscene {
         this.isTabPressed = true;
         this.pause = false;
         this.continueDialogue = false;
-        this.shouldDrawWord = false;
         this.isCharacterBlackAndWhite = false;
         this.isBackgroundBlackAndWhite = false;
         this.fullWords = [];
@@ -27,8 +26,10 @@ export class Cutscene {
         this.groundShaking = false;
         this.playerCoins = this.game.coins;
         this.textBoxWidth = 870;
+        // coins
         this.coinText = "coin";
         this.coinsText = "coins";
+        // characters
         this.firedog = "Firedog";
         this.elyvorg = "Elyvorg";
         this.galadon = "Galadon";
@@ -39,37 +40,26 @@ export class Cutscene {
         this.questionMark = "???";
         this.penguini = "Penguini";
         this.valdorin = "Valdorin";
-        this.valdonotski = "Valdonotski"
+        this.valdonotski = "Valdonotski";
         this.zephyrion = "Zephyrion";
-        this.cryptic = "Cryptic";
-        this.token = "Token";
-        this.temporal = "Temporal";
-        this.timber = "Timber";
-        this.lunar = "Lunar";
-        this.moonlit = "Moonlit";
-        this.glade = "Glade";
-        this.nightfall = "Nightfall";
-        this.city = "City";
-        this.phantom = "Phantom";
-        this.coral = "Coral";
-        this.abyss = "Abyss";
-        this.verdant = "Verdant";
-        this.vine = "Vine";
-        this.springly = "Springly";
-        this.lemony = "Lemony";
-        this.infernal = "Infernal";
-        this.crater = "Crater";
-        this.peak = "Peak";
-        this.project = "Project";
-        this.cryptoterra = "Cryptoterra";
-        this.genesis = "Genesis";
+        // maps
+        this.lunarMoonlitGlade = "Lunar Moonlit Glade";
+        this.nightfallCityPhantom = "Nightfall City Phantom";
+        this.coralAbyss = "Coral Abyss";
+        this.verdantVine = "Verdant Vine";
+        this.springlyLemony = "Springly Lemony";
+        this.infernalCraterPeak = "Infernal Crater Peak";
+        // phrases
+        this.crypticToken = "Cryptic Token";
+        this.temporalTimber = "Temporal Timber";
+        this.projectCryptoterraGenesis = "Project Cryptoterra Genesis";
         this.characterColors = {
-            // coin colours
+            // coins
             [this.game.winningCoins]: 'orange',
             [this.playerCoins]: 'orange',
             [this.coinText]: 'orange',
             [this.coinsText]: 'orange',
-            //characters
+            // characters
             [this.firedog]: 'yellow',
             [this.galadon]: 'tomato',
             [this.valdorin]: 'RoyalBlue',
@@ -80,47 +70,84 @@ export class Cutscene {
             [this.zephyrion]: 'DodgerBlue',
             [this.elyvorg]: 'red',
             [this.everyone]: 'SkyBlue',
-            //unknown
             [this.questionMark]: 'red',
-            [this.threeDots]: 'white',
-            //map1
-            [this.lunar]: 'green',
-            [this.moonlit]: 'green',
-            [this.glade]: 'green',
-            //map2
-            [this.nightfall]: 'green',
-            [this.city]: 'green',
-            [this.phantom]: 'green',
-            //map3
-            [this.coral]: 'green',
-            [this.abyss]: 'green',
-            //map4
-            [this.verdant]: 'green',
-            [this.vine]: 'green',
-            //map5
-            [this.springly]: 'green',
-            [this.lemony]: 'green',
-            //map6
-            [this.infernal]: 'Crimson',
-            [this.crater]: 'Crimson',
-            [this.peak]: 'Crimson',
-            // project
-            [this.project]: 'OrangeRed',
-            [this.cryptoterra]: 'OrangeRed',
-            [this.genesis]: 'OrangeRed',
-            //other
-            [this.cryptic]: 'DarkViolet',
-            [this.token]: 'DarkViolet',
-            [this.temporal]: 'GoldenRod',
-            [this.timber]: 'GoldenRod',
+            // map phrases
+            [this.lunarMoonlitGlade]: 'green',
+            [this.nightfallCityPhantom]: 'green',
+            [this.coralAbyss]: 'green',
+            [this.verdantVine]: 'green',
+            [this.springlyLemony]: 'green',
+            [this.infernalCraterPeak]: 'Crimson',
+            // project phrases
+            [this.crypticToken]: 'DarkViolet',
+            [this.temporalTimber]: 'GoldenRod',
+            [this.projectCryptoterraGenesis]: 'OrangeRed',
         };
+
+        this.currentColorSpans = [];
+        this.currentSpansForIndex = -1;
+
         this.reminderImage = document.getElementById("reminderToSkipWithTab");
         this.reminderImageStartTime = null;
     }
 
-    splitDialogueIntoWords(dialogueText) {
-        const words = dialogueText.split(" ");
-        return words;
+    splitDialogueIntoWords(text) { return text.split(" "); }
+    escapeRegExp(str) { return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+    buildColorSpans(fullText) {
+        const spans = [];
+        const keys = Object.keys(this.characterColors)
+            .filter(k => typeof k === 'string' && k.trim().length > 0)
+            .sort((a, b) => b.length - a.length);
+
+        for (const key of keys) {
+            const color = this.characterColors[key];
+            const rx = new RegExp(`\\b${this.escapeRegExp(key)}\\b`, 'g');
+            let m;
+            while ((m = rx.exec(fullText)) !== null) {
+                spans.push([m.index, m.index + m[0].length, color]);
+            }
+        }
+        return spans;
+    }
+
+    colorAtGlobal(globalIndex, spans, fallback = 'white') {
+        for (const [s, e, c] of spans) {
+            if (globalIndex >= s && globalIndex < e) return c;
+        }
+        return fallback;
+    }
+
+    isCharacterName(word) {
+        return Object.prototype.hasOwnProperty.call(this.characterColors, word);
+    }
+
+    getDotIndices(dialogue) {
+        const out = [];
+        let i = dialogue.indexOf('...');
+        while (i !== -1) {
+            out.push(i);
+            i = dialogue.indexOf('...', i + 3);
+        }
+        return out;
+    }
+
+    ellipsisFollowedOnlyByTerminalPunct(dialogue, startIdx) {
+        const tail = dialogue.slice(startIdx + 3);
+
+        if (tail.length === 0) return false;
+
+        const TERMINAL_RX = /^[\)\]\}»"'’”!?]+$/u;
+
+        return TERMINAL_RX.test(tail);
+    }
+
+    endsWithEllipsisPlusTerminal(partial) {
+        return /\.\.\.[\)\]\}»"'’”!?]$/u.test(partial);
+    }
+
+    isTerminalChar(ch) {
+        return /[\)\]\}»"'’”!?]/u.test(ch);
     }
 
     addEventListeners() {
@@ -158,7 +185,6 @@ export class Cutscene {
     fadeOutMusic(name) {
         this.game.audioHandler.cutsceneMusic.fadeOutAndStop(name);
     }
-
     stopAllAudio() {
         this.game.audioHandler.cutsceneDialogue.stopAllSounds();
         this.game.audioHandler.cutsceneSFX.stopAllSounds();
@@ -171,12 +197,30 @@ export class Cutscene {
 
     cutsceneController() {
         if (this.textIndex !== this.dialogue[this.dialogueIndex].dialogue.length) return;
-
-        const resolver = typeof this.resolveCutsceneAction === 'function'
-            ? this.resolveCutsceneAction()
-            : undefined;
-
+        const resolver = typeof this.resolveCutsceneAction === 'function' ? this.resolveCutsceneAction() : undefined;
         if (typeof resolver === 'function') resolver();
+    }
+
+    addDialogue(character, dialogue, ...maybeImages) {
+        let options = {};
+        let images = maybeImages;
+
+        if (maybeImages.length > 0 && typeof maybeImages[0] === 'object' && !maybeImages[0].hasOwnProperty('id') && (maybeImages[0].hasOwnProperty('whisper') || maybeImages[0].hasOwnProperty('options'))) {
+            options = maybeImages[0];
+            images = maybeImages.slice(1);
+        }
+
+        const entry = {
+            character,
+            dialogue,
+            images,
+            whisper: !!options.whisper
+        };
+        this.dialogue.push(entry);
+    }
+
+    addImage(id, opacity, x, y, width, height) {
+        return { id, opacity, x, y, width, height };
     }
 
     displayDialogue(cutscene) {
@@ -190,116 +234,103 @@ export class Cutscene {
         this.isEnterPressed = false;
 
         this.handleKeyUp = (event) => {
-            if (event.key === 'Enter') {
-                this.isEnterPressed = false;
-            }
+            if (event.key === 'Enter') this.isEnterPressed = false;
         };
         this.handleLeftClickUp = (event) => {
-            if (event.button === 0) {
-                this.isEnterPressed = false;
-            }
+            if (event.button === 0) this.isEnterPressed = false;
         };
 
         this.dialogueIndex++;
-        this.addEventListeners();
+        this.currentColorSpans = this.buildColorSpans(this.dialogue[this.dialogueIndex].dialogue);
+        this.currentSpansForIndex = this.dialogueIndex;
 
+        this.addEventListeners();
         this.reminderImageStartTime = performance.now();
     }
 
     draw(context) {
         if (this.backgroundImage) {
-            if (this.isBackgroundBlackAndWhite) {
-                context.filter = "grayscale(100%)";
-            }
-
-            if (this.groundShaking) {
-                preShake(context);
-            }
+            if (this.isBackgroundBlackAndWhite) context.filter = 'grayscale(100%)';
+            if (this.groundShaking) preShake(context);
             context.drawImage(this.backgroundImage, 0, 0, this.game.width, this.game.height);
-            if (this.groundShaking) {
-                postShake(context);
-            }
-
-            context.filter = "none";
+            if (this.groundShaking) postShake(context);
+            context.filter = 'none';
         }
-        if (this.dialogueIndex < this.dialogue.length) {
-            const currentDialogue = this.dialogue[this.dialogueIndex];
-            const { character, dialogue, images } = currentDialogue;
-            const partialText = dialogue.substring(0, this.textIndex + 1);
-            this.dialogueText = partialText;
-            const words = this.splitDialogueIntoWords(partialText);
-            const lines = this.getLinesWithinLimit(words, this.dialogueText, this.characterLimit);
 
-            context.save();
+        if (this.dialogueIndex >= this.dialogue.length) return;
 
-            if (this.game.enterDuringBackgroundTransition) {
-                if (images && Array.isArray(images)) {
-                    images.forEach((imageObject) => {
-                        const { id, opacity, x, y, width, height } = imageObject;
+        const currentDialogue = this.dialogue[this.dialogueIndex];
+        const { character, dialogue, images } = currentDialogue;
 
-                        if (this.isCharacterBlackAndWhite) {
-                            context.filter = "grayscale(100%)";
-                        }
+        if (this.currentSpansForIndex !== this.dialogueIndex) {
+            this.currentColorSpans = this.buildColorSpans(dialogue);
+            this.currentSpansForIndex = this.dialogueIndex;
+        }
 
-                        context.globalAlpha = opacity !== undefined ? opacity : 1;
-                        context.drawImage(document.getElementById(id), x, y, width, height);
+        const partialText = dialogue.substring(0, this.textIndex + 1);
+        this.dialogueText = partialText;
+        const words = this.splitDialogueIntoWords(partialText);
+        const lines = this.getLinesWithinLimit(words, this.dialogueText, this.characterLimit);
 
-                        context.filter = "none";
-                        context.globalAlpha = 1;
-                    });
-                }
-                if (this.dontShowTextBoxAndSound === false) {
-                    context.drawImage(document.getElementById("textBox"), 0 + 15, this.game.height - 70, this.textBoxWidth, 96);
-                }
+        context.save();
+
+        if (this.game.enterDuringBackgroundTransition) {
+            if (images && Array.isArray(images)) {
+                images.forEach(({ id, opacity, x, y, width, height }) => {
+                    if (this.isCharacterBlackAndWhite) context.filter = 'grayscale(100%)';
+                    context.globalAlpha = opacity !== undefined ? opacity : 1;
+                    context.drawImage(document.getElementById(id), x, y, width, height);
+                    context.filter = 'none';
+                    context.globalAlpha = 1;
+                });
+            }
+            if (this.dontShowTextBoxAndSound === false) {
+                context.drawImage(document.getElementById('textBox'), 15, this.game.height - 70, this.textBoxWidth, 96);
+            }
+        }
+
+        const currentTime = performance.now();
+        if (this.reminderImageStartTime !== null && (currentTime - this.reminderImageStartTime) < 7000 &&
+            (this.game.cutsceneActive && !this.game.talkToPenguin && !this.game.talkToElyvorg)) {
+            context.drawImage(this.reminderImage, this.game.width - 500, this.game.height - 100);
+        }
+
+        const characterColor = this.characterColors[character] || 'white';
+        context.fillStyle = characterColor;
+        context.font = '23px Arial';
+        context.textAlign = 'left';
+        context.shadowOffsetX = 2;
+        context.shadowOffsetY = 2;
+        context.shadowColor = 'black';
+        context.shadowBlur = 0;
+
+        const characterName = `${character}: `;
+        let xPosition = 50;
+
+        if (this.game.enterDuringBackgroundTransition) {
+            for (let i = 0; i < characterName.length; i++) {
+                const ch = characterName[i];
+                context.fillStyle = (ch === ':') ? 'white' : characterColor;
+                context.fillText(ch, xPosition, this.game.height - 33);
+                xPosition += context.measureText(ch).width;
+            }
+        }
+
+        if (this.textIndex < dialogue.length) {
+            if (!this.game.enterDuringBackgroundTransition) {
+                this.textIndex -= 2;
+                if (this.textIndex < 0) this.textIndex = -2;
+                this.pause = true;
+            } else {
+                this.pause = false;
             }
 
-            const currentTime = performance.now();
-            if (this.reminderImageStartTime !== null && (currentTime - this.reminderImageStartTime) < 7000 &&
-                (this.game.cutsceneActive && !this.game.talkToPenguin && !this.game.talkToElyvorg)) {
-                context.drawImage(this.reminderImage, this.game.width - 500, this.game.height - 100);
-            }
-
-            const characterColor = this.characterColors[character] || 'white';
-            context.fillStyle = characterColor;
-
-            context.font = '23px Arial';
-            context.textAlign = 'left';
-            context.shadowOffsetX = 2;
-            context.shadowOffsetY = 2;
-            context.shadowColor = 'black';
-            context.shadowBlur = 0;
-
-            const characterName = `${character}: `;
-
-            let xPosition = 50;
-
-            if (this.game.enterDuringBackgroundTransition) {
-                for (let charIndex = 0; charIndex < characterName.length; charIndex++) {
-                    const punctuationChars = ':';
-                    const char = characterName[charIndex];
-
-                    if (punctuationChars.includes(char)) {
-                        context.fillStyle = 'white';
-                    } else {
-                        context.fillStyle = characterColor;
-                    }
-
-                    context.fillText(char, xPosition, this.game.height - 33);
-                    xPosition += context.measureText(char).width;
-                }
-            }
-
-            if (this.textIndex < dialogue.length) {
-                if (!this.game.enterDuringBackgroundTransition) {
-                    this.textIndex -= 2;
-                    if (this.textIndex < 0) {
-                        this.textIndex = -2;
-                    }
-                    this.pause = true;
-                } else {
-                    this.pause = false;
-                }
-                if (partialText.endsWith('...') && !this.lastSoundPlayed && partialText !== dialogue && this.game.menu.pause.isPaused === false) {
+            if (
+                !this.lastSoundPlayed &&
+                partialText !== dialogue &&
+                this.game.menu.pause.isPaused === false
+            ) {
+                if (this.endsWithEllipsisPlusTerminal(partialText)) {
                     if (!this.playSound2OnDotPause) {
                         this.playEightBitSound('bit2');
                         this.playSound2OnDotPause = true;
@@ -309,20 +340,37 @@ export class Cutscene {
                     this.continueDialogue = true;
                     this.isEnterPressed = false;
                 }
-
-                this.characterColorLogic(context, lines, words, characterName)
-
-                if (!this.game.menu.pause.isPaused) {
-                    this.playEightBitSound('bit1', 'bit1');
-                    this.textIndex++;
-                } else {
-                    this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
+                else if (partialText.endsWith('...')) {
+                    const nextChar = dialogue[this.textIndex + 1];
+                    if (nextChar && this.isTerminalChar(nextChar)) {
+                    } else {
+                        const ellipsisStart = this.textIndex - 2;
+                        if (!this.ellipsisFollowedOnlyByTerminalPunct(dialogue, ellipsisStart)) {
+                            if (!this.playSound2OnDotPause) {
+                                this.playEightBitSound('bit2');
+                                this.playSound2OnDotPause = true;
+                            }
+                            this.textIndex--;
+                            this.pause = true;
+                            this.continueDialogue = true;
+                            this.isEnterPressed = false;
+                        }
+                    }
                 }
-            } else {
-                this.characterColorLogic(context, lines, words, characterName)
             }
+        }
 
-            if (this.textIndex >= dialogue.length && !this.lastSoundPlayed) {
+        this.characterColorLogic(context, lines, words, characterName, dialogue, this.currentColorSpans);
+
+        if (this.textIndex < dialogue.length) {
+            if (!this.game.menu.pause.isPaused) {
+                this.playEightBitSound('bit1', 'bit1');
+                this.textIndex++;
+            } else {
+                this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
+            }
+        } else {
+            if (!this.lastSoundPlayed) {
                 this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
                 if (!this.lastSound2Played && this.dontShowTextBoxAndSound === false) {
                     this.playEightBitSound('bit2');
@@ -330,95 +378,88 @@ export class Cutscene {
                 }
             }
         }
+
         context.restore();
     }
 
-    playEightBitSound(soundId, soundIDpaused) {
-        const audioElement = this.game.audioHandler.cutsceneDialogue.sounds[soundIDpaused];
-        if (this.dialogueText.trim().startsWith("(")) {
-            // if dialogue starts with "(" don't play the sound
-            return;
-        }
-        if (!this.pause) {
-            this.game.audioHandler.cutsceneDialogue.playSound(soundId);
-        } else {
-            this.game.audioHandler.cutsceneDialogue.pauseSound(audioElement);
-        }
-    }
-
-    getDotIndices(dialogue) {
-        const dotIndices = [];
-        let dotIndex = dialogue.indexOf('...');
-
-        while (dotIndex !== -1) {
-            dotIndices.push(dotIndex);
-            dotIndex = dialogue.indexOf('...', dotIndex + 3);
-        }
-        return dotIndices;
-    }
-
-    isCharacterName(word) {
-        return this.characterColors.hasOwnProperty(word);
-    }
-
-    characterColorLogic(context, lines, words, characterName) {
+    characterColorLogic(context, lines, words, characterName, fullDialogue, spans) {
         const punctuationChars = ',!?.:;()"';
-        const intColor = this.dialogue[this.dialogueIndex];
+        const dlgObj = this.dialogue[this.dialogueIndex];
         const specificPhrases = ["It seems you have", "I will need"];
 
-        for (let index = 0; index < lines.length; index++) {
-            const line = lines[index];
-            const lineWords = this.splitDialogueIntoWords(line);
-            let xPosition = 50 + context.measureText(characterName).width;
-
-            for (let wordIndex = 0; wordIndex < lineWords.length; wordIndex++) {
-                const word = lineWords[wordIndex];
-
-                for (let i = 0; i < words.length; i++) {
-                    const wordsIndex = words[i];
-                    const completedWord = this.fullWordsColor[i].replace(/[,!?.:;()"]/g, '');
-
-                    if (word === wordsIndex) {
-                        for (let charIndex = 0; charIndex < word.length; charIndex++) {
-                            const char = word[charIndex];
-                            let color = '';
-
-                            if (this.isCharacterName(completedWord)) {
-                                color = this.characterColors[completedWord];
-                            } else {
-                                color = 'white';
-                            }
-                            if (!isNaN(word) && !specificPhrases.some(phrase => intColor.dialogue.includes(phrase))) {
-                                // if the word is a number and the dialogue doesn't include the specific phrase
-                                color = 'white';
-                            }
-                            context.fillStyle = color;
-
-                            if (punctuationChars.includes(char)) {
-                                context.fillStyle = 'white';
-                            }
-
-                            context.fillText(char, xPosition, this.game.height - 33 + (index * 25));
-                            xPosition += context.measureText(char).width;
-                        }
-
-                        xPosition += context.measureText(' ').width; // adds space between words
-                        break;
-                    }
-                }
+        let searchCursor = 0;
+        const wordStartsGlobal = words.map(w => {
+            const idx = fullDialogue.indexOf(w, searchCursor);
+            if (idx >= 0) {
+                searchCursor = idx + w.length + 1;
+                return idx;
             }
+            searchCursor += (w.length + 1);
+            return Math.max(0, searchCursor - (w.length + 1));
+        });
+
+        let consumedWords = 0;
+        for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+            const line = lines[lineIdx];
+            const lineWords = this.splitDialogueIntoWords(line);
+            let x = 50 + context.measureText(characterName).width;
+
+            for (let lw = 0; lw < lineWords.length; lw++) {
+                const word = lineWords[lw];
+
+                const posInRemaining = words.slice(consumedWords).indexOf(word);
+                const wordsIdx = posInRemaining === -1 ? -1 : (consumedWords + posInRemaining);
+                if (wordsIdx === -1) continue;
+
+                const globalStart = wordStartsGlobal[wordsIdx];
+                consumedWords = wordsIdx + 1;
+
+                for (let i = 0; i < word.length; i++) {
+                    const ch = word[i];
+
+                    // default color for this letter is determined by the full-dialogue spans
+                    let color = this.colorAtGlobal(globalStart + i, spans, 'white');
+
+                    // numeric words are white unless in specific phrases
+                    if (!isNaN(word) && !specificPhrases.some(p => dlgObj.dialogue.includes(p))) {
+                        color = 'white';
+                    }
+                    // punctuation is always white
+                    if (punctuationChars.includes(ch)) color = 'white';
+
+                    context.fillStyle = color;
+                    context.fillText(ch, x, this.game.height - 33 + (lineIdx * 25));
+                    x += context.measureText(ch).width;
+                }
+
+                x += context.measureText(' ').width;
+            }
+        }
+    }
+
+    playEightBitSound(soundId, soundIDpaused) {
+        const audioElement = soundIDpaused ? this.game.audioHandler.cutsceneDialogue.sounds[soundIDpaused] : undefined;
+
+        const current = this.dialogue[this.dialogueIndex];
+        if (current && current.whisper) {
+            return;
+        }
+
+        if (!this.pause) {
+            this.game.audioHandler.cutsceneDialogue.playSound(soundId);
+        } else if (audioElement) {
+            this.game.audioHandler.cutsceneDialogue.pauseSound(audioElement);
         }
     }
 
     getLinesWithinLimit(words, fullWords, limit) {
         const lines = [];
-        this.limit = limit;
         let currentLine = '';
         let lineCounter = 1;
         for (let i = 0; i < words.length; i++) {
             const word = words[i];
             const currentLineLength = currentLine.length;
-            if (fullWords[i] && (currentLineLength + fullWords[i].length) > this.limit && lineCounter < 2) {
+            if (fullWords[i] && (currentLineLength + fullWords[i].length) > limit && lineCounter < 2) {
                 lines.push(currentLine);
                 currentLine = word;
                 lineCounter++;
@@ -426,9 +467,7 @@ export class Cutscene {
                 currentLine += (currentLine === '' ? '' : ' ') + word;
             }
         }
-        if (currentLine !== '') {
-            lines.push(currentLine);
-        }
+        if (currentLine !== '') lines.push(currentLine);
         return lines;
     }
 
@@ -436,14 +475,6 @@ export class Cutscene {
         this.game.enterDuringBackgroundTransition = false;
         fadeInAndOut(this.game.canvas, fadein, stay, fadeout, () => {
             this.game.enterDuringBackgroundTransition = true;
-        });
-    }
-
-    addDialogue(character, dialogue, ...images) {
-        this.dialogue.push({
-            character: character,
-            dialogue: dialogue,
-            images: images
         });
     }
 

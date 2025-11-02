@@ -267,7 +267,7 @@ export class Map2PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //1
             `${this.firedog}`,
-            `It's you again ${this.penguini}!? Weren't you just in ${this.lunar} ${this.moonlit} ${this.glade}?`,
+            `It's you again ${this.penguini}!? Weren't you just in ${this.lunarMoonlitGlade}?`,
             this.addImage(this.setfiredogNormalQuestionAndExlamationMarkBorder(), 1, 100, 400, 200, 200),
         );
         this.addDialogue( //2
@@ -645,6 +645,7 @@ export class Map4PenguinIngameCutscene extends PenguiniCutscene {
         this.addDialogue( //18
             `${this.firedog}`,
             `(Oh right, nevermind... I forgot ${this.penguini} and his brothers somehow magically can communicate telepathically.)`,
+            { whisper: true },
             this.addImage(this.setfiredogPhewBorder(), 1, 100, 400, 200, 200),
             this.addImage('penguinGunTalkNormalBorder', 0.7, 1430, 400, 200, 200),
         );
@@ -706,7 +707,7 @@ export class Map5PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //5
             `${this.penguini}`,
-            `You seem to be in a wild rush to go somewhere.. From ${this.lunar} ${this.moonlit} ${this.glade} to here in just some days!`,
+            `You seem to be in a wild rush to go somewhere.. From ${this.lunarMoonlitGlade} to here in just some days!`,
             this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
             this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
         );
@@ -724,7 +725,8 @@ export class Map5PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //8
             `${this.firedog}`,
-            `(I shouldn't tell ${this.penguini} why I'm in a rush..)`,
+            `(I shouldn't tell ${this.penguini} why I'm in a rush...)`,
+            { whisper: true },
             this.addImage(this.setfiredogPhewBorder(), 1, 100, 400, 200, 200),
             this.addImage('penguinGunTalkNormalBorder', 0.7, 1430, 400, 200, 200),
         );
@@ -772,7 +774,7 @@ export class Map5PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //16
             `${this.firedog}`,
-            `Wait... why would you charge twice the usual price just because it's raining...`,
+            `Wait... why would you charge twice the usual price just because it's raining...?`,
             this.addImage(this.setfiredogNormalQuestionMarkBorder(), 1, 100, 400, 200, 200),
             this.addImage('penguinGunTalkNormalBorder', 0.7, 1430, 400, 200, 200),
         );
@@ -819,13 +821,13 @@ export class Map5PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //23
             `${this.firedog}`,
-            `Huh? Well I'm going towards ${this.infernal} ${this.crater} ${this.peak}.`,
+            `Huh? Well I'm going towards ${this.infernalCraterPeak}.`,
             this.addImage(this.setfiredogNormalBorder(), 1, 100, 400, 200, 200),
             this.addImage('penguinGunTalkNormalBorder', 0.7, 1430, 400, 200, 200),
         );
         this.addDialogue( //24
             `${this.penguini}`,
-            `You know, from all my years of being in this tight business with my brothers, I've seen people go towards ${this.infernal} ${this.crater} ${this.peak}.`,
+            `You know, from all my years of being in this tight business with my brothers, I've seen people go towards ${this.infernalCraterPeak}.`,
             this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
             this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
         );
@@ -886,7 +888,7 @@ export class Map6PenguinIngameCutscene extends PenguiniCutscene {
         this.game.notEnoughCoins = false;
         this.addDialogue( //1
             `${this.firedog}`,
-            `${this.penguini}!? WHAT HAPPENED...`,
+            `${this.penguini}!? Oh no.. What happened!?`,
             this.addImage(this.setfiredogNormalExclamationMarkBorder(), 1, 100, 400, 200, 200)
         );
         this.addDialogue( //2
@@ -945,6 +947,7 @@ export class Map6PenguinIngameCutscene extends PenguiniCutscene {
         this.addDialogue( //11
             `${this.firedog}`,
             `(${this.elyvorg}, I'm going to make you regret this.)`,
+            { whisper: true },
             this.addImage(this.setfiredogAngryBorder(), 1, 100, 400, 200, 200),
             this.addImage('penguinOnFloorBorder', 0.7, 1200, 400, 200, 200),
         );

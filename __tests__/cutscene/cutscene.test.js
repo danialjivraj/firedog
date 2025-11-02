@@ -155,8 +155,12 @@ describe('Cutscene', () => {
         beforeEach(() => {
             cutscene.dialogueText = ''; cutscene.pause = false;
         });
-        it('does nothing if dialogue starts with "("', () => {
-            cutscene.dialogueText = '(hi)'; cutscene.playEightBitSound('x', 'y');
+        it('does nothing when whisper flag is true', () => {
+            cutscene.dialogue = [{ character: 'A', dialogue: '(hi)', images: [], whisper: true }];
+            cutscene.dialogueIndex = 0;
+            cutscene.dialogueText = '(hi)';
+            cutscene.playEightBitSound('x', 'y');
+
             expect(game.audioHandler.cutsceneDialogue.playSound).not.toHaveBeenCalled();
             expect(game.audioHandler.cutsceneDialogue.pauseSound).not.toHaveBeenCalled();
         });
@@ -201,15 +205,19 @@ describe('Cutscene', () => {
         });
     });
 
-    describe('characterColorLogic', () => {
-        it('renders each character of each word exactly once', () => {
-            const ctx = { fillText: jest.fn(), measureText: jest.fn().mockReturnValue({ width: 5 }) };
-            cutscene.dialogue = [{ character: 'Firedog', dialogue: 'Test', images: [] }];
-            cutscene.dialogueIndex = 0;
-            cutscene.fullWords = ['Test']; cutscene.fullWordsColor = ['Test'];
-            cutscene.characterColorLogic(ctx, ['Test'], ['Test'], 'Firedog: ');
-            expect(ctx.fillText).toHaveBeenCalledTimes(4);
-        });
+    it('renders each character of each word exactly once', () => {
+        const ctx = { fillText: jest.fn(), measureText: jest.fn().mockReturnValue({ width: 5 }) };
+
+        cutscene.dialogue = [{ character: 'Firedog', dialogue: 'Test', images: [], whisper: false }];
+        cutscene.dialogueIndex = 0;
+        cutscene.fullWords = ['Test'];
+        cutscene.fullWordsColor = ['Test'];
+
+        const fullDialogue = 'Test';
+        const spans = cutscene.buildColorSpans(fullDialogue);
+
+        cutscene.characterColorLogic(ctx, ['Test'], ['Test'], 'Firedog: ', fullDialogue, spans);
+        expect(ctx.fillText).toHaveBeenCalledTimes(4);
     });
 
     describe('draw', () => {
@@ -378,5 +386,66 @@ describe('Cutscene', () => {
             cutscene.handleLeftClickUp({ button: 0 });
             expect(cutscene.isEnterPressed).toBe(false);
         });
+    });
+
+    it('does not pause on "..." when next char is a terminal; waits to pause after the terminal', () => {
+        cutscene.dialogue = [{ character: 'Firedog', dialogue: 'Why...?', images: [] }];
+        cutscene.dialogueIndex = 0;
+        cutscene.fullWords = ['Why...?'];
+        cutscene.fullWordsColor = ['Why...?'];
+
+        cutscene.textIndex = 5;
+
+        game.enterDuringBackgroundTransition = true;
+        game.menu.pause.isPaused = false;
+
+        const spy = jest.spyOn(cutscene, 'playEightBitSound');
+        const ctx = {
+            save: jest.fn(), restore: jest.fn(),
+            drawImage: jest.fn(), fillText: jest.fn(),
+            measureText: jest.fn().mockReturnValue({ width: 5 }),
+            font: '', textAlign: '', shadowOffsetX: 0, shadowOffsetY: 0, shadowColor: '', shadowBlur: 0, fillStyle: '',
+            set filter(v) { }, get filter() { return 'none'; },
+            set globalAlpha(v) { }, get globalAlpha() { return 1; },
+        };
+
+        cutscene.draw(ctx);
+
+        expect(cutscene.pause).toBe(false);
+        expect(cutscene.continueDialogue).toBe(false);
+        expect(cutscene.playSound2OnDotPause).toBe(false);
+
+        expect(cutscene.textIndex).toBe(6);
+
+        expect(spy).toHaveBeenCalledWith('bit1', 'bit1');
+        expect(spy).not.toHaveBeenCalledWith('bit2');
+    });
+
+    it('pauses after the terminal that follows an ellipsis (mid-line)', () => {
+        cutscene.dialogue = [{ character: 'Firedog', dialogue: 'Why...? Next', images: [] }];
+        cutscene.dialogueIndex = 0;
+        cutscene.fullWords = ['Why...?', 'Next'];
+        cutscene.fullWordsColor = ['Why...?', 'Next'];
+
+        cutscene.textIndex = 6;
+        game.enterDuringBackgroundTransition = true;
+        game.menu.pause.isPaused = false;
+
+        const spy = jest.spyOn(cutscene, 'playEightBitSound');
+        const ctx = {
+            save: jest.fn(), restore: jest.fn(),
+            drawImage: jest.fn(), fillText: jest.fn(),
+            measureText: jest.fn().mockReturnValue({ width: 5 }),
+            font: '', textAlign: '', shadowOffsetX: 0, shadowOffsetY: 0, shadowColor: '', shadowBlur: 0, fillStyle: '',
+            set filter(v) { }, get filter() { return 'none'; },
+            set globalAlpha(v) { }, get globalAlpha() { return 1; },
+        };
+
+        cutscene.draw(ctx);
+
+        expect(spy).toHaveBeenCalledWith('bit2');
+        expect(cutscene.playSound2OnDotPause).toBe(true);
+        expect(cutscene.pause).toBe(true);
+        expect(cutscene.continueDialogue).toBe(true);
     });
 });

@@ -13,45 +13,58 @@ export class ElyvorgCutscene extends Cutscene {
 
         this.actions = {
             pre: {
-                1:  () => this.game.audioHandler.mapSoundtrack.playSound('crypticTokenDarkAmbienceSoundInGame', true),
-                5:  () => this.game.audioHandler.mapSoundtrack.fadeOutAndStop('crypticTokenDarkAmbienceSoundInGame'),
+                1: () => this.game.audioHandler.mapSoundtrack.playSound('crypticTokenDarkAmbienceSoundInGame', true),
+                5: () => this.game.audioHandler.mapSoundtrack.fadeOutAndStop('crypticTokenDarkAmbienceSoundInGame'),
                 12: () => this.dreamFlash(),
                 15: () => this.dreamFlash(),
                 17: () => this.dreamFlash(),
             },
             post: {
-                2:  () => this.game.audioHandler.cutsceneMusic.playSound('unboundPurpose', true),
+                2: () => this.game.audioHandler.cutsceneMusic.playSound('unboundPurpose', true),
                 25: () => this.game.audioHandler.mapSoundtrack.playSound('crypticTokenDarkAmbienceSoundInGame', true),
                 29: () => this.game.audioHandler.mapSoundtrack.fadeOutAndStop('crypticTokenDarkAmbienceSoundInGame'),
-                35: () => this.game.audioHandler.cutsceneMusic.fadeOutAndStop('unboundPurpose'),
+                37: () => this.game.audioHandler.cutsceneMusic.fadeOutAndStop('unboundPurpose'),
             }
         };
     }
 
     enterOrLeftClick(cutscene) {
         this.cutsceneController();
-        if (this.game.player.currentState !== this.game.player.states[8]) {
+        if (this.game.player?.currentState !== this.game.player?.states[8]) {
             this.game.player.setState(8, 0);
         }
+
         this.isEnterPressed = true;
         this.playSound2OnDotPause = false;
+
+        const dlg = this.dialogue[this.dialogueIndex].dialogue;
 
         if (this.continueDialogue) {
             this.pause = false;
             this.textIndex++;
             this.continueDialogue = false;
-        } else if (this.textIndex < this.dialogue[this.dialogueIndex].dialogue.length) {
-            const dotIndices = this.getDotIndices(this.dialogue[this.dialogueIndex].dialogue);
-            const nextDotIndex = dotIndices.find(index => index > this.textIndex);
-            this.textIndex = nextDotIndex !== undefined ? nextDotIndex : this.dialogue[this.dialogueIndex].dialogue.length;
+
+        } else if (this.textIndex < dlg.length) {
+            const dotIndices = this.getDotIndices(dlg);
+            const nextDotIndex = dotIndices.find(idx => idx > this.textIndex);
+            if (nextDotIndex !== undefined) {
+                this.textIndex = this.ellipsisFollowedOnlyByTerminalPunct(dlg, nextDotIndex)
+                    ? dlg.length
+                    : nextDotIndex;
+            } else {
+                this.textIndex = dlg.length;
+            }
+
         } else if (this.dialogueIndex < this.dialogue.length - 1) {
             this.dialogueIndex++;
             this.textIndex = 0;
             this.lastSound2Played = false;
+
             const currentDialogue = this.dialogue[this.dialogueIndex];
             const prefullWords = this.splitDialogueIntoWords(currentDialogue.dialogue);
             this.fullWordsColor = [];
             this.fullWordsColor = prefullWords;
+
         } else {
             if (this.game.elyvorgPreFight) {
                 this.removeEventListeners();
@@ -142,7 +155,7 @@ export class Map6ElyvorgIngameCutsceneBeforeFight extends ElyvorgCutscene {
         );
         this.addDialogue( //1
             `${this.firedog}`,
-            `You are the one who stole the ${this.cryptic} ${this.token} weren't you?`,
+            `You are the one who stole the ${this.crypticToken} weren't you?`,
             this.addImage(this.setfiredogAngry2Border(), 1, 100, 400, 200, 200),
         );
         this.addDialogue( //2
@@ -154,7 +167,7 @@ export class Map6ElyvorgIngameCutsceneBeforeFight extends ElyvorgCutscene {
         );
         this.addDialogue( //3
             `${this.firedog}`,
-            `That's the... The ${this.cryptic} ${this.token}! You need to give that back!`,
+            `That's the... The ${this.crypticToken}! You need to give that back!`,
             this.addImage(this.setfiredogNormalExclamationMarkBorder(), 1, 100, 400, 200, 200),
             this.addImage('elyvorgTokenBorder', 0.7, 1560, 250, 200, 200),
             this.addImage('crypticTokenShining', 1, 1620, 400, 260, 260),
@@ -180,7 +193,7 @@ export class Map6ElyvorgIngameCutsceneBeforeFight extends ElyvorgCutscene {
         );
         this.addDialogue( //7
             `${this.firedog}`,
-            `You atacked ${this.valdorin}, and also ${this.galadon} back in ${this.verdant} ${this.vine}.`,
+            `You atacked ${this.valdorin}, and also ${this.galadon} back in ${this.verdantVine}.`,
             this.addImage(this.setfiredogAngryBorder(), 1, 100, 400, 200, 200),
         );
         this.addDialogue( //8
@@ -221,13 +234,15 @@ export class Map6ElyvorgIngameCutsceneBeforeFight extends ElyvorgCutscene {
         );
         this.addDialogue( //14
             `${this.firedog}`,
-            `(Ugh... it's happening again... it feels unbelievably strong this time..)`,
+            `(Ugh... it's happening again... it feels unbelievably strong this time...)`,
+            { whisper: true },
             this.addImage(this.setfiredogHeadacheBorder(), 1, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 0.7, 1560, 400, 200, 200),
         );
         this.addDialogue( //15
             `${this.firedog}`,
-            `(This is not good... If I pass out here I'm sure to die..)`,
+            `(This is not good... If I pass out here I'm sure to die...)`,
+            { whisper: true },
             this.addImage(this.setfiredogHeadacheBorder(), 1, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 0.7, 1560, 400, 200, 200),
         );
@@ -239,7 +254,8 @@ export class Map6ElyvorgIngameCutsceneBeforeFight extends ElyvorgCutscene {
         );
         this.addDialogue( //17
             `${this.firedog}`,
-            `(Ugh... Why did the headache get so intense after seeing the ${this.cryptic} ${this.token}..?)`,
+            `(Ugh... Why did the headache get so intense after seeing the ${this.crypticToken}...?)`,
+            { whisper: true },
             this.addImage(this.setfiredogHeadacheBorder(), 1, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 0.7, 1560, 400, 200, 200),
         );
@@ -251,25 +267,29 @@ export class Map6ElyvorgIngameCutsceneBeforeFight extends ElyvorgCutscene {
         );
         this.addDialogue( //19
             `${this.firedog}`,
-            `(My heart is beating so fast... just like in the dreams..)`,
+            `(My heart is beating so fast... just like in the dreams...)`,
+            { whisper: true },
             this.addImage(this.setfiredogHeadacheBorder(), 1, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 0.7, 1560, 400, 200, 200),
         );
         this.addDialogue( //20
             `${this.firedog}`,
-            `(Relax..)`,
+            `(Relax...)`,
+            { whisper: true },
             this.addImage(this.setfiredogHeadacheBorder(), 1, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 0.7, 1560, 400, 200, 200),
         );
         this.addDialogue( //21
             `${this.firedog}`,
             `(I'm not going to lose now, after all the trouble I went through to get here!)`,
+            { whisper: true },
             this.addImage(this.setfiredogHeadacheBorder(), 1, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 0.7, 1560, 400, 200, 200),
         );
         this.addDialogue( //22
             `${this.firedog}`,
-            `(Okay... I think it went away..)`,
+            `(Okay... I think it went away...)`,
+            { whisper: true },
             this.addImage(this.setfiredogTiredBorder(), 1, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 0.7, 1560, 400, 200, 200),
         );
@@ -371,7 +391,7 @@ export class Map6ElyvorgIngameCutsceneAfterFight extends ElyvorgCutscene {
         );
         this.addDialogue( //9
             `${this.elyvorg}`,
-            `You see, ${this.valdorin} inserted the ${this.cryptic} ${this.token} inside of our hearts.`,
+            `You see, ${this.valdorin} inserted the ${this.crypticToken} inside of our hearts.`,
             this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 1, 1100, 400, 200, 200),
         );
@@ -383,13 +403,13 @@ export class Map6ElyvorgIngameCutsceneAfterFight extends ElyvorgCutscene {
         );
         this.addDialogue( //11
             `${this.elyvorg}`,
-            `Yes. His secret. The ${this.project} ${this.cryptoterra} ${this.genesis}.`,
+            `Yes. His secret. The ${this.projectCryptoterraGenesis}.`,
             this.addImage(this.setfiredogNormalQuestionAndExlamationMarkBorder(), 0.7, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 1, 1100, 400, 200, 200),
         );
         this.addDialogue( //12
             `${this.firedog}`,
-            `The ${this.project} ${this.cryptoterra} ${this.genesis}? What is that?`,
+            `The ${this.projectCryptoterraGenesis}? What is that?`,
             this.addImage(this.setfiredogNormalQuestionMarkBorder(), 1, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 0.7, 1100, 400, 200, 200),
         );
@@ -413,7 +433,7 @@ export class Map6ElyvorgIngameCutsceneAfterFight extends ElyvorgCutscene {
         );
         this.addDialogue( //16
             `${this.elyvorg}`,
-            `Because we are both connected to the ${this.cryptic} ${this.token}. The token that gave me and you these powers.`,
+            `Because we are both connected to the ${this.crypticToken}. The token that gave me and you these powers.`,
             this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 1, 1100, 400, 200, 200),
         );
@@ -431,7 +451,7 @@ export class Map6ElyvorgIngameCutsceneAfterFight extends ElyvorgCutscene {
         );
         this.addDialogue( //19
             `${this.elyvorg}`,
-            `You get them because... there are still fragments of the ${this.cryptic} ${this.token} inside of you.`,
+            `You get them because... there are still fragments of the ${this.crypticToken} inside of you.`,
             this.addImage(this.setfiredogSadBorder(), 0.7, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 1, 1100, 400, 200, 200),
         );
@@ -455,7 +475,7 @@ export class Map6ElyvorgIngameCutsceneAfterFight extends ElyvorgCutscene {
         );
         this.addDialogue( //23
             `${this.elyvorg}`,
-            `The ${this.cryptic} ${this.token} itself doesn't look like it has any cracks because it molds itself into it's perfect shape.`,
+            `The ${this.crypticToken} itself doesn't look like it has any cracks because it molds itself into it's perfect shape.`,
             this.addImage(this.setfiredogSadBorder(), 0.7, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 1, 1100, 400, 200, 200),
         );
@@ -467,7 +487,7 @@ export class Map6ElyvorgIngameCutsceneAfterFight extends ElyvorgCutscene {
         );
         this.addDialogue( //25
             `${this.elyvorg}`,
-            `Not even ${this.valdorin} has a clue about this. He doesn't know anything about the ${this.cryptic} ${this.token}.`,
+            `Not even ${this.valdorin} has a clue about this. He doesn't know anything about the ${this.crypticToken}.`,
             this.addImage(this.setfiredogSadBorder(), 0.7, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 1, 1100, 400, 200, 200),
         );
@@ -487,14 +507,14 @@ export class Map6ElyvorgIngameCutsceneAfterFight extends ElyvorgCutscene {
         );
         this.addDialogue( //28
             `${this.elyvorg}`,
-            `And as long as it's separated from the stone, it will soundlessly scream for it.`,
+            `And as long as it's separated from its wooden piece, it will soundlessly scream for it.`,
             this.addImage(this.setfiredogSadBorder(), 0.7, 100, 400, 200, 200),
             this.addImage('elyvorgTokenBorder', 1, 1100, 400, 200, 200),
             this.addImage('crypticTokenShining', 1, 800, 400, 260, 260),
         );
         this.addDialogue( //29
             `${this.elyvorg}`,
-            `Because a part of the ${this.cryptic} ${this.token} is inside of you... you are able to hear those voices.`,
+            `Because a part of the ${this.crypticToken} is inside of you... you are able to hear those voices.`,
             this.addImage(this.setfiredogSadBorder(), 0.7, 100, 400, 200, 200),
             this.addImage('elyvorgTokenBorder', 1, 1100, 400, 200, 200),
             this.addImage('crypticTokenShining', 1, 800, 400, 260, 260),
@@ -531,41 +551,53 @@ export class Map6ElyvorgIngameCutsceneAfterFight extends ElyvorgCutscene {
         );
         this.addDialogue( //35
             `${this.firedog}`,
-            `... ... ...`,
+            `...`,
             this.addImage(this.setfiredogSadBorder(), 1, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 0.7, 1100, 400, 200, 200),
         );
         this.addDialogue( //36
             `${this.firedog}`,
+            `... ...`,
+            this.addImage(this.setfiredogSadBorder(), 1, 100, 400, 200, 200),
+            this.addImage('elyvorgBorder', 0.7, 1100, 400, 200, 200),
+        );
+        this.addDialogue( //37
+            `${this.firedog}`,
+            `... ... ...`,
+            this.addImage(this.setfiredogSadBorder(), 1, 100, 400, 200, 200),
+            this.addImage('elyvorgBorder', 0.7, 1100, 400, 200, 200),
+        );
+        this.addDialogue( //38
+            `${this.firedog}`,
             `No... What they did to us is wrong, but what you're doing is worse...`,
             this.addImage(this.setfiredogAngryBorder(), 1, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 0.7, 1100, 400, 200, 200),
         );
-        this.addDialogue( //37
+        this.addDialogue( //39
             `${this.firedog}`,
             `Innocent lives will die... that's just not right. You need to stop.`,
             this.addImage(this.setfiredogAngryBorder(), 1, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 0.7, 1100, 400, 200, 200),
         );
-        this.addDialogue( //38
+        this.addDialogue( //40
             `${this.elyvorg}`,
             `Very well then. I see you've made up your mind.`,
             this.addImage(this.setfiredogAngryBorder(), 0.7, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 1, 1100, 400, 200, 200),
         );
-        this.addDialogue( //39
+        this.addDialogue( //41
             `${this.elyvorg}`,
-            `Once I find the ${this.temporal} ${this.timber}, the world shall come to an end, and you ${this.firedog}, will die a sacrifice.`,
+            `Once I find the ${this.temporalTimber}, the world shall come to an end, and you ${this.firedog}, will die a sacrifice.`,
             this.addImage(this.setfiredogAngryBorder(), 0.7, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 1, 1100, 400, 200, 200),
         );
-        this.addDialogue( //40
+        this.addDialogue( //42
             `${this.elyvorg}`,
             `There is no point in meaningless fights. I'm just delaying the inevitable.`,
             this.addImage(this.setfiredogAngryBorder(), 0.7, 100, 400, 200, 200),
             this.addImage('elyvorgBorder', 1, 1100, 400, 200, 200),
         );
-        this.addDialogue( //41
+        this.addDialogue( //43
             `${this.firedog}`,
             `Uh? I'm not letting you run away, no!`,
             this.addImage(this.setfiredogAngry2Border(), 1, 100, 400, 200, 200),
