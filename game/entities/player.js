@@ -5,7 +5,7 @@ import {
     MeteorExplosionCollision
 } from '../animations/collisionAnimation.js';
 import { HealthLive, RedPotion, BluePotion, Coin, OxygenTank } from './powerUp.js';
-import { BlackHole, Cauldron, Drink } from './powerDown.js';
+import { BlackHole, Cauldron, IceDrink } from './powerDown.js';
 import { FloatingMessage } from '../animations/floatingMessages.js';
 import { Fireball, CoinLoss, PoisonBubbles, IceCrystalBubbles } from '../animations/particles.js';
 import {
@@ -797,11 +797,13 @@ export class Player {
                 this.slowedTimer -= deltaTime;
                 this.normalSpeed = 4;
                 this.maxSpeed = 6;
+                this.weight = 1.5;
             } else {
                 this.slowedTimer = 0;
                 this.isSlowed = false;
                 this.normalSpeed = 6;
                 this.maxSpeed = 10;
+                this.weight = 1;
             }
         }
     }
@@ -978,7 +980,7 @@ export class Player {
         if (!this.game.gameOver) {
             // power down collisions
             checkPowerCollision(
-                this.game.powerDowns.filter(pd => pd instanceof Drink), drink => {
+                this.game.powerDowns.filter(pd => pd instanceof IceDrink), drink => {
                     this.isSlowed = true;
                     this.slowedTimer = 7000;
                     this.game.audioHandler.powerUpAndDownSFX.playSound('drinkSoundEffect', false, true);

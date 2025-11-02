@@ -1,6 +1,6 @@
 import { Player, CollisionLogic } from '../../game/entities/player';
 import { Fireball, CoinLoss, PoisonBubbles, IceCrystalBubbles } from '../../game/animations/particles';
-import { Drink, Cauldron, BlackHole } from '../../game/entities/powerDown';
+import { IceDrink, Cauldron, BlackHole } from '../../game/entities/powerDown';
 import { OxygenTank, HealthLive, Coin, RedPotion, BluePotion } from '../../game/entities/powerUp';
 import { InkSplash } from '../../game/animations/ink';
 import { TunnelVision } from '../../game/animations/tunnelVision';
@@ -56,7 +56,7 @@ jest.mock('../../game/entities/powerUp', () => ({
 }));
 
 jest.mock('../../game/entities/powerDown', () => ({
-    BlackHole: jest.fn(), Cauldron: jest.fn(), Drink: jest.fn(),
+    BlackHole: jest.fn(), Cauldron: jest.fn(), IceDrink: jest.fn(),
 }));
 
 jest.mock('../../game/animations/floatingMessages', () => ({
@@ -495,21 +495,26 @@ describe('Player', () => {
             game.gameOver = false;
         });
 
-        test('Drink slows player', () => {
-            const d = new Drink();
+        test('IceDrink slows player', () => {
+            const d = new IceDrink();
             Object.assign(d, { x: 0, y: 0, width: 10, height: 10 });
             game.powerDowns = [d];
             player.collisionWithPowers(0);
             expect(player.isSlowed).toBe(true);
+            player.checkIfFiredogIsSlowed(1);
+            expect(player.normalSpeed).toBe(4);
+            expect(player.maxSpeed).toBe(6);
+            expect(player.weight).toBe(1.5);
         });
 
-        test('cannot pick up Drink when invisible', () => {
+        test('cannot pick up IceDrink when invisible', () => {
             player.isInvisible = true;
-            const d = new Drink();
+            const d = new IceDrink();
             Object.assign(d, { x: 0, y: 0, width: 10, height: 10 });
             game.powerDowns = [d];
             player.collisionWithPowers(0);
             expect(player.isSlowed).toBe(false);
+            expect(player.weight).toBe(1);
         });
 
         test('Cauldron poisons player', () => {
@@ -666,7 +671,7 @@ describe('Player', () => {
         player.height = 10;
 
         // powerDowns
-        const pdClasses = [Drink, Cauldron, BlackHole];
+        const pdClasses = [IceDrink, Cauldron, BlackHole];
         pdClasses.forEach(Ctor => {
             const item = new Ctor();
             Object.assign(item, { x: 0, y: 0, width: 10, height: 10 });
@@ -789,18 +794,21 @@ describe('Player', () => {
         player.slowedTimer = 100;
         player.normalSpeed = 4;
         player.maxSpeed = 6;
+        player.weight = 1.5;
 
         player.checkIfFiredogIsSlowed(150);
         expect(player.slowedTimer).toBeLessThanOrEqual(0);
         expect(player.isSlowed).toBe(true);
         expect(player.normalSpeed).toBe(4);
         expect(player.maxSpeed).toBe(6);
+        expect(player.weight).toBe(1.5);
 
         player.checkIfFiredogIsSlowed(0);
         expect(player.slowedTimer).toBe(0);
         expect(player.isSlowed).toBe(false);
         expect(player.normalSpeed).toBe(6);
         expect(player.maxSpeed).toBe(10);
+        expect(player.weight).toBe(1);
     });
 
     describe('collisionAnimationFollowsEnemy', () => {

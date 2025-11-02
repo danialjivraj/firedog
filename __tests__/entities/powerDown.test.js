@@ -1,14 +1,14 @@
-import { Drink, Cauldron, BlackHole } from '../../game/entities/powerDown';
+import { IceDrink, Cauldron, BlackHole } from '../../game/entities/powerDown';
 
 describe('PowerDown subclasses', () => {
-  let game, ctx, fakeDrinkImg, fakeCauldronImg, fakeBlackholeImg;
+  let game, ctx, fakeIceDrinkImg, fakeCauldronImg, fakeBlackholeImg;
 
   beforeAll(() => {
-    fakeDrinkImg = {};
+    fakeIceDrinkImg = {};
     fakeCauldronImg = {};
     fakeBlackholeImg = {};
     document.getElementById = jest.fn(id => {
-      if (id === 'drink') return fakeDrinkImg;
+      if (id === 'drink') return fakeIceDrinkImg;
       if (id === 'cauldron') return fakeCauldronImg;
       if (id === 'blackhole') return fakeBlackholeImg;
       return {};
@@ -37,19 +37,19 @@ describe('PowerDown subclasses', () => {
   });
 
   // -----------------------------------------------------------------------------
-  // Drink
+  // IceDrink
   // -----------------------------------------------------------------------------
-  describe('Drink', () => {
+  describe('IceDrink', () => {
     let drink;
     beforeEach(() => {
-      drink = new Drink(game);
+      drink = new IceDrink(game);
     });
 
     test('constructor sets correct props and random x/y', () => {
       expect(drink.game).toBe(game);
       expect(drink.width).toBe(65);
       expect(drink.height).toBe(65);
-      expect(drink.image).toBe(fakeDrinkImg);
+      expect(drink.image).toBe(fakeIceDrinkImg);
       expect(drink.maxFrame).toBe(4);
       const expectedX = game.width + game.width * 0.5 * 0.5;
       expect(drink.x).toBeCloseTo(expectedX);
@@ -110,7 +110,7 @@ describe('PowerDown subclasses', () => {
       expect(ctx.shadowColor).toBe('red');
       expect(ctx.shadowBlur).toBe(10);
       expect(ctx.drawImage).toHaveBeenCalledWith(
-        fakeDrinkImg,
+        fakeIceDrinkImg,
         drink.frameX * drink.frameWidth,
         drink.frameY * drink.frameHeight,
         drink.frameWidth,

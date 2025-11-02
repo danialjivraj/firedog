@@ -49,7 +49,7 @@ class PowerDown {
     }
 }
 
-export class Drink extends PowerDown {
+export class IceDrink extends PowerDown {
     constructor(game) {
         super();
         this.game = game;

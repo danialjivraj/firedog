@@ -8,7 +8,7 @@ import {
     OxygenTank
 } from '../game/entities/powerUp.js';
 import {
-    Drink,
+    IceDrink,
     Cauldron,
     BlackHole
 } from '../game/entities/powerDown.js';
@@ -397,7 +397,7 @@ describe('Game class (game-main.js)', () => {
 
         it('spawns all power‑downs when random < threshold and not Map6', () => {
             game.addPowerDown();
-            expect(game.powerDowns.some(p => p instanceof Drink)).toBe(true);
+            expect(game.powerDowns.some(p => p instanceof IceDrink)).toBe(true);
             expect(game.powerDowns.some(p => p instanceof Cauldron)).toBe(true);
             expect(game.powerDowns.some(p => p instanceof BlackHole)).toBe(true);
         });

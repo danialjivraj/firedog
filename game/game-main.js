@@ -29,7 +29,7 @@ import { ForestMapMenu } from './menu/forestMap.js';
 import { HowToPlayMenu } from "./menu/howToPlayMenu.js";
 import { Skins } from "./menu/skinsMenu.js";
 import { DeleteProgress, DeleteProgress2 } from "./menu/deleteProgress.js";
-import { BlackHole, Cauldron, Drink } from "./entities/powerDown.js";
+import { BlackHole, Cauldron, IceDrink } from "./entities/powerDown.js";
 //audios
 import { AudioSettingsMenu } from "./menu/audio/audioSettingsMenu.js";
 import { IngameAudioSettingsMenu } from "./menu/audio/ingameAudioSettingsMenu.js";
@@ -634,7 +634,7 @@ export class Game {
         if (!(this.background instanceof Map6)) {
             if (this.speed > 0 && this.background.totalDistanceTraveled < this.maxDistance - 3) {
                 if (Math.random() < 0.005) {
-                    this.powerDowns.push(new Drink(this));
+                    this.powerDowns.push(new IceDrink(this));
                 }
                 if (Math.random() < 0.005) {
                     this.powerDowns.push(new Cauldron(this));
