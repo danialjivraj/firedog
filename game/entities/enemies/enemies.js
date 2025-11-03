@@ -1958,11 +1958,95 @@ export class Sunflora extends ImmobileGroundEnemy {
     }
 }
 
-export class Cyclorange extends ImmobileGroundEnemy {
-    constructor(game) {
-        super(game, 57, 71, 2, 'cyclorange');
-        this.fps = 10;
+export class Eggry extends ImmobileGroundEnemy {
+    constructor(game, jumpStyle = "smart") {
+        super(game, 102.6923076923077, 100, 38, 'eggry');
+        this.fps = 30;
         this.frameInterval = 1000 / this.fps;
+
+        this.jumpStyle = jumpStyle;
+
+        this.isJumping = false;
+        this.jumpStartTime = 0;
+        this.jumpDir = 0;
+        this.groundY = this.game.height - this.height - this.game.groundMargin;
+        this.y = this.groundY;
+        this.jumpedThisCycle = false;
+
+        if (this.jumpStyle === "low") {
+            this.jumpHeight = 140 + Math.random() * 20;
+            this.jumpDuration = 0.52 + Math.random() * 0.06;
+            this.horizontalSpeed = 6.5 + Math.random() * 1.2;
+        } else { // "smart"
+            this.jumpHeight = 260 + Math.random() * 60;
+            this.jumpDuration = 0.55 + Math.random() * 0.1;
+            this.baseHorizontalSpeed = 7 + Math.random() * 2;
+            this.horizontalSpeed = this.baseHorizontalSpeed;
+
+            this.minHSpeed = 5;
+            this.maxHSpeed = 11;
+
+            this.jumpTickFpsEstimate = 60;
+        }
+    }
+
+    clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+    startJump() {
+        this.isJumping = true;
+        this.jumpStartTime = this.game.hiddenTime;
+        this.groundY = this.game.height - this.height - this.game.groundMargin;
+
+        if (this.game.gameOver) {
+            this.jumpDir = -1;
+            if (this.jumpStyle === "smart") {
+                this.horizontalSpeed = this.baseHorizontalSpeed;
+            }
+            return;
+        }
+
+        if (this.jumpStyle === "low") {
+            this.jumpDir = (this.game.player.x >= this.x) ? 1 : -1;
+        } else {
+            const playerCenterX = this.game.player.x + (this.game.player.width ? this.game.player.width / 2 : 0);
+            const myCenterX = this.x + this.width / 2;
+            const deltaX = playerCenterX - myCenterX;
+
+            this.jumpDir = deltaX >= 0 ? 1 : -1;
+
+            const expectedTicks = Math.max(1, Math.round(this.jumpDuration * this.jumpTickFpsEstimate));
+            const neededSpeed = Math.abs(deltaX) / expectedTicks;
+
+            this.horizontalSpeed = this.clamp(neededSpeed, this.minHSpeed, this.maxHSpeed);
+        }
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime);
+
+        if (this.frameX < 9) this.jumpedThisCycle = false;
+
+        if (this.game.background.isRaining) {
+            if (!this.isJumping && !this.jumpedThisCycle && this.frameX === 9) {
+                this.startJump();
+                this.jumpedThisCycle = true;
+            }
+        } else {
+            this.isJumping = false;
+            this.jumpedThisCycle = false;
+            this.y = this.groundY;
+        }
+
+        if (this.isJumping) {
+            const progress = (this.game.hiddenTime - this.jumpStartTime) / (this.jumpDuration * 1000);
+            if (progress < 1) {
+                this.y = this.groundY - this.jumpHeight * Math.sin(progress * Math.PI);
+                this.x += this.jumpDir * this.horizontalSpeed;
+            } else {
+                this.y = this.groundY;
+                this.isJumping = false;
+            }
+        }
     }
 }
 

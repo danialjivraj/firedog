@@ -55,7 +55,7 @@ import {
     LazyMosquito,
     LeafSlug,
     Sunflora,
-    Cyclorange,
+    Eggry,
     Tauro,
     Bee,
     AngryBee,
@@ -1002,9 +1002,49 @@ describe('Map 5 Enemies', () => {
         expect(game.enemies.some(e => e instanceof YellowBeam)).toBe(true);
     });
 
-    it('Cyclorange updates frames without error', () => {
-        const co = new Cyclorange(game);
-        expect(() => co.update(16)).not.toThrow();
+    it('Eggry jumps on frame 9 only when raining', () => {
+        const egDry = new Eggry(game);
+        game.background.isRaining = false;
+        game.hiddenTime = 0;
+        egDry.frameX = 9;
+        egDry.frameTimer = 0;
+        egDry.update(16);
+        expect(egDry.isJumping).toBe(false);
+
+        const egWet = new Eggry(game);
+        game.background.isRaining = true;
+        game.hiddenTime = 0;
+
+        egWet.frameX = 8;
+        egWet.frameTimer = egWet.frameInterval + 1;
+
+        const startX = egWet.x;
+        egWet.update(16);
+        expect(egWet.isJumping).toBe(true);
+
+        game.hiddenTime += (egWet.jumpDuration * 1000) + 1;
+        egWet.update(16);
+        expect(egWet.isJumping).toBe(false);
+        expect(egWet.x).not.toBe(startX);
+    });
+
+    it('Eggry keeps jumping in one direction when gameOver', () => {
+        const eg = new Eggry(game);
+        game.background.isRaining = true;
+        game.gameOver = true;
+        game.hiddenTime = 0
+
+        eg.frameX = 8;
+        eg.frameTimer = eg.frameInterval + 1;
+
+        const startX = eg.x;
+        eg.update(16);
+        expect(eg.isJumping).toBe(true);
+
+        game.hiddenTime += (eg.jumpDuration * 1000) + 1;
+        eg.update(16);
+        expect(eg.isJumping).toBe(false);
+        expect(eg.x).not.toBe(startX);
     });
 
     it('Tauro moves left by speed on update and is red', () => {

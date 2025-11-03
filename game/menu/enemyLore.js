@@ -245,8 +245,11 @@ export class EnemyLore extends BaseMenu {
             this.createImage('sunflora', 132, 137, 0, this.pageWidth - 210, this.pageHeight - 150, 1),
         ]);
         //36
-        this.createPage("CYCLORANGE", "GROUND & NORMAL", "SPRINGLY LEMONY", "CYCLORANGE NEVER MOVES.\nHE JUST STANDS THERE, UNPHASED.", [
-            this.createImage('cyclorange', 57, 71, 0, this.pageWidth - 210, this.pageHeight - 110, 1),
+        this.createPage("EGGRY", "GROUND & NORMAL", "SPRINGLY LEMONY",
+            "EGGRY IS THE ANGRY EGG THAT NEVER HATCHED.\n"
+            + "NO ONE TRULY KNOWS WHAT EGGRY WOULD HATCH INTO OR WHY IT DECIDES TO REMAIN IN ITS SEMI-CRACKED SHELL, BUT LEGENDS SAY IT’S WAITING FOR THE PERFECT STORM TO FINALLY BREAK FREE.\n"
+            + "RAIN EFFECT: DUE TO ITS SOFT SHELL, EGGRY JUMPS ANGRILY IN HOPES OF FINDING SHELTER FROM THE RAIN!", [
+            this.createImage('eggry', 102.6923076923077, 100, 12, this.pageWidth - 180, this.pageHeight - 115, 1),
         ]);
         //37
         this.createPage("TAURO", "GROUND & RED", "SPRINGLY LEMONY", "TAURO IS AN ANGRY CREATURE WHO STOMPS LOUDLY AS HE MOVES FORWARD, KNOCKING EVERYTHING IN HIS PATH DOWN!\n"
