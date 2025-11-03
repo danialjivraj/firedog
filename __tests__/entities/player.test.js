@@ -6,7 +6,7 @@ import { InkSplash } from '../../game/animations/ink';
 import { TunnelVision } from '../../game/animations/tunnelVision';
 import {
     Goblin, Sluggie, Skulnap, PoisonSpit,
-    AngryBee, Bee, IceBall, Garry, Cactus, TheRock, Tauro,
+    AngryBee, Bee, IceBall, Garry, InkBeam, Cactus, TheRock, Tauro,
 } from '../../game/entities/enemies/enemies';
 import {
     ElectricWheel, Elyvorg, Arrow, Barrier,
@@ -77,7 +77,7 @@ jest.mock('../../game/entities/enemies/enemies', () => ({
     AngryBee: jest.fn(), Bee: jest.fn(), Skulnap: jest.fn(), Sluggie: jest.fn(),
     Voltzeel: jest.fn(), Tauro: jest.fn(), Aura: jest.fn(), KarateCroco: jest.fn(),
     SpearFish: jest.fn(), TheRock: jest.fn(), LilHornet: jest.fn(), Cactus: jest.fn(),
-    IceBall: jest.fn(), Garry: jest.fn(), RockProjectile: jest.fn(),
+    IceBall: jest.fn(), Garry: jest.fn(), InkBeam: jest.fn(), RockProjectile: jest.fn(),
     VolcanoWasp: jest.fn(), Volcanurtle: jest.fn(),
 }));
 
@@ -1413,6 +1413,7 @@ describe('Player', () => {
         it.each([
             [Sluggie, InkSplashCollision],
             [Garry, InkSplashCollision],
+            [InkBeam, InkSplashCollision],
             [InkBomb, InkBombCollision],
             [Skulnap, ExplosionCollisionAnimation],
             [ElectricWheel, ElectricityCollision],

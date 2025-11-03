@@ -150,6 +150,7 @@ export class EnemyLore extends BaseMenu {
             + "TAKES A WHILE TO FADE AWAY!", [
             this.createImage('paint_splatter_8', 1994, 995, 0, -130, 175, 0.5),
             this.createImage('garry', 165, 122, 0, this.pageWidth - 220, this.pageHeight - 130, 1),
+            this.createImage('inkBeam', 77, 34, 2, this.pageWidth - 250, this.pageHeight - 70, 1),
         ]);
         // map 4
         //22

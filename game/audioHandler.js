@@ -384,6 +384,8 @@ export class EnemySFXAudioHandler extends AudioHandler {
       //vertibat
       wooshBat: 'wooshBat',
       batPitch: 'batPitch',
+      //garry
+      inkSpit: 'inkSpit',
       //ben
       verticalGhostSound: 'verticalGhostSound',
       //piranha

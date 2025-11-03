@@ -10,7 +10,7 @@ import { FloatingMessage } from '../animations/floatingMessages.js';
 import { Fireball, CoinLoss, PoisonBubbles, IceCrystalBubbles } from '../animations/particles.js';
 import {
     AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Tauro,
-    Aura, KarateCroco, SpearFish, TheRock, LilHornet, Cactus, IceBall, Garry, RockProjectile, VolcanoWasp, Volcanurtle
+    Aura, KarateCroco, SpearFish, TheRock, LilHornet, Cactus, IceBall, Garry, InkBeam, RockProjectile, VolcanoWasp, Volcanurtle
 } from './enemies/enemies.js';
 import { InkSplash } from '../animations/ink.js';
 import { DamageIndicator } from '../animations/damageIndicator.js';
@@ -918,6 +918,10 @@ export class Player {
                 this.game.collisions.push(new InkSplashCollision(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
                 this.game.audioHandler.explosionSFX.playSound('slugExplosion', false, true);
             },
+            InkBeam: () => {
+                this.game.collisions.push(new InkSplashCollision(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
+                this.game.audioHandler.explosionSFX.playSound('slugExplosion', false, true);
+            },
             PoisonSpit: () => {
                 this.game.collisions.push(new PoisonSpitSplash(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
                 this.game.audioHandler.explosionSFX.playSound('poofSound', false, true);
@@ -1077,9 +1081,9 @@ export class Player {
 
     collisionAnimationBasedOnEnemy(enemy) {
         switch (true) {
-            case enemy instanceof Sluggie || enemy instanceof InkBomb || enemy instanceof Garry:
+            case enemy instanceof Sluggie || enemy instanceof InkBomb || enemy instanceof Garry || enemy instanceof InkBeam:
                 this.game.audioHandler.explosionSFX.playSound('slugExplosion', false, true);
-                if (enemy instanceof Sluggie || enemy instanceof Garry) {
+                if (enemy instanceof Sluggie || enemy instanceof Garry || enemy instanceof InkBeam) {
                     this.game.collisions.push(new InkSplashCollision(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
                 } else {
                     this.game.collisions.push(new InkBombCollision(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
@@ -1161,6 +1165,7 @@ export class CollisionLogic {
             case enemy instanceof Sluggie:
             case enemy instanceof InkBomb:
             case enemy instanceof Garry:
+            case enemy instanceof InkBeam:
                 this.player.hit(enemy);
                 this.player.triggerInkSplash();
                 if (this.player.isInvisible === false) {
@@ -1295,6 +1300,7 @@ export class CollisionLogic {
             case enemy instanceof Sluggie:
             case enemy instanceof InkBomb:
             case enemy instanceof Garry:
+            case enemy instanceof InkBeam:
                 this.player.triggerInkSplash();
                 this.player.collisionAnimationBasedOnEnemy(enemy);
                 break;

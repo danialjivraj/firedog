@@ -17,6 +17,7 @@ import {
     IceBall,
     DarkLaser,
     YellowBeam,
+    InkBeam,
     PurpleLaser,
     RockProjectile,
     Goblin,
@@ -832,10 +833,49 @@ describe('Map 3 Enemies', () => {
         expect(v.y).not.toEqual(beforeY + v.currentSpeed);
     });
 
-    it('Garry instantiates and never throws on update/draw', () => {
+    it('Garry fires InkBeam instantly when first on-screen', () => {
         const g = new Garry(game);
-        expect(() => g.update(16)).not.toThrow();
-        expect(() => g.draw({ drawImage: () => { }, strokeRect: () => { } })).not.toThrow();
+
+        game.speed = 0;
+        g.x = game.width / 2;
+        g.y = game.height - g.height - game.groundMargin;
+
+        expect(game.enemies.some(e => e instanceof InkBeam)).toBe(false);
+
+        g.update(0);
+
+        expect(game.enemies.some(e => e instanceof InkBeam)).toBe(true);
+        expect(game.audioHandler.enemySFX.playSound)
+            .toHaveBeenCalledWith('inkSpit', false, true);
+    });
+
+    it('Garry fires two InkBeams every 2000ms while on-screen', () => {
+        const g = new Garry(game);
+
+        game.speed = 0;
+        g.x = game.width / 2;
+        g.y = game.height - g.height - game.groundMargin;
+
+        g.update(0);
+        const firstCount = game.enemies.filter(e => e instanceof InkBeam).length;
+        expect(firstCount).toBeGreaterThanOrEqual(2);
+
+        game.audioHandler.enemySFX.playSound.mockClear();
+
+        g.update(1999);
+        expect(game.enemies.filter(e => e instanceof InkBeam).length).toBe(firstCount);
+        expect(game.audioHandler.enemySFX.playSound)
+            .not.toHaveBeenCalledWith('inkSpit', false, true);
+
+        g.update(1);
+        expect(game.enemies.filter(e => e instanceof InkBeam).length).toBe(firstCount + 2);
+        expect(game.audioHandler.enemySFX.playSound)
+            .toHaveBeenCalledWith('inkSpit', false, true);
+
+        const beams = game.enemies.filter(e => e instanceof InkBeam);
+        const newestTwo = beams.slice(-2);
+        expect(newestTwo.some(b => b.speedY === 0)).toBe(true);
+        expect(newestTwo.some(b => b.speedY <= -1 && b.speedY >= -10)).toBe(true);
     });
 });
 
