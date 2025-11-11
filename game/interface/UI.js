@@ -117,15 +117,24 @@ export class UI {
     }
 
     distanceBar(context) {
-        if (!this.game.mapSelected[6]) {
-            this.progressBar(
-                context,
-                Math.min((this.game.background.totalDistanceTraveled / this.game.maxDistance) * 100, 100),
-                (this.game.background.totalDistanceTraveled / this.game.maxDistance) * this.barWidth,
-                this.barWidth,
-                '#2ecc71',
-            );
-        }
+        const isMap6 =
+            this.game.currentMap === 'Map6' ||
+            (this.game.background && this.game.background.constructor.name === 'Map6');
+
+        if (isMap6) return;
+
+        const maxDist = Math.max(1, this.game.maxDistance || 1);
+        const traveled = Math.min(this.game.background.totalDistanceTraveled, maxDist);
+        const pct = (traveled / maxDist) * 100;
+        const filled = (traveled / maxDist) * this.barWidth;
+
+        this.progressBar(
+            context,
+            Math.min(pct, 100),
+            filled,
+            this.barWidth,
+            '#2ecc71'
+        );
     }
 
     elyvorgHealthBar(context) {
@@ -216,7 +225,7 @@ export class UI {
             context.fillStyle = 'black';
             context.shadowColor = 'white';
         }
-        const minutes = Math.floor(time / 60000);
+        let minutes = Math.floor(time / 60000);
         let seconds = Math.floor((time % 60000) / 1000);
         if (seconds === 60) {
             seconds = 0;
@@ -235,9 +244,9 @@ export class UI {
             this.game.audioHandler.mapSoundtrack.stopSound('timeTickingSound');
         }
         if (this.game.menu.pause.isPaused) {
-            this.game.audioHandler.mapSoundtrack.pauseSound(timeTickingSound);
+            this.game.audioHandler.mapSoundtrack.pauseSound('timeTickingSound');
         } else {
-            this.game.audioHandler.mapSoundtrack.resumeSound(timeTickingSound);
+            this.game.audioHandler.mapSoundtrack.resumeSound('timeTickingSound');
         }
         if (this.game.player.isUnderwater) {
             context.restore();
@@ -361,8 +370,8 @@ export class UI {
         }
         if (this.game.player.invisibleTimer < this.game.player.invisibleCooldown) {
             context.restore();
-            const invisibleCooldown = Math.max(0, this.game.player.invisibleCooldown - this.game.player.invisibleTimer) / 1000;
-            const countdownText = invisibleCooldown.toFixed(1);
+            const invisibleCooldownRemaining = Math.max(0, this.game.player.invisibleCooldown - this.game.player.invisibleTimer) / 1000;
+            const countdownText = invisibleCooldownRemaining.toFixed(1);
             let textXActive;
             if (this.game.player.invisibleTimer <= 30050) {
                 textXActive = 150.537109375;

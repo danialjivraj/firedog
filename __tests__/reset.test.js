@@ -8,7 +8,10 @@ jest.mock('../game/background/background.js', () => ({
     Map3: class { },
     Map4: class { },
     Map5: class { },
-    Map6: class { }
+    Map6: class { },
+    BonusMap1: class { },
+    BonusMap2: class { },
+    BonusMap3: class { },
 }));
 
 jest.mock('../game/entities/player.js', () => ({
@@ -18,8 +21,8 @@ jest.mock('../game/entities/player.js', () => ({
         currentState: null,
         isDarkWhiteBorder: false,
         isUnderwater: false,
-        underwaterOrNot: jest.fn()
-    }))
+        isIce: false,
+    })),
 }));
 
 describe('Reset', () => {
@@ -45,7 +48,7 @@ describe('Reset', () => {
                 enemySFX: { stopAllSounds: jest.fn() },
                 explosionSFX: { stopAllSounds: jest.fn() },
                 powerUpAndDownSFX: { stopAllSounds: jest.fn() },
-                cutsceneMusic: { stopAllSounds: jest.fn() }
+                cutsceneMusic: { stopAllSounds: jest.fn() },
             },
             enemies: [1],
             behindPlayerParticles: [1],
@@ -79,14 +82,14 @@ describe('Reset', () => {
             poisonColourOpacity: 1,
             menu: {
                 levelDifficulty: { setDifficulty: jest.fn() },
-                forestMap: { setMap: jest.fn() }
+                forestMap: { setMap: jest.fn() },
             },
             selectedDifficulty: 'hard',
             width: 800,
             height: 600,
             maxDistance: 500,
             background: { constructor: Maps.Map3 },
-            player: null
+            player: null,
         };
         reset = new Reset(game);
     });
@@ -178,11 +181,6 @@ describe('Reset', () => {
             expect(game.player.currentState).toBe(game.player.states[0]);
         });
 
-        it('invokes player.underwaterOrNot() after map is set', () => {
-            reset.reset();
-            expect(game.player.underwaterOrNot).toHaveBeenCalled();
-        });
-
         it('stops all audio', () => {
             reset.reset();
             Object.values(game.audioHandler).forEach(handler => {
@@ -193,8 +191,16 @@ describe('Reset', () => {
         it('clears entities and resets arrays', () => {
             reset.reset();
             [
-                'enemies', 'behindPlayerParticles', 'particles', 'collisions',
-                'floatingMessages', 'powerUps', 'powerDowns', 'cabins', 'penguins', 'cutscenes'
+                'enemies',
+                'behindPlayerParticles',
+                'particles',
+                'collisions',
+                'floatingMessages',
+                'powerUps',
+                'powerDowns',
+                'cabins',
+                'penguins',
+                'cutscenes',
             ].forEach(key => {
                 expect(game[key]).toEqual([]);
             });
@@ -247,6 +253,7 @@ describe('Reset', () => {
                 expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map1));
                 expect(game.player.isDarkWhiteBorder).toBe(false);
                 expect(game.player.isUnderwater).toBe(false);
+                expect(game.player.isIce).toBe(false);
             });
 
             it('applies Map2 and dark-white border flag', () => {
@@ -254,12 +261,16 @@ describe('Reset', () => {
                 reset.reset();
                 expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map2));
                 expect(game.player.isDarkWhiteBorder).toBe(true);
+                expect(game.player.isUnderwater).toBe(false);
+                expect(game.player.isIce).toBe(false);
             });
 
             it('applies Map3 and underwater flag', () => {
                 game.background = { constructor: Maps.Map3 };
                 reset.reset();
                 expect(game.player.isUnderwater).toBe(true);
+                expect(game.player.isDarkWhiteBorder).toBe(false);
+                expect(game.player.isIce).toBe(false);
                 expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map3));
             });
 
@@ -269,6 +280,7 @@ describe('Reset', () => {
                 expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map4));
                 expect(game.player.isDarkWhiteBorder).toBe(false);
                 expect(game.player.isUnderwater).toBe(false);
+                expect(game.player.isIce).toBe(false);
             });
 
             it('applies Map5 with no extra flags', () => {
@@ -277,6 +289,7 @@ describe('Reset', () => {
                 expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map5));
                 expect(game.player.isDarkWhiteBorder).toBe(false);
                 expect(game.player.isUnderwater).toBe(false);
+                expect(game.player.isIce).toBe(false);
             });
 
             it('applies Map6 and sets maxDistance, without flipping other flags', () => {
@@ -286,6 +299,34 @@ describe('Reset', () => {
                 expect(game.maxDistance).toBe(9999999);
                 expect(game.player.isDarkWhiteBorder).toBe(false);
                 expect(game.player.isUnderwater).toBe(false);
+                expect(game.player.isIce).toBe(false);
+            });
+
+            it('applies BonusMap1 and sets isIce=true', () => {
+                game.background = { constructor: Maps.BonusMap1 };
+                reset.reset();
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.BonusMap1));
+                expect(game.player.isIce).toBe(true);
+                expect(game.player.isUnderwater).toBe(false);
+                expect(game.player.isDarkWhiteBorder).toBe(false);
+            });
+
+            it('applies BonusMap2 with no extra flags', () => {
+                game.background = { constructor: Maps.BonusMap2 };
+                reset.reset();
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.BonusMap2));
+                expect(game.player.isIce).toBe(false);
+                expect(game.player.isUnderwater).toBe(false);
+                expect(game.player.isDarkWhiteBorder).toBe(false);
+            });
+
+            it('applies BonusMap3 with no extra flags', () => {
+                game.background = { constructor: Maps.BonusMap3 };
+                reset.reset();
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.BonusMap3));
+                expect(game.player.isIce).toBe(false);
+                expect(game.player.isUnderwater).toBe(false);
+                expect(game.player.isDarkWhiteBorder).toBe(false);
             });
 
             it('handles an unrecognized map constructor gracefully', () => {
@@ -297,12 +338,16 @@ describe('Reset', () => {
 
         it('sets difficulty correctly', () => {
             reset.reset();
-            expect(game.menu.levelDifficulty.setDifficulty)
-                .toHaveBeenCalledWith(game.selectedDifficulty);
+            expect(game.menu.levelDifficulty.setDifficulty).toHaveBeenCalledWith(
+                game.selectedDifficulty
+            );
         });
 
         it('is idempotent when called twice', () => {
-            expect(() => { reset.reset(); reset.reset(); }).not.toThrow();
+            expect(() => {
+                reset.reset();
+                reset.reset();
+            }).not.toThrow();
             expect(game.speed).toBe(0);
             expect(game.coins).toBe(0);
             expect(reset.reset()).toBeUndefined();

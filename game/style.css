@@ -38,16 +38,16 @@ body {
     #poisonUI, #gravityUI, #slashUI, #slashWarningUI, #electricUI, #electricWarningUI,
 /* entities */
     /* firedog */
-    #player, #player2, #player3, #player4, #player5, 
+    #defaultSkin, #hatSkin, #choloSkin, #zabkaSkin, #shinySkin, 
         /* firedog animations */ 
-        #dust_black, #ice_crystal, #fire, #fireball, #redPotionFireball, #bluefire, #bubble, #bluebubble, #bubble_projectile, #bubble_redPotion, #damageIndicator, 
+        #dust_black, #ice_crystal, #fire, #fireball, #redPotionFireball, #bluefire, #bubble, #bluebubble, 
     /* penguin */
     #penguinBatSprite, #penguinPistolSprite, #penguinDead,
     /* enemies */
         /* elyvorg */
         #elyvorgIdle, #elyvorgLaserIdle, #elyvorgGravityIdle, #elyvorgMeteorIdle, #elyvorgPoisonIdle, #elyvorgPistolIdle, #elyvorgGhostIdle, #elyvorgInkIdle, #elyvorgIdleFireball, #elyvorgRechargeIdle, #elyvorgRun, #elyvorgJump, 
             /* abilities */
-            #purpleWarningIndicator, #barrier, #barrier1, #barrier2, #elyvorgGhostRun, #elyvorg_laser_beam, #meteorAttack, #poisonDrop, #electricWheel, #gravitationalAura, #inkBomb, #purpleFireball, #purpleSlash, #blueArrow, #yellowArrow, #greenArrow, 
+            #barrier, #barrier1, #barrier2, #elyvorgGhostRun, #elyvorg_laser_beam, #meteorAttack, #poisonDrop, #electricWheel, #gravitationalAura, #inkBomb, #purpleFireball, #purpleSlash, #blueArrow, #yellowArrow, #greenArrow, 
         /* projectiles */ 
         #leafAttack, #darkLeafAttack, #windAttack, #poison_spit,  #laser_beam, #iceBall, #darkLaser, #yellowBeam, #rockProjectile, #purpleLaser, #inkBeam,
         /* goblin */
@@ -82,6 +82,8 @@ body {
 #map5Background, #map5Ground, #map5Flowers1, #map5Flowers2, #map5Bush1, #map5Bush2, #map5Trees1, #map5Trees2, #map5Trees3, #map5Trees4, #map5Trees5, 
 /* map6 */ 
 #map6Background, #map6Ground, #map6spikeStones, #map6rocks1, #map6rocks2, #map6cactus, 
+/* bonusmap1 */ 
+#map6Background, #bonusMap1Background, #bonusMap1Ground, 
 /* fish */ 
 #jellyfish, #fish, #fish2, #fish3, #fish4, #fish5, #fish6, #fish7, #fish8, #fish9, #fish10, #fish11, #shark, #whale, 
 /* ink */ 

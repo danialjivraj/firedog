@@ -300,7 +300,7 @@ export class StoryCutscene extends Cutscene {
         };
     }
 
-    enterOrLeftClick(cutscene) {
+    enterOrLeftClick() {
         this.cutsceneController();
 
         this.playSound2OnDotPause = false;
@@ -340,7 +340,7 @@ export class StoryCutscene extends Cutscene {
             this.removeEventListeners();
             this.cutsceneBackgroundChange(400, 600, 400);
             setTimeout(() => {
-                this.game.endCutscene(cutscene);
+                this.game.endCutscene();
                 if (this.game.isEndCutscene) {
                     this.game.isPlayerInGame = false;
                 } else {
@@ -360,14 +360,14 @@ export class StoryCutscene extends Cutscene {
         }, 100);
     }
 
-    displayDialogue(cutscene) {
+    displayDialogue() {
         this.handleKeyDown = (event) => {
             if (event.key === 'Tab' && this.game.fadingIn === false && this.game.enterDuringBackgroundTransition && this.game.waitForFadeInOpacity === false) {
                 this.removeEventListeners();
                 this.cutsceneBackgroundChange(400, 600, 400);
                 setTimeout(() => {
                     this.dialogueIndex = this.dialogue.length - 1;
-                    this.game.endCutscene(cutscene);
+                    this.game.endCutscene();
                     if (this.game.isEndCutscene) {
                         this.game.isPlayerInGame = false;
                     } else {
@@ -379,15 +379,15 @@ export class StoryCutscene extends Cutscene {
             }
             if (event.key === 'Enter' && !this.isEnterPressed && !this.game.fadingIn &&
                 this.game.enterDuringBackgroundTransition && this.game.waitForFadeInOpacity === false) {
-                this.enterOrLeftClick(cutscene);
+                this.enterOrLeftClick();
             }
         };
         this.handleLeftClick = (event) => {
             if (!this.isEnterPressed && !this.game.fadingIn && this.game.enterDuringBackgroundTransition && this.game.waitForFadeInOpacity === false) {
-                this.enterOrLeftClick(cutscene);
+                this.enterOrLeftClick();
             }
         };
-        super.displayDialogue(cutscene);
+        super.displayDialogue();
     }
 
     resolveCutsceneAction() {
@@ -2361,6 +2361,7 @@ export class Map2EndCutscene extends StoryCutscene {
             this.addImage(this.setfiredogHeadache(), 1, 0, 79, 590, 610),
         );
         this.game.map3Unlocked = true;
+        this.game.bonusMap1Unlocked = true;
         this.game.saveGameState();
     }
 }
@@ -3976,6 +3977,7 @@ export class Map4EndCutscene extends StoryCutscene {
             this.addImage('galadonHurt', 0.7, 1300, 79, 590, 610),
         );
         this.game.map5Unlocked = true;
+        this.game.bonusMap2Unlocked = true;
         this.game.saveGameState();
     }
 }
@@ -4891,6 +4893,148 @@ export class Map6EndCutscene extends StoryCutscene {
             ``,
         );
         this.game.gameCompleted = true;
+        this.game.saveGameState();
+    }
+}
+
+export class BonusMap1Cutscene extends StoryCutscene {
+    constructor(game) {
+        super(game, true);
+        this.backgroundImage = document.getElementById('map1blackBackground');
+        this.addDialogue( //0
+            `${this.questionMark}`,
+            `BonusMap1Cutscene`,
+        );
+        this.addDialogue( //1
+            `${this.questionMark}`,
+            `No one is going to stop you.`,
+        );
+        this.addDialogue( //2
+            `${this.questionMark}`,
+            `And everyone will suffer!`,
+        );
+        this.addDialogue( //3
+            `${this.questionMark}`,
+            `Space-time will be reshaped into whatever you want!`,
+        );
+    }
+}
+
+export class BonusMap1EndCutscene extends StoryCutscene {
+    constructor(game) {
+        super(game, true);
+        this.backgroundImage = document.getElementById('map1blackBackground');
+        this.addDialogue( //0
+            `${this.questionMark}`,
+            `BonusMap1EndCutscene`,
+        );
+        this.addDialogue( //1
+            `${this.questionMark}`,
+            `No one is going to stop you.`,
+        );
+        this.addDialogue( //2
+            `${this.questionMark}`,
+            `And everyone will suffer!`,
+        );
+        this.addDialogue( //3
+            `${this.questionMark}`,
+            `Space-time will be reshaped into whatever you want!`,
+        );
+        this.game.saveGameState();
+    }
+}
+
+export class BonusMap2Cutscene extends StoryCutscene {
+    constructor(game) {
+        super(game, true);
+        this.backgroundImage = document.getElementById('map1blackBackground');
+        this.addDialogue( //0
+            `${this.questionMark}`,
+            `BonusMap2Cutscene`,
+        );
+        this.addDialogue( //1
+            `${this.questionMark}`,
+            `No one is going to stop you.`,
+        );
+        this.addDialogue( //2
+            `${this.questionMark}`,
+            `And everyone will suffer!`,
+        );
+        this.addDialogue( //3
+            `${this.questionMark}`,
+            `Space-time will be reshaped into whatever you want!`,
+        );
+    }
+}
+
+export class BonusMap2EndCutscene extends StoryCutscene {
+    constructor(game) {
+        super(game, true);
+        this.backgroundImage = document.getElementById('map1blackBackground');
+        this.addDialogue( //0
+            `${this.questionMark}`,
+            `BonusMap2EndCutscene`,
+        );
+        this.addDialogue( //1
+            `${this.questionMark}`,
+            `No one is going to stop you.`,
+        );
+        this.addDialogue( //2
+            `${this.questionMark}`,
+            `And everyone will suffer!`,
+        );
+        this.addDialogue( //3
+            `${this.questionMark}`,
+            `Space-time will be reshaped into whatever you want!`,
+        );
+        this.game.bonusMap3Unlocked = true;
+        this.game.saveGameState();
+    }
+}
+
+export class BonusMap3Cutscene extends StoryCutscene {
+    constructor(game) {
+        super(game, true);
+        this.backgroundImage = document.getElementById('map1blackBackground');
+        this.addDialogue( //0
+            `${this.questionMark}`,
+            `BonusMap3Cutscene`,
+        );
+        this.addDialogue( //1
+            `${this.questionMark}`,
+            `No one is going to stop you.`,
+        );
+        this.addDialogue( //2
+            `${this.questionMark}`,
+            `And everyone will suffer!`,
+        );
+        this.addDialogue( //3
+            `${this.questionMark}`,
+            `Space-time will be reshaped into whatever you want!`,
+        );
+    }
+}
+
+export class BonusMap3EndCutscene extends StoryCutscene {
+    constructor(game) {
+        super(game, true);
+        this.backgroundImage = document.getElementById('map1blackBackground');
+        this.addDialogue( //0
+            `${this.questionMark}`,
+            `BonusMap3EndCutscene`,
+        );
+        this.addDialogue( //1
+            `${this.questionMark}`,
+            `No one is going to stop you.`,
+        );
+        this.addDialogue( //2
+            `${this.questionMark}`,
+            `And everyone will suffer!`,
+        );
+        this.addDialogue( //3
+            `${this.questionMark}`,
+            `Space-time will be reshaped into whatever you want!`,
+        );
         this.game.saveGameState();
     }
 }

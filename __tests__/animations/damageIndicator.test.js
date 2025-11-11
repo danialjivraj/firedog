@@ -1,19 +1,23 @@
 import {
     BaseIndicator,
     DamageIndicator,
-    PurpleWarningIndicator
 } from '../../game/animations/damageIndicator.js';
-
-beforeAll(() => {
-    document.body.innerHTML = `
-      <img id="testImage">
-      <img id="damageIndicator">
-      <img id="purpleWarningIndicator">
-    `;
-});
 
 describe('BaseIndicator', () => {
     let game, indicator, ctx;
+
+    const makeCtx = () => {
+        const gradient = { addColorStop: jest.fn() };
+        return {
+            globalAlpha: 0,
+            save: jest.fn(),
+            restore: jest.fn(),
+            translate: jest.fn(),
+            scale: jest.fn(),
+            fillRect: jest.fn(),
+            createRadialGradient: jest.fn(() => gradient),
+        };
+    };
 
     beforeEach(() => {
         game = {
@@ -21,101 +25,111 @@ describe('BaseIndicator', () => {
             height: 689,
             isPlayerInGame: false,
             collisions: [],
-            player: { loopDamageIndicator: false }
+            player: { loopDamageIndicator: false },
         };
-        indicator = new BaseIndicator(game, 'testImage', 0.8);
-        ctx = { globalAlpha: 0, drawImage: jest.fn() };
+        indicator = new BaseIndicator(game, '255,0,0', 0.8);
+        ctx = makeCtx();
     });
 
-    test('constructor sets position, image, opacity and timers', () => {
-        expect(indicator.x).toBe(0);
-        expect(indicator.y).toBe(0);
-        expect(indicator.image).toBe(document.getElementById('testImage'));
-        expect(indicator.initialOpacity).toBe(0.8);
-        expect(indicator.alpha).toBe(0.8);
-        expect(indicator.fadeSpeed).toBeCloseTo(1 / 1500);
-        expect(indicator.elapsedTime).toBe(0);
+    describe('constructor', () => {
+        test('initializes opacity and elapsedTime', () => {
+            expect(indicator.initialOpacity).toBe(0.8);
+            expect(indicator.alpha).toBe(0.8);
+            expect(indicator.elapsedTime).toBe(0);
+        });
     });
 
-    test('update does nothing when isPlayerInGame is false', () => {
-        indicator.update(1000);
-        expect(indicator.elapsedTime).toBe(0);
-        expect(indicator.alpha).toBe(0.8);
+    describe('update', () => {
+        test('does nothing when player is not in game', () => {
+            indicator.update(1000);
+            expect(indicator.elapsedTime).toBe(0);
+            expect(indicator.alpha).toBe(0.8);
+        });
+
+        test('keeps alpha constant before fade start', () => {
+            game.isPlayerInGame = true;
+            indicator.update(400);
+            expect(indicator.elapsedTime).toBe(400);
+            expect(indicator.alpha).toBe(0.8);
+        });
+
+        test('reduces alpha proportionally during fade window', () => {
+            game.isPlayerInGame = true;
+            indicator.update(600); // elapsedTime = 600
+
+            // fadeProgress = (600 - 500) / 1500 = 100 / 1500
+            const expectedAlpha = 0.8 - 0.8 * (100 / 1500);
+
+            expect(indicator.elapsedTime).toBe(600);
+            expect(indicator.alpha).toBeCloseTo(expectedAlpha);
+        });
+
+        test('removes indicator after fade end and flags loopDamageIndicator', () => {
+            game.isPlayerInGame = true;
+            game.collisions = [indicator];
+
+            indicator.elapsedTime = 2000;
+            indicator.update(0);
+
+            expect(game.collisions).not.toContain(indicator);
+            expect(game.player.loopDamageIndicator).toBe(true);
+        });
     });
 
-    test('update before fade start does not change alpha', () => {
-        game.isPlayerInGame = true;
-        indicator.update(400);
-        expect(indicator.elapsedTime).toBe(400);
-        expect(indicator.alpha).toBe(0.8);
+    describe('draw', () => {
+        test('renders radial gradient and sets globalAlpha when alpha > 0', () => {
+            indicator.alpha = 0.42;
+            indicator.draw(ctx);
+
+            expect(ctx.save).toHaveBeenCalled();
+            expect(ctx.restore).toHaveBeenCalled();
+
+            expect(ctx.createRadialGradient).toHaveBeenCalledTimes(1);
+            expect(ctx.fillRect).toHaveBeenCalled();
+
+            expect(ctx.globalAlpha).toBeCloseTo(0.42);
+        });
     });
 
-    test('update during fade reduces alpha proportionally', () => {
-        game.isPlayerInGame = true;
-        indicator.update(600); // elapsedTime = 600
-        // fadeProgress = (600-500)/1500 = 100/1500 = 0.066666
-        const expectedAlpha = 0.8 - 0.8 * (100 / 1500);
-        expect(indicator.elapsedTime).toBe(600);
-        expect(indicator.alpha).toBeCloseTo(expectedAlpha);
-    });
+    describe('reset', () => {
+        test('restores initial alpha and clears elapsedTime', () => {
+            indicator.elapsedTime = 1234;
+            indicator.alpha = 0.1;
 
-    test('update after fade end removes from collisions and flags loopDamageIndicator', () => {
-        game.isPlayerInGame = true;
-        game.collisions = [indicator];
-        indicator.elapsedTime = 2000;
-        indicator.update(0);
-        expect(game.collisions).not.toContain(indicator);
-        expect(game.player.loopDamageIndicator).toBe(true);
-    });
+            indicator.reset();
 
-    test('draw sets globalAlpha, calls drawImage, and resets globalAlpha to 1.0', () => {
-        indicator.alpha = 0.42;
-        indicator.draw(ctx);
-        expect(ctx.globalAlpha).toBe(1.0);
-        expect(ctx.drawImage).toHaveBeenCalledWith(indicator.image, 0, 0);
-    });
-
-    test('reset zeroes elapsedTime and restores alpha', () => {
-        indicator.elapsedTime = 1234;
-        indicator.alpha = 0.1;
-        indicator.reset();
-        expect(indicator.elapsedTime).toBe(0);
-        expect(indicator.alpha).toBe(0.8);
+            expect(indicator.elapsedTime).toBe(0);
+            expect(indicator.alpha).toBe(0.8);
+        });
     });
 });
 
 describe('DamageIndicator', () => {
     const cases = [
-        [1, 0.36],
-        [2, 0.26],
-        [3, 0.75],
-        [4, 0.47],
-        [5, 0.66],
-        [6, 0.62]
+        ['Map1', 0.20],
+        ['Map2', 0.10],
+        ['Map3', 0.40],
+        ['Map4', 0.25],
+        ['Map5', 0.27],
+        ['Map6', 0.26],
+        ['BonusMap1', 0.35],
+        ['BonusMap2', 0.47],
+        ['BonusMap3', 0.47],
     ];
 
     test.each(cases)(
-        'when mapSelected[%i] is true, initialOpacity is %f',
-        (idx, expectedOpacity) => {
+        'sets initial opacity for %s to %f',
+        (mapName, expectedOpacity) => {
             const game = {
-                width: 100, height: 50,
-                mapSelected: [false, false, false, false, false, false, false],
+                width: 100,
+                height: 50,
+                currentMap: mapName,
             };
-            game.mapSelected[idx] = true;
+
             const di = new DamageIndicator(game);
+
             expect(di.initialOpacity).toBeCloseTo(expectedOpacity);
             expect(di.alpha).toBeCloseTo(expectedOpacity);
-            expect(di.image).toBe(document.getElementById('damageIndicator'));
         }
     );
-});
-
-describe('PurpleWarningIndicator', () => {
-    test('always uses 0.62 initialOpacity', () => {
-        const game = { width: 1, height: 1, mapSelected: [] };
-        const pi = new PurpleWarningIndicator(game);
-        expect(pi.initialOpacity).toBe(0.62);
-        expect(pi.alpha).toBe(0.62);
-        expect(pi.image).toBe(document.getElementById('purpleWarningIndicator'));
-    });
 });

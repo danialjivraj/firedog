@@ -1,9 +1,9 @@
-import { BaseMenu } from './baseMenu.js';
+import { SelectMenu } from './baseMenu.js';
 
-export class LevelDifficultyMenu extends BaseMenu {
+export class LevelDifficultyMenu extends SelectMenu {
     constructor(game) {
-        const menuOptions = ['Easy', 'Normal', 'Hard', 'Go Back'];
-        super(game, menuOptions, 'Level Difficulty Menu');
+        const menuOptions = ['Easy', 'Normal', 'Hard', 'Extreme', 'Go Back'];
+        super(game, menuOptions, 'Level Difficulty Menu', { initialIndex: 1, goBackLabel: 'Go Back' });
         this.setDifficulty('Normal');
     }
 
@@ -21,29 +21,25 @@ export class LevelDifficultyMenu extends BaseMenu {
                 this.selectedDifficultyIndex = 2;
                 this.game.lives = 3;
                 break;
+            case 'Extreme':
+                this.selectedDifficultyIndex = 3;
+                this.game.lives = 1;
+                break;
             default:
                 this.selectedDifficultyIndex = 1;
                 this.game.lives = 5;
                 break;
         }
         this.game.selectedDifficulty = selectedDifficulty;
-        this.updateSelectedDifficulty();
+        this.setSelectedIndex(this.selectedDifficultyIndex);
     }
 
-    handleMenuSelection() {
-        const selectedOption = this.menuOptions[this.selectedOption];
-        super.handleMenuSelection();
-
-        if (selectedOption === 'Go Back') {
-            this.game.menu.main.activateMenu(2);
-        } else {
-            this.setDifficulty(selectedOption.replace(' - Selected', ''));
-        }
+    onSelect(index, cleanLabel) {
+        this.setDifficulty(cleanLabel);
     }
 
-    updateSelectedDifficulty() {
-        this.menuOptions = this.menuOptions.map(option => option.replace(' - Selected', ''));
-        this.menuOptions[this.selectedDifficultyIndex] += ' - Selected';
+    onGoBack() {
+        this.game.menu.main.activateMenu(2);
     }
 
     getSelectedOption() {

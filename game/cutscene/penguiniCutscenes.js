@@ -7,7 +7,7 @@ export class PenguiniCutscene extends Cutscene {
         this.game.talkToPenguinOneTimeOnly = false;
     }
 
-    enterOrLeftClick(cutscene) {
+    enterOrLeftClick() {
         this.isEnterPressed = true;
         this.playSound2OnDotPause = false;
 
@@ -45,7 +45,7 @@ export class PenguiniCutscene extends Cutscene {
             this.fullWordsColor = [];
             this.fullWordsColor = prefullWords;
         } else {
-            this.game.endCutscene(cutscene);
+            this.game.endCutscene();
             this.game.talkToPenguin = false;
             this.game.cutscenes = [];
             if (this.game.notEnoughCoins) {
@@ -64,7 +64,7 @@ export class PenguiniCutscene extends Cutscene {
         }, 100);
     }
 
-    displayDialogue(cutscene) {
+    displayDialogue() {
         this.handleKeyDown = (event) => {
             if (!this.game.menu.pause.isPaused && this.game.currentMenu !== this.game.menu.ingameAudioSettings) {
                 this.coinCheckIndex = this.dialogue.findIndex(dialogue => dialogue.dialogue.includes("It seems you have"));
@@ -98,7 +98,7 @@ export class PenguiniCutscene extends Cutscene {
                 }
 
                 if (event.key === 'Enter' && !this.isEnterPressed && this.game.enterDuringBackgroundTransition) {
-                    this.enterOrLeftClick(cutscene);
+                    this.enterOrLeftClick();
                 }
             }
         };
@@ -110,11 +110,11 @@ export class PenguiniCutscene extends Cutscene {
                 !this.game.menu.pause.isPaused &&
                 this.game.currentMenu !== this.game.menu.ingameAudioSettings
             ) {
-                this.enterOrLeftClick(cutscene);
+                this.enterOrLeftClick();
             }
         };
 
-        super.displayDialogue(cutscene);
+        super.displayDialogue();
     }
 }
 
@@ -959,250 +959,668 @@ export class Map6PenguinIngameCutscene extends PenguiniCutscene {
         );
     }
 }
+
+export class BonusMap1PenguinIngameCutscene extends PenguiniCutscene {
+    constructor(game) {
+        super(game);
+        this.coinDialogueConditionCutscene = new CoinDialogueConditionCutscene(game);
+        const coinConditionDialogues = this.coinDialogueConditionCutscene.checkPlayerCoins();
+        this.coinText = this.playerCoins === 1 ? this.coinText : this.coinsText;
+
+        this.addDialogue( //0
+            `${this.firedog}`,
+            `Of course it stops raining when I'm near the cabin..`,
+            this.addImage(this.setfiredogPhewBorder(), 1, 100, 400, 200, 200)
+        );
+        this.addDialogue( //1
+            `${this.firedog}`,
+            `Hello ${this.penguini}!`,
+            this.addImage(this.setfiredogHappyBorder(), 1, 100, 400, 200, 200)
+        );
+        this.addDialogue( //11
+            `${this.penguini}`,
+            `I stay tight in business with my brothers. If you got a problem you can leave ya' fool!`,
+            this.addImage(this.setfiredogAngryBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //12
+            `${this.firedog}`,
+            `I never said I had a problem! Why are you always so abrasive!`,
+            this.addImage(this.setfiredogAngryBorder(), 1, 100, 400, 200, 200),
+            this.addImage('penguinGunUpBorder', 0.7, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //13
+            `${this.penguini}`,
+            `Don't hate the player hate the game ya' fool! Now let's talk real business.`,
+            this.addImage(this.setfiredogAngryBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //14
+            `${this.penguini}`,
+            `I will need ${this.game.winningCoins} ${this.coinsText} for you to stay in this summery cabin!`,
+            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //15
+            `${this.penguini}`,
+            `You're lucky it isn't raining right now, or you would've been charged twice as much ya' fool!`,
+            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //16
+            `${this.firedog}`,
+            `Wait... why would you charge twice the usual price just because it's raining...?`,
+            this.addImage(this.setfiredogNormalQuestionMarkBorder(), 1, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 0.7, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //17
+            `${this.penguini}`,
+            `...`,
+            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //18
+            `${this.penguini}`,
+            `Anyways, let me see your pockets ya' fool!`,
+            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //19
+            `${this.penguini}`,
+            `It seems you have ${this.playerCoins} ${this.coinText}.`,
+            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
+        );
+
+        // coin condition dialogues
+        coinConditionDialogues.forEach(dialogue => {
+            this.addDialogue(dialogue.character, dialogue.dialogue, ...dialogue.images);
+        });
+
+        if (this.game.notEnoughCoins === true) {
+            return;
+        }
+
+        // rest of the dialogue
+        this.addDialogue( //21
+            `${this.firedog}`,
+            `Alright! I'll get inside before it starts raining on me again!`,
+            this.addImage(this.setfiredogNormalBorder(), 1, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 0.7, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //22
+            `${this.penguini}`,
+            `Before you get in ${this.firedog}, can I ask which way you're going when you leave?`,
+            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //32
+            `${this.penguini}`,
+            `No worries ya' fool!`,
+            this.addImage(this.setfiredogHappyBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
+        );
+    }
+}
+
+export class BonusMap2PenguinIngameCutscene extends PenguiniCutscene {
+    constructor(game) {
+        super(game);
+        this.coinDialogueConditionCutscene = new CoinDialogueConditionCutscene(game);
+        const coinConditionDialogues = this.coinDialogueConditionCutscene.checkPlayerCoins();
+        this.coinText = this.playerCoins === 1 ? this.coinText : this.coinsText;
+
+        this.addDialogue( //0
+            `${this.firedog}`,
+            `Of course it stops raining when I'm near the cabin..`,
+            this.addImage(this.setfiredogPhewBorder(), 1, 100, 400, 200, 200)
+        );
+        this.addDialogue( //1
+            `${this.firedog}`,
+            `Hello ${this.penguini}!`,
+            this.addImage(this.setfiredogHappyBorder(), 1, 100, 400, 200, 200)
+        );
+        this.addDialogue( //11
+            `${this.penguini}`,
+            `I stay tight in business with my brothers. If you got a problem you can leave ya' fool!`,
+            this.addImage(this.setfiredogAngryBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //12
+            `${this.firedog}`,
+            `I never said I had a problem! Why are you always so abrasive!`,
+            this.addImage(this.setfiredogAngryBorder(), 1, 100, 400, 200, 200),
+            this.addImage('penguinGunUpBorder', 0.7, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //13
+            `${this.penguini}`,
+            `Don't hate the player hate the game ya' fool! Now let's talk real business.`,
+            this.addImage(this.setfiredogAngryBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //14
+            `${this.penguini}`,
+            `I will need ${this.game.winningCoins} ${this.coinsText} for you to stay in this summery cabin!`,
+            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //15
+            `${this.penguini}`,
+            `You're lucky it isn't raining right now, or you would've been charged twice as much ya' fool!`,
+            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //16
+            `${this.firedog}`,
+            `Wait... why would you charge twice the usual price just because it's raining...?`,
+            this.addImage(this.setfiredogNormalQuestionMarkBorder(), 1, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 0.7, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //17
+            `${this.penguini}`,
+            `...`,
+            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //18
+            `${this.penguini}`,
+            `Anyways, let me see your pockets ya' fool!`,
+            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //19
+            `${this.penguini}`,
+            `It seems you have ${this.playerCoins} ${this.coinText}.`,
+            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
+        );
+
+        // coin condition dialogues
+        coinConditionDialogues.forEach(dialogue => {
+            this.addDialogue(dialogue.character, dialogue.dialogue, ...dialogue.images);
+        });
+
+        if (this.game.notEnoughCoins === true) {
+            return;
+        }
+
+        // rest of the dialogue
+        this.addDialogue( //21
+            `${this.firedog}`,
+            `Alright! I'll get inside before it starts raining on me again!`,
+            this.addImage(this.setfiredogNormalBorder(), 1, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 0.7, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //22
+            `${this.penguini}`,
+            `Before you get in ${this.firedog}, can I ask which way you're going when you leave?`,
+            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
+        );
+    }
+}
+
+export class BonusMap3PenguinIngameCutscene extends PenguiniCutscene {
+    constructor(game) {
+        super(game);
+        this.coinDialogueConditionCutscene = new CoinDialogueConditionCutscene(game);
+        const coinConditionDialogues = this.coinDialogueConditionCutscene.checkPlayerCoins();
+        this.coinText = this.playerCoins === 1 ? this.coinText : this.coinsText;
+
+        this.addDialogue( //0
+            `${this.firedog}`,
+            `Of course it stops raining when I'm near the cabin..`,
+            this.addImage(this.setfiredogPhewBorder(), 1, 100, 400, 200, 200)
+        );
+        this.addDialogue( //1
+            `${this.firedog}`,
+            `Hello ${this.penguini}!`,
+            this.addImage(this.setfiredogHappyBorder(), 1, 100, 400, 200, 200)
+        );
+        this.addDialogue( //11
+            `${this.penguini}`,
+            `I stay tight in business with my brothers. If you got a problem you can leave ya' fool!`,
+            this.addImage(this.setfiredogAngryBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //12
+            `${this.firedog}`,
+            `I never said I had a problem! Why are you always so abrasive!`,
+            this.addImage(this.setfiredogAngryBorder(), 1, 100, 400, 200, 200),
+            this.addImage('penguinGunUpBorder', 0.7, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //13
+            `${this.penguini}`,
+            `Don't hate the player hate the game ya' fool! Now let's talk real business.`,
+            this.addImage(this.setfiredogAngryBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //14
+            `${this.penguini}`,
+            `I will need ${this.game.winningCoins} ${this.coinsText} for you to stay in this summery cabin!`,
+            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //15
+            `${this.penguini}`,
+            `You're lucky it isn't raining right now, or you would've been charged twice as much ya' fool!`,
+            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //16
+            `${this.firedog}`,
+            `Wait... why would you charge twice the usual price just because it's raining...?`,
+            this.addImage(this.setfiredogNormalQuestionMarkBorder(), 1, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 0.7, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //17
+            `${this.penguini}`,
+            `...`,
+            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //18
+            `${this.penguini}`,
+            `Anyways, let me see your pockets ya' fool!`,
+            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //19
+            `${this.penguini}`,
+            `It seems you have ${this.playerCoins} ${this.coinText}.`,
+            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
+        );
+
+        // coin condition dialogues
+        coinConditionDialogues.forEach(dialogue => {
+            this.addDialogue(dialogue.character, dialogue.dialogue, ...dialogue.images);
+        });
+
+        if (this.game.notEnoughCoins === true) {
+            return;
+        }
+
+        // rest of the dialogue
+        this.addDialogue( //21
+            `${this.firedog}`,
+            `Alright! I'll get inside before it starts raining on me again!`,
+            this.addImage(this.setfiredogNormalBorder(), 1, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 0.7, 1430, 400, 200, 200),
+        );
+        this.addDialogue( //22
+            `${this.penguini}`,
+            `Before you get in ${this.firedog}, can I ask which way you're going when you leave?`,
+            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+            this.addImage('penguinGunTalkNormalBorder', 1, 1430, 400, 200, 200),
+        );
+    }
+}
+
 // coin condition penguini dialogues
 export class CoinDialogueConditionCutscene extends PenguiniCutscene {
     constructor(game) {
         super(game);
     }
+
+    makeEnoughCoinsDialogue(mapId, firedogX = 100, penguinX = 1400) {
+        const penguinLaughByMap = {
+            Map1: 'penguinBatLaughBorder',
+            Map2: 'penguinBatLaughBorder',
+            Map3: 'penguinBatLaughBorder',
+            Map4: 'penguinGunLaughBorder',
+            Map5: 'penguinGunLaughBorder',
+            BonusMap1: 'penguinGunLaughBorder',
+            BonusMap2: 'penguinGunLaughBorder',
+            BonusMap3: 'penguinGunLaughBorder',
+        };
+
+        return {
+            character: this.penguini,
+            dialogue: `That's good enough, give me that!`,
+            images: [
+                this.addImage(this.setfiredogNormalBorder(), 0.7, firedogX, 400, 200, 200),
+                this.addImage(penguinLaughByMap[mapId] || 'penguinBatLaughBorder', 1, penguinX, 400, 200, 200),
+            ],
+        };
+    }
+
     checkPlayerCoins() {
-        let newDialogues = [];
-        if (this.game.mapSelected[1]) {
-            if (this.game.coins < this.game.winningCoins) {
-                this.game.notEnoughCoins = true;
-                newDialogues.push(
-                    { //13
-                        character: this.penguini,
-                        dialogue: `That doesn't even cover my rent!`,
-                        images: [
-                            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                            this.addImage('penguinBatUpBorder', 1, 1400, 400, 200, 200),
-                        ]
-                    },
-                    { //14
-                        character: this.penguini,
-                        dialogue: `Come back when you have enough, get out of here now!`,
-                        images: [
-                            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                            this.addImage('penguinBatUpBorder', 1, 1400, 400, 200, 200),
-                        ]
-                    },
-                    { //15
-                        character: this.firedog,
-                        dialogue: `Damn.. Gotta try again..`,
-                        images: [
-                            this.addImage(this.setfiredogPhewBorder(), 1, 100, 400, 200, 200),
-                            this.addImage('penguinBatUpBorder', 0.7, 1400, 400, 200, 200),
-                        ]
-                    },
-                );
-            } else {
-                newDialogues.push(
-                    { //13
-                        character: this.penguini,
-                        dialogue: `That's good enough, give me that!`,
-                        images: [
-                            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                            this.addImage('penguinBatLaughBorder', 1, 1400, 400, 200, 200),
-                        ]
-                    },
-                );
-            }
-        } else if (this.game.mapSelected[2]) {
-            if (this.game.coins < this.game.winningCoins) {
-                this.game.notEnoughCoins = true;
-                newDialogues.push(
-                    { //15
-                        character: this.penguini,
-                        dialogue: `That doesn't even cover half my rent!`,
-                        images: [
-                            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                            this.addImage('penguinBatUpBorder', 1, 1400, 400, 200, 200),
-                        ]
-                    },
-                    { //16
-                        character: this.penguini,
-                        dialogue: `You're sleeping outside tonight with the ghosts ya' fool!`,
-                        images: [
-                            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                            this.addImage('penguinBatUpBorder', 1, 1400, 400, 200, 200),
-                        ]
-                    },
-                    { //17
-                        character: this.penguini,
-                        dialogue: `Come back when you have enough, get out of here now!`,
-                        images: [
-                            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                            this.addImage('penguinBatUpBorder', 1, 1400, 400, 200, 200),
-                        ]
-                    },
-                    { //18
-                        character: this.firedog,
-                        dialogue: `Damn.. Gotta try again..`,
-                        images: [
-                            this.addImage(this.setfiredogPhewBorder(), 1, 100, 400, 200, 200),
-                            this.addImage('penguinBatUpBorder', 0.7, 1400, 400, 200, 200),
-                        ]
-                    },
-                );
-            } else {
-                newDialogues.push(
-                    { //15
-                        character: this.penguini,
-                        dialogue: `That's good enough, give me that!`,
-                        images: [
-                            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                            this.addImage('penguinBatLaughBorder', 1, 1400, 400, 200, 200),
-                        ]
-                    }
-                );
-            }
-        } else if (this.game.mapSelected[3]) {
-            if (this.game.coins < this.game.winningCoins) {
-                this.game.notEnoughCoins = true;
-                newDialogues.push(
-                    { //15
-                        character: this.penguini,
-                        dialogue: `That doesn't even cover half of my uranium submarine fuel!`,
-                        images: [
-                            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                            this.addImage('penguinBatUpBorder', 1, 1200, 400, 200, 200),
-                        ]
-                    },
-                    { //16
-                        character: this.penguini,
-                        dialogue: `You're not going inside of this submarine.`,
-                        images: [
-                            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                            this.addImage('penguinBatUpBorder', 1, 1200, 400, 200, 200),
-                        ]
-                    },
-                    { //17
-                        character: this.penguini,
-                        dialogue: `Come back when you have enough, get out of here now!`,
-                        images: [
-                            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                            this.addImage('penguinBatUpBorder', 1, 1200, 400, 200, 200),
-                        ]
-                    },
-                    { //18
-                        character: this.firedog,
-                        dialogue: `Damn.. Gotta try again..`,
-                        images: [
-                            this.addImage(this.setfiredogPhewBorder(), 1, 100, 400, 200, 200),
-                            this.addImage('penguinBatUpBorder', 0.7, 1200, 400, 200, 200),
-                        ]
-                    },
-                );
-            } else {
-                newDialogues.push(
-                    { //15
-                        character: this.penguini,
-                        dialogue: `That's good enough, give me that!`,
-                        images: [
-                            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                            this.addImage('penguinBatLaughBorder', 1, 1200, 400, 200, 200),
-                        ]
-                    }
-                );
-            }
-        } else if (this.game.mapSelected[4]) {
-            if (this.game.coins < this.game.winningCoins) {
-                this.game.notEnoughCoins = true;
-                newDialogues.push(
-                    { //10
-                        character: this.penguini,
-                        dialogue: `That doesn't even cover enough to water the verdant plants of this land!`,
-                        images: [
-                            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                            this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
-                        ]
-                    },
-                    { //11
-                        character: this.penguini,
-                        dialogue: `If you want to get inside you're gonna need to try harder than that ya' fool!`,
-                        images: [
-                            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                            this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
-                        ]
-                    },
-                    { //12
-                        character: this.penguini,
-                        dialogue: `Come back when you have enough, get out of here now!`,
-                        images: [
-                            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                            this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
-                        ]
-                    },
-                    { //13
-                        character: this.firedog,
-                        dialogue: `Damn.. Gotta try again..`,
-                        images: [
-                            this.addImage(this.setfiredogPhewBorder(), 1, 100, 400, 200, 200),
-                            this.addImage('penguinGunUpBorder', 0.7, 1430, 400, 200, 200),
-                        ]
-                    },
-                );
-            } else {
-                newDialogues.push(
-                    { //10
-                        character: this.penguini,
-                        dialogue: `That's good enough, give me that!`,
-                        images: [
-                            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                            this.addImage('penguinGunLaughBorder', 1, 1430, 400, 200, 200),
-                        ]
-                    }
-                );
-            }
-        } else if (this.game.mapSelected[5]) {
-            if (this.game.coins < this.game.winningCoins) {
-                this.game.notEnoughCoins = true;
-                newDialogues.push(
-                    { //20
-                        character: this.penguini,
-                        dialogue: `That doesn't even cover half my rent! If I accepted those pennies my business would go bankrupt!`,
-                        images: [
-                            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                            this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
-                        ]
-                    },
-                    { //21
-                        character: this.penguini,
-                        dialogue: `You're going to stay outside. I don't care if it rains on you!`,
-                        images: [
-                            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                            this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
-                        ]
-                    },
-                    { //22
-                        character: this.penguini,
-                        dialogue: `Come back when you have enough, get out of here now!`,
-                        images: [
-                            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                            this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
-                        ]
-                    },
-                    { //23
-                        character: this.firedog,
-                        dialogue: `Damn.. Gotta try again..`,
-                        images: [
-                            this.addImage(this.setfiredogPhewBorder(), 1, 100, 400, 200, 200),
-                            this.addImage('penguinGunUpBorder', 0.7, 1430, 400, 200, 200),
-                        ]
-                    },
-                );
-            } else {
-                newDialogues.push(
-                    { //20
-                        character: this.penguini,
-                        dialogue: `That's good enough, give me that!`,
-                        images: [
-                            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                            this.addImage('penguinGunLaughBorder', 1, 1430, 400, 200, 200),
-                        ]
-                    }
-                );
-            }
+        const mapId = this.getCurrentMapId();
+        const notEnough = this.game.coins < this.game.winningCoins;
+        const newDialogues = [];
+
+        switch (mapId) {
+            case 'Map1':
+                if (notEnough) {
+                    this.game.notEnoughCoins = true;
+                    newDialogues.push(
+                        {
+                            character: this.penguini,
+                            dialogue: `That doesn't even cover my rent!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinBatUpBorder', 1, 1400, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.penguini,
+                            dialogue: `Come back when you have enough, get out of here now!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinBatUpBorder', 1, 1400, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.firedog,
+                            dialogue: `Damn.. Gotta try again..`,
+                            images: [
+                                this.addImage(this.setfiredogPhewBorder(), 1, 100, 400, 200, 200),
+                                this.addImage('penguinBatUpBorder', 0.7, 1400, 400, 200, 200),
+                            ],
+                        }
+                    );
+                } else {
+                    newDialogues.push(this.makeEnoughCoinsDialogue(mapId, 100, 1400));
+                }
+                break;
+
+            case 'Map2':
+                if (notEnough) {
+                    this.game.notEnoughCoins = true;
+                    newDialogues.push(
+                        {
+                            character: this.penguini,
+                            dialogue: `That doesn't even cover half my rent!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinBatUpBorder', 1, 1400, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.penguini,
+                            dialogue: `You're sleeping outside tonight with the ghosts ya' fool!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinBatUpBorder', 1, 1400, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.penguini,
+                            dialogue: `Come back when you have enough, get out of here now!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinBatUpBorder', 1, 1400, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.firedog,
+                            dialogue: `Damn.. Gotta try again..`,
+                            images: [
+                                this.addImage(this.setfiredogPhewBorder(), 1, 100, 400, 200, 200),
+                                this.addImage('penguinBatUpBorder', 0.7, 1400, 400, 200, 200),
+                            ],
+                        }
+                    );
+                } else {
+                    newDialogues.push(this.makeEnoughCoinsDialogue(mapId, 100, 1400));
+                }
+                break;
+
+            case 'Map3':
+                if (notEnough) {
+                    this.game.notEnoughCoins = true;
+                    newDialogues.push(
+                        {
+                            character: this.penguini,
+                            dialogue: `That doesn't even cover half of my uranium submarine fuel!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinBatUpBorder', 1, 1200, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.penguini,
+                            dialogue: `You're not going inside of this submarine.`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinBatUpBorder', 1, 1200, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.penguini,
+                            dialogue: `Come back when you have enough, get out of here now!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinBatUpBorder', 1, 1200, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.firedog,
+                            dialogue: `Damn.. Gotta try again..`,
+                            images: [
+                                this.addImage(this.setfiredogPhewBorder(), 1, 100, 400, 200, 200),
+                                this.addImage('penguinBatUpBorder', 0.7, 1200, 400, 200, 200),
+                            ],
+                        }
+                    );
+                } else {
+                    newDialogues.push(this.makeEnoughCoinsDialogue(mapId, 100, 1200));
+                }
+                break;
+
+            case 'Map4':
+                if (notEnough) {
+                    this.game.notEnoughCoins = true;
+                    newDialogues.push(
+                        {
+                            character: this.penguini,
+                            dialogue: `That doesn't even cover enough to water the verdant plants of this land!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.penguini,
+                            dialogue: `If you want to get inside you're gonna need to try harder than that ya' fool!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.penguini,
+                            dialogue: `Come back when you have enough, get out of here now!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.firedog,
+                            dialogue: `Damn.. Gotta try again..`,
+                            images: [
+                                this.addImage(this.setfiredogPhewBorder(), 1, 100, 400, 200, 200),
+                                this.addImage('penguinGunUpBorder', 0.7, 1430, 400, 200, 200),
+                            ],
+                        }
+                    );
+                } else {
+                    newDialogues.push(this.makeEnoughCoinsDialogue(mapId, 100, 1430));
+                }
+                break;
+
+            case 'Map5':
+                if (notEnough) {
+                    this.game.notEnoughCoins = true;
+                    newDialogues.push(
+                        {
+                            character: this.penguini,
+                            dialogue: `That doesn't even cover half my rent! If I accepted those pennies my business would go bankrupt!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.penguini,
+                            dialogue: `You're going to stay outside. I don't care if it rains on you!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.penguini,
+                            dialogue: `Come back when you have enough, get out of here now!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.firedog,
+                            dialogue: `Damn.. Gotta try again..`,
+                            images: [
+                                this.addImage(this.setfiredogPhewBorder(), 1, 100, 400, 200, 200),
+                                this.addImage('penguinGunUpBorder', 0.7, 1430, 400, 200, 200),
+                            ],
+                        }
+                    );
+                } else {
+                    newDialogues.push(this.makeEnoughCoinsDialogue(mapId, 100, 1430));
+                }
+                break;
+
+            case 'BonusMap1':
+                if (notEnough) {
+                    this.game.notEnoughCoins = true;
+                    newDialogues.push(
+                        {
+                            character: this.penguini,
+                            dialogue: `That doesn't even cover half my rent! If I accepted those pennies my business would go bankrupt!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.penguini,
+                            dialogue: `You're going to stay outside. I don't care if it rains on you!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.penguini,
+                            dialogue: `Come back when you have enough, get out of here now!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.firedog,
+                            dialogue: `Damn.. Gotta try again..`,
+                            images: [
+                                this.addImage(this.setfiredogPhewBorder(), 1, 100, 400, 200, 200),
+                                this.addImage('penguinGunUpBorder', 0.7, 1430, 400, 200, 200),
+                            ],
+                        }
+                    );
+                } else {
+                    newDialogues.push(this.makeEnoughCoinsDialogue(mapId, 100, 1430));
+                }
+                break;
+
+            case 'BonusMap2':
+                if (notEnough) {
+                    this.game.notEnoughCoins = true;
+                    newDialogues.push(
+                        {
+                            character: this.penguini,
+                            dialogue: `That doesn't even cover half my rent! If I accepted those pennies my business would go bankrupt!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.penguini,
+                            dialogue: `You're going to stay outside. I don't care if it rains on you!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.penguini,
+                            dialogue: `Come back when you have enough, get out of here now!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.firedog,
+                            dialogue: `Damn.. Gotta try again..`,
+                            images: [
+                                this.addImage(this.setfiredogPhewBorder(), 1, 100, 400, 200, 200),
+                                this.addImage('penguinGunUpBorder', 0.7, 1430, 400, 200, 200),
+                            ],
+                        }
+                    );
+                } else {
+                    newDialogues.push(this.makeEnoughCoinsDialogue(mapId, 100, 1430));
+                }
+                break;
+
+            case 'BonusMap3':
+                if (notEnough) {
+                    this.game.notEnoughCoins = true;
+                    newDialogues.push(
+                        {
+                            character: this.penguini,
+                            dialogue: `That doesn't even cover half my rent! If I accepted those pennies my business would go bankrupt!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.penguini,
+                            dialogue: `You're going to stay outside. I don't care if it rains on you!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.penguini,
+                            dialogue: `Come back when you have enough, get out of here now!`,
+                            images: [
+                                this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
+                                this.addImage('penguinGunUpBorder', 1, 1430, 400, 200, 200),
+                            ],
+                        },
+                        {
+                            character: this.firedog,
+                            dialogue: `Damn.. Gotta try again..`,
+                            images: [
+                                this.addImage(this.setfiredogPhewBorder(), 1, 100, 400, 200, 200),
+                                this.addImage('penguinGunUpBorder', 0.7, 1430, 400, 200, 200),
+                            ],
+                        }
+                    );
+                } else {
+                    newDialogues.push(this.makeEnoughCoinsDialogue(mapId, 100, 1430));
+                }
+                break;
+
+            default:
+                break;
         }
         return newDialogues;
     }

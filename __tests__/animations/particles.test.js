@@ -17,6 +17,9 @@ const fakeImages = {
     singleCoin: { name: 'singleCoin' },
     test_img: { name: 'test_img' },
     fireball_img: { name: 'fireball_img' },
+    fire: { name: 'fire' },
+    bluefire: { name: 'bluefire' },
+    bluebubble: { name: 'bluebubble' },
 };
 
 beforeAll(() => {
@@ -24,12 +27,13 @@ beforeAll(() => {
         .spyOn(document, 'getElementById')
         .mockImplementation((id) => fakeImages[id] || null);
 });
+
 afterAll(() => {
     document.getElementById.mockRestore();
 });
 
 describe('Base Particle behavior', () => {
-    it('marks for deletion when size falls below 0.5', () => {
+    it('marks particle for deletion when size falls below 0.5', () => {
         const game = {
             cabin: { isFullyVisible: false },
             isElyvorgFullyVisible: false,
@@ -41,11 +45,13 @@ describe('Base Particle behavior', () => {
         p.size = 0.4;
         p.speedX = 0;
         p.speedY = 0;
+
         p.update();
+
         expect(p.markedForDeletion).toBe(true);
     });
 
-    it('uses only speedX when cabin.isFullyVisible=true', () => {
+    it('uses only speedX when cabin is fully visible', () => {
         const game = {
             cabin: { isFullyVisible: true },
             isElyvorgFullyVisible: false,
@@ -54,13 +60,19 @@ describe('Base Particle behavior', () => {
             menu: { pause: { isPaused: false } },
         };
         const p = new IceCrystal(game, 0, 0);
-        p.size = 1; p.x = 10; p.y = 10; p.speedX = 2; p.speedY = 1;
+        p.size = 1;
+        p.x = 10;
+        p.y = 10;
+        p.speedX = 2;
+        p.speedY = 1;
+
         p.update();
+
         expect(p.x).toBeCloseTo(8);
         expect(p.y).toBeCloseTo(9);
     });
 
-    it('uses only speedX when isElyvorgFullyVisible=true', () => {
+    it('uses only speedX when Elyvorg is fully visible', () => {
         const game = {
             cabin: { isFullyVisible: false },
             isElyvorgFullyVisible: true,
@@ -69,8 +81,14 @@ describe('Base Particle behavior', () => {
             menu: { pause: { isPaused: false } },
         };
         const p = new IceCrystal(game, 0, 0);
-        p.size = 1; p.x = 20; p.y = 20; p.speedX = 3; p.speedY = 1;
+        p.size = 1;
+        p.x = 20;
+        p.y = 20;
+        p.speedX = 3;
+        p.speedY = 1;
+
         p.update();
+
         expect(p.x).toBeCloseTo(17);
         expect(p.y).toBeCloseTo(19);
     });
@@ -78,13 +96,15 @@ describe('Base Particle behavior', () => {
 
 describe('Dust', () => {
     let game, dust, ctx;
+
     beforeEach(() => {
         jest.spyOn(Math, 'random')
-            .mockReturnValueOnce(0.5) // size
-            .mockReturnValueOnce(0.2) // speedX
-            .mockReturnValueOnce(0.3) // speedY
+            .mockReturnValueOnce(0.5)  // size
+            .mockReturnValueOnce(0.2)  // speedX
+            .mockReturnValueOnce(0.3)  // speedY
             .mockReturnValueOnce(0.95) // createBubble
             .mockReturnValueOnce(0.8); // createDust
+
         game = {
             cabin: { isFullyVisible: false },
             isElyvorgFullyVisible: false,
@@ -95,65 +115,81 @@ describe('Dust', () => {
         ctx = { drawImage: jest.fn() };
         dust = new Dust(game, 100, 200);
     });
-    afterEach(() => { Math.random.mockRestore(); });
 
-    it('update() moves, shrinks, but does not delete', () => {
+    afterEach(() => {
+        Math.random.mockRestore();
+    });
+
+    it('update() moves and shrinks dust without marking for deletion when size >= 0.5', () => {
         const { x: ix, y: iy, size: isz, speedX, speedY } = dust;
+
         dust.update();
+
         expect(dust.x).toBeCloseTo(ix - (speedX + game.speed));
         expect(dust.y).toBeCloseTo(iy - speedY);
         expect(dust.size).toBeCloseTo(isz * 0.97);
         expect(dust.markedForDeletion).toBe(false);
     });
 
-    it('draw() shows both and moves up when not paused', () => {
+    it('draw() renders bubble and dust underwater and moves bubble up when not paused', () => {
         dust.update();
         const afterY = dust.y;
+
         dust.draw(ctx);
+
         expect(ctx.drawImage).toHaveBeenCalledTimes(2);
         expect(dust.y).toBeCloseTo(afterY - 2);
     });
 
-    it('draw() does not move up when paused', () => {
+    it('draw() does not move bubble up when game is paused', () => {
         game.menu.pause.isPaused = true;
         dust.update();
         const y0 = dust.y;
+
         dust.draw(ctx);
+
         expect(dust.y).toBe(y0);
     });
 
-    it('draw() only dust when createBubble=false, createDust=true', () => {
+    it('draw() renders only dust when createBubble=false and createDust=true', () => {
         Math.random.mockRestore();
         jest.spyOn(Math, 'random')
             .mockReturnValueOnce(0.5)
             .mockReturnValueOnce(0.2)
             .mockReturnValueOnce(0.3)
-            .mockReturnValueOnce(0) // createBubble false
+            .mockReturnValueOnce(0)    // createBubble false
             .mockReturnValueOnce(0.8); // createDust true
+
         dust = new Dust(game, 0, 0);
         dust.update();
         ctx.drawImage.mockClear();
+
         dust.draw(ctx);
+
         expect(ctx.drawImage).toHaveBeenCalledTimes(1);
         expect(dust.y).toBeCloseTo(0 - dust.speedY);
     });
 
-    it('draw() only bubble when createBubble=true, createDust=false', () => {
+    it('draw() renders only bubble when createBubble=true and createDust=false', () => {
         Math.random.mockRestore();
         jest.spyOn(Math, 'random')
             .mockReturnValueOnce(0.5)
             .mockReturnValueOnce(0.2)
             .mockReturnValueOnce(0.3)
             .mockReturnValueOnce(0.95) // createBubble true
-            .mockReturnValueOnce(0); // createDust false
+            .mockReturnValueOnce(0);   // createDust false
+
         dust = new Dust(game, 0, 0);
         dust.update();
 
         const { x: px, y: py, size } = dust;
         const expectedX = px - size;
         const expectedY = py - size / 1.3;
+
         ctx.drawImage.mockClear();
+
         dust.draw(ctx);
+
         expect(ctx.drawImage).toHaveBeenCalledTimes(1);
         expect(ctx.drawImage).toHaveBeenCalledWith(
             fakeImages.bubble,
@@ -168,8 +204,13 @@ describe('Dust', () => {
 
 describe('IceCrystal', () => {
     let game, ice, ctx;
-    beforeEach(() => { game = { player: {} }; ctx = { drawImage: jest.fn() }; });
-    it('draws when createIce=true', () => {
+
+    beforeEach(() => {
+        game = { player: {} };
+        ctx = { drawImage: jest.fn() };
+    });
+
+    it('draws the crystal when createIce=true', () => {
         jest.spyOn(Math, 'random')
             .mockReturnValueOnce(0.5)
             .mockReturnValueOnce(0.1)
@@ -177,10 +218,13 @@ describe('IceCrystal', () => {
             .mockReturnValueOnce(0.6);
         ice = new IceCrystal(game, 5, 15);
         Math.random.mockRestore();
+
         ice.draw(ctx);
+
         expect(ctx.drawImage).toHaveBeenCalled();
     });
-    it('skips when createIce=false', () => {
+
+    it('skips drawing when createIce=false', () => {
         jest.spyOn(Math, 'random')
             .mockReturnValueOnce(0.5)
             .mockReturnValueOnce(0.1)
@@ -188,19 +232,23 @@ describe('IceCrystal', () => {
             .mockReturnValueOnce(0.4);
         ice = new IceCrystal(game, 0, 0);
         Math.random.mockRestore();
+
         ice.draw(ctx);
+
         expect(ctx.drawImage).not.toHaveBeenCalled();
     });
 });
 
 describe('Bubble', () => {
     let game, bubble, ctx;
+
     beforeEach(() => {
         jest.spyOn(Math, 'random')
             .mockReturnValueOnce(0.5)
             .mockReturnValueOnce(0.2)
             .mockReturnValueOnce(0.3)
             .mockReturnValueOnce(0.95);
+
         game = {
             cabin: { isFullyVisible: false },
             isElyvorgFullyVisible: false,
@@ -211,37 +259,46 @@ describe('Bubble', () => {
         ctx = { drawImage: jest.fn() };
         bubble = new Bubble(game, 20, 30);
     });
+
     afterEach(() => Math.random.mockRestore());
 
-    it('update()+draw() underwater moves up 2px', () => {
+    it('update() + draw() underwater moves bubble up by 2px when not paused', () => {
         bubble.update();
         const yAfter = bubble.y;
+
         bubble.draw(ctx);
+
         expect(bubble.y).toBeCloseTo(yAfter - 2);
     });
 
-    it('draw() does nothing when createBubble=false', () => {
+    it('draw() does nothing when createBubble=false underwater', () => {
         Math.random.mockRestore();
         jest.spyOn(Math, 'random')
             .mockReturnValueOnce(0.5)
             .mockReturnValueOnce(0.2)
             .mockReturnValueOnce(0.3)
             .mockReturnValueOnce(0); // createBubble false
+
         bubble = new Bubble(game, 0, 0);
         bubble.update();
+
         ctx.drawImage.mockClear();
+
         bubble.draw(ctx);
+
         expect(ctx.drawImage).not.toHaveBeenCalled();
     });
 });
 
 describe('Splash', () => {
     let game, splash, ctx;
+
     beforeEach(() => {
         jest.spyOn(Math, 'random')
             .mockReturnValueOnce(0.5)
             .mockReturnValueOnce(0.2)
             .mockReturnValueOnce(0.3);
+
         game = {
             cabin: { isFullyVisible: false },
             isElyvorgFullyVisible: false,
@@ -253,34 +310,41 @@ describe('Splash', () => {
         Math.random.mockRestore();
     });
 
-    it('non-underwater update() ignores gravity on first call', () => {
+    it('non-underwater update() on first call only subtracts speedY (gravity starts at 0)', () => {
         const { y: iy, speedY } = splash;
+
         splash.update();
+
         expect(splash.y).toBeCloseTo(iy - speedY);
     });
 
-    it('underwater update() subtracts gravity*0.6', () => {
+    it('underwater update() moves up by speedY and gravity * 0.6', () => {
         game.player.isUnderwater = true;
         splash = new Splash(game, 0, 0);
         splash.gravity = 1;
         splash.y = 50;
         splash.speedY = 2;
+
         splash.update();
+
         expect(splash.y).toBeCloseTo(47.4);
     });
 
-    it('draw() renders image', () => {
+    it('draw() renders a splash image', () => {
         splash.draw(ctx);
+
         expect(ctx.drawImage).toHaveBeenCalled();
     });
 });
 
 describe('Fire', () => {
     let game, fire, ctx;
+
     beforeEach(() => {
         jest.spyOn(Math, 'random')
             .mockReturnValueOnce(0.5)
             .mockReturnValueOnce(0.5);
+
         game = {
             cabin: { isFullyVisible: false },
             isElyvorgFullyVisible: false,
@@ -288,48 +352,228 @@ describe('Fire', () => {
             player: { isUnderwater: false, particleImage: 'test_img' },
         };
         ctx = {
-            save: jest.fn(), translate: jest.fn(),
-            rotate: jest.fn(), drawImage: jest.fn(), restore: jest.fn(),
+            save: jest.fn(),
+            translate: jest.fn(),
+            rotate: jest.fn(),
+            drawImage: jest.fn(),
+            restore: jest.fn(),
         };
         fire = new Fire(game, 10, 15);
         Math.random.mockRestore();
     });
 
-    it('not underwater update() does not subtract extra 4', () => {
+    it('update() on land does not apply extra underwater -4 offset', () => {
         const { y: iy, speedY } = fire;
+
         fire.update();
+
         expect(fire.y).toBeCloseTo(iy - speedY);
     });
 
-    it('underwater branch subtracts 4 from y', () => {
+    it('update() underwater subtracts an extra 4 from y', () => {
         game.player.isUnderwater = true;
         fire = new Fire(game, 0, 10);
+
         fire.update();
+
         expect(fire.y).toBeCloseTo(5);
     });
 
-    it('draw() applies transform', () => {
-        fire.size = 50; fire.angle = Math.PI / 4; fire.x = 5; fire.y = 6;
+    it('draw() rotates and draws fire sprite with save/translate/rotate/restore', () => {
+        fire.size = 50;
+        fire.angle = Math.PI / 4;
+        fire.x = 5;
+        fire.y = 6;
+
         fire.draw(ctx);
+
         expect(ctx.save).toHaveBeenCalled();
         expect(ctx.drawImage).toHaveBeenCalled();
+        expect(ctx.restore).toHaveBeenCalled();
+    });
+});
+
+describe('resolveFireSplashImageId usage (Splash & Fire)', () => {
+    let ctx;
+
+    beforeEach(() => {
+        ctx = {
+            save: jest.fn(),
+            translate: jest.fn(),
+            rotate: jest.fn(),
+            drawImage: jest.fn(),
+            restore: jest.fn(),
+        };
+    });
+
+    it('Splash uses "fire" on land without blue potion', () => {
+        const game = {
+            player: { isUnderwater: false, isBluePotionActive: false },
+            cabin: { isFullyVisible: false },
+            isElyvorgFullyVisible: false,
+            speed: 0,
+            menu: { pause: { isPaused: false } },
+        };
+        const s = new Splash(game, 0, 0);
+
+        s.draw(ctx);
+
+        expect(ctx.drawImage).toHaveBeenCalledWith(
+            fakeImages.fire,
+            expect.any(Number),
+            expect.any(Number),
+            expect.any(Number),
+            expect.any(Number)
+        );
+    });
+
+    it('Splash uses "bluefire" on land with blue potion active', () => {
+        const game = {
+            player: { isUnderwater: false, isBluePotionActive: true },
+            cabin: { isFullyVisible: false },
+            isElyvorgFullyVisible: false,
+            speed: 0,
+            menu: { pause: { isPaused: false } },
+        };
+        const s = new Splash(game, 0, 0);
+
+        s.draw(ctx);
+
+        expect(ctx.drawImage).toHaveBeenCalledWith(
+            fakeImages.bluefire,
+            expect.any(Number),
+            expect.any(Number),
+            expect.any(Number),
+            expect.any(Number)
+        );
+    });
+
+    it('Splash uses "bubble" underwater without blue potion', () => {
+        const game = {
+            player: { isUnderwater: true, isBluePotionActive: false },
+            cabin: { isFullyVisible: false },
+            isElyvorgFullyVisible: false,
+            speed: 0,
+            menu: { pause: { isPaused: false } },
+        };
+        const s = new Splash(game, 0, 0);
+
+        s.draw(ctx);
+
+        expect(ctx.drawImage).toHaveBeenCalledWith(
+            fakeImages.bubble,
+            expect.any(Number),
+            expect.any(Number),
+            expect.any(Number),
+            expect.any(Number)
+        );
+    });
+
+    it('Splash uses "bluebubble" underwater with blue potion active', () => {
+        const game = {
+            player: { isUnderwater: true, isBluePotionActive: true },
+            cabin: { isFullyVisible: false },
+            isElyvorgFullyVisible: false,
+            speed: 0,
+            menu: { pause: { isPaused: false } },
+        };
+        const s = new Splash(game, 0, 0);
+
+        s.draw(ctx);
+
+        expect(ctx.drawImage).toHaveBeenCalledWith(
+            fakeImages.bluebubble,
+            expect.any(Number),
+            expect.any(Number),
+            expect.any(Number),
+            expect.any(Number)
+        );
+    });
+
+    it('Fire uses "bluefire" on land with blue potion active', () => {
+        const game = {
+            player: { isUnderwater: false, isBluePotionActive: true },
+            cabin: { isFullyVisible: false },
+            isElyvorgFullyVisible: false,
+            speed: 0,
+            menu: { pause: { isPaused: false } },
+        };
+        const f = new Fire(game, 5, 6);
+        f.size = 50;
+        f.angle = Math.PI / 4;
+
+        f.draw(ctx);
+
+        expect(ctx.save).toHaveBeenCalled();
+        expect(ctx.drawImage).toHaveBeenCalledWith(
+            fakeImages.bluefire,
+            expect.any(Number),
+            expect.any(Number),
+            expect.any(Number),
+            expect.any(Number)
+        );
+        expect(ctx.restore).toHaveBeenCalled();
+    });
+
+    it('Fire uses "bluebubble" underwater with blue potion active', () => {
+        const game = {
+            player: { isUnderwater: true, isBluePotionActive: true },
+            cabin: { isFullyVisible: false },
+            isElyvorgFullyVisible: false,
+            speed: 0,
+            menu: { pause: { isPaused: false } },
+        };
+        const f = new Fire(game, 5, 6);
+        f.size = 50;
+        f.angle = Math.PI / 4;
+
+        f.draw(ctx);
+
+        expect(ctx.save).toHaveBeenCalled();
+        expect(ctx.drawImage).toHaveBeenCalledWith(
+            fakeImages.bluebubble,
+            expect.any(Number),
+            expect.any(Number),
+            expect.any(Number),
+            expect.any(Number)
+        );
+        expect(ctx.restore).toHaveBeenCalled();
     });
 });
 
 describe('Fireball', () => {
     let game, fb, ctx;
+
     beforeEach(() => {
-        game = { width: 200, debug: false, player: { isUnderwater: false, isRedPotionActive: false } };
+        game = {
+            width: 200,
+            debug: false,
+            player: { isUnderwater: false, isRedPotionActive: false },
+        };
         ctx = {
-            save: jest.fn(), translate: jest.fn(), rotate: jest.fn(),
-            strokeRect: jest.fn(), drawImage: jest.fn(), restore: jest.fn(),
+            save: jest.fn(),
+            restore: jest.fn(),
+            translate: jest.fn(),
+            rotate: jest.fn(),
+            strokeRect: jest.fn(),
+            drawImage: jest.fn(),
+            beginPath: jest.fn(),
+            arc: jest.fn(),
+            fill: jest.fn(),
+            set globalCompositeOperation(val) { this._gco = val; },
+            get globalCompositeOperation() { return this._gco; },
+            createRadialGradient: jest.fn(() => ({
+                addColorStop: jest.fn(),
+            })),
         };
         fb = new Fireball(game, 10, 20, 'fireball_img', 'right', 5);
     });
 
-    it('update() moves right and applies verticalMovement minus half growth', () => {
+    it('update() moves right and applies verticalMovement minus half of growth-based offset', () => {
         const iy = fb.y;
+
         fb.update();
+
         const halfGrowth = fb.growthRate / 2;
         expect(fb.y).toBeCloseTo(iy + 5 - halfGrowth);
     });
@@ -337,44 +581,108 @@ describe('Fireball', () => {
     it('update() moves left when initialDirection="left"', () => {
         fb = new Fireball(game, 50, 0, 'fireball_img', 'left', 0);
         const ix = fb.x;
+
         fb.update();
+
         expect(fb.x).toBeCloseTo(ix - fb.speedX);
     });
 
-    it('growth caps at maxSize', () => {
+    it('update() caps growth at maxSize', () => {
         fb.size = fb.maxSize - 1;
+
         fb.update();
+
         expect(fb.size).toBeLessThanOrEqual(fb.maxSize);
     });
 
-    it('deletes when x > width', () => {
-        fb.x = 500; fb.update();
+    it('marks fireball for deletion when x > game.width', () => {
+        fb.x = 500;
+
+        fb.update();
+
         expect(fb.markedForDeletion).toBe(true);
     });
 
-    it('draw() without debug skips strokeRect', () => {
-        fb.size = 10; fb.rotationAngle = 0; fb.x = 0; fb.y = 0;
-        fb.draw(ctx);
-        expect(ctx.strokeRect).not.toHaveBeenCalled();
-        expect(ctx.drawImage).toHaveBeenCalled();
+    it('marks fireball for deletion when fully off the left side', () => {
+        fb = new Fireball(game, 0, 0, 'fireball_img', 'left', 0);
+        fb.x = -fb.size - 1;
+
+        fb.update();
+
+        expect(fb.markedForDeletion).toBe(true);
     });
 
-    it('draw() with debug draws bounding box', () => {
+    it('draw() in non-debug mode skips strokeRect and draws sprite + sparkles', () => {
+        fb.size = 10;
+        fb.rotationAngle = 0;
+        fb.x = 0;
+        fb.y = 0;
+
+        fb.draw(ctx);
+
+        expect(ctx.strokeRect).not.toHaveBeenCalled();
+        expect(ctx.drawImage).toHaveBeenCalled();
+        expect(ctx.beginPath).toHaveBeenCalled();
+        expect(ctx.arc).toHaveBeenCalled();
+        expect(ctx.fill).toHaveBeenCalled();
+    });
+
+    it('draw() in debug mode draws bounding box around sprite', () => {
         game.debug = true;
         fb = new Fireball(game, 50, 60, 'fireball_img', 'right', 0);
-        fb.size = 20; fb.rotationAngle = Math.PI / 2; fb.x = 50; fb.y = 60;
+        fb.size = 20;
+        fb.rotationAngle = Math.PI / 2;
+        fb.x = 50;
+        fb.y = 60;
+
         fb.draw(ctx);
+
         expect(ctx.strokeRect).toHaveBeenCalledWith(-10, -10, 20, 20);
+    });
+
+    it('draw() underwater uses bubble shader (gradients/arcs) and skips sprite', () => {
+        game.player.isUnderwater = true;
+        fb = new Fireball(game, 30, 40, 'fireball_img', 'right', 0);
+        ctx.drawImage.mockClear();
+        ctx.beginPath.mockClear();
+        ctx.arc.mockClear();
+        ctx.fill.mockClear();
+        ctx.createRadialGradient.mockClear();
+
+        fb.size = 24;
+
+        fb.draw(ctx);
+
+        expect(ctx.drawImage).not.toHaveBeenCalled();
+        expect(ctx.createRadialGradient).toHaveBeenCalled();
+        expect(ctx.beginPath).toHaveBeenCalled();
+        expect(ctx.arc).toHaveBeenCalled();
+        expect(ctx.fill).toHaveBeenCalled();
+    });
+
+    it('draw() underwater in red mode still uses bubble shader and no sprite', () => {
+        game.player.isUnderwater = true;
+        game.player.isRedPotionActive = true;
+        fb = new Fireball(game, 70, 80, 'fireball_img', 'right', 0);
+        ctx.drawImage.mockClear();
+        ctx.createRadialGradient.mockClear();
+
+        fb.draw(ctx);
+
+        expect(ctx.drawImage).not.toHaveBeenCalled();
+        expect(ctx.createRadialGradient).toHaveBeenCalled();
     });
 });
 
 describe('CoinLoss', () => {
     let game, cl, ctx;
+
     beforeEach(() => {
         jest.spyOn(Math, 'random')
             .mockReturnValueOnce(0.5)
             .mockReturnValueOnce(0.2)
             .mockReturnValueOnce(0.3);
+
         game = {
             cabin: { isFullyVisible: false },
             isElyvorgFullyVisible: false,
@@ -386,16 +694,19 @@ describe('CoinLoss', () => {
         Math.random.mockRestore();
     });
 
-    it('update() moves, grows gravity, and shifts y', () => {
+    it('update() applies Particle movement, increases gravity, and shifts y by gravity', () => {
         const { x: ix, y: iy, speedX, speedY } = cl;
+
         cl.update();
+
         expect(cl.x).toBeCloseTo(ix - (speedX + game.speed));
         expect(cl.gravity).toBeCloseTo(0.14, 5);
         expect(cl.y).toBeCloseTo((iy - speedY) + 0.14, 5);
     });
 
-    it('draw() renders coin', () => {
+    it('draw() renders coin sprite', () => {
         cl.draw(ctx);
+
         expect(ctx.drawImage).toHaveBeenCalled();
     });
 });
@@ -450,10 +761,12 @@ describe('PoisonBubbles', () => {
         Math.sin.mockRestore();
     });
 
-    it('update() applies parallax, vertical rise, shrink, and fade (not fully visible)', () => {
+    it('update() applies parallax, vertical rise, shrink, and fade while still alive', () => {
         const p = new PoisonBubbles(game, 100, 200, 'poison');
         const { size: isz } = p;
+
         p.update();
+
         expect(p.x).toBeCloseTo(100 - 5 * 0.2, 5);
         expect(p.y).toBeCloseTo(200 - 1.4, 5);
         expect(p.size).toBeCloseTo(isz * 0.992, 5);
@@ -461,14 +774,16 @@ describe('PoisonBubbles', () => {
         expect(p.markedForDeletion).toBe(false);
     });
 
-    it('update() uses zero parallax when cabin/isElyvorg fully visible', () => {
+    it('update() uses zero parallax when cabin or Elyvorg is fully visible', () => {
         game.cabin.isFullyVisible = true;
+
         const p = new PoisonBubbles(game, 50, 50);
         p.update();
+
         expect(p.x).toBeCloseTo(50, 5);
     });
 
-    it('marks for deletion when too small or life depleted', () => {
+    it('marks bubble for deletion when size is too small or life is depleted', () => {
         const p1 = new PoisonBubbles(game, 0, 0);
         p1.size = 1.9;
         p1.update();
@@ -480,9 +795,11 @@ describe('PoisonBubbles', () => {
         expect(p2.markedForDeletion).toBe(true);
     });
 
-    it('draw() renders bubble body, stroke, and highlight', () => {
+    it('draw() renders bubble body, stroke, and highlight with proper styles', () => {
         const p = new PoisonBubbles(game, 10, 20, 'poison');
+
         p.draw(ctx);
+
         expect(ctx.beginPath).toHaveBeenCalled();
         expect(ctx.arc).toHaveBeenCalled();
         expect(ctx.fill).toHaveBeenCalled();
@@ -533,20 +850,24 @@ describe('IceCrystalBubbles', () => {
         Math.sin.mockRestore();
     });
 
-    it('update() ties alpha to life and applies motion/shrink/fade', () => {
+    it('update() ties alpha to life and applies motion, shrink, and fade', () => {
         const icb = new IceCrystalBubbles(game, 100, 100);
         const { size: isz } = icb;
+
         icb.update();
+
         expect(icb.x).toBeCloseTo(100 - 3 * 0.2, 5);
         expect(icb.y).toBeCloseTo(100 - 1.4, 5);
         expect(icb.size).toBeCloseTo(isz * 0.992, 5);
         expect(icb.alpha).toBeCloseTo(icb.life, 5);
     });
 
-    it('draw() renders the ice crystal sprite with alpha', () => {
+    it('draw() renders the ice crystal sprite using current alpha', () => {
         const icb = new IceCrystalBubbles(game, 10, 20);
         icb.size = 20;
+
         icb.draw(ctx);
+
         expect(ctx.drawImage).toHaveBeenCalledWith(
             fakeImages.ice_crystal,
             icb.x - icb.size / 2,
@@ -558,10 +879,12 @@ describe('IceCrystalBubbles', () => {
         expect(ctx.restore).toHaveBeenCalled();
     });
 
-    it('marks for deletion when life <= 0', () => {
+    it('marks bubble for deletion when life <= 0', () => {
         const icb = new IceCrystalBubbles(game, 0, 0);
         icb.life = 0.001;
+
         icb.update();
+
         expect(icb.markedForDeletion).toBe(true);
     });
 });

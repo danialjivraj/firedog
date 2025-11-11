@@ -16,7 +16,7 @@ export class Penguini {
         this.x = this.game.width;
         this.y = this.game.height - this.height - this.game.groundMargin - 10;
         this.isFullyVisible = false;
-        this.showPressEnterImage = document.getElementById('enterToTalkToPenguini')
+        this.showPressEnterImage = document.getElementById('enterToTalkToPenguini');
         this.showEnterToTalkToPenguini = false;
     }
     update(deltaTime) {
@@ -46,14 +46,26 @@ export class Penguini {
     }
     draw(context) {
         if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
-        context.drawImage(this.image, this.frameX * this.frameWidth, this.frameY * this.frameHeight, this.frameWidth, this.frameHeight, this.x, this.y, this.width, this.height);
+        context.drawImage(
+            this.image,
+            this.frameX * this.frameWidth,
+            this.frameY * this.frameHeight,
+            this.frameWidth,
+            this.frameHeight,
+            this.x,
+            this.y,
+            this.width,
+            this.height
+        );
 
-        let yPosition = this.y - 140;
-        if (this.game.mapSelected[6]) {
-            yPosition = this.y - 235;
-        } else {
-            yPosition = this.y - 170;
-        }
+        const isMap6 =
+            this.game.currentMap === 'Map6' ||
+            (this.game.background &&
+                this.game.background.constructor &&
+                this.game.background.constructor.name === 'Map6');
+
+        const yPosition = this.y - (isMap6 ? 235 : 170);
+
         if (this.showEnterToTalkToPenguini && this.game.talkToPenguinOneTimeOnly) {
             context.drawImage(this.showPressEnterImage, this.x - 320, yPosition);
         }

@@ -14,8 +14,8 @@ import {
 } from '../../game/entities/enemies/elyvorg';
 import {
     ElectricityCollision, PoisonSpitSplash, PoisonDropCollision,
-    InkBombCollision, InkSplashCollision, ExplosionCollisionAnimation, PurpleFireballExplosion, CollisionAnimation,
-    CollisionAnimation as MeteorExplosionCollision, Blood
+    InkBombCollision, InkSplashCollision, ExplosionCollisionAnimation,
+    PurpleFireballExplosion, CollisionAnimation, MeteorExplosionCollision, Blood
 } from '../../game/animations/collisionAnimation';
 import { FloatingMessage } from '../../game/animations/floatingMessages';
 
@@ -105,9 +105,9 @@ describe('Player', () => {
             speed: 6,
             enemyInterval: 1000,
             input: {
-                qOrLeftClick: jest.fn().mockReturnValue(false),
-                eOrScrollClick: jest.fn().mockReturnValue(false),
-                enterOrRightClick: jest.fn().mockReturnValue(false),
+                isFireballAttack: jest.fn().mockReturnValue(false),
+                isInvisibleDefense: jest.fn().mockReturnValue(false),
+                isRollAttack: jest.fn().mockReturnValue(false),
                 keys: []
             },
             cabin: { isFullyVisible: false },
@@ -118,7 +118,6 @@ describe('Player', () => {
             maxTime: 10000,
             noDamageDuringTutorial: false,
             selectedDifficulty: 'Easy',
-            mapSelected: [false, false, false, false],
             UI: { secondsLeftActivated: false },
             collisions: [],
             floatingMessages: [],
@@ -147,6 +146,28 @@ describe('Player', () => {
                 }
             }
         };
+        game.input.isActionActive = (binding, input) => {
+            const has = key => {
+                if (!input) return false;
+                if (Array.isArray(input)) return input.includes(key);
+                if (typeof input === 'string') return input === key;
+                return !!input[key];
+            };
+
+            switch (binding) {
+                case 'moveForward':
+                    return has('d') || has('D') || has('right') || has('ArrowRight') || has('moveForward');
+                case 'moveBackward':
+                    return has('a') || has('A') || has('left') || has('ArrowLeft') || has('moveBackward');
+                case 'jump':
+                    return has('w') || has('W') || has('space') || has(' ') || has('Space') || has('ArrowUp') || has('jump');
+                case 'sit':
+                    return has('s') || has('S') || has('down') || has('ArrowDown') || has('sit');
+                default:
+                    return false;
+            }
+        };
+
         player = new Player(game);
         game.player = player;
         player.states = player.states.map(() => ({
@@ -167,17 +188,6 @@ describe('Player', () => {
         expect(player.y).toBe(game.height - player.height - game.groundMargin);
         expect(player.energy).toBe(100);
         expect(player.states).toHaveLength(10);
-    });
-
-    test('underwaterOrNot switches particle/splash images', () => {
-        player.isUnderwater = true;
-        player.underwaterOrNot();
-        expect(player.particleImage).toBe('bubble');
-        expect(player.splashImage).toBe('bubble');
-        player.isUnderwater = false;
-        player.underwaterOrNot();
-        expect(player.particleImage).toBe('fire');
-        expect(player.splashImage).toBe('fire');
     });
 
     test('firedogLivesLimit caps lives at maxLives', () => {
@@ -319,7 +329,7 @@ describe('Player', () => {
         });
 
         test('spawns one normal fireball and drains 8 energy', () => {
-            game.input.qOrLeftClick.mockReturnValue(true);
+            game.input.isFireballAttack.mockReturnValue(true);
             const e0 = player.energy;
             player.fireballAbility(game.input, 0);
             expect(Fireball).toHaveBeenCalledTimes(1);
@@ -328,7 +338,7 @@ describe('Player', () => {
         });
 
         test('spawns 7 fireballs under red potion', () => {
-            game.input.qOrLeftClick.mockReturnValue(true);
+            game.input.isFireballAttack.mockReturnValue(true);
             player.isRedPotionActive = true;
             const e0 = player.energy;
             player.fireballAbility(game.input, 0);
@@ -346,27 +356,31 @@ describe('Player', () => {
             player.isUnderwater = true;
         });
 
-        test('uses bubble_projectile when underwater', () => {
-            game.input.qOrLeftClick.mockReturnValue(true);
-            player.fireballAbility(game.input, 0);
-            const call = Fireball.mock.calls[0];
-            expect(call).toEqual(
-                expect.arrayContaining([
-                    game,
-                    expect.any(Number),
-                    expect.any(Number),
-                    'bubble_projectile',
-                    expect.any(String)
-                ])
-            );
+        test('underwater spawns a normal fireball, using the fireball sprite id', () => {
+            game.input.isFireballAttack.mockReturnValue(true);
 
+            player.fireballAbility(game.input, 0);
+
+            expect(Fireball).toHaveBeenCalledTimes(1);
+
+            const [argGame, argX, argY, argImage, argDir] = Fireball.mock.calls[0];
+
+            expect(argGame).toBe(game);
+            expect(typeof argX).toBe('number');
+            expect(typeof argY).toBe('number');
+            expect(argImage).toBe('fireball');
+            expect(typeof argDir).toBe('string');
         });
 
-        test('spawns 7 bubble_redPotion when underwater + red potion', () => {
+        test('spawns 7 redPotionFireball when underwater + red potion', () => {
             player.isRedPotionActive = true;
-            game.input.qOrLeftClick.mockReturnValue(true);
+            game.input.isFireballAttack.mockReturnValue(true);
+
             player.fireballAbility(game.input, 0);
-            const calls = Fireball.mock.calls.filter(c => c[3] === 'bubble_redPotion');
+
+            expect(Fireball).toHaveBeenCalledTimes(7);
+
+            const calls = Fireball.mock.calls.filter(c => c[3] === 'redPotionFireball');
             expect(calls).toHaveLength(7);
         });
     });
@@ -375,7 +389,7 @@ describe('Player', () => {
         test('activation with E when timer full', () => {
             player.isInvisible = false;
             player.invisibleTimer = player.invisibleCooldown;
-            game.input.eOrScrollClick.mockReturnValue(true);
+            game.input.isInvisibleDefense.mockReturnValue(true);
             player.invisibleAbility(game.input, 0);
             expect(player.isInvisible).toBe(true);
             expect(game.audioHandler.firedogSFX.playSound)
@@ -401,7 +415,7 @@ describe('Player', () => {
             player.buoyancy = 4;
             const initialY = player.y;
             game.input.keys = ['w'];
-            game.input.enterOrRightClick.mockReturnValue(true);
+            game.input.isRollAttack.mockReturnValue(true);
             player.playerVerticalMovement(game.input.keys);
             expect(player.buoyancy).toBe(3);
             expect(player.y).toBe(initialY - 4);
@@ -610,17 +624,6 @@ describe('Player', () => {
         expect(player.isRedPotionActive).toBe(false);
     });
 
-    test('blue‑potion timer expiry resets state and images', () => {
-        player.isBluePotionActive = true;
-        player.blueFireTimer = 1000;
-        player.particleImage = 'bluefire';
-        player.splashImage = 'bluebubble';
-        player.collisionWithPowers(1000);
-        expect(player.isBluePotionActive).toBe(false);
-        expect(player.particleImage).toBe('fire');
-        expect(player.splashImage).toBe('fire');
-    });
-
     test('energyLogic flips energyReachedZero off once energy ≥ 20', () => {
         player.energyReachedZero = true;
         player.noEnergyLeftSound = true;
@@ -699,25 +702,6 @@ describe('Player', () => {
         player.elyvorgCollisionTimer = 100;
         player.elyvorgCollisionTimers(500);
         expect(player.elyvorgCollisionTimer).toBe(100);
-    });
-
-    test('underwaterOrNot remains stable when called repeatedly', () => {
-        player.isUnderwater = true;
-        player.particleImage = player.splashImage = '';
-        player.underwaterOrNot();
-        expect(player.particleImage).toBe('bubble');
-        expect(player.splashImage).toBe('bubble');
-        player.underwaterOrNot();
-        expect(player.particleImage).toBe('bubble');
-        expect(player.splashImage).toBe('bubble');
-
-        player.isUnderwater = false;
-        player.underwaterOrNot();
-        expect(player.particleImage).toBe('fire');
-        expect(player.splashImage).toBe('fire');
-        player.underwaterOrNot();
-        expect(player.particleImage).toBe('fire');
-        expect(player.splashImage).toBe('fire');
     });
 
     test('checkIfFiredogIsDead sets gameOver when lives ≤ 0', () => {
@@ -827,13 +811,11 @@ describe('Player', () => {
             ec.updatePosition = jest.fn();
             game.collisions = [ec];
 
-            // overlap → sticks
             ec.x = player.x;
             ec.y = player.y;
             player.collisionAnimationFollowsEnemy(enemy);
             expect(ec.updatePositionWhereCollisionHappened).toHaveBeenCalled();
 
-            // no overlap → follows
             ec.x = player.x + 999;
             player.collisionAnimationFollowsEnemy(enemy);
             expect(ec.updatePosition).toHaveBeenCalledWith(enemy);
@@ -1073,7 +1055,7 @@ describe('Player', () => {
             player.isInvisible = false;
             logic.handleNormalCollision(pf);
             expect(player.hit).toHaveBeenCalledWith(pf);
-            expect(MeteorExplosionCollision).toHaveBeenCalled();
+            expect(PurpleFireballExplosion).toHaveBeenCalled();
         });
 
         test('MeteorAttack hits and plays MeteorExplosionCollision', () => {
@@ -1245,7 +1227,7 @@ describe('Player', () => {
             pf.x = 0; pf.y = 0; pf.width = 10; pf.height = 10;
             logic.handleRollingOrDivingCollision(pf);
             expect(player.hit).toHaveBeenCalledWith(pf);
-            expect(MeteorExplosionCollision).toHaveBeenCalled();
+            expect(PurpleFireballExplosion).toHaveBeenCalled();
         });
 
         test('MeteorAttack in rolling only collision animation', () => {
@@ -1374,7 +1356,7 @@ describe('Player', () => {
             player.currentState = player.states[1];
         });
         test('does not spawn when cabin is fully visible', () => {
-            game.input.qOrLeftClick.mockReturnValue(true);
+            game.input.isFireballAttack.mockReturnValue(true);
             game.cabin.isFullyVisible = true;
             player.fireballAbility(game.input, 0);
             expect(Fireball).not.toHaveBeenCalled();
@@ -1429,44 +1411,12 @@ describe('Player', () => {
         });
     });
 
-    describe('bluePotion powerUp effects', () => {
-        test('collisionWithPowers flips to fire visuals and plays SFX when not underwater', () => {
-            const bp = new BluePotion();
-            Object.assign(bp, { x: player.x, y: player.y, width: 10, height: 10 });
-            game.powerUps = [bp];
-            jest.spyOn(game.audioHandler.powerUpAndDownSFX, 'playSound');
-            player.isUnderwater = false;
-            player.currentState = player.states[4];
-            player.collisionWithPowers(0);
-            expect(player.particleImage).toBe('bluefire');
-            expect(player.splashImage).toBe('bluefire');
-            expect(game.audioHandler.powerUpAndDownSFX.playSound).toHaveBeenCalledWith(
-                'bluePotionSound', false, true
-            );
-        });
-
-        test('collisionWithPowers flips to bubble visuals when underwater', () => {
-            const bp = new BluePotion();
-            Object.assign(bp, { x: player.x, y: player.y, width: 10, height: 10 });
-            game.powerUps = [bp];
-            jest.spyOn(game.audioHandler.powerUpAndDownSFX, 'playSound');
-            player.isUnderwater = true;
-            player.currentState = player.states[4];
-            player.collisionWithPowers(0);
-            expect(player.particleImage).toBe('bluebubble');
-            expect(player.splashImage).toBe('bluebubble');
-            expect(game.audioHandler.powerUpAndDownSFX.playSound).toHaveBeenCalledWith(
-                'bluePotionSound', false, true
-            );
-        });
-    });
-
     describe('fireballAbility energyReachedZero blocks spawn', () => {
         beforeEach(() => Fireball.mockClear());
         test('does not fire when energyReachedZero', () => {
             player.energyReachedZero = true;
             player.fireballTimer = player.fireballCooldown;
-            game.input.qOrLeftClick.mockReturnValue(true);
+            game.input.isFireballAttack.mockReturnValue(true);
             player.currentState = player.states[1];
             player.fireballAbility(game.input, 0);
             expect(Fireball).not.toHaveBeenCalled();
@@ -1495,28 +1445,27 @@ describe('Player', () => {
         const fakeCanvas = (w = 10, h = 10) => ({
             width: w,
             height: h,
-            getContext: jest.fn(() => ({
-            })),
+            getContext: jest.fn(() => ({})),
         });
 
         let ctx;
         beforeEach(() => {
-        ctx = {
-            drawImage: jest.fn(),
-            save: jest.fn(),
-            restore: jest.fn(),
-        };
-        let _alpha = 1;
-        Object.defineProperty(ctx, 'globalAlpha', {
-            configurable: true,
-            get() { return _alpha; },
-            set(v) { _alpha = v; }
-        });
+            ctx = {
+                drawImage: jest.fn(),
+                save: jest.fn(),
+                restore: jest.fn(),
+            };
+            let _alpha = 1;
+            Object.defineProperty(ctx, 'globalAlpha', {
+                configurable: true,
+                get() { return _alpha; },
+                set(v) { _alpha = v; }
+            });
 
-        player.frameX = 0;
-        player.frameY = 0;
-        player.width = 100;
-        player.height = 90;
+            player.frameX = 0;
+            player.frameY = 0;
+            player.width = 100;
+            player.height = 90;
         });
 
         test('poisoned branch: uses green tint and draws base + oc', () => {
@@ -1707,6 +1656,135 @@ describe('Player', () => {
             expect(player.collisionWithPowers).toHaveBeenCalled();
         });
     });
+
+    describe('ice movement (applyIceMovementExact)', () => {
+        beforeEach(() => {
+            player.isIce = true;
+            player.currentState = player.states[1]; // running
+            player.x = 100;
+            player.vx = 0;
+            player.maxSpeed = 10;
+        });
+
+        test('accelerates on ice when holding right and clamps speed', () => {
+            for (let i = 0; i < 10; i++) {
+                player.playerHorizontalMovement({ d: true }, 16);
+            }
+            expect(player.vx).toBeGreaterThan(0);
+            expect(player.vx).toBeLessThanOrEqual(player.maxSpeed);
+            expect(player.x).toBeGreaterThan(100);
+        });
+
+        test('slides (decays) when released and respects bounds', () => {
+            for (let i = 0; i < 10; i++) player.playerHorizontalMovement({ d: true }, 16);
+            const vAfterAccel = player.vx;
+
+            player.playerHorizontalMovement({}, 16);
+            expect(player.vx).toBeLessThan(vAfterAccel);
+            expect(player.vx).toBeGreaterThanOrEqual(0);
+
+            player.x = -5;
+            player.vx = -2;
+            player.playerHorizontalMovement({}, 16);
+            expect(player.x).toBe(0);
+            expect(player.vx).toBe(0);
+
+            player.x = game.width - player.width + 10;
+            player.vx = 5;
+            player.playerHorizontalMovement({}, 16);
+            expect(player.x).toBe(game.width - player.width);
+            expect(player.vx).toBe(0);
+        });
+    });
+
+    describe('fireballAbility y-offset when sitting', () => {
+        beforeEach(() => {
+            Fireball.mockClear();
+            player.fireballTimer = player.fireballCooldown;
+            player.currentState = player.states[0]; // sitting
+            game.cabin.isFullyVisible = false;
+            player.isRedPotionActive = false;
+            player.isUnderwater = false;
+        });
+
+        test('adds +15px y offset in Sitting state', () => {
+            game.input.isFireballAttack.mockReturnValue(true);
+
+            const baseY = player.y + player.height * 0.5;
+            player.fireballAbility(game.input, 0);
+
+            expect(Fireball).toHaveBeenCalledTimes(1);
+            const call = Fireball.mock.calls[0];
+            const yArg = call[2];
+            expect(yArg).toBeCloseTo(baseY + 15);
+        });
+    });
+
+    describe('handleFireballCollisionWithEnemy de-duplicates per enemy', () => {
+        test('only first fireball affects enemy; second is ignored', () => {
+            const enemy = { id: 'dedup', x: 0, y: 0, width: 20, height: 20, lives: 2 };
+            game.enemies = [enemy];
+
+            const fb1 = new Fireball();
+            Object.assign(fb1, { x: 5, y: 5, size: 10, type: 'normalMode', markedForDeletion: false });
+
+            const fb2 = new Fireball();
+            Object.assign(fb2, { x: 6, y: 6, size: 10, type: 'normalMode', markedForDeletion: false });
+
+            game.behindPlayerParticles = [fb1, fb2];
+
+            player.currentState = player.states[8]; // standing
+            player.isInvisible = false;
+
+            player.collisionWithEnemies(0);
+
+            expect(enemy.lives).toBe(1);
+
+            expect(fb1.markedForDeletion).toBe(true);
+            expect(fb2.markedForDeletion).not.toBe(true);
+        });
+    });
+
+    describe('playerSFXAudios underwater rolling variant', () => {
+        test('uses rollingUnderwaterSFX when underwater', () => {
+            player.currentState = player.states[4]; // rolling
+            player.isUnderwater = true;
+            player.isRolling = false;
+
+            player.playerSFXAudios();
+
+            expect(game.audioHandler.firedogSFX.playSound)
+                .toHaveBeenCalledWith('rollingUnderwaterSFX', true, true);
+            expect(player.isRolling).toBe(true);
+        });
+    });
+
+    describe('firedogMeetsElyvorg facingLeft branch', () => {
+        beforeEach(() => {
+            game.isElyvorgFullyVisible = true;
+            const e = new Elyvorg();
+            e.x = player.x - 200;
+            e.width = 50;
+            game.enemies = [e];
+
+            player.facingRight = false;
+            player.facingLeft = true;
+            player.currentState = player.states[4]; // rolling
+        });
+
+        test('when facingLeft, pressing right moves player right (mirrored logic)', () => {
+            player.x = 50;
+            player.firedogMeetsElyvorg(['d']);
+            expect(player.x).toBe(56);
+        });
+
+        test('when facingLeft and not pressing, roll+no LR keeps position', () => {
+            player.x = 100;
+            game.input.isRollAttack.mockReturnValue(true);
+            player.firedogMeetsElyvorg([]);
+            expect(player.x).toBe(100);
+        });
+    });
 });
 
 describe('emitStatusParticles (bubble status logic)', () => {
@@ -1724,9 +1802,9 @@ describe('emitStatusParticles (bubble status logic)', () => {
             speed: 6,
             enemyInterval: 1000,
             input: {
-                qOrLeftClick: jest.fn().mockReturnValue(false),
-                eOrScrollClick: jest.fn().mockReturnValue(false),
-                enterOrRightClick: jest.fn().mockReturnValue(false),
+                isFireballAttack: jest.fn().mockReturnValue(false),
+                isInvisibleDefense: jest.fn().mockReturnValue(false),
+                isRollAttack: jest.fn().mockReturnValue(false),
                 keys: []
             },
             cabin: { isFullyVisible: false },
@@ -1737,7 +1815,6 @@ describe('emitStatusParticles (bubble status logic)', () => {
             maxTime: 10000,
             noDamageDuringTutorial: false,
             selectedDifficulty: 'Easy',
-            mapSelected: [false, false, false, false],
             UI: { secondsLeftActivated: false },
             collisions: [],
             floatingMessages: [],

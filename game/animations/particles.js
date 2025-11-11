@@ -15,6 +15,14 @@ class Particle {
     }
 }
 
+function resolveFireSplashImageId(player) {
+    if (player.isUnderwater) {
+        return player.isBluePotionActive ? 'bluebubble' : 'bubble';
+    } else {
+        return player.isBluePotionActive ? 'bluefire' : 'fire';
+    }
+}
+
 export class Dust extends Particle {
     constructor(game, x, y) {
         super(game);
@@ -107,7 +115,6 @@ export class Splash extends Particle {
         this.speedX = Math.random() * 6 - 4;
         this.speedY = Math.random() * 2 + 2;
         this.gravity = 0;
-        this.image = document.getElementById(this.game.player.particleImage);
     }
     update() {
         super.update();
@@ -119,14 +126,16 @@ export class Splash extends Particle {
         this.gravity += 0.1;
     }
     draw(context) {
-        context.drawImage(this.image, this.x, this.y, this.size, this.size);
+        const id = resolveFireSplashImageId(this.game.player);
+        const img = document.getElementById(id);
+        if (!img) return;
+        context.drawImage(img, this.x, this.y, this.size, this.size);
     }
 }
 
 export class Fire extends Particle {
     constructor(game, x, y) {
         super(game);
-        this.image = document.getElementById(this.game.player.particleImage);
         this.size = Math.random() * 100 + 50;
         this.x = x;
         this.y = y;
@@ -144,10 +153,14 @@ export class Fire extends Particle {
         this.x += Math.sin(this.angle * 5);
     }
     draw(context) {
+        const id = resolveFireSplashImageId(this.game.player);
+        const img = document.getElementById(id);
+        if (!img) return;
+
         context.save();
         context.translate(this.x, this.y);
         context.rotate(this.angle);
-        context.drawImage(this.image, -this.size * 0.5, -this.size * 0.5, this.size, this.size);
+        context.drawImage(img, -this.size * 0.5, -this.size * 0.5, this.size, this.size);
         context.restore();
     }
 }
@@ -168,34 +181,78 @@ export class Fireball extends Particle {
         this.rotationSpeed = 0.2;
         this.verticalMovement = verticalMovement;
         this.initialDirection = initialDirection;
+
+        this._cachedSpecks = this.makeSpecks();
     }
+
     redPotionModeOrNot() {
-        if (this.game.player.isRedPotionActive === true) {
-            this.type = "redMode";
-        } else {
-            this.type = "normalMode";
-        }
+        this.type = this.game.player.isRedPotionActive ? "redMode" : "normalMode";
     }
     updateSize() {
-        this.maxSize = this.game.player.isUnderwater ? 70 : 40;
-        if (this.game.player.isRedPotionActive === true && this.game.player.isUnderwater) {
-            this.maxSize = 55;
-        }
+        this.maxSize = this.game.player.isUnderwater ? 55 : 40;
     }
     updateGrowthRate() {
         this.growthRate = this.game.player.isUnderwater ? 3 : 1;
     }
-    update() {
-        if (this.initialDirection === 'right') {
-            this.x += this.speedX;
-        } else if (this.initialDirection === 'left') {
-            this.x -= this.speedX;
+
+    makeSpecks() {
+        return Array.from({ length: 2 }, () => ({
+            a: Math.random() * Math.PI * 2,
+            rr: 0.15 + Math.random() * 0.5,
+            sz: 1 + Math.random() * 1
+        }));
+    }
+
+    drawBubbleBall(ctx, x, y, r, variant = 'normal') {
+        ctx.save();
+
+        // outer glow
+        ctx.globalCompositeOperation = 'lighter';
+        const glow = ctx.createRadialGradient(x, y, 0, x, y, r * 1.6);
+        if (variant === 'red') {
+            glow.addColorStop(0.0, 'rgba(255,80,80,0.55)');
+            glow.addColorStop(0.6, 'rgba(255,0,0,0.35)');
+            glow.addColorStop(1.0, 'rgba(0,0,0,0)');
+        } else {
+            glow.addColorStop(0.0, 'rgba(160,220,255,0.35)');
+            glow.addColorStop(1.0, 'rgba(0,0,0,0)');
         }
+        ctx.fillStyle = glow;
+        ctx.beginPath(); ctx.arc(x, y, r * 1.6, 0, Math.PI * 2); ctx.fill();
+
+        // shell
+        ctx.globalCompositeOperation = 'source-over';
+        const shell = ctx.createRadialGradient(x, y, 0, x, y, r);
+        if (variant === 'red') {
+            shell.addColorStop(0.0, 'rgba(255,230,230,0.45)');
+            shell.addColorStop(0.4, 'rgba(255,100,100,0.35)');
+            shell.addColorStop(0.75, 'rgba(200,40,40,0.32)');
+            shell.addColorStop(1.0, 'rgba(120,0,0,0.30)');
+        } else {
+            shell.addColorStop(0.0, 'rgba(220,245,255,0.35)');
+            shell.addColorStop(0.7, 'rgba(150,210,255,0.25)');
+            shell.addColorStop(1.0, 'rgba(80,140,200,0.35)');
+        }
+        ctx.fillStyle = shell;
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+
+        // specular highlights
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.beginPath(); ctx.arc(x - r * 0.35, y - r * 0.35, r * 0.18, 0, Math.PI * 2); ctx.fill();
+
+        ctx.fillStyle = (variant === 'red') ? 'rgba(255,120,120,0.35)' : 'rgba(255,255,255,0.22)';
+        ctx.beginPath(); ctx.arc(x + r * 0.25, y + r * 0.15, r * 0.28, 0, Math.PI * 2); ctx.fill();
+
+        ctx.restore();
+    }
+
+    update() {
+        if (this.initialDirection === 'right') this.x += this.speedX;
+        else if (this.initialDirection === 'left') this.x -= this.speedX;
+
         this.y += this.verticalMovement;
 
-        if (this.x > this.game.width || this.x - this.width < 0) {
-            this.markedForDeletion = true;
-        }
+        if (this.x > this.game.width || this.x + this.size < 0) this.markedForDeletion = true;
 
         const sizeChange = this.size + this.growthRate > this.maxSize
             ? this.maxSize - this.size
@@ -205,15 +262,45 @@ export class Fireball extends Particle {
         this.y -= sizeChange / 2;
 
         this.rotationAngle += this.rotationSpeed;
+
+        this._cachedSpecks = this.makeSpecks();
     }
 
     draw(context) {
+        const r = this.size * (this.type === 'redMode' ? 0.62 : 0.56);
+
         context.save();
         context.translate(this.x + this.size / 2, this.y + this.size / 2);
         context.rotate(this.rotationAngle);
 
-        if (this.game.debug) context.strokeRect(-this.size / 2, -this.size / 2, this.size, this.size);
-        context.drawImage(this.image, -this.size / 2, -this.size / 2, this.size, this.size);
+        if (this.game.player.isUnderwater) {
+            const variant = (this.type === 'redMode') ? 'red' : 'normal';
+            this.drawBubbleBall(context, 0, 0, r, variant);
+        } else {
+            if (this.game.debug) context.strokeRect(-this.size / 2, -this.size / 2, this.size, this.size);
+            context.drawImage(this.image, -this.size / 2, -this.size / 2, this.size, this.size);
+
+            // sparkles around the image
+            context.globalCompositeOperation = 'lighter';
+            context.fillStyle = (this.type === 'redMode')
+                ? 'rgba(255,220,180,0.75)'
+                : 'rgba(255,240,190,0.75)';
+
+            const spin = this.rotationAngle * 5;
+
+            for (const s of this._cachedSpecks) {
+                const rr = r * s.rr;
+                const a = s.a + spin;
+                const px = Math.cos(a) * rr;
+                const py = Math.sin(a) * rr;
+
+                context.beginPath();
+                context.arc(px, py, s.sz, 0, Math.PI * 2);
+                context.fill();
+            }
+
+            context.globalCompositeOperation = 'source-over';
+        }
 
         context.restore();
     }

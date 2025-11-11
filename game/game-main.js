@@ -1,4 +1,3 @@
-//entities
 import { Player } from "./entities/player.js";
 import {
     Goblin,
@@ -29,6 +28,9 @@ import { ForestMapMenu } from './menu/forestMap.js';
 import { HowToPlayMenu } from "./menu/howToPlayMenu.js";
 import { Skins } from "./menu/skinsMenu.js";
 import { DeleteProgress, DeleteProgress2 } from "./menu/deleteProgress.js";
+import { SettingsMenu } from "./menu/settingsMenu.js";
+import { ControlsSettingsMenu } from "./menu/controlsSettingsMenu.js";
+import { getDefaultKeyBindings } from "./config/keyBindings.js";
 import { BlackHole, Cauldron, IceDrink } from "./entities/powerDown.js";
 //audios
 import { AudioSettingsMenu } from "./menu/audio/audioSettingsMenu.js";
@@ -43,11 +45,13 @@ import { screenColourFadeIn, screenColourFadeOut } from "./animations/screenColo
 //cutscenes
 import {
     Map1EndCutscene, Map2EndCutscene, Map3EndCutscene,
-    Map4EndCutscene, Map5EndCutscene, Map6EndCutscene
+    Map4EndCutscene, Map5EndCutscene, Map6EndCutscene,
+    BonusMap1EndCutscene, BonusMap2EndCutscene, BonusMap3EndCutscene
 } from "./cutscene/storyCutscenes.js";
 import {
     Map1PenguinIngameCutscene, Map2PenguinIngameCutscene, Map3PenguinIngameCutscene,
-    Map4PenguinIngameCutscene, Map5PenguinIngameCutscene, Map6PenguinIngameCutscene
+    Map4PenguinIngameCutscene, Map5PenguinIngameCutscene, Map6PenguinIngameCutscene,
+    BonusMap1PenguinIngameCutscene, BonusMap2PenguinIngameCutscene, BonusMap3PenguinIngameCutscene,
 } from "./cutscene/penguiniCutscenes.js";
 import {
     Map6ElyvorgIngameCutsceneBeforeFight,
@@ -61,13 +65,13 @@ export class Game {
         this.width = width;
         this.height = height;
         // player related
-        this.lives = 3;
+        this.lives = 5;
         this.maxLives = 10;
         this.speed = 0;
         this.normalSpeed = 6;
         this.groundMargin = 40;
-        this.maxDistance = 100; // forestMap menu controls this variable
-        this.winningCoins = 100; // forestMap menu controls this variable
+        this.maxDistance = 100;
+        this.winningCoins = 100;
         this.coins = 0;
         this.notEnoughCoins = false;
         this.time = 0;
@@ -108,6 +112,8 @@ export class Game {
         this.isTutorialActive = true;
         this.noDamageDuringTutorial = false;
         this.tutorial = new Tutorial(this);
+        this.keyBindings = getDefaultKeyBindings();
+        this._defaultKeyBindings = getDefaultKeyBindings();
         this.menu = {
             main: new MainMenu(this),
             forestMap: new ForestMapMenu(this),
@@ -115,7 +121,9 @@ export class Game {
             skins: new Skins(this),
             levelDifficulty: new LevelDifficultyMenu(this),
             howToPlay: new HowToPlayMenu(this),
+            settings: new SettingsMenu(this),
             audioSettings: new AudioSettingsMenu(this),
+            controlsSettings: new ControlsSettingsMenu(this),
             ingameAudioSettings: new IngameAudioSettingsMenu(this),
             deleteProgress: new DeleteProgress(this),
             deleteProgress2: new DeleteProgress2(this),
@@ -125,7 +133,7 @@ export class Game {
         this.currentMenu = this.menu.main;
         this.canSelect = true;
         this.canSelectForestMap = true;
-        this.mapSelected = Array(6).fill(false);
+        this.currentMap = null;
         this.selectedDifficulty = "Normal";
         this.map1Unlocked = true;
         this.map2Unlocked = false;
@@ -133,6 +141,9 @@ export class Game {
         this.map4Unlocked = false;
         this.map5Unlocked = false;
         this.map6Unlocked = false;
+        this.bonusMap1Unlocked = false;
+        this.bonusMap2Unlocked = false;
+        this.bonusMap3Unlocked = false;
         this.gameCompleted = false;
         this.isPlayerInGame = false;
         // arrays
@@ -175,14 +186,8 @@ export class Game {
         // loading game state
         this.loadGameState();
     }
-    // ------------------------------------------------------------ Game Class logic ------------------------------------------------------------
-    updateMapSelection(i) {
-        if (i >= 1 && i <= this.mapSelected.length) {
-            this.mapSelected = Array(6).fill(false);
-            this.mapSelected[i] = true;
-        }
-    }
 
+    // ------------------------------------------------------------ Game Class logic ------------------------------------------------------------
     startCutscene(cutscene) {
         this.fadingIn = true;
         this.cutsceneActive = true;
@@ -196,7 +201,6 @@ export class Game {
             this.input.keys = [];
             this.input.arrowUpPressed = false;
             this.input.arrowDownPressed = false;
-            this.input.isWKeyPressed = false;
         }
         if (this.player.x + this.player.width >= this.cabin.x + 190 &&
             this.player.x <= this.cabin.x + this.cabin.width) {
@@ -206,12 +210,48 @@ export class Game {
                 this.canSelectForestMap = false;
                 this.currentMenu = this.menu.forestMap;
                 this.menu.forestMap.showSavingSprite = true;
+
                 setTimeout(() => {
                     this.canSelectForestMap = true;
                     this.menu.forestMap.showSavingSprite = false;
-                    this.menu.forestMap.selectedCircleIndex++;
+
+                    const bgName = this.background && this.background.constructor
+                        ? this.background.constructor.name
+                        : null;
+
+                    const targetIndexByMap = {
+                        Map1: 1,
+                        Map2: 2,
+                        Map3: 3,
+                        Map4: 4,
+                        Map5: 5,
+                        BonusMap1: 1,
+                        BonusMap2: 8,
+                        BonusMap3: 3,
+                    };
+
+                    let nextIndex = (bgName && bgName in targetIndexByMap)
+                        ? targetIndexByMap[bgName]
+                        : (this.menu.forestMap.selectedCircleIndex + 1);
+
+                    const maxIdx = this.menu.forestMap.circleOptions.length - 1;
+                    nextIndex = Math.max(0, Math.min(maxIdx, nextIndex));
+
+                    const isUnlocked = (idx) => {
+                        if (idx === 6) return !!this.bonusMap1Unlocked;
+                        if (idx === 7) return !!this.bonusMap2Unlocked;
+                        if (idx === 8) return !!this.bonusMap3Unlocked;
+                        if (idx >= 0 && idx <= 5) return !!this[`map${idx + 1}Unlocked`];
+                        return false;
+                    };
+
+                    if (isUnlocked(nextIndex)) {
+                        this.menu.forestMap.selectedCircleIndex = nextIndex;
+                    }
+
                     this.audioHandler.menu.playSound('optionHoveredSound', false, true);
                 }, 4000);
+
             } else {
                 this.menu.main.showSavingSprite = true;
                 this.canSelect = false;
@@ -223,14 +263,21 @@ export class Game {
             }
         }
     }
-
+    getEffectiveKeyBindings() {
+        const tutorialMapActive = this.isTutorialActive && this.currentMap === "Map1";
+        return tutorialMapActive ? this._defaultKeyBindings : this.keyBindings;
+    }
     reset() {
         this.resetInstance.reset();
     }
 
     update(deltaTime) {
-        //handle tutorial
-        if (this.isTutorialActive && this.mapSelected[1]) {
+        if (this.background && this.background.constructor && this.currentMap !== this.background.constructor.name) {
+            this.currentMap = this.background.constructor.name;
+        }
+
+        const tutorialMapActive = this.isTutorialActive && this.currentMap === "Map1";
+        if (tutorialMapActive) {
             this.tutorial.update(deltaTime);
             this.noDamageDuringTutorial = true;
         } else {
@@ -239,7 +286,7 @@ export class Game {
         }
 
         if (!this.menu.pause.isPaused && this.tutorial.tutorialPause === false) {
-            if (this.cabin.isFullyVisible) {
+            if (this.cabin && this.cabin.isFullyVisible) {
                 this.time = this.time;
             } else if (!this.gameOver) {
                 this.time += deltaTime;
@@ -248,11 +295,12 @@ export class Game {
                 this.speed = 0;
             }
 
-            this.background.update(deltaTime);
-            if (!this.cabin.isFullyVisible) {
+            if (this.background) this.background.update(deltaTime);
+
+            if (!this.cabin || !this.cabin.isFullyVisible) {
                 //enemy
                 if (this.enemyTimer > this.enemyInterval) {
-                    if (this.isTutorialActive === false || this.isTutorialActive && this.mapSelected[1] === false) {
+                    if (!tutorialMapActive) {
                         this.addEnemy();
                     }
                     this.enemyTimer = 0;
@@ -261,7 +309,7 @@ export class Game {
                 }
                 //other entities
                 if (this.nonEnemyTimer > this.nonEnemyInterval) {
-                    if (this.isTutorialActive === false || this.isTutorialActive && this.mapSelected[1] === false) {
+                    if (!tutorialMapActive) {
                         this.addPowerUp();
                         this.addPowerDown();
                     }
@@ -277,8 +325,8 @@ export class Game {
 
             this.player.update(this.input.keys, deltaTime);
             this.coins = Math.max(0, this.coins);
+
             // handles certain audios where the sound doesn't stop until that type of enemy is not in enemy list
-            // this audioMapping is no longer needed because of "existingEnemy instanceof type" in addEnemy() but in case it's needed it's here
             const enemyAudioMapping = [
                 { enemyType: WindAttack, audio: 'tornadoAudio' },
                 { enemyType: Skulnap, audio: 'fuseSound' },
@@ -303,6 +351,7 @@ export class Game {
                     }
                 }
             });
+
             //handle power up
             this.powerUps.forEach(powerUp => {
                 powerUp.update(deltaTime);
@@ -359,13 +408,16 @@ export class Game {
                     Map3: Map3PenguinIngameCutscene,
                     Map4: Map4PenguinIngameCutscene,
                     Map5: Map5PenguinIngameCutscene,
-                    Map6: Map6PenguinIngameCutscene
+                    Map6: Map6PenguinIngameCutscene,
+                    BonusMap1: BonusMap1PenguinIngameCutscene,
+                    BonusMap2: BonusMap2PenguinIngameCutscene,
+                    BonusMap3: BonusMap3PenguinIngameCutscene
                 };
-                const mapConstructor = mapCutsceneMapping[this.background.constructor.name];
+                const mapConstructor = mapCutsceneMapping[this.currentMap];
                 if (mapConstructor) {
                     const cutscene = new mapConstructor(this);
                     this.startCutscene(cutscene);
-                    cutscene.displayDialogue(mapConstructor);
+                    cutscene.displayDialogue();
                     this.cutscenes.push(cutscene);
                 }
             }
@@ -382,7 +434,7 @@ export class Game {
                 this.menu.levelDifficulty.setDifficulty(this.selectedDifficulty);
                 const map6ElyvorgBeforeFightCutscene = new Map6ElyvorgIngameCutsceneBeforeFight(this);
                 this.startCutscene(map6ElyvorgBeforeFightCutscene);
-                map6ElyvorgBeforeFightCutscene.displayDialogue(Map6ElyvorgIngameCutsceneBeforeFight);
+                map6ElyvorgBeforeFightCutscene.displayDialogue();
                 this.cutscenes.push(map6ElyvorgBeforeFightCutscene);
             } else if (this.background instanceof Map6 && this.isElyvorgFullyVisible &&
                 this.elyvorgDialogueAfterDialoguePlayOnce && this.elyvorgStartAfterDialogueOnlyWhenAnimationEnds && this.player.x <= 0) {
@@ -393,7 +445,7 @@ export class Game {
                 this.player.energy = 100;
                 const map6ElyvorgAfterFightCutscene = new Map6ElyvorgIngameCutsceneAfterFight(this);
                 this.startCutscene(map6ElyvorgAfterFightCutscene);
-                map6ElyvorgAfterFightCutscene.displayDialogue(Map6ElyvorgIngameCutsceneAfterFight);
+                map6ElyvorgAfterFightCutscene.displayDialogue();
                 this.cutscenes.push(map6ElyvorgAfterFightCutscene);
             }
             // end cutscenes after each map
@@ -420,23 +472,26 @@ export class Game {
                     Map3: Map3EndCutscene,
                     Map4: Map4EndCutscene,
                     Map5: Map5EndCutscene,
-                    Map6: Map6EndCutscene
+                    Map6: Map6EndCutscene,
+                    BonusMap1: BonusMap1EndCutscene,
+                    BonusMap2: BonusMap2EndCutscene,
+                    BonusMap3: BonusMap3EndCutscene,
                 };
 
-                const mapConstructor = mapCutsceneMapping[this.background.constructor.name];
+                const mapConstructor = mapCutsceneMapping[this.currentMap];
                 if (mapConstructor) {
                     this.isEndCutscene = true;
                     this.isPlayerInGame = false;
                     const cutscene = new mapConstructor(this);
                     this.startCutscene(cutscene);
-                    cutscene.displayDialogue(mapConstructor);
+                    cutscene.displayDialogue();
                 }
             }
         }
     }
     draw(context) {
         context.clearRect(0, 0, this.width, this.height);
-        this.background.draw(context);
+        if (this.background) this.background.draw(context);
 
         this.cabins.forEach(cabin => {
             cabin.draw(context);
@@ -491,14 +546,15 @@ export class Game {
             cutscene.draw(context);
         });
 
-        if (this.isTutorialActive && this.mapSelected[1]) {
+        // tutorial overlay only when Map1 tutorial is active
+        if (this.isTutorialActive && this.currentMap === "Map1") {
             this.tutorial.draw(context);
         }
 
         this.UI.draw(context);
     }
     addEnemy() {
-        if (this.gameOver || this.background.totalDistanceTraveled >= this.maxDistance - 5) {
+        if (this.gameOver || (this.background && this.background.totalDistanceTraveled >= this.maxDistance - 5)) {
             return;
         }
         const enemyTypes = {
@@ -553,7 +609,7 @@ export class Game {
                 { type: Sunflora, probability: 0.1, spawningDistance: 0 },
                 { type: Eggry, probability: 0.3, spawningDistance: 0 },
                 { type: Tauro, probability: 0.05, spawningDistance: 0 },
-                { type: this.background.isRaining ? AngryBee : Bee, probability: this.background.isRaining ? 0.06 : 0.07, spawningDistance: 0 },
+                { type: this.background && this.background.isRaining ? AngryBee : Bee, probability: this.background && this.background.isRaining ? 0.06 : 0.07, spawningDistance: 0 },
                 { type: HangingSpidoLazer, probability: 0.05, spawningDistance: 0 },
             ],
             Map6: [
@@ -569,13 +625,31 @@ export class Game {
                 { type: Dragon, probability: 0.05, spawningDistance: 0 },
                 { type: Elyvorg, probability: 0.85, spawningDistance: 0 },
             ],
+            BonusMap1: [
+                { type: Goblin, probability: 0.05, spawningDistance: 0 },
+                { type: Vertibat, probability: 0.1, spawningDistance: 0 },
+                { type: DuskPlant, probability: 0.2, spawningDistance: 0 },
+                { type: Silknoir, probability: 0.4, spawningDistance: 0 },
+                { type: WalterTheGhost, probability: 0.2, spawningDistance: 0 },
+                { type: Ben, probability: 0.2, spawningDistance: 0 },
+                { type: Dolly, probability: 0.01, spawningDistance: 100 },
+            ],
+            BonusMap2: [
+                { type: Goblin, probability: 0.05, spawningDistance: 0 },
+                { type: Vertibat, probability: 0.1, spawningDistance: 0 },
+                { type: DuskPlant, probability: 0.2, spawningDistance: 0 },
+                { type: Silknoir, probability: 0.4, spawningDistance: 0 },
+                { type: WalterTheGhost, probability: 0.2, spawningDistance: 0 },
+                { type: Ben, probability: 0.2, spawningDistance: 0 },
+                { type: Dolly, probability: 0.01, spawningDistance: 100 },
+            ],
         };
-        const currentMap = this.background.constructor.name;
+        const currentMap = this.currentMap;
         const enemiesForCurrentMap = enemyTypes[currentMap];
 
         if (enemiesForCurrentMap && this.enemies.length < this.maxEnemies) {
             for (const { type, probability, spawningDistance } of enemiesForCurrentMap) {
-                if (Math.random() < probability && this.background.totalDistanceTraveled >= spawningDistance) {
+                if (Math.random() < probability && this.background && this.background.totalDistanceTraveled >= spawningDistance) {
                     if (type === Elyvorg && !this.elyvorgSpawned && this.coins >= this.winningCoins && this.enemies.length === 0) {
                         if (this.elyvorgSpawned) {
                             continue;
@@ -614,7 +688,7 @@ export class Game {
     }
     addPowerUp() {
         if (!(this.background instanceof Map6)) {
-            if (this.speed > 0 && this.background.totalDistanceTraveled < this.maxDistance - 3) {
+            if (this.speed > 0 && this.background && this.background.totalDistanceTraveled < this.maxDistance - 3) {
                 if (Math.random() < 0.005) {
                     this.powerUps.push(new RedPotion(this));
                 }
@@ -638,7 +712,7 @@ export class Game {
     }
     addPowerDown() {
         if (!(this.background instanceof Map6)) {
-            if (this.speed > 0 && this.background.totalDistanceTraveled < this.maxDistance - 3) {
+            if (this.speed > 0 && this.background && this.background.totalDistanceTraveled < this.maxDistance - 3) {
                 if (Math.random() < 0.005) {
                     this.powerDowns.push(new IceDrink(this));
                 }
@@ -652,14 +726,14 @@ export class Game {
         }
     }
     addCabin() {
-        if (this.background.totalDistanceTraveled >= this.maxDistance && !this.cabinAppeared) {
+        if (this.background && this.background.totalDistanceTraveled >= this.maxDistance && !this.cabinAppeared) {
             this.cabins.push(this.cabin);
             this.cabinAppeared = true;
             this.fixedCabinX = this.width - this.cabin.width;
         }
     }
     addPenguin() {
-        if (this.background.totalDistanceTraveled >= this.maxDistance && !this.penguinAppeared) {
+        if (this.background && this.background.totalDistanceTraveled >= this.maxDistance && !this.penguinAppeared) {
             this.penguins.push(this.penguini);
             this.penguinAppeared = true;
             this.fixedPenguinX = this.width - this.cabin.width - 100;
@@ -669,36 +743,58 @@ export class Game {
     // ------------------------------------------------------------ Saving logic ------------------------------------------------------------
     saveGameState() {
         const gameState = {
-            mapSelected: this.mapSelected,
+            currentMap: this.currentMap,
             coins: this.coins,
             isTutorialActive: this.isTutorialActive,
+
             map1Unlocked: this.map1Unlocked,
             map2Unlocked: this.map2Unlocked,
             map3Unlocked: this.map3Unlocked,
             map4Unlocked: this.map4Unlocked,
             map5Unlocked: this.map5Unlocked,
             map6Unlocked: this.map6Unlocked,
+            bonusMap1Unlocked: this.bonusMap1Unlocked,
+            bonusMap2Unlocked: this.bonusMap2Unlocked,
+            bonusMap3Unlocked: this.bonusMap3Unlocked,
             gameCompleted: this.gameCompleted,
+
             audioSettingsState: this.menu.audioSettings.getState(),
             ingameAudioSettingsState: this.menu.ingameAudioSettings.getState(),
             currentSkin: this.menu.skins.currentSkin.id,
             selectedDifficulty: this.selectedDifficulty,
+
+            keyBindings: this.keyBindings,
         };
-        localStorage.setItem('gameState', JSON.stringify(gameState));
+
+        try {
+            localStorage.setItem('gameState', JSON.stringify(gameState));
+        } catch (e) {
+            console.warn('Failed to save game state:', e);
+        }
     }
+
     loadGameState() {
         const savedGameState = localStorage.getItem('gameState');
+        if (!savedGameState) return;
 
-        if (savedGameState) {
+        try {
             const gameState = JSON.parse(savedGameState);
-            this.isTutorialActive = gameState.isTutorialActive !== undefined ? gameState.isTutorialActive : this.isTutorialActive;
-            this.map1Unlocked = gameState.map1Unlocked !== undefined ? gameState.map1Unlocked : this.map1Unlocked;
-            this.map2Unlocked = gameState.map2Unlocked !== undefined ? gameState.map2Unlocked : this.map2Unlocked;
-            this.map3Unlocked = gameState.map3Unlocked !== undefined ? gameState.map3Unlocked : this.map3Unlocked;
-            this.map4Unlocked = gameState.map4Unlocked !== undefined ? gameState.map4Unlocked : this.map4Unlocked;
-            this.map5Unlocked = gameState.map5Unlocked !== undefined ? gameState.map5Unlocked : this.map5Unlocked;
-            this.map6Unlocked = gameState.map6Unlocked !== undefined ? gameState.map6Unlocked : this.map6Unlocked;
-            this.gameCompleted = gameState.gameCompleted !== undefined ? gameState.gameCompleted : this.gameCompleted;
+
+            this.currentMap = gameState.currentMap ?? this.currentMap;
+            this.coins = gameState.coins ?? this.coins;
+            this.isTutorialActive = gameState.isTutorialActive ?? this.isTutorialActive;
+
+            this.map1Unlocked = gameState.map1Unlocked ?? this.map1Unlocked;
+            this.map2Unlocked = gameState.map2Unlocked ?? this.map2Unlocked;
+            this.map3Unlocked = gameState.map3Unlocked ?? this.map3Unlocked;
+            this.map4Unlocked = gameState.map4Unlocked ?? this.map4Unlocked;
+            this.map5Unlocked = gameState.map5Unlocked ?? this.map5Unlocked;
+            this.map6Unlocked = gameState.map6Unlocked ?? this.map6Unlocked;
+            this.bonusMap1Unlocked = gameState.bonusMap1Unlocked ?? this.bonusMap1Unlocked;
+            this.bonusMap2Unlocked = gameState.bonusMap2Unlocked ?? this.bonusMap2Unlocked;
+            this.bonusMap3Unlocked = gameState.bonusMap3Unlocked ?? this.bonusMap3Unlocked;
+            this.gameCompleted = gameState.gameCompleted ?? this.gameCompleted;
+
             if (gameState.audioSettingsState) {
                 this.menu.audioSettings.setState(gameState.audioSettingsState);
             }
@@ -712,8 +808,17 @@ export class Game {
             if (gameState.selectedDifficulty) {
                 this.menu.levelDifficulty.setDifficulty(gameState.selectedDifficulty);
             }
+
+            if (gameState.keyBindings) {
+                const defaults = getDefaultKeyBindings();
+                this.keyBindings = { ...defaults, ...gameState.keyBindings };
+            }
+        } catch (e) {
+            console.warn('Failed to load game state, clearing corrupted data:', e);
+            localStorage.removeItem('gameState');
         }
     }
+
     clearSavedData() {
         localStorage.removeItem('gameState');
         this.isTutorialActive = true;
@@ -724,6 +829,9 @@ export class Game {
         this.map4Unlocked = false;
         this.map5Unlocked = false;
         this.map6Unlocked = false;
+        this.bonusMap1Unlocked = false;
+        this.bonusMap2Unlocked = false;
+        this.bonusMap3Unlocked = false;
         this.gameCompleted = false;
 
         this.menu.forestMap.resetSelectedCircleIndex();
@@ -731,7 +839,7 @@ export class Game {
         this.menu.levelDifficulty.setDifficulty('Normal');
 
         this.menu.skins.currentSkin = this.menu.skins.defaultSkin;
-        this.menu.skins.setCurrentSkinById('player');
+        this.menu.skins.setCurrentSkinById('defaultSkin');
 
         this.menu.audioSettings.setState({
             volumeLevels: [75, 10, 90, 90, 70, 60, null],
@@ -739,6 +847,10 @@ export class Game {
         this.menu.ingameAudioSettings.setState({
             volumeLevels: [30, 80, 60, 40, 80, 65, null],
         });
+
+        this.keyBindings = getDefaultKeyBindings();
+
+        this.saveGameState();
     }
 }
 

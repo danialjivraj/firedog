@@ -1,31 +1,58 @@
+import { getDefaultKeyBindings } from '../config/keyBindings.js';
+
 export class InputHandler {
     constructor(game) {
         this.game = game;
+
         this.keys = [];
         this.arrowUpPressed = false;
         this.arrowDownPressed = false;
-        this.isWKeyPressed = false;
+        this.isJumpKeyPressed = false;
 
-        window.addEventListener('keydown', e => {
-            const lowercaseKey = e.key.length === 1 && e.key !== 'Enter' ? e.key.toLowerCase() : e.key;
+        this._defaultBindings = getDefaultKeyBindings();
 
-            if (e.key === 'Enter' && this.keys.indexOf('Enter') === -1 && this.game.talkToPenguin && this.game.enterDuringBackgroundTransition) {
-                this.keys.push('Enter');
+        // keyboard
+        window.addEventListener('keydown', (e) => {
+            const lowercaseKey = this.normalizeKey(e.key);
+
+            if (
+                e.key === 'Enter' &&
+                this.game.enterDuringBackgroundTransition &&
+                !(this.game.talkToElyvorg && this.game.isElyvorgFullyVisible) &&
+                this.game.talkToPenguin
+            ) {
                 this.game.enterToTalkToPenguin = true;
             }
 
-            if ((lowercaseKey === 's' || (lowercaseKey === 'w' && this.game.player.isUnderwater === false) || lowercaseKey === 'a' || lowercaseKey === 'd' ||
-                lowercaseKey === 'q' || lowercaseKey === 'e' || lowercaseKey === 'Enter') && this.keys.indexOf(lowercaseKey) === -1 && this.game.enterDuringBackgroundTransition) {
+            const isGameplayKey = this.isMappedGameplayKey(lowercaseKey);
+
+            const jumpNorm = this.getJumpKeyNorm();
+
+            const jumpAllowed = !(lowercaseKey === jumpNorm && this.game.player.isUnderwater);
+
+            if (
+                isGameplayKey &&
+                jumpAllowed &&
+                this.keys.indexOf(lowercaseKey) === -1 &&
+                this.game.enterDuringBackgroundTransition
+            ) {
                 if (!this.game.talkToElyvorg) {
                     this.keys.push(lowercaseKey);
                 } else {
                     if (!this.game.isElyvorgFullyVisible) {
-                        this.keys.push('d');
+                        const forwardKey = this.keyForAction('moveForward') || 'd';
+                        this.keys.push(forwardKey);
                     }
                 }
             }
 
-            if (lowercaseKey === 'b' && this.game.isPlayerInGame && this.game.menu.pause.isPaused === false && this.game.tutorial.tutorialPause === false && this.game.gameOver === false) {
+            if (
+                lowercaseKey === 'b' &&
+                this.game.isPlayerInGame &&
+                this.game.menu.pause.isPaused === false &&
+                this.game.tutorial.tutorialPause === false &&
+                this.game.gameOver === false
+            ) {
                 this.game.audioHandler.firedogSFX.playSound('barkSound');
             }
 
@@ -39,55 +66,70 @@ export class InputHandler {
                 }
             }
 
-            if (e.key === 'm') {
-                //this.game.debug = !this.game.debug; //uncomment for debug mode
+            if (lowercaseKey === 'm') {
+                this.game.debug = !this.game.debug;
             }
 
-            if (e.key === 't' && this.game.currentMenu === this.game.menu.howToPlay) {
+            if (lowercaseKey === 't' && this.game.currentMenu === this.game.menu.howToPlay) {
                 this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
                 this.game.isTutorialActive = !this.game.isTutorialActive;
-                if (this.game.isTutorialActive === true) {
-                    this.game.tutorial.tutorialPause = true;
-                } else {
-                    this.game.tutorial.tutorialPause = false;
-                }
+                this.game.tutorial.tutorialPause = this.game.isTutorialActive === true;
                 this.game.saveGameState();
             }
 
-            if (lowercaseKey === 'w' && this.game.player.isUnderwater) {
-                if (!this.isWKeyPressed) {
-                    this.isWKeyPressed = true;
-                    this.keys.push('w');
+            if (
+                lowercaseKey === jumpNorm &&
+                this.game.player.isUnderwater &&
+                this.game.enterDuringBackgroundTransition
+            ) {
+                if (!this.isJumpKeyPressed) {
+                    this.isJumpKeyPressed = true;
+                    this.keys.push(jumpNorm);
                 }
             }
 
             if (e.key === 'Escape') {
+                if (this.game.currentMenu && this.game.currentMenu.waitingForKey) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+
                 if (this.game.isPlayerInGame) {
-                    if (this.game.audioHandler.cutsceneSFX.isPlaying("battleStarting")) {
+                    if (this.game.audioHandler.cutsceneSFX.isPlaying('battleStarting')) {
                         return;
                     }
-                    if (!this.game.currentMenu && !this.game.cutsceneActive && !this.game.notEnoughCoins && !this.game.gameOver ||
-                        this.game.cutsceneActive && this.game.enterDuringBackgroundTransition && (this.game.talkToElyvorg || this.game.talkToPenguin)) {
+                    if (
+                        (!this.game.currentMenu && !this.game.cutsceneActive && !this.game.notEnoughCoins && !this.game.gameOver) ||
+                        (this.game.cutsceneActive &&
+                            this.game.enterDuringBackgroundTransition &&
+                            (this.game.talkToElyvorg || this.game.talkToPenguin))
+                    ) {
                         this.game.menu.pause.togglePause();
                     }
                 }
 
-                if (this.game.currentMenu && this.game.currentMenu !== this.game.menu.main && this.game.menu.forestMap.showSavingSprite === false) {
+                if (
+                    this.game.currentMenu &&
+                    this.game.currentMenu !== this.game.menu.main &&
+                    this.game.menu.forestMap.showSavingSprite === false
+                ) {
                     this.handleEscapeKey();
                 }
+                return;
             }
         });
 
-        window.addEventListener('keyup', e => {
-            const lowercaseKey = e.key.length === 1 && e.key !== 'Enter' ? e.key.toLowerCase() : e.key;
+        window.addEventListener('keyup', (e) => {
+            const lowercaseKey = this.normalizeKey(e.key);
+            const jumpNorm = this.getJumpKeyNorm();
 
-            if (lowercaseKey === 'w') {
-                this.isWKeyPressed = false;
+            if (lowercaseKey === jumpNorm) {
+                this.isJumpKeyPressed = false;
             }
 
-            if ((lowercaseKey === 's' || lowercaseKey === 'w' || lowercaseKey === 'a' || lowercaseKey === 'd' ||
-                lowercaseKey === 'q' || lowercaseKey === 'e' || lowercaseKey === 'Enter') && this.game.enterDuringBackgroundTransition) {
-                this.keys.splice(this.keys.indexOf(lowercaseKey), 1);
+            if (this.isMappedGameplayKey(lowercaseKey)) {
+                const idx = this.keys.indexOf(lowercaseKey);
+                if (idx !== -1) this.keys.splice(idx, 1);
             } else if (lowercaseKey === 'arrowup') {
                 this.arrowUpPressed = false;
             } else if (lowercaseKey === 'arrowdown') {
@@ -95,25 +137,26 @@ export class InputHandler {
             }
         });
 
-        document.addEventListener("mousedown", (event) => {
+        // mouse
+        document.addEventListener('mousedown', (event) => {
             if (!this.game.talkToElyvorg && this.game.enterDuringBackgroundTransition) {
                 if (event.button === 0) {
-                    this.keys.push('leftClick');
+                    if (this.keys.indexOf('leftClick') === -1) this.keys.push('leftClick');
                 } else if (event.button === 2) {
-                    this.keys.push('rightClick');
+                    if (this.keys.indexOf('rightClick') === -1) this.keys.push('rightClick');
                 } else if (event.button === 1) {
-                    this.keys.push('scrollClick');
+                    if (this.keys.indexOf('scrollClick') === -1) this.keys.push('scrollClick');
                 }
             }
         });
 
-        document.addEventListener("mouseup", (event) => {
+        document.addEventListener('mouseup', (event) => {
             if ((event.button === 0 || event.button === 2 || event.button === 1) && this.game.enterDuringBackgroundTransition) {
-                const mouseClickType = event.button === 0 ? 'leftClick' : event.button === 2 ? 'rightClick' : 'scrollClick';
+                const mouseClickType =
+                    event.button === 0 ? 'leftClick' : event.button === 2 ? 'rightClick' : 'scrollClick';
                 const index = this.keys.indexOf(mouseClickType);
-                if (index !== -1) {
-                    this.keys.splice(index, 1);
-                }
+                if (index !== -1) this.keys.splice(index, 1);
+
                 if (event.button === 0 && this.game.talkToPenguin) {
                     this.game.enterToTalkToPenguin = true;
                 }
@@ -121,25 +164,80 @@ export class InputHandler {
         });
     }
 
-    enterOrRightClick(input) {
-        if (input.includes('Enter') || input.includes('rightClick')) {
-            return true;
-        }
+    // helpers
+    normalizeKey(key) {
+        if (!key) return key;
+        if (key.length === 1 && key !== 'Enter') return key.toLowerCase();
+        return key;
     }
 
-    eOrScrollClick(input) {
-        if (input.includes('e') || input.includes('scrollClick')) {
-            return true;
-        }
+    _bindingsObject() {
+        return (this.game.getEffectiveKeyBindings && this.game.getEffectiveKeyBindings())
+            || this.game.keyBindings
+            || this._defaultBindings
+            || {};
     }
 
-    qOrLeftClick(input) {
-        if (input.includes('q') || input.includes('leftClick')) {
-            return true;
-        }
+    getJumpKeyNorm() {
+        return this.keyForAction('jump');
     }
+
+    keyForAction(action) {
+        const kbObj = this._bindingsObject();
+        if (!kbObj) return null;
+
+        const raw = kbObj[action];
+
+        if (!raw) return null;
+        return raw.length === 1 ? raw.toLowerCase() : raw;
+    }
+
+    isKeyForAction(key, action) {
+        const binding = this.keyForAction(action);
+        if (!binding) return false;
+        return key === binding;
+    }
+
+    isMappedGameplayKey(key) {
+        const ACTIONS = [
+            'jump',
+            'moveBackward',
+            'sit',
+            'moveForward',
+            'rollAttack',
+            'diveAttack',
+            'fireballAttack',
+            'invisibleDefense',
+        ];
+        return ACTIONS.some((a) => this.isKeyForAction(key, a));
+    }
+
+    isActionActive(action, input) {
+        const kb = this.keyForAction(action);
+        const kbPressed = kb ? input.includes(kb) : false;
+
+        let active = kbPressed;
+        if (action === 'rollAttack') {
+            active = kbPressed || input.includes('rightClick');
+        } else if (action === 'fireballAttack') {
+            active = kbPressed || input.includes('leftClick');
+        } else if (action === 'invisibleDefense') {
+            active = kbPressed || input.includes('scrollClick');
+        }
+        return active ? true : undefined;
+    }
+
+    isRollAttack(input) { return this.isActionActive('rollAttack', input); }
+    isInvisibleDefense(input) { return this.isActionActive('invisibleDefense', input); }
+    isFireballAttack(input) { return this.isActionActive('fireballAttack', input); }
 
     handleEscapeKey() {
+        if (this.game.currentMenu && this.game.currentMenu.waitingForKey) {
+            this.game.currentMenu.waitingForKey = false;
+            this.game.currentMenu.waitingAction = null;
+            return;
+        }
+
         if (this.game.currentMenu.menuInGame === false) {
             if (this.game.currentMenu !== this.game.menu.enemyLore) {
                 for (const menuKey in this.game.menu) {

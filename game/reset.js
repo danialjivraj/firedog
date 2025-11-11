@@ -1,4 +1,4 @@
-import { Map1, Map2, Map3, Map4, Map5, Map6 } from "./background/background.js";
+import { Map1, Map2, Map3, Map4, Map5, Map6, BonusMap1, BonusMap2, BonusMap3 } from "./background/background.js";
 import { Player } from "./entities/player.js";
 
 export class Reset {
@@ -103,10 +103,19 @@ export class Reset {
                 selectedMap = new Map6(this.game);
                 this.game.maxDistance = 9999999;
                 break;
+            case BonusMap1:
+                selectedMap = new BonusMap1(this.game);
+                this.game.player.isIce = true;
+                break;
+            case BonusMap2:
+                selectedMap = new BonusMap2(this.game);
+                break;
+            case BonusMap3:
+                selectedMap = new BonusMap3(this.game);
+                break;
             default:
                 break;
         }
         this.game.menu.forestMap.setMap(selectedMap);
-        this.game.player.underwaterOrNot();
     }
 }

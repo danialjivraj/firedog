@@ -28,9 +28,9 @@ export class ElyvorgCutscene extends Cutscene {
         };
     }
 
-    enterOrLeftClick(cutscene) {
+    enterOrLeftClick() {
         this.cutsceneController();
-        if (this.game.player?.currentState !== this.game.player?.states[8]) {
+        if (this.game.player.currentState !== this.game.player.states[8]) {
             this.game.player.setState(8, 0);
         }
 
@@ -71,14 +71,14 @@ export class ElyvorgCutscene extends Cutscene {
                 this.cutsceneBackgroundChange(500, 2500, 200);
                 this.game.audioHandler.cutsceneSFX.playSound('battleStarting');
                 setTimeout(() => {
-                    this.game.endCutscene(cutscene);
+                    this.game.endCutscene();
                     this.game.talkToElyvorg = false;
                     this.game.cutscenes = [];
                     this.game.elyvorgInFight = true;
                     this.game.audioHandler.mapSoundtrack.playSound('elyvorgBattleTheme', true);
                 }, 3000);
             } else if (this.game.elyvorgPostFight) {
-                this.game.endCutscene(cutscene);
+                this.game.endCutscene();
                 this.game.talkToElyvorg = false;
                 this.game.cutscenes = [];
                 this.removeEventListeners();
@@ -93,7 +93,7 @@ export class ElyvorgCutscene extends Cutscene {
         }, 100);
     }
 
-    displayDialogue(cutscene) {
+    displayDialogue() {
         this.handleKeyDown = (event) => {
             if (!this.game.menu.pause.isPaused && this.game.currentMenu !== this.game.menu.ingameAudioSettings) {
                 if (event.key === 'Tab' && this.game.enterDuringBackgroundTransition) {
@@ -107,7 +107,7 @@ export class ElyvorgCutscene extends Cutscene {
                         this.game.audioHandler.cutsceneSFX.playSound('battleStarting');
                         setTimeout(() => {
                             this.dialogueIndex = this.dialogue.length - 1;
-                            this.game.endCutscene(cutscene);
+                            this.game.endCutscene();
                             this.game.talkToElyvorg = false;
                             this.game.cutscenes = [];
                             this.game.elyvorgInFight = true;
@@ -117,17 +117,17 @@ export class ElyvorgCutscene extends Cutscene {
                 }
 
                 if (event.key === 'Enter' && !this.isEnterPressed && this.game.enterDuringBackgroundTransition) {
-                    this.enterOrLeftClick(cutscene);
+                    this.enterOrLeftClick();
                 }
             }
         };
         this.handleLeftClick = (event) => {
             if (!this.isEnterPressed && this.game.enterDuringBackgroundTransition && !this.game.menu.pause.isPaused &&
                 this.game.currentMenu !== this.game.menu.ingameAudioSettings) {
-                this.enterOrLeftClick(cutscene);
+                this.enterOrLeftClick();
             }
         };
-        super.displayDialogue(cutscene);
+        super.displayDialogue();
     }
 
     resolveCutsceneAction() {

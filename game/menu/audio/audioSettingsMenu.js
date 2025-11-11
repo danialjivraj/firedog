@@ -33,7 +33,7 @@ export class AudioSettingsMenu extends AudioMenu {
         const selectedOption = this.menuOptions[this.selectedOption];
         if (selectedOption === 'Go Back') {
             super.handleMenuSelection();
-            this.game.menu.main.activateMenu(4);
+            this.game.menu.settings.activateMenu(0);
             this.canPressNow = true;
         }
     }

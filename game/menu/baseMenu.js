@@ -67,14 +67,14 @@ export class BaseMenu {
                 context.shadowBlur = 4;
                 context.shadowOffsetX = 2;
                 context.shadowOffsetY = 2;
-    
+
                 context.drawImage(this.greenCompletedImage, 10, 10);
-    
+
                 context.shadowColor = 'transparent';
                 context.shadowBlur = 0;
                 context.shadowOffsetX = 0;
                 context.shadowOffsetY = 0;
-    
+
                 context.globalAlpha = 1;
             }
         }
@@ -188,7 +188,6 @@ export class BaseMenu {
     handleMouseClick(event) {
         if (this.menuActive && this.game.canSelect && this.game.canSelectForestMap) {
             this.handleMenuSelection();
-            this.game.saveGameState();
         }
     }
 }
@@ -466,11 +465,11 @@ export class AudioMenu extends BaseMenu {
                     // updates the volume of the associated audio element
                     this.updateAudioVolume(audioElementId, currentIndex);
                 }
+                this.game.saveGameState();
             } else if (event.key === 'Enter') {
                 this.handleMenuSelection();
             }
         }
-        this.game.saveGameState();
     }
     //mouse
     handleMouseClick(event) {
@@ -591,6 +590,74 @@ export class AudioMenu extends BaseMenu {
                 const audioElementId = this.audioMap[selectedOption];
                 this.updateAudioVolume(audioElementId, currentIndex);
             }
+            this.game.saveGameState();
+        }
+    }
+}
+
+export class SelectMenu extends BaseMenu {
+    constructor(game, menuOptions, title, options = {}) {
+        super(game, menuOptions, title);
+        this.goBackLabel = options.goBackLabel || 'Go Back';
+        this.selectedIndex = options.initialIndex ?? 0;
+        this._applySelectedSuffix(this.selectedIndex);
+    }
+
+    activateMenu(selectedOption = this.selectedIndex) {
+        super.activateMenu(selectedOption);
+    }
+
+    stripSelectedSuffix(label) {
+        return label.replace(/ - Selected/g, '');
+    }
+
+    _clearAllSuffixes() {
+        this.menuOptions = this.menuOptions.map(opt => this.stripSelectedSuffix(opt));
+    }
+
+    _applySelectedSuffix(index) {
+        this._clearAllSuffixes();
+        if (index >= 0 && index < this.menuOptions.length) {
+            this.menuOptions[index] = this.menuOptions[index] + ' - Selected';
+            this.selectedIndex = index;
+        }
+    }
+
+    setSelectedIndex(index) {
+        this._applySelectedSuffix(index);
+    }
+
+    getSelectedIndex() {
+        return this.selectedIndex;
+    }
+
+    handleMenuSelection() {
+        const raw = this.menuOptions[this.selectedOption];
+        const clean = this.stripSelectedSuffix(raw);
+
+        if (this.selectedOption === this.selectedIndex) {
+            const expected = `${this.stripSelectedSuffix(this.menuOptions[this.selectedIndex])} - Selected`;
+            if (this.menuOptions[this.selectedIndex] !== expected) {
+                this._applySelectedSuffix(this.selectedIndex);
+            }
+            super.handleMenuSelection();
+            return;
+        }
+
+        super.handleMenuSelection();
+
+        if (this.goBackLabel && clean === this.goBackLabel && typeof this.onGoBack === 'function') {
+            this.onGoBack();
+            return;
+        }
+
+        this._applySelectedSuffix(this.selectedOption);
+        if (typeof this.onSelect === 'function') {
+            this.onSelect(this.selectedOption, clean);
+        }
+
+        if (this.game && typeof this.game.saveGameState === 'function') {
+            this.game.saveGameState();
         }
     }
 }

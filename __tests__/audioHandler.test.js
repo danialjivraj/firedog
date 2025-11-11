@@ -47,7 +47,6 @@ describe('AudioHandler (base class)', () => {
 
         it('returns null and logs error if no element', () => {
             ah.soundsMapping = { missing: 'no-such-id' };
-            const before = console.error.mock.calls.length;
             const res = ah.loadSound('missing');
             expect(res).toBeNull();
             expect(console.error).toHaveBeenCalledWith(
@@ -117,6 +116,7 @@ describe('AudioHandler (base class)', () => {
         let fake;
         beforeEach(() => {
             fake = {
+                id: 'baz',
                 currentTime: 7,
                 paused: false,
                 play: jest.fn(),
@@ -144,21 +144,21 @@ describe('AudioHandler (base class)', () => {
     describe('pauseSound() & pauseAllSounds()', () => {
         let one, two;
         beforeEach(() => {
-            one = { id: 'one', currentTime: 1, paused: false, pause: jest.fn(() => { one.paused = true }), play: jest.fn() };
-            two = { id: 'two', currentTime: 2, paused: false, pause: jest.fn(() => { two.paused = true }), play: jest.fn() };
+            one = { id: 'one', currentTime: 1, paused: false, pause: jest.fn(() => { one.paused = true; }), play: jest.fn() };
+            two = { id: 'two', currentTime: 2, paused: false, pause: jest.fn(() => { two.paused = true; }), play: jest.fn() };
             ah.soundsMapping = { one: 'one', two: 'two' };
             ah.sounds = { one, two };
         });
 
         it('pauseSound pauses and stores position', () => {
-            ah.pauseSound(one);
+            ah.pauseSound('one');
             expect(one.pause).toHaveBeenCalled();
             expect(ah.pausedSoundPositions.one).toBe(1);
         });
 
         it('pauseSound does nothing if already paused', () => {
             one.paused = true;
-            ah.pauseSound(one);
+            ah.pauseSound('one');
             expect(one.pause).not.toHaveBeenCalled();
             expect(ah.pausedSoundPositions.one).toBeUndefined();
         });
@@ -166,22 +166,22 @@ describe('AudioHandler (base class)', () => {
         it('pauseAllSounds iterates correctly', () => {
             const spy = jest.spyOn(ah, 'pauseSound');
             ah.pauseAllSounds();
-            expect(spy).toHaveBeenCalledWith(one);
-            expect(spy).toHaveBeenCalledWith(two);
+            expect(spy).toHaveBeenCalledWith('one');
+            expect(spy).toHaveBeenCalledWith('two');
         });
     });
 
     describe('resumeSound() & resumeAllSounds()', () => {
         let three;
         beforeEach(() => {
-            three = { id: 'three', currentTime: 0, duration: 5, paused: true, play: jest.fn(() => { three.paused = false }), pause: jest.fn() };
+            three = { id: 'three', currentTime: 0, duration: 5, paused: true, play: jest.fn(() => { three.paused = false; }), pause: jest.fn() };
             ah.soundsMapping = { three: 'three' };
             ah.sounds = { three };
             ah.pausedSoundPositions['three'] = 2;
         });
 
         it('resumeSound sets time, plays, and clears stored position', () => {
-            ah.resumeSound(three);
+            ah.resumeSound('three');
             expect(three.currentTime).toBe(2);
             expect(three.play).toHaveBeenCalled();
             expect(ah.pausedSoundPositions.three).toBeUndefined();
@@ -190,7 +190,7 @@ describe('AudioHandler (base class)', () => {
         it('resumeSound does nothing if audio.paused is false', () => {
             three.paused = false;
             ah.pausedSoundPositions['three'] = 2;
-            ah.resumeSound(three);
+            ah.resumeSound('three');
             expect(three.play).not.toHaveBeenCalled();
             expect(ah.pausedSoundPositions.three).toBe(2);
         });
@@ -198,7 +198,7 @@ describe('AudioHandler (base class)', () => {
         it('resumeSound clears but does not play if storedTime ≥ duration', () => {
             three.paused = true;
             ah.pausedSoundPositions['three'] = 10;
-            ah.resumeSound(three);
+            ah.resumeSound('three');
             expect(three.play).not.toHaveBeenCalled();
             expect(ah.pausedSoundPositions.three).toBeUndefined();
         });
@@ -206,12 +206,12 @@ describe('AudioHandler (base class)', () => {
         it('resumeAllSounds iterates correctly', () => {
             const spy = jest.spyOn(ah, 'resumeSound');
             ah.resumeAllSounds();
-            expect(spy).toHaveBeenCalledWith(three);
+            expect(spy).toHaveBeenCalledWith('three');
         });
 
         it('does nothing if no stored position', () => {
             delete ah.pausedSoundPositions['three'];
-            ah.resumeSound(three);
+            ah.resumeSound('three');
             expect(three.play).not.toHaveBeenCalled();
         });
     });
@@ -247,7 +247,7 @@ describe('AudioHandler (base class)', () => {
                 duration: 1,
                 paused: false,
                 play: jest.fn(),
-                pause: jest.fn(() => { fake.paused = true }),
+                pause: jest.fn(() => { fake.paused = true; }),
                 currentTime: 0,
             };
             ah.soundsMapping = { fade: 'fade' };
@@ -273,7 +273,7 @@ describe('AudioHandler (base class)', () => {
                 duration: 2,
                 paused: false,
                 play: jest.fn(),
-                pause: jest.fn(() => { fake.paused = true }),
+                pause: jest.fn(() => { fake.paused = true; }),
                 currentTime: 0,
             };
             ah.soundsMapping = { dfade: 'dfade' };
@@ -297,7 +297,7 @@ describe('AudioHandler (base class)', () => {
                 duration: 1,
                 paused: false,
                 play: jest.fn(),
-                pause: jest.fn(() => { fake.paused = true }),
+                pause: jest.fn(() => { fake.paused = true; }),
                 currentTime: 0,
             };
             ah.soundsMapping = { twice: 'twice' };

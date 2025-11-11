@@ -1,3 +1,4 @@
+import { getSkinElement } from '../config/skins.js';
 import { Sitting, Running, Jumping, Falling, Rolling, Diving, Stunned, Hit, Standing, Dying } from '../animations/playerStates.js';
 import {
     CollisionAnimation, ExplosionCollisionAnimation, PoisonSpitSplash, InkSplashCollision, Blood,
@@ -21,13 +22,11 @@ export class Player {
     constructor(game) {
         this.game = game;
         //images
-        this.image = document.getElementById('player')
-        this.hatImage = document.getElementById('player2')
-        this.choloImage = document.getElementById('player3')
-        this.zabkaImage = document.getElementById('player4')
-        this.shinyImage = document.getElementById('player5')
-        this.particleImage = 'fire';
-        this.splashImage = 'fire';
+        this.image = getSkinElement('default');
+        this.hatImage = getSkinElement('hat');
+        this.choloImage = getSkinElement('cholo');
+        this.zabkaImage = getSkinElement('zabka');
+        this.shinyImage = getSkinElement('shiny');
         //firedog vars
         this.width = 100;
         this.height = 91.3;
@@ -55,6 +54,22 @@ export class Player {
         this.isUnderwater = false;
         this.loopDamageIndicator = true;
         this.buoyancy = 4;
+        // ice vars
+        this.isIce = false;
+        this.vx = 0;
+        this.accelIce = 0.045;
+        this.frictionIce = 0.005;
+        this.turnResistanceIce = 0.45;
+        this.deadzone = 0.05;
+        this.iceIdleDrift = 0.0005;
+        this.slideGraceMs = 260;
+        this.slideFrictionIce = 0.0016;
+        this.slideTimer = 0;
+        this.prevAxis = 0;
+        this.slideGraceMsBack = this.slideGraceMs;
+        this.slideFrictionIceBack = this.slideFrictionIce;
+        this.slideBoostBack = 0;
+        this._reverseSlideActive = false;
         //states
         this.states = [
             new Sitting(this.game), //0
@@ -78,7 +93,7 @@ export class Player {
         this.noEnergyLeftSound = false;
         //blue potion
         this.blueFireTimer = 0;
-        this.isBluePotionActive = false
+        this.isBluePotionActive = false;
         this.bluePotionSpeed = 22;
         //red potion
         this.isRedPotionActive = false;
@@ -113,15 +128,12 @@ export class Player {
         this.elyvorgCollisionCooldown = 1000;
         this.resetElectricWheelCounters = false;
     }
-    underwaterOrNot() {
-        if (this.isUnderwater) {
-            this.particleImage = 'bubble';
-            this.splashImage = 'bubble';
-        } else {
-            this.particleImage = 'fire';
-            this.splashImage = 'fire';
-        }
-    }
+
+    _moveLeft(input) { return this.game.input.isActionActive('moveBackward', input); }
+    _moveRight(input) { return this.game.input.isActionActive('moveForward', input); }
+    _jump(input) { return this.game.input.isActionActive('jump', input); }
+    _sit(input) { return this.game.input.isActionActive('sit', input); }
+
     elyvorgCollisionTimers(deltaTime) { // this is needed for collision relating to elyvorg, barrier, slash and electricWheel
         if (this.game.elyvorgInFight) {
             this.elyvorgCollisionTimer += deltaTime;
@@ -136,7 +148,7 @@ export class Player {
         this.checkIfFiredogIsSlowed(deltaTime);
         this.emitStatusParticles(deltaTime);
 
-        this.divingAbility(deltaTime)
+        this.divingAbility(deltaTime);
         this.fireballAbility(input, deltaTime);
         this.invisibleAbility(input, deltaTime);
         this.elyvorgCollisionTimers(deltaTime);
@@ -147,7 +159,7 @@ export class Player {
             this.underwaterGravityAndIndicator();
 
             this.spriteAnimation(deltaTime);
-            this.playerHorizontalMovement(input);
+            this.playerHorizontalMovement(input, deltaTime);
             this.playerVerticalMovement(input);
 
             this.collisionWithEnemies(deltaTime);
@@ -389,56 +401,54 @@ export class Player {
         this.fireballTimer += deltaTime;
         this.fireballTimer = Math.min(this.fireballTimer, this.fireballCooldown);
 
-        if (this.currentState === this.states[0] || this.currentState === this.states[1] || this.currentState === this.states[2] ||
-            this.currentState === this.states[3] || this.currentState === this.states[8]) {
-            if (this.game.player.energyReachedZero === false && this.fireballTimer >= this.fireballCooldown) {
-                if ((this.game.input.qOrLeftClick(input)) && !this.game.cabin.isFullyVisible) {
-                    if (!this.isUnderwater) {
-                        if (this.isRedPotionActive) {
-                            this.game.audioHandler.firedogSFX.playSound('fireballRedPotionActiveSFX', false, true);
-                        } else {
-                            this.game.audioHandler.firedogSFX.playSound('fireballSFX', false, true);
-                        }
-                    } else {
-                        if (this.isRedPotionActive) {
-                            this.game.audioHandler.firedogSFX.playSound('fireballUnderwaterRedPotionSFX', false, true);
-                        } else {
-                            this.game.audioHandler.firedogSFX.playSound('fireballUnderwaterSFX', false, true);
-                        }
-                    }
+        const inFireballState =
+            this.currentState === this.states[0] ||
+            this.currentState === this.states[1] ||
+            this.currentState === this.states[2] ||
+            this.currentState === this.states[3] ||
+            this.currentState === this.states[8];
 
-                    const yOffset = this.currentState === this.states[0] ? 15 : 0;
+        if (
+            inFireballState &&
+            !this.energyReachedZero &&
+            this.fireballTimer >= this.fireballCooldown &&
+            this.game.input.isFireballAttack(input) &&
+            !this.game.cabin.isFullyVisible
+        ) {
+            const underwater = this.isUnderwater;
+            const redActive = this.isRedPotionActive;
 
-                    const fireballDirection = this.facingRight ? 'right' : 'left';
-                    if (this.isRedPotionActive) {
-                        for (let i = -6; i <= 0; i++) {
-                            const xPos = this.x + 10 + this.width * 0.5;
-                            const yPos = this.y + this.height * 0.5 + yOffset;
-                            if (this.isUnderwater === true) {
-                                this.game.behindPlayerParticles.unshift(new Fireball(this.game, xPos, yPos, 'bubble_redPotion', fireballDirection, i));
-                            } else {
-                                this.game.behindPlayerParticles.unshift(new Fireball(this.game, xPos, yPos, 'redPotionFireball', fireballDirection, i));
-                            }
-                        }
-                    } else {
-                        const xPos = this.x + 10 + this.width * 0.5;
-                        const yPos = this.y + this.height * 0.5 + yOffset;
-                        if (this.isUnderwater === true) {
-                            this.game.behindPlayerParticles.unshift(new Fireball(this.game, xPos, yPos, 'bubble_projectile', fireballDirection));
-                        } else {
-                            this.game.behindPlayerParticles.unshift(new Fireball(this.game, xPos, yPos, 'fireball', fireballDirection));
-                        }
-                    }
+            const sfxKey = underwater
+                ? (redActive ? 'fireballUnderwaterRedPotionSFX' : 'fireballUnderwaterSFX')
+                : (redActive ? 'fireballRedPotionActiveSFX' : 'fireballSFX');
 
-                    this.energy = this.energy - 8;
-                    if (this.energy <= 0) {
-                        this.energyReachedZero = true;
-                    }
+            this.game.audioHandler.firedogSFX.playSound(sfxKey, false, true);
 
-                    this.fireballTimer = 0;
+            const yOffset = this.currentState === this.states[0] ? 15 : 0; // small offset when sitting
+            const baseX = this.x + 10 + this.width * 0.5;
+            const baseY = this.y + this.height * 0.5 + yOffset;
+            const fireballDirection = this.facingRight ? 'right' : 'left';
+
+            if (redActive) {
+                for (let i = -6; i <= 0; i++) {
+                    this.game.behindPlayerParticles.unshift(
+                        new Fireball(this.game, baseX, baseY, 'redPotionFireball', fireballDirection, i)
+                    );
                 }
+            } else {
+                this.game.behindPlayerParticles.unshift(
+                    new Fireball(this.game, baseX, baseY, 'fireball', fireballDirection)
+                );
             }
+
+            this.energy = Math.max(0, this.energy - 8);
+            if (this.energy <= 0) {
+                this.energyReachedZero = true;
+            }
+
+            this.fireballTimer = 0;
         }
+
         if (this.isRedPotionActive) {
             this.redPotionTimer -= deltaTime;
             if (this.redPotionTimer <= 0) {
@@ -450,7 +460,7 @@ export class Player {
         this.invisibleTimer += deltaTime;
         this.invisibleTimer = Math.min(this.invisibleTimer, this.invisibleCooldown);
 
-        if ((this.game.input.eOrScrollClick(input)) && this.isInvisible === false && !this.game.gameOver) {
+        if ((this.game.input.isInvisibleDefense(input)) && this.isInvisible === false && !this.game.gameOver) {
             if (this.invisibleTimer === this.invisibleCooldown) {
                 this.isInvisible = true;
                 this.game.audioHandler.firedogSFX.playSound('invisibleInSFX');
@@ -584,19 +594,26 @@ export class Player {
     // screen indicators
     triggerDamageIndicator() {
         const oneMinute = 60000;
-        if (this.game.mapSelected[3] && this.game.time < this.game.maxTime - oneMinute) {
+        const isMap3 =
+            this.game.background &&
+            this.game.background.constructor &&
+            this.game.background.constructor.name === 'Map3';
+
+        if (isMap3 && this.game.time < this.game.maxTime - oneMinute) {
             this.firstLoopDamageIndicator = true;
         }
-        const existingDamageIndicator = this.game.collisions.find(collision => collision instanceof DamageIndicator);
+
+        const existingDamageIndicator = this.game.collisions.find(
+            c => c instanceof DamageIndicator
+        );
+
         if (existingDamageIndicator) {
-            if (this.game.mapSelected[3] && this.game.time >= this.game.maxTime - oneMinute) {
-                // do nothing
+            if (isMap3 && this.game.time >= this.game.maxTime - oneMinute) {
             } else {
                 existingDamageIndicator.reset();
             }
         } else {
-            const damageIndicator = new DamageIndicator(this.game);
-            this.game.collisions.push(damageIndicator);
+            this.game.collisions.push(new DamageIndicator(this.game));
         }
     }
     underwaterGravityAndIndicator() {
@@ -682,18 +699,26 @@ export class Player {
             if (this.frameX < this.maxFrame) this.frameX++;
             else this.frameX = 0;
         } else {
-            this.frameTimer += deltaTime
+            this.frameTimer += deltaTime;
         }
     }
     onGround() {
         return this.y >= this.game.height - this.height - this.game.groundMargin;
     }
-    playerHorizontalMovement(input) {
+    playerHorizontalMovement(input, deltaTime) {
+        if (this.isIce) {
+            this.applyIceMovementExact(input, deltaTime);
+            return;
+        }
+
         // horizontal movement
+        const right = this._moveRight(input);
+        const left = this._moveLeft(input);
+
         this.x += this.speed;
-        if (input.includes('d') && this.currentState !== this.states[6]) {
+        if (right && this.currentState !== this.states[6]) {
             this.speed = this.maxSpeed;
-        } else if (input.includes('a') && this.currentState !== this.states[6]) {
+        } else if (left && this.currentState !== this.states[6]) {
             if (this.game.isElyvorgFullyVisible || this.game.cabin.isFullyVisible) {
                 this.speed = -this.maxSpeed;
             } else if (this.currentState === this.states[4]) {
@@ -704,14 +729,109 @@ export class Player {
         } else {
             this.speed = 0;
         }
-        //horizontal bondaries
-        if (this.x < 0) {
-            this.x = 0;
-        }
+        // horizontal boundaries
+        if (this.x < 0) this.x = 0;
         if (this.x > this.game.width - this.width) {
             this.x = this.game.width - this.width;
         }
     }
+
+    applyIceMovementExact(input, deltaTime) {
+        let axis = 0;
+        if (this._moveLeft(input)) axis -= 1;
+        if (this._moveRight(input)) axis += 1;
+
+        const onIce = true;
+        const stunned = this.currentState === this.states[6];
+
+        const accel = this.accelIce;
+        const frictionBase = this.frictionIce;
+
+        let speedCap = this.maxSpeed;
+        if (axis < 0) {
+            if (this.game.isElyvorgFullyVisible || this.game.cabin.isFullyVisible) {
+                speedCap = this.maxSpeed;
+            } else if (this.currentState === this.states[4]) {
+                speedCap = this.maxSpeed * 1.7;
+            } else {
+                speedCap = this.maxSpeed * 1.3;
+            }
+        }
+
+        const dt = Math.max(1, deltaTime || 16);
+
+        if (onIce && this.prevAxis !== 0 && axis === 0) {
+            if (this.vx < 0) {
+                this.slideTimer = this.slideGraceMsBack;
+                this._reverseSlideActive = true;
+                if (Math.abs(this.vx) > 0.05 && this.slideBoostBack > 0) {
+                    this.vx *= (1 + this.slideBoostBack);
+                }
+            } else {
+                this.slideTimer = this.slideGraceMs;
+                this._reverseSlideActive = false;
+            }
+        }
+
+        const slideFric =
+            (this._reverseSlideActive ? this.slideFrictionIceBack : this.slideFrictionIce);
+
+        if (stunned) {
+            const effFric = (onIce && this.slideTimer > 0) ? slideFric : frictionBase;
+            const decay = Math.max(0, 1 - effFric * dt);
+            this.vx *= decay;
+        } else {
+            if (Math.abs(axis) < this.deadzone) axis = 0;
+
+            let effectiveAccel = accel;
+            if (
+                onIce &&
+                axis !== 0 &&
+                Math.sign(axis) !== Math.sign(this.vx) &&
+                Math.abs(this.vx) > 0.01
+            ) {
+                effectiveAccel *= (1 - this.turnResistanceIce); // 0..1
+            }
+
+            this.vx += axis * effectiveAccel * dt;
+
+            if (axis === 0) {
+                const effFric = (onIce && this.slideTimer > 0) ? slideFric : frictionBase;
+                const decay = Math.max(0, 1 - effFric * dt);
+                this.vx *= decay;
+
+                if (onIce && Math.abs(this.vx) < 0.01 && this.iceIdleDrift > 0) {
+                    this.vx += (Math.random() * 2 - 1) * this.iceIdleDrift * dt;
+                }
+            } else {
+                this._reverseSlideActive = false;
+            }
+        }
+
+        if (this.slideTimer > 0) {
+            this.slideTimer = Math.max(0, this.slideTimer - dt);
+            if (this.slideTimer === 0) this._reverseSlideActive = false;
+        }
+
+        if (this.vx > speedCap) this.vx = speedCap;
+        if (this.vx < -speedCap) this.vx = -speedCap;
+
+        this.x += this.vx;
+
+        if (this.x < 0) {
+            this.x = 0;
+            if (this.vx < 0) this.vx = 0;
+        }
+        const rightMax = this.game.width - this.width;
+        if (this.x > rightMax) {
+            this.x = rightMax;
+            if (this.vx > 0) this.vx = 0;
+        }
+
+        this.speed = this.vx;
+        this.prevAxis = axis;
+    }
+
     playerVerticalMovement(input) {
         //vertical movement
         this.y += this.vy;
@@ -721,9 +841,9 @@ export class Player {
             this.vy = 0;
         }
         if (this.isUnderwater) {
-            if (this.game.input.enterOrRightClick(input) && input.includes('w') && this.currentState === this.states[4]) {
+            if (this.game.input.isRollAttack(input) && this._jump(input) && this.currentState === this.states[4]) {
                 this.buoyancy -= 1;
-                this.y -= 4
+                this.y -= 4;
             }
             if (this.buoyancy < 1) {
                 this.buoyancy = 1;
@@ -737,19 +857,22 @@ export class Player {
         }
     }
     firedogMeetsElyvorg(input) {
+        const left = this._moveLeft(input);
+        const right = this._moveRight(input);
+
         if (this.game.isElyvorgFullyVisible && this.currentState === this.states[4]) {
             if (this.facingRight) {
-                if (this.game.input.enterOrRightClick(input) && !input.includes('a') && !input.includes('d')) {
+                if (this.game.input.isRollAttack(input) && !left && !right) {
                     this.x = this.x;
-                } else if (input.includes('a')) {
+                } else if (left) {
                     this.x -= 6;
                 } else {
                     this.x += 6;
                 }
             } else if (this.facingLeft) {
-                if (this.game.input.enterOrRightClick(input) && !input.includes('a') && !input.includes('d')) {
+                if (this.game.input.isRollAttack(input) && !left && !right) {
                     this.x = this.x;
-                } else if (input.includes('d')) {
+                } else if (right) {
                     this.x += 6;
                 } else {
                     this.x -= 6;
@@ -1039,13 +1162,6 @@ export class Player {
 
                 this.energyReachedZero = false;
 
-                if (this.isUnderwater) {
-                    this.particleImage = 'bluebubble';
-                    this.splashImage = 'bluebubble';
-                } else {
-                    this.particleImage = 'bluefire';
-                    this.splashImage = 'bluefire';
-                }
                 if (this.currentState === this.states[4]) {
                     this.game.speed = this.bluePotionSpeed;
                 }
@@ -1059,14 +1175,6 @@ export class Player {
             this.blueFireTimer -= deltaTime;
 
             if (this.blueFireTimer <= 0) {
-                if (this.isUnderwater) {
-                    this.particleImage = 'bubble';
-                    this.splashImage = 'bubble';
-                } else {
-                    this.particleImage = 'fire';
-                    this.splashImage = 'fire';
-                }
-
                 this.isBluePotionActive = false;
                 this.game.audioHandler.firedogSFX.stopSound('bluePotionEnergyGoingUp');
 

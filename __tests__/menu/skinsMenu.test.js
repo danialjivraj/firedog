@@ -7,11 +7,11 @@ describe('Skins menu', () => {
     beforeAll(() => {
         document.body.innerHTML = `
       <img id="skinStage" />
-      <img id="player" />
-      <img id="player2" />
-      <img id="player3" />
-      <img id="player4" />
-      <img id="player5" />
+      <img id="defaultSkin" />
+      <img id="hatSkin" />
+      <img id="choloSkin" />
+      <img id="zabkaSkin" />
+      <img id="shinySkin" />
     `;
         jest.spyOn(BaseMenu.prototype, 'draw').mockImplementation(() => { });
         jest.spyOn(BaseMenu.prototype, 'handleMenuSelection').mockImplementation(() => { });
@@ -28,6 +28,13 @@ describe('Skins menu', () => {
             height: 689,
             audioHandler: { menu: { playSound: jest.fn() } },
             menu: { main: { activateMenu: jest.fn() } },
+            canSelect: true,
+            canSelectForestMap: true,
+            canvas: {
+                width: 1920,
+                height: 689,
+                getBoundingClientRect: () => ({ left: 0, top: 0, width: 1920, height: 689 })
+            },
         };
         menu = new Skins(mockGame);
         menu.activateMenu();
@@ -43,8 +50,7 @@ describe('Skins menu', () => {
 
     describe('initialization', () => {
         it('starts with default skin selected', () => {
-            expect(menu.currentSkin.id).toBe('player');
-            expect(menu.selectedSkinIndex).toBe(0);
+            expect(menu.currentSkin.id).toBe('defaultSkin');
             expect(menu.menuOptions).toEqual([
                 'Firedog - Selected',
                 'Hatboy Firedog',
@@ -57,19 +63,18 @@ describe('Skins menu', () => {
 
     describe('skin objects', () => {
         it('has the correct IDs on each skin object', () => {
-            expect(menu.defaultSkin.id).toBe('player');
-            expect(menu.hatSkin.id).toBe('player2');
-            expect(menu.choloSkin.id).toBe('player3');
-            expect(menu.zabkaSkin.id).toBe('player4');
-            expect(menu.shinySkin.id).toBe('player5');
+            expect(menu.defaultSkin.id).toBe('defaultSkin');
+            expect(menu.hatSkin.id).toBe('hatSkin');
+            expect(menu.choloSkin.id).toBe('choloSkin');
+            expect(menu.zabkaSkin.id).toBe('zabkaSkin');
+            expect(menu.shinySkin.id).toBe('shinySkin');
         });
     });
 
     describe('setCurrentSkinById()', () => {
-        it('selects player2 (Hatboy Firedog)', () => {
-            menu.setCurrentSkinById('player2');
-            expect(menu.currentSkin.id).toBe('player2');
-            expect(menu.selectedSkinIndex).toBe(1);
+        it('selects hatSkin (Hatboy Firedog)', () => {
+            menu.setCurrentSkinById('hatSkin');
+            expect(menu.currentSkin.id).toBe('hatSkin');
             expect(menu.menuOptions).toEqual([
                 'Firedog',
                 'Hatboy Firedog - Selected',
@@ -79,10 +84,9 @@ describe('Skins menu', () => {
             ]);
         });
 
-        it('selects player3 (Cholo Firedog)', () => {
-            menu.setCurrentSkinById('player3');
-            expect(menu.currentSkin.id).toBe('player3');
-            expect(menu.selectedSkinIndex).toBe(2);
+        it('selects choloSkin (Cholo Firedog)', () => {
+            menu.setCurrentSkinById('choloSkin');
+            expect(menu.currentSkin.id).toBe('choloSkin');
             expect(menu.menuOptions).toEqual([
                 'Firedog',
                 'Hatboy Firedog',
@@ -92,10 +96,9 @@ describe('Skins menu', () => {
             ]);
         });
 
-        it('selects player4 (Zabka Firedog)', () => {
-            menu.setCurrentSkinById('player4');
-            expect(menu.currentSkin.id).toBe('player4');
-            expect(menu.selectedSkinIndex).toBe(3);
+        it('selects zabkaSkin (Zabka Firedog)', () => {
+            menu.setCurrentSkinById('zabkaSkin');
+            expect(menu.currentSkin.id).toBe('zabkaSkin');
             expect(menu.menuOptions).toEqual([
                 'Firedog',
                 'Hatboy Firedog',
@@ -114,8 +117,8 @@ describe('Skins menu', () => {
         });
 
         it('removes the old "- Selected" when picking a new skin', () => {
-            menu.setCurrentSkinById('player2');
-            menu.setCurrentSkinById('player3');
+            menu.setCurrentSkinById('hatSkin');
+            menu.setCurrentSkinById('choloSkin');
             expect(menu.menuOptions).toEqual([
                 'Firedog',
                 'Hatboy Firedog',
@@ -130,7 +133,7 @@ describe('Skins menu', () => {
         it('keeps default skin 90% of the time', () => {
             jest.spyOn(Math, 'random').mockReturnValue(0.5);
             menu.setCurrentSkin('Firedog');
-            expect(menu.currentSkin.id).toBe('player');
+            expect(menu.currentSkin.id).toBe('defaultSkin');
             expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalled();
             Math.random.mockRestore();
         });
@@ -138,7 +141,7 @@ describe('Skins menu', () => {
         it('selects shiny skin 10% of the time and plays sound', () => {
             jest.spyOn(Math, 'random').mockReturnValue(0.95);
             menu.setCurrentSkin('Firedog');
-            expect(menu.currentSkin.id).toBe('player5');
+            expect(menu.currentSkin.id).toBe('shinySkin');
             expect(mockGame.audioHandler.menu.playSound)
                 .toHaveBeenCalledWith('shinySkinRizzSound');
             Math.random.mockRestore();
@@ -147,7 +150,7 @@ describe('Skins menu', () => {
         it('selects shiny when random() === threshold', () => {
             jest.spyOn(Math, 'random').mockReturnValue(0.9);
             menu.setCurrentSkin('Firedog');
-            expect(menu.currentSkin.id).toBe('player5');
+            expect(menu.currentSkin.id).toBe('shinySkin');
             expect(mockGame.audioHandler.menu.playSound)
                 .toHaveBeenCalledWith('shinySkinRizzSound');
             Math.random.mockRestore();
@@ -155,55 +158,49 @@ describe('Skins menu', () => {
 
         it('selects hat skin by name', () => {
             menu.setCurrentSkin('Hatboy Firedog');
-            expect(menu.currentSkin.id).toBe('player2');
+            expect(menu.currentSkin.id).toBe('hatSkin');
         });
 
         it('selects cholo skin by name', () => {
             menu.setCurrentSkin('Firedog the Cholo');
-            expect(menu.currentSkin.id).toBe('player3');
+            expect(menu.currentSkin.id).toBe('choloSkin');
         });
 
         it('selects zabka skin by name', () => {
             menu.setCurrentSkin('Zabka Firedog');
-            expect(menu.currentSkin.id).toBe('player4');
+            expect(menu.currentSkin.id).toBe('zabkaSkin');
         });
 
         it('falls back to default on unknown name', () => {
             menu.currentSkin = menu.hatSkin;
             menu.setCurrentSkin('No such skin');
-            expect(menu.currentSkin.id).toBe('player');
+            expect(menu.currentSkin.id).toBe('defaultSkin');
         });
     });
 
     describe('handleMenuSelection()', () => {
         it('chooses Firedog and marks it selected', () => {
-            menu.selectedSkinIndex = 1;
-            menu.menuOptions[1] += ' - Selected';
+            menu.setSelectedIndex(1);
             menu.selectedOption = 0;
-            menu.menuOptions[0] = 'Firedog';
             menu.handleMenuSelection();
-            expect(menu.selectedSkinIndex).toBe(0);
             expect(menu.menuOptions[0]).toBe('Firedog - Selected');
         });
 
         it('chooses Hatboy Firedog', () => {
             menu.selectedOption = 1;
             menu.handleMenuSelection();
-            expect(menu.selectedSkinIndex).toBe(1);
             expect(menu.menuOptions[1]).toBe('Hatboy Firedog - Selected');
         });
 
         it('chooses Cholo Firedog', () => {
             menu.selectedOption = 2;
             menu.handleMenuSelection();
-            expect(menu.selectedSkinIndex).toBe(2);
             expect(menu.menuOptions[2]).toBe('Firedog the Cholo - Selected');
         });
 
         it('chooses Zabka Firedog', () => {
             menu.selectedOption = 3;
             menu.handleMenuSelection();
-            expect(menu.selectedSkinIndex).toBe(3);
             expect(menu.menuOptions[3]).toBe('Zabka Firedog - Selected');
         });
 
@@ -313,4 +310,53 @@ describe('Skins menu', () => {
             );
         });
     });
+
+    describe('saving behavior (Skins via SelectMenu)', () => {
+        beforeEach(() => {
+            mockGame.saveGameState = mockGame.saveGameState || jest.fn();
+            mockGame.saveGameState.mockClear();
+        });
+
+        it('saves once when changing to a different skin (Enter path)', () => {
+            menu.selectedOption = 1;
+            menu.handleMenuSelection();
+
+            expect(menu.menuOptions).toEqual([
+                'Firedog',
+                'Hatboy Firedog - Selected',
+                'Firedog the Cholo',
+                'Zabka Firedog',
+                'Go Back'
+            ]);
+            expect(mockGame.saveGameState).toHaveBeenCalledTimes(1);
+        });
+
+        it('does NOT save when confirming the already-selected skin', () => {
+            mockGame.saveGameState.mockClear();
+            menu.selectedOption = 0;
+            menu.handleMenuSelection();
+            expect(mockGame.saveGameState).not.toHaveBeenCalled();
+        });
+
+        it('does NOT save when choosing Go Back', () => {
+            mockGame.saveGameState.mockClear();
+            menu.selectedOption = 4;
+            menu.handleMenuSelection();
+            expect(mockGame.menu.main.activateMenu).toHaveBeenCalledWith(1);
+            expect(mockGame.saveGameState).not.toHaveBeenCalled();
+        });
+
+        it('mouse click funnels to same save semantics', () => {
+            mockGame.saveGameState.mockClear();
+            menu.selectedOption = 2;
+            menu.handleMouseClick({ clientX: 0, clientY: 0 });
+            expect(mockGame.saveGameState).toHaveBeenCalledTimes(1);
+
+            mockGame.saveGameState.mockClear();
+            menu.selectedOption = 2;
+            menu.handleMouseClick({ clientX: 0, clientY: 0 });
+            expect(mockGame.saveGameState).not.toHaveBeenCalled();
+        });
+    });
+
 });

@@ -1,8 +1,6 @@
 import { UI } from '../../game/interface/UI';
 import { Elyvorg } from '../../game/entities/enemies/elyvorg';
 
-global.timeTickingSound = 'timeTickingSound';
-
 describe('UI', () => {
     let game, ui, ctx;
 
@@ -17,7 +15,8 @@ describe('UI', () => {
             coins: 5,
             fontColor: 'white',
 
-            mapSelected: {},
+            currentMap: 'Map1',
+
             background: { totalDistanceTraveled: 200 },
             maxDistance: 400,
 
@@ -99,6 +98,12 @@ describe('UI', () => {
         };
     });
 
+    function createElyvorg(overrides = {}) {
+        const enemy = new Elyvorg(game);
+        Object.assign(enemy, overrides);
+        return enemy;
+    }
+
     describe('constructor', () => {
         test('hooks up UI images via getElementById', () => {
             expect(document.getElementById).toHaveBeenCalledWith('firedogHead');
@@ -109,316 +114,9 @@ describe('UI', () => {
         });
     });
 
-    describe('progressBar()', () => {
-        test('draws percentage text and updates internal state', () => {
-            ui.progressBar(ctx, 75, 375, 500, 'pink');
-            expect(ctx.fillText).toHaveBeenCalledWith('75%', expect.any(Number), expect.any(Number));
-            expect(ui.percentage).toBe(75);
-            expect(ui.filledWidth).toBe(375);
-            expect(ctx.fill).toHaveBeenCalled();
-        });
-    });
-
-    describe('distanceBar()', () => {
-        test('calls progressBar if mapSelected[6] is false', () => {
-            game.mapSelected[6] = false;
-            const spy = jest.spyOn(ui, 'progressBar');
-            ui.distanceBar(ctx);
-            expect(spy).toHaveBeenCalled();
-        });
-        test('skips if mapSelected[6] is true', () => {
-            game.mapSelected[6] = true;
-            const spy = jest.spyOn(ui, 'progressBar');
-            ui.distanceBar(ctx);
-            expect(spy).not.toHaveBeenCalled();
-        });
-    });
-
-    describe('elyvorgHealthBar()', () => {
-        test('skips when elyvorgInFight is false', () => {
-            game.elyvorgInFight = false;
-            const spy = jest.spyOn(ui, 'progressBar');
-            ui.elyvorgHealthBar(ctx);
-            expect(spy).not.toHaveBeenCalled();
-        });
-        test('renders when elyvorgInFight and enemy present', () => {
-            game.elyvorgInFight = true;
-            const e = new Elyvorg(game);
-            e.lives = 4;
-            e.livesDefeatedAt = 1;
-            e.maxLives = 5;
-            game.enemies = [e];
-            const spy = jest.spyOn(ui, 'progressBar');
-            ui.elyvorgHealthBar(ctx);
-            expect(spy).toHaveBeenCalledWith(
-                ctx,
-                expect.any(Number),
-                expect.any(Number),
-                expect.any(Number),
-                'red'
-            );
-        });
-        test('skips if no Elyvorg in enemies', () => {
-            game.elyvorgInFight = true;
-            game.enemies = [];
-            const spy = jest.spyOn(ui, 'progressBar');
-            ui.elyvorgHealthBar(ctx);
-            expect(spy).not.toHaveBeenCalled();
-        });
-    });
-
-    describe('energy()', () => {
-        test('default branch: black text, white shadow when energy ≥ 20', () => {
-            game.player.energy = 50;
-            ui.energy(ctx);
-            expect(ctx.fillStyle).toBe('black');
-            expect(ctx.shadowColor).toBe('white');
-            expect(ctx.fillText).toHaveBeenCalled();
-        });
-        test('poisoned branch', () => {
-            game.player.isPoisonedActive = true;
-            ui.energy(ctx);
-            expect(ctx.fillStyle).toBe('darkgreen');
-            expect(ctx.shadowColor).toBe('black');
-        });
-        test('low energy branch', () => {
-            game.player.energy = 10;
-            ui.energy(ctx);
-            expect(ctx.shadowColor).toBe('gold');
-        });
-        test('zero energy branch', () => {
-            game.player.energyReachedZero = true;
-            ui.energy(ctx);
-            expect(ctx.fillStyle).toBe('red');
-        });
-        test('blue potion shake branch', () => {
-            game.player.isBluePotionActive = true;
-            ui.energy(ctx);
-            expect(ctx.fillText).toHaveBeenCalled();
-        });
-    });
-
-    describe('timer()', () => {
-        test('non-underwater: shows normal time and toggles stop/resume', () => {
-            game.player.isUnderwater = false;
-            game.time = 125000; // 2:05
-            ui.timer(ctx);
-            expect(ctx.fillText).toHaveBeenCalledWith('Time: 2:05', 20, 90);
-            expect(game.audioHandler.mapSoundtrack.stopSound)
-                .toHaveBeenCalledWith('timeTickingSound');
-            expect(game.audioHandler.mapSoundtrack.resumeSound)
-                .toHaveBeenCalledWith('timeTickingSound');
-        });
-        test('underwater < secondsLeft: plays ticking', () => {
-            game.player.isUnderwater = true;
-            game.maxTime = 70000;
-            game.time = 65000; // remaining=5000 < 60000
-            ui.timer(ctx);
-            expect(ui.secondsLeftActivated).toBe(true);
-            expect(game.audioHandler.mapSoundtrack.playSound)
-                .toHaveBeenCalledWith('timeTickingSound', true);
-        });
-        test('underwater > secondsLeft: black on white', () => {
-            game.player.isUnderwater = true;
-            game.maxTime = 70000;
-            game.time = 5000; // remaining=65000>60000
-            ui.timer(ctx);
-            expect(ctx.fillStyle).toBe('black');
-            expect(ctx.shadowColor).toBe('white');
-        });
-        test('dynamic white‐flash branch', () => {
-            game.player.isUnderwater = true;
-            game.maxTime = 70000;
-            // remaining = 30000; 30000%2000===0<1000
-            game.time = 40000;
-            ui.timer(ctx);
-            expect(ctx.fillStyle).toBe('white');
-        });
-        test('pauseSound when menu paused', () => {
-            game.player.isUnderwater = false;
-            game.menu.pause.isPaused = true;
-            ui.timer(ctx);
-            expect(game.audioHandler.mapSoundtrack.pauseSound)
-                .toHaveBeenCalledWith('timeTickingSound');
-        });
-        test('stopSound when cabin visible or gameOver', () => {
-            game.player.isUnderwater = true;
-            game.cabin.isFullyVisible = true;
-            ui.timer(ctx);
-            expect(game.audioHandler.mapSoundtrack.stopSound)
-                .toHaveBeenCalledWith('timeTickingSound');
-        });
-        test('blue potion center‐screen countdown', () => {
-            game.player.isBluePotionActive = true;
-            game.player.blueFireTimer = 2500;
-            ui.timer(ctx);
-            expect(ctx.fillStyle).toBe('blue');
-            expect(ctx.fillText).toHaveBeenCalledWith(
-                expect.stringMatching(/2\.5/),
-                expect.any(Number),
-                expect.any(Number)
-            );
-        });
-    });
-
-    describe('firedogAbilityUI()', () => {
-        test('diving grayscale + countdown on cooldown', () => {
-            game.player.divingTimer = 500;
-            game.player.divingCooldown = 1000;
-            ui.firedogAbilityUI(ctx);
-            expect(ctx.filter).toBe('grayscale(100%)');
-            expect(ctx.drawImage).toHaveBeenCalled();
-            expect(ctx.fillText).toHaveBeenCalled();
-        });
-        test('fireball gray‐out when on cooldown', () => {
-            game.player.fireballTimer = 500;
-            game.player.fireballCooldown = 1000;
-            ui.firedogAbilityUI(ctx);
-            expect(ctx.filter).toBe('grayscale(100%)');
-            expect(ctx.drawImage).toHaveBeenCalledWith(
-                ui.fireballUI, expect.any(Number), expect.any(Number), 50, 50
-            );
-            expect(ctx.fillText).toHaveBeenCalled();
-        });
-        test('red‐potion branch', () => {
-            game.player.isRedPotionActive = true;
-            game.player.redPotionTimer = 5000;
-            ui.firedogAbilityUI(ctx);
-            expect(ctx.drawImage).toHaveBeenCalledWith(
-                ui.fireballRedPotionUI, expect.any(Number), expect.any(Number), 50, 50
-            );
-        });
-        test('darkWhiteBorder variant', () => {
-            game.player.isDarkWhiteBorder = true;
-            ui.firedogAbilityUI(ctx);
-            expect(ctx.drawImage).toHaveBeenCalledWith(
-                ui.divingUIWhiteBorder, expect.any(Number), expect.any(Number), 50, 50
-            );
-        });
-        test('invisible cooldown when invisible', () => {
-            game.player.invisibleTimer = 2000;
-            game.player.invisibleActiveCooldownTimer = 3000;
-            game.player.isInvisible = true;
-            ui.firedogAbilityUI(ctx);
-            expect(ctx.fillText).toHaveBeenCalled();
-        });
-    });
-
-    describe('elyvorgAbilityUI()', () => {
-        test('skips when not in fight', () => {
-            game.elyvorgInFight = false;
-            ui.elyvorgAbilityUI(ctx);
-            expect(ctx.drawImage).not.toHaveBeenCalled();
-        });
-        test('poison active branch', () => {
-            game.elyvorgInFight = true;
-            const e = new Elyvorg(game);
-            e.isPoisonActive = true;
-            e.poisonCooldown = 5000;
-            e.poisonCooldownTimer = 2000;
-            game.enemies = [e];
-            ui.elyvorgAbilityUI(ctx);
-            expect(ctx.drawImage).toHaveBeenCalledWith(
-                ui.poisonUI, expect.any(Number), 20, 65, 65
-            );
-            expect(ctx.strokeText).toHaveBeenCalled();
-        });
-        test('poison grayscale when no cooldown', () => {
-            game.elyvorgInFight = true;
-            const e = new Elyvorg(game);
-            e.poisonCooldownTimer = 0;
-            game.enemies = [e];
-            ui.elyvorgAbilityUI(ctx);
-            expect(ctx.filter).toBe('grayscale(100%)');
-        });
-        test('gravity active & countdown', () => {
-            game.elyvorgInFight = true;
-            const e = new Elyvorg(game);
-            e.isGravitySpinnerActive = true;
-            e.gravityCooldown = 5000;
-            e.gravityCooldownTimer = 2000;
-            game.enemies = [e];
-            ui.elyvorgAbilityUI(ctx);
-            expect(ctx.drawImage).toHaveBeenCalledWith(
-                ui.gravityUI, expect.any(Number), 20, 65, 65
-            );
-            expect(ctx.strokeText).toHaveBeenCalled();
-        });
-        test('gravity grayscale when no cooldown', () => {
-            game.elyvorgInFight = true;
-            const e = new Elyvorg(game);
-            e.gravityCooldownTimer = 0;
-            game.enemies = [e];
-            ui.elyvorgAbilityUI(ctx);
-            expect(ctx.filter).toBe('grayscale(100%)');
-        });
-        test('slashAttackOnce branch', () => {
-            game.elyvorgInFight = true;
-            const e = new Elyvorg(game);
-            e.slashAttackOnce = true;
-            game.enemies = [e];
-            ui.elyvorgAbilityUI(ctx);
-            expect(ctx.drawImage).toHaveBeenCalledWith(
-                ui.slashUI, expect.any(Number), 20, 65, 65
-            );
-        });
-        test('slash warning branch', () => {
-            game.elyvorgInFight = true;
-            const e = new Elyvorg(game);
-            e.slashAttackOnce = false;
-            e.slashAttackStateCounterLimit = 5;
-            e.slashAttackStateCounter = 4;
-            game.enemies = [e];
-            ui.elyvorgAbilityUI(ctx);
-            expect(ctx.drawImage).toHaveBeenCalledWith(
-                ui.slashWarningUI, expect.any(Number), 20, 65, 65
-            );
-        });
-        test('slash grayscale branch', () => {
-            game.elyvorgInFight = true;
-            const e = new Elyvorg(game);
-            e.slashAttackOnce = false;
-            e.slashAttackStateCounterLimit = 5;
-            e.slashAttackStateCounter = 1;
-            game.enemies = [e];
-            ui.elyvorgAbilityUI(ctx);
-            expect(ctx.filter).toBe('grayscale(100%)');
-        });
-        test('electric active branch', () => {
-            game.elyvorgInFight = true;
-            const e = new Elyvorg(game);
-            e.isElectricWheelActive = true;
-            game.enemies = [e];
-            ui.elyvorgAbilityUI(ctx);
-            expect(ctx.drawImage).toHaveBeenCalledWith(
-                ui.electricUI, expect.any(Number), 20, 65, 65
-            );
-        });
-        test('electric warning branch', () => {
-            game.elyvorgInFight = true;
-            const e = new Elyvorg(game);
-            e.isElectricWheelActive = false;
-            e.electricWheelTimer = 2000;
-            game.enemies = [e];
-            ui.elyvorgAbilityUI(ctx);
-            expect(ctx.drawImage).toHaveBeenCalledWith(
-                ui.electricWarningUI, expect.any(Number), 20, 65, 65
-            );
-        });
-        test('electric grayscale branch', () => {
-            game.elyvorgInFight = true;
-            const e = new Elyvorg(game);
-            e.isElectricWheelActive = false;
-            e.electricWheelTimer = 0;
-            game.enemies = [e];
-            ui.elyvorgAbilityUI(ctx);
-            expect(ctx.filter).toBe('grayscale(100%)');
-        });
-    });
-
     describe('draw()', () => {
         test('renders coins, bars, timer, energy, lives and abilities', () => {
-            game.mapSelected[6] = false;
+            game.currentMap = 'Map1';
             game.elyvorgInFight = false;
             game.lives = 2;
             game.maxLives = 3;
@@ -437,6 +135,372 @@ describe('UI', () => {
             expect(spyEnergy).toHaveBeenCalledWith(ctx);
 
             expect(ctx.drawImage).toHaveBeenCalledTimes(5);
+        });
+    });
+
+    describe('progressBar()', () => {
+        test('draws percentage text and updates internal state', () => {
+            ui.progressBar(ctx, 75, 375, 500, 'pink');
+            expect(ctx.fillText).toHaveBeenCalledWith('75%', expect.any(Number), expect.any(Number));
+            expect(ui.percentage).toBe(75);
+            expect(ui.filledWidth).toBe(375);
+            expect(ctx.fill).toHaveBeenCalled();
+        });
+    });
+
+    describe('distanceBar()', () => {
+        test('calls progressBar when currentMap is not "Map6"', () => {
+            game.currentMap = 'Map1';
+            const spy = jest.spyOn(ui, 'progressBar');
+            ui.distanceBar(ctx);
+            expect(spy).toHaveBeenCalled();
+        });
+
+        test('skips progressBar when currentMap is "Map6"', () => {
+            game.currentMap = 'Map6';
+            const spy = jest.spyOn(ui, 'progressBar');
+            ui.distanceBar(ctx);
+            expect(spy).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('elyvorgHealthBar()', () => {
+        test('skips when elyvorgInFight is false', () => {
+            game.elyvorgInFight = false;
+            const spy = jest.spyOn(ui, 'progressBar');
+            ui.elyvorgHealthBar(ctx);
+            expect(spy).not.toHaveBeenCalled();
+        });
+
+        test('renders health bar when in fight and Elyvorg is present', () => {
+            game.elyvorgInFight = true;
+            const enemy = createElyvorg({
+                lives: 4,
+                livesDefeatedAt: 1,
+                maxLives: 5,
+            });
+            game.enemies = [enemy];
+
+            const spy = jest.spyOn(ui, 'progressBar');
+            ui.elyvorgHealthBar(ctx);
+            expect(spy).toHaveBeenCalledWith(
+                ctx,
+                expect.any(Number),
+                expect.any(Number),
+                expect.any(Number),
+                'red'
+            );
+        });
+
+        test('skips when there is no Elyvorg in enemies', () => {
+            game.elyvorgInFight = true;
+            game.enemies = [];
+            const spy = jest.spyOn(ui, 'progressBar');
+            ui.elyvorgHealthBar(ctx);
+            expect(spy).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('energy()', () => {
+        test('uses black text and white shadow when energy ≥ 20', () => {
+            game.player.energy = 50;
+            ui.energy(ctx);
+            expect(ctx.fillStyle).toBe('black');
+            expect(ctx.shadowColor).toBe('white');
+            expect(ctx.fillText).toHaveBeenCalled();
+        });
+
+        test('uses darkgreen text and black shadow when poisoned', () => {
+            game.player.isPoisonedActive = true;
+            ui.energy(ctx);
+            expect(ctx.fillStyle).toBe('darkgreen');
+            expect(ctx.shadowColor).toBe('black');
+        });
+
+        test('uses gold shadow when energy is low but not zero', () => {
+            game.player.energy = 10;
+            ui.energy(ctx);
+            expect(ctx.shadowColor).toBe('gold');
+        });
+
+        test('uses red text when energy has reached zero', () => {
+            game.player.energyReachedZero = true;
+            ui.energy(ctx);
+            expect(ctx.fillStyle).toBe('red');
+        });
+
+        test('renders shaken energy text when blue potion is active', () => {
+            game.player.isBluePotionActive = true;
+            ui.energy(ctx);
+            expect(ctx.fillText).toHaveBeenCalled();
+        });
+    });
+
+    describe('timer()', () => {
+        test('non-underwater: shows normal time and toggles stop/resume', () => {
+            game.player.isUnderwater = false;
+            game.time = 125000; // 2:05
+            ui.timer(ctx);
+            expect(ctx.fillText).toHaveBeenCalledWith('Time: 2:05', 20, 90);
+            expect(game.audioHandler.mapSoundtrack.stopSound)
+                .toHaveBeenCalledWith('timeTickingSound');
+            expect(game.audioHandler.mapSoundtrack.resumeSound)
+                .toHaveBeenCalledWith('timeTickingSound');
+        });
+
+        test('underwater: remaining time below threshold plays ticking sound', () => {
+            game.player.isUnderwater = true;
+            game.maxTime = 70000;
+            game.time = 65000; // remaining = 5000 < 60000
+            ui.timer(ctx);
+            expect(ui.secondsLeftActivated).toBe(true);
+            expect(game.audioHandler.mapSoundtrack.playSound)
+                .toHaveBeenCalledWith('timeTickingSound', true);
+        });
+
+        test('underwater: remaining time above threshold uses black on white', () => {
+            game.player.isUnderwater = true;
+            game.maxTime = 70000;
+            game.time = 5000; // remaining = 65000 > 60000
+            ui.timer(ctx);
+            expect(ctx.fillStyle).toBe('black');
+            expect(ctx.shadowColor).toBe('white');
+        });
+
+        test('underwater: dynamic white flash branch switches fillStyle to white', () => {
+            game.player.isUnderwater = true;
+            game.maxTime = 70000;
+            // remaining = 30000; 30000 % 2000 === 0 < 1000
+            game.time = 40000;
+            ui.timer(ctx);
+            expect(ctx.fillStyle).toBe('white');
+        });
+
+        test('pauses ticking sound when menu is paused', () => {
+            game.player.isUnderwater = false;
+            game.menu.pause.isPaused = true;
+            ui.timer(ctx);
+            expect(game.audioHandler.mapSoundtrack.pauseSound)
+                .toHaveBeenCalledWith('timeTickingSound');
+        });
+
+        test('stops ticking sound when cabin is visible or game is over', () => {
+            game.player.isUnderwater = true;
+            game.cabin.isFullyVisible = true;
+            ui.timer(ctx);
+            expect(game.audioHandler.mapSoundtrack.stopSound)
+                .toHaveBeenCalledWith('timeTickingSound');
+        });
+
+        test('shows blue potion center-screen countdown when active', () => {
+            game.player.isBluePotionActive = true;
+            game.player.blueFireTimer = 2500;
+            ui.timer(ctx);
+            expect(ctx.fillStyle).toBe('blue');
+            expect(ctx.fillText).toHaveBeenCalledWith(
+                expect.stringMatching(/2\.5/),
+                expect.any(Number),
+                expect.any(Number)
+            );
+        });
+    });
+
+    describe('firedogAbilityUI()', () => {
+        test('diving icon grayscale with countdown while on cooldown', () => {
+            game.player.divingTimer = 500;
+            game.player.divingCooldown = 1000;
+            ui.firedogAbilityUI(ctx);
+            expect(ctx.filter).toBe('grayscale(100%)');
+            expect(ctx.drawImage).toHaveBeenCalled();
+            expect(ctx.fillText).toHaveBeenCalled();
+        });
+
+        test('fireball icon gray-out with countdown while on cooldown', () => {
+            game.player.fireballTimer = 500;
+            game.player.fireballCooldown = 1000;
+            ui.firedogAbilityUI(ctx);
+            expect(ctx.filter).toBe('grayscale(100%)');
+            expect(ctx.drawImage).toHaveBeenCalledWith(
+                ui.fireballUI, expect.any(Number), expect.any(Number), 50, 50
+            );
+            expect(ctx.fillText).toHaveBeenCalled();
+        });
+
+        test('renders red potion fireball image and countdown when active', () => {
+            game.player.isRedPotionActive = true;
+            game.player.redPotionTimer = 5000;
+            ui.firedogAbilityUI(ctx);
+            expect(ctx.drawImage).toHaveBeenCalledWith(
+                ui.fireballRedPotionUI, expect.any(Number), expect.any(Number), 50, 50
+            );
+        });
+
+        test('uses white-border variants when darkWhiteBorder flag is set', () => {
+            game.player.isDarkWhiteBorder = true;
+            ui.firedogAbilityUI(ctx);
+            expect(ctx.drawImage).toHaveBeenCalledWith(
+                ui.divingUIWhiteBorder, expect.any(Number), expect.any(Number), 50, 50
+            );
+        });
+
+        test('shows invisible cooldown timer when invisible', () => {
+            game.player.invisibleTimer = 2000;
+            game.player.invisibleActiveCooldownTimer = 3000;
+            game.player.isInvisible = true;
+            ui.firedogAbilityUI(ctx);
+            expect(ctx.fillText).toHaveBeenCalled();
+        });
+    });
+
+    describe('elyvorgAbilityUI()', () => {
+        test('skips drawing when not in Elyvorg fight', () => {
+            game.elyvorgInFight = false;
+            ui.elyvorgAbilityUI(ctx);
+            expect(ctx.drawImage).not.toHaveBeenCalled();
+        });
+
+        test('poison ability: shows active icon and countdown during cooldown', () => {
+            game.elyvorgInFight = true;
+            game.enemies = [
+                createElyvorg({
+                    isPoisonActive: true,
+                    poisonCooldown: 5000,
+                    poisonCooldownTimer: 2000,
+                }),
+            ];
+
+            ui.elyvorgAbilityUI(ctx);
+            expect(ctx.drawImage).toHaveBeenCalledWith(
+                ui.poisonUI, expect.any(Number), 20, 65, 65
+            );
+            expect(ctx.strokeText).toHaveBeenCalled();
+        });
+
+        test('poison ability: grayscale icon when not on cooldown', () => {
+            game.elyvorgInFight = true;
+            game.enemies = [
+                createElyvorg({
+                    poisonCooldownTimer: 0,
+                }),
+            ];
+
+            ui.elyvorgAbilityUI(ctx);
+            expect(ctx.filter).toBe('grayscale(100%)');
+        });
+
+        test('gravity ability: shows active icon and countdown during cooldown', () => {
+            game.elyvorgInFight = true;
+            game.enemies = [
+                createElyvorg({
+                    isGravitySpinnerActive: true,
+                    gravityCooldown: 5000,
+                    gravityCooldownTimer: 2000,
+                }),
+            ];
+
+            ui.elyvorgAbilityUI(ctx);
+            expect(ctx.drawImage).toHaveBeenCalledWith(
+                ui.gravityUI, expect.any(Number), 20, 65, 65
+            );
+            expect(ctx.strokeText).toHaveBeenCalled();
+        });
+
+        test('gravity ability: grayscale icon when not on cooldown', () => {
+            game.elyvorgInFight = true;
+            game.enemies = [
+                createElyvorg({
+                    gravityCooldownTimer: 0,
+                }),
+            ];
+
+            ui.elyvorgAbilityUI(ctx);
+            expect(ctx.filter).toBe('grayscale(100%)');
+        });
+
+        test('slash ability: draws normal icon when first slash attack is ready', () => {
+            game.elyvorgInFight = true;
+            game.enemies = [
+                createElyvorg({
+                    slashAttackOnce: true,
+                }),
+            ];
+
+            ui.elyvorgAbilityUI(ctx);
+            expect(ctx.drawImage).toHaveBeenCalledWith(
+                ui.slashUI, expect.any(Number), 20, 65, 65
+            );
+        });
+
+        test('slash ability: draws warning icon near attack threshold', () => {
+            game.elyvorgInFight = true;
+            game.enemies = [
+                createElyvorg({
+                    slashAttackOnce: false,
+                    slashAttackStateCounterLimit: 5,
+                    slashAttackStateCounter: 4,
+                }),
+            ];
+
+            ui.elyvorgAbilityUI(ctx);
+            expect(ctx.drawImage).toHaveBeenCalledWith(
+                ui.slashWarningUI, expect.any(Number), 20, 65, 65
+            );
+        });
+
+        test('slash ability: grayscale icon when far from attack threshold', () => {
+            game.elyvorgInFight = true;
+            game.enemies = [
+                createElyvorg({
+                    slashAttackOnce: false,
+                    slashAttackStateCounterLimit: 5,
+                    slashAttackStateCounter: 1,
+                }),
+            ];
+
+            ui.elyvorgAbilityUI(ctx);
+            expect(ctx.filter).toBe('grayscale(100%)');
+        });
+
+        test('electric ability: draws active icon when wheel is active', () => {
+            game.elyvorgInFight = true;
+            game.enemies = [
+                createElyvorg({
+                    isElectricWheelActive: true,
+                }),
+            ];
+
+            ui.elyvorgAbilityUI(ctx);
+            expect(ctx.drawImage).toHaveBeenCalledWith(
+                ui.electricUI, expect.any(Number), 20, 65, 65
+            );
+        });
+
+        test('electric ability: draws warning icon when wheel is charging', () => {
+            game.elyvorgInFight = true;
+            game.enemies = [
+                createElyvorg({
+                    isElectricWheelActive: false,
+                    electricWheelTimer: 2000,
+                }),
+            ];
+
+            ui.elyvorgAbilityUI(ctx);
+            expect(ctx.drawImage).toHaveBeenCalledWith(
+                ui.electricWarningUI, expect.any(Number), 20, 65, 65
+            );
+        });
+
+        test('electric ability: grayscale icon when wheel is inactive and not charging', () => {
+            game.elyvorgInFight = true;
+            game.enemies = [
+                createElyvorg({
+                    isElectricWheelActive: false,
+                    electricWheelTimer: 0,
+                }),
+            ];
+
+            ui.elyvorgAbilityUI(ctx);
+            expect(ctx.filter).toBe('grayscale(100%)');
         });
     });
 });

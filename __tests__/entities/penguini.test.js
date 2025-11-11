@@ -25,9 +25,9 @@ describe('Penguini', () => {
             enterToTalkToPenguin: true,
             penguini: null,
             player: { x: 0, width: 20 },
-            mapSelected: {},
             talkToPenguinOneTimeOnly: false,
-            debug: false
+            debug: false,
+            currentMap: 'Map1',
         };
 
         penguini = new Penguini(game, 50, 30, 'sheet', 2);
@@ -106,7 +106,7 @@ describe('Penguini', () => {
 
             test('when notEnoughCoins & close enough, clamps similarly', () => {
                 game.notEnoughCoins = true;
-                game.player.x = 200; // 200+20>=(200→195)+10
+                game.player.x = 200;
                 penguini.update(0);
                 expect(game.player.x).toBe(185);
                 expect(penguini.showEnterToTalkToPenguini).toBe(true);
@@ -157,12 +157,12 @@ describe('Penguini', () => {
             );
         });
 
-        test('renders the Enter prompt at y−170 when mapSelected[6]=false', () => {
+        test('renders the Enter prompt at y−170 when currentMap != Map6', () => {
             penguini.showEnterToTalkToPenguini = true;
             game.talkToPenguinOneTimeOnly = true;
             penguini.x = 250;
             penguini.y = 120;
-            game.mapSelected[6] = false;
+            game.currentMap = 'Map1';
             penguini.draw(ctx);
             expect(ctx.drawImage).toHaveBeenCalledWith(
                 fakePressImg,
@@ -171,12 +171,12 @@ describe('Penguini', () => {
             );
         });
 
-        test('renders the Enter prompt at y−235 when mapSelected[6]=true', () => {
+        test('renders the Enter prompt at y−235 when currentMap === Map6', () => {
             penguini.showEnterToTalkToPenguini = true;
             game.talkToPenguinOneTimeOnly = true;
             penguini.x = 300;
             penguini.y = 130;
-            game.mapSelected[6] = true;
+            game.currentMap = 'Map6';
             penguini.draw(ctx);
             expect(ctx.drawImage).toHaveBeenCalledWith(
                 fakePressImg,

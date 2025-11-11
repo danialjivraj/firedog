@@ -21,7 +21,6 @@ export class Layer {
 
     draw(context) {
         context.drawImage(this.image, this.x, this.y, this.game.width, this.game.height);
-        // draws the second image seamlessly following the first one
         context.drawImage(this.image, this.x + this.game.width, this.y, this.game.width, this.game.height);
     }
 }
@@ -67,13 +66,20 @@ export class Background {
                 }
             } else {
                 layer.groundSpeed = 0;
-                if (layer instanceof EntityAnimation || layer instanceof RaindropAnimation) {
+                if (layer instanceof EntityAnimation || layer instanceof RaindropAnimation || layer instanceof SnowflakeAnimation) {
                     layer.update(deltaTime);
                 }
             }
         }
 
-        if (lastGroundLayer && this.game.isTutorialActive === false || this.game.isTutorialActive && this.game.mapSelected[1] === false) {
+        const activeMap =
+            this.game.currentMap ||
+            (this.game.background && this.game.background.constructor.name) ||
+            null;
+
+        const tutorialBlocksScroll = this.game.isTutorialActive && activeMap === 'Map1';
+
+        if (lastGroundLayer && !tutorialBlocksScroll) {
             this.totalDistanceTraveled += this.game.speed / 1000;
             this.totalDistanceTraveled = parseFloat(this.totalDistanceTraveled.toFixed(2));
         }
@@ -271,6 +277,47 @@ export class Map6 extends Background {
             { imageId: 'map6Ground', bgSpeed: 1 },
         );
         this.soundId = 'map6Soundtrack';
+    }
+}
+
+export class BonusMap1 extends Background {
+    constructor(game) {
+        super(game,
+            { imageId: 'bonusMap1Background', bgSpeed: 0 },
+            { imageId: 'bonusMap1Ground', bgSpeed: 1 },
+        );
+        this.soundId = 'map3Soundtrack';
+
+        const totalFlakes = 220;
+        this.snowMid = new SnowflakeAnimation(game, Math.floor(totalFlakes * 0.8));
+        this.snowFront = new SnowflakeAnimation(game, Math.ceil(totalFlakes * 0.2));
+
+        for (const f of this.snowFront.flakes) {
+            f.r *= 1.2;
+            f.opacity = Math.min(1, f.opacity * 1.25);
+        }
+
+        this.backgroundLayers.push(this.snowMid, this.snowFront);
+    }
+}
+
+export class BonusMap2 extends Background {
+    constructor(game) {
+        super(game,
+            { imageId: 'bonusMap1Background', bgSpeed: 0 },
+            { imageId: 'bonusMap1Ground', bgSpeed: 1 },
+        );
+        this.soundId = 'map3Soundtrack';
+    }
+}
+
+export class BonusMap3 extends Background {
+    constructor(game) {
+        super(game,
+            { imageId: 'bonusMap1Background', bgSpeed: 0 },
+            { imageId: 'bonusMap1Ground', bgSpeed: 1 },
+        );
+        this.soundId = 'map3Soundtrack';
     }
 }
 
@@ -640,7 +687,6 @@ export class RaindropAnimation {
     draw(context) {
         context.save();
         if (this.isRaining) {
-            // draws raindrops
             context.strokeStyle = '#808080';
             context.lineWidth = 0.5;
 
@@ -705,5 +751,70 @@ export class RaindropSplashAnimation {
                 this.height
             );
         }
+    }
+}
+
+export class SnowflakeAnimation {
+    constructor(game, maxFlakes = 180) {
+        this.game = game;
+        this.maxFlakes = maxFlakes;
+        this.flakes = [];
+        this.spawnAll();
+    }
+
+    spawnAll() {
+        for (let i = 0; i < this.maxFlakes; i++) {
+            this.flakes.push(this.makeFlake(true));
+        }
+    }
+
+    makeFlake(randomY = false) {
+        const r = Math.random() * 2.2 + 0.8;
+        const speed = Math.random() * 0.06 + 0.02;
+        const drift = (Math.random() * 0.06) - 0.03;
+        const stopAbove = Math.random() < 0.8;
+        return {
+            x: Math.random() * this.game.width,
+            y: randomY ? Math.random() * this.game.height : -10,
+            r,
+            speed,
+            drift,
+            opacity: Math.random() * 0.35 + 0.35,
+            stopAbove,
+        };
+    }
+
+    update(deltaTime) {
+        const dt = deltaTime / 16.67;
+        const playerParallax = this.game.cabin.isFullyVisible ? 0 : (this.game.speed / 400) * dt;
+
+        for (let i = 0; i < this.flakes.length; i++) {
+            const f = this.flakes[i];
+
+            f.y += f.speed * 120 * dt;
+            f.x += f.drift * 50 * dt - playerParallax;
+
+            const stopThreshold = f.stopAbove
+                ? this.game.height - 40
+                : this.game.height + 10;
+
+            if (f.y > stopThreshold || f.x < -20 || f.x > this.game.width + 20) {
+                this.flakes[i] = this.makeFlake(false);
+            }
+        }
+    }
+
+    draw(context) {
+        context.save();
+        context.fillStyle = 'white';
+        for (let i = 0; i < this.flakes.length; i++) {
+            const f = this.flakes[i];
+            context.globalAlpha = f.opacity;
+            context.beginPath();
+            context.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+            context.fill();
+        }
+        context.globalAlpha = 1;
+        context.restore();
     }
 }

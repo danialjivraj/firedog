@@ -3,7 +3,7 @@ import { DeleteProgressAnimation, DeleteProgressBookAnimation, SavingAnimation, 
 
 export class MainMenu extends BaseMenu {
     constructor(game) {
-        const menuOptions = ['Play', 'Skins', 'Level Difficulty', 'How to Play', 'Audio Settings', 'Delete Progress', 'Exit'];
+        const menuOptions = ['Play', 'Skins', 'Level Difficulty', 'How to Play', 'Settings', 'Delete Progress', 'Exit'];
         super(game, menuOptions, 'Main Menu');
         this.menuOptionsPositionOffset = 50;
         this.positionOffset = 240;
@@ -27,13 +27,13 @@ export class MainMenu extends BaseMenu {
                 this.game.menu.levelDifficulty.activateMenu(this.game.menu.levelDifficulty.selectedDifficultyIndex);
             } else if (selectedOption === 'Skins') {
                 this.game.currentMenu = this.game.menu.skins;
-                this.game.menu.skins.activateMenu(this.game.menu.skins.selectedSkinIndex);
+                this.game.menu.skins.activateMenu();
             } else if (selectedOption === 'How to Play') {
                 this.game.currentMenu = this.game.menu.howToPlay;
                 this.game.menu.howToPlay.activateMenu();
-            } else if (selectedOption === 'Audio Settings') {
-                this.game.currentMenu = this.game.menu.audioSettings;
-                this.game.menu.audioSettings.activateMenu();
+            } else if (selectedOption === 'Settings') {
+                this.game.currentMenu = this.game.menu.settings;
+                this.game.menu.settings.activateMenu();
             } else if (selectedOption === 'Delete Progress') {
                 this.game.currentMenu = this.game.menu.deleteProgress;
                 this.game.menu.deleteProgress.activateMenu(1);
@@ -53,6 +53,7 @@ export class MainMenu extends BaseMenu {
             this.savingBookAnimation.update(deltaTime);
         }
     }
+
     draw(context) {
         super.draw(context);
         if (this.game.menu.deleteProgress2.showSavingSprite) {

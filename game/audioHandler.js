@@ -66,38 +66,39 @@ export class AudioHandler {
       audioElement.pause();
       audioElement.currentTime = 0;
       // removes the stored position
-      delete this.pausedSoundPositions[soundName];
+      delete this.pausedSoundPositions[audioElement.id];
     }
   }
 
   pauseAllSounds() {
     for (const soundName in this.soundsMapping) {
-      this.pauseSound(this.sounds[soundName]);
+      this.pauseSound(soundName);
     }
   }
 
-  pauseSound(audioElement) {
+  pauseSound(soundName) {
+    const audioElement = this.sounds[soundName];
     if (audioElement && !audioElement.paused) {
       audioElement.pause();
-      // stores the current position only if the sound is paused
       this.pausedSoundPositions[audioElement.id] = audioElement.currentTime;
     }
   }
 
   resumeAllSounds() {
     for (const soundName in this.soundsMapping) {
-      this.resumeSound(this.sounds[soundName]);
+      this.resumeSound(soundName);
     }
   }
 
-  resumeSound(audioElement) {
+  resumeSound(soundName) {
+    const audioElement = this.sounds[soundName];
     if (audioElement && audioElement.paused) {
       const storedTime = this.pausedSoundPositions[audioElement.id];
       if (storedTime !== undefined) {
-        // clears the stored position
+        // clears stored position
         delete this.pausedSoundPositions[audioElement.id];
 
-        // checks if the stored time is within the sounds duration
+        // checks if the stored time is within the sound's duration
         if (storedTime < audioElement.duration) {
           audioElement.currentTime = storedTime;
           audioElement.play();

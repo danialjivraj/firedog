@@ -182,17 +182,27 @@ export class Cutscene {
         this.game.audioHandler.cutsceneMusic.playSound(...args);
     }
 
-    fadeOutMusic(name) {
-        this.game.audioHandler.cutsceneMusic.fadeOutAndStop(name);
+    fadeOutMusic(...args) {
+        this.game.audioHandler.cutsceneMusic.fadeOutAndStop(...args);
     }
+
     stopAllAudio() {
         this.game.audioHandler.cutsceneDialogue.stopAllSounds();
         this.game.audioHandler.cutsceneSFX.stopAllSounds();
         this.game.audioHandler.cutsceneMusic.stopAllSounds();
     }
 
+    getCurrentMapId() {
+        const id = this.game.currentMap
+            || (this.game.background && this.game.background.constructor.name)
+            || null;
+        return id || null;
+    }
+
     getSelectedMapIndex() {
-        return [1, 2, 3, 4, 5, 6].find(i => this.game.mapSelected && this.game.mapSelected[i]);
+        const id = this.getCurrentMapId();
+        const m = /^Map([1-6])$/.exec(id || '');
+        return m ? Number(m[1]) : null;
     }
 
     cutsceneController() {
@@ -205,7 +215,12 @@ export class Cutscene {
         let options = {};
         let images = maybeImages;
 
-        if (maybeImages.length > 0 && typeof maybeImages[0] === 'object' && !maybeImages[0].hasOwnProperty('id') && (maybeImages[0].hasOwnProperty('whisper') || maybeImages[0].hasOwnProperty('options'))) {
+        if (
+            maybeImages.length > 0 &&
+            typeof maybeImages[0] === 'object' &&
+            !maybeImages[0].hasOwnProperty('id') &&
+            (maybeImages[0].hasOwnProperty('whisper') || maybeImages[0].hasOwnProperty('options'))
+        ) {
             options = maybeImages[0];
             images = maybeImages.slice(1);
         }
@@ -223,7 +238,7 @@ export class Cutscene {
         return { id, opacity, x, y, width, height };
     }
 
-    displayDialogue(cutscene) {
+    displayDialogue() {
         const currentDialogue = this.dialogue[this.dialogueIndex];
         const prefullWords = this.splitDialogueIntoWords(currentDialogue.dialogue);
         this.fullWords = prefullWords;
@@ -270,6 +285,7 @@ export class Cutscene {
         const partialText = dialogue.substring(0, this.textIndex + 1);
         this.dialogueText = partialText;
         const words = this.splitDialogueIntoWords(partialText);
+
         const lines = this.getLinesWithinLimit(words, this.dialogueText, this.characterLimit);
 
         context.save();
@@ -285,13 +301,22 @@ export class Cutscene {
                 });
             }
             if (this.dontShowTextBoxAndSound === false) {
-                context.drawImage(document.getElementById('textBox'), 15, this.game.height - 70, this.textBoxWidth, 96);
+                context.drawImage(
+                    document.getElementById('textBox'),
+                    15,
+                    this.game.height - 70,
+                    this.textBoxWidth,
+                    96
+                );
             }
         }
 
         const currentTime = performance.now();
-        if (this.reminderImageStartTime !== null && (currentTime - this.reminderImageStartTime) < 7000 &&
-            (this.game.cutsceneActive && !this.game.talkToPenguin && !this.game.talkToElyvorg)) {
+        if (
+            this.reminderImageStartTime !== null &&
+            (currentTime - this.reminderImageStartTime) < 7000 &&
+            (this.game.cutsceneActive && !this.game.talkToPenguin && !this.game.talkToElyvorg)
+        ) {
             context.drawImage(this.reminderImage, this.game.width - 500, this.game.height - 100);
         }
 
@@ -343,6 +368,7 @@ export class Cutscene {
                 else if (partialText.endsWith('...')) {
                     const nextChar = dialogue[this.textIndex + 1];
                     if (nextChar && this.isTerminalChar(nextChar)) {
+                        // let terminal char arrive before pausing
                     } else {
                         const ellipsisStart = this.textIndex - 2;
                         if (!this.ellipsisFollowedOnlyByTerminalPunct(dialogue, ellipsisStart)) {
@@ -360,7 +386,14 @@ export class Cutscene {
             }
         }
 
-        this.characterColorLogic(context, lines, words, characterName, dialogue, this.currentColorSpans);
+        this.characterColorLogic(
+            context,
+            lines,
+            words,
+            characterName,
+            dialogue,
+            this.currentColorSpans
+        );
 
         if (this.textIndex < dialogue.length) {
             if (!this.game.menu.pause.isPaused) {
@@ -437,18 +470,16 @@ export class Cutscene {
         }
     }
 
-    playEightBitSound(soundId, soundIDpaused) {
-        const audioElement = soundIDpaused ? this.game.audioHandler.cutsceneDialogue.sounds[soundIDpaused] : undefined;
-
+    playEightBitSound(soundName) {
         const current = this.dialogue[this.dialogueIndex];
         if (current && current.whisper) {
             return;
         }
 
         if (!this.pause) {
-            this.game.audioHandler.cutsceneDialogue.playSound(soundId);
-        } else if (audioElement) {
-            this.game.audioHandler.cutsceneDialogue.pauseSound(audioElement);
+            this.game.audioHandler.cutsceneDialogue.playSound(soundName);
+        } else {
+            this.game.audioHandler.cutsceneDialogue.pauseSound(soundName);
         }
     }
 
@@ -476,10 +507,6 @@ export class Cutscene {
         fadeInAndOut(this.game.canvas, fadein, stay, fadeout, () => {
             this.game.enterDuringBackgroundTransition = true;
         });
-    }
-
-    addImage(id, opacity, x, y, width, height) {
-        return { id, opacity, x, y, width, height };
     }
 
     getmap6insideCaveLavaEarthquake() {
