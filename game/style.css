@@ -69,7 +69,7 @@ body {
     /* power up */ 
     #redpotion, #bluepotion, #healthlive, #coin, #oxygenTank,
     /* power down */
-    #drink, #cauldron, #blackhole,
+    #drink, #cauldron, #blackhole, #confuse, 
 /* map1 */ 
 #map1Background, #map1Ground, #map1Rocks, #map1Bush, #map1Trees1, #map1Trees2, #map1Trees3, #map1Trees4, #map1Trees5, #map1Trees6, #map1Trees7, 
 /* map2 */

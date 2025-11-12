@@ -124,3 +124,23 @@ export class BlackHole extends PowerDown {
         super.draw(context, 25);
     }
 }
+
+export class Confuse extends PowerDown {
+    constructor(game) {
+        super();
+        this.game = game;
+        this.width = 49.25;
+        this.height = 80;
+        this.image = document.getElementById('confuse');
+        this.maxFrame = 3;
+        this.frameWidth = 49.25;
+        this.frameHeight = 80;
+        this.x = this.game.width + Math.random() * this.game.width * 0.5;
+        const minY = this.game.height - this.height - this.game.groundMargin;
+        const maxY = 130;
+        this.y = minY + Math.random() * (maxY - minY);
+    }
+    draw(context) {
+        super.draw(context, 10);
+    }
+}

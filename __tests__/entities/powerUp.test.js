@@ -402,8 +402,8 @@ describe('PowerUp subclasses', () => {
     });
 
     test('constructor sets fps=0 and infinite interval', () => {
-      expect(tank.fps).toBe(0);
-      expect(tank.frameInterval).toBe(Infinity);
+      expect(tank.fps).toBe(5);
+      expect(tank.frameInterval).toBe(200);
       expect(tank.image).toBe(fakeImages.oxygenTank);
       expect(tank.frameX).toBe(0);
       expect(tank.frameTimer).toBe(0);

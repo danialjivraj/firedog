@@ -1,16 +1,18 @@
-import { IceDrink, Cauldron, BlackHole } from '../../game/entities/powerDown';
+import { IceDrink, Cauldron, BlackHole, Confuse } from '../../game/entities/powerDown';
 
 describe('PowerDown subclasses', () => {
-  let game, ctx, fakeIceDrinkImg, fakeCauldronImg, fakeBlackholeImg;
+  let game, ctx, fakeIceDrinkImg, fakeCauldronImg, fakeBlackholeImg, fakeConfuseImg;
 
   beforeAll(() => {
     fakeIceDrinkImg = {};
     fakeCauldronImg = {};
     fakeBlackholeImg = {};
+    fakeConfuseImg = {};
     document.getElementById = jest.fn(id => {
       if (id === 'drink') return fakeIceDrinkImg;
       if (id === 'cauldron') return fakeCauldronImg;
       if (id === 'blackhole') return fakeBlackholeImg;
+      if (id === 'confuse') return fakeConfuseImg;
       return {};
     });
     jest.spyOn(Math, 'random').mockReturnValue(0.5);
@@ -338,6 +340,110 @@ describe('PowerDown subclasses', () => {
       game.debug = true;
       hole.draw(ctx);
       expect(ctx.strokeRect).toHaveBeenCalledWith(hole.x, hole.y, hole.width, hole.height);
+    });
+  });
+
+  // -----------------------------------------------------------------------------
+  // Confuse
+  // -----------------------------------------------------------------------------
+  describe('Confuse', () => {
+    let confuse;
+    beforeEach(() => {
+      confuse = new Confuse(game);
+    });
+
+    test('constructor sets correct props and random x/y', () => {
+      expect(confuse.game).toBe(game);
+      expect(confuse.width).toBeCloseTo(49.25);
+      expect(confuse.height).toBe(80);
+      expect(confuse.image).toBe(fakeConfuseImg);
+      expect(confuse.maxFrame).toBe(3);
+      expect(confuse.frameWidth).toBeCloseTo(49.25);
+      expect(confuse.frameHeight).toBe(80);
+
+      const expectedX = game.width + game.width * 0.5 * 0.5;
+      expect(confuse.x).toBeCloseTo(expectedX);
+
+      const minY = game.height - confuse.height - game.groundMargin;
+      const maxY = 130;
+      expect(confuse.y).toBeCloseTo(minY + 0.5 * (maxY - minY));
+
+      expect(confuse.frameX).toBe(0);
+      expect(confuse.frameY).toBe(0);
+      expect(confuse.frameTimer).toBe(0);
+      expect(confuse.markedForDeletion).toBe(false);
+    });
+
+    test('update moves left when cabin not visible', () => {
+      const startX = confuse.x;
+      game.cabin.isFullyVisible = false;
+      confuse.update(16);
+      expect(confuse.x).toBe(startX - game.speed);
+    });
+
+    test('update does not move when cabin visible', () => {
+      const startX = confuse.x;
+      game.cabin.isFullyVisible = true;
+      confuse.update(16);
+      expect(confuse.x).toBe(startX);
+    });
+
+    test('animation wraps frameX and resets timer', () => {
+      confuse.frameTimer = confuse.frameInterval + 1;
+      confuse.frameX = confuse.maxFrame;
+      confuse.update(0);
+      expect(confuse.frameX).toBe(0);
+      expect(confuse.frameTimer).toBe(0);
+
+      confuse.frameInterval = 1000;
+      confuse.frameTimer = 0;
+      confuse.update(100);
+      expect(confuse.frameTimer).toBe(100);
+    });
+
+    test('animation advances frameX when below maxFrame', () => {
+      confuse.frameTimer = confuse.frameInterval + 1;
+      confuse.frameX = 0;
+      confuse.update(0);
+      expect(confuse.frameX).toBe(1);
+    });
+
+    test('markedForDeletion when off-screen horizontally or vertically', () => {
+      confuse.x = -confuse.width - 1;
+      confuse.y = 0;
+      confuse.update(0);
+      expect(confuse.markedForDeletion).toBe(true);
+
+      confuse.markedForDeletion = false;
+      confuse.x = 100;
+      confuse.y = game.height + 1;
+      confuse.update(0);
+      expect(confuse.markedForDeletion).toBe(true);
+    });
+
+    test('draw uses red shadowBlur=10 and calls save/restore + drawImage', () => {
+      confuse.draw(ctx);
+      expect(ctx.save).toHaveBeenCalled();
+      expect(ctx.shadowColor).toBe('red');
+      expect(ctx.shadowBlur).toBe(10);
+      expect(ctx.drawImage).toHaveBeenCalledWith(
+        fakeConfuseImg,
+        confuse.frameX * confuse.frameWidth,
+        confuse.frameY * confuse.frameHeight,
+        confuse.frameWidth,
+        confuse.frameHeight,
+        confuse.x,
+        confuse.y,
+        confuse.width,
+        confuse.height
+      );
+      expect(ctx.restore).toHaveBeenCalled();
+    });
+
+    test('draw draws debug rect when game.debug=true', () => {
+      game.debug = true;
+      confuse.draw(ctx);
+      expect(ctx.strokeRect).toHaveBeenCalledWith(confuse.x, confuse.y, confuse.width, confuse.height);
     });
   });
 });

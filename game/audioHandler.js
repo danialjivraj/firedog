@@ -279,6 +279,7 @@ export class PowerUpAndDownSFXAudioHandler extends AudioHandler {
       drinkSoundEffect: 'drinkSoundEffect',
       cauldronSoundEffect: 'cauldronSoundEffect',
       darkHoleLaughSound: 'darkHoleLaughSound',
+      statusConfusedSound: 'statusConfusedSound',
     };
     this.initializeSounds();
   }

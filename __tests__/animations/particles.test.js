@@ -8,6 +8,7 @@ import {
     CoinLoss,
     PoisonBubbles,
     IceCrystalBubbles,
+    SpinningChicks,
 } from '../../game/animations/particles';
 
 const fakeImages = {
@@ -886,5 +887,113 @@ describe('IceCrystalBubbles', () => {
         icb.update();
 
         expect(icb.markedForDeletion).toBe(true);
+    });
+});
+
+describe('SpinningChicks', () => {
+    let game, player, ctx;
+
+    beforeEach(() => {
+        player = {
+            x: 100,
+            y: 200,
+            width: 50,
+            height: 80,
+            isConfused: true,
+            states: [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}],
+            currentState: {},
+        };
+
+        game = {
+            player,
+            gameOver: false,
+            menu: { pause: { isPaused: false } },
+        };
+
+        ctx = {
+            save: jest.fn(),
+            restore: jest.fn(),
+            beginPath: jest.fn(),
+            arc: jest.fn(),
+            fill: jest.fn(),
+            set globalCompositeOperation(val) { this._gco = val; },
+            get globalCompositeOperation() { return this._gco; },
+            createRadialGradient: jest.fn(() => ({ addColorStop: jest.fn() })),
+        };
+    });
+
+    test('positions 4 chicks in an ellipse around the player head at t=0', () => {
+        const sc = new SpinningChicks(game);
+        sc.drawChick = jest.fn();
+
+        sc.draw(ctx);
+
+        const px = player.x + player.width * 0.5 + sc.headOffsetX; // 135
+        const py = player.y + player.height * (0.5 - sc._headOffsetYRatio); // 216
+
+        const expected = [
+            [px + 36, py + 0], // a=0
+            [px + 0, py + 10], // a=π/2
+            [px - 36, py + 0], // a=π
+            [px + 0, py - 10], // a=3π/2
+        ];
+
+        expect(sc.drawChick).toHaveBeenCalledTimes(4);
+        for (let i = 0; i < 4; i++) {
+            const call = sc.drawChick.mock.calls[i];
+            const [, cx, cy] = call; // [ctx, x, y, s]
+            expect(cx).toBeCloseTo(expected[i][0], 5);
+            expect(cy).toBeCloseTo(expected[i][1], 5);
+        }
+    });
+
+    test('marks for deletion when no longer confused', () => {
+        const sc = new SpinningChicks(game);
+        player.isConfused = false;
+
+        sc.update();
+
+        expect(sc.markedForDeletion).toBe(true);
+    });
+
+    test('marks for deletion when gameOver is true', () => {
+        const sc = new SpinningChicks(game);
+        game.gameOver = true;
+
+        sc.update();
+
+        expect(sc.markedForDeletion).toBe(true);
+    });
+
+    test('baseAngle/rockPhase advance only when not paused', () => {
+        const sc = new SpinningChicks(game);
+        const a0 = sc.baseAngle;
+        const r0 = sc.rockPhase;
+
+        sc.update(); // not paused
+        expect(sc.baseAngle).toBeCloseTo(a0 + sc.angularSpeed, 5);
+        expect(sc.rockPhase).toBeCloseTo(r0 + sc.rockSpeed, 5);
+
+        game.menu.pause.isPaused = true;
+        const a1 = sc.baseAngle;
+        const r1 = sc.rockPhase;
+
+        sc.update(); // paused
+        expect(sc.baseAngle).toBeCloseTo(a1, 5);
+        expect(sc.rockPhase).toBeCloseTo(r1, 5);
+    });
+
+    test('head offset lerps toward sitting ratio when currentState === states[0]', () => {
+        const sc = new SpinningChicks(game);
+        expect(sc._headOffsetYRatio).toBeCloseTo(sc.headOffsetYRatioStand, 5);
+
+        player.currentState = player.states[0]; // sitting
+        sc.update();
+
+        const start = sc.headOffsetYRatioStand; // 0.30
+        const target = sc.headOffsetYRatioSit; // 0.15
+        const expected = start + (target - start) * sc.headOffsetYLerp; // 0.2775
+
+        expect(sc._headOffsetYRatio).toBeCloseTo(expected, 5);
     });
 });

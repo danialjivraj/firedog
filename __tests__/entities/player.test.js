@@ -1,6 +1,6 @@
 import { Player, CollisionLogic } from '../../game/entities/player';
 import { Fireball, CoinLoss, PoisonBubbles, IceCrystalBubbles } from '../../game/animations/particles';
-import { IceDrink, Cauldron, BlackHole } from '../../game/entities/powerDown';
+import { IceDrink, Cauldron, BlackHole, Confuse } from '../../game/entities/powerDown';
 import { OxygenTank, HealthLive, Coin, RedPotion, BluePotion } from '../../game/entities/powerUp';
 import { InkSplash } from '../../game/animations/ink';
 import { TunnelVision } from '../../game/animations/tunnelVision';
@@ -56,7 +56,7 @@ jest.mock('../../game/entities/powerUp', () => ({
 }));
 
 jest.mock('../../game/entities/powerDown', () => ({
-    BlackHole: jest.fn(), Cauldron: jest.fn(), IceDrink: jest.fn(),
+    BlackHole: jest.fn(), Cauldron: jest.fn(), IceDrink: jest.fn(), Confuse: jest.fn(),
 }));
 
 jest.mock('../../game/animations/floatingMessages', () => ({
@@ -68,6 +68,7 @@ jest.mock('../../game/animations/particles', () => ({
     CoinLoss: jest.fn(),
     PoisonBubbles: jest.fn(),
     IceCrystalBubbles: jest.fn(),
+    SpinningChicks: jest.fn(),
 }));
 
 jest.mock('../../game/entities/enemies/enemies', () => ({
@@ -549,6 +550,20 @@ describe('Player', () => {
             expect(player.triggerTunnelVision).toHaveBeenCalled();
         });
 
+        test('Confuse activates confuse state and deletes item', () => {
+            const conf = new Confuse();
+            Object.assign(conf, { x: 0, y: 0, width: 10, height: 10 });
+            game.powerDowns = [conf];
+            const spy = jest.spyOn(player, 'activateConfuse').mockImplementation(() => {
+                player.isConfused = true;
+                player.confuseTimer = 8000;
+            });
+            player.collisionWithPowers(0);
+            expect(spy).toHaveBeenCalled();
+            expect(player.isConfused).toBe(true);
+            expect(conf.markedForDeletion).toBe(true);
+        });
+
         test('OxygenTank reduces time', () => {
             game.time = 50000;
             const o = new OxygenTank();
@@ -673,8 +688,7 @@ describe('Player', () => {
         player.width = 10;
         player.height = 10;
 
-        // powerDowns
-        const pdClasses = [IceDrink, Cauldron, BlackHole];
+        const pdClasses = [IceDrink, Cauldron, BlackHole, Confuse];
         pdClasses.forEach(Ctor => {
             const item = new Ctor();
             Object.assign(item, { x: 0, y: 0, width: 10, height: 10 });
@@ -1892,7 +1906,7 @@ describe('emitStatusParticles (bubble status logic)', () => {
 
         expect(PoisonBubbles).toHaveBeenCalledTimes(1);
         expect(IceCrystalBubbles).not.toHaveBeenCalled();
-        expect(game.particles.length).toBe(1);
+        expect(game.particles.length).toBe(2);
     });
 
     test('when ONLY poisoned: may skip spawn (non-spawn case)', () => {
@@ -1904,7 +1918,7 @@ describe('emitStatusParticles (bubble status logic)', () => {
 
         expect(PoisonBubbles).not.toHaveBeenCalled();
         expect(IceCrystalBubbles).not.toHaveBeenCalled();
-        expect(game.particles.length).toBe(0);
+        expect(game.particles.length).toBe(1);
     });
 
     test('when ONLY slowed: always spawns IceCrystalBubbles', () => {
@@ -1916,7 +1930,7 @@ describe('emitStatusParticles (bubble status logic)', () => {
 
         expect(IceCrystalBubbles).toHaveBeenCalledTimes(1);
         expect(PoisonBubbles).not.toHaveBeenCalled();
-        expect(game.particles.length).toBe(1);
+        expect(game.particles.length).toBe(2);
     });
 
     test('when NEITHER slowed nor poisoned: spawns nothing', () => {
@@ -1927,7 +1941,7 @@ describe('emitStatusParticles (bubble status logic)', () => {
 
         expect(PoisonBubbles).not.toHaveBeenCalled();
         expect(IceCrystalBubbles).not.toHaveBeenCalled();
-        expect(game.particles.length).toBe(0);
+        expect(game.particles.length).toBe(1);
     });
 
     test('does emit when currentState.deathAnimation is true', () => {
@@ -1951,5 +1965,132 @@ describe('emitStatusParticles (bubble status logic)', () => {
         expect(PoisonBubbles).not.toHaveBeenCalled();
         expect(IceCrystalBubbles).not.toHaveBeenCalled();
         expect(game.particles.length).toBe(0);
+    });
+
+    describe('confuse logic', () => {
+        const MOVES = ['jump', 'moveBackward', 'sit', 'moveForward'];
+        const diffCount = (before, after) =>
+            MOVES.reduce((n, a) => n + ((before[a] ?? null) !== (after[a] ?? null) ? 1 : 0), 0);
+        const multiset = obj => MOVES.map(k => obj[k] ?? null).sort();
+        const makeWASD = () => ({
+            jump: 'w', moveBackward: 'a', sit: 's', moveForward: 'd',
+            rollAttack: 'Enter', diveAttack: 's', fireballAttack: 'q', invisibleDefense: 'e',
+        });
+
+        test('normal WASD preserves multiset and changes ≥2 positions; non-movement keys untouched', () => {
+            game.keyBindings = makeWASD();
+            const base = { ...game.keyBindings };
+
+            player.activateConfuse();
+
+            expect(player.isConfused).toBe(true);
+            expect(player.confuseTimer).toBe(player.confuseDuration);
+
+            const after = player.confusedKeyBindings;
+            expect(multiset(after)).toEqual(multiset(base));
+            expect(diffCount(base, after)).toBeGreaterThanOrEqual(2);
+
+            expect(after.rollAttack).toBe(base.rollAttack);
+            expect(after.diveAttack).toBe(base.diveAttack);
+            expect(after.fireballAttack).toBe(base.fireballAttack);
+            expect(after.invisibleDefense).toBe(base.invisibleDefense);
+        });
+
+        test('adversarial RNG (identity shuffles) fallback still enforces ≥2 diffs', () => {
+            game.keyBindings = makeWASD();
+            const base = { ...game.keyBindings };
+            const origRandom = Math.random;
+
+            Math.random = jest.fn(() => 0.999999);
+
+            try {
+                player.activateConfuse();
+            } finally {
+                Math.random = origRandom;
+            }
+
+            const after = player.confusedKeyBindings;
+            expect(multiset(after)).toEqual(multiset(base));
+            expect(diffCount(base, after)).toBeGreaterThanOrEqual(2);
+        });
+
+        test('only moveForward bound (others null) still ≥2 diffs; multiset preserved', () => {
+            game.keyBindings = { jump: null, moveBackward: null, sit: null, moveForward: 'd' };
+            const base = { ...game.keyBindings };
+
+            player.activateConfuse();
+
+            const after = player.confusedKeyBindings;
+            expect(multiset(after)).toEqual(multiset(base));
+            expect(diffCount(base, after)).toBeGreaterThanOrEqual(2);
+        });
+
+        test('all null movement keys activates safely; all remain null', () => {
+            game.keyBindings = { jump: null, moveBackward: null, sit: null, moveForward: null };
+
+            expect(() => player.activateConfuse()).not.toThrow();
+
+            const after = player.confusedKeyBindings;
+            expect(MOVES.every(k => after[k] === null)).toBe(true);
+            expect(player.isConfused).toBe(true);
+        });
+
+        test('tutorial map uses _defaultKeyBindings as base', () => {
+            game.isTutorialActive = true;
+            game.currentMap = 'Map1';
+
+            game._defaultKeyBindings = makeWASD();
+            game.keyBindings = {
+                jump: 'ArrowUp', moveBackward: 'ArrowLeft', sit: 'ArrowDown', moveForward: 'ArrowRight',
+                rollAttack: 'Enter', diveAttack: 's', fireballAttack: 'q', invisibleDefense: 'e',
+            };
+
+            const baseTutorial = { ...game._defaultKeyBindings };
+            player.activateConfuse();
+
+            const after = player.confusedKeyBindings;
+            expect(multiset(after)).toEqual(multiset(baseTutorial));
+            expect(diffCount(baseTutorial, after)).toBeGreaterThanOrEqual(2);
+        });
+
+        test('updateConfuse counts down and clears state when timer elapses', () => {
+            game.keyBindings = makeWASD();
+            player.activateConfuse();
+
+            expect(player.isConfused).toBe(true);
+            expect(player.confusedKeyBindings).toBeTruthy();
+
+            player.updateConfuse(player.confuseDuration - 1);
+            expect(player.isConfused).toBe(true);
+            expect(player.confusedKeyBindings).toBeTruthy();
+
+            player.updateConfuse(2);
+            expect(player.isConfused).toBe(false);
+            expect(player.confusedKeyBindings).toBeNull();
+        });
+
+        test('repeated activations always ≥2 diffs and multiset preserved', () => {
+            game.keyBindings = makeWASD();
+            const base = { ...game.keyBindings };
+
+            for (let i = 0; i < 25; i++) {
+                player.activateConfuse();
+                const after = player.confusedKeyBindings;
+
+                expect(diffCount(base, after)).toBeGreaterThanOrEqual(2);
+                expect(multiset(after)).toEqual(multiset(base));
+
+                player.updateConfuse(player.confuseDuration + 1);
+            }
+        });
+
+        test('does not mutate the original keyBindings object', () => {
+            game.keyBindings = makeWASD();
+            const snapshot = JSON.parse(JSON.stringify(game.keyBindings));
+
+            player.activateConfuse();
+
+            expect(game.keyBindings).toEqual(snapshot);
+        });
     });
 });

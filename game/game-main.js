@@ -31,7 +31,7 @@ import { DeleteProgress, DeleteProgress2 } from "./menu/deleteProgress.js";
 import { SettingsMenu } from "./menu/settingsMenu.js";
 import { ControlsSettingsMenu } from "./menu/controlsSettingsMenu.js";
 import { getDefaultKeyBindings } from "./config/keyBindings.js";
-import { BlackHole, Cauldron, IceDrink } from "./entities/powerDown.js";
+import { BlackHole, Cauldron, IceDrink, Confuse } from "./entities/powerDown.js";
 //audios
 import { AudioSettingsMenu } from "./menu/audio/audioSettingsMenu.js";
 import { IngameAudioSettingsMenu } from "./menu/audio/ingameAudioSettingsMenu.js";
@@ -265,7 +265,13 @@ export class Game {
     }
     getEffectiveKeyBindings() {
         const tutorialMapActive = this.isTutorialActive && this.currentMap === "Map1";
-        return tutorialMapActive ? this._defaultKeyBindings : this.keyBindings;
+        if (tutorialMapActive) {
+            return this._defaultKeyBindings;
+        }
+        if (this.player && this.player.isConfused && this.player.confusedKeyBindings) {
+            return this.player.confusedKeyBindings;
+        }
+        return this.keyBindings;
     }
     reset() {
         this.resetInstance.reset();
@@ -721,6 +727,9 @@ export class Game {
                 }
                 if (Math.random() < 0.005 && this.player.isBlackHoleActive === false) {
                     this.powerDowns.push(new BlackHole(this));
+                }
+                if (Math.random() < 0.005) {
+                    this.powerDowns.push(new Confuse(this));
                 }
             }
         }

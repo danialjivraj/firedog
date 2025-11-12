@@ -135,13 +135,14 @@ export class OxygenTank extends PowerUp {
     constructor(game) {
         super();
         this.game = game;
-        this.fps = 0;
+        this.fps = 5;
         this.frameInterval = 1000 / this.fps;
-        this.width = 35;
-        this.height = 64;
+        this.width = 40.2;
+        this.height = 100;
         this.image = document.getElementById('oxygenTank');
-        this.frameWidth = 35;
-        this.frameHeight = 64;
+        this.maxFrame = 4;
+        this.frameWidth = 40.2;
+        this.frameHeight = 100;
         this.x = this.game.width + Math.random() * this.game.width * 0.5;
         this.y = Math.random() * (this.game.height - this.height - this.game.groundMargin);
     }

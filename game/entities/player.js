@@ -1,3 +1,4 @@
+import { getDefaultKeyBindings } from '../config/keyBindings.js';
 import { getSkinElement } from '../config/skins.js';
 import { Sitting, Running, Jumping, Falling, Rolling, Diving, Stunned, Hit, Standing, Dying } from '../animations/playerStates.js';
 import {
@@ -6,9 +7,9 @@ import {
     MeteorExplosionCollision
 } from '../animations/collisionAnimation.js';
 import { HealthLive, RedPotion, BluePotion, Coin, OxygenTank } from './powerUp.js';
-import { BlackHole, Cauldron, IceDrink } from './powerDown.js';
+import { BlackHole, Cauldron, IceDrink, Confuse } from './powerDown.js';
 import { FloatingMessage } from '../animations/floatingMessages.js';
-import { Fireball, CoinLoss, PoisonBubbles, IceCrystalBubbles } from '../animations/particles.js';
+import { Fireball, CoinLoss, PoisonBubbles, IceCrystalBubbles, SpinningChicks } from '../animations/particles.js';
 import {
     AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Tauro,
     Aura, KarateCroco, SpearFish, TheRock, LilHornet, Cactus, IceBall, Garry, InkBeam, RockProjectile, VolcanoWasp, Volcanurtle
@@ -106,6 +107,11 @@ export class Player {
         //slow down
         this.isSlowed = false;
         this.slowedTimer = 0;
+        //confuse
+        this.isConfused = false;
+        this.confuseTimer = 0;
+        this.confuseDuration = 8000;
+        this.confusedKeyBindings = null;
         //status blubbles
         this.statusFxTimer = 0;
         this.statusFxInterval = 120;
@@ -146,6 +152,7 @@ export class Player {
         this.firedogLivesLimit();
         this.energyLogic(deltaTime);
         this.checkIfFiredogIsSlowed(deltaTime);
+        this.updateConfuse(deltaTime);
         this.emitStatusParticles(deltaTime);
 
         this.divingAbility(deltaTime);
@@ -690,6 +697,10 @@ export class Player {
         if (this.isSlowed) {
             if (Math.random() < 1.0) spawnIceCrystal();
         }
+
+        if (!this.game.particles.some(p => p instanceof SpinningChicks)) {
+            this.game.particles.push(new SpinningChicks(this.game));
+        }
     }
 
     // movement logic
@@ -930,6 +941,57 @@ export class Player {
             }
         }
     }
+    updateConfuse(deltaTime) {
+        if (this.isConfused) {
+            this.confuseTimer -= deltaTime;
+            if (this.confuseTimer <= 0) {
+                this.isConfused = false;
+                this.confusedKeyBindings = null;
+            }
+        }
+    }
+    activateConfuse() {
+        const tutorialMapActive = this.game.isTutorialActive && this.game.currentMap === "Map1";
+        const base =
+            (tutorialMapActive ? this.game._defaultKeyBindings : this.game.keyBindings)
+            || this.game._defaultKeyBindings
+            || getDefaultKeyBindings?.();
+
+        const MOVEMENT_ACTIONS = ['jump', 'moveBackward', 'sit', 'moveForward'];
+        const movementKeys = MOVEMENT_ACTIONS.map(a => base[a] ?? null);
+
+        const shuffled = movementKeys.slice();
+        const changes = (a, b) => a.reduce((n, v, i) => n + (v !== b[i] ? 1 : 0), 0);
+
+        let tries = 0;
+        do {
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            tries++;
+        } while (changes(movementKeys, shuffled) < 2 && tries < 6);
+
+        // if still <2 (e.g., duplicates/nulls), force a swap of two indices with different original values
+        if (changes(movementKeys, shuffled) < 2) {
+            for (let i = 0; i < shuffled.length; i++) {
+                for (let j = i + 1; j < shuffled.length; j++) {
+                    if (movementKeys[i] !== movementKeys[j]) {
+                        [shuffled[i], shuffled[j]] = [movementKeys[j], movementKeys[i]];
+                        i = j = shuffled.length;
+                    }
+                }
+            }
+        }
+
+        const confused = { ...base };
+        MOVEMENT_ACTIONS.forEach((action, idx) => { confused[action] = shuffled[idx]; });
+
+        this.confusedKeyBindings = confused;
+        this.isConfused = true;
+        this.confuseTimer = this.confuseDuration;
+        console.log('Confused keybindings:', JSON.stringify(this.confusedKeyBindings, null, 2));
+    }
 
     // types of collision
     collisionWithEnemies(deltaTime) {
@@ -1126,7 +1188,13 @@ export class Player {
                 this.game.audioHandler.powerUpAndDownSFX.playSound('darkHoleLaughSound');
             }, true
             );
-
+            checkPowerCollision(
+                this.game.powerDowns.filter(pd => pd instanceof Confuse), confuse => {
+                    this.game.audioHandler.powerUpAndDownSFX.playSound('statusConfusedSound', false, true);
+                    this.activateConfuse();
+                },
+                true
+            );
             // power up collisions
             checkPowerCollision(this.game.powerUps.filter(pu => pu instanceof OxygenTank), oxygenTank => {
                 this.game.time -= 10000;

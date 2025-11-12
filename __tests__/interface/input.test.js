@@ -300,18 +300,6 @@ describe('InputHandler', () => {
                 expect(spy).toHaveBeenCalled();
             });
         });
-
-        describe('"m" debug toggle', () => {
-            test('pressing m toggles game.debug flag', () => {
-                game.debug = false;
-
-                keyDown('m');
-                expect(game.debug).toBe(true);
-
-                keyDown('m');
-                expect(game.debug).toBe(false);
-            });
-        });
     });
 
     describe('keyup handling', () => {

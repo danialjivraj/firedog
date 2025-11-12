@@ -67,7 +67,7 @@ export class InputHandler {
             }
 
             if (lowercaseKey === 'm') {
-                this.game.debug = !this.game.debug;
+                //this.game.debug = !this.game.debug;
             }
 
             if (lowercaseKey === 't' && this.game.currentMenu === this.game.menu.howToPlay) {

@@ -423,3 +423,107 @@ export class IceCrystalBubbles extends FloatingBubbleEffect {
         ctx.restore();
     }
 }
+
+export class SpinningChicks extends Particle {
+    constructor(game) {
+        super(game);
+        this.count = 4;
+        this.radiusX = 36;
+        this.radiusY = 10;
+        this.angularSpeed = 0.07;
+        this.baseAngle = 0;
+        this.rockAmp = 4;
+        this.rockSpeed = 0.05;
+        this.rockPhase = 0;
+        this.size = 12;
+        this.headOffsetX = 10;
+        this.headOffsetYRatioStand = 0.3;
+        this.headOffsetYRatioSit = 0.15;
+        this.headOffsetYLerp = 0.15;
+        this._headOffsetYRatio = this.headOffsetYRatioStand;
+        this.TWO_PI = Math.PI * 2;
+    }
+
+    update() {
+        const player = this.game.player;
+
+        if (!player.isConfused || this.game.gameOver) {
+            this.markedForDeletion = true;
+            return;
+        }
+        if (!this.game.menu.pause?.isPaused) {
+            this.baseAngle += this.angularSpeed;
+            this.rockPhase += this.rockSpeed;
+        }
+
+        const isSitting = player.currentState === player.states[0];
+        const target = isSitting ? this.headOffsetYRatioSit : this.headOffsetYRatioStand;
+        this._headOffsetYRatio += (target - this._headOffsetYRatio) * this.headOffsetYLerp;
+    }
+
+    drawChick(ctx, x, y, s) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(s, s);
+        // body
+        ctx.beginPath();
+        ctx.arc(0, 0, 6, 0, this.TWO_PI);
+        ctx.fillStyle = 'rgba(255,215,0,0.95)';
+        ctx.fill();
+        // highlight
+        ctx.beginPath();
+        ctx.arc(-2.5, -2.5, 1.6, 0, this.TWO_PI);
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.fill();
+        // beak
+        ctx.beginPath();
+        ctx.moveTo(5.4, 0);
+        ctx.lineTo(8.4, -1.2);
+        ctx.lineTo(5.4, 1.2);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(255,140,0,0.95)';
+        ctx.fill();
+        // eye
+        ctx.beginPath();
+        ctx.arc(2.3, -1.7, 0.9, 0, this.TWO_PI);
+        ctx.fillStyle = 'rgba(0,0,0,0.85)';
+        ctx.fill();
+        ctx.restore();
+    }
+
+    draw(ctx) {
+        const p = this.game.player;
+
+        const px = p.x + p.width * 0.5 + this.headOffsetX;
+        const py = p.y + p.height * (0.5 - this._headOffsetYRatio);
+
+        // glow
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        const glow = ctx.createRadialGradient(px, py, 0, px, py, this.radiusX + 18);
+        glow.addColorStop(0.0, 'rgba(255, 80, 80, 0.13)');
+        glow.addColorStop(1.0, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(px, py, this.radiusX + 18, 0, this.TWO_PI);
+        ctx.fill();
+        ctx.restore();
+
+        for (let i = 0; i < this.count; i++) {
+            const a = this.baseAngle + i * (this.TWO_PI / this.count);
+            const ex = Math.cos(a) * this.radiusX;
+            const ey = Math.sin(a) * this.radiusY;
+
+            const rock = -this.rockAmp * Math.cos(a) * Math.sin(this.rockPhase);
+
+            const cx = px + ex;
+            const cy = py + ey + rock;
+
+            ctx.save();
+            ctx.shadowColor = 'rgba(255, 0, 0, 0.7)';
+            ctx.shadowBlur = 8;
+            this.drawChick(ctx, cx, cy, this.size / 12);
+            ctx.restore();
+        }
+    }
+}
