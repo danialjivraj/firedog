@@ -24,6 +24,32 @@ export class UI {
 
         this.secondsLeft = 60000;
         this.secondsLeftActivated = false;
+
+        this.uiTime = 0;
+        this.uiLastRealTime = null;
+
+        this.prevLives = this.game.lives;
+        this.lifeBlinkIndex = -1;
+        this.lifeBlinkEndTime = 0;
+        this.lifeBlinkDuration = 400;
+    }
+
+    getUiTime() {
+        const realNow = Date.now();
+
+        if (this.uiLastRealTime === null) {
+            this.uiLastRealTime = realNow;
+            return this.uiTime;
+        }
+
+        const dt = realNow - this.uiLastRealTime;
+        this.uiLastRealTime = realNow;
+
+        if (!this.game.menu.pause.isPaused) {
+            this.uiTime += Math.max(0, dt);
+        }
+
+        return this.uiTime;
     }
 
     draw(context) {
@@ -35,22 +61,72 @@ export class UI {
         context.font = this.fontSize + 'px ' + this.fontFamily;
         context.textAlign = 'left';
         context.fillStyle = this.game.fontColor;
-        //coins score
+
+        // coins score
         context.fillText('Coins: ' + this.game.coins, 20, 50);
-        //bars
+
+        // bars
         this.distanceBar(context);
         this.elyvorgHealthBar(context);
-        //time
+
+        // time
         this.timer(context);
-        //energy
+
+        // energy
         this.energy(context);
-        //lives
-        for (let i = 0; i < Math.min(this.game.lives, this.game.maxLives); i++) {
-            context.drawImage(this.livesImage, 25 * i + 20, 145, 25, 25);
+
+        // lives
+        const now = this.getUiTime();
+
+        if (this.game.lives < this.prevLives) {
+            this.lifeBlinkIndex = Math.max(0, this.prevLives - 1);
+            this.lifeBlinkEndTime = now + this.lifeBlinkDuration;
         }
+        this.prevLives = this.game.lives;
+
+        const heartsToDraw = Math.min(
+            this.game.maxLives,
+            Math.max(this.game.lives, this.lifeBlinkIndex + 1)
+        );
+
+        for (let i = 0; i < heartsToDraw; i++) {
+            const baseX = 25 * i + 20;
+            const baseY = 145;
+            const isBlinkingLostHeart =
+                i === this.lifeBlinkIndex &&
+                now < this.lifeBlinkEndTime &&
+                i >= this.game.lives;
+
+            context.save();
+
+            if (isBlinkingLostHeart) {
+                const t = 1 - (this.lifeBlinkEndTime - now) / this.lifeBlinkDuration;
+                const pulse = 0.9 + 0.2 * Math.sin(t * Math.PI * 4);
+
+                context.translate(baseX + 12.5, baseY + 12.5);
+                context.scale(pulse, pulse);
+
+                context.shadowColor = 'red';
+                context.shadowBlur = 18;
+                context.shadowOffsetX = 0;
+                context.shadowOffsetY = 0;
+
+                context.drawImage(this.livesImage, -12.5, -12.5, 25, 25);
+            } else if (i < this.game.lives) {
+                context.drawImage(this.livesImage, baseX, baseY, 25, 25);
+            }
+
+            context.restore();
+        }
+
+        if (now >= this.lifeBlinkEndTime) {
+            this.lifeBlinkIndex = -1;
+        }
+
         context.restore();
-        //abilities
-        this.firedogAbilityUI(context)
+
+        // abilities
+        this.firedogAbilityUI(context);
         this.elyvorgAbilityUI(context);
     }
 
@@ -199,8 +275,10 @@ export class UI {
         context.font = this.fontSize * 1 + 'px ' + this.fontFamily;
         let formattedTime;
         let time;
+
         if (this.game.player.isUnderwater) {
             time = Math.max(this.game.maxTime - this.game.time, 0);
+
             let dynamicColor = 'red';
             if (time <= this.secondsLeft && time % 2000 < 1000) {
                 dynamicColor = 'white';
@@ -221,10 +299,12 @@ export class UI {
         } else {
             time = this.game.time;
         }
+
         if (this.game.player.isUnderwater && time > this.secondsLeft) {
             context.fillStyle = 'black';
             context.shadowColor = 'white';
         }
+
         let minutes = Math.floor(time / 60000);
         let seconds = Math.floor((time % 60000) / 1000);
         if (seconds === 60) {
@@ -232,7 +312,9 @@ export class UI {
             minutes += 1;
         }
         formattedTime = `${minutes}:${(seconds < 10 ? '0' : '') + seconds}`;
+
         context.fillText('Time: ' + formattedTime, 20, 90);
+
         if (this.game.player.isUnderwater && time <= this.secondsLeft && time > this.secondsLeft - 60000) {
             this.secondsLeftActivated = true;
             this.game.audioHandler.mapSoundtrack.playSound('timeTickingSound', true);
@@ -296,7 +378,7 @@ export class UI {
         const divingImage = this.game.player.isDarkWhiteBorder ? this.divingUIWhiteBorder : this.divingUI;
         const invisibleImage = this.game.player.isDarkWhiteBorder ? this.invisibleUIWhiteBorder : this.invisibleUI;
 
-        //diving ability
+        // diving ability
         const divingX = 25;
         if (this.game.player.divingTimer < this.game.player.divingCooldown) {
             context.save();
@@ -314,7 +396,7 @@ export class UI {
             context.fillText(countdownText, textX, textY);
         }
 
-        //fireball ability
+        // fireball ability
         const fireballX = divingX + firedogBorderSize + spaceBetweenAbilities;
         if (this.game.player.fireballTimer < this.game.player.fireballCooldown || this.game.player.energyReachedZero) {
             context.save();
@@ -350,7 +432,7 @@ export class UI {
             }
         }
 
-        //invisible ability
+        // invisible ability
         const invisibleX = fireballX + firedogBorderSize + spaceBetweenAbilities;
         if (this.game.player.invisibleTimer < this.game.player.invisibleCooldown) {
             context.save();
@@ -387,37 +469,37 @@ export class UI {
 
     elyvorgAbilityUI(context) {
         if (this.game.elyvorgInFight) {
-            //poison
+            // poison
             let isPoisonActive;
             let poisonCooldownTime;
             let poisonCooldownTimer;
-            //gravity
+            // gravity
             let isGravitySpinnerActive;
             let gravityCooldownTime;
             let gravityCooldownTimer;
-            //slash
+            // slash
             let slashAttackStateCounter;
             let slashAttackStateCounterLimit;
             let slashAttackOnce;
-            //electric
+            // electric
             let electricWheelTimer;
             let isElectricWheelActive;
 
             for (const enemy of this.game.enemies) {
                 if (enemy instanceof Elyvorg) {
-                    //poison
+                    // poison
                     isPoisonActive = enemy.isPoisonActive;
                     poisonCooldownTime = enemy.poisonCooldown;
                     poisonCooldownTimer = enemy.poisonCooldownTimer;
-                    //gravity
+                    // gravity
                     isGravitySpinnerActive = enemy.isGravitySpinnerActive;
                     gravityCooldownTime = enemy.gravityCooldown;
                     gravityCooldownTimer = enemy.gravityCooldownTimer;
-                    //slash
+                    // slash
                     slashAttackOnce = enemy.slashAttackOnce;
                     slashAttackStateCounter = enemy.slashAttackStateCounter;
                     slashAttackStateCounterLimit = enemy.slashAttackStateCounterLimit;
-                    //electric
+                    // electric
                     electricWheelTimer = enemy.electricWheelTimer;
                     isElectricWheelActive = enemy.isElectricWheelActive;
                     break;
@@ -428,7 +510,7 @@ export class UI {
             const spaceBetweenAbilities = 10;
             const yPosition = 20;
 
-            //poison
+            // poison
             const poisonX = this.game.width - elyvorgBorderSize - spaceBetweenAbilities * 2;
             if (poisonCooldownTimer > 0) {
                 if (isPoisonActive) {
@@ -455,7 +537,7 @@ export class UI {
                 context.restore();
             }
 
-            //gravity
+            // gravity
             const gravityX = poisonX - elyvorgBorderSize - spaceBetweenAbilities;
             if (gravityCooldownTimer > 0) {
                 if (isGravitySpinnerActive) {
@@ -482,7 +564,7 @@ export class UI {
                 context.restore();
             }
 
-            //slash
+            // slash
             const slashX = gravityX - elyvorgBorderSize - spaceBetweenAbilities;
             if (slashAttackOnce) {
                 context.drawImage(this.slashUI, slashX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
@@ -499,7 +581,7 @@ export class UI {
                 }
             }
 
-            //electric
+            // electric
             const electricX = slashX - elyvorgBorderSize - spaceBetweenAbilities;
             if (isElectricWheelActive) {
                 context.drawImage(this.electricUI, electricX, yPosition, elyvorgBorderSize, elyvorgBorderSize);

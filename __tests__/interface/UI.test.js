@@ -95,6 +95,9 @@ describe('UI', () => {
             shadowColor: '',
             shadowBlur: 0,
             filter: '',
+
+            translate: jest.fn(),
+            scale: jest.fn(),
         };
     });
 
@@ -135,6 +138,63 @@ describe('UI', () => {
             expect(spyEnergy).toHaveBeenCalledWith(ctx);
 
             expect(ctx.drawImage).toHaveBeenCalledTimes(5);
+        });
+    });
+
+    describe('lives rendering & blink behavior', () => {
+        test('draws one heart icon per current life when there is no damage blink', () => {
+            game.lives = 2;
+            game.maxLives = 3;
+            ui = new UI(game);
+
+            ctx.drawImage.mockClear();
+
+            ui.draw(ctx);
+
+            const heartCalls = ctx.drawImage.mock.calls.filter(
+                ([, , , w, h]) => w === 25 && h === 25
+            );
+            expect(heartCalls.length).toBe(2);
+        });
+
+        test('removes the last heart after the blink animation finishes when final life is lost', () => {
+            game.lives = 1;
+            game.maxLives = 3;
+            ui = new UI(game);
+
+            const timeSequence = [0, 100, 600];
+            let index = 0;
+            const getUiTimeSpy = jest
+                .spyOn(ui, 'getUiTime')
+                .mockImplementation(() => {
+                    const value = timeSequence[index] ?? timeSequence[timeSequence.length - 1];
+                    index += 1;
+                    return value;
+                });
+
+            ctx.drawImage.mockClear();
+            ui.draw(ctx);
+            let heartCalls = ctx.drawImage.mock.calls.filter(
+                ([, , , w, h]) => w === 25 && h === 25
+            );
+            expect(heartCalls.length).toBe(1);
+
+            ctx.drawImage.mockClear();
+            game.lives = 0;
+            ui.draw(ctx);
+            heartCalls = ctx.drawImage.mock.calls.filter(
+                ([, , , w, h]) => w === 25 && h === 25
+            );
+            expect(heartCalls.length).toBe(1);
+
+            ctx.drawImage.mockClear();
+            ui.draw(ctx);
+            heartCalls = ctx.drawImage.mock.calls.filter(
+                ([, , , w, h]) => w === 25 && h === 25
+            );
+            expect(heartCalls.length).toBe(0);
+
+            getUiTimeSpy.mockRestore();
         });
     });
 
