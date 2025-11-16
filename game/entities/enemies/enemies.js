@@ -1092,6 +1092,16 @@ export class Aura extends FlyingEnemy {
     }
 }
 
+export class Gloomlet extends FlyingEnemy {
+    constructor(game) {
+        super(game, 78, 75, 4, 'gloomlet');
+        this.isRedEnemy = true;
+        this.setFps(10);
+        this.y = this.game.height * 0.5 + Math.random() * (this.game.height - 160 - this.game.height * 0.5);
+        this.soundId = 'gloomletHumming';
+    }
+}
+
 export class Dolly extends FlyingEnemy {
     constructor(game) {
         super(game, 88.2, 120, 29, 'dolly');
@@ -1364,10 +1374,32 @@ export class Garry extends ImmobileGroundEnemy {
         const spawnX = this.x;
         const spawnY = this.y + 65;
 
-        this.game.enemies.push(new InkBeam(this.game, spawnX, spawnY, 10, 0));
+        const player = this.game.player;
+        const playerCenterX = player.x + (player.width || 0) / 2;
+        const playerCenterY = player.y + (player.height || 0) / 2;
+        const playerVelY = player.speedY || 0;
 
-    const randomSpeedY = -1 - Math.random() * 9;
-        this.game.enemies.push(new InkBeam(this.game, spawnX, spawnY, 10, randomSpeedY));
+        const horizontalDist = Math.abs(playerCenterX - spawnX) || 1;
+
+        const baseSpeedX = 11;
+
+        let timeToTarget = horizontalDist / baseSpeedX;
+        timeToTarget = clamp(timeToTarget, 0.35, 1.0);
+
+        const predictedPlayerY = playerCenterY + playerVelY * timeToTarget;
+        let dyPred = predictedPlayerY - spawnY;
+
+        const leadFactor = 2.0;
+        dyPred *= leadFactor;
+
+        const angle = Math.atan2(dyPred, horizontalDist);
+
+        let speedY = Math.sin(angle) * baseSpeedX;
+        speedY = clamp(speedY, -20, 20);
+
+        this.game.enemies.push(
+            new InkBeam(this.game, spawnX, spawnY, baseSpeedX, speedY)
+        );
 
         this.game.audioHandler.enemySFX.playSound('inkSpit', false, true);
     }
@@ -1501,11 +1533,12 @@ export class LilHornet extends FlyingEnemy {
 
 export class KarateCroco extends MovingGroundEnemy {
     constructor(game) {
-        super(game, 152.75, 110, 3, 'karateCrocoIdle');
+        super(game, 98.25, 140, 3, 'karateCrocoIdle');
         this.isRedEnemy = true;
         this.state = 'idle';
+        this.setFps(10);
         this.lives = 2;
-        this.flyKickAnimation = new MovingGroundEnemy(game, 153, 110, 2, 'karateCrocoFlyKick');
+        this.flyKickAnimation = new MovingGroundEnemy(game, 146, 140, 3, 'karateCrocoFlyKick');
         this.playsOnce = true;
     }
 
@@ -1521,12 +1554,12 @@ export class KarateCroco extends MovingGroundEnemy {
                 this.playsOnce = false;
                 this.game.audioHandler.enemySFX.playSound('ahhhSound', false, true);
             }
-            if (this.flyKickAnimation.frameX < 2) {
+            if (this.flyKickAnimation.frameX < 3) {
                 this.flyKickAnimation.update(deltaTime);
                 this.x -= 14;
             } else {
                 this.x -= 14;
-                this.flyKickAnimation.frameX = 2;
+                this.flyKickAnimation.frameX = 3;
             }
         }
     }

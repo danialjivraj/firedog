@@ -280,6 +280,7 @@ export class PowerUpAndDownSFXAudioHandler extends AudioHandler {
       cauldronSoundEffect: 'cauldronSoundEffect',
       darkHoleLaughSound: 'darkHoleLaughSound',
       statusConfusedSound: 'statusConfusedSound',
+      deadSkullLaugh: 'deadSkullLaugh',
     };
     this.initializeSounds();
   }
@@ -361,6 +362,8 @@ export class EnemySFXAudioHandler extends AudioHandler {
       beeBuzzing: 'beeBuzzing',
       //angryBee, volcanoWasp
       angryBeeBuzzing: 'angryBeeBuzzing',
+      //gloomlet
+      gloomletHumming: 'gloomletHumming',
       //dolly
       auraSoundEffect: 'auraSoundEffect',
       dollHumming: 'dollHumming',

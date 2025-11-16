@@ -115,7 +115,9 @@ export class Splash extends Particle {
         this.speedX = Math.random() * 6 - 4;
         this.speedY = Math.random() * 2 + 2;
         this.gravity = 0;
+        this.imageId = resolveFireSplashImageId(this.game.player);
     }
+
     update() {
         super.update();
         if (this.game.player.isUnderwater) {
@@ -125,9 +127,9 @@ export class Splash extends Particle {
         }
         this.gravity += 0.1;
     }
+
     draw(context) {
-        const id = resolveFireSplashImageId(this.game.player);
-        const img = document.getElementById(id);
+        const img = document.getElementById(this.imageId);
         if (!img) return;
         context.drawImage(img, this.x, this.y, this.size, this.size);
     }
@@ -143,7 +145,9 @@ export class Fire extends Particle {
         this.speedY = 1;
         this.angle = 0;
         this.va = Math.random() * 0.2 - 0.1;
+        this.imageId = resolveFireSplashImageId(this.game.player);
     }
+
     update() {
         super.update();
         if (this.game.player.isUnderwater) {
@@ -152,9 +156,9 @@ export class Fire extends Particle {
         this.angle += this.va;
         this.x += Math.sin(this.angle * 5);
     }
+
     draw(context) {
-        const id = resolveFireSplashImageId(this.game.player);
-        const img = document.getElementById(id);
+        const img = document.getElementById(this.imageId);
         if (!img) return;
 
         context.save();

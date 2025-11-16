@@ -55,7 +55,7 @@ body {
         /* map1 */
         #abyssaw, #dotter, #vertibat, #ghobat, #skulnapSleep, #meatSoldier, #skulnapAwake, #ravengloom, #glidoSpikeFly, #glidoSpikeAttack, 
         /* map2 */
-        #duskPlant, #silknoir, #walterTheGhost, #dolly, #aura, #ben,
+        #duskPlant, #silknoir, #walterTheGhost, #gloomlet, #dolly, #aura, #ben,
         /* map3 */
         #piranha, #skeletonFish, #spearFish, #voltzeel, #jetFish, #piperIdle, #piperExtended, #garry, 
         /* map4 */
@@ -69,7 +69,9 @@ body {
     /* power up */ 
     #redpotion, #bluepotion, #healthlive, #coin, #oxygenTank,
     /* power down */
-    #drink, #cauldron, #blackhole, #confuse, 
+    #iceDrink, #cauldron, #blackhole, #confuse, #deadSkull, 
+    /* random power */
+    #randomPower,
 /* map1 */ 
 #map1Background, #map1Ground, #map1Rocks, #map1Bush, #map1Trees1, #map1Trees2, #map1Trees3, #map1Trees4, #map1Trees5, #map1Trees6, #map1Trees7, 
 /* map2 */
@@ -135,7 +137,7 @@ body {
         /* duskmaw */
         #duskmawLaugh, #duskmawLiftingHat, #duskmawLiftingHat2, #duskmawNormal, 
         /* zephyrion */
-        #zephyrionDistraught, #zephyrionEyesClosed, #zephyrionHappy, #zephyrionNormal, 
+        #zephyrionDistraught, #zephyrionEyesClosed, #zephyrionHappy, #zephyrionNormal, #zephyrionSurprised, 
         /* penguini */
         #penguinBatLaugh, #penguinBatTalkNormal, #penguinBatUp, #penguinGunLaugh, #penguinGunTalkNormal, #penguinGunUp, 
     /* border images */

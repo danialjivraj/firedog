@@ -6,13 +6,13 @@ import {
   BluePotion,
   HealthLive,
   Coin,
-  OxygenTank
-} from '../game/entities/powerUp.js';
-import {
+  OxygenTank,
   IceDrink,
   Cauldron,
-  BlackHole
-} from '../game/entities/powerDown.js';
+  BlackHole,
+  Confuse,
+  DeadSkull
+} from '../game/entities/powerUpAndDown.js';
 import { Goblin, ImmobileGroundEnemy } from '../game/entities/enemies/enemies.js';
 import { Elyvorg } from '../game/entities/enemies/elyvorg.js';
 import {
@@ -630,14 +630,6 @@ describe('Game class (game-main.js)', () => {
 
     afterEach(() => Math.random.mockRestore());
 
-    it('does not spawn BluePotion if player.isBluePotionActive is true', () => {
-      game.player.isBluePotionActive = true;
-      game.player.isUnderwater = false;
-      game.powerUps = [];
-      game.addPowerUp();
-      expect(game.powerUps.some(p => p instanceof BluePotion)).toBe(false);
-    });
-
     it('does not spawn OxygenTank when player.isUnderwater is false', () => {
       game.player.isBluePotionActive = false;
       game.player.isUnderwater = false;
@@ -671,6 +663,8 @@ describe('Game class (game-main.js)', () => {
       expect(game.powerDowns.some(p => p instanceof IceDrink)).toBe(true);
       expect(game.powerDowns.some(p => p instanceof Cauldron)).toBe(true);
       expect(game.powerDowns.some(p => p instanceof BlackHole)).toBe(true);
+      expect(game.powerDowns.some(p => p instanceof Confuse)).toBe(true);
+      expect(game.powerDowns.some(p => p instanceof DeadSkull)).toBe(true);
     });
 
     it('spawns no power-downs on Map6', () => {
@@ -691,13 +685,6 @@ describe('Game class (game-main.js)', () => {
       game.background.totalDistanceTraveled = game.maxDistance - 2;
       game.addPowerDown();
       expect(game.powerDowns).toHaveLength(0);
-    });
-
-    it('does not spawn BlackHole when player.isBlackHoleActive is true', () => {
-      game.player.isBlackHoleActive = true;
-      game.powerDowns = [];
-      game.addPowerDown();
-      expect(game.powerDowns.some(p => p instanceof BlackHole)).toBe(false);
     });
   });
 

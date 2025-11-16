@@ -34,6 +34,7 @@ import {
     WalterTheGhost,
     Ben,
     Aura,
+    Gloomlet,
     Dolly,
     Piranha,
     SkeletonFish,
@@ -734,6 +735,17 @@ describe('Map 2 Enemies', () => {
         expect(b.x).toBeLessThan(ox);
     });
 
+    it('Gloomlet plays humming sounds when on-screen', () => {
+        const g = new Gloomlet(game);
+        g.x = game.width / 2;
+        g.y = game.height / 2;
+
+        const playSpy = jest.spyOn(game.audioHandler.enemySFX, 'playSound');
+        g.update(16);
+
+        expect(playSpy).toHaveBeenCalledWith('gloomletHumming');
+    });
+
     it('Aura is semi-transparent and draws without error', () => {
         const a = new Aura(game);
         const ctx = {
@@ -849,7 +861,11 @@ describe('Map 3 Enemies', () => {
             .toHaveBeenCalledWith('inkSpit', false, true);
     });
 
-    it('Garry fires two InkBeams every 2000ms while on-screen', () => {
+    it('Garry fires one InkBeam every 2000ms while on-screen', () => {
+        game.player.width = 50;
+        game.player.height = 50;
+        game.player.speedY = 0;
+
         const g = new Garry(game);
 
         game.speed = 0;
@@ -858,7 +874,7 @@ describe('Map 3 Enemies', () => {
 
         g.update(0);
         const firstCount = game.enemies.filter(e => e instanceof InkBeam).length;
-        expect(firstCount).toBeGreaterThanOrEqual(2);
+        expect(firstCount).toBe(1);
 
         game.audioHandler.enemySFX.playSound.mockClear();
 
@@ -868,15 +884,16 @@ describe('Map 3 Enemies', () => {
             .not.toHaveBeenCalledWith('inkSpit', false, true);
 
         g.update(1);
-        expect(game.enemies.filter(e => e instanceof InkBeam).length).toBe(firstCount + 2);
+        const secondCount = game.enemies.filter(e => e instanceof InkBeam).length;
+        expect(secondCount).toBe(firstCount + 1);
         expect(game.audioHandler.enemySFX.playSound)
             .toHaveBeenCalledWith('inkSpit', false, true);
 
-        const beams = game.enemies.filter(e => e instanceof InkBeam);
-        const newestTwo = beams.slice(-2);
-        expect(newestTwo.some(b => b.speedY === 0)).toBe(true);
-        expect(newestTwo.some(b => b.speedY <= -1 && b.speedY >= -10)).toBe(true);
+        const newest = game.enemies.filter(e => e instanceof InkBeam).slice(-1)[0];
+        expect(newest.speedY).toBeGreaterThanOrEqual(-20);
+        expect(newest.speedY).toBeLessThanOrEqual(20);
     });
+
 });
 
 // -----------------------------------------------------------------------------

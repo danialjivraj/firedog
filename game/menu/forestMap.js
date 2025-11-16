@@ -32,8 +32,8 @@ export class ForestMapMenu extends BaseMenu {
             map4: "Verdant Vine",
             map5: "Springly Lemony",
             map6: "Infernal Crater Peak",
-            bonus1: "Bonus Map 1 - Icebound Abyss",
-            bonus2: "Bonus Map 2 - Spacial Rift",
+            bonus1: "Bonus Map 1 - Icebound Cave",
+            bonus2: "Bonus Map 2 - Cosmic Rift",
             bonus3: "Bonus Map 3 - Crimson Fissure",
         };
 

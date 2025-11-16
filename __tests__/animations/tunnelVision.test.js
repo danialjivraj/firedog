@@ -26,11 +26,12 @@ describe('TunnelVision', () => {
         expect(tv.x).toBe(0);
         expect(tv.y).toBe(0);
         expect(tv.radius).toBe(400);
-        expect(tv.fadeSpeed).toBeCloseTo(1 / 15000);
         expect(tv.alpha).toBe(1.0);
+        expect(tv.circleAlpha).toBe(0);
         expect(tv.elapsedTime).toBe(0);
         expect(tv.fadeOutStartTime).toBe(15000);
         expect(tv.fadeOutDuration).toBe(9000);
+        expect(tv.restartRadius).toBeNull();
     });
 
     it('update() does nothing when isPlayerInGame=false', () => {

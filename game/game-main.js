@@ -2,7 +2,7 @@ import { Player } from "./entities/player.js";
 import {
     Goblin,
     Dotter, Vertibat, Ghobat, Ravengloom, MeatSoldier, Skulnap, Abyssaw, GlidoSpike,
-    DuskPlant, Silknoir, WalterTheGhost, Ben, Dolly, Aura,
+    DuskPlant, Silknoir, WalterTheGhost, Ben, Gloomlet, Dolly, Aura,
     Piranha, SkeletonFish, SpearFish, JetFish, Piper, Voltzeel, Garry,
     Sluggie, BigGreener, Chiquita, LilHornet, KarateCroco, Zabkous, SpidoLazer, Jerry,
     Snailey, RedFlyer, PurpleFlyer, LazyMosquito, LeafSlug, Sunflora, Eggry, Tauro, AngryBee, Bee, HangingSpidoLazer,
@@ -11,7 +11,11 @@ import {
     ImmobileGroundEnemy,
 } from "./entities/enemies/enemies.js";
 import { Elyvorg, InkBomb, MeteorAttack } from "./entities/enemies/elyvorg.js";
-import { RedPotion, BluePotion, HealthLive, Coin, OxygenTank } from "./entities/powerUp.js";
+import {
+    RedPotion, BluePotion, HealthLive, Coin, OxygenTank,
+    BlackHole, Cauldron, IceDrink, Confuse, DeadSkull,
+    RandomPower
+} from "./entities/powerUpAndDown.js";
 //ingame
 import { Reset } from "./reset.js";
 import { PauseMenu } from "./menu/pauseMenu.js";
@@ -31,7 +35,6 @@ import { DeleteProgress, DeleteProgress2 } from "./menu/deleteProgress.js";
 import { SettingsMenu } from "./menu/settingsMenu.js";
 import { ControlsSettingsMenu } from "./menu/controlsSettingsMenu.js";
 import { getDefaultKeyBindings } from "./config/keyBindings.js";
-import { BlackHole, Cauldron, IceDrink, Confuse } from "./entities/powerDown.js";
 //audios
 import { AudioSettingsMenu } from "./menu/audio/audioSettingsMenu.js";
 import { IngameAudioSettingsMenu } from "./menu/audio/ingameAudioSettingsMenu.js";
@@ -582,6 +585,7 @@ export class Game {
                 { type: Silknoir, probability: 0.4, spawningDistance: 0 },
                 { type: WalterTheGhost, probability: 0.2, spawningDistance: 0 },
                 { type: Ben, probability: 0.2, spawningDistance: 0 },
+                { type: Gloomlet, probability: 0.08, spawningDistance: 50 },
                 { type: Dolly, probability: 0.01, spawningDistance: 100 },
             ],
             Map3: [
@@ -695,11 +699,13 @@ export class Game {
     addPowerUp() {
         if (!(this.background instanceof Map6)) {
             if (this.speed > 0 && this.background && this.background.totalDistanceTraveled < this.maxDistance - 3) {
+                if (Math.random() < 0.0025) {
+                    this.powerUps.push(new RandomPower(this));
+                }
                 if (Math.random() < 0.005) {
                     this.powerUps.push(new RedPotion(this));
                 }
-                if (Math.random() < 0.005 && this.player.isBluePotionActive === false &&
-                    !this.powerUps.some(powerUp => powerUp instanceof BluePotion)) {
+                if (Math.random() < 0.005) {
                     this.powerUps.push(new BluePotion(this));
                 }
                 if (Math.random() < 0.005) {
@@ -719,17 +725,23 @@ export class Game {
     addPowerDown() {
         if (!(this.background instanceof Map6)) {
             if (this.speed > 0 && this.background && this.background.totalDistanceTraveled < this.maxDistance - 3) {
+                if (Math.random() < 0.0025) {
+                    this.powerDowns.push(new RandomPower(this));
+                }
                 if (Math.random() < 0.005) {
                     this.powerDowns.push(new IceDrink(this));
                 }
                 if (Math.random() < 0.005) {
                     this.powerDowns.push(new Cauldron(this));
                 }
-                if (Math.random() < 0.005 && this.player.isBlackHoleActive === false) {
+                if (Math.random() < 0.005) {
                     this.powerDowns.push(new BlackHole(this));
                 }
                 if (Math.random() < 0.005) {
                     this.powerDowns.push(new Confuse(this));
+                }
+                if (Math.random() < 0.005) {
+                    this.powerDowns.push(new DeadSkull(this));
                 }
             }
         }

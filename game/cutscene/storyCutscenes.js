@@ -2794,20 +2794,20 @@ export class Map3Cutscene extends StoryCutscene {
             `${this.zephyrion}`,
             `Wha!`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
-            this.addImage('zephyrionNormal', 1, 1300, 79, 590, 610),
+            this.addImage('zephyrionSurprised', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //76
             `${this.firedog}`,
             `Huh? Everything okay ${this.zephyrion}?`,
             this.addImage(this.setfiredogNormalQuestionMark(), 1, 0, 79, 590, 610),
-            this.addImage('zephyrionNormal', 0.7, 1300, 79, 590, 610),
+            this.addImage('zephyrionSurprised', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //77
             `${this.zephyrion}`,
             `(What was that? It was inside ${this.firedog}? Inside of his thoughts? His heart?)`,
             { whisper: true },
             this.addImage(this.setfiredogNormalQuestionMark(), 0.7, 0, 79, 590, 610),
-            this.addImage('zephyrionDistraught', 1, 1300, 79, 590, 610),
+            this.addImage('zephyrionSurprised', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //78
             `${this.zephyrion}`,
@@ -2891,31 +2891,31 @@ export class Map3Cutscene extends StoryCutscene {
             `${this.zephyrion}`,
             `Okay... The spell has been casted. You can breathe underwater now.`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
-            this.addImage('zephyrionNormal', 1, 1300, 79, 590, 610),
+            this.addImage('zephyrionHappy', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //92
             `${this.zephyrion}`,
             `Don't waste too much time here on land! Every second counts!`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
-            this.addImage('zephyrionNormal', 1, 1300, 79, 590, 610),
+            this.addImage('zephyrionHappy', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //93
             `${this.firedog}`,
             `Awesome. Thank you so much for the help ${this.zephyrion}!`,
             this.addImage(this.setfiredogHappy(), 1, 0, 79, 590, 610),
-            this.addImage('zephyrionNormal', 0.7, 1300, 79, 590, 610),
+            this.addImage('zephyrionHappy', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //94
             `${this.firedog}`,
             `I'll go now! Adios!`,
             this.addImage(this.setfiredogHappy(), 1, 0, 79, 590, 610),
-            this.addImage('zephyrionNormal', 0.7, 1300, 79, 590, 610),
+            this.addImage('zephyrionHappy', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //95 change scenary
             `${this.firedog}`,
             `Woohoo!`,
             this.addImage(this.setfiredogLaugh(), 1, 0, 79, 590, 610),
-            this.addImage('zephyrionNormal', 0.7, 1300, 79, 590, 610),
+            this.addImage('zephyrionHappy', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //96
             `${this.zephyrion}`,

@@ -1,7 +1,6 @@
 import { Player, CollisionLogic } from '../../game/entities/player';
 import { Fireball, CoinLoss, PoisonBubbles, IceCrystalBubbles } from '../../game/animations/particles';
-import { IceDrink, Cauldron, BlackHole, Confuse } from '../../game/entities/powerDown';
-import { OxygenTank, HealthLive, Coin, RedPotion, BluePotion } from '../../game/entities/powerUp';
+import { IceDrink, Cauldron, BlackHole, Confuse, DeadSkull, OxygenTank, HealthLive, Coin, RedPotion, BluePotion, RandomPower } from '../../game/entities/powerUpAndDown';
 import { InkSplash } from '../../game/animations/ink';
 import { TunnelVision } from '../../game/animations/tunnelVision';
 import {
@@ -50,14 +49,32 @@ jest.mock('../../game/animations/collisionAnimation', () => ({
     MeteorExplosionCollision: jest.fn(),
 }));
 
-jest.mock('../../game/entities/powerUp', () => ({
-    HealthLive: jest.fn(), RedPotion: jest.fn(), BluePotion: jest.fn(),
-    Coin: jest.fn(), OxygenTank: jest.fn(),
-}));
-
-jest.mock('../../game/entities/powerDown', () => ({
-    BlackHole: jest.fn(), Cauldron: jest.fn(), IceDrink: jest.fn(), Confuse: jest.fn(),
-}));
+jest.mock('../../game/entities/powerUpAndDown', () => {
+    class HealthLive { }
+    class RedPotion { }
+    class BluePotion { }
+    class Coin { }
+    class OxygenTank { }
+    class BlackHole { }
+    class Cauldron { }
+    class IceDrink { }
+    class Confuse { }
+    class DeadSkull { }
+    class RandomPower { }
+    return {
+        HealthLive,
+        RedPotion,
+        BluePotion,
+        Coin,
+        OxygenTank,
+        BlackHole,
+        Cauldron,
+        IceDrink,
+        Confuse,
+        DeadSkull,
+        RandomPower,
+    };
+});
 
 jest.mock('../../game/animations/floatingMessages', () => ({
     FloatingMessage: jest.fn(),
@@ -76,7 +93,7 @@ jest.mock('../../game/entities/enemies/enemies', () => ({
     PoisonSpit: jest.fn(),
     PoisonDrop: jest.fn(),
     AngryBee: jest.fn(), Bee: jest.fn(), Skulnap: jest.fn(), Sluggie: jest.fn(),
-    Voltzeel: jest.fn(), Tauro: jest.fn(), Aura: jest.fn(), KarateCroco: jest.fn(),
+    Voltzeel: jest.fn(), Tauro: jest.fn(), Gloomlet: jest.fn(), Aura: jest.fn(), KarateCroco: jest.fn(),
     SpearFish: jest.fn(), TheRock: jest.fn(), LilHornet: jest.fn(), Cactus: jest.fn(),
     IceBall: jest.fn(), Garry: jest.fn(), InkBeam: jest.fn(), RockProjectile: jest.fn(),
     VolcanoWasp: jest.fn(), Volcanurtle: jest.fn(),
@@ -84,7 +101,14 @@ jest.mock('../../game/entities/enemies/enemies', () => ({
 
 jest.mock('../../game/animations/ink', () => ({ InkSplash: jest.fn() }));
 jest.mock('../../game/animations/damageIndicator', () => ({ DamageIndicator: jest.fn() }));
-jest.mock('../../game/animations/tunnelVision', () => ({ TunnelVision: jest.fn() }));
+jest.mock('../../game/animations/tunnelVision', () => {
+    const TunnelVision = jest.fn(function (game) {
+        this.game = game;
+        this.restartFromCurrent = jest.fn();
+        this.reset = jest.fn();
+    });
+    return { TunnelVision };
+});
 jest.mock('../../game/entities/enemies/elyvorg', () => ({
     Elyvorg: jest.fn(), Arrow: jest.fn(), Barrier: jest.fn(),
     ElectricWheel: jest.fn(), GravitationalAura: jest.fn(),
@@ -508,6 +532,7 @@ describe('Player', () => {
             player.x = 0; player.y = 0;
             player.width = 10; player.height = 10;
             game.gameOver = false;
+            player.isUnderwater = false;
         });
 
         test('IceDrink slows player', () => {
@@ -564,6 +589,15 @@ describe('Player', () => {
             expect(conf.markedForDeletion).toBe(true);
         });
 
+        test('DeadSkull decrements lives', () => {
+            game.lives = 2;
+            const h = new DeadSkull();
+            Object.assign(h, { x: 0, y: 0, width: 10, height: 10 });
+            game.powerDowns = [h];
+            player.collisionWithPowers(0);
+            expect(game.lives).toBe(1);
+        });
+
         test('OxygenTank reduces time', () => {
             game.time = 50000;
             const o = new OxygenTank();
@@ -605,6 +639,101 @@ describe('Player', () => {
             game.powerUps = [bp];
             player.collisionWithPowers(0);
             expect(player.isBluePotionActive).toBe(true);
+        });
+
+        test('RandomPower in powerUps can resolve to OxygenTank when underwater', () => {
+            const origRandom = Math.random;
+            Math.random = jest.fn(() => 0);
+
+            try {
+                game.time = 50000;
+                player.isUnderwater = true;
+
+                const rp = new RandomPower();
+                Object.assign(rp, { x: 0, y: 0, width: 10, height: 10 });
+
+                game.powerUps = [rp];
+                game.powerDowns = [];
+
+                player.collisionWithPowers(0);
+
+                expect(game.time).toBe(40000);
+
+                expect(rp.markedForDeletion).toBe(true);
+            } finally {
+                Math.random = origRandom;
+            }
+        });
+
+        test('RandomPower in powerUps does not pick OxygenTank when not underwater', () => {
+            const origRandom = Math.random;
+            Math.random = jest.fn(() => 0);
+
+            try {
+                game.time = 50000;
+                game.lives = 1;
+                player.isUnderwater = false;
+
+                const rp = new RandomPower();
+                Object.assign(rp, { x: 0, y: 0, width: 10, height: 10 });
+
+                game.powerUps = [rp];
+                game.powerDowns = [];
+
+                player.collisionWithPowers(0);
+
+                expect(game.time).toBe(50000);
+
+                expect(game.lives).toBe(2);
+
+                expect(rp.markedForDeletion).toBe(true);
+            } finally {
+                Math.random = origRandom;
+            }
+        });
+
+        test('RandomPower in powerDowns delegates to a down handler (e.g. IceDrink)', () => {
+            const origRandom = Math.random;
+            Math.random = jest.fn(() => 0);
+
+            try {
+                const rp = new RandomPower();
+                Object.assign(rp, { x: 0, y: 0, width: 10, height: 10 });
+
+                game.powerUps = [];
+                game.powerDowns = [rp];
+
+                player.isInvisible = false;
+                player.collisionWithPowers(0);
+
+                expect(player.isSlowed).toBe(true);
+
+                expect(rp.markedForDeletion).toBe(true);
+            } finally {
+                Math.random = origRandom;
+            }
+        });
+
+        test('RandomPower powerDown is ignored while invisible', () => {
+            const rp = new RandomPower();
+            Object.assign(rp, { x: 0, y: 0, width: 10, height: 10 });
+
+            game.powerUps = [];
+            game.powerDowns = [rp];
+
+            player.isInvisible = true;
+
+            const origRandom = Math.random;
+            Math.random = jest.fn(() => 0);
+
+            try {
+                player.collisionWithPowers(0);
+
+                expect(rp.markedForDeletion).toBeUndefined();
+                expect(player.isSlowed).toBe(false);
+            } finally {
+                Math.random = origRandom;
+            }
         });
     });
 
@@ -688,7 +817,7 @@ describe('Player', () => {
         player.width = 10;
         player.height = 10;
 
-        const pdClasses = [IceDrink, Cauldron, BlackHole, Confuse];
+        const pdClasses = [IceDrink, Cauldron, BlackHole, Confuse, DeadSkull, RandomPower];
         pdClasses.forEach(Ctor => {
             const item = new Ctor();
             Object.assign(item, { x: 0, y: 0, width: 10, height: 10 });
@@ -699,8 +828,7 @@ describe('Player', () => {
             expect(item.markedForDeletion).toBe(true);
         });
 
-        // powerUps
-        const puClasses = [OxygenTank, HealthLive, Coin, RedPotion, BluePotion];
+        const puClasses = [OxygenTank, HealthLive, Coin, RedPotion, BluePotion, RandomPower];
         puClasses.forEach(Ctor => {
             const item = new Ctor();
             Object.assign(item, { x: 0, y: 0, width: 10, height: 10 });
