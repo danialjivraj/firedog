@@ -81,6 +81,8 @@ export class MeteorAttack extends FallingEnemy {
 export class PoisonDrop extends FallingEnemy {
     constructor(game) {
         super(game, 26, 60, 3, 'poisonDrop');
+        this.dealsDirectHitDamage = false;
+        this.isPoisonEnemy = true;
         this.speedY = Math.random() * 2 + 7;
         this.x = Math.random() * (this.game.width - this.width);
     }

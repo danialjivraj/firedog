@@ -501,9 +501,9 @@ describe('EnemyLore', () => {
     describe('createImage helper', () => {
         it('returns an object with correct properties', () => {
             const imgObj = menu.createImage(
-                'forestmap', 16, 32, 2, 100, 150, 1.5, 'stun'
+                'goblin', 16, 32, 2, 100, 150, 1.5, 'stun'
             );
-            expect(imgObj.enemyImage).toBe(document.getElementById('forestmap'));
+            expect(imgObj.enemyImage).toBe(document.getElementById('goblin'));
             expect(imgObj.frameWidth).toBe(16);
             expect(imgObj.frameHeight).toBe(32);
             expect(imgObj.enemyFrame).toBe(2);

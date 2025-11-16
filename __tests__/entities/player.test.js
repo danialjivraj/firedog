@@ -746,9 +746,18 @@ describe('Player', () => {
         test('hit reduces lives & coins and switches to Hit state', () => {
             game.coins = 5; game.lives = 3;
             player.currentState = player.states[0];
-            player.hit({});
+            player.hit({ dealsDirectHitDamage: true });
             expect(game.lives).toBe(2);
             expect(game.coins).toBe(4);
+            expect(player.currentState).toBe(player.states[7]);
+        });
+
+        test('hit does not reduce lives & coins and switches to Hit state', () => {
+            game.coins = 5; game.lives = 3;
+            player.currentState = player.states[0];
+            player.hit({ dealsDirectHitDamage: false });
+            expect(game.lives).toBe(3);
+            expect(game.coins).toBe(5);
             expect(player.currentState).toBe(player.states[7]);
         });
 

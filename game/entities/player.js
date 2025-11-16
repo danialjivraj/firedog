@@ -9,7 +9,7 @@ import {
 import { FloatingMessage } from '../animations/floatingMessages.js';
 import { Fireball, CoinLoss, PoisonBubbles, IceCrystalBubbles, SpinningChicks } from '../animations/particles.js';
 import {
-    AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Tauro, Gloomlet, 
+    AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Tauro, Gloomlet,
     Aura, KarateCroco, SpearFish, TheRock, LilHornet, Cactus, IceBall, Garry, InkBeam, RockProjectile, VolcanoWasp, Volcanurtle
 } from './enemies/enemies.js';
 import { InkSplash } from '../animations/ink.js';
@@ -614,7 +614,7 @@ export class Player {
             this.setState(7, 1);
         }
 
-        if (!(enemy instanceof Goblin) && !(enemy instanceof PoisonDrop)) {
+        if (enemy.dealsDirectHitDamage) {
             this.game.coins -= 1;
             this.game.lives -= 1;
         }

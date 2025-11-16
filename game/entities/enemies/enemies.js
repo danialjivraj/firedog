@@ -35,8 +35,13 @@ export class Enemy {
         this.lives = 1;
         this.id = Math.random().toString(36).substring(2, 11);
         this.soundId = undefined;
+
+        this.dealsDirectHitDamage = true;
+
         this.isStunEnemy = false;
         this.isRedEnemy = false;
+        this.isPoisonEnemy = false;
+        this.isSlowEnemy = false;
     }
 
     setFps(fps) {
@@ -99,8 +104,16 @@ export class Enemy {
 
     draw(context) {
         if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
-        if (this.isStunEnemy) setShadow(context, 'yellow', 10);
-        else if (this.isRedEnemy) setShadow(context, 'red', 10);
+
+        if (this.isStunEnemy) {
+            setShadow(context, 'yellow', 10);
+        } else if (this.isRedEnemy) {
+            setShadow(context, 'red', 10);
+        } else if (this.isPoisonEnemy) {
+            setShadow(context, 'green', 10);
+        } else if (this.isSlowEnemy) {
+            setShadow(context, 'blue', 10);
+        }
 
         drawSprite(
             context,
@@ -386,6 +399,8 @@ export class LeafAttack extends Projectile {
 export class PoisonSpit extends Projectile {
     constructor(game, x, y, width, height, maxFrame, imageId, speedX) {
         super(game, x, y, width, height, maxFrame, imageId, speedX, 30);
+        this.dealsDirectHitDamage = false;
+        this.isPoisonEnemy = true;
     }
 }
 
@@ -413,6 +428,7 @@ export class LaserBeam extends Projectile {
 export class IceBall extends Projectile {
     constructor(game, x, y, speedY) {
         super(game, x, y, 35, 35, 0, 'iceBall', 7, speedY);
+        this.isSlowEnemy = true;
         this.initialSize = 10;
         this.size = this.initialSize;
         this.maxSize = 35;
@@ -521,6 +537,7 @@ export class Goblin extends MovingGroundEnemy {
     constructor(game) {
         super(game, 60.083, 80, 11, 'goblinRun');
         this.lives = 3;
+        this.dealsDirectHitDamage = false;
 
         this.walkFps = 60;
         this.attackFps = 60;

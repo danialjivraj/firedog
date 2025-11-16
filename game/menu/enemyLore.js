@@ -400,7 +400,7 @@ export class EnemyLore extends BaseMenu {
             + "UNTIL HE SEES A TARGET! HE CAN SPIT POISON OUT OF HIS MOUTH, DRAINING ENERGY RAPIDLY!",
             [
                 this.createImage('zabkousAttack', 134.0588235294118, 100, 14, this.pageWidth - 200, this.pageHeight - 140, 1),
-                this.createImage('poison_spit', 59, 22, 0, this.pageWidth - 260, this.pageHeight - 100, 1),
+                this.createImage('poison_spit', 59, 22, 0, this.pageWidth - 260, this.pageHeight - 100, 1, 'poison'),
             ],
             "map4"
         );
@@ -469,7 +469,7 @@ export class EnemyLore extends BaseMenu {
             + "RAIN EFFECT: SHOOTS ICE BALLS OUT OF ITS EYE, SLOWING YOU DOWN IF YOU MAKE CONTACT WITH IT!",
             [
                 this.createImage('purpleFlyer', 83.33333, 65, 0, this.pageWidth - 140, 70, 1),
-                this.createImage('iceBall', 35, 35, 0, this.pageWidth - 180, 100, 1),
+                this.createImage('iceBall', 35, 35, 0, this.pageWidth - 180, 100, 1, 'slow'),
                 this.createImage('ice_crystal', 365, 419, 0, this.pageWidth - 220, 100, 0.05),
                 this.createImage('ice_crystal', 365, 419, 0, this.pageWidth - 180, 150, 0.05),
                 this.createImage('ice_crystal', 365, 419, 0, this.pageWidth - 100, 170, 0.05),
@@ -877,6 +877,12 @@ export class EnemyLore extends BaseMenu {
                     context.shadowBlur = 20;
                 } else if (image.type === 'stun') {
                     context.shadowColor = 'yellow';
+                    context.shadowBlur = 20;
+                } else if (image.type === 'poison') {
+                    context.shadowColor = 'green';
+                    context.shadowBlur = 20;
+                } else if (image.type === 'slow') {
+                    context.shadowColor = 'blue';
                     context.shadowBlur = 20;
                 }
 
