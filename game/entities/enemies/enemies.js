@@ -1545,7 +1545,7 @@ export class KarateCroco extends MovingGroundEnemy {
     update(deltaTime) {
         super.update(deltaTime);
         const playerDistance = Math.abs(this.game.player.x - this.x);
-        if ((playerDistance < 1500 && this.y >= this.game.height - this.height - this.game.groundMargin) || this.lives <= 1) {
+        if ((playerDistance < 1300 && this.y >= this.game.height - this.height - this.game.groundMargin) || this.lives <= 1) {
             this.state = 'flykick';
         }
 
