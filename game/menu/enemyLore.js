@@ -399,8 +399,8 @@ export class EnemyLore extends BaseMenu {
             "JUMPING AND LEAPING AROUND IS WHAT THIS FROG NORMALLY DOES..."
             + "UNTIL HE SEES A TARGET! HE CAN SPIT POISON OUT OF HIS MOUTH, DRAINING ENERGY RAPIDLY!",
             [
-                this.createImage('zabkousAttack', 177, 132, 14, this.pageWidth - 250, this.pageHeight - 170, 1),
-                this.createImage('poison_spit', 59, 22, 0, this.pageWidth - 310, this.pageHeight - 105, 1),
+                this.createImage('zabkousAttack', 134.0588235294118, 100, 14, this.pageWidth - 200, this.pageHeight - 140, 1),
+                this.createImage('poison_spit', 59, 22, 0, this.pageWidth - 260, this.pageHeight - 100, 1),
             ],
             "map4"
         );
@@ -413,8 +413,8 @@ export class EnemyLore extends BaseMenu {
             + "IT HAS THE UNIQUE ABILITY TO SHOOT FOCUSED LASERS FROM ITS EYE.\nTHERE IS SPECULATION REGARDING THE ORIGINS OF SPIDOLAZER, AS SOME LOCAL RESIDENTS BELIEVE "
             + "THAT THIS SPIDER IS FROM ANOTHER PLANET DUE TO ITS ALIEN-LIKE CHARACTERISTICS.",
             [
-                this.createImage('spidoLazerAttack', 161.33, 144, 13, this.pageWidth - 210, this.pageHeight - 170, 1),
-                this.createImage('laser_beam', 300, 28, 0, this.pageWidth - 440, this.pageHeight - 125, 1),
+                this.createImage('spidoLazerAttack', 134.45, 120, 13, this.pageWidth - 210, this.pageHeight - 140, 1),
+                this.createImage('laser_beam', 300, 28, 0, this.pageWidth - 440, this.pageHeight - 105, 1),
             ],
             "map4"
         );
@@ -574,9 +574,9 @@ export class EnemyLore extends BaseMenu {
             + "THESE HANGING SPIDER-LASERS ARE THE SAME SPECIES AS THE ONES FOUND ON THE GROUND IN VERDANT VINE, BUT HERE THEY CRAWL FROM TREES BECAUSE THEIR LEGS CAN OVERHEAT ON THE "
             + "HOT GROUND.\nTHE STRONG SUN ALSO GIVES THEM A SLIGHT YELLOW TINT TO THEIR SKIN!",
             [
-                this.createImage('blackLine', 3, 485, 0, this.pageWidth - 111, 0, 1),
-                this.createImage('hangingSpidoLazer', 161.33, 144, 17, this.pageWidth - 190, this.pageHeight - 200, 1),
-                this.createImage('laser_beam', 300, 28, 0, this.pageWidth - 420, this.pageHeight - 120, 1),
+                this.createImage('blackLine', 3, 485, 0, this.pageWidth - 120, -30, 1),
+                this.createImage('hangingSpidoLazer', 123.2333333333333, 110, 17, this.pageWidth - 180, this.pageHeight - 200, 1),
+                this.createImage('laser_beam', 170, 28, 0, this.pageWidth - 340, this.pageHeight - 140, 1),
             ],
             "map5"
         );

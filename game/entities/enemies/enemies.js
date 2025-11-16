@@ -1580,11 +1580,30 @@ export class KarateCroco extends MovingGroundEnemy {
 }
 
 export class Zabkous extends MovingGroundEnemy {
+    static STATES = {
+        run: {
+            imageId: 'zabkousJump',
+            width: 234.6470588235294,
+            height: 150,
+            xOffset: 0,
+            yOffset: 0,
+        },
+        attack: {
+            imageId: 'zabkousAttack',
+            width: 134.0588235294118,
+            height: 100,
+            xOffset: 45,
+            yOffset: 0,
+        },
+    };
+
     constructor(game) {
         super(game, 316, 202, 16, 'zabkousJump');
-        this.image = getImg('zabkousJump');
+
+        this.game = game;
         this.lives = 2;
         this.setFps(60);
+
         this.state = 'run';
         this.jumpHeight = 160;
         this.jumpDuration = 0.5;
@@ -1597,27 +1616,57 @@ export class Zabkous extends MovingGroundEnemy {
             height: 22,
             maxFrame: 11,
             imageId: 'poison_spit',
-            speedX: 18
+            speedX: 18,
         };
         this.poisonSpitThrown = false;
         this.playsOnce = true;
+
+        this.applyState('run', { resetJumpFlags: true });
+    }
+
+    applyState(newState, { resetJumpFlags = false } = {}) {
+        const cfg = Zabkous.STATES[newState];
+        if (!cfg) return;
+
+        this.state = newState;
+
+        this.image = getImg(cfg.imageId);
+        this.width = cfg.width;
+        this.height = cfg.height;
+        this.frameX = 0;
+
+        const groundY = this.game.height - this.height - this.game.groundMargin;
+
+        this.x += cfg.xOffset;
+        this.y = groundY + cfg.yOffset;
+
+        if (resetJumpFlags) {
+            this.jumpedBeforeDistanceLogic = false;
+        }
     }
 
     throwPoisonSpit() {
         if (!this.poisonSpitThrown) {
-            const {
-                x,
-                y,
-                height
-            } = this;
+            const { x, y, height } = this;
             const {
                 width,
                 height: spitHeight,
                 maxFrame,
-                imageId
+                imageId,
+                speedX,
             } = this.poisonSpitConfig;
 
-            const spit = new PoisonSpit(this.game, x + 20, y + 15 + height / 2 - spitHeight / 2, width, spitHeight, maxFrame, imageId, this.poisonSpitConfig.speedX);
+            const spit = new PoisonSpit(
+                this.game,
+                x + 20,
+                y + 15 + height / 2 - spitHeight / 2,
+                width,
+                spitHeight,
+                maxFrame,
+                imageId,
+                speedX
+            );
+
             this.game.enemies.push(spit);
             this.poisonSpitThrown = true;
         }
@@ -1630,9 +1679,12 @@ export class Zabkous extends MovingGroundEnemy {
         if (this.state === 'run' && this.frameX === 0 && !this.jumpedBeforeDistanceLogic) {
             this.jumpStartTime = this.game.hiddenTime;
             this.jumpedBeforeDistanceLogic = true;
+            this.originalY = this.y;
         }
 
-        const jumpProgress = (this.game.hiddenTime - this.jumpStartTime) / (this.jumpDuration * 1000);
+        const jumpProgress =
+            (this.game.hiddenTime - this.jumpStartTime) / (this.jumpDuration * 1000);
+
         if (jumpProgress < 1) {
             this.y = this.originalY - this.jumpHeight * Math.sin(jumpProgress * Math.PI);
             this.x -= 5;
@@ -1641,30 +1693,12 @@ export class Zabkous extends MovingGroundEnemy {
             this.game.audioHandler.enemySFX.playSound('landingJumpSound', false, true);
 
             if (this.game.gameOver) {
-                this.state = 'run';
-                this.image = getImg('zabkousJump');
-                this.width = 316;
-                this.height = 202;
-                this.frameX = 0;
-                this.y = this.game.height - this.height - this.game.groundMargin;
-                this.jumpedBeforeDistanceLogic = false;
+                this.applyState('run', { resetJumpFlags: true });
             } else if (playerDistance <= 1500) {
-                this.state = 'attack';
-                this.image = getImg('zabkousAttack');
-                this.width = 177;
-                this.height = 132;
-                this.frameX = 0;
-                this.x = this.x + 45;
-                this.y = this.game.height - this.height - this.game.groundMargin;
                 this.poisonSpitThrown = false;
+                this.applyState('attack');
             } else {
-                this.state = 'run';
-                this.image = getImg('zabkousJump');
-                this.width = 316;
-                this.height = 202;
-                this.frameX = 0;
-                this.y = this.game.height - this.height - this.game.groundMargin;
-                this.jumpedBeforeDistanceLogic = false;
+                this.applyState('run', { resetJumpFlags: true });
             }
         }
     }
@@ -1674,43 +1708,58 @@ export class Zabkous extends MovingGroundEnemy {
             this.throwPoisonSpit();
             this.game.audioHandler.enemySFX.playSound('spitSound', false, true);
         }
+
         if (this.state === 'attack' && this.frameX >= this.maxFrame) {
-            this.state = 'run';
-            this.image = getImg('zabkousJump');
-            this.width = 316;
-            this.height = 202;
-            this.frameX = 0;
-            this.x = this.x - 90;
-            this.y = this.game.height - this.height - this.game.groundMargin;
+            this.applyState('run', { resetJumpFlags: true });
+
+            this.x -= 90;
+
             this.jumpStartTime = this.game.hiddenTime;
         }
     }
 
     update(deltaTime) {
         super.update(deltaTime);
+
         if (this.playsOnce && this.isOnScreen()) {
             this.playsOnce = false;
             this.game.audioHandler.enemySFX.playSound('frogSound', false, true);
         }
+
         if (this.state === 'run') this.frogRun();
         else if (this.state === 'attack') this.frogAttack();
     }
 }
 
 export class SpidoLazer extends MovingGroundEnemy {
+    static STATES = {
+        walk: {
+            imageId: 'spidoLazerWalk',
+            width: 134.4210526315789,
+            height: 120,
+            maxFrame: 18,
+            fps: 260,
+            xOffset: 0,
+            yOffset: 0,
+        },
+        attack: {
+            imageId: 'spidoLazerAttack',
+            width: 134.45,
+            height: 120,
+            maxFrame: 59,
+            fps: 120,
+            xOffset: 0,
+            yOffset: 0,
+        },
+    };
+
     constructor(game) {
-        super(game, 161.33, 144, 18, 'spidoLazerWalk');
+        const { width, height, maxFrame, imageId } = SpidoLazer.STATES.walk;
+        super(game, width, height, maxFrame, imageId);
+
+        this.game = game;
         this.lives = 2;
-        this.walkFps = 60;
-        this.attackFps = 120;
-        this.frameInterval = 1000 / this.walkFps;
         this.state = 'walk';
-
-        this.attackAnimation = new MovingGroundEnemy(game, 161.33, 144, 59, 'spidoLazerAttack');
-        this.attackAnimation.setFps(this.attackFps);
-        this.attackAnimation.frameX = 0;
-
-        this.attackCooldown = 0;
         this.canAttack = true;
 
         this.laserBeamConfig = {
@@ -1718,72 +1767,91 @@ export class SpidoLazer extends MovingGroundEnemy {
             height: 28,
             maxFrame: 9,
             imageId: 'laser_beam',
-            speedX: 30
+            speedX: 30,
         };
+
+        this.applyState('walk');
+    }
+
+    applyState(newState) {
+        const cfg = SpidoLazer.STATES[newState];
+        if (!cfg) return;
+
+        this.state = newState;
+
+        this.image = getImg(cfg.imageId);
+        this.width = cfg.width;
+        this.height = cfg.height;
+        this.maxFrame = cfg.maxFrame;
+        this.setFps(cfg.fps);
+        this.frameX = 0;
+
+        const groundY = this.game.height - this.height - this.game.groundMargin;
+        this.y = groundY + cfg.yOffset;
+        this.x += cfg.xOffset;
     }
 
     throwLaserBeam() {
-        const {
-            x,
-            y,
-            height
-        } = this;
+        const { x, y, height } = this;
         const {
             width,
-            height: spitHeight,
+            height: laserHeight,
             maxFrame,
-            imageId
+            imageId,
+            speedX,
         } = this.laserBeamConfig;
 
-        const laser = new LaserBeam(this.game, x - 170, y - 15 + height / 2 - spitHeight / 2, width, spitHeight, maxFrame, imageId, this.laserBeamConfig.speedX);
+        const laser = new LaserBeam(
+            this.game,
+            x - 170,
+            y - 15 + height / 2 - laserHeight / 2,
+            width,
+            laserHeight,
+            maxFrame,
+            imageId,
+            speedX
+        );
         this.game.enemies.push(laser);
     }
 
     update(deltaTime) {
         super.update(deltaTime);
-        const playerDistance = Math.abs(this.game.player.x - this.x);
+
+        const player = this.game.player;
+        const playerDistance = Math.abs(player.x - this.x);
 
         if (this.state === 'walk') {
             this.x -= 2;
-            if (playerDistance <= 1200 && this.frameX == 18) {
-                if (this.game.player.x <= this.x && !this.game.gameOver) {
-                    this.state = 'attack';
-                    this.attackAnimation.x = this.x;
-                    this.attackAnimation.y = this.y;
-                    this.attackAnimation.frameX = 0;
-                }
+
+            if (
+                playerDistance <= 1600 &&
+                this.frameX === this.maxFrame &&
+                player.x <= this.x &&
+                !this.game.gameOver
+            ) {
+                this.applyState('attack');
             }
+
+            if ((this.frameX === 0 || this.frameX === 9) && this.isOnScreen()) {
+                this.game.audioHandler.enemySFX.playSound('spidoLazerWalking');
+            }
+
         } else if (this.state === 'attack') {
-            this.attackAnimation.update(deltaTime);
-            if (this.attackAnimation.frameX === 27 && this.canAttack === true) {
+            const hasPassedPlayer = player.x > this.x;
+
+            if (this.frameX === 27 && this.canAttack) {
                 this.throwLaserBeam();
                 this.game.audioHandler.enemySFX.playSound('laserAttackAudio', false, true);
                 this.canAttack = false;
             }
-            if (this.attackAnimation.frameX === 59) this.canAttack = true;
-            if (playerDistance > 1200 && this.attackAnimation.frameX >= this.attackAnimation.maxFrame) {
-                this.state = 'walk';
+
+            if (this.frameX >= this.maxFrame) {
+                this.canAttack = true;
+
+                if (hasPassedPlayer || this.game.gameOver) {
+                    this.applyState('walk');
+                }
             }
-        }
-
-        if (
-            (this.game.player.x > this.x && this.attackAnimation.frameX >= this.attackAnimation.maxFrame) ||
-            (this.game.gameOver && this.attackAnimation.frameX >= this.attackAnimation.maxFrame)
-        ) {
-            this.state = 'walk';
-        }
-
-        if ((this.frameX === 0 || this.frameX === 9) && this.isOnScreen()) {
-            this.game.audioHandler.enemySFX.playSound('spidoLazerWalking');
-        }
-    }
-
-    draw(context) {
-        if (this.state === 'walk') super.draw(context);
-        else if (this.state === 'attack') {
-            this.attackAnimation.x = this.x;
-            this.attackAnimation.y = this.y;
-            this.attackAnimation.draw(context);
         }
     }
 }
@@ -2092,7 +2160,7 @@ export class AngryBee extends BeeInstances {
 
 export class HangingSpidoLazer extends ClimbingEnemy {
     constructor(game) {
-        super(game, 161.33, 144, 59, 'hangingSpidoLazer');
+        super(game, 123.2333333333333, 110, 59, 'hangingSpidoLazer');
         this.lives = 2;
         this.setFps(120);
         this.swingAngle = 0;
@@ -2139,11 +2207,11 @@ export class HangingSpidoLazer extends ClimbingEnemy {
     }
 
     draw(context) {
-        super.draw(context);
         context.beginPath();
         context.moveTo(this.x + this.width / 2, 0);
         context.lineTo(this.x + this.width / 2, this.y + 50);
         context.stroke();
+        super.draw(context);
     }
 }
 

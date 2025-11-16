@@ -977,7 +977,7 @@ describe('Map 4 Enemies', () => {
         slz.x = game.player.x + 100;
         slz.state = 'attack';
         slz.canAttack = true;
-        slz.attackAnimation.frameX = 27;
+        slz.frameX = 27;
         slz.update(16);
         expect(game.enemies.some(e => e.constructor.name === 'LaserBeam')).toBe(true);
     });
