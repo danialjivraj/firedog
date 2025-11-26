@@ -10,9 +10,9 @@ describe('GameOverMenu', () => {
             height: 689,
             player: { currentState: { deathAnimation: false } },
             notEnoughCoins: false,
-            isElyvorgFullyVisible: false,
+            hasActiveBoss: false,
             coins: 0,
-            maxCoinsToFightElyvorg: 999,
+            background: { totalDistanceTraveled: 0 },
             audioHandler: {
                 menu: {
                     playSound: jest.fn(),
@@ -22,6 +22,12 @@ describe('GameOverMenu', () => {
             menu: {
                 main: { activateMenu: jest.fn() },
                 pause: { canEscape: true }
+            },
+            bossManager: {
+                getGateForCurrentMap: jest.fn().mockReturnValue({
+                    minCoins: 999,
+                    minDistance: 1234,
+                }),
             },
             reset: jest.fn(),
         };
@@ -54,7 +60,7 @@ describe('GameOverMenu', () => {
     describe('draw()', () => {
         it('draws the “Game Over!” overlay when coins are sufficient', () => {
             mockGame.notEnoughCoins = false;
-            mockGame.isElyvorgFullyVisible = false;
+            mockGame.hasActiveBoss = false;
 
             menu.draw(ctx);
 
@@ -74,8 +80,8 @@ describe('GameOverMenu', () => {
             expect(menu.menuOptions).toEqual(['Retry', 'Back to Main Menu']);
         });
 
-        it('inserts the “Retry Final Boss” option when Elyvorg is visible', () => {
-            mockGame.isElyvorgFullyVisible = true;
+        it('inserts the “Retry Final Boss” option when a boss is active', () => {
+            mockGame.hasActiveBoss = true;
 
             menu.draw(ctx);
 
@@ -121,15 +127,18 @@ describe('GameOverMenu', () => {
                 .toHaveBeenCalledWith('optionSelectedSound', false, true);
         });
 
-        it('retries final boss when visible & selected', () => {
-            mockGame.isElyvorgFullyVisible = true;
+        it('retries final boss using gate data when active & selected', () => {
+            mockGame.hasActiveBoss = true;
             menu.draw(ctx);
-            menu.selectedOption = 0; // Retry Final Boss
+            menu.selectedOption = 0;
 
             menu.handleMenuSelection();
 
+            expect(mockGame.bossManager.getGateForCurrentMap).toHaveBeenCalled();
             expect(mockGame.reset).toHaveBeenCalled();
-            expect(mockGame.coins).toBe(mockGame.maxCoinsToFightElyvorg);
+            expect(mockGame.coins).toBe(999);
+            expect(mockGame.background.totalDistanceTraveled).toBe(1234);
+            expect(mockGame.notEnoughCoins).toBe(false);
             expect(menu.menuActive).toBe(false);
             expect(mockGame.audioHandler.menu.playSound)
                 .toHaveBeenCalledWith('optionSelectedSound', false, true);
@@ -145,7 +154,7 @@ describe('GameOverMenu', () => {
             expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalled();
         });
 
-        it('still lets retry/back‑to‑main if notEnoughCoins but no deathAnimation', () => {
+        it('still lets retry/back-to-main if notEnoughCoins but no deathAnimation', () => {
             mockGame.player.currentState.deathAnimation = false;
             mockGame.notEnoughCoins = true;
             menu.selectedOption = 0; // Retry

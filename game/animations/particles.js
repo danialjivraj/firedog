@@ -4,7 +4,7 @@ class Particle {
         this.markedForDeletion = false;
     }
     update() {
-        if (this.game.cabin.isFullyVisible || this.game.isElyvorgFullyVisible) {
+        if (this.game.cabin.isFullyVisible || this.game.isBossVisible) {
             this.x -= this.speedX;
         } else {
             this.x -= this.speedX + this.game.speed;
@@ -348,7 +348,7 @@ class FloatingBubbleEffect extends Particle {
     }
 
     update() {
-        if (this.game.cabin.isFullyVisible || this.game.isElyvorgFullyVisible) {
+        if (this.game.cabin.isFullyVisible || this.game.isBossVisible) {
             this.x -= this.game.speed * (this.parallax ?? 0.0);
         } else {
             this.x -= this.game.speed * (this.parallax ?? 0.2);
@@ -455,7 +455,7 @@ export class SpinningChicks extends Particle {
             this.markedForDeletion = true;
             return;
         }
-        if (!this.game.menu.pause?.isPaused) {
+        if (!this.game.menu.pause.isPaused) {
             this.baseAngle += this.angularSpeed;
             this.rockPhase += this.rockSpeed;
         }

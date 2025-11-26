@@ -42,6 +42,7 @@ export class Cutscene {
         this.valdorin = "Valdorin";
         this.valdonotski = "Valdonotski";
         this.zephyrion = "Zephyrion";
+        this.glacikal = "Glacikal";
         // maps
         this.lunarMoonlitGlade = "Lunar Moonlit Glade";
         this.nightfallCityPhantom = "Nightfall City Phantom";
@@ -71,6 +72,7 @@ export class Cutscene {
             [this.elyvorg]: 'red',
             [this.everyone]: 'SkyBlue',
             [this.questionMark]: 'red',
+            [this.glacikal]: 'cyan',
             // map phrases
             [this.lunarMoonlitGlade]: 'green',
             [this.nightfallCityPhantom]: 'green',
@@ -315,7 +317,7 @@ export class Cutscene {
         if (
             this.reminderImageStartTime !== null &&
             (currentTime - this.reminderImageStartTime) < 7000 &&
-            (this.game.cutsceneActive && !this.game.talkToPenguin && !this.game.talkToElyvorg)
+            (this.game.cutsceneActive && !this.game.talkToPenguin && !this.game.boss.talkToBoss)
         ) {
             context.drawImage(this.reminderImage, this.game.width - 500, this.game.height - 100);
         }

@@ -2,10 +2,11 @@ import { IngameAudioSettingsMenu } from '../../../game/menu/audio/ingameAudioSet
 
 describe('IngameAudioSettingsMenu', () => {
     let menu, mockGame;
+
     const mapSoundtrackMapping = { ms1: 'ms1' };
     const enemySFXMapping = { es1: 'es1' };
     const firedogSFXMapping = { fs1: 'fs1' };
-    const explosionSFXMapping = { ex1: 'ex1' };
+    const collisionSFXMapping = { ex1: 'ex1' };
     const powerUpAndDownSFXMapping = { pu1: 'pu1' };
 
     beforeAll(() => {
@@ -23,7 +24,7 @@ describe('IngameAudioSettingsMenu', () => {
                 mapSoundtrack: { getSoundsMapping: jest.fn(() => mapSoundtrackMapping) },
                 enemySFX: { getSoundsMapping: jest.fn(() => enemySFXMapping) },
                 firedogSFX: { getSoundsMapping: jest.fn(() => firedogSFXMapping) },
-                explosionSFX: { getSoundsMapping: jest.fn(() => explosionSFXMapping) },
+                collisionSFX: { getSoundsMapping: jest.fn(() => collisionSFXMapping) },
                 powerUpAndDownSFX: { getSoundsMapping: jest.fn(() => powerUpAndDownSFXMapping) },
                 menu: { playSound: jest.fn() }
             },
@@ -32,7 +33,8 @@ describe('IngameAudioSettingsMenu', () => {
             },
             saveGameState: jest.fn(),
             canvas: {
-                width: 1920, height: 689,
+                width: 1920,
+                height: 689,
                 getBoundingClientRect: () => ({ left: 0, top: 0, width: 1920, height: 689 })
             },
             input: { handleEscapeKey: jest.fn() },
@@ -46,42 +48,44 @@ describe('IngameAudioSettingsMenu', () => {
         menu.activateMenu();
     });
 
-    test('constructor sets menuOptions, title, menuInGame flag, and selectedOption', () => {
-        expect(menu.menuOptions).toEqual([
-            'In-game Master Volume',
-            'Map Soundtrack',
-            'Firedog SFX',
-            'Enemy SFX',
-            'Collision SFX',
-            'Power Up/Down SFX',
-            'Go Back'
-        ]);
-        expect(menu.title).toBe('Ingame Audio Settings');
-        expect(menu.menuInGame).toBe(true);
-        expect(menu.selectedOption).toBe(0);
-    });
-
-    test('initializeVolumeLevels sets up correct defaults', () => {
-        expect(menu.volumeLevels).toEqual([30, 80, 60, 40, 80, 65, null]);
-    });
-
-    test('initializeAudioMap merges all mappings correctly', () => {
-        const map = menu.audioMap;
-
-        expect(map['In-game Master Volume']).toEqual({
-            ...mapSoundtrackMapping,
-            ...enemySFXMapping,
-            ...firedogSFXMapping,
-            ...explosionSFXMapping,
-            ...powerUpAndDownSFXMapping
+    describe('construction and activation', () => {
+        test('sets menu options, title, menuInGame flag, and initial selection', () => {
+            expect(menu.menuOptions).toEqual([
+                'In-game Master Volume',
+                'Map Soundtrack',
+                'Firedog SFX',
+                'Enemy SFX',
+                'Collision SFX',
+                'Power Up/Down SFX',
+                'Go Back'
+            ]);
+            expect(menu.title).toBe('Ingame Audio Settings');
+            expect(menu.menuInGame).toBe(true);
+            expect(menu.selectedOption).toBe(0);
         });
 
-        expect(map['Map Soundtrack']).toEqual(mapSoundtrackMapping);
-        expect(map['Firedog SFX']).toEqual(firedogSFXMapping);
-        expect(map['Enemy SFX']).toEqual(enemySFXMapping);
-        expect(map['Collision SFX']).toEqual(explosionSFXMapping);
-        expect(map['Power Up/Down SFX']).toEqual(powerUpAndDownSFXMapping);
-        expect(map['Go Back']).toBeUndefined();
+        test('initializes default volume levels when the menu is activated', () => {
+            expect(menu.volumeLevels).toEqual([30, 80, 60, 40, 80, 65, null]);
+        });
+
+        test('builds audioMap with correct sound mappings for each option', () => {
+            const map = menu.audioMap;
+
+            expect(map['In-game Master Volume']).toEqual({
+                ...mapSoundtrackMapping,
+                ...enemySFXMapping,
+                ...firedogSFXMapping,
+                ...collisionSFXMapping,
+                ...powerUpAndDownSFXMapping
+            });
+
+            expect(map['Map Soundtrack']).toEqual(mapSoundtrackMapping);
+            expect(map['Firedog SFX']).toEqual(firedogSFXMapping);
+            expect(map['Enemy SFX']).toEqual(enemySFXMapping);
+            expect(map['Collision SFX']).toEqual(collisionSFXMapping);
+            expect(map['Power Up/Down SFX']).toEqual(powerUpAndDownSFXMapping);
+            expect(map['Go Back']).toBeUndefined();
+        });
     });
 
     describe('handleMenuSelection()', () => {
@@ -91,12 +95,13 @@ describe('IngameAudioSettingsMenu', () => {
             menu.canPressNow = true;
             jest.useFakeTimers();
         });
+
         afterEach(() => {
             jest.useRealTimers();
         });
 
-        test('does nothing for non‑"Go Back" options', () => {
-            menu.selectedOption = 2; // Firedog SFX
+        test('leaves state unchanged for options other than "Go Back"', () => {
+            menu.selectedOption = 2; // "Firedog SFX"
             menu.handleMenuSelection();
 
             expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalled();
@@ -104,7 +109,7 @@ describe('IngameAudioSettingsMenu', () => {
             expect(menu.canPressNow).toBe(true);
         });
 
-        test('"Go Back" triggers sound, delayedEnablePress, pause.activateMenu(2), and resets canPressNow', () => {
+        test('"Go Back" plays selection sound, activates pause menu, and temporarily disables input', () => {
             const backIndex = menu.menuOptions.indexOf('Go Back');
             menu.selectedOption = backIndex;
 
@@ -122,10 +127,13 @@ describe('IngameAudioSettingsMenu', () => {
         });
     });
 
-    test('null volume level for "Go Back" means no slider exists', () => {
-        const goBackIndex = menu.menuOptions.indexOf('Go Back');
-        expect(menu.volumeLevels[goBackIndex]).toBeNull();
-        expect(() => menu.updateAudioVolume(menu.audioMap['Go Back'], goBackIndex))
-            .not.toThrow();
+    describe('"Go Back" volume configuration', () => {
+        test('uses null volume level to indicate no slider and updateAudioVolume handles it safely', () => {
+            const goBackIndex = menu.menuOptions.indexOf('Go Back');
+
+            expect(menu.volumeLevels[goBackIndex]).toBeNull();
+            expect(() => menu.updateAudioVolume(menu.audioMap['Go Back'], goBackIndex))
+                .not.toThrow();
+        });
     });
 });

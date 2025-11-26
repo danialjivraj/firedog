@@ -34,7 +34,7 @@ describe('Tutorial', () => {
                     pauseAllSounds: jest.fn(),
                     resumeAllSounds: jest.fn(),
                 },
-                explosionSFX: {
+                collisionSFX: {
                     pauseAllSounds: jest.fn(),
                     resumeAllSounds: jest.fn(),
                 },
@@ -118,7 +118,7 @@ describe('Tutorial', () => {
             expect(tutorial.tutorialPause).toBe(false);
             expect(game.audioHandler.firedogSFX.pauseAllSounds).toHaveBeenCalled();
             expect(game.audioHandler.enemySFX.pauseAllSounds).toHaveBeenCalled();
-            expect(game.audioHandler.explosionSFX.pauseAllSounds).toHaveBeenCalled();
+            expect(game.audioHandler.collisionSFX.pauseAllSounds).toHaveBeenCalled();
         });
 
         test('resumes sounds when unpaused', () => {
@@ -126,7 +126,7 @@ describe('Tutorial', () => {
             tutorial.update(0);
             expect(game.audioHandler.firedogSFX.resumeAllSounds).toHaveBeenCalled();
             expect(game.audioHandler.enemySFX.resumeAllSounds).toHaveBeenCalled();
-            expect(game.audioHandler.explosionSFX.resumeAllSounds).toHaveBeenCalled();
+            expect(game.audioHandler.collisionSFX.resumeAllSounds).toHaveBeenCalled();
         });
 
         test('spawnEnemy called for MeatSoldier on step 4 → 5', () => {

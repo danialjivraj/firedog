@@ -1,3 +1,5 @@
+import { fadeInAndOut } from "../../animations/fading.js";
+
 // helpers
 const dist = (x1, y1, x2, y2) => Math.hypot(x2 - x1, y2 - y1);
 const angleTo = (x1, y1, x2, y2) => Math.atan2(y2 - y1, x2 - x1);
@@ -113,6 +115,8 @@ export class Enemy {
             setShadow(context, 'green', 10);
         } else if (this.isSlowEnemy) {
             setShadow(context, 'blue', 10);
+        } else if (this.isFrozenEnemy) {
+            setShadow(context, '#00eaff', 18);
         }
 
         drawSprite(
@@ -123,6 +127,197 @@ export class Enemy {
         );
 
         setShadow(context, 'transparent', 0);
+    }
+}
+
+// EnemyBoss
+export class EnemyBoss extends Enemy {
+    constructor(game, width, height, maxFrame, imageId) {
+        super();
+        this.game = game;
+        this.width = width;
+        this.height = height;
+        this.x = this.game.width;
+        this.y = this.game.height - this.height - this.game.groundMargin;
+
+        this.image = document.getElementById(imageId);
+
+        this.speedX = 0;
+        this.speedY = 0;
+        this.maxFrame = maxFrame;
+
+        this.state = "idle";
+        this.previousState = null;
+        this.chooseStateOnce = true;
+        this.shouldInvert = false;
+
+        this.reachedRightEdge = false;
+        this.reachedLeftEdge = false;
+        this.isInTheMiddle = false;
+
+        this.originalY = this.y;
+    }
+
+    draw(context, shouldInvert = false) {
+        if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
+
+        context.save();
+        context.translate(this.x + this.width / 2, this.y + this.height / 2);
+        context.scale(shouldInvert ? -1 : 1, 1);
+
+        context.drawImage(
+            this.image,
+            this.frameX * this.width,
+            this.frameY * this.height,
+            this.width,
+            this.height,
+            -this.width / 2,
+            -this.height / 2,
+            this.width,
+            this.height
+        );
+
+        context.restore();
+    }
+
+    cutsceneBackgroundChange(fadein, stay, fadeout) {
+        this.game.enterDuringBackgroundTransition = false;
+        fadeInAndOut(this.game.canvas, fadein, stay, fadeout, () => {
+            this.game.enterDuringBackgroundTransition = true;
+        });
+    }
+
+    backToIdleSetUp() {
+        this.previousState = this.state;
+        this.state = "idle";
+        this.chooseStateOnce = true;
+        this.frameX = 0;
+    }
+
+    checksBossIsFullyVisible(bossId) {
+        if (!this.game.boss.isVisible &&
+            this.game.boss.current === this &&
+            this.game.boss.id === bossId) {
+            if (this.x <= this.game.width - this.width) {
+                this.game.boss.isVisible = true;
+                this.x = this.game.width - this.width;
+            }
+        }
+    }
+
+    edgeConstraintLogic(bossId, middleTolerance = 11, stopAtMiddleChance = 0.7) {
+        if (this.game.isBossVisible &&
+            this.game.boss.current === this &&
+            this.game.boss.id === bossId) {
+
+            const pickRunStopAtMiddle = () => {
+                this.runStopAtTheMiddle = Math.random() >= stopAtMiddleChance;
+            };
+
+            if (this.x <= 0) {
+                this.x = 1;
+                pickRunStopAtMiddle();
+                this.reachedLeftEdge = true;
+                this.chooseStateOnce = true;
+                if (this.state === "run") this.previousState = this.state;
+                this.state = "idle";
+            } else if (this.x + this.width >= this.game.width) {
+                this.x = this.game.width - this.width - 1;
+                pickRunStopAtMiddle();
+                this.reachedRightEdge = true;
+                this.chooseStateOnce = true;
+                if (this.state === "run") this.previousState = this.state;
+                this.state = "idle";
+            } else {
+                this.reachedRightEdge = false;
+                this.reachedLeftEdge = false;
+            }
+
+            if (this.runAnimation) {
+                this.isInTheMiddle =
+                    this.runAnimation.x >= this.game.width / 2 - middleTolerance &&
+                    this.runAnimation.x <= this.game.width / 2 + middleTolerance;
+            }
+        }
+    }
+
+    runningAway(deltaTime, bossId) {
+        this.runningDirection = 10;
+        this.state = "run";
+
+        if (this.runAnimation) {
+            this.runAnimation.x = this.x;
+            this.runAnimation.y = this.y;
+            this.runAnimation.update(deltaTime);
+        }
+
+        this.x += this.runningDirection;
+        this.game.background.totalDistanceTraveled = this.game.maxDistance - 6;
+
+        if (this.x > this.game.width) {
+            if (this.game.boss.current === this && this.game.boss.id === bossId) {
+                this.game.boss.isVisible = false;
+                this.game.boss.talkToBoss = false;
+                this.game.boss.runAway = false;
+                this.game.boss.current = null;
+            }
+            this.markedForDeletion = true;
+        }
+    }
+
+    defeatCommon({
+        bossId,
+        bossClass,
+        battleThemeId = "elyvorgBattleTheme",
+        onBeforeClear = () => { },
+        onAfterSetup = () => { },
+    }) {
+        this.game.boss.inFight = false;
+        this.lives = 110;
+
+        this.cutsceneBackgroundChange(200, 600, 300);
+        this.game.audioHandler.mapSoundtrack.fadeOutAndStop(battleThemeId);
+        this.game.input.keys = [];
+        this.game.audioHandler.enemySFX.stopAllSounds();
+
+        onBeforeClear();
+
+        for (const enemy of this.game.enemies) {
+            if (!(enemy instanceof bossClass)) enemy.markedForDeletion = true;
+        }
+
+        setTimeout(() => {
+            this.game.boss.talkToBoss = true;
+            this.game.player.setToStandingOnce = true;
+            this.game.boss.dialogueAfterOnce = true;
+            this.game.boss.dialogueAfterLeaving = false;
+
+            this.game.input.keys = [];
+            this.game.collisions = [];
+            this.game.behindPlayerParticles = [];
+
+            this.x = this.game.width / 2;
+            this.state = "idle";
+
+            this.game.player.setState(8, 0);
+            this.game.player.x = 1;
+            this.game.player.y = this.game.height - this.game.player.height - this.game.groundMargin;
+
+            this.game.player.isInvisible = false;
+            this.game.player.invisibleTimer = this.game.player.invisibleCooldown;
+            this.game.player.invisibleActiveCooldownTimer = 5000;
+
+            onAfterSetup();
+        }, 300);
+
+        setTimeout(() => {
+            this.game.boss.startAfterDialogueWhenAnimEnds = true;
+            this.game.audioHandler.enemySFX.stopAllSounds();
+
+            for (const enemy of this.game.enemies) {
+                if (!(enemy instanceof bossClass)) enemy.markedForDeletion = true;
+            }
+        }, 1200);
     }
 }
 
@@ -410,7 +605,9 @@ export class LaserBeam extends Projectile {
     }
     draw(context) {
         super.draw(context);
-        if (this.game.isElyvorgFullyVisible) {
+        if (this.game.isBossVisible &&
+            this.game.boss.current &&
+            this.game.boss.id === 'elyvorg') {
             if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
             const shouldFlipSprite = this.speedX < 0;
             if (shouldFlipSprite) {

@@ -16,7 +16,7 @@ describe('PauseMenu', () => {
                 mapSoundtrack: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
                 firedogSFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
                 enemySFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
-                explosionSFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
+                collisionSFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
                 powerUpAndDownSFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
                 cutsceneMusic: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
             },
@@ -64,7 +64,7 @@ describe('PauseMenu', () => {
             expect(mockGame.audioHandler.mapSoundtrack.pauseAllSounds).toHaveBeenCalled();
             expect(mockGame.audioHandler.firedogSFX.pauseAllSounds).toHaveBeenCalled();
             expect(mockGame.audioHandler.enemySFX.pauseAllSounds).toHaveBeenCalled();
-            expect(mockGame.audioHandler.explosionSFX.pauseAllSounds).toHaveBeenCalled();
+            expect(mockGame.audioHandler.collisionSFX.pauseAllSounds).toHaveBeenCalled();
             expect(mockGame.audioHandler.powerUpAndDownSFX.pauseAllSounds).toHaveBeenCalled();
             expect(mockGame.audioHandler.cutsceneMusic.pauseAllSounds).toHaveBeenCalled();
 
@@ -87,7 +87,7 @@ describe('PauseMenu', () => {
             expect(mockGame.audioHandler.mapSoundtrack.resumeAllSounds).toHaveBeenCalled();
             expect(mockGame.audioHandler.firedogSFX.resumeAllSounds).toHaveBeenCalled();
             expect(mockGame.audioHandler.enemySFX.resumeAllSounds).toHaveBeenCalled();
-            expect(mockGame.audioHandler.explosionSFX.resumeAllSounds).toHaveBeenCalled();
+            expect(mockGame.audioHandler.collisionSFX.resumeAllSounds).toHaveBeenCalled();
             expect(mockGame.audioHandler.powerUpAndDownSFX.resumeAllSounds).toHaveBeenCalled();
             expect(mockGame.audioHandler.cutsceneMusic.resumeAllSounds).toHaveBeenCalled();
 

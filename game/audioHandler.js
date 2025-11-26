@@ -259,6 +259,7 @@ export class FiredogAudioHandler extends AudioHandler {
       invisibleInSFX: 'invisibleInSFX',
       invisibleOutSFX: 'invisibleOutSFX',
       barkSound: 'barkSound',
+      frozenSound: 'frozenSound',
     };
     this.initializeSounds();
   }
@@ -286,7 +287,7 @@ export class PowerUpAndDownSFXAudioHandler extends AudioHandler {
   }
 }
 
-export class ExplosionSFXAudioHandler extends AudioHandler {
+export class CollisionSFXAudioHandler extends AudioHandler {
   constructor(game) {
     super(game);
     this.soundsMapping = {
@@ -300,6 +301,7 @@ export class ExplosionSFXAudioHandler extends AudioHandler {
       elyvorg_meteor_in_contact_sound: 'elyvorg_meteor_in_contact_sound',
       elyvorg_meteor_in_contact_with_ground_sound: 'elyvorg_meteor_in_contact_with_ground_sound',
       elyvorg_electricity_wheel_collision_sound: 'elyvorg_electricity_wheel_collision_sound',
+      breakingIceNoDamageSound: 'breakingIceNoDamageSound',
     };
     this.initializeSounds();
   }
@@ -329,6 +331,14 @@ export class EnemySFXAudioHandler extends AudioHandler {
       elyvorg_poison_drop_rain_sound: 'elyvorg_poison_drop_rain_sound',
       elyvorg_slash_attack_sound: 'elyvorg_slash_attack_sound',
       elyvorg_arrow_attack_sound: 'elyvorg_arrow_attack_sound',
+      // glacikal sounds
+      iceTrailSound: 'iceTrailSound',
+      iceSlashSound: 'iceSlashSound',
+      iceSpiderSound: 'iceSpiderSound',
+      glacikalJumpSound: 'glacikalJumpSound',
+      glacikalRunSound: 'glacikalRunSound',
+      spinningIceBallsSound: 'spinningIceBallsSound',
+      undergroundIcicleSound: 'undergroundIcicleSound',
       //projectiles
       windAttackAudio: 'windAttackAudio',
       tornadoAudio: 'tornadoAudio',
@@ -336,10 +346,12 @@ export class EnemySFXAudioHandler extends AudioHandler {
       laserAttackAudio: 'laserAttackAudio',
       acidSoundEffect: 'acidSoundEffect',
       spitSound: 'spitSound',
-      frozenSound: 'frozenSound',
       staticSound: 'staticSound',
       rockAttackSound: 'rockAttackSound',
+      iceSlowedSound: 'iceSlowedSound',
       //enemies
+      //ground rumble
+      groundRumbleSound: 'groundRumbleSound',
       //goblito
       goblinDie: 'goblinDie',
       goblinStealing: 'goblinStealing',

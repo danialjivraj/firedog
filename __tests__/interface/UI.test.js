@@ -20,7 +20,8 @@ describe('UI', () => {
             background: { totalDistanceTraveled: 200 },
             maxDistance: 400,
 
-            elyvorgInFight: false,
+            bossInFight: false,
+            boss: null,
             enemies: [],
 
             player: {
@@ -102,8 +103,15 @@ describe('UI', () => {
     });
 
     function createElyvorg(overrides = {}) {
-        const enemy = new Elyvorg(game);
+        const enemy = Object.create(Elyvorg.prototype);
         Object.assign(enemy, overrides);
+        return enemy;
+    }
+
+    function setBossElyvorg(overrides = {}) {
+        const enemy = createElyvorg(overrides);
+        game.boss = { current: enemy };
+        game.enemies = [enemy];
         return enemy;
     }
 
@@ -118,25 +126,30 @@ describe('UI', () => {
     });
 
     describe('draw()', () => {
-        test('renders coins, bars, timer, energy, lives and abilities', () => {
+        test('renders coins, bars, timer, energy, lives and ability UIs', () => {
             game.currentMap = 'Map1';
-            game.elyvorgInFight = false;
+            game.bossInFight = false;
             game.lives = 2;
             game.maxLives = 3;
 
             const spyDist = jest.spyOn(ui, 'distanceBar');
-            const spyEBar = jest.spyOn(ui, 'elyvorgHealthBar');
+            const spyBossBar = jest.spyOn(ui, 'bossHealthBar');
             const spyTimer = jest.spyOn(ui, 'timer');
             const spyEnergy = jest.spyOn(ui, 'energy');
+            const spyFiredog = jest.spyOn(ui, 'firedogAbilityUI');
+            const spyElyvorg = jest.spyOn(ui, 'elyvorgAbilityUI');
 
             ui.draw(ctx);
 
             expect(ctx.fillText).toHaveBeenCalledWith('Coins: 5', 20, 50);
             expect(spyDist).toHaveBeenCalledWith(ctx);
-            expect(spyEBar).toHaveBeenCalledWith(ctx);
+            expect(spyBossBar).toHaveBeenCalledWith(ctx);
             expect(spyTimer).toHaveBeenCalledWith(ctx);
             expect(spyEnergy).toHaveBeenCalledWith(ctx);
+            expect(spyFiredog).toHaveBeenCalledWith(ctx);
+            expect(spyElyvorg).toHaveBeenCalledWith(ctx);
 
+            // 2 hearts + 3 firedog ability icons
             expect(ctx.drawImage).toHaveBeenCalledTimes(5);
         });
     });
@@ -209,40 +222,49 @@ describe('UI', () => {
     });
 
     describe('distanceBar()', () => {
-        test('calls progressBar when currentMap is not "Map6"', () => {
+        test('calls progressBar for a generic map (e.g. "Map1") when enabled', () => {
             game.currentMap = 'Map1';
             const spy = jest.spyOn(ui, 'progressBar');
             ui.distanceBar(ctx);
             expect(spy).toHaveBeenCalled();
         });
 
-        test('skips progressBar when currentMap is "Map6"', () => {
+        test('still calls progressBar for "Map6" (no special-case skip)', () => {
             game.currentMap = 'Map6';
+            const spy = jest.spyOn(ui, 'progressBar');
+            ui.distanceBar(ctx);
+            expect(spy).toHaveBeenCalled();
+        });
+
+        test('does nothing when a boss fight is active', () => {
+            game.bossInFight = true;
             const spy = jest.spyOn(ui, 'progressBar');
             ui.distanceBar(ctx);
             expect(spy).not.toHaveBeenCalled();
         });
     });
 
-    describe('elyvorgHealthBar()', () => {
-        test('skips when elyvorgInFight is false', () => {
-            game.elyvorgInFight = false;
+    describe('bossHealthBar()', () => {
+        test('skips when bossInFight is false', () => {
+            game.bossInFight = false;
+            game.boss = null;
             const spy = jest.spyOn(ui, 'progressBar');
-            ui.elyvorgHealthBar(ctx);
+            ui.bossHealthBar(ctx);
             expect(spy).not.toHaveBeenCalled();
         });
 
-        test('renders health bar when in fight and Elyvorg is present', () => {
-            game.elyvorgInFight = true;
-            const enemy = createElyvorg({
-                lives: 4,
-                livesDefeatedAt: 1,
-                maxLives: 5,
-            });
-            game.enemies = [enemy];
+        test('renders health bar when in fight and boss is present', () => {
+            game.bossInFight = true;
+            game.boss = {
+                current: {
+                    lives: 4,
+                    livesDefeatedAt: 1,
+                    maxLives: 5,
+                },
+            };
 
             const spy = jest.spyOn(ui, 'progressBar');
-            ui.elyvorgHealthBar(ctx);
+            ui.bossHealthBar(ctx);
             expect(spy).toHaveBeenCalledWith(
                 ctx,
                 expect.any(Number),
@@ -252,11 +274,11 @@ describe('UI', () => {
             );
         });
 
-        test('skips when there is no Elyvorg in enemies', () => {
-            game.elyvorgInFight = true;
-            game.enemies = [];
+        test('skips when there is no boss instance', () => {
+            game.bossInFight = true;
+            game.boss = { current: null };
             const spy = jest.spyOn(ui, 'progressBar');
-            ui.elyvorgHealthBar(ctx);
+            ui.bossHealthBar(ctx);
             expect(spy).not.toHaveBeenCalled();
         });
     });
@@ -414,20 +436,18 @@ describe('UI', () => {
 
     describe('elyvorgAbilityUI()', () => {
         test('skips drawing when not in Elyvorg fight', () => {
-            game.elyvorgInFight = false;
+            game.bossInFight = false;
             ui.elyvorgAbilityUI(ctx);
             expect(ctx.drawImage).not.toHaveBeenCalled();
         });
 
         test('poison ability: shows active icon and countdown during cooldown', () => {
-            game.elyvorgInFight = true;
-            game.enemies = [
-                createElyvorg({
-                    isPoisonActive: true,
-                    poisonCooldown: 5000,
-                    poisonCooldownTimer: 2000,
-                }),
-            ];
+            game.bossInFight = true;
+            setBossElyvorg({
+                isPoisonActive: true,
+                poisonCooldown: 5000,
+                poisonCooldownTimer: 2000,
+            });
 
             ui.elyvorgAbilityUI(ctx);
             expect(ctx.drawImage).toHaveBeenCalledWith(
@@ -437,26 +457,22 @@ describe('UI', () => {
         });
 
         test('poison ability: grayscale icon when not on cooldown', () => {
-            game.elyvorgInFight = true;
-            game.enemies = [
-                createElyvorg({
-                    poisonCooldownTimer: 0,
-                }),
-            ];
+            game.bossInFight = true;
+            setBossElyvorg({
+                poisonCooldownTimer: 0,
+            });
 
             ui.elyvorgAbilityUI(ctx);
             expect(ctx.filter).toBe('grayscale(100%)');
         });
 
         test('gravity ability: shows active icon and countdown during cooldown', () => {
-            game.elyvorgInFight = true;
-            game.enemies = [
-                createElyvorg({
-                    isGravitySpinnerActive: true,
-                    gravityCooldown: 5000,
-                    gravityCooldownTimer: 2000,
-                }),
-            ];
+            game.bossInFight = true;
+            setBossElyvorg({
+                isGravitySpinnerActive: true,
+                gravityCooldown: 5000,
+                gravityCooldownTimer: 2000,
+            });
 
             ui.elyvorgAbilityUI(ctx);
             expect(ctx.drawImage).toHaveBeenCalledWith(
@@ -466,24 +482,20 @@ describe('UI', () => {
         });
 
         test('gravity ability: grayscale icon when not on cooldown', () => {
-            game.elyvorgInFight = true;
-            game.enemies = [
-                createElyvorg({
-                    gravityCooldownTimer: 0,
-                }),
-            ];
+            game.bossInFight = true;
+            setBossElyvorg({
+                gravityCooldownTimer: 0,
+            });
 
             ui.elyvorgAbilityUI(ctx);
             expect(ctx.filter).toBe('grayscale(100%)');
         });
 
         test('slash ability: draws normal icon when first slash attack is ready', () => {
-            game.elyvorgInFight = true;
-            game.enemies = [
-                createElyvorg({
-                    slashAttackOnce: true,
-                }),
-            ];
+            game.bossInFight = true;
+            setBossElyvorg({
+                slashAttackOnce: true,
+            });
 
             ui.elyvorgAbilityUI(ctx);
             expect(ctx.drawImage).toHaveBeenCalledWith(
@@ -492,14 +504,12 @@ describe('UI', () => {
         });
 
         test('slash ability: draws warning icon near attack threshold', () => {
-            game.elyvorgInFight = true;
-            game.enemies = [
-                createElyvorg({
-                    slashAttackOnce: false,
-                    slashAttackStateCounterLimit: 5,
-                    slashAttackStateCounter: 4,
-                }),
-            ];
+            game.bossInFight = true;
+            setBossElyvorg({
+                slashAttackOnce: false,
+                slashAttackStateCounterLimit: 5,
+                slashAttackStateCounter: 4,
+            });
 
             ui.elyvorgAbilityUI(ctx);
             expect(ctx.drawImage).toHaveBeenCalledWith(
@@ -508,26 +518,22 @@ describe('UI', () => {
         });
 
         test('slash ability: grayscale icon when far from attack threshold', () => {
-            game.elyvorgInFight = true;
-            game.enemies = [
-                createElyvorg({
-                    slashAttackOnce: false,
-                    slashAttackStateCounterLimit: 5,
-                    slashAttackStateCounter: 1,
-                }),
-            ];
+            game.bossInFight = true;
+            setBossElyvorg({
+                slashAttackOnce: false,
+                slashAttackStateCounterLimit: 5,
+                slashAttackStateCounter: 1,
+            });
 
             ui.elyvorgAbilityUI(ctx);
             expect(ctx.filter).toBe('grayscale(100%)');
         });
 
         test('electric ability: draws active icon when wheel is active', () => {
-            game.elyvorgInFight = true;
-            game.enemies = [
-                createElyvorg({
-                    isElectricWheelActive: true,
-                }),
-            ];
+            game.bossInFight = true;
+            setBossElyvorg({
+                isElectricWheelActive: true,
+            });
 
             ui.elyvorgAbilityUI(ctx);
             expect(ctx.drawImage).toHaveBeenCalledWith(
@@ -536,13 +542,11 @@ describe('UI', () => {
         });
 
         test('electric ability: draws warning icon when wheel is charging', () => {
-            game.elyvorgInFight = true;
-            game.enemies = [
-                createElyvorg({
-                    isElectricWheelActive: false,
-                    electricWheelTimer: 2000,
-                }),
-            ];
+            game.bossInFight = true;
+            setBossElyvorg({
+                isElectricWheelActive: false,
+                electricWheelTimer: 2000,
+            });
 
             ui.elyvorgAbilityUI(ctx);
             expect(ctx.drawImage).toHaveBeenCalledWith(
@@ -551,13 +555,11 @@ describe('UI', () => {
         });
 
         test('electric ability: grayscale icon when wheel is inactive and not charging', () => {
-            game.elyvorgInFight = true;
-            game.enemies = [
-                createElyvorg({
-                    isElectricWheelActive: false,
-                    electricWheelTimer: 0,
-                }),
-            ];
+            game.bossInFight = true;
+            setBossElyvorg({
+                isElectricWheelActive: false,
+                electricWheelTimer: 0,
+            });
 
             ui.elyvorgAbilityUI(ctx);
             expect(ctx.filter).toBe('grayscale(100%)');

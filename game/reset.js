@@ -17,6 +17,10 @@ export class Reset {
         if (this.game.currentCutscene !== null) {
             this.game.currentCutscene.removeEventListeners();
         }
+        // shake
+        this.game.shakeActive = false;
+        this.game.shakeTimer = 0;
+        this.game.shakeDuration = 0;
         // tutorial
         this.game.tutorial.elapsedTime = 0;
         this.game.tutorial.currentStepIndex = 0;
@@ -36,7 +40,7 @@ export class Reset {
         this.game.audioHandler.mapSoundtrack.stopAllSounds();
         this.game.audioHandler.firedogSFX.stopAllSounds();
         this.game.audioHandler.enemySFX.stopAllSounds();
-        this.game.audioHandler.explosionSFX.stopAllSounds();
+        this.game.audioHandler.collisionSFX.stopAllSounds();
         this.game.audioHandler.powerUpAndDownSFX.stopAllSounds();
         this.game.audioHandler.cutsceneMusic.stopAllSounds();
         // arrays
@@ -62,21 +66,8 @@ export class Reset {
         this.game.talkToPenguin = false;
         this.game.enterToTalkToPenguin = false;
         this.game.talkToPenguinOneTimeOnly = true;
-        // elyvorg
-        this.game.elyvorgSpawned = false;
-        this.game.elyvorgDialogueBeforeDialoguePlayOnce = true;
-        this.game.elyvorgDialogueAfterDialoguePlayOnce = false;
-        this.game.elyvorgStartAfterDialogueOnlyWhenAnimationEnds = false;
-        this.game.elyvorgDialogueAfterDialogueLeaving = false;
-        this.game.elyvorgRunAway = false;
-        this.game.talkToElyvorg = false;
-        this.game.elyvorgDialoguePlayOnce = true;
-        this.game.isElyvorgFullyVisible = false;
-        this.game.elyvorgInFight = false;
-        this.game.elyvorgPreFight = false;
-        this.game.elyvorgPostFight = false;
-        this.game.poisonScreen = false;
-        this.game.poisonColourOpacity = 0;
+        // boss
+        this.game.bossManager.resetState();
         // level difficulty
         this.game.menu.levelDifficulty.setDifficulty(this.game.selectedDifficulty);
         // selecting map
@@ -105,6 +96,7 @@ export class Reset {
                 break;
             case BonusMap1:
                 selectedMap = new BonusMap1(this.game);
+                this.game.maxDistance = 9999999;
                 this.game.player.isIce = true;
                 break;
             case BonusMap2:

@@ -14,7 +14,6 @@ import {
   DeadSkull
 } from '../game/entities/powerUpAndDown.js';
 import { Goblin, ImmobileGroundEnemy } from '../game/entities/enemies/enemies.js';
-import { Elyvorg } from '../game/entities/enemies/elyvorg.js';
 import {
   Map1EndCutscene, Map2EndCutscene, Map3EndCutscene,
   Map4EndCutscene, Map5EndCutscene, Map6EndCutscene
@@ -92,7 +91,6 @@ describe('Game class (game-main.js)', () => {
       const item = localStorage.getItem('gameState');
       expect(item).not.toBeNull();
       const snapshot = JSON.parse(item);
-      expect(snapshot.coins).toBe(42);
       expect(snapshot.map3Unlocked).toBe(true);
       expect(snapshot.currentSkin).toBe('zabka');
       expect(snapshot.selectedDifficulty).toBe('Hard');
@@ -235,7 +233,6 @@ describe('Game class (game-main.js)', () => {
 
       expect(saved).toMatchObject({
         currentMap: null,
-        coins: 0,
         isTutorialActive: true,
         map1Unlocked: true,
         map2Unlocked: false,
@@ -721,44 +718,63 @@ describe('Game class (game-main.js)', () => {
       expect(game.enemies).toHaveLength(0);
     });
 
-    it('spawns no enemies on Map6 when coins reached winning threshold', () => {
+    it('delegates boss spawning to bossManager and skips normal enemies when a boss is spawned', () => {
       game.gameOver = false;
-      game.background = new Map6(game);
+      game.background = { totalDistanceTraveled: 0, constructor: { name: 'Map6' } };
       game.currentMap = 'Map6';
-      game.coins = game.winningCoins;
+
+      const boss = { isBoss: true };
+      const spawnBossSpy = jest.spyOn(game.bossManager, 'spawnBossIfNeeded')
+        .mockImplementation(() => {
+          game.enemies.push(boss);
+          return true;
+        });
+      const canSpawnNormalEnemiesSpy = jest.spyOn(game.bossManager, 'canSpawnNormalEnemies');
+
       game.addEnemy();
-      expect(game.enemies).toHaveLength(0);
+
+      expect(spawnBossSpy).toHaveBeenCalled();
+      expect(canSpawnNormalEnemiesSpy).not.toHaveBeenCalled();
+      expect(game.enemies).toHaveLength(1);
+      expect(game.enemies[0]).toBe(boss);
     });
 
-    it('spawns a Goblin when random < probability on Map1', () => {
+    it('spawns a Goblin when random < probability on Map1 (when bossManager allows normal enemies)', () => {
       game.gameOver = false;
       game.background = { totalDistanceTraveled: 0, constructor: { name: 'Map1' } };
       game.currentMap = 'Map1';
+
+      jest.spyOn(game.bossManager, 'spawnBossIfNeeded').mockReturnValue(false);
+      jest.spyOn(game.bossManager, 'canSpawnNormalEnemies').mockReturnValue(true);
+
       game.addEnemy();
       expect(game.enemies.length).toBeGreaterThan(0);
       expect(game.enemies[0]).toBeInstanceOf(Goblin);
     });
 
-    it('spawns Elyvorg on Map6 once you have enough coins', () => {
-      Math.random.mockReturnValue(0.6);
-      game.enemies = [];
-      game.background = new Map6(game);
-      game.currentMap = 'Map6';
-      game.coins = game.winningCoins;
-      game.elyvorgSpawned = false;
+    it('does not spawn normal enemies when bossManager.canSpawnNormalEnemies() returns false', () => {
+      game.gameOver = false;
+      game.background = { totalDistanceTraveled: 0, constructor: { name: 'Map1' } };
+      game.currentMap = 'Map1';
+
+      jest.spyOn(game.bossManager, 'spawnBossIfNeeded').mockReturnValue(false);
+      jest.spyOn(game.bossManager, 'canSpawnNormalEnemies').mockReturnValue(false);
+
       game.addEnemy();
-      expect(game.enemies).toHaveLength(1);
-      expect(game.enemies[0]).toBeInstanceOf(Elyvorg);
-      expect(game.elyvorgSpawned).toBe(true);
-      expect(game.talkToElyvorg).toBe(true);
+      expect(game.enemies).toHaveLength(0);
     });
 
-    it('spawns Goblin on Map6 when coins < winningCoins', () => {
+    it('can spawn normal enemies on Map6 via enemy table when bossManager allows it', () => {
+      game.gameOver = false;
       game.background = new Map6(game);
       game.currentMap = 'Map6';
-      game.coins = 0;
       game.enemies = [];
+
+      jest.spyOn(game.bossManager, 'spawnBossIfNeeded').mockReturnValue(false);
+      jest.spyOn(game.bossManager, 'canSpawnNormalEnemies').mockReturnValue(true);
+
       game.addEnemy();
+
       expect(game.enemies.some(e => e instanceof Goblin)).toBe(true);
     });
 
@@ -1003,42 +1019,107 @@ describe('Game class (game-main.js)', () => {
       expect(game.cutscenes.some(c => c instanceof Map6PenguinIngameCutscene)).toBe(true);
     });
 
-    it('triggers Elyvorg pre-fight cutscene on Map6', () => {
+    it('triggers Elyvorg pre-fight cutscene on Map6 via bossManager state', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
       jest.spyOn(game, 'startCutscene');
+
       game.background = new Map6(game);
       game.currentMap = 'Map6';
-      game.isElyvorgFullyVisible = true;
-      game.elyvorgDialogueBeforeDialoguePlayOnce = true;
-      game.player = { update: () => { }, x: 0, width: 0 };
+
+      game.player = {
+        update: () => { },
+        x: 0,
+        width: 0,
+        energy: 0,
+        isInvisible: true,
+        invisibleTimer: 0,
+        invisibleCooldown: 1000,
+        invisibleActiveCooldownTimer: 0,
+      };
+
       game.menu.pause.isPaused = false;
       game.tutorial.tutorialPause = false;
       game.cabin = { isFullyVisible: false };
       game.background.update = () => { };
+
+      const bossState = game.bossManager.state;
+      Object.assign(bossState, {
+        current: {},
+        id: 'elyvorg',
+        map: 'Map6',
+        isVisible: true,
+        talkToBoss: false,
+        preFight: false,
+        inFight: false,
+        postFight: false,
+        runAway: false,
+        dialogueBeforeOnce: true,
+        dialogueAfterOnce: false,
+        dialogueAfterLeaving: false,
+        startAfterDialogueWhenAnimEnds: false,
+        poisonScreen: false,
+        poisonColourOpacity: 0,
+      });
+      game.menu.levelDifficulty.setDifficulty = jest.fn();
+
       game.update(0);
+
       expect(game.startCutscene).toHaveBeenCalled();
       expect(game.cutscenes.some(c => c instanceof Map6ElyvorgIngameCutsceneBeforeFight)).toBe(true);
-      expect(game.elyvorgDialogueBeforeDialoguePlayOnce).toBe(false);
+      expect(game.boss.dialogueBeforeOnce).toBe(false);
+      expect(game.boss.preFight).toBe(true);
+      expect(game.boss.postFight).toBe(false);
     });
 
-    it('triggers Elyvorg post-fight cutscene on Map6', () => {
+    it('triggers Elyvorg post-fight cutscene on Map6 via bossManager state', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
       jest.spyOn(game, 'startCutscene');
+
       game.background = new Map6(game);
       game.currentMap = 'Map6';
-      game.isElyvorgFullyVisible = true;
-      game.elyvorgDialogueBeforeDialoguePlayOnce = false;
-      game.elyvorgDialogueAfterDialoguePlayOnce = true;
-      game.elyvorgStartAfterDialogueOnlyWhenAnimationEnds = true;
-      game.player = { update: () => { }, x: 0, width: 0 };
+
+      game.player = {
+        update: () => { },
+        x: 0,
+        width: 0,
+        energy: 100,
+        isInvisible: false,
+        invisibleTimer: 0,
+        invisibleCooldown: 1000,
+        invisibleActiveCooldownTimer: 0,
+      };
+
       game.menu.pause.isPaused = false;
       game.tutorial.tutorialPause = false;
       game.cabin = { isFullyVisible: false };
       game.background.update = () => { };
+
+      const bossState = game.bossManager.state;
+      Object.assign(bossState, {
+        current: {},
+        id: 'elyvorg',
+        map: 'Map6',
+        isVisible: true,
+        talkToBoss: false,
+        preFight: true,
+        inFight: false,
+        postFight: false,
+        runAway: false,
+        dialogueBeforeOnce: false,
+        dialogueAfterOnce: true,
+        dialogueAfterLeaving: false,
+        startAfterDialogueWhenAnimEnds: true,
+        poisonScreen: false,
+        poisonColourOpacity: 0,
+      });
+
       game.update(0);
+
       expect(game.startCutscene).toHaveBeenCalled();
       expect(game.cutscenes.some(c => c instanceof Map6ElyvorgIngameCutsceneAfterFight)).toBe(true);
-      expect(game.elyvorgDialogueAfterDialoguePlayOnce).toBe(false);
+      expect(game.boss.dialogueAfterOnce).toBe(false);
+      expect(game.boss.dialogueAfterLeaving).toBe(true);
+      expect(game.boss.postFight).toBe(true);
     });
 
     it('sets enterCabin=500 and openDoor="submarineDoorOpening" for Map3 and plays sound', () => {
@@ -1141,26 +1222,35 @@ describe('Game class (game-main.js)', () => {
     it('draws underwater overlay when player.isUnderwater is true', () => {
       game.player.isUnderwater = true;
       game.player.isInvisible = false;
-      game.elyvorgInFight = false;
       game.draw(ctx);
       expect(ctx.fillRect).toHaveBeenCalledTimes(2);
     });
 
-    it('draws poison overlay when Elyvorg fight poisonScreen is active', () => {
+    it('draws poison overlay when boss fight poisonScreen is active', () => {
       game.player.isUnderwater = false;
       game.player.isInvisible = false;
-      game.elyvorgInFight = true;
-      game.poisonScreen = true;
-      game.poisonColourOpacity = 0.5;
+
+      const bossState = game.bossManager.state;
+      Object.assign(bossState, {
+        inFight: true,
+        screenEffect: {
+          active: true,
+          opacity: 0.5,
+          rgb: [0, 255, 0],
+          fadeInSpeed: 1,
+        },
+      });
+
+      jest.spyOn(game, 'bossInFight', 'get').mockReturnValue(true);
+
       game.draw(ctx);
+
       expect(ctx.fillRect).toHaveBeenCalledTimes(2);
     });
 
     it('draws invisible overlay when player.isInvisible is true', () => {
       game.player.isUnderwater = false;
-      game.elyvorgInFight = false;
       game.player.isInvisible = true;
-      game.invisibleColourOpacity = 0.3;
       game.draw(ctx);
       expect(ctx.fillRect).toHaveBeenCalledTimes(1);
     });

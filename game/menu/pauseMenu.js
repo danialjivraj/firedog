@@ -37,7 +37,7 @@ export class PauseMenu extends BaseMenu {
             this.game.audioHandler.mapSoundtrack.pauseAllSounds();
             this.game.audioHandler.firedogSFX.pauseAllSounds();
             this.game.audioHandler.enemySFX.pauseAllSounds();
-            this.game.audioHandler.explosionSFX.pauseAllSounds();
+            this.game.audioHandler.collisionSFX.pauseAllSounds();
             this.game.audioHandler.powerUpAndDownSFX.pauseAllSounds();
             this.game.audioHandler.cutsceneMusic.pauseAllSounds();
         } else {
@@ -45,7 +45,7 @@ export class PauseMenu extends BaseMenu {
             this.game.audioHandler.mapSoundtrack.resumeAllSounds();
             this.game.audioHandler.firedogSFX.resumeAllSounds();
             this.game.audioHandler.enemySFX.resumeAllSounds();
-            this.game.audioHandler.explosionSFX.resumeAllSounds();
+            this.game.audioHandler.collisionSFX.resumeAllSounds();
             this.game.audioHandler.powerUpAndDownSFX.resumeAllSounds();
             this.game.audioHandler.cutsceneMusic.resumeAllSounds();
         }

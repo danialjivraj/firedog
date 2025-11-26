@@ -67,7 +67,7 @@ export class UI {
 
         // bars
         this.distanceBar(context);
-        this.elyvorgHealthBar(context);
+        this.bossHealthBar(context);
 
         // time
         this.timer(context);
@@ -193,41 +193,134 @@ export class UI {
     }
 
     distanceBar(context) {
-        const isMap6 =
-            this.game.currentMap === 'Map6' ||
-            (this.game.background && this.game.background.constructor.name === 'Map6');
+        if (this.game.bossInFight) return;
+        if (!this.game.background) return;
+        if (this.game.boss && this.game.boss.progressComplete) return;
 
-        if (isMap6) return;
+        const totalDist = this.game.background.totalDistanceTraveled || 0;
+        const fallbackMaxDist = Math.max(1, this.game.maxDistance || 1);
 
-        const maxDist = Math.max(1, this.game.maxDistance || 1);
-        const traveled = Math.min(this.game.background.totalDistanceTraveled, maxDist);
-        const pct = (traveled / maxDist) * 100;
-        const filled = (traveled / maxDist) * this.barWidth;
+        const gate = this.game.bossManager
+            ? this.game.bossManager.getGateForCurrentMap()
+            : null;
+
+        let distanceTarget = fallbackMaxDist;
+        let minCoins = 0;
+
+        if (gate) {
+            const gateMinDistance = gate.minDistance ?? 0;
+            if (gateMinDistance > 0) {
+                distanceTarget = gateMinDistance;
+            }
+            minCoins = gate.minCoins ?? 0;
+        }
+
+        // distance
+        const clampedDistanceTarget = Math.max(1, distanceTarget);
+        const traveled = Math.min(totalDist, clampedDistanceTarget);
+        const distanceProgress = traveled / clampedDistanceTarget;
+
+        const pct = Math.min(Math.max(distanceProgress * 100, 0), 100);
+        const filledDistance = distanceProgress * this.barWidth;
 
         this.progressBar(
             context,
-            Math.min(pct, 100),
-            filled,
+            pct,
+            filledDistance,
             this.barWidth,
             '#2ecc71'
         );
+
+        // coins
+        if (gate && minCoins > 0) {
+            const coinsProgress = Math.min(this.game.coins / minCoins, 1);
+            if (coinsProgress <= 0) return;
+
+            const coinsFilled = coinsProgress * this.barWidth;
+
+            const barHeight = 10;
+            const barX = (this.game.width / 2) - (this.barWidth / 2);
+            const barY = 10;
+
+            const stripeHeight = barHeight * 0.4;
+            const stripeY = barY + barHeight - stripeHeight;
+
+            context.save();
+
+            context.beginPath();
+            context.moveTo(barX + 5, barY);
+            context.lineTo(barX + this.barWidth - 5, barY);
+            context.arcTo(barX + this.barWidth, barY, barX + this.barWidth, barY + 5, 5);
+            context.lineTo(barX + this.barWidth, barY + barHeight - 5);
+            context.arcTo(barX + this.barWidth, barY + barHeight, barX + this.barWidth - 5, barY + barHeight, 5);
+            context.lineTo(barX + 5, barY + barHeight);
+            context.arcTo(barX, barY + barHeight, barX, barY + barHeight - 5, 5);
+            context.lineTo(barX, barY + 5);
+            context.arcTo(barX, barY, barX + 5, barY, 5);
+            context.closePath();
+            context.clip();
+
+            context.shadowColor = 'transparent';
+            context.shadowBlur = 0;
+            context.fillStyle = 'orange';
+
+            const rightX = barX + coinsFilled;
+            const radius = stripeHeight / 2;
+
+            if (coinsFilled <= radius * 2) {
+                context.fillRect(barX, stripeY, coinsFilled, stripeHeight);
+            } else {
+                context.beginPath();
+                context.moveTo(barX, stripeY);
+                context.lineTo(rightX - radius, stripeY);
+                context.quadraticCurveTo(
+                    rightX,
+                    stripeY,
+                    rightX,
+                    stripeY + stripeHeight / 2
+                );
+                context.quadraticCurveTo(
+                    rightX,
+                    stripeY + stripeHeight,
+                    rightX - radius,
+                    stripeY + stripeHeight
+                );
+                context.lineTo(barX, stripeY + stripeHeight);
+                context.closePath();
+                context.fill();
+            }
+
+            context.restore();
+        }
     }
 
-    elyvorgHealthBar(context) {
-        if (this.game.elyvorgInFight) {
-            const enemy = this.game.enemies.find(e => e instanceof Elyvorg);
-            if (!enemy) return;
+    bossHealthBar(context) {
+        if (!this.game.bossInFight) return;
 
-            let elyvorgLives = enemy.lives - enemy.livesDefeatedAt;
+        const bossState = this.game.boss;
+        const boss = bossState && bossState.current;
+        if (!boss) return;
 
-            this.progressBar(
-                context,
-                enemy.lives > 0 ? Math.max((elyvorgLives / enemy.maxLives) * 100, 1) : 0,
-                elyvorgLives > 0 ? Math.max((elyvorgLives / enemy.maxLives) * this.barWidth, 0.01 * this.barWidth) : 0,
-                elyvorgLives > 0 ? Math.max((elyvorgLives / enemy.maxLives) * this.barWidth, 0.01 * this.barWidth) : 0,
-                'red',
-            );
-        }
+        const defeatedOffset = boss.livesDefeatedAt ?? 0;
+        let remainingLives = boss.lives - defeatedOffset;
+        remainingLives = Math.max(0, remainingLives);
+
+        const maxLives = boss.maxLives || 1;
+
+        const percentage = (remainingLives / maxLives) * 100;
+        const clampedPct = boss.lives > 0 ? Math.max(percentage, 1) : 0;
+
+        const filledWidth = boss.lives > 0
+            ? Math.max((remainingLives / maxLives) * this.barWidth, 0.01 * this.barWidth)
+            : 0;
+
+        this.progressBar(
+            context,
+            clampedPct,
+            filledWidth,
+            filledWidth,
+            'red'
+        );
     }
 
     energy(context) {
@@ -374,40 +467,55 @@ export class UI {
         const spaceBetweenAbilities = 10;
         const yPosition = 180;
 
-        const fireballImage = this.game.player.isDarkWhiteBorder ? this.fireballUIWhiteBorder : this.fireballUI;
-        const divingImage = this.game.player.isDarkWhiteBorder ? this.divingUIWhiteBorder : this.divingUI;
-        const invisibleImage = this.game.player.isDarkWhiteBorder ? this.invisibleUIWhiteBorder : this.invisibleUI;
+        const player = this.game.player;
+        const frozen = !!player.isFrozen;
+
+        const fireballImage = player.isDarkWhiteBorder ? this.fireballUIWhiteBorder : this.fireballUI;
+        const divingImage = player.isDarkWhiteBorder ? this.divingUIWhiteBorder : this.divingUI;
+        const invisibleImage = player.isDarkWhiteBorder ? this.invisibleUIWhiteBorder : this.invisibleUI;
 
         // diving ability
         const divingX = 25;
-        if (this.game.player.divingTimer < this.game.player.divingCooldown) {
+        const divingLocked = frozen || player.divingTimer < player.divingCooldown;
+
+        if (divingLocked) {
             context.save();
             context.filter = 'grayscale(100%)';
         }
         context.drawImage(divingImage, divingX, yPosition, firedogBorderSize, firedogBorderSize);
-        if (this.game.player.divingTimer < this.game.player.divingCooldown) {
+
+        if (divingLocked) {
             context.restore();
-            const divingCooldown = Math.max(0, this.game.player.divingCooldown - this.game.player.divingTimer) / 1000;
-            const countdownText = divingCooldown.toFixed(1);
-            const textX = divingX + (firedogBorderSize - maxTextWidth) / 2 + 10;
-            const textY = yPosition + (50 - 16) / 2 + 16;
-            context.fillStyle = 'white';
-            context.font = 'bold 20px Arial';
-            context.fillText(countdownText, textX, textY);
+
+            if (!frozen && player.divingTimer < player.divingCooldown) {
+                const divingCooldown = Math.max(0, player.divingCooldown - player.divingTimer) / 1000;
+                const countdownText = divingCooldown.toFixed(1);
+                const textX = divingX + (firedogBorderSize - maxTextWidth) / 2 + 10;
+                const textY = yPosition + (50 - 16) / 2 + 16;
+                context.fillStyle = 'white';
+                context.font = 'bold 20px Arial';
+                context.fillText(countdownText, textX, textY);
+            }
         }
 
         // fireball ability
         const fireballX = divingX + firedogBorderSize + spaceBetweenAbilities;
-        if (this.game.player.fireballTimer < this.game.player.fireballCooldown || this.game.player.energyReachedZero) {
+        const fireballLocked =
+            frozen ||
+            player.fireballTimer < player.fireballCooldown ||
+            player.energyReachedZero;
+
+        if (fireballLocked) {
             context.save();
             context.filter = 'grayscale(100%)';
         }
-        if (this.game.player.isRedPotionActive) {
+
+        if (player.isRedPotionActive) {
             context.drawImage(this.fireballRedPotionUI, fireballX, yPosition, firedogBorderSize, firedogBorderSize);
             context.save();
             const redPotionTimerX = fireballX + firedogBorderSize / 2;
             const redPotionTimerY = yPosition + 70;
-            const redPotionCooldown = Math.max(0, this.game.player.redPotionTimer) / 1000;
+            const redPotionCooldown = Math.max(0, player.redPotionTimer) / 1000;
             const redPotionCountdownText = redPotionCooldown.toFixed(1);
             context.fillStyle = 'white';
             context.shadowColor = 'black';
@@ -419,10 +527,12 @@ export class UI {
             context.drawImage(fireballImage, fireballX, yPosition, firedogBorderSize, firedogBorderSize);
         }
 
-        if (this.game.player.fireballTimer < this.game.player.fireballCooldown || this.game.player.energyReachedZero) {
+        if (fireballLocked) {
             context.restore();
-            if (this.game.player.fireballTimer < this.game.player.fireballCooldown) {
-                const fireballCooldown = Math.max(0, this.game.player.fireballCooldown - this.game.player.fireballTimer) / 1000;
+
+            if (!frozen && player.fireballTimer < player.fireballCooldown) {
+                const fireballCooldown =
+                    Math.max(0, player.fireballCooldown - player.fireballTimer) / 1000;
                 const countdownText = fireballCooldown.toFixed(1);
                 const textX = fireballX + (firedogBorderSize - maxTextWidth) / 2 + 10;
                 const textY = yPosition + (50 - 16) / 2 + 16;
@@ -434,28 +544,29 @@ export class UI {
 
         // invisible ability
         const invisibleX = fireballX + firedogBorderSize + spaceBetweenAbilities;
-        if (this.game.player.invisibleTimer < this.game.player.invisibleCooldown) {
+        if (player.invisibleTimer < player.invisibleCooldown) {
             context.save();
             context.filter = 'grayscale(100%)';
         }
         context.drawImage(invisibleImage, invisibleX, yPosition, firedogBorderSize, firedogBorderSize);
         const invisibleTimerX = invisibleX + firedogBorderSize / 2;
         const invisibleTimerY = yPosition + 70;
-        const invisibleCooldown = Math.max(0, this.game.player.invisibleActiveCooldownTimer) / 1000;
+        const invisibleCooldown = Math.max(0, player.invisibleActiveCooldownTimer) / 1000;
         const invisibleCountdownText = invisibleCooldown.toFixed(1);
-        if (this.game.player.isInvisible) {
+        if (player.isInvisible) {
             context.fillStyle = 'white';
             context.shadowColor = 'black';
             context.font = 'bold 21px Arial';
             context.textAlign = 'center';
             context.fillText(invisibleCountdownText, invisibleTimerX, invisibleTimerY);
         }
-        if (this.game.player.invisibleTimer < this.game.player.invisibleCooldown) {
+        if (player.invisibleTimer < player.invisibleCooldown) {
             context.restore();
-            const invisibleCooldownRemaining = Math.max(0, this.game.player.invisibleCooldown - this.game.player.invisibleTimer) / 1000;
+            const invisibleCooldownRemaining =
+                Math.max(0, player.invisibleCooldown - player.invisibleTimer) / 1000;
             const countdownText = invisibleCooldownRemaining.toFixed(1);
             let textXActive;
-            if (this.game.player.invisibleTimer <= 30050) {
+            if (player.invisibleTimer <= 30050) {
                 textXActive = 150.537109375;
             } else {
                 textXActive = 156.0986328125;
@@ -468,134 +579,122 @@ export class UI {
     }
 
     elyvorgAbilityUI(context) {
-        if (this.game.elyvorgInFight) {
-            // poison
-            let isPoisonActive;
-            let poisonCooldownTime;
-            let poisonCooldownTimer;
-            // gravity
-            let isGravitySpinnerActive;
-            let gravityCooldownTime;
-            let gravityCooldownTimer;
-            // slash
-            let slashAttackStateCounter;
-            let slashAttackStateCounterLimit;
-            let slashAttackOnce;
-            // electric
-            let electricWheelTimer;
-            let isElectricWheelActive;
+        if (!this.game.bossInFight) return;
 
-            for (const enemy of this.game.enemies) {
-                if (enemy instanceof Elyvorg) {
-                    // poison
-                    isPoisonActive = enemy.isPoisonActive;
-                    poisonCooldownTime = enemy.poisonCooldown;
-                    poisonCooldownTimer = enemy.poisonCooldownTimer;
-                    // gravity
-                    isGravitySpinnerActive = enemy.isGravitySpinnerActive;
-                    gravityCooldownTime = enemy.gravityCooldown;
-                    gravityCooldownTimer = enemy.gravityCooldownTimer;
-                    // slash
-                    slashAttackOnce = enemy.slashAttackOnce;
-                    slashAttackStateCounter = enemy.slashAttackStateCounter;
-                    slashAttackStateCounterLimit = enemy.slashAttackStateCounterLimit;
-                    // electric
-                    electricWheelTimer = enemy.electricWheelTimer;
-                    isElectricWheelActive = enemy.isElectricWheelActive;
-                    break;
-                }
-            }
+        let elyvorg = null;
+        if (this.game.boss && this.game.boss.current instanceof Elyvorg) {
+            elyvorg = this.game.boss.current;
+        } else {
+            elyvorg = this.game.enemies.find(e => e instanceof Elyvorg) || null;
+        }
 
-            const elyvorgBorderSize = 65;
-            const spaceBetweenAbilities = 10;
-            const yPosition = 20;
+        if (!elyvorg) return;
 
-            // poison
-            const poisonX = this.game.width - elyvorgBorderSize - spaceBetweenAbilities * 2;
-            if (poisonCooldownTimer > 0) {
-                if (isPoisonActive) {
-                    context.drawImage(this.poisonUI, poisonX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
-                }
-                context.save();
-                const poisonTimerX = poisonX + elyvorgBorderSize / 2;
-                const poisonTimerY = yPosition + 87;
-                const poisonCooldown = Math.max(0, poisonCooldownTime / 1000 - poisonCooldownTimer / 1000);
-                const poisonCountdownText = poisonCooldown.toFixed(1);
-                context.fillStyle = 'white';
-                context.shadowColor = 'black';
-                context.font = 'bold 22px Arial';
-                context.strokeStyle = 'black';
-                context.lineWidth = 2;
-                context.textAlign = 'center';
-                context.strokeText(poisonCountdownText, poisonTimerX, poisonTimerY);
-                context.fillText(poisonCountdownText, poisonTimerX, poisonTimerY);
-                context.restore();
-            } else {
-                context.save();
-                context.filter = 'grayscale(100%)';
+        // poison
+        const isPoisonActive = elyvorg.isPoisonActive;
+        const poisonCooldownTime = elyvorg.poisonCooldown;
+        const poisonCooldownTimer = elyvorg.poisonCooldownTimer;
+        // gravity
+        const isGravitySpinnerActive = elyvorg.isGravitySpinnerActive;
+        const gravityCooldownTime = elyvorg.gravityCooldown;
+        const gravityCooldownTimer = elyvorg.gravityCooldownTimer;
+        // slash
+        const slashAttackOnce = elyvorg.slashAttackOnce;
+        const slashAttackStateCounter = elyvorg.slashAttackStateCounter;
+        const slashAttackStateCounterLimit = elyvorg.slashAttackStateCounterLimit;
+        // electric
+        const electricWheelTimer = elyvorg.electricWheelTimer;
+        const isElectricWheelActive = elyvorg.isElectricWheelActive;
+
+        const elyvorgBorderSize = 65;
+        const spaceBetweenAbilities = 10;
+        const yPosition = 20;
+
+        // poison
+        const poisonX = this.game.width - elyvorgBorderSize - spaceBetweenAbilities * 2;
+        if (poisonCooldownTimer > 0) {
+            if (isPoisonActive) {
                 context.drawImage(this.poisonUI, poisonX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
-                context.restore();
             }
+            context.save();
+            const poisonTimerX = poisonX + elyvorgBorderSize / 2;
+            const poisonTimerY = yPosition + 87;
+            const poisonCooldown = Math.max(0, poisonCooldownTime / 1000 - poisonCooldownTimer / 1000);
+            const poisonCountdownText = poisonCooldown.toFixed(1);
+            context.fillStyle = 'white';
+            context.shadowColor = 'black';
+            context.font = 'bold 22px Arial';
+            context.strokeStyle = 'black';
+            context.lineWidth = 2;
+            context.textAlign = 'center';
+            context.strokeText(poisonCountdownText, poisonTimerX, poisonTimerY);
+            context.fillText(poisonCountdownText, poisonTimerX, poisonTimerY);
+            context.restore();
+        } else {
+            context.save();
+            context.filter = 'grayscale(100%)';
+            context.drawImage(this.poisonUI, poisonX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
+            context.restore();
+        }
 
-            // gravity
-            const gravityX = poisonX - elyvorgBorderSize - spaceBetweenAbilities;
-            if (gravityCooldownTimer > 0) {
-                if (isGravitySpinnerActive) {
-                    context.drawImage(this.gravityUI, gravityX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
-                }
+        // gravity
+        const gravityX = poisonX - elyvorgBorderSize - spaceBetweenAbilities;
+        if (gravityCooldownTimer > 0) {
+            if (isGravitySpinnerActive) {
+                context.drawImage(this.gravityUI, gravityX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
+            }
+            context.save();
+            const gravityTimerX = gravityX + elyvorgBorderSize / 2;
+            const gravityTimerY = yPosition + 87;
+            const gravityCooldown = Math.max(0, gravityCooldownTime / 1000 - gravityCooldownTimer / 1000);
+            const gravityCountdownText = gravityCooldown.toFixed(1);
+            context.fillStyle = 'white';
+            context.shadowColor = 'black';
+            context.font = 'bold 22px Arial';
+            context.strokeStyle = 'black';
+            context.lineWidth = 2;
+            context.textAlign = 'center';
+            context.strokeText(gravityCountdownText, gravityTimerX, gravityTimerY);
+            context.fillText(gravityCountdownText, gravityTimerX, gravityTimerY);
+            context.restore();
+        } else {
+            context.save();
+            context.filter = 'grayscale(100%)';
+            context.drawImage(this.gravityUI, gravityX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
+            context.restore();
+        }
+
+        // slash
+        const slashX = gravityX - elyvorgBorderSize - spaceBetweenAbilities;
+        if (slashAttackOnce) {
+            context.drawImage(this.slashUI, slashX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
+        } else {
+            if (slashAttackStateCounter >= slashAttackStateCounterLimit - 2) {
                 context.save();
-                const gravityTimerX = gravityX + elyvorgBorderSize / 2;
-                const gravityTimerY = yPosition + 87;
-                const gravityCooldown = Math.max(0, gravityCooldownTime / 1000 - gravityCooldownTimer / 1000);
-                const gravityCountdownText = gravityCooldown.toFixed(1);
-                context.fillStyle = 'white';
-                context.shadowColor = 'black';
-                context.font = 'bold 22px Arial';
-                context.strokeStyle = 'black';
-                context.lineWidth = 2;
-                context.textAlign = 'center';
-                context.strokeText(gravityCountdownText, gravityTimerX, gravityTimerY);
-                context.fillText(gravityCountdownText, gravityTimerX, gravityTimerY);
+                context.drawImage(this.slashWarningUI, slashX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
                 context.restore();
             } else {
                 context.save();
                 context.filter = 'grayscale(100%)';
-                context.drawImage(this.gravityUI, gravityX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
+                context.drawImage(this.slashUI, slashX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
                 context.restore();
             }
+        }
 
-            // slash
-            const slashX = gravityX - elyvorgBorderSize - spaceBetweenAbilities;
-            if (slashAttackOnce) {
-                context.drawImage(this.slashUI, slashX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
+        // electric
+        const electricX = slashX - elyvorgBorderSize - spaceBetweenAbilities;
+        if (isElectricWheelActive) {
+            context.drawImage(this.electricUI, electricX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
+        } else {
+            if (electricWheelTimer > 0) {
+                context.save();
+                context.drawImage(this.electricWarningUI, electricX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
+                context.restore();
             } else {
-                if (slashAttackStateCounter >= slashAttackStateCounterLimit - 2) {
-                    context.save();
-                    context.drawImage(this.slashWarningUI, slashX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
-                    context.restore();
-                } else {
-                    context.save();
-                    context.filter = 'grayscale(100%)';
-                    context.drawImage(this.slashUI, slashX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
-                    context.restore();
-                }
-            }
-
-            // electric
-            const electricX = slashX - elyvorgBorderSize - spaceBetweenAbilities;
-            if (isElectricWheelActive) {
+                context.save();
+                context.filter = 'grayscale(100%)';
                 context.drawImage(this.electricUI, electricX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
-            } else {
-                if (electricWheelTimer > 0) {
-                    context.save();
-                    context.drawImage(this.electricWarningUI, electricX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
-                    context.restore();
-                } else {
-                    context.save();
-                    context.filter = 'grayscale(100%)';
-                    context.drawImage(this.electricUI, electricX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
-                    context.restore();
-                }
+                context.restore();
             }
         }
     }

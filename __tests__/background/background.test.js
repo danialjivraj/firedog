@@ -47,7 +47,6 @@ afterAll(() => {
 
 afterEach(() => {
     jest.clearAllMocks();
-    jest.useRealTimers();
 });
 
 // -----------------------------------------------------------------------------
@@ -109,7 +108,7 @@ describe('Background', () => {
             height: 689,
             speed: 4,
             cabin: { isFullyVisible: false },
-            isElyvorgFullyVisible: false,
+            isBossVisible: false,
             isTutorialActive: false,
             currentMap: 'Map1',
             audioHandler: { mapSoundtrack: soundtrack }
@@ -130,7 +129,7 @@ describe('Background', () => {
         rainSpy.mockRestore();
     });
 
-    test('plays soundtrack first update, fades out when cabin visible', () => {
+    test('plays soundtrack first update, then fades out when cabin becomes visible', () => {
         bg.soundId = 'testSound';
         bg.update(16);
         expect(soundtrack.playSound).toHaveBeenCalledWith(bg.soundId, true);
@@ -142,12 +141,12 @@ describe('Background', () => {
         expect(bg.soundPlayed).toBe(false);
     });
 
-    test('when elyvorg visible, no Layer.update but RaindropAnimation.update still called', () => {
+    test('when boss is visible, parallax layers freeze but RaindropAnimation continues updating', () => {
         bg.soundId = 'sfx';
         bg.update(0);
         expect(soundtrack.playSound).toHaveBeenCalled();
 
-        mockGame.isElyvorgFullyVisible = true;
+        mockGame.isBossVisible = true;
         layerSpy.mockClear();
         rainSpy.mockClear();
         bg.update(1);
@@ -156,7 +155,7 @@ describe('Background', () => {
         expect(rainSpy).toHaveBeenCalled();
     });
 
-    test('EntityAnimation & SnowflakeAnimation still update when parallax frozen', () => {
+    test('EntityAnimation & SnowflakeAnimation still update when parallax is frozen', () => {
         const ent = new (class extends EntityAnimation {
             constructor(game) { super(game, 0); this.updated = 0; this.groundSpeed = 999; }
             update(dt) { this.updated += dt; }
@@ -196,7 +195,7 @@ describe('Background', () => {
         expect(bg.totalDistanceTraveled).toBeCloseTo(0.20);
     });
 
-    test('draw calls each layer.draw in order without invoking real draws', () => {
+    test('draw calls each layer.draw in order without invoking real layer drawing logic', () => {
         const ctx = { drawImage: jest.fn() };
         const spies = bg.backgroundLayers.map(layer =>
             jest.spyOn(layer, 'draw').mockImplementation(() => { })
@@ -214,16 +213,16 @@ describe('Background', () => {
 // -----------------------------------------------------------------------------
 describe('Map1–Map6 constructors', () => {
     const specs = [
-        { Cls: Map1, id: 'map1Soundtrack', inserts: 5 },
-        { Cls: Map2, id: 'map2Soundtrack', inserts: 2 },
-        { Cls: Map3, id: 'map3Soundtrack', inserts: 6 },
-        { Cls: Map4, id: 'map4Soundtrack', inserts: 3 },
-        { Cls: Map5, id: 'map5Soundtrack', inserts: 6, hasRain: true },
-        { Cls: Map6, id: 'map6Soundtrack', inserts: 0 }
+        { Cls: Map1, id: 'map1Soundtrack', baseLayers: 11, extraLayers: 5 },
+        { Cls: Map2, id: 'map2Soundtrack', baseLayers: 5, extraLayers: 2 },
+        { Cls: Map3, id: 'map3Soundtrack', baseLayers: 10, extraLayers: 6 },
+        { Cls: Map4, id: 'map4Soundtrack', baseLayers: 8, extraLayers: 3 },
+        { Cls: Map5, id: 'map5Soundtrack', baseLayers: 11, extraLayers: 6, hasRain: true },
+        { Cls: Map6, id: 'map6Soundtrack', baseLayers: 6, extraLayers: 0 }
     ];
 
-    specs.forEach(({ Cls, id, inserts, hasRain = false }) => {
-        test(`${Cls.name} sets soundId and layer count`, () => {
+    specs.forEach(({ Cls, id, baseLayers, extraLayers, hasRain = false }) => {
+        test(`${Cls.name} sets soundtrack id and expected background layer count`, () => {
             const game = {
                 width: 1920, height: 689, speed: 1,
                 cabin: { isFullyVisible: false },
@@ -232,11 +231,7 @@ describe('Map1–Map6 constructors', () => {
             const map = new Cls(game);
             expect(map.soundId).toBe(id);
 
-            const superArgs = Cls.prototype.constructor.toString()
-                .match(/super\([^)]*\)/)[0];
-            const baseCount = (superArgs.match(/{\s*imageId/g) || []).length;
-            let expected = baseCount + inserts;
-            if (hasRain) expected++;
+            const expected = baseLayers + extraLayers + (hasRain ? 1 : 0);
             expect(map.backgroundLayers).toHaveLength(expected);
         });
     });
@@ -246,7 +241,7 @@ describe('Map1–Map6 constructors', () => {
 // Bonus maps snow wiring
 // -----------------------------------------------------------------------------
 describe('BonusMap snow layers & soundtrack', () => {
-    test('BonusMap1: snow layers present and front layer amplified', () => {
+    test('BonusMap1: snow layers present and front layer visually amplified', () => {
         const game = {
             width: 800, height: 600, speed: 0,
             cabin: { isFullyVisible: false },
@@ -269,7 +264,7 @@ describe('BonusMap snow layers & soundtrack', () => {
         expect(anyAmplified).toBe(true);
     });
 
-    test('BonusMap2/BonusMap3 soundtrack ids wired', () => {
+    test('BonusMap2/BonusMap3 soundtrack ids wired to underwater track', () => {
         const game = {
             width: 800, height: 600, speed: 0,
             cabin: { isFullyVisible: false },
@@ -296,7 +291,7 @@ describe('Firefly', () => {
         expect(firefly.backgroundEntities).toHaveLength(3);
     });
 
-    test('update removes only the x-out-of-bounds entity and calls spawnNewFirefly', () => {
+    test('update removes only the off-screen entity and calls spawnNewFirefly once', () => {
         firefly.backgroundEntities = [
             { x: -1, y: 50, speed: 0.1, directionX: 1, directionY: 0, opacity: 1 },
             { x: 10, y: 50, speed: 0.1, directionX: 1, directionY: 0, opacity: 1 },
@@ -308,7 +303,7 @@ describe('Firefly', () => {
         expect(Firefly.prototype.spawnNewFirefly).toHaveBeenCalledTimes(1);
     });
 
-    test('opacity is clamped [0,1] and edge fade reduces opacity near borders', () => {
+    test('opacity is clamped to [0,1] and edge fade reduces opacity near borders', () => {
         firefly.backgroundEntities = [{
             x: 1, y: 300, speed: 0.1, directionX: 0, directionY: 0, opacity: 1
         }];
@@ -318,7 +313,7 @@ describe('Firefly', () => {
         expect(firefly.backgroundEntities[0].opacity).toBeLessThan(1);
     });
 
-    test('when cabin visible, player parallax is not subtracted from x movement', () => {
+    test('when cabin is visible, player parallax is not subtracted from x movement', () => {
         const e = firefly.backgroundEntities[0];
         e.directionX = 1;
         e.speed = 0.1;
@@ -346,7 +341,7 @@ describe('SmallFish', () => {
         sf.backgroundEntities.forEach(f => { f.directionX = 1; f.speed = 0.2; f.directionY = 0; });
     });
 
-    test('update removes off-screen fish (keeps count thanks to respawn mock = no-op)', () => {
+    test('update removes off-screen fish and triggers respawn once (mocked)', () => {
         sf.backgroundEntities = [
             { x: -1, y: 10, speed: 0.1, directionX: 1, directionY: 0, opacity: 1 },
             { x: 10, y: 10, speed: 0.1, directionX: 1, directionY: 0, opacity: 1 },
@@ -415,13 +410,13 @@ describe('BigFish', () => {
         bf.spawnTimer = bf.spawnInterval;
     });
 
-    test('update spawns fish when timer ≥ interval & random < .2', () => {
+    test('update spawns fish when timer ≥ interval and random < 0.2', () => {
         bf.backgroundEntities = [];
         bf.update(1);
         expect(bf.backgroundEntities.length).toBe(1);
     });
 
-    test('removes fish that swim offscreen', () => {
+    test('removes fish that swim offscreen and resets spawn timer', () => {
         bf.backgroundEntities = [
             { x: -100, y: 0, width: 10, height: 10, speed: 1, directionX: 1, directionY: 0 }
         ];
@@ -430,7 +425,7 @@ describe('BigFish', () => {
         expect(bf.spawnTimer).toBe(0);
     });
 
-    test('edge opacity is capped at 0.6 and reduces near borders', () => {
+    test('edge opacity is capped at 0.6 and reduced near borders', () => {
         bf.backgroundEntities = [{
             width: 100, height: 50, x: 1, y: 1, speed: 0, directionX: 0, directionY: 0, opacity: 1
         }];
@@ -457,7 +452,7 @@ describe('Map5 rain windows & cabin stop', () => {
     });
 
     [40, 130, 230].forEach(dist => {
-        test(`rain ON at totalDistanceTraveled = ${dist}`, () => {
+        test(`rain switches ON at totalDistanceTraveled = ${dist}`, () => {
             map5.totalDistanceTraveled = dist;
             map5.update(0);
             const rainLayer = map5.backgroundLayers.find(l => l instanceof RaindropAnimation);
@@ -466,7 +461,7 @@ describe('Map5 rain windows & cabin stop', () => {
         });
     });
 
-    test('rain stops immediately when cabin visible', () => {
+    test('rain and sound stop immediately when cabin becomes visible', () => {
         map5.totalDistanceTraveled = 50;
         mockGame.cabin.isFullyVisible = true;
         map5.update(0);
@@ -498,7 +493,7 @@ describe('RaindropAnimation & Splash', () => {
         expect(JSON.stringify(rain.raindrops)).toBe(before);
     });
 
-    test('drops reset and splashes spawn when raining; finished splashes are filtered out', () => {
+    test('when raining, drops reset at bottom and spawn/cleanup splash animations', () => {
         rain.isRaining = true;
         rain.raindrops[0].y = mockGame.height + 1;
         jest.spyOn(Math, 'random').mockReturnValue(0);
@@ -529,13 +524,13 @@ describe('RaindropSplashAnimation', () => {
         ctx = { drawImage: jest.fn() };
     });
 
-    test('calculateRandomY is within expected range', () => {
+    test('calculateRandomY returns a value within expected vertical band', () => {
         const y = splash.calculateRandomY();
         expect(y).toBeGreaterThanOrEqual(mockGame.height - 25 - 55);
         expect(y).toBeLessThanOrEqual(mockGame.height);
     });
 
-    test('update advances frames and marks deletion', () => {
+    test('update advances frames and eventually marks splash for deletion', () => {
         splash.frameInterval = 1;
         splash.currentFrame = splash.maxFrames - 1;
         splash.update(2);
@@ -545,7 +540,7 @@ describe('RaindropSplashAnimation', () => {
         expect(splash.markedForDeletion).toBe(true);
     });
 
-    test('x moves by groundSpeed', () => {
+    test('x position moves left according to groundSpeed', () => {
         splash.bgSpeed = 2;
         mockGame.speed = 10;
         splash.x = 50;
@@ -553,7 +548,7 @@ describe('RaindropSplashAnimation', () => {
         expect(splash.x).toBe(30);
     });
 
-    test('draw only when currentFrame < maxFrames', () => {
+    test('draw only when currentFrame is less than maxFrames', () => {
         splash.currentFrame = splash.maxFrames;
         splash.draw(ctx);
         expect(ctx.drawImage).not.toHaveBeenCalled();
@@ -662,7 +657,7 @@ describe('SnowflakeAnimation', () => {
         expect(snow.flakes[0].x).toBeLessThanOrEqual(game.width);
     });
 
-    test('draw renders arcs with per-flake alpha and restores alpha', () => {
+    test('draw renders arcs with per-flake alpha and restores global alpha', () => {
         const snow = new SnowflakeAnimation(game, 2);
         snow.flakes = [
             { x: 10, y: 20, r: 2, speed: 0, drift: 0, opacity: 0.4, stopAbove: true },

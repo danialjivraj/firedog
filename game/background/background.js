@@ -43,12 +43,12 @@ export class Background {
     }
     update(deltaTime) {
         if (!this.soundPlayed) {
-            if (!this.game.cabin.isFullyVisible && !this.game.isElyvorgFullyVisible) {
+            if (!this.game.cabin.isFullyVisible && !this.game.isBossVisible) {
                 this.game.audioHandler.mapSoundtrack.playSound(this.soundId, true);
                 this.soundPlayed = true;
             }
         } else {
-            if (this.game.cabin.isFullyVisible || this.game.isElyvorgFullyVisible) {
+            if (this.game.cabin.isFullyVisible || this.game.isBossVisible) {
                 this.game.audioHandler.mapSoundtrack.fadeOutAndStop(this.soundId);
                 this.soundPlayed = false;
             }
@@ -58,8 +58,7 @@ export class Background {
 
         for (let i = this.backgroundLayers.length - 1; i >= 0; i--) {
             const layer = this.backgroundLayers[i];
-            if (!this.game.cabin.isFullyVisible && !this.game.isElyvorgFullyVisible) {
-                // if cabin or elyvorg aren't visible, the layers are updated
+            if (!this.game.cabin.isFullyVisible && !this.game.isBossVisible) {
                 layer.update(deltaTime);
                 if (layer.bgSpeed === 1 && !lastGroundLayer) {
                     lastGroundLayer = layer;

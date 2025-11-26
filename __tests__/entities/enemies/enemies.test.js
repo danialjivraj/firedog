@@ -155,14 +155,14 @@ describe('Enemy (base class)', () => {
         expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith('boom');
     });
 
-    it('draw() with no stun/red leaves shadow transparent', () => {
+    it('draw() resets shadow for non-special enemies', () => {
         ctx.drawImage.mockImplementation(() => { });
         e.draw(ctx);
         expect(ctx.shadowColor).toBe('transparent');
         expect(ctx.shadowBlur).toBe(0);
     });
 
-    it('draw() applies yellow shadow when isStunEnemy', () => {
+    it('draw() resets shadow after stun enemy draw', () => {
         e.isStunEnemy = true;
         ctx.drawImage.mockImplementation(() => { });
         e.draw(ctx);
@@ -170,7 +170,7 @@ describe('Enemy (base class)', () => {
         expect(ctx.shadowBlur).toBe(0);
     });
 
-    it('draw() applies red shadow when isRedEnemy', () => {
+    it('draw() resets shadow after red enemy draw', () => {
         e.isRedEnemy = true;
         ctx.drawImage.mockImplementation(() => { });
         e.draw(ctx);
@@ -459,7 +459,7 @@ describe('Projectile & subclasses', () => {
             cabin: { isFullyVisible: false },
             audioHandler: { enemySFX: { playSound: jest.fn() } },
             player: { x: 0, y: 0 },
-            isElyvorgFullyVisible: true,
+            bossManager: { isBossVisible: true },
             debug: true,
         };
         ctx = {
@@ -506,7 +506,7 @@ describe('Projectile & subclasses', () => {
         });
     });
 
-    it('LaserBeam flips when visible', () => {
+    it('LaserBeam draw() does not throw', () => {
         const lb = new LaserBeam(game, 10, 20, 30, 40, 1, 'img', -5);
         expect(() => lb.draw(ctx)).not.toThrow();
     });
@@ -643,7 +643,7 @@ describe('Map 1 Enemies', () => {
         expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith('ravenSingleFlap');
     });
 
-    it('MeatSoldier drifts at random speed and plays only once', () => {
+    it('MeatSoldier plays its run sound on update', () => {
         const m = new MeatSoldier(game);
         expect(m.currentSpeed).toBeUndefined();
         m.update(16);
@@ -765,7 +765,7 @@ describe('Map 2 Enemies', () => {
         expect(game.enemies.some(e => e instanceof Aura)).toBe(true);
     });
 
-    it('plays humming and aura sounds', () => {
+    it('Dolly plays humming and aura sounds', () => {
         const d = new Dolly(game);
         const playSpy = jest.spyOn(game.audioHandler.enemySFX, 'playSound');
         d.update(16);
@@ -979,7 +979,7 @@ describe('Map 4 Enemies', () => {
         slz.canAttack = true;
         slz.frameX = 27;
         slz.update(16);
-        expect(game.enemies.some(e => e.constructor.name === 'LaserBeam')).toBe(true);
+        expect(game.enemies.some(e => e instanceof LaserBeam)).toBe(true);
     });
 
     it('Jerry spawns Skulnap children when frame max reached', () => {
@@ -988,7 +988,7 @@ describe('Map 4 Enemies', () => {
         j.frameX = j.maxFrame;
         j.maxFrameReached = false;
         j.update(j.frameInterval + 1);
-        expect(game.enemies.some(e => e.constructor.name === 'Skulnap')).toBe(true);
+        expect(game.enemies.some(e => e instanceof Skulnap)).toBe(true);
     });
 });
 
@@ -1026,7 +1026,7 @@ describe('Map 5 Enemies', () => {
         rf.x = game.player.x + 100;
         rf.darkLaserTimer = 3000;
         rf.update(3000);
-        expect(game.enemies.some(e => e.constructor.name === 'DarkLaser')).toBe(true);
+        expect(game.enemies.some(e => e instanceof DarkLaser)).toBe(true);
     });
 
     it('PurpleFlyer throws IceBall when raining and cooldown met', () => {
@@ -1089,7 +1089,7 @@ describe('Map 5 Enemies', () => {
         const eg = new Eggry(game);
         game.background.isRaining = true;
         game.gameOver = true;
-        game.hiddenTime = 0
+        game.hiddenTime = 0;
 
         eg.frameX = 8;
         eg.frameTimer = eg.frameInterval + 1;
@@ -1125,7 +1125,7 @@ describe('Map 5 Enemies', () => {
         hl.x = game.width / 2;
         hl.canAttack = true;
         hl.update(16);
-        expect(game.enemies.some(e => e.constructor.name === 'LaserBeam')).toBe(true);
+        expect(game.enemies.some(e => e instanceof LaserBeam)).toBe(true);
     });
 });
 
@@ -1161,7 +1161,7 @@ describe('Map 6 Enemies', () => {
         pp.x = game.width - pp.width - 1;
         pp.lastRockAttackTime = pp.rockAttackConfig.cooldown;
         pp.update(pp.rockAttackConfig.cooldown);
-        const rocks = game.enemies.filter(e => e.constructor.name === 'RockProjectile');
+        const rocks = game.enemies.filter(e => e instanceof RockProjectile);
         expect(rocks.length).toBeGreaterThanOrEqual(2);
     });
 

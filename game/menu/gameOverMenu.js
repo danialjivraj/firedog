@@ -12,25 +12,41 @@ export class GameOverMenu extends BaseMenu {
         if (this.game.player.currentState.deathAnimation || this.game.notEnoughCoins) {
             super.handleMenuSelection();
             const selectedOption = this.menuOptions[this.selectedOption];
+
             if (selectedOption === 'Retry') {
                 this.game.reset();
             } else if (selectedOption === 'Back to Main Menu') {
                 this.game.reset();
                 this.game.menu.main.activateMenu();
             } else if (selectedOption === 'Retry Final Boss') {
+                const bossManager = this.game.bossManager;
+                const gate = bossManager.getGateForCurrentMap();
                 this.game.reset();
-                this.game.coins = this.game.maxCoinsToFightElyvorg;
+                if (gate) {
+                    if (typeof gate.minCoins === 'number') {
+                        this.game.coins = gate.minCoins;
+                    }
+                    if (
+                        typeof gate.minDistance === 'number' &&
+                        this.game.background &&
+                        this.game.background.totalDistanceTraveled !== undefined
+                    ) {
+                        this.game.background.totalDistanceTraveled = gate.minDistance;
+                    }
+                }
+                this.game.notEnoughCoins = false;
             }
             this.menuActive = false;
         }
     }
 
     draw(context) {
-        if (this.game.isElyvorgFullyVisible) {
+        if (this.game.hasActiveBoss) {
             this.menuOptions = ['Retry Final Boss', 'Retry', 'Back to Main Menu'];
         } else {
             this.menuOptions = ['Retry', 'Back to Main Menu'];
         }
+
         if (this.game.notEnoughCoins) {
             context.fillStyle = 'rgba(0, 0, 0, 0.5)';
             context.fillRect(0, 0, this.game.width, this.game.height);
@@ -40,6 +56,7 @@ export class GameOverMenu extends BaseMenu {
             context.fillRect(0, 0, this.game.width, this.game.height);
             this.title = "Game Over!";
         }
+
         this.game.menu.pause.canEscape = false;
 
         super.draw(context);

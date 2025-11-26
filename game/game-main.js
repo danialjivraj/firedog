@@ -1,4 +1,5 @@
 import { Player } from "./entities/player.js";
+import { preShake, postShake } from './animations/shake.js';
 import {
     Goblin,
     Dotter, Vertibat, Ghobat, Ravengloom, MeatSoldier, Skulnap, Abyssaw, GlidoSpike,
@@ -10,42 +11,42 @@ import {
     WindAttack,
     ImmobileGroundEnemy,
 } from "./entities/enemies/enemies.js";
-import { Elyvorg, InkBomb, MeteorAttack } from "./entities/enemies/elyvorg.js";
+import { InkBomb, MeteorAttack } from "./entities/enemies/elyvorg.js";
 import {
     RedPotion, BluePotion, HealthLive, Coin, OxygenTank,
     BlackHole, Cauldron, IceDrink, Confuse, DeadSkull,
     RandomPower
 } from "./entities/powerUpAndDown.js";
-//ingame
+// ingame
 import { Reset } from "./reset.js";
 import { PauseMenu } from "./menu/pauseMenu.js";
 import { GameOverMenu } from "./menu/gameOverMenu.js";
-//ui
+// ui
 import { InputHandler } from "./interface/input.js";
 import { UI } from "./interface/UI.js";
 import { Tutorial } from "./interface/tutorial.js";
-import { Map3, Map6 } from './background/background.js';
-//menus
+import { Map3, Map6, BonusMap1 } from "./background/background.js";
+// menus
 import { MainMenu } from "./menu/mainMenu.js";
-import { LevelDifficultyMenu } from './menu/levelDifficultyMenu.js';
-import { ForestMapMenu } from './menu/forestMap.js';
+import { LevelDifficultyMenu } from "./menu/levelDifficultyMenu.js";
+import { ForestMapMenu } from "./menu/forestMap.js";
 import { HowToPlayMenu } from "./menu/howToPlayMenu.js";
 import { Skins } from "./menu/skinsMenu.js";
 import { DeleteProgress, DeleteProgress2 } from "./menu/deleteProgress.js";
 import { SettingsMenu } from "./menu/settingsMenu.js";
 import { ControlsSettingsMenu } from "./menu/controlsSettingsMenu.js";
 import { getDefaultKeyBindings } from "./config/keyBindings.js";
-//audios
+// audios
 import { AudioSettingsMenu } from "./menu/audio/audioSettingsMenu.js";
 import { IngameAudioSettingsMenu } from "./menu/audio/ingameAudioSettingsMenu.js";
 import {
-    MenuAudioHandler, FiredogAudioHandler, EnemySFXAudioHandler, ExplosionSFXAudioHandler, MapSoundtrackAudioHandler,
+    MenuAudioHandler, FiredogAudioHandler, EnemySFXAudioHandler, CollisionSFXAudioHandler, MapSoundtrackAudioHandler,
     PowerUpAndDownSFXAudioHandler, CutsceneMusicAudioHandler, CutsceneDialogueAudioHandler, CutsceneSFXAudioHandler
 } from "./audioHandler.js";
-//animations
+// animations
 import { fadeIn } from "./animations/fading.js";
 import { screenColourFadeIn, screenColourFadeOut } from "./animations/screenColourFade.js";
-//cutscenes
+// cutscenes
 import {
     Map1EndCutscene, Map2EndCutscene, Map3EndCutscene,
     Map4EndCutscene, Map5EndCutscene, Map6EndCutscene,
@@ -60,7 +61,17 @@ import {
     Map6ElyvorgIngameCutsceneBeforeFight,
     Map6ElyvorgIngameCutsceneAfterFight
 } from "./cutscene/elyvorgCutscenes.js";
+import {
+    Map6GlacikalIngameCutsceneBeforeFight,
+    Map6GlacikalIngameCutsceneAfterFight
+} from "./cutscene/glacikalCutscenes.js";
 import { EnemyLore } from "./menu/enemyLore.js";
+import {
+    saveGameState as persistGameState,
+    loadGameState as restoreGameState,
+    clearSavedData as resetPersistedData
+} from "./persistence/gamePersistence.js";
+import { BossManager } from "./entities/enemies/bossManager.js";
 
 export class Game {
     constructor(canvas, width, height) {
@@ -89,6 +100,7 @@ export class Game {
         this.invisibleColourOpacity = 0;
         this.gameOver = false;
         this.debug = false;
+
         // player/audio handlers/menus/etc classes and vars...
         this.player = new Player(this);
         this.player.currentState = this.player.states[0];
@@ -98,7 +110,7 @@ export class Game {
         this.background = null;
         this.cabin = null;
         this.penguini = null;
-        this.fontColor = 'black';
+        this.fontColor = "black";
         this.isDarkWhiteBorder = false;
         this.resetInstance = new Reset(this);
         this.audioHandler = {
@@ -109,8 +121,8 @@ export class Game {
             cutsceneMusic: new CutsceneMusicAudioHandler(this),
             enemySFX: new EnemySFXAudioHandler(this),
             firedogSFX: new FiredogAudioHandler(this),
-            explosionSFX: new ExplosionSFXAudioHandler(this),
-            powerUpAndDownSFX: new PowerUpAndDownSFXAudioHandler(this)
+            collisionSFX: new CollisionSFXAudioHandler(this),
+            powerUpAndDownSFX: new PowerUpAndDownSFXAudioHandler(this),
         };
         this.isTutorialActive = true;
         this.noDamageDuringTutorial = false;
@@ -171,23 +183,14 @@ export class Game {
         this.talkToPenguin = false;
         this.enterToTalkToPenguin = false;
         this.talkToPenguinOneTimeOnly = true;
-        // elyvorg
-        this.maxCoinsToFightElyvorg = 100;
-        this.isElyvorgFullyVisible = false;
-        this.elyvorgSpawned = false;
-        this.elyvorgDialogueBeforeDialoguePlayOnce = true;
-        this.elyvorgDialogueAfterDialoguePlayOnce = false;
-        this.elyvorgDialogueAfterDialogueLeaving = false;
-        this.elyvorgStartAfterDialogueOnlyWhenAnimationEnds = false;
-        this.elyvorgInFight = false;
-        this.elyvorgPreFight = false;
-        this.elyvorgPostFight = false;
-        this.elyvorgRunAway = false;
-        this.talkToElyvorg = false;
-        this.poisonScreen = false;
-        this.poisonColourOpacity = 0;
+        // boss
+        this.bossManager = new BossManager(this);
         // loading game state
         this.loadGameState();
+    }
+
+    get boss() {
+        return this.bossManager.state;
     }
 
     // ------------------------------------------------------------ Game Class logic ------------------------------------------------------------
@@ -196,6 +199,7 @@ export class Game {
         this.cutsceneActive = true;
         this.currentCutscene = cutscene;
     }
+
     endCutscene() {
         this.cutsceneActive = false;
         this.currentCutscene = null;
@@ -205,8 +209,10 @@ export class Game {
             this.input.arrowUpPressed = false;
             this.input.arrowDownPressed = false;
         }
-        if (this.player.x + this.player.width >= this.cabin.x + 190 &&
-            this.player.x <= this.cabin.x + this.cabin.width) {
+        if (
+            this.player.x + this.player.width >= this.cabin.x + 190 &&
+            this.player.x <= this.cabin.x + this.cabin.width
+        ) {
             this.reset();
             this.isPlayerInGame = false;
             if (!(this.background instanceof Map6)) {
@@ -218,9 +224,10 @@ export class Game {
                     this.canSelectForestMap = true;
                     this.menu.forestMap.showSavingSprite = false;
 
-                    const bgName = this.background && this.background.constructor
-                        ? this.background.constructor.name
-                        : null;
+                    const bgName =
+                        this.background && this.background.constructor
+                            ? this.background.constructor.name
+                            : null;
 
                     const targetIndexByMap = {
                         Map1: 1,
@@ -233,9 +240,10 @@ export class Game {
                         BonusMap3: 3,
                     };
 
-                    let nextIndex = (bgName && bgName in targetIndexByMap)
-                        ? targetIndexByMap[bgName]
-                        : (this.menu.forestMap.selectedCircleIndex + 1);
+                    let nextIndex =
+                        bgName && bgName in targetIndexByMap
+                            ? targetIndexByMap[bgName]
+                            : this.menu.forestMap.selectedCircleIndex + 1;
 
                     const maxIdx = this.menu.forestMap.circleOptions.length - 1;
                     nextIndex = Math.max(0, Math.min(maxIdx, nextIndex));
@@ -252,9 +260,8 @@ export class Game {
                         this.menu.forestMap.selectedCircleIndex = nextIndex;
                     }
 
-                    this.audioHandler.menu.playSound('optionHoveredSound', false, true);
+                    this.audioHandler.menu.playSound("optionHoveredSound", false, true);
                 }, 4000);
-
             } else {
                 this.menu.main.showSavingSprite = true;
                 this.canSelect = false;
@@ -266,8 +273,10 @@ export class Game {
             }
         }
     }
+
     getEffectiveKeyBindings() {
-        const tutorialMapActive = this.isTutorialActive && this.currentMap === "Map1";
+        const tutorialMapActive =
+            this.isTutorialActive && this.currentMap === "Map1";
         if (tutorialMapActive) {
             return this._defaultKeyBindings;
         }
@@ -276,16 +285,32 @@ export class Game {
         }
         return this.keyBindings;
     }
+
     reset() {
         this.resetInstance.reset();
     }
 
+    get hasActiveBoss() {
+        return this.bossManager.hasActiveBoss;
+    }
+    get isBossVisible() {
+        return this.bossManager.isBossVisible;
+    }
+    get bossInFight() {
+        return this.bossManager.bossInFight;
+    }
+
     update(deltaTime) {
-        if (this.background && this.background.constructor && this.currentMap !== this.background.constructor.name) {
+        if (
+            this.background &&
+            this.background.constructor &&
+            this.currentMap !== this.background.constructor.name
+        ) {
             this.currentMap = this.background.constructor.name;
         }
 
-        const tutorialMapActive = this.isTutorialActive && this.currentMap === "Map1";
+        const tutorialMapActive =
+            this.isTutorialActive && this.currentMap === "Map1";
         if (tutorialMapActive) {
             this.tutorial.update(deltaTime);
             this.noDamageDuringTutorial = true;
@@ -299,7 +324,8 @@ export class Game {
                 this.time = this.time;
             } else if (!this.gameOver) {
                 this.time += deltaTime;
-                if (this.time > this.maxTime && this.player.isUnderwater) this.gameOver = true;
+                if (this.time > this.maxTime && this.player.isUnderwater)
+                    this.gameOver = true;
             } else {
                 this.speed = 0;
             }
@@ -307,7 +333,7 @@ export class Game {
             if (this.background) this.background.update(deltaTime);
 
             if (!this.cabin || !this.cabin.isFullyVisible) {
-                //enemy
+                // enemy
                 if (this.enemyTimer > this.enemyInterval) {
                     if (!tutorialMapActive) {
                         this.addEnemy();
@@ -316,7 +342,7 @@ export class Game {
                 } else {
                     this.enemyTimer += deltaTime;
                 }
-                //other entities
+                // other entities
                 if (this.nonEnemyTimer > this.nonEnemyInterval) {
                     if (!tutorialMapActive) {
                         this.addPowerUp();
@@ -337,79 +363,103 @@ export class Game {
 
             // handles certain audios where the sound doesn't stop until that type of enemy is not in enemy list
             const enemyAudioMapping = [
-                { enemyType: WindAttack, audio: 'tornadoAudio' },
-                { enemyType: Skulnap, audio: 'fuseSound' },
-                { enemyType: SpidoLazer, audio: 'spidoLazerWalking' },
-                { enemyType: Goblin, audio: 'goblinRunSound' },
-                { enemyType: Ben, audio: 'verticalGhostSound' },
-                { enemyType: JetFish, audio: 'rocketLauncherSound' },
-                { enemyType: SpearFish, audio: 'stepWaterSound' },
-                { enemyType: Dolly, audio: 'dollHumming' },
-                { enemyType: Aura, audio: 'auraSoundEffect' },
-                { enemyType: InkBomb, audio: 'elyvorg_ink_bomb_sound' },
-                { enemyType: MeteorAttack, audio: 'elyvorg_meteor_falling_sound' },
+                { enemyType: WindAttack, audio: "tornadoAudio" },
+                { enemyType: Skulnap, audio: "fuseSound" },
+                { enemyType: SpidoLazer, audio: "spidoLazerWalking" },
+                { enemyType: Goblin, audio: "goblinRunSound" },
+                { enemyType: Ben, audio: "verticalGhostSound" },
+                { enemyType: JetFish, audio: "rocketLauncherSound" },
+                { enemyType: SpearFish, audio: "stepWaterSound" },
+                { enemyType: Dolly, audio: "dollHumming" },
+                { enemyType: Aura, audio: "auraSoundEffect" },
+                { enemyType: InkBomb, audio: "elyvorg_ink_bomb_sound" },
+                { enemyType: MeteorAttack, audio: "elyvorg_meteor_falling_sound" },
             ];
             enemyAudioMapping.forEach(({ enemyType, audio }) => {
-                if (enemyType === MeteorAttack && !this.enemies.some(enemy => enemy instanceof enemyType)) {
+                if (
+                    enemyType === MeteorAttack &&
+                    !this.enemies.some((enemy) => enemy instanceof enemyType)
+                ) {
                     if (this.audioHandler.enemySFX.isPlaying(audio)) {
                         this.audioHandler.enemySFX.fadeOutAndStop(audio, 2000);
                     }
                 } else {
-                    if (!this.enemies.some(enemy => enemy instanceof enemyType)) {
+                    if (
+                        !this.enemies.some((enemy) => enemy instanceof enemyType)
+                    ) {
                         this.audioHandler.enemySFX.stopSound(audio);
                     }
                 }
             });
 
-            //handle power up
-            this.powerUps.forEach(powerUp => {
+            // handle power up
+            this.powerUps.forEach((powerUp) => {
                 powerUp.update(deltaTime);
             });
-            //handle power down
-            this.powerDowns.forEach(powerDown => {
+            // handle power down
+            this.powerDowns.forEach((powerDown) => {
                 powerDown.update(deltaTime);
             });
-            //handle enemies
-            this.enemies.forEach(enemy => {
+            // handle enemies
+            this.enemies.forEach((enemy) => {
                 enemy.update(deltaTime);
             });
-            //handle messages
-            this.floatingMessages.forEach(message => {
+            // handle messages
+            this.floatingMessages.forEach((message) => {
                 message.update();
             });
-            //handle cabin
-            this.cabins.forEach(cabin => {
+            // handle cabin
+            this.cabins.forEach((cabin) => {
                 cabin.update(deltaTime);
             });
-            //handle penguin
-            this.penguins.forEach(penguin => {
+            // handle penguin
+            this.penguins.forEach((penguin) => {
                 penguin.update(deltaTime);
             });
-            //handle particles behind the player
-            this.behindPlayerParticles.forEach((behindPlayerParticle, index) => {
+            // handle particles behind the player
+            this.behindPlayerParticles.forEach((behindPlayerParticle) => {
                 behindPlayerParticle.update();
             });
-            //handle particles
-            this.particles.forEach((particle, index) => {
-                particle.update();
+            // handle particles
+            this.particles.forEach((particle) => {
+                particle.update(deltaTime);
             });
             if (this.particles.length > this.maxParticles) {
                 this.particles.length = this.maxParticles;
             }
-            //handle collision sprites
-            this.collisions.forEach((collision, index) => {
+            // handle collision sprites
+            this.collisions.forEach((collision) => {
                 collision.update(deltaTime);
-            })
+            });
             // removes marked entities
-            this.enemies = this.enemies.filter(enemy => !enemy.markedForDeletion);
-            this.powerUps = this.powerUps.filter(powerUp => !powerUp.markedForDeletion);
-            this.powerDowns = this.powerDowns.filter(powerDown => !powerDown.markedForDeletion);
-            this.behindPlayerParticles = this.behindPlayerParticles.filter(behindPlayerParticle => !behindPlayerParticle.markedForDeletion);
-            this.particles = this.particles.filter(particle => !particle.markedForDeletion);
-            this.collisions = this.collisions.filter(collision => !collision.markedForDeletion);
-            this.floatingMessages = this.floatingMessages.filter(message => !message.markedForDeletion);
+            this.enemies = this.enemies.filter(
+                (enemy) => !enemy.markedForDeletion
+            );
+            this.powerUps = this.powerUps.filter(
+                (powerUp) => !powerUp.markedForDeletion
+            );
+            this.powerDowns = this.powerDowns.filter(
+                (powerDown) => !powerDown.markedForDeletion
+            );
+            this.behindPlayerParticles = this.behindPlayerParticles.filter(
+                (behindPlayerParticle) => !behindPlayerParticle.markedForDeletion
+            );
+            this.particles = this.particles.filter(
+                (particle) => !particle.markedForDeletion
+            );
+            this.collisions = this.collisions.filter(
+                (collision) => !collision.markedForDeletion
+            );
+            this.floatingMessages = this.floatingMessages.filter(
+                (message) => !message.markedForDeletion
+            );
+
             // penguin cutscenes
-            if (this.talkToPenguin && this.talkToPenguinOneTimeOnly && this.enterToTalkToPenguin) {
+            if (
+                this.talkToPenguin &&
+                this.talkToPenguinOneTimeOnly &&
+                this.enterToTalkToPenguin
+            ) {
                 this.enterToTalkToPenguin = false;
                 const mapCutsceneMapping = {
                     Map1: Map1PenguinIngameCutscene,
@@ -420,7 +470,7 @@ export class Game {
                     Map6: Map6PenguinIngameCutscene,
                     BonusMap1: BonusMap1PenguinIngameCutscene,
                     BonusMap2: BonusMap2PenguinIngameCutscene,
-                    BonusMap3: BonusMap3PenguinIngameCutscene
+                    BonusMap3: BonusMap3PenguinIngameCutscene,
                 };
                 const mapConstructor = mapCutsceneMapping[this.currentMap];
                 if (mapConstructor) {
@@ -430,48 +480,87 @@ export class Game {
                     this.cutscenes.push(cutscene);
                 }
             }
-            // elyvorg cutscene
-            if (this.background instanceof Map6 && this.isElyvorgFullyVisible &&
-                this.elyvorgDialogueBeforeDialoguePlayOnce && this.player.x <= 0) {
-                this.elyvorgPreFight = true;
-                this.elyvorgPostFight = false;
-                this.elyvorgDialogueBeforeDialoguePlayOnce = false;
-                this.player.energy = 100;
-                this.player.isInvisible = false;
-                this.player.invisibleTimer = this.player.invisibleCooldown;
-                this.player.invisibleActiveCooldownTimer = 5000;
-                this.menu.levelDifficulty.setDifficulty(this.selectedDifficulty);
-                const map6ElyvorgBeforeFightCutscene = new Map6ElyvorgIngameCutsceneBeforeFight(this);
-                this.startCutscene(map6ElyvorgBeforeFightCutscene);
-                map6ElyvorgBeforeFightCutscene.displayDialogue();
-                this.cutscenes.push(map6ElyvorgBeforeFightCutscene);
-            } else if (this.background instanceof Map6 && this.isElyvorgFullyVisible &&
-                this.elyvorgDialogueAfterDialoguePlayOnce && this.elyvorgStartAfterDialogueOnlyWhenAnimationEnds && this.player.x <= 0) {
-                this.elyvorgPreFight = false;
-                this.elyvorgPostFight = true;
-                this.elyvorgDialogueAfterDialoguePlayOnce = false;
-                this.elyvorgDialogueAfterDialogueLeaving = true;
-                this.player.energy = 100;
-                const map6ElyvorgAfterFightCutscene = new Map6ElyvorgIngameCutsceneAfterFight(this);
-                this.startCutscene(map6ElyvorgAfterFightCutscene);
-                map6ElyvorgAfterFightCutscene.displayDialogue();
-                this.cutscenes.push(map6ElyvorgAfterFightCutscene);
+
+            // boss in-game cutscenes (before/after fight)
+            if (
+                this.background &&
+                this.hasActiveBoss &&
+                this.isBossVisible &&
+                this.player.x <= 0
+            ) {
+                const boss = this.boss;
+
+                const configs = [
+                    {
+                        mapClass: BonusMap1,
+                        bossId: "glacikal",
+                        beforeCutscene: Map6GlacikalIngameCutsceneBeforeFight,
+                        afterCutscene: Map6GlacikalIngameCutsceneAfterFight,
+                    },
+                    {
+                        mapClass: Map6,
+                        bossId: "elyvorg",
+                        beforeCutscene: Map6ElyvorgIngameCutsceneBeforeFight,
+                        afterCutscene: Map6ElyvorgIngameCutsceneAfterFight,
+                    },
+                ];
+
+                for (const cfg of configs) {
+                    if (!(this.background instanceof cfg.mapClass)) continue;
+                    if (boss.id !== cfg.bossId) continue;
+
+                    if (boss.dialogueBeforeOnce) {
+                        boss.preFight = true;
+                        boss.postFight = false;
+                        boss.dialogueBeforeOnce = false;
+
+                        this.player.energy = 100;
+                        this.player.isInvisible = false;
+                        this.player.invisibleTimer = this.player.invisibleCooldown;
+                        this.player.invisibleActiveCooldownTimer = 5000;
+                        this.menu.levelDifficulty.setDifficulty(this.selectedDifficulty);
+
+                        const cutscene = new cfg.beforeCutscene(this);
+                        this.startCutscene(cutscene);
+                        cutscene.displayDialogue();
+                        this.cutscenes.push(cutscene);
+                        break;
+                    }
+
+                    if (boss.dialogueAfterOnce && boss.startAfterDialogueWhenAnimEnds) {
+                        boss.preFight = false;
+                        boss.postFight = true;
+                        boss.dialogueAfterOnce = false;
+                        boss.dialogueAfterLeaving = true;
+
+                        this.player.energy = 100;
+
+                        const cutscene = new cfg.afterCutscene(this);
+                        this.startCutscene(cutscene);
+                        cutscene.displayDialogue();
+                        this.cutscenes.push(cutscene);
+                        break;
+                    }
+                }
             }
+
             // end cutscenes after each map
             if (this.background instanceof Map3) {
                 this.enterCabin = 500;
-                this.openDoor = 'submarineDoorOpening'
+                this.openDoor = "submarineDoorOpening";
             } else if (this.background instanceof Map6) {
                 this.enterCabin = 570;
-                this.openDoor = 'walkingCutsceneSound'
+                this.openDoor = "walkingCutsceneSound";
             } else {
                 this.enterCabin = 290;
-                this.openDoor = 'doorOpening'
+                this.openDoor = "doorOpening";
             }
-            if (this.player.x + this.player.width >= this.cabin.x + this.enterCabin &&
+            if (
+                this.cabin &&
+                this.player.x + this.player.width >= this.cabin.x + this.enterCabin &&
                 this.player.x <= this.cabin.x + this.cabin.width &&
-                this.cabin.isFullyVisible) {
-
+                this.cabin.isFullyVisible
+            ) {
                 this.audioHandler.cutsceneSFX.playSound(this.openDoor);
                 this.audioHandler.firedogSFX.stopAllSounds();
 
@@ -498,60 +587,76 @@ export class Game {
             }
         }
     }
+
     draw(context) {
         context.clearRect(0, 0, this.width, this.height);
         if (this.background) this.background.draw(context);
 
-        this.cabins.forEach(cabin => {
+        this.cabins.forEach((cabin) => {
             cabin.draw(context);
         });
-        this.penguins.forEach(penguin => {
+        this.penguins.forEach((penguin) => {
             penguin.draw(context);
         });
-        this.powerUps.forEach(powerUp => {
+        this.powerUps.forEach((powerUp) => {
             powerUp.draw(context);
         });
-        this.powerDowns.forEach(powerDown => {
+        this.powerDowns.forEach((powerDown) => {
             powerDown.draw(context);
         });
-        this.behindPlayerParticles.forEach(behindPlayerParticle => {
+        this.behindPlayerParticles.forEach((behindPlayerParticle) => {
             behindPlayerParticle.draw(context);
         });
         this.player.draw(context); // player
-        this.enemies.forEach(enemy => {
+        this.enemies.forEach((enemy) => {
             enemy.draw(context);
         });
-        this.particles.forEach(particle => {
+        this.particles.forEach((particle) => {
             particle.draw(context);
         });
-        this.collisions.forEach(collision => {
+        this.collisions.forEach((collision) => {
             collision.draw(context);
         });
-        this.floatingMessages.forEach(message => {
+        this.floatingMessages.forEach((message) => {
             message.draw(context);
         });
+
         if (this.player.isUnderwater === true) {
-            context.fillStyle = 'rgba(0, 0, 50, 0.6)';
+            context.fillStyle = "rgba(0, 0, 50, 0.6)";
             context.fillRect(0, 0, this.width, this.height);
         }
-        if (this.elyvorgInFight) {
-            if (this.poisonScreen === true) {
-                this.poisonColourOpacity = screenColourFadeIn(this.poisonColourOpacity, 0.00298);
-            } else {
-                this.poisonColourOpacity = screenColourFadeOut(this.poisonColourOpacity);
-            }
-            context.fillStyle = `rgba(0, 50, 0, ${this.poisonColourOpacity})`;
+
+        const effect = this.boss.screenEffect;
+
+        if (this.bossInFight && effect.active) {
+            effect.opacity = screenColourFadeIn(
+                effect.opacity,
+                effect.fadeInSpeed ?? 0.00298
+            );
+        } else if (effect) {
+            effect.opacity = screenColourFadeOut(effect.opacity);
+        }
+
+        if (effect && effect.opacity > 0) {
+            const [r, g, b] = effect.rgb ?? [0, 0, 0];
+            context.fillStyle = `rgba(${r}, ${g}, ${b}, ${effect.opacity})`;
             context.fillRect(0, 0, this.width, this.height);
         }
+
         if (this.player.isInvisible) {
-            this.invisibleColourOpacity = screenColourFadeIn(this.invisibleColourOpacity, 0.014);
+            this.invisibleColourOpacity = screenColourFadeIn(
+                this.invisibleColourOpacity,
+                0.014
+            );
         } else {
-            this.invisibleColourOpacity = screenColourFadeOut(this.invisibleColourOpacity);
+            this.invisibleColourOpacity = screenColourFadeOut(
+                this.invisibleColourOpacity
+            );
         }
         context.fillStyle = `rgba(0, 0, 50, ${this.invisibleColourOpacity})`;
         context.fillRect(0, 0, this.width, this.height);
 
-        this.cutscenes.forEach(cutscene => {
+        this.cutscenes.forEach((cutscene) => {
             cutscene.draw(context);
         });
 
@@ -562,10 +667,24 @@ export class Game {
 
         this.UI.draw(context);
     }
+
     addEnemy() {
-        if (this.gameOver || (this.background && this.background.totalDistanceTraveled >= this.maxDistance - 5)) {
+        if (
+            this.gameOver ||
+            (this.background &&
+                this.background.totalDistanceTraveled >= this.maxDistance - 5)
+        ) {
             return;
         }
+
+        if (this.bossManager.spawnBossIfNeeded()) {
+            return;
+        }
+
+        if (!this.bossManager.canSpawnNormalEnemies()) {
+            return;
+        }
+
         const enemyTypes = {
             Map1: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
@@ -633,7 +752,6 @@ export class Game {
                 { type: VolcanoWasp, probability: 0.03, spawningDistance: 0 },
                 { type: Rollhog, probability: 0.1, spawningDistance: 0 },
                 { type: Dragon, probability: 0.05, spawningDistance: 0 },
-                { type: Elyvorg, probability: 0.85, spawningDistance: 0 },
             ],
             BonusMap1: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
@@ -654,51 +772,50 @@ export class Game {
                 { type: Dolly, probability: 0.01, spawningDistance: 100 },
             ],
         };
+
         const currentMap = this.currentMap;
         const enemiesForCurrentMap = enemyTypes[currentMap];
 
         if (enemiesForCurrentMap && this.enemies.length < this.maxEnemies) {
             for (const { type, probability, spawningDistance } of enemiesForCurrentMap) {
-                if (Math.random() < probability && this.background && this.background.totalDistanceTraveled >= spawningDistance) {
-                    if (type === Elyvorg && !this.elyvorgSpawned && this.coins >= this.winningCoins && this.enemies.length === 0) {
-                        if (this.elyvorgSpawned) {
-                            continue;
+                if (
+                    Math.random() < probability &&
+                    this.background &&
+                    this.background.totalDistanceTraveled >= spawningDistance
+                ) {
+                    const newEnemy = new type(this);
+                    let collision = false;
+
+                    for (const existingEnemy of this.enemies) {
+                        if (
+                            existingEnemy instanceof type ||
+                            (newEnemy instanceof ImmobileGroundEnemy &&
+                                existingEnemy instanceof ImmobileGroundEnemy &&
+                                Math.abs(newEnemy.x - existingEnemy.x) <
+                                (newEnemy.width + existingEnemy.width) / 2 &&
+                                Math.abs(newEnemy.y - existingEnemy.y) <
+                                (newEnemy.height + existingEnemy.height) / 2)
+                        ) {
+                            collision = true;
+                            break;
                         }
-                        this.elyvorgSpawned = true;
-                        this.talkToElyvorg = true;
-                        const newEnemy = new type(this);
-                        this.enemies.push(newEnemy);
-                        return;
                     }
 
-                    if (this.background instanceof Map6 && this.coins >= this.winningCoins) {
-                        return;
-                    } else {
-                        if (!this.elyvorgSpawned && type !== Elyvorg) {
-                            const newEnemy = new type(this);
-                            let collision = false;
-                            for (const existingEnemy of this.enemies) {
-                                if (existingEnemy instanceof type ||
-                                    (newEnemy instanceof ImmobileGroundEnemy && existingEnemy instanceof ImmobileGroundEnemy) &&
-                                    Math.abs(newEnemy.x - existingEnemy.x) < (newEnemy.width + existingEnemy.width) / 2 &&
-                                    Math.abs(newEnemy.y - existingEnemy.y) < (newEnemy.height + existingEnemy.height) / 2
-                                ) {
-                                    collision = true;
-                                    break;
-                                }
-                            }
-                            if (!collision) {
-                                this.enemies.push(newEnemy);
-                            }
-                        }
+                    if (!collision) {
+                        this.enemies.push(newEnemy);
                     }
                 }
             }
         }
     }
+
     addPowerUp() {
         if (!(this.background instanceof Map6)) {
-            if (this.speed > 0 && this.background && this.background.totalDistanceTraveled < this.maxDistance - 3) {
+            if (
+                this.speed > 0 &&
+                this.background &&
+                this.background.totalDistanceTraveled < this.maxDistance - 3
+            ) {
                 if (Math.random() < 0.0025) {
                     this.powerUps.push(new RandomPower(this));
                 }
@@ -722,9 +839,14 @@ export class Game {
             }
         }
     }
+
     addPowerDown() {
         if (!(this.background instanceof Map6)) {
-            if (this.speed > 0 && this.background && this.background.totalDistanceTraveled < this.maxDistance - 3) {
+            if (
+                this.speed > 0 &&
+                this.background &&
+                this.background.totalDistanceTraveled < this.maxDistance - 3
+            ) {
                 if (Math.random() < 0.0025) {
                     this.powerDowns.push(new RandomPower(this));
                 }
@@ -746,142 +868,53 @@ export class Game {
             }
         }
     }
+
     addCabin() {
-        if (this.background && this.background.totalDistanceTraveled >= this.maxDistance && !this.cabinAppeared) {
+        if (
+            this.background &&
+            this.background.totalDistanceTraveled >= this.maxDistance &&
+            !this.cabinAppeared
+        ) {
             this.cabins.push(this.cabin);
             this.cabinAppeared = true;
             this.fixedCabinX = this.width - this.cabin.width;
         }
     }
+
     addPenguin() {
-        if (this.background && this.background.totalDistanceTraveled >= this.maxDistance && !this.penguinAppeared) {
+        if (
+            this.background &&
+            this.background.totalDistanceTraveled >= this.maxDistance &&
+            !this.penguinAppeared
+        ) {
             this.penguins.push(this.penguini);
             this.penguinAppeared = true;
             this.fixedPenguinX = this.width - this.cabin.width - 100;
             this.talkToPenguin = true;
         }
     }
-    // ------------------------------------------------------------ Saving logic ------------------------------------------------------------
+
+    // ------------------------------------------------------------ Saving logic  ------------------------------------------------------------
     saveGameState() {
-        const gameState = {
-            currentMap: this.currentMap,
-            coins: this.coins,
-            isTutorialActive: this.isTutorialActive,
-
-            map1Unlocked: this.map1Unlocked,
-            map2Unlocked: this.map2Unlocked,
-            map3Unlocked: this.map3Unlocked,
-            map4Unlocked: this.map4Unlocked,
-            map5Unlocked: this.map5Unlocked,
-            map6Unlocked: this.map6Unlocked,
-            bonusMap1Unlocked: this.bonusMap1Unlocked,
-            bonusMap2Unlocked: this.bonusMap2Unlocked,
-            bonusMap3Unlocked: this.bonusMap3Unlocked,
-            gameCompleted: this.gameCompleted,
-
-            audioSettingsState: this.menu.audioSettings.getState(),
-            ingameAudioSettingsState: this.menu.ingameAudioSettings.getState(),
-            currentSkin: this.menu.skins.currentSkin.id,
-            selectedDifficulty: this.selectedDifficulty,
-
-            keyBindings: this.keyBindings,
-        };
-
-        try {
-            localStorage.setItem('gameState', JSON.stringify(gameState));
-        } catch (e) {
-            console.warn('Failed to save game state:', e);
-        }
+        persistGameState(this);
     }
 
     loadGameState() {
-        const savedGameState = localStorage.getItem('gameState');
-        if (!savedGameState) return;
-
-        try {
-            const gameState = JSON.parse(savedGameState);
-
-            this.currentMap = gameState.currentMap ?? this.currentMap;
-            this.coins = gameState.coins ?? this.coins;
-            this.isTutorialActive = gameState.isTutorialActive ?? this.isTutorialActive;
-
-            this.map1Unlocked = gameState.map1Unlocked ?? this.map1Unlocked;
-            this.map2Unlocked = gameState.map2Unlocked ?? this.map2Unlocked;
-            this.map3Unlocked = gameState.map3Unlocked ?? this.map3Unlocked;
-            this.map4Unlocked = gameState.map4Unlocked ?? this.map4Unlocked;
-            this.map5Unlocked = gameState.map5Unlocked ?? this.map5Unlocked;
-            this.map6Unlocked = gameState.map6Unlocked ?? this.map6Unlocked;
-            this.bonusMap1Unlocked = gameState.bonusMap1Unlocked ?? this.bonusMap1Unlocked;
-            this.bonusMap2Unlocked = gameState.bonusMap2Unlocked ?? this.bonusMap2Unlocked;
-            this.bonusMap3Unlocked = gameState.bonusMap3Unlocked ?? this.bonusMap3Unlocked;
-            this.gameCompleted = gameState.gameCompleted ?? this.gameCompleted;
-
-            if (gameState.audioSettingsState) {
-                this.menu.audioSettings.setState(gameState.audioSettingsState);
-            }
-            if (gameState.ingameAudioSettingsState) {
-                this.menu.ingameAudioSettings.setState(gameState.ingameAudioSettingsState);
-            }
-            if (gameState.currentSkin) {
-                const skinId = gameState.currentSkin;
-                this.menu.skins.setCurrentSkinById(skinId);
-            }
-            if (gameState.selectedDifficulty) {
-                this.menu.levelDifficulty.setDifficulty(gameState.selectedDifficulty);
-            }
-
-            if (gameState.keyBindings) {
-                const defaults = getDefaultKeyBindings();
-                this.keyBindings = { ...defaults, ...gameState.keyBindings };
-            }
-        } catch (e) {
-            console.warn('Failed to load game state, clearing corrupted data:', e);
-            localStorage.removeItem('gameState');
-        }
+        restoreGameState(this);
     }
 
     clearSavedData() {
-        localStorage.removeItem('gameState');
-        this.isTutorialActive = true;
-
-        this.map1Unlocked = true;
-        this.map2Unlocked = false;
-        this.map3Unlocked = false;
-        this.map4Unlocked = false;
-        this.map5Unlocked = false;
-        this.map6Unlocked = false;
-        this.bonusMap1Unlocked = false;
-        this.bonusMap2Unlocked = false;
-        this.bonusMap3Unlocked = false;
-        this.gameCompleted = false;
-
-        this.menu.forestMap.resetSelectedCircleIndex();
-        this.menu.enemyLore.currentPage = 0;
-        this.menu.levelDifficulty.setDifficulty('Normal');
-
-        this.menu.skins.currentSkin = this.menu.skins.defaultSkin;
-        this.menu.skins.setCurrentSkinById('defaultSkin');
-
-        this.menu.audioSettings.setState({
-            volumeLevels: [75, 10, 90, 90, 70, 60, null],
-        });
-        this.menu.ingameAudioSettings.setState({
-            volumeLevels: [30, 80, 60, 40, 80, 65, null],
-        });
-
-        this.keyBindings = getDefaultKeyBindings();
-
-        this.saveGameState();
+        resetPersistedData(this);
     }
 }
 
-window.addEventListener('load', function () {
-    const canvas = document.getElementById('canvas1');
-    const ctx = canvas.getContext('2d');
+// ------------------------------------------------------------ Game Function ------------------------------------------------------------
+window.addEventListener("load", function () {
+    const canvas = document.getElementById("canvas1");
+    const ctx = canvas.getContext("2d");
     canvas.width = 1920;
     canvas.height = 689;
 
-    // ------------------------------------------------------------ Game Function ------------------------------------------------------------
     const game = new Game(canvas, canvas.width, canvas.height);
     let lastTime = 0;
 
@@ -889,7 +922,11 @@ window.addEventListener('load', function () {
         const deltaTime = timeStamp - lastTime;
         lastTime = timeStamp;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if (game.cutsceneActive && !game.talkToPenguin && !game.talkToElyvorg) {
+        if (
+            game.cutsceneActive &&
+            !game.talkToPenguin &&
+            !(game.boss && game.boss.talkToBoss)
+        ) {
             if (game.fadingIn) {
                 game.waitForFadeInOpacity = true;
                 fadeIn(canvas, 1300, () => {
@@ -908,13 +945,25 @@ window.addEventListener('load', function () {
             game.currentMenu.update(deltaTime);
         } else if (game.isPlayerInGame) {
             game.update(deltaTime);
+
+            const canShake =
+                game.shakeActive &&
+                !game.menu.pause.isPaused &&
+                game.tutorial.tutorialPause === false;
+
+            if (canShake) preShake(ctx);
+
             game.draw(ctx);
+
+            if (canShake) postShake(ctx);
+
             if (game.currentMenu || game.gameOver) {
                 game.currentMenu.menuActive = true;
                 game.currentMenu.draw(ctx);
                 game.currentMenu.update(deltaTime);
             }
         }
+
         requestAnimationFrame(animate);
     }
     animate(0);

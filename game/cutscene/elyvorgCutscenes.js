@@ -29,6 +29,8 @@ export class ElyvorgCutscene extends Cutscene {
     }
 
     enterOrLeftClick() {
+        const boss = this.game.boss;
+
         this.cutsceneController();
         if (this.game.player.currentState !== this.game.player.states[8]) {
             this.game.player.setState(8, 0);
@@ -66,22 +68,34 @@ export class ElyvorgCutscene extends Cutscene {
             this.fullWordsColor = prefullWords;
 
         } else {
-            if (this.game.elyvorgPreFight) {
-                this.removeEventListeners();
-                this.cutsceneBackgroundChange(500, 2500, 200);
-                this.game.audioHandler.cutsceneSFX.playSound('battleStarting');
-                setTimeout(() => {
+            if (boss && boss.current && boss.id === 'elyvorg') {
+                if (boss.preFight) {
+                    this.removeEventListeners();
+                    this.cutsceneBackgroundChange(500, 2500, 200);
+                    this.game.audioHandler.cutsceneSFX.playSound('battleStarting');
+
+                    setTimeout(() => {
+                        this.game.endCutscene();
+                        boss.talkToBoss = false;
+                        boss.preFight = false;
+                        boss.inFight = true;
+                        boss.progressComplete = true;
+                        this.game.cutscenes = [];
+                        this.game.audioHandler.mapSoundtrack.playSound('elyvorgBattleTheme', true);
+                    }, 3000);
+
+                } else if (boss.postFight) {
                     this.game.endCutscene();
-                    this.game.talkToElyvorg = false;
+                    boss.talkToBoss = false;
+                    boss.postFight = false;
+                    boss.runAway = true;
                     this.game.cutscenes = [];
-                    this.game.elyvorgInFight = true;
-                    this.game.audioHandler.mapSoundtrack.playSound('elyvorgBattleTheme', true);
-                }, 3000);
-            } else if (this.game.elyvorgPostFight) {
-                this.game.endCutscene();
-                this.game.talkToElyvorg = false;
-                this.game.cutscenes = [];
-                this.removeEventListeners();
+                    this.removeEventListeners();
+
+                    const bg = this.game.background;
+                    const dist = (bg && bg.totalDistanceTraveled) || 0;
+                    this.game.maxDistance = dist + 5;
+                }
             }
         }
 
@@ -95,9 +109,11 @@ export class ElyvorgCutscene extends Cutscene {
 
     displayDialogue() {
         this.handleKeyDown = (event) => {
+            const boss = this.game.boss;
+
             if (!this.game.menu.pause.isPaused && this.game.currentMenu !== this.game.menu.ingameAudioSettings) {
                 if (event.key === 'Tab' && this.game.enterDuringBackgroundTransition) {
-                    if (this.game.elyvorgPreFight) {
+                    if (boss && boss.current && boss.id === 'elyvorg' && boss.preFight) {
                         this.removeEventListeners();
                         this.cutsceneBackgroundChange(500, 2500, 200);
 
@@ -108,9 +124,11 @@ export class ElyvorgCutscene extends Cutscene {
                         setTimeout(() => {
                             this.dialogueIndex = this.dialogue.length - 1;
                             this.game.endCutscene();
-                            this.game.talkToElyvorg = false;
+                            boss.talkToBoss = false;
+                            boss.preFight = false;
+                            boss.inFight = true;
+                            boss.progressComplete = true;
                             this.game.cutscenes = [];
-                            this.game.elyvorgInFight = true;
                             this.game.audioHandler.mapSoundtrack.playSound('elyvorgBattleTheme', true);
                         }, 3000);
                     }
@@ -121,19 +139,27 @@ export class ElyvorgCutscene extends Cutscene {
                 }
             }
         };
+
         this.handleLeftClick = (event) => {
-            if (!this.isEnterPressed && this.game.enterDuringBackgroundTransition && !this.game.menu.pause.isPaused &&
+            if (!this.isEnterPressed &&
+                this.game.enterDuringBackgroundTransition &&
+                !this.game.menu.pause.isPaused &&
                 this.game.currentMenu !== this.game.menu.ingameAudioSettings) {
                 this.enterOrLeftClick();
             }
         };
+
         super.displayDialogue();
     }
 
     resolveCutsceneAction() {
-        const mode = this.game.elyvorgPreFight === true
+        const boss = this.game.boss;
+        const isElyvorg =
+            boss && boss.current && boss.id === 'elyvorg';
+
+        const mode = isElyvorg && boss.preFight
             ? 'pre'
-            : (this.game.elyvorgPostFight === true ? 'post' : null);
+            : (isElyvorg && boss.postFight ? 'post' : null);
 
         if (!mode) return undefined;
 
@@ -334,7 +360,6 @@ export class Map6ElyvorgIngameCutsceneBeforeFight extends ElyvorgCutscene {
 export class Map6ElyvorgIngameCutsceneAfterFight extends ElyvorgCutscene {
     constructor(game) {
         super(game);
-        this.game.elyvorgRunAway = true;
         this.addDialogue( //0
             `${this.elyvorg}`,
             `You're strong.`,

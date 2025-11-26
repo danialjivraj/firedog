@@ -70,14 +70,14 @@ export class ExplosionCollisionAnimation extends Collision {
             ) {
                 enemy.markedForDeletion = true;
                 if (!(enemy instanceof Skulnap)) {
-                    this.game.audioHandler.explosionSFX.playSound('poofSound', false, true);
+                    this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
                     this.game.collisions.push(new CollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
                     this.game.floatingMessages.push(new FloatingMessage('+1', enemy.x, enemy.y, 150, 50, 20));
                     this.game.coins++;
                 } else if (enemy instanceof Skulnap && enemy.id !== this.enemyId) {
                     this.game.collisions.push(new ExplosionCollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5, this.enemyId));
                     this.game.audioHandler.enemySFX.stopSound('skeletonRattlingSound');
-                    this.game.audioHandler.explosionSFX.playSound('explosionCollision', false, true);
+                    this.game.audioHandler.collisionSFX.playSound('explosionCollision', false, true);
                 }
                 if (enemy instanceof Abyssaw) {
                     this.game.audioHandler.enemySFX.stopSound('spinningChainsaw');
@@ -94,7 +94,7 @@ export class ExplosionCollisionAnimation extends Collision {
                 powerUp.y + powerUp.height > this.y && !this.game.gameOver
             ) {
                 powerUp.markedForDeletion = true;
-                this.game.audioHandler.explosionSFX.playSound('poofSound', false, true);
+                this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
                 this.game.collisions.push(new CollisionAnimation(
                     this.game, powerUp.x + powerUp.width * 0.5, powerUp.y + powerUp.height * 0.5));
             }
@@ -108,7 +108,7 @@ export class ExplosionCollisionAnimation extends Collision {
                 powerDown.y + powerDown.height > this.y && !this.game.gameOver
             ) {
                 powerDown.markedForDeletion = true;
-                this.game.audioHandler.explosionSFX.playSound('poofSound', false, true);
+                this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
                 this.game.collisions.push(new CollisionAnimation(this.game, powerDown.x + powerDown.width * 0.5, powerDown.y + powerDown.height * 0.5));
             }
         });
@@ -173,9 +173,68 @@ export class PoisonDropGroundCollision extends Collision {
     }
 }
 
+export class IcyStormBallCollision extends Collision {
+    constructor(game, x, y) {
+        super(game, x, y, 'icyStormBallCollision', 42.44444444444444, 50, 8, 50);
+    }
+}
+
+export class IceSlashCollision extends Collision {
+    constructor(game, x, y, shouldInvert = false) {
+        super(game, x, y, 'iceSlashCollision', 119, 150, 5, 30);
+        this.shouldInvert = shouldInvert;
+    }
+
+    draw(context) {
+        if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
+
+        context.save();
+        context.translate(this.x + this.width / 2, this.y + this.height / 2);
+        context.scale(this.shouldInvert ? -1 : 1, 1);
+
+        context.drawImage(
+            this.image,
+            this.frameX * this.spriteWidth,
+            0,
+            this.spriteWidth,
+            this.spriteHeight,
+            -this.width / 2,
+            -this.height / 2,
+            this.width,
+            this.height
+        );
+
+        context.restore();
+    }
+}
+
+export class IceTrailCollision extends Collision {
+    constructor(game, x, y) {
+        super(game, x, y, 'iceTrailCollision', 28.83333333333333, 70, 5, 30);
+    }
+}
+
 export class InkSplashCollision extends Collision {
     constructor(game, x, y) {
         super(game, x, y, 'blackInk', 278, 394, 6, 20);
+    }
+}
+
+export class SpinningIceBallsCollision extends Collision {
+    constructor(game, x, y) {
+        super(game, x, y, 'spinningIceBallsCollision', 37.2, 35, 4, 20);
+    }
+}
+
+export class PointyIcicleShardCollision extends Collision {
+    constructor(game, x, y) {
+        super(game, x, y, 'pointyIcicleShardCollision', 81, 130, 5, 20);
+    }
+}
+
+export class UndergroundIcicleCollision extends Collision {
+    constructor(game, x, y) {
+        super(game, x, y, 'undergroundIcicleCollision', 125.4, 200, 4, 20);
     }
 }
 

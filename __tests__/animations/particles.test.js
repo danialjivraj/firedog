@@ -37,7 +37,7 @@ describe('Base Particle behavior', () => {
     it('marks particle for deletion when size falls below 0.5', () => {
         const game = {
             cabin: { isFullyVisible: false },
-            isElyvorgFullyVisible: false,
+            isBossVisible: false,
             speed: 0,
             player: {},
             menu: { pause: { isPaused: false } },
@@ -55,7 +55,7 @@ describe('Base Particle behavior', () => {
     it('uses only speedX when cabin is fully visible', () => {
         const game = {
             cabin: { isFullyVisible: true },
-            isElyvorgFullyVisible: false,
+            isBossVisible: false,
             speed: 5,
             player: {},
             menu: { pause: { isPaused: false } },
@@ -73,10 +73,10 @@ describe('Base Particle behavior', () => {
         expect(p.y).toBeCloseTo(9);
     });
 
-    it('uses only speedX when Elyvorg is fully visible', () => {
+    it('uses only speedX when boss is fully visible', () => {
         const game = {
             cabin: { isFullyVisible: false },
-            isElyvorgFullyVisible: true,
+            isBossVisible: true,
             speed: 5,
             player: {},
             menu: { pause: { isPaused: false } },
@@ -108,7 +108,7 @@ describe('Dust', () => {
 
         game = {
             cabin: { isFullyVisible: false },
-            isElyvorgFullyVisible: false,
+            isBossVisible: false,
             speed: 2,
             player: { isUnderwater: true },
             menu: { pause: { isPaused: false } },
@@ -252,7 +252,7 @@ describe('Bubble', () => {
 
         game = {
             cabin: { isFullyVisible: false },
-            isElyvorgFullyVisible: false,
+            isBossVisible: false,
             speed: 1,
             player: { isUnderwater: true },
             menu: { pause: { isPaused: false } },
@@ -302,7 +302,7 @@ describe('Splash', () => {
 
         game = {
             cabin: { isFullyVisible: false },
-            isElyvorgFullyVisible: false,
+            isBossVisible: false,
             speed: 1,
             player: { isUnderwater: false, particleImage: 'test_img' },
         };
@@ -348,9 +348,10 @@ describe('Fire', () => {
 
         game = {
             cabin: { isFullyVisible: false },
-            isElyvorgFullyVisible: false,
+            isBossVisible: false,
             speed: 2,
-            player: { isUnderwater: false, particleImage: 'test_img' },
+            player: { isUnderwater: false, particleImage: 'test_img', isBluePotionActive: false },
+            menu: { pause: { isPaused: false } },
         };
         ctx = {
             save: jest.fn(),
@@ -377,7 +378,7 @@ describe('Fire', () => {
 
         fire.update();
 
-        expect(fire.y).toBeCloseTo(5);
+        expect(fire.y).toBeCloseTo(10 - fire.speedY - 4);
     });
 
     it('draw() rotates and draws fire sprite with save/translate/rotate/restore', () => {
@@ -411,7 +412,7 @@ describe('resolveFireSplashImageId usage (Splash & Fire)', () => {
         const game = {
             player: { isUnderwater: false, isBluePotionActive: false },
             cabin: { isFullyVisible: false },
-            isElyvorgFullyVisible: false,
+            isBossVisible: false,
             speed: 0,
             menu: { pause: { isPaused: false } },
         };
@@ -432,7 +433,7 @@ describe('resolveFireSplashImageId usage (Splash & Fire)', () => {
         const game = {
             player: { isUnderwater: false, isBluePotionActive: true },
             cabin: { isFullyVisible: false },
-            isElyvorgFullyVisible: false,
+            isBossVisible: false,
             speed: 0,
             menu: { pause: { isPaused: false } },
         };
@@ -453,7 +454,7 @@ describe('resolveFireSplashImageId usage (Splash & Fire)', () => {
         const game = {
             player: { isUnderwater: true, isBluePotionActive: false },
             cabin: { isFullyVisible: false },
-            isElyvorgFullyVisible: false,
+            isBossVisible: false,
             speed: 0,
             menu: { pause: { isPaused: false } },
         };
@@ -474,7 +475,7 @@ describe('resolveFireSplashImageId usage (Splash & Fire)', () => {
         const game = {
             player: { isUnderwater: true, isBluePotionActive: true },
             cabin: { isFullyVisible: false },
-            isElyvorgFullyVisible: false,
+            isBossVisible: false,
             speed: 0,
             menu: { pause: { isPaused: false } },
         };
@@ -495,7 +496,7 @@ describe('resolveFireSplashImageId usage (Splash & Fire)', () => {
         const game = {
             player: { isUnderwater: false, isBluePotionActive: true },
             cabin: { isFullyVisible: false },
-            isElyvorgFullyVisible: false,
+            isBossVisible: false,
             speed: 0,
             menu: { pause: { isPaused: false } },
         };
@@ -520,7 +521,7 @@ describe('resolveFireSplashImageId usage (Splash & Fire)', () => {
         const game = {
             player: { isUnderwater: true, isBluePotionActive: true },
             cabin: { isFullyVisible: false },
-            isElyvorgFullyVisible: false,
+            isBossVisible: false,
             speed: 0,
             menu: { pause: { isPaused: false } },
         };
@@ -686,7 +687,7 @@ describe('CoinLoss', () => {
 
         game = {
             cabin: { isFullyVisible: false },
-            isElyvorgFullyVisible: false,
+            isBossVisible: false,
             speed: 1,
             player: { particleImage: 'singleCoin', isUnderwater: false },
         };
@@ -728,7 +729,7 @@ describe('PoisonBubbles', () => {
 
         game = {
             cabin: { isFullyVisible: false },
-            isElyvorgFullyVisible: false,
+            isBossVisible: false,
             speed: 5,
             player: {},
             menu: { pause: { isPaused: false } },
@@ -775,7 +776,7 @@ describe('PoisonBubbles', () => {
         expect(p.markedForDeletion).toBe(false);
     });
 
-    it('update() uses zero parallax when cabin or Elyvorg is fully visible', () => {
+    it('update() uses zero parallax when cabin or boss is fully visible', () => {
         game.cabin.isFullyVisible = true;
 
         const p = new PoisonBubbles(game, 50, 50);
@@ -831,7 +832,7 @@ describe('IceCrystalBubbles', () => {
 
         game = {
             cabin: { isFullyVisible: false },
-            isElyvorgFullyVisible: false,
+            isBossVisible: false,
             speed: 3,
             player: {},
             menu: { pause: { isPaused: false } },

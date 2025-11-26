@@ -92,7 +92,7 @@ export class Sitting extends State {
         } else if (jump(this.game, input)) {
             this.game.player.setState(states.JUMPING, 1);
         } else if (rollRequested(this.game, input) && !this.game.cabin.isFullyVisible) {
-            if (this.game.isElyvorgFullyVisible) {
+            if (this.game.isBossVisible) {
                 if (!this.game.player.energyReachedZero) {
                     this.game.player.setState(states.ROLLING, 0);
                 }
@@ -129,21 +129,21 @@ export class Running extends State {
             );
         }
 
-        if (this.game.talkToElyvorg) {
+        if (this.game.boss.talkToBoss) {
             // do nothing
-        } else if (this.game.isElyvorgFullyVisible && !this.oneTime) {
+        } else if (this.game.isBossVisible && !this.oneTime) {
             this.game.player.setState(states.STANDING, 0);
             this.oneTime = true;
         }
 
-        if (this.game.talkToElyvorg) {
+        if (this.game.boss.talkToBoss) {
             // do nothing
         } else if (jump(this.game, input) && sit(this.game, input)) {
             // do nothing
         } else if (jump(this.game, input)) {
             this.game.player.setState(states.JUMPING, 1);
         } else if (rollRequested(this.game, input)) {
-            if (this.game.isElyvorgFullyVisible === true) {
+            if (this.game.isBossVisible === true) {
                 if (!this.game.player.energyReachedZero) {
                     this.game.player.setState(states.ROLLING, 2);
                 }
@@ -154,7 +154,7 @@ export class Running extends State {
             }
         } else if (
             !anyLR(this.game, input) &&
-            (this.game.cabin.isFullyVisible || this.game.isElyvorgFullyVisible)
+            (this.game.cabin.isFullyVisible || this.game.isBossVisible)
         ) {
             this.game.player.setState(states.STANDING, 0);
         } else if (sit(this.game, input) && anyLR(this.game, input)) {
@@ -162,7 +162,7 @@ export class Running extends State {
         } else if (sit(this.game, input)) {
             this.game.player.setState(states.SITTING, 0);
         } else if (
-            this.game.isElyvorgFullyVisible === true &&
+            this.game.isBossVisible === true &&
             this.game.player.energyReachedZero === true &&
             rollRequested(this.game, input) &&
             anyLR(this.game, input)
@@ -274,7 +274,7 @@ export class Falling extends State {
                 this.game.player.setState(states.DIVING, 0);
             }
         }
-        if (rollRequested(this.game, input) && this.game.isElyvorgFullyVisible && this.game.player.onGround()) {
+        if (rollRequested(this.game, input) && this.game.isBossVisible && this.game.player.onGround()) {
             this.game.player.setState(states.STANDING, 0);
         } else if (rollRequested(this.game, input) && !this.game.cabin.isFullyVisible) {
             if (this.game.player.energy > 0) {
@@ -301,7 +301,7 @@ export class Rolling extends State {
         if (!this.game.player.energyReachedZero) {
             this.game.player.drainEnergy();
 
-            if (this.game.isElyvorgFullyVisible && !this.oneTime) {
+            if (this.game.isBossVisible && !this.oneTime) {
                 this.game.player.setState(states.STANDING, 0);
                 this.oneTime = true;
             }
@@ -338,7 +338,7 @@ export class Rolling extends State {
                 }
             }
         } else if (this.game.player.isUnderwater === false) {
-            if (this.game.isElyvorgFullyVisible) {
+            if (this.game.isBossVisible) {
                 this.game.player.setState(states.STANDING, 0);
             } else {
                 this.game.player.setState(states.RUNNING, 1);
@@ -465,7 +465,7 @@ export class Standing extends State {
             }
         }
 
-        if (this.game.isElyvorgFullyVisible) {
+        if (this.game.isBossVisible) {
             if (rollRequested(this.game, input) && this.game.player.energyReachedZero === false) {
                 this.game.player.setState(states.ROLLING, 0);
             }

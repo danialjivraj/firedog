@@ -14,7 +14,13 @@ import {
     PoisonDropGroundCollision,
     InkSplashCollision,
     InkBombCollision,
-    Blood
+    Blood,
+    IcyStormBallCollision,
+    IceSlashCollision,
+    IceTrailCollision,
+    SpinningIceBallsCollision,
+    PointyIcicleShardCollision,
+    UndergroundIcicleCollision,
 } from '../../game/animations/collisionAnimation.js';
 
 jest.mock('../../game/entities/enemies/enemies.js', () => ({
@@ -51,7 +57,13 @@ const allImageIds = [
     'poisonDropGroundCollision',
     'blackInk',
     'inkBombCollision',
-    'blood'
+    'blood',
+    'icyStormBallCollision',
+    'iceSlashCollision',
+    'iceTrailCollision',
+    'spinningIceBallsCollision',
+    'pointyIcicleShardCollision',
+    'undergroundIcicleCollision',
 ];
 
 beforeAll(() => {
@@ -168,7 +180,7 @@ describe('ExplosionCollisionAnimation', () => {
             floatingMessages: [],
             coins: 0,
             audioHandler: {
-                explosionSFX: { playSound: jest.fn() },
+                collisionSFX: { playSound: jest.fn() },
                 enemySFX: { stopSound: jest.fn() }
             }
         };
@@ -181,7 +193,7 @@ describe('ExplosionCollisionAnimation', () => {
         eca.update(0);
 
         expect(enemy.markedForDeletion).toBe(true);
-        expect(game.audioHandler.explosionSFX.playSound)
+        expect(game.audioHandler.collisionSFX.playSound)
             .toHaveBeenCalledWith('poofSound', false, true);
         expect(game.coins).toBe(1);
         expect(game.collisions[0]).toBeInstanceOf(CollisionAnimation);
@@ -199,9 +211,22 @@ describe('ExplosionCollisionAnimation', () => {
         expect(skul.markedForDeletion).toBe(true);
         expect(game.audioHandler.enemySFX.stopSound)
             .toHaveBeenCalledWith('skeletonRattlingSound');
-        expect(game.audioHandler.explosionSFX.playSound)
+        expect(game.audioHandler.collisionSFX.playSound)
             .toHaveBeenCalledWith('explosionCollision', false, true);
         expect(game.collisions[0]).toBeInstanceOf(ExplosionCollisionAnimation);
+    });
+
+    test('Skulnap enemy with matching id does not chain explode again', () => {
+        const skul = new Skulnap();
+        skul.id = 'same';
+        skul.x = 60; skul.y = 60; skul.width = 10; skul.height = 10; skul.markedForDeletion = false;
+        game.enemies.push(skul);
+        eca = new ExplosionCollisionAnimation(game, skul.x + skul.width / 2, skul.y + skul.height / 2, 'same');
+        eca.update(0);
+
+        expect(skul.markedForDeletion).toBe(true);
+        expect(game.collisions).toHaveLength(0);
+        expect(game.audioHandler.collisionSFX.playSound).not.toHaveBeenCalled();
     });
 
     test('Abyssaw enemy also stops spinningChainsaw', () => {
@@ -223,7 +248,7 @@ describe('ExplosionCollisionAnimation', () => {
         eca.update(0);
 
         expect(pu.markedForDeletion).toBe(true);
-        expect(game.audioHandler.explosionSFX.playSound)
+        expect(game.audioHandler.collisionSFX.playSound)
             .toHaveBeenCalledWith('poofSound', false, true);
         expect(game.collisions[0]).toBeInstanceOf(CollisionAnimation);
     });
@@ -235,9 +260,24 @@ describe('ExplosionCollisionAnimation', () => {
         eca.update(0);
 
         expect(pd.markedForDeletion).toBe(true);
-        expect(game.audioHandler.explosionSFX.playSound)
+        expect(game.audioHandler.collisionSFX.playSound)
             .toHaveBeenCalledWith('poofSound', false, true);
         expect(game.collisions[0]).toBeInstanceOf(CollisionAnimation);
+    });
+
+    test('does nothing when gameOver is true even on overlapping enemy', () => {
+        const enemy = { x: 50, y: 50, width: 10, height: 10, markedForDeletion: false };
+        game.enemies.push(enemy);
+        game.gameOver = true;
+
+        eca = new ExplosionCollisionAnimation(game, 55, 55, 'id');
+        eca.update(0);
+
+        expect(enemy.markedForDeletion).toBe(false);
+        expect(game.coins).toBe(0);
+        expect(game.collisions).toHaveLength(0);
+        expect(game.audioHandler.collisionSFX.playSound).not.toHaveBeenCalled();
+        expect(game.audioHandler.enemySFX.stopSound).not.toHaveBeenCalled();
     });
 });
 
@@ -298,7 +338,12 @@ describe('Various simple Collision subclasses', () => {
         { Cls: PoisonDropCollision, id: 'poisonDropCollision', w: 112, h: 102, f: 30, m: 5 },
         { Cls: PoisonDropGroundCollision, id: 'poisonDropGroundCollision', w: 50, h: 50, f: 30, m: 6 },
         { Cls: InkSplashCollision, id: 'blackInk', w: 278, h: 394, f: 20, m: 6 },
-        { Cls: InkBombCollision, id: 'inkBombCollision', w: 212, h: 212, f: 20, m: 7 }
+        { Cls: InkBombCollision, id: 'inkBombCollision', w: 212, h: 212, f: 20, m: 7 },
+        { Cls: IcyStormBallCollision, id: 'icyStormBallCollision', w: 42.44444444444444, h: 50, f: 50, m: 8 },
+        { Cls: IceTrailCollision, id: 'iceTrailCollision', w: 28.83333333333333, h: 70, f: 30, m: 5 },
+        { Cls: SpinningIceBallsCollision, id: 'spinningIceBallsCollision', w: 37.2, h: 35, f: 20, m: 4 },
+        { Cls: PointyIcicleShardCollision, id: 'pointyIcicleShardCollision', w: 81, h: 130, f: 20, m: 5 },
+        { Cls: UndergroundIcicleCollision, id: 'undergroundIcicleCollision', w: 125.4, h: 200, f: 20, m: 4 },
     ];
 
     cases.forEach(({ Cls, id, w, h, f, m }) => {
@@ -311,6 +356,67 @@ describe('Various simple Collision subclasses', () => {
             expect(inst.fps).toBe(f);
             expect(inst.maxFrame).toBe(m);
         });
+    });
+});
+
+describe('IceSlashCollision', () => {
+    test('constructor sets size, frames and default orientation', () => {
+        const game = { speed: 0 };
+        const slash = new IceSlashCollision(game, 100, 200);
+        expect(slash.image).toBe(document.getElementById('iceSlashCollision'));
+        expect(slash.spriteWidth).toBe(119);
+        expect(slash.spriteHeight).toBe(150);
+        expect(slash.maxFrame).toBe(5);
+        expect(slash.fps).toBe(30);
+        expect(slash.shouldInvert).toBe(false);
+    });
+
+    test('constructor respects shouldInvert=true', () => {
+        const game = { speed: 0 };
+        const slash = new IceSlashCollision(game, 100, 200, true);
+        expect(slash.shouldInvert).toBe(true);
+    });
+
+    test('draw uses scale(1, 1) when not inverted', () => {
+        const game = { speed: 0, debug: false };
+        const ctx = {
+            save: jest.fn(),
+            restore: jest.fn(),
+            translate: jest.fn(),
+            scale: jest.fn(),
+            drawImage: jest.fn(),
+            strokeRect: jest.fn(),
+        };
+
+        const slash = new IceSlashCollision(game, 100, 200, false);
+        slash.draw(ctx);
+
+        expect(ctx.save).toHaveBeenCalled();
+        expect(ctx.translate).toHaveBeenCalled();
+        expect(ctx.scale).toHaveBeenCalledWith(1, 1);
+        expect(ctx.drawImage).toHaveBeenCalled();
+        expect(ctx.restore).toHaveBeenCalled();
+    });
+
+    test('draw uses scale(-1, 1) when inverted', () => {
+        const game = { speed: 0, debug: false };
+        const ctx = {
+            save: jest.fn(),
+            restore: jest.fn(),
+            translate: jest.fn(),
+            scale: jest.fn(),
+            drawImage: jest.fn(),
+            strokeRect: jest.fn(),
+        };
+
+        const slash = new IceSlashCollision(game, 100, 200, true);
+        slash.draw(ctx);
+
+        expect(ctx.save).toHaveBeenCalled();
+        expect(ctx.translate).toHaveBeenCalled();
+        expect(ctx.scale).toHaveBeenCalledWith(-1, 1);
+        expect(ctx.drawImage).toHaveBeenCalled();
+        expect(ctx.restore).toHaveBeenCalled();
     });
 });
 

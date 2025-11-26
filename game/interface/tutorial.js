@@ -302,7 +302,7 @@ export class Tutorial {
         if (this.tutorialPause && currentStep) {
             this.game.audioHandler.firedogSFX.pauseAllSounds();
             this.game.audioHandler.enemySFX.pauseAllSounds();
-            this.game.audioHandler.explosionSFX.pauseAllSounds();
+            this.game.audioHandler.collisionSFX.pauseAllSounds();
 
             if (this.currentStepIndex < this.steps.length) {
                 this.cooldownTime += deltaTime;
@@ -316,7 +316,7 @@ export class Tutorial {
         } else if (!this.tutorialPause && this.currentStepIndex < this.steps.length) {
             this.game.audioHandler.firedogSFX.resumeAllSounds();
             this.game.audioHandler.enemySFX.resumeAllSounds();
-            this.game.audioHandler.explosionSFX.resumeAllSounds();
+            this.game.audioHandler.collisionSFX.resumeAllSounds();
 
             this.elapsedTime += deltaTime;
 

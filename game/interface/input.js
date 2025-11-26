@@ -18,7 +18,7 @@ export class InputHandler {
             if (
                 e.key === 'Enter' &&
                 this.game.enterDuringBackgroundTransition &&
-                !(this.game.talkToElyvorg && this.game.isElyvorgFullyVisible) &&
+                !(this.game.boss.talkToBoss && this.game.isBossVisible) &&
                 this.game.talkToPenguin
             ) {
                 this.game.enterToTalkToPenguin = true;
@@ -36,10 +36,10 @@ export class InputHandler {
                 this.keys.indexOf(lowercaseKey) === -1 &&
                 this.game.enterDuringBackgroundTransition
             ) {
-                if (!this.game.talkToElyvorg) {
+                if (!this.game.boss.talkToBoss) {
                     this.keys.push(lowercaseKey);
                 } else {
-                    if (!this.game.isElyvorgFullyVisible) {
+                    if (!this.game.isBossVisible) {
                         const forwardKey = this.keyForAction('moveForward') || 'd';
                         this.keys.push(forwardKey);
                     }
@@ -67,7 +67,7 @@ export class InputHandler {
             }
 
             if (lowercaseKey === 'm') {
-                //this.game.debug = !this.game.debug;
+                this.game.debug = !this.game.debug;
             }
 
             if (lowercaseKey === 't' && this.game.currentMenu === this.game.menu.howToPlay) {
@@ -102,7 +102,7 @@ export class InputHandler {
                         (!this.game.currentMenu && !this.game.cutsceneActive && !this.game.notEnoughCoins && !this.game.gameOver) ||
                         (this.game.cutsceneActive &&
                             this.game.enterDuringBackgroundTransition &&
-                            (this.game.talkToElyvorg || this.game.talkToPenguin))
+                            (this.game.boss.talkToBoss || this.game.talkToPenguin))
                     ) {
                         this.game.menu.pause.togglePause();
                     }
@@ -139,19 +139,35 @@ export class InputHandler {
 
         // mouse
         document.addEventListener('mousedown', (event) => {
-            if (!this.game.talkToElyvorg && this.game.enterDuringBackgroundTransition) {
-                if (event.button === 0) {
-                    if (this.keys.indexOf('leftClick') === -1) this.keys.push('leftClick');
-                } else if (event.button === 2) {
-                    if (this.keys.indexOf('rightClick') === -1) this.keys.push('rightClick');
-                } else if (event.button === 1) {
-                    if (this.keys.indexOf('scrollClick') === -1) this.keys.push('scrollClick');
+            if (!this.game.enterDuringBackgroundTransition) return;
+
+            if (this.game.boss.talkToBoss) {
+                if (!this.game.isBossVisible) {
+                    const forwardKey = this.keyForAction('moveForward') || 'd';
+                    if (this.keys.indexOf(forwardKey) === -1) {
+                        this.keys.push(forwardKey);
+                    }
                 }
+                return;
+            }
+
+            if (event.button === 0) {
+                if (this.keys.indexOf('leftClick') === -1) this.keys.push('leftClick');
+            } else if (event.button === 2) {
+                if (this.keys.indexOf('rightClick') === -1) this.keys.push('rightClick');
+            } else if (event.button === 1) {
+                if (this.keys.indexOf('scrollClick') === -1) this.keys.push('scrollClick');
             }
         });
 
         document.addEventListener('mouseup', (event) => {
-            if ((event.button === 0 || event.button === 2 || event.button === 1) && this.game.enterDuringBackgroundTransition) {
+            if (!this.game.enterDuringBackgroundTransition) return;
+
+            if (this.game.boss.talkToBoss && !this.game.isBossVisible) {
+                return;
+            }
+
+            if (event.button === 0 || event.button === 2 || event.button === 1) {
                 const mouseClickType =
                     event.button === 0 ? 'leftClick' : event.button === 2 ? 'rightClick' : 'scrollClick';
                 const index = this.keys.indexOf(mouseClickType);

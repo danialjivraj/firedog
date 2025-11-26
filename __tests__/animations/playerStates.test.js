@@ -55,12 +55,17 @@ describe('Player State Machine', () => {
             particles: [],
             input,
             cabin: { isFullyVisible: false },
-            isElyvorgFullyVisible: false,
-            talkToElyvorg: false,
+
+            boss: {
+                talkToBoss: false,
+            },
+            isBossVisible: false,
+
             width: 1920, height: 689,
             audioHandler: sfx,
             collisions: [],
         };
+
         game.keyBindings = {
             moveForward: 'd',
             moveBackward: 'a',
@@ -87,9 +92,9 @@ describe('Player State Machine', () => {
         expect(player.setState).toHaveBeenCalledWith(states.DYING, 1);
     });
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Sitting
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     describe('Sitting', () => {
         let st;
         beforeEach(() => { st = new Sitting(game); });
@@ -117,17 +122,17 @@ describe('Player State Machine', () => {
             expect(player.setState).toHaveBeenCalledWith(states.ROLLING, 2);
         });
 
-        it('click + Elyvorg visible → ROLLING(0)', () => {
-            game.isElyvorgFullyVisible = true;
+        it('click + boss visible → ROLLING(0)', () => {
+            game.isBossVisible = true;
             input.isRollAttack.mockReturnValue(true);
             st.handleInput([]);
             expect(player.setState).toHaveBeenCalledWith(states.ROLLING, 0);
         });
     });
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Running
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     describe('Running', () => {
         let st;
         beforeEach(() => { st = new Running(game); });
@@ -150,8 +155,8 @@ describe('Player State Machine', () => {
             expect(game.particles[0].constructor.name).toBe('Dust');
         });
 
-        it('Elyvorg appears once then “no a/d” fallback → four STANDINGs', () => {
-            game.isElyvorgFullyVisible = true;
+        it('boss appears once then “no a/d” fallback → four STANDINGs', () => {
+            game.isBossVisible = true;
             st.handleInput([]);
             st.handleInput([]);
             st.handleInput([]);
@@ -198,9 +203,9 @@ describe('Player State Machine', () => {
         });
     });
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Jumping
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     describe('Jumping', () => {
         let st, baseY;
         beforeEach(() => {
@@ -255,9 +260,9 @@ describe('Player State Machine', () => {
         });
     });
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Falling
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     describe('Falling', () => {
         let st;
         beforeEach(() => {
@@ -300,9 +305,9 @@ describe('Player State Machine', () => {
             expect(player.setState).toHaveBeenCalledWith(states.DIVING, 0);
         });
 
-        it('click & Elyvorg & onGround → STANDING', () => {
+        it('click & boss visible & onGround → STANDING', () => {
             player.onGround.mockReturnValue(true);
-            game.isElyvorgFullyVisible = true;
+            game.isBossVisible = true;
             input.isRollAttack.mockReturnValue(true);
             st.handleInput([]);
             expect(player.setState).toHaveBeenCalledWith(states.STANDING, 0);
@@ -316,9 +321,9 @@ describe('Player State Machine', () => {
         });
     });
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Rolling
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     describe('Rolling', () => {
         let st;
         beforeEach(() => { st = new Rolling(game); });
@@ -370,9 +375,9 @@ describe('Player State Machine', () => {
         });
     });
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Diving
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     describe('Diving', () => {
         let st;
         beforeEach(() => {
@@ -420,7 +425,9 @@ describe('Player State Machine', () => {
             player.particleImage = 'bluefire';
             const start = game.particles.length;
             st2.handleInput([]);
-            const splashes = game.particles.slice(start).filter(p => p.constructor.name === 'Splash');
+            const splashes = game.particles
+                .slice(start)
+                .filter(p => p.constructor.name === 'Splash');
             expect(splashes).toHaveLength(90);
         });
 
@@ -434,9 +441,9 @@ describe('Player State Machine', () => {
         });
     });
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Stunned
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     describe('Stunned', () => {
         let st;
         beforeEach(() => {
@@ -474,9 +481,9 @@ describe('Player State Machine', () => {
         });
     });
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Hit
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     describe('Hit', () => {
         let st;
         beforeEach(() => {
@@ -514,9 +521,9 @@ describe('Player State Machine', () => {
         });
     });
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Standing
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     describe('Standing', () => {
         let st;
         beforeEach(() => { st = new Standing(game); });
@@ -535,8 +542,8 @@ describe('Player State Machine', () => {
             expect(player.setState).toHaveBeenCalledWith(states.FALLING, 1);
         });
 
-        it('Elyvorg visible & click & energy>0 → ROLLING(0)', () => {
-            game.isElyvorgFullyVisible = true;
+        it('boss visible & click & energy>0 → ROLLING(0)', () => {
+            game.isBossVisible = true;
             input.isRollAttack.mockReturnValue(true);
             st.handleInput([]);
             expect(player.setState).toHaveBeenCalledWith(states.ROLLING, 0);
@@ -558,9 +565,9 @@ describe('Player State Machine', () => {
         });
     });
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Dying
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     describe('Dying', () => {
         let st;
         beforeEach(() => { st = new Dying(game); });

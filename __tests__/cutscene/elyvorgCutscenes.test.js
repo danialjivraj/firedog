@@ -30,10 +30,15 @@ const createBaseGame = () => {
         },
         endCutscene: jest.fn(),
         cutscenes: [],
-        talkToElyvorg: true,
-        elyvorgPreFight: false,
-        elyvorgPostFight: false,
-        elyvorgInFight: false
+        boss: {
+            id: 'elyvorg',
+            current: {},
+            talkToBoss: true,
+            preFight: false,
+            postFight: false,
+            inFight: false,
+            runAway: false,
+        },
     };
 };
 
@@ -154,7 +159,8 @@ describe('ElyvorgCutscene', () => {
 
     describe('final branch: pre-fight', () => {
         beforeEach(() => {
-            game.elyvorgPreFight = true;
+            game.boss.preFight = true;
+            game.boss.current = {};
             cut.dialogueIndex = 1;
             cut.textIndex = cut.dialogue[1].dialogue.length;
             jest.spyOn(cut, 'removeEventListeners');
@@ -172,9 +178,10 @@ describe('ElyvorgCutscene', () => {
             jest.advanceTimersByTime(3000);
 
             expect(game.endCutscene).toHaveBeenCalled();
-            expect(game.talkToElyvorg).toBe(false);
+            expect(game.boss.talkToBoss).toBe(false);
+            expect(game.boss.preFight).toBe(false);
+            expect(game.boss.inFight).toBe(true);
             expect(game.cutscenes).toEqual([]);
-            expect(game.elyvorgInFight).toBe(true);
             expect(game.audioHandler.mapSoundtrack.playSound)
                 .toHaveBeenCalledWith('elyvorgBattleTheme', true);
         });
@@ -182,7 +189,8 @@ describe('ElyvorgCutscene', () => {
 
     describe('final branch: post-fight', () => {
         beforeEach(() => {
-            game.elyvorgPostFight = true;
+            game.boss.postFight = true;
+            game.boss.current = {};
             cut.dialogueIndex = 1;
             cut.textIndex = cut.dialogue[1].dialogue.length;
             jest.spyOn(cut, 'removeEventListeners');
@@ -194,12 +202,14 @@ describe('ElyvorgCutscene', () => {
             expect(game.endCutscene).toHaveBeenCalled();
             expect(cut.removeEventListeners).toHaveBeenCalled();
             expect(game.cutscenes).toEqual([]);
-            expect(game.talkToElyvorg).toBe(false);
+            expect(game.boss.talkToBoss).toBe(false);
+            expect(game.boss.postFight).toBe(false);
+            expect(game.boss.runAway).toBe(true);
         });
     });
 
     it('resets isEnterPressed via interval when at end of a post-fight line', () => {
-        game.elyvorgPostFight = true;
+        game.boss.postFight = true;
         cut.dialogue = [{ dialogue: 'X' }];
         cut.dialogueIndex = 0;
         cut.textIndex = 1; // at end
@@ -236,7 +246,8 @@ describe('ElyvorgCutscene', () => {
         });
 
         it('Tab in pre-fight immediately starts battle sequence and jumps to last dialogue', () => {
-            game.elyvorgPreFight = true;
+            game.boss.preFight = true;
+            game.boss.current = {};
             jest.spyOn(cut, 'removeEventListeners');
             jest.spyOn(cut, 'cutsceneBackgroundChange');
 
@@ -261,12 +272,17 @@ describe('ElyvorgCutscene', () => {
             // after 3s, now in-fight and index jumped
             jest.advanceTimersByTime(3000);
 
-            expect(game.elyvorgInFight).toBe(true);
+            expect(game.boss.inFight).toBe(true);
+            expect(game.boss.talkToBoss).toBe(false);
+            expect(game.boss.preFight).toBe(false);
+            expect(game.cutscenes).toEqual([]);
             expect(cut.dialogueIndex).toBe(2);
+            expect(game.audioHandler.mapSoundtrack.playSound)
+                .toHaveBeenCalledWith('elyvorgBattleTheme', true);
         });
 
         it('Tab does nothing when not in pre-fight', () => {
-            game.elyvorgPreFight = false;
+            game.boss.preFight = false;
             const spyRemove = jest.spyOn(cut, 'removeEventListeners');
             const spyStopDialogue = jest.spyOn(game.audioHandler.cutsceneDialogue, 'stopAllSounds');
 
@@ -307,8 +323,8 @@ describe('ElyvorgCutscene', () => {
         beforeEach(() => {
             cut.dialogue = Array.from({ length: 40 }, () => ({ dialogue: 'X' }));
             cut.textIndex = 1; // not at end
-            game.elyvorgPreFight = false;
-            game.elyvorgPostFight = false;
+            game.boss.preFight = false;
+            game.boss.postFight = false;
         });
 
         it('does nothing when textIndex does not equal current dialogue length', () => {
@@ -327,7 +343,8 @@ describe('ElyvorgCutscene', () => {
 
         describe('pre-fight ambience & dream scenes', () => {
             beforeEach(() => {
-                game.elyvorgPreFight = true;
+                game.boss.preFight = true;
+                game.boss.current = {};
                 cut.textIndex = cut.dialogue[0].dialogue.length;
             });
 
@@ -372,7 +389,8 @@ describe('ElyvorgCutscene', () => {
 
         describe('post-fight music transitions', () => {
             beforeEach(() => {
-                game.elyvorgPostFight = true;
+                game.boss.postFight = true;
+                game.boss.current = {};
                 cut.textIndex = cut.dialogue[0].dialogue.length;
             });
 
@@ -437,7 +455,7 @@ describe('Map6ElyvorgIngameCutsceneAfterFight', () => {
     let game, m6post;
 
     beforeEach(() => {
-        game = createMap6Game({ elyvorgRunAway: false });
+        game = createMap6Game();
         m6post = new Map6ElyvorgIngameCutsceneAfterFight(game);
     });
 
@@ -445,7 +463,8 @@ describe('Map6ElyvorgIngameCutsceneAfterFight', () => {
         expect(m6post.dialogue.length).toBe(44);
     });
 
-    it('sets game.elyvorgRunAway flag in constructor', () => {
-        expect(game.elyvorgRunAway).toBe(true);
+    it('inherits ElyvorgCutscene interaction methods', () => {
+        expect(typeof m6post.enterOrLeftClick).toBe('function');
+        expect(typeof m6post.displayDialogue).toBe('function');
     });
 });

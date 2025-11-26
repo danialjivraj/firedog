@@ -110,6 +110,7 @@
 <audio id="invisibleInSFX" src="assets/audio/player/invisibleInSFX.mp3" preload="auto"></audio>
 <audio id="invisibleOutSFX" src="assets/audio/player/invisibleOutSFX.mp3" preload="auto"></audio>
 <audio id="barkSound" src="assets/audio/player/barkSound.mp3" preload="auto"></audio>
+<audio id="frozenSound" src="assets/audio/player/frozenSound.mp3" preload="auto"></audio>
 <!-- collision audio -->
 <audio id="poofSound" src="assets/audio/collision/poofSound.mp3" preload="auto"></audio>
 <audio id="explosionCollision" src="assets/audio/collision/explosionCollision.mp3" preload="auto"></audio>
@@ -142,6 +143,15 @@
     <audio id="elyvorg_poison_drop_rain_sound" src="assets/audio/enemies/0elyvorg/elyvorg_poison_drop_rain_sound.mp3" preload="auto"></audio>
     <audio id="elyvorg_slash_attack_sound" src="assets/audio/enemies/0elyvorg/elyvorg_slash_attack_sound.mp3" preload="auto"></audio>
     <audio id="elyvorg_arrow_attack_sound" src="assets/audio/enemies/0elyvorg/elyvorg_arrow_attack_sound.mp3" preload="auto"></audio>
+    <!-- glacikal audio -->
+    <audio id="iceTrailSound" src="assets/audio/enemies/0glacikal/iceTrailSound.mp3" preload="auto"></audio>
+    <audio id="breakingIceNoDamageSound" src="assets/audio/enemies/0glacikal/breakingIceNoDamageSound.mp3" preload="auto"></audio>
+    <audio id="iceSlashSound" src="assets/audio/enemies/0glacikal/iceSlashSound.mp3" preload="auto"></audio>
+    <audio id="iceSpiderSound" src="assets/audio/enemies/0glacikal/iceSpiderSound.mp3" preload="auto"></audio>
+    <audio id="glacikalJumpSound" src="assets/audio/enemies/0glacikal/glacikalJumpSound.mp3" preload="auto"></audio>
+    <audio id="glacikalRunSound" src="assets/audio/enemies/0glacikal/glacikalRunSound.mp3" preload="auto"></audio>
+    <audio id="spinningIceBallsSound" src="assets/audio/enemies/0glacikal/spinningIceBallsSound.mp3" preload="auto"></audio>
+    <audio id="undergroundIcicleSound" src="assets/audio/enemies/0glacikal/undergroundIcicleSound.mp3" preload="auto"></audio>
     <!-- projectiles audio -->
     <audio id="windAttackAudio" src="assets/audio/enemies/0projectiles/windAttackAudio.mp3" preload="auto"></audio>
     <audio id="tornadoAudio" src="assets/audio/enemies/0projectiles/tornadoAudio.mp3" preload="auto"></audio>
@@ -149,9 +159,11 @@
     <audio id="laserAttackAudio" src="assets/audio/enemies/0projectiles/laserAttackAudio.mp3" preload="auto"></audio>
     <audio id="spitSound" src="assets/audio/enemies/0projectiles/spitSound.mp3" preload="auto"></audio>
     <audio id="acidSoundEffect" src="assets/audio/enemies/0projectiles/acidSoundEffect.mp3" preload="auto"></audio>
-    <audio id="frozenSound" src="assets/audio/enemies/0projectiles/frozenSound.mp3" preload="auto"></audio>
+    <audio id="iceSlowedSound" src="assets/audio/enemies/0projectiles/iceSlowedSound.mp3" preload="auto"></audio>
     <audio id="staticSound" src="assets/audio/enemies/0projectiles/staticSound.mp3" preload="auto"></audio>
     <audio id="rockAttackSound" src="assets/audio/enemies/0projectiles/rockAttackSound.mp3" preload="auto"></audio>
+    <!-- ground rumble -->
+    <audio id="groundRumbleSound" src="assets/audio/enemies/0groundRumble/groundRumbleSound.mp3" preload="auto"></audio>
     <!-- goblito audio -->
     <audio id="goblinDie" src="assets/audio/enemies/goblito/goblinDie.mp3" preload="auto"></audio>
     <audio id="goblinStealing" src="assets/audio/enemies/goblito/goblinStealing.mp3" preload="auto"></audio>
@@ -297,6 +309,7 @@
     <img id="bluefire" src="assets/entities/firedog/animations/bluefire.png">
     <img id="bubble" src="assets/entities/firedog/animations/bubble.png">
     <img id="bluebubble" src="assets/entities/firedog/animations/bluebubble.png">
+    <img id="frozenIce" src="assets/entities/firedog/animations/frozenIce.png">
     <!-- penguin -->
     <img id="penguinBatSprite" src="assets/entities/penguin/penguinBatSprite.png">
     <img id="penguinPistolSprite" src="assets/entities/penguin/penguinPistolSprite.png">
@@ -343,6 +356,23 @@
             <img id="blueArrow" src="assets/entities/enemies/Elyvorg/abilities/blueArrow.png">
             <img id="yellowArrow" src="assets/entities/enemies/Elyvorg/abilities/yellowArrow.png">
             <img id="greenArrow" src="assets/entities/enemies/Elyvorg/abilities/greenArrow.png">
+        <!-- glacikal -->
+        <img id="glacikalIdle" src="assets/entities/enemies/Glacikal/glacikalIdle.png">
+        <img id="glacikalRunning" src="assets/entities/enemies/Glacikal/glacikalRunning.png">
+        <img id="glacikalJumping" src="assets/entities/enemies/Glacikal/glacikalJumping.png">
+        <img id="glacikalAttacking" src="assets/entities/enemies/Glacikal/glacikalAttacking.png">
+        <img id="glacikalIcyStorm" src="assets/entities/enemies/Glacikal/glacikalIcyStorm.png">
+        <img id="glacikalKneelDown" src="assets/entities/enemies/Glacikal/glacikalKneelDown.png">
+        <img id="glacikalExtendedArm" src="assets/entities/enemies/Glacikal/glacikalExtendedArm.png">
+        <img id="glacikalRecharge" src="assets/entities/enemies/Glacikal/glacikalRecharge.png">
+            <!-- abilities -->
+            <img id="iceTrail" src="assets/entities/enemies/Glacikal/abilities/iceTrail.png">
+            <img id="icyStormBall" src="assets/entities/enemies/Glacikal/abilities/icyStormBall.png">
+            <img id="iceSlash" src="assets/entities/enemies/Glacikal/abilities/iceSlash.png">
+            <img id="spinningIceBalls" src="assets/entities/enemies/Glacikal/abilities/spinningIceBalls.png">
+            <img id="pointyIcicleShard" src="assets/entities/enemies/Glacikal/abilities/pointyIcicleShard.png">
+            <img id="iceSpider" src="assets/entities/enemies/Glacikal/abilities/iceSpider.png">
+            <img id="undergroundIcicle" src="assets/entities/enemies/Glacikal/abilities/undergroundIcicle.png">
         <!-- goblin -->
         <img id="goblinRun" src="assets/entities/enemies/Goblito/goblinRun.png">
         <img id="goblinSteal" src="assets/entities/enemies/Goblito/goblinSteal.png">
@@ -418,6 +448,7 @@
     <img id="map4cabin" src="assets/entities/cabin/map4cabin.png">
     <img id="map5cabin" src="assets/entities/cabin/map5cabin.png">
     <img id="map6cave" src="assets/entities/cabin/map6cave.png">
+    <img id="bonusmap1cabin" src="assets/entities/cabin/bonusmap1cabin.png">
     <!-- power up -->
     <img id="redpotion" src="assets/entities/powerUps/redpotion.png">
     <img id="bluepotion" src="assets/entities/powerUps/bluepotion.png">
@@ -490,8 +521,8 @@
 <img id="map6rocks2" src="assets/mapsBackground/Map6/map6rocks2.png">
 <img id="map6cactus" src="assets/mapsBackground/Map6/map6cactus.png">
 <!-- bonusmap1 -->
-<img id="bonusMap1Background" src="assets/mapsBackground/Bonus Map 1/bonusMap1Background.png">
-<img id="bonusMap1Ground" src="assets/mapsBackground/Bonus Map 1/bonusMap1Ground.png">
+<img id="bonusMap1Background" src="assets/mapsBackground/BonusMap1/bonusMap1Background.png">
+<img id="bonusMap1Ground" src="assets/mapsBackground/BonusMap1/bonusMap1Ground.png">
 <!-- fish -->
 <img id="jellyfish" src="assets/mapsBackground/fish/jellyfish.png">
 <img id="fish" src="assets/mapsBackground/fish/fish.png">
@@ -543,6 +574,12 @@
 <img id="blood" src="assets/collisionAnimations/blood.png">
 <img id="raindropSplash" src="assets/collisionAnimations/raindropSplash.png">
 <img id="poisonDropGroundCollision" src="assets/collisionAnimations/poisonDropGroundCollision.png">
+<img id="icyStormBallCollision" src="assets/collisionAnimations/icyStormBallCollision.png">
+<img id="iceSlashCollision" src="assets/collisionAnimations/iceSlashCollision.png">
+<img id="iceTrailCollision" src="assets/collisionAnimations/iceTrailCollision.png">
+<img id="spinningIceBallsCollision" src="assets/collisionAnimations/spinningIceBallsCollision.png">
+<img id="pointyIcicleShardCollision" src="assets/collisionAnimations/pointyIcicleShardCollision.png">
+<img id="undergroundIcicleCollision" src="assets/collisionAnimations/undergroundIcicleCollision.png">
 <!-- cutscene images -->
     <!-- background images -->
         <img id="toBeContinued" src="assets/cutscenes/background/toBeContinued.png">
@@ -811,6 +848,8 @@
         <!-- elyvorg -->
         <img id="elyvorgBorder" src="assets/cutscenes/borderImages/Elyvorg/elyvorgBorder.png">
         <img id="elyvorgTokenBorder" src="assets/cutscenes/borderImages/Elyvorg/elyvorgTokenBorder.png">
+        <!-- glacikal -->
+        <img id="glacikalBorder" src="assets/cutscenes/borderImages/Glacikal/glacikalBorder.png">
 <script type="module" src="game-main.js"></script>
 </body>
 

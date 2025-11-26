@@ -32,7 +32,7 @@ describe('Cutscene', () => {
             enterDuringBackgroundTransition: true,
             cutsceneActive: true,
             talkToPenguin: false,
-            talkToElyvorg: false,
+            boss: { talkToBoss: false },
             canvas: document.createElement('canvas'),
         };
 
@@ -302,7 +302,6 @@ describe('Cutscene', () => {
         it('pauses sound when paused', () => {
             cutscene.dialogueText = 'hi';
             cutscene.pause = true;
-            const el = game.audioHandler.cutsceneDialogue.sounds.bit1;
             cutscene.playEightBitSound('bit1', 'bit1');
             expect(game.audioHandler.cutsceneDialogue.pauseSound).toHaveBeenCalledWith('bit1');
         });

@@ -18,8 +18,12 @@ describe('InputHandler', () => {
         game = {
             enterToTalkToPenguin: false,
             talkToPenguin: false,
-            talkToElyvorg: false,
-            isElyvorgFullyVisible: false,
+
+            boss: {
+                talkToBoss: false,
+            },
+            isBossVisible: false,
+
             enterDuringBackgroundTransition: true,
             isPlayerInGame: false,
             cutsceneActive: false,
@@ -86,9 +90,9 @@ describe('InputHandler', () => {
                 expect(game.enterToTalkToPenguin).toBe(false);
             });
 
-            test('when talking to Elyvorg & fully visible, Enter is ignored as gameplay input', () => {
-                game.talkToElyvorg = true;
-                game.isElyvorgFullyVisible = true;
+            test('when talking to boss & fully visible, Enter is ignored as gameplay input', () => {
+                game.boss.talkToBoss = true;
+                game.isBossVisible = true;
                 ih.keys = [];
 
                 keyDown('Enter');
@@ -146,9 +150,9 @@ describe('InputHandler', () => {
                 expect(ih.keys).not.toContain('w');
             });
 
-            test('when talking to Elyvorg & not fully visible, any gameplay key maps to "d"', () => {
-                game.talkToElyvorg = true;
-                game.isElyvorgFullyVisible = false;
+            test('when talking to boss & not fully visible, any gameplay key maps to "d"', () => {
+                game.boss.talkToBoss = true;
+                game.isBossVisible = false;
                 ih.keys = [];
 
                 keyDown('s');
@@ -157,9 +161,9 @@ describe('InputHandler', () => {
                 expect(ih.keys).toEqual(['d', 'd']);
             });
 
-            test('when talking to Elyvorg & fully visible, movement keys are ignored', () => {
-                game.talkToElyvorg = true;
-                game.isElyvorgFullyVisible = true;
+            test('when talking to boss & fully visible, movement keys are ignored', () => {
+                game.boss.talkToBoss = true;
+                game.isBossVisible = true;
                 ih.keys = [];
 
                 keyDown('s');
@@ -336,7 +340,7 @@ describe('InputHandler', () => {
     describe('mouse handling', () => {
         describe('mousedown', () => {
             test('pushes left/right/scroll click tokens when allowed', () => {
-                game.talkToElyvorg = false;
+                game.boss.talkToBoss = false;
                 ih.keys = [];
 
                 mouseDown(0);
@@ -348,8 +352,19 @@ describe('InputHandler', () => {
                 );
             });
 
-            test('does nothing on mousedown when talking to Elyvorg', () => {
-                game.talkToElyvorg = true;
+            test('when talking to boss & not fully visible, mousedown maps to moveForward ("d")', () => {
+                game.boss.talkToBoss = true;
+                game.isBossVisible = false;
+                ih.keys = [];
+
+                mouseDown(0);
+
+                expect(ih.keys).toEqual(['d']);
+            });
+
+            test('when talking to boss & fully visible, mousedown does nothing', () => {
+                game.boss.talkToBoss = true;
+                game.isBossVisible = true;
                 ih.keys = [];
 
                 mouseDown(0);

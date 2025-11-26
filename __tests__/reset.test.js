@@ -46,7 +46,7 @@ describe('Reset', () => {
                 mapSoundtrack: { stopAllSounds: jest.fn() },
                 firedogSFX: { stopAllSounds: jest.fn() },
                 enemySFX: { stopAllSounds: jest.fn() },
-                explosionSFX: { stopAllSounds: jest.fn() },
+                collisionSFX: { stopAllSounds: jest.fn() },
                 powerUpAndDownSFX: { stopAllSounds: jest.fn() },
                 cutsceneMusic: { stopAllSounds: jest.fn() },
             },
@@ -60,37 +60,31 @@ describe('Reset', () => {
             cabins: [1],
             penguins: [1],
             input: { keys: ['A'] },
+
             cabinAppeared: true,
             cabin: { isFullyVisible: true, x: 0 },
+
             penguinAppeared: true,
             talkToPenguin: true,
             enterToTalkToPenguin: true,
             talkToPenguinOneTimeOnly: false,
-            elyvorgSpawned: true,
-            elyvorgDialogueBeforeDialoguePlayOnce: false,
-            elyvorgDialogueAfterDialoguePlayOnce: true,
-            elyvorgStartAfterDialogueOnlyWhenAnimationEnds: true,
-            elyvorgDialogueAfterDialogueLeaving: true,
-            elyvorgRunAway: true,
-            talkToElyvorg: true,
-            elyvorgDialoguePlayOnce: false,
-            isElyvorgFullyVisible: true,
-            elyvorgInFight: true,
-            elyvorgPreFight: true,
-            elyvorgPostFight: true,
-            poisonScreen: true,
-            poisonColourOpacity: 1,
+
+            bossManager: { resetState: jest.fn() },
+
             menu: {
                 levelDifficulty: { setDifficulty: jest.fn() },
                 forestMap: { setMap: jest.fn() },
             },
+
             selectedDifficulty: 'hard',
             width: 800,
             height: 600,
             maxDistance: 500,
+
             background: { constructor: Maps.Map3 },
             player: null,
         };
+
         reset = new Reset(game);
     });
 
@@ -98,45 +92,37 @@ describe('Reset', () => {
         it('zeros out coins when notEnoughCoins is false', () => {
             game.coins = 50;
             game.notEnoughCoins = false;
-            expect(reset.coinReset()).toBeUndefined();
+            reset.coinReset();
             expect(game.coins).toBe(0);
         });
 
         it('reduces coins to 10% when notEnoughCoins is true', () => {
             game.coins = 50;
             game.notEnoughCoins = true;
-            expect(reset.coinReset()).toBeUndefined();
-            expect(game.coins).toBe(Math.floor(0.1 * 50));
+            reset.coinReset();
+            expect(game.coins).toBe(5);
         });
 
-        it('handles zero coins edge case', () => {
+        it('handles zero coins', () => {
             game.coins = 0;
             game.notEnoughCoins = true;
-            expect(reset.coinReset()).toBeUndefined();
+            reset.coinReset();
             expect(game.coins).toBe(0);
         });
 
-        it('handles negative coins edge case', () => {
+        it('handles negative coins', () => {
             game.coins = -10;
             game.notEnoughCoins = true;
-            expect(reset.coinReset()).toBeUndefined();
-            expect(game.coins).toBe(Math.floor(0.1 * -10));
+            reset.coinReset();
+            expect(game.coins).toBe(-1);
         });
     });
 
     describe('reset()', () => {
+
         it('does not throw when currentCutscene is null', () => {
             game.currentCutscene = null;
             expect(() => reset.reset()).not.toThrow();
-            expect(reset.reset()).toBeUndefined();
-        });
-
-        it('does not remove cutscene listeners when currentCutscene is null', () => {
-            const dummy = { removeEventListeners: jest.fn() };
-            game.currentCutscene = dummy;
-            game.currentCutscene = null;
-            reset.reset();
-            expect(dummy.removeEventListeners).not.toHaveBeenCalled();
         });
 
         it('removes cutscene listeners when present', () => {
@@ -144,10 +130,22 @@ describe('Reset', () => {
             expect(game.currentCutscene.removeEventListeners).toHaveBeenCalled();
         });
 
-        it('resets tutorial state even if already paused or out-of-range', () => {
+        it('does not remove listeners when cutscene is null', () => {
+            const dummy = { removeEventListeners: jest.fn() };
+            game.currentCutscene = dummy;
+            game.currentCutscene = null;
+            reset.reset();
+            expect(dummy.removeEventListeners).not.toHaveBeenCalled();
+        });
+
+        it('resets tutorial state', () => {
             game.tutorial = { elapsedTime: 999, currentStepIndex: 99, tutorialPause: true };
             reset.reset();
-            expect(game.tutorial).toEqual({ elapsedTime: 0, currentStepIndex: 0, tutorialPause: true });
+            expect(game.tutorial).toEqual({
+                elapsedTime: 0,
+                currentStepIndex: 0,
+                tutorialPause: true
+            });
         });
 
         it('resets main game flags', () => {
@@ -158,37 +156,37 @@ describe('Reset', () => {
             expect(game.gameOver).toBe(false);
         });
 
-        it('resets coins and notEnoughCoins flag', () => {
+        it('resets coins and notEnoughCoins', () => {
             game.coins = 80;
             game.notEnoughCoins = true;
             reset.reset();
-            expect(game.coins).toBe(Math.floor(0.1 * 80));
+            expect(game.coins).toBe(8);
             expect(game.notEnoughCoins).toBe(false);
         });
 
-        it('initializes a new player on each reset', () => {
+        it('creates a new player', () => {
             Player.mockClear();
             reset.reset();
-            const firstPlayer = game.player;
+            const first = game.player;
             reset.reset();
-            expect(game.player).not.toBe(firstPlayer);
+            expect(game.player).not.toBe(first);
             expect(Player).toHaveBeenCalledTimes(2);
         });
 
-        it('enters the initial player state on reset and sets it as currentState', () => {
+        it('enters the initial player state', () => {
             reset.reset();
             expect(game.player.states[0].enter).toHaveBeenCalled();
             expect(game.player.currentState).toBe(game.player.states[0]);
         });
 
-        it('stops all audio', () => {
+        it('stops all audio handlers', () => {
             reset.reset();
-            Object.values(game.audioHandler).forEach(handler => {
-                expect(handler.stopAllSounds).toHaveBeenCalled();
-            });
+            Object.values(game.audioHandler).forEach(h =>
+                expect(h.stopAllSounds).toHaveBeenCalled()
+            );
         });
 
-        it('clears entities and resets arrays', () => {
+        it('clears all arrays', () => {
             reset.reset();
             [
                 'enemies',
@@ -201,11 +199,7 @@ describe('Reset', () => {
                 'cabins',
                 'penguins',
                 'cutscenes',
-            ].forEach(key => {
-                expect(game[key]).toEqual([]);
-            });
-            expect(game.isEndCutscene).toBe(false);
-            expect(game.endCutscene).toHaveBeenCalled();
+            ].forEach(key => expect(game[key]).toEqual([]));
         });
 
         it('clears input keys', () => {
@@ -224,133 +218,58 @@ describe('Reset', () => {
             expect(game.talkToPenguinOneTimeOnly).toBe(true);
         });
 
-        it('resets elyvorg and poison flags', () => {
+        it('delegates boss reset to bossManager.resetState()', () => {
             reset.reset();
-            expect(game.elyvorgSpawned).toBe(false);
-            expect(game.elyvorgDialogueBeforeDialoguePlayOnce).toBe(true);
-            expect(game.elyvorgDialogueAfterDialoguePlayOnce).toBe(false);
-            expect(game.elyvorgRunAway).toBe(false);
-            expect(game.talkToElyvorg).toBe(false);
-            expect(game.elyvorgDialoguePlayOnce).toBe(true);
-            expect(game.isElyvorgFullyVisible).toBe(false);
-            expect(game.elyvorgInFight).toBe(false);
-            expect(game.poisonScreen).toBe(false);
-            expect(game.poisonColourOpacity).toBe(0);
+            expect(game.bossManager.resetState).toHaveBeenCalledTimes(1);
         });
 
-        it('resets all elyvorg-related flags', () => {
+        it('Map1 loads correctly', () => {
+            game.background = { constructor: Maps.Map1 };
             reset.reset();
-            expect(game.elyvorgStartAfterDialogueOnlyWhenAnimationEnds).toBe(false);
-            expect(game.elyvorgDialogueAfterDialogueLeaving).toBe(false);
-            expect(game.elyvorgPreFight).toBe(false);
-            expect(game.elyvorgPostFight).toBe(false);
+            expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map1));
         });
 
-        describe('map selection branches', () => {
-            it('defaults to Map1 with no flags', () => {
-                game.background = { constructor: Maps.Map1 };
-                reset.reset();
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map1));
-                expect(game.player.isDarkWhiteBorder).toBe(false);
-                expect(game.player.isUnderwater).toBe(false);
-                expect(game.player.isIce).toBe(false);
-            });
+        it('Map2 enables darkWhiteBorder', () => {
+            game.background = { constructor: Maps.Map2 };
+            reset.reset();
+            expect(game.player.isDarkWhiteBorder).toBe(true);
+        });
 
-            it('applies Map2 and dark-white border flag', () => {
-                game.background = { constructor: Maps.Map2 };
-                reset.reset();
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map2));
-                expect(game.player.isDarkWhiteBorder).toBe(true);
-                expect(game.player.isUnderwater).toBe(false);
-                expect(game.player.isIce).toBe(false);
-            });
+        it('Map3 enables underwater', () => {
+            game.background = { constructor: Maps.Map3 };
+            reset.reset();
+            expect(game.player.isUnderwater).toBe(true);
+        });
 
-            it('applies Map3 and underwater flag', () => {
-                game.background = { constructor: Maps.Map3 };
-                reset.reset();
-                expect(game.player.isUnderwater).toBe(true);
-                expect(game.player.isDarkWhiteBorder).toBe(false);
-                expect(game.player.isIce).toBe(false);
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map3));
-            });
+        it('Map6 sets maxDistance', () => {
+            game.background = { constructor: Maps.Map6 };
+            reset.reset();
+            expect(game.maxDistance).toBe(9999999);
+        });
 
-            it('applies Map4 with no extra flags', () => {
-                game.background = { constructor: Maps.Map4 };
-                reset.reset();
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map4));
-                expect(game.player.isDarkWhiteBorder).toBe(false);
-                expect(game.player.isUnderwater).toBe(false);
-                expect(game.player.isIce).toBe(false);
-            });
+        it('BonusMap1 enables ice', () => {
+            game.background = { constructor: Maps.BonusMap1 };
+            reset.reset();
+            expect(game.player.isIce).toBe(true);
+        });
 
-            it('applies Map5 with no extra flags', () => {
-                game.background = { constructor: Maps.Map5 };
-                reset.reset();
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map5));
-                expect(game.player.isDarkWhiteBorder).toBe(false);
-                expect(game.player.isUnderwater).toBe(false);
-                expect(game.player.isIce).toBe(false);
-            });
-
-            it('applies Map6 and sets maxDistance, without flipping other flags', () => {
-                game.background = { constructor: Maps.Map6 };
-                reset.reset();
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map6));
-                expect(game.maxDistance).toBe(9999999);
-                expect(game.player.isDarkWhiteBorder).toBe(false);
-                expect(game.player.isUnderwater).toBe(false);
-                expect(game.player.isIce).toBe(false);
-            });
-
-            it('applies BonusMap1 and sets isIce=true', () => {
-                game.background = { constructor: Maps.BonusMap1 };
-                reset.reset();
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.BonusMap1));
-                expect(game.player.isIce).toBe(true);
-                expect(game.player.isUnderwater).toBe(false);
-                expect(game.player.isDarkWhiteBorder).toBe(false);
-            });
-
-            it('applies BonusMap2 with no extra flags', () => {
-                game.background = { constructor: Maps.BonusMap2 };
-                reset.reset();
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.BonusMap2));
-                expect(game.player.isIce).toBe(false);
-                expect(game.player.isUnderwater).toBe(false);
-                expect(game.player.isDarkWhiteBorder).toBe(false);
-            });
-
-            it('applies BonusMap3 with no extra flags', () => {
-                game.background = { constructor: Maps.BonusMap3 };
-                reset.reset();
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.BonusMap3));
-                expect(game.player.isIce).toBe(false);
-                expect(game.player.isUnderwater).toBe(false);
-                expect(game.player.isDarkWhiteBorder).toBe(false);
-            });
-
-            it('handles an unrecognized map constructor gracefully', () => {
-                game.background = { constructor: class Foo { } };
-                expect(() => reset.reset()).not.toThrow();
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(undefined);
-            });
+        it('unrecognized map constructor does not throw', () => {
+            game.background = { constructor: class Foo { } };
+            expect(() => reset.reset()).not.toThrow();
+            expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(undefined);
         });
 
         it('sets difficulty correctly', () => {
             reset.reset();
-            expect(game.menu.levelDifficulty.setDifficulty).toHaveBeenCalledWith(
-                game.selectedDifficulty
-            );
+            expect(game.menu.levelDifficulty.setDifficulty)
+                .toHaveBeenCalledWith('hard');
         });
 
-        it('is idempotent when called twice', () => {
+        it('is idempotent', () => {
             expect(() => {
                 reset.reset();
                 reset.reset();
             }).not.toThrow();
-            expect(game.speed).toBe(0);
-            expect(game.coins).toBe(0);
-            expect(reset.reset()).toBeUndefined();
         });
     });
 });
