@@ -8,10 +8,12 @@ import {
   Coin,
   OxygenTank,
   IceDrink,
+  IceCube,
   Cauldron,
   BlackHole,
   Confuse,
-  DeadSkull
+  DeadSkull,
+  CarbonDioxideTank
 } from '../game/entities/powerUpAndDown.js';
 import { Goblin, ImmobileGroundEnemy } from '../game/entities/enemies/enemies.js';
 import {
@@ -648,6 +650,7 @@ describe('Game class (game-main.js)', () => {
       game.background = { constructor: { name: 'NotMap6' }, totalDistanceTraveled: 0 };
       game.speed = 10;
       game.player.isBlackHoleActive = false;
+      game.player.isUnderwater = true;
       game.powerDowns = [];
     });
 
@@ -658,10 +661,12 @@ describe('Game class (game-main.js)', () => {
     it('spawns all power-down types when random < thresholds and not Map6', () => {
       game.addPowerDown();
       expect(game.powerDowns.some(p => p instanceof IceDrink)).toBe(true);
+      expect(game.powerDowns.some(p => p instanceof IceCube)).toBe(true);
       expect(game.powerDowns.some(p => p instanceof Cauldron)).toBe(true);
       expect(game.powerDowns.some(p => p instanceof BlackHole)).toBe(true);
       expect(game.powerDowns.some(p => p instanceof Confuse)).toBe(true);
       expect(game.powerDowns.some(p => p instanceof DeadSkull)).toBe(true);
+      expect(game.powerDowns.some(p => p instanceof CarbonDioxideTank)).toBe(true);
     });
 
     it('spawns no power-downs on Map6', () => {
@@ -682,6 +687,27 @@ describe('Game class (game-main.js)', () => {
       game.background.totalDistanceTraveled = game.maxDistance - 2;
       game.addPowerDown();
       expect(game.powerDowns).toHaveLength(0);
+    });
+  });
+
+  describe('addPowerDown() edge-cases', () => {
+    let game;
+
+    beforeEach(() => {
+      jest.spyOn(Math, 'random').mockReturnValue(0);
+      game = new Game(canvas, canvas.width, canvas.height);
+      game.background = { constructor: { name: 'NotMap6' }, totalDistanceTraveled: 0 };
+      game.speed = 10;
+    });
+
+    afterEach(() => Math.random.mockRestore());
+
+    it('does not spawn CarbonDioxideTank when player.isUnderwater is false', () => {
+      game.player.isBlackHoleActive = false;
+      game.player.isUnderwater = false;
+      game.powerDowns = [];
+      game.addPowerDown();
+      expect(game.powerDowns.some(p => p instanceof CarbonDioxideTank)).toBe(false);
     });
   });
 

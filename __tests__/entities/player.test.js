@@ -1,6 +1,6 @@
 import { Player, CollisionLogic } from '../../game/entities/player';
 import { Fireball, CoinLoss, PoisonBubbles, IceCrystalBubbles } from '../../game/animations/particles';
-import { IceDrink, Cauldron, BlackHole, Confuse, DeadSkull, OxygenTank, HealthLive, Coin, RedPotion, BluePotion, RandomPower } from '../../game/entities/powerUpAndDown';
+import { IceDrink, IceCube, Cauldron, BlackHole, Confuse, DeadSkull, CarbonDioxideTank, OxygenTank, HealthLive, Coin, RedPotion, BluePotion, RandomPower } from '../../game/entities/powerUpAndDown';
 import { InkSplash } from '../../game/animations/ink';
 import { TunnelVision } from '../../game/animations/tunnelVision';
 import {
@@ -59,8 +59,10 @@ jest.mock('../../game/entities/powerUpAndDown', () => {
     class BlackHole { }
     class Cauldron { }
     class IceDrink { }
+    class IceCube { }
     class Confuse { }
     class DeadSkull { }
+    class CarbonDioxideTank { }
     class RandomPower { }
     return {
         HealthLive,
@@ -71,8 +73,10 @@ jest.mock('../../game/entities/powerUpAndDown', () => {
         BlackHole,
         Cauldron,
         IceDrink,
+        IceCube,
         Confuse,
         DeadSkull,
+        CarbonDioxideTank,
         RandomPower,
     };
 });
@@ -479,6 +483,7 @@ describe('Player', () => {
         test('activation with E when timer full', () => {
             player.isInvisible = false;
             player.invisibleTimer = player.invisibleCooldown;
+            player.currentState = { deathAnimation: false };
             game.input.isInvisibleDefense.mockReturnValue(true);
             player.invisibleAbility(game.input, 0);
             expect(player.isInvisible).toBe(true);
@@ -489,6 +494,7 @@ describe('Player', () => {
         test('deactivation after active cooldown', () => {
             player.isInvisible = true;
             player.invisibleTimer = player.invisibleCooldown;
+            player.currentState = { deathAnimation: false };
             player.invisibleAbility(game.input, 0);
             expect(player.invisibleActiveCooldownTimer).toBe(5000);
             player.invisibleAbility(game.input, 6000);
@@ -568,6 +574,7 @@ describe('Player', () => {
 
         test('clamps x within bounds', () => {
             player.x = -5;
+            player.currentState = player.states[1];
             player.playerHorizontalMovement([]);
             expect(player.x).toBe(0);
             player.x = 1000;
@@ -598,6 +605,7 @@ describe('Player', () => {
             player.width = 10; player.height = 10;
             game.gameOver = false;
             player.isUnderwater = false;
+            player.currentState = { deathAnimation: false };
         });
 
         test('IceDrink slows player', () => {
@@ -620,6 +628,16 @@ describe('Player', () => {
             player.collisionWithPowers(0);
             expect(player.isSlowed).toBe(false);
             expect(player.weight).toBe(1);
+        });
+
+        test('IceCube freezes player using startFrozen(3000)', () => {
+            const cube = new IceCube();
+            Object.assign(cube, { x: 0, y: 0, width: 10, height: 10 });
+            game.powerDowns = [cube];
+            const spy = jest.spyOn(player, 'startFrozen');
+            player.collisionWithPowers(0);
+            expect(spy).toHaveBeenCalledWith(3000);
+            expect(cube.markedForDeletion).toBe(true);
         });
 
         test('Cauldron poisons player', () => {
@@ -663,13 +681,22 @@ describe('Player', () => {
             expect(game.lives).toBe(1);
         });
 
-        test('OxygenTank reduces time', () => {
+        test('OxygenTank grants +10s remaining', () => {
             game.time = 50000;
             const o = new OxygenTank();
             Object.assign(o, { x: 0, y: 0, width: 10, height: 10 });
             game.powerUps = [o];
             player.collisionWithPowers(0);
             expect(game.time).toBe(40000);
+        });
+
+        test('CarbonDioxideTank decreases 10s remaining', () => {
+            game.time = 50000;
+            const cd = new CarbonDioxideTank();
+            Object.assign(cd, { x: 0, y: 0, width: 10, height: 10 });
+            game.powerDowns = [cd];
+            player.collisionWithPowers(0);
+            expect(game.time).toBe(60000);
         });
 
         test('HealthLive increments lives', () => {
@@ -723,7 +750,6 @@ describe('Player', () => {
                 player.collisionWithPowers(0);
 
                 expect(game.time).toBe(40000);
-
                 expect(rp.markedForDeletion).toBe(true);
             } finally {
                 Math.random = origRandom;
@@ -748,9 +774,57 @@ describe('Player', () => {
                 player.collisionWithPowers(0);
 
                 expect(game.time).toBe(50000);
-
                 expect(game.lives).toBe(2);
+                expect(rp.markedForDeletion).toBe(true);
+            } finally {
+                Math.random = origRandom;
+            }
+        });
 
+        test('RandomPower in powerDowns can resolve to CarbonDioxideTank when underwater', () => {
+            const origRandom = Math.random;
+            Math.random = jest.fn(() => 0.9);
+
+            try {
+                game.time = 50000;
+                player.isUnderwater = true;
+
+                const rp = new RandomPower();
+                Object.assign(rp, { x: 0, y: 0, width: 10, height: 10 });
+
+                game.powerUps = [];
+                game.powerDowns = [rp];
+
+                player.isInvisible = false;
+
+                player.collisionWithPowers(0);
+
+                expect(game.time).toBe(60000);
+                expect(rp.markedForDeletion).toBe(true);
+            } finally {
+                Math.random = origRandom;
+            }
+        });
+
+        test('RandomPower in powerDowns does not pick CarbonDioxideTank when NOT underwater', () => {
+            const origRandom = Math.random;
+            Math.random = jest.fn(() => 0.9);
+
+            try {
+                game.time = 50000;
+                player.isUnderwater = false;
+
+                const rp = new RandomPower();
+                Object.assign(rp, { x: 0, y: 0, width: 10, height: 10 });
+
+                game.powerUps = [];
+                game.powerDowns = [rp];
+
+                player.isInvisible = false;
+
+                player.collisionWithPowers(0);
+
+                expect(game.time).toBe(50000);
                 expect(rp.markedForDeletion).toBe(true);
             } finally {
                 Math.random = origRandom;
@@ -772,7 +846,6 @@ describe('Player', () => {
                 player.collisionWithPowers(0);
 
                 expect(player.isSlowed).toBe(true);
-
                 expect(rp.markedForDeletion).toBe(true);
             } finally {
                 Math.random = origRandom;
@@ -828,6 +901,7 @@ describe('Player', () => {
 
         test('stunned reduces lives & coins and switches to Stunned state', () => {
             game.coins = 5; game.lives = 3;
+            player.currentState = player.states[0];
             player.stunned({});
             expect(game.lives).toBe(2);
             expect(game.coins).toBe(4);
@@ -838,6 +912,7 @@ describe('Player', () => {
     test('red potion expires after duration', () => {
         player.isRedPotionActive = true;
         player.redPotionTimer = 1000;
+        player.currentState = player.states[0];
         player.fireballAbility(game.input, 1000);
         expect(player.isRedPotionActive).toBe(false);
     });
@@ -890,8 +965,9 @@ describe('Player', () => {
         player.y = 0;
         player.width = 10;
         player.height = 10;
+        player.currentState = { deathAnimation: false };
 
-        const pdClasses = [IceDrink, Cauldron, BlackHole, Confuse, DeadSkull, RandomPower];
+        const pdClasses = [IceDrink, IceCube, Cauldron, BlackHole, Confuse, DeadSkull, CarbonDioxideTank, RandomPower];
         pdClasses.forEach(Ctor => {
             const item = new Ctor();
             Object.assign(item, { x: 0, y: 0, width: 10, height: 10 });
@@ -2024,6 +2100,82 @@ describe('Player', () => {
             game.input.isRollAttack.mockReturnValue(true);
             player.firedogMeetsElyvorg([]);
             expect(player.x).toBe(100);
+        });
+    });
+
+
+    describe('freezing and startFrozen/updateFrozen/clearFreeze', () => {
+        beforeEach(() => {
+            player.currentState = { deathAnimation: false };
+        });
+
+        test('startFrozen enters frozen state and switches to Hit', () => {
+            player.states[7] = { enter: jest.fn(), deathAnimation: false };
+            player.currentState = player.states[1]; // running
+            player.speed = 5;
+            player.vx = 3;
+            player.vy = -2;
+            game.input.keys = ['a', 'd'];
+
+            player.startFrozen(3000);
+
+            expect(player.isFrozen).toBe(true);
+            expect(player.frozenTimer).toBe(3000);
+            expect(player.currentState).toBe(player.states[7]);
+            expect(player.speed).toBe(0);
+            expect(player.vx).toBe(0);
+            expect(player.vy).toBe(0);
+            expect(game.input.keys).toEqual([]);
+        });
+
+        test('updateFrozen keeps game speed at 0 and counts down while frozen', () => {
+            player.isFrozen = true;
+            player.frozenTimer = 1000;
+            game.speed = 6;
+
+            player.updateFrozen(200);
+
+            expect(player.isFrozen).toBe(true);
+            expect(player.frozenTimer).toBe(800);
+            expect(game.speed).toBe(0);
+        });
+
+        test('updateFrozen unfreezes and clears keys when timer expires', () => {
+            player.isFrozen = true;
+            player.frozenTimer = 10;
+            game.input.keys = ['x'];
+
+            player.updateFrozen(15);
+
+            expect(player.isFrozen).toBe(false);
+            expect(player.frozenTimer).toBe(0);
+            expect(game.input.keys).toEqual([]);
+        });
+
+        test('clearFreeze resets freeze flags and input keys', () => {
+            player.isFrozen = true;
+            player.frozenTimer = 123;
+            game.input.keys = ['x'];
+
+            player.clearFreeze();
+
+            expect(player.isFrozen).toBe(false);
+            expect(player.frozenTimer).toBe(0);
+            expect(game.input.keys).toEqual([]);
+        });
+
+        test('checkIfFiredogIsDead clears freeze when gameOver is already true', () => {
+            game.gameOver = true;
+            player.isFrozen = true;
+            player.frozenTimer = 500;
+            game.input.keys = ['left'];
+            player.currentState = { deathAnimation: false };
+
+            player.checkIfFiredogIsDead();
+
+            expect(player.isFrozen).toBe(false);
+            expect(player.frozenTimer).toBe(0);
+            expect(game.input.keys).toEqual([]);
         });
     });
 });

@@ -5,7 +5,7 @@ import {
     CollisionAnimation, ExplosionCollisionAnimation, PoisonSpitSplash, InkSplashCollision, Blood,
     ElectricityCollision, InkBombCollision, RedFireballExplosion, PurpleFireballExplosion, PoisonDropCollision,
     MeteorExplosionCollision, IceSlashCollision, IceTrailCollision, IcyStormBallCollision, SpinningIceBallsCollision,
-    PointyIcicleShardCollision, UndergroundIcicleCollision, 
+    PointyIcicleShardCollision, UndergroundIcicleCollision,
 } from '../animations/collisionAnimation.js';
 import { FloatingMessage } from '../animations/floatingMessages.js';
 import { Fireball, CoinLoss, PoisonBubbles, IceCrystalBubbles, SpinningChicks } from '../animations/particles.js';
@@ -197,6 +197,7 @@ export class Player {
     updateFrozen(deltaTime) {
         if (!this.isFrozen) return;
 
+        this.game.speed = 0;
         this.frozenTimer -= deltaTime;
         if (this.frozenTimer <= 0) {
             this.frozenTimer = 0;
@@ -220,6 +221,13 @@ export class Player {
         this.frozenOpacity = 0.5 - this.frozenPulseAmp * dip;
         if (this.frozenOpacity < 0.05) this.frozenOpacity = 0.05;
         if (this.frozenOpacity > 0.5) this.frozenOpacity = 0.5;
+    }
+
+    clearFreeze() {
+        if (!this.isFrozen) return;
+        this.isFrozen = false;
+        this.frozenTimer = 0;
+        this.game.input.keys = [];
     }
 
     bossCollisionTimers(deltaTime) { // needed for boss hazards (elyvorg barrier, slash, electricWheel)
@@ -522,7 +530,7 @@ export class Player {
             this.isBluePotionActive = false;
             this.game.audioHandler.firedogSFX.stopSound('bluePotionEnergyGoingUp');
 
-            if (!this.game.isBossVisible) {
+            if (!this.game.isBossVisible && !this.isFrozen) {
                 if (this.currentState === this.states[4]) {
                     this.game.speed = 12;
                 } else if (this.game.speed === this.bluePotionSpeed) {
@@ -675,7 +683,9 @@ export class Player {
         this.currentState = this.states[state];
 
         if (!this.game.isBossVisible) {
-            if (this.isBluePotionActive && this.currentState === this.states[4]) {
+            if (this.isFrozen) {
+                this.game.speed = 0;
+            } else if (this.isBluePotionActive && this.currentState === this.states[4]) {
                 this.game.speed = this.bluePotionSpeed;
             } else {
                 this.game.speed = this.game.normalSpeed * speed;
@@ -1082,13 +1092,12 @@ export class Player {
             if (this.game.noDamageDuringTutorial) {
                 this.game.menu.levelDifficulty.setDifficulty(this.game.selectedDifficulty);
             } else {
-                if (this.isFrozen) {
-                    this.isFrozen = false;
-                    this.frozenTimer = 0;
-                    this.game.input.keys = [];
-                }
                 this.game.gameOver = true;
             }
+        }
+
+        if (this.game.gameOver) {
+            this.clearFreeze();
         }
 
         if (this.currentState.deathAnimation && this.isUnderwater && !this.onGround()) {
@@ -1529,7 +1538,9 @@ export class CollisionLogic {
             IceDrink() {
                 player.isSlowed = true;
                 player.slowedTimer = 7000;
-                game.audioHandler.powerUpAndDownSFX.playSound('drinkSoundEffect', false, true);
+            },
+            IceCube() {
+                player.startFrozen(3000);
             },
             Cauldron() {
                 game.audioHandler.powerUpAndDownSFX.playSound('cauldronSoundEffect', false, true);
@@ -1550,8 +1561,20 @@ export class CollisionLogic {
                 player.setState(7, 1);
                 game.audioHandler.powerUpAndDownSFX.playSound('deadSkullLaugh', false, true);
             },
+            CarbonDioxideTank(item) {
+                game.time += 10000;
+                game.audioHandler.powerUpAndDownSFX.playSound('carbonDioxideTankSound', false, true);
+                game.floatingMessages.push(
+                    new FloatingMessage('-10s', item.x, item.y, 115, 90, 30, 'red', 'black', true)
+                );
+            },
             RandomPower(item) {
-                const candidates = Object.keys(downHandlers).filter(n => n !== 'RandomPower');
+                const candidates = Object.keys(downHandlers).filter(name => {
+                    if (name === 'RandomPower') return false;
+                    if (name === 'CarbonDioxideTank' && !player.isUnderwater) return false;
+                    return true;
+                });
+
                 const pickName = candidates[Math.floor(Math.random() * candidates.length)];
                 downHandlers[pickName](item);
             }
@@ -1956,7 +1979,7 @@ export class CollisionLogic {
                     player.slowedTimer = 5000;
                 }
                 this.specialCollisionAnimationOrNot(enemy);
-                if (player.isInvisible){
+                if (player.isInvisible) {
                     this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
                 } else {
                     this.game.audioHandler.enemySFX.playSound('iceSlowedSound', false, true);

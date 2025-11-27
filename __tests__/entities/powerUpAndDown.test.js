@@ -1,6 +1,6 @@
 import {
     RedPotion, BluePotion, HealthLive, Coin, OxygenTank,
-    IceDrink, Cauldron, BlackHole, Confuse, DeadSkull
+    IceDrink, IceCube, Cauldron, BlackHole, Confuse, DeadSkull, CarbonDioxideTank
 } from '../../game/entities/powerUpAndDown';
 
 describe('PowerUp & PowerDown subclasses (merged)', () => {
@@ -15,10 +15,12 @@ describe('PowerUp & PowerDown subclasses (merged)', () => {
         oxygenTank: {},
         // power downs
         iceDrink: {},
+        iceCube: {},
         cauldron: {},
         blackhole: {},
         confuse: {},
         deadskull: {},
+        carbonDioxideTank: {},
     };
 
     beforeAll(() => {
@@ -607,6 +609,115 @@ describe('PowerUp & PowerDown subclasses (merged)', () => {
         });
 
         // ---------------------------------------------------------------------------
+        // IceCube
+        // ---------------------------------------------------------------------------
+        describe('IceCube', () => {
+            let iceCube;
+            beforeEach(() => {
+                iceCube = new IceCube(game);
+            });
+
+            test('constructor sets correct props and random x/y', () => {
+                expect(iceCube.game).toBe(game);
+                expect(iceCube.width).toBeCloseTo(82.5);
+                expect(iceCube.height).toBe(90);
+                expect(iceCube.image).toBe(fakeImages.iceCube);
+                expect(iceCube.maxFrame).toBe(3);
+                expect(iceCube.frameWidth).toBeCloseTo(82.5);
+                expect(iceCube.frameHeight).toBe(90);
+
+                const expectedX = game.width + game.width * 0.5 * 0.5;
+                expect(iceCube.x).toBeCloseTo(expectedX);
+
+                const minY = game.height - iceCube.height - game.groundMargin;
+                const maxY = 130;
+                expect(iceCube.y).toBeCloseTo(minY + 0.5 * (maxY - minY));
+
+                expect(iceCube.frameX).toBe(0);
+                expect(iceCube.frameY).toBe(0);
+                expect(iceCube.frameTimer).toBe(0);
+                expect(iceCube.markedForDeletion).toBe(false);
+            });
+
+            test('update moves left when cabin not visible', () => {
+                const startX = iceCube.x;
+                game.cabin.isFullyVisible = false;
+                iceCube.update(16);
+                expect(iceCube.x).toBe(startX - game.speed);
+            });
+
+            test('update does not move when cabin visible', () => {
+                const startX = iceCube.x;
+                game.cabin.isFullyVisible = true;
+                iceCube.update(16);
+                expect(iceCube.x).toBe(startX);
+            });
+
+            test('animation wraps frameX and resets timer', () => {
+                iceCube.frameTimer = iceCube.frameInterval + 1;
+                iceCube.frameX = iceCube.maxFrame;
+                iceCube.update(0);
+                expect(iceCube.frameX).toBe(0);
+                expect(iceCube.frameTimer).toBe(0);
+
+                iceCube.frameInterval = 1000;
+                iceCube.frameTimer = 0;
+                iceCube.update(100);
+                expect(iceCube.frameTimer).toBe(100);
+            });
+
+            test('animation advances frameX when below maxFrame', () => {
+                iceCube.frameTimer = iceCube.frameInterval + 1;
+                iceCube.frameX = 0;
+                iceCube.update(0);
+                expect(iceCube.frameX).toBe(1);
+            });
+
+            test('markedForDeletion when off-screen horizontally or vertically', () => {
+                iceCube.x = -iceCube.width - 1;
+                iceCube.y = 0;
+                iceCube.update(0);
+                expect(iceCube.markedForDeletion).toBe(true);
+
+                iceCube.markedForDeletion = false;
+                iceCube.x = 100;
+                iceCube.y = game.height + 1;
+                iceCube.update(0);
+                expect(iceCube.markedForDeletion).toBe(true);
+            });
+
+            test('draw uses red shadowBlur=10 and calls save/restore + drawImage', () => {
+                iceCube.draw(ctx);
+                expect(ctx.save).toHaveBeenCalled();
+                expect(ctx.shadowColor).toBe('red');
+                expect(ctx.shadowBlur).toBe(10);
+                expect(ctx.drawImage).toHaveBeenCalledWith(
+                    fakeImages.iceCube,
+                    iceCube.frameX * iceCube.frameWidth,
+                    iceCube.frameY * iceCube.frameHeight,
+                    iceCube.frameWidth,
+                    iceCube.frameHeight,
+                    iceCube.x,
+                    iceCube.y,
+                    iceCube.width,
+                    iceCube.height
+                );
+                expect(ctx.restore).toHaveBeenCalled();
+            });
+
+            test('draw draws debug rect when game.debug=true', () => {
+                game.debug = true;
+                iceCube.draw(ctx);
+                expect(ctx.strokeRect).toHaveBeenCalledWith(
+                    iceCube.x,
+                    iceCube.y,
+                    iceCube.width,
+                    iceCube.height
+                );
+            });
+        });
+
+        // ---------------------------------------------------------------------------
         // Cauldron
         // ---------------------------------------------------------------------------
         describe('Cauldron', () => {
@@ -1034,6 +1145,112 @@ describe('PowerUp & PowerDown subclasses (merged)', () => {
                 game.debug = true;
                 skull.draw(ctx);
                 expect(ctx.strokeRect).toHaveBeenCalledWith(skull.x, skull.y, skull.width, skull.height);
+            });
+        });
+
+        // ---------------------------------------------------------------------------
+        // CarbonDioxideTank
+        // ---------------------------------------------------------------------------
+        describe('CarbonDioxideTank', () => {
+            let tank;
+            beforeEach(() => {
+                tank = new CarbonDioxideTank(game);
+            });
+
+            test('constructor sets correct props and random x/y', () => {
+                expect(tank.game).toBe(game);
+                expect(tank.width).toBeCloseTo(40.2);
+                expect(tank.height).toBe(100);
+                expect(tank.image).toBe(fakeImages.carbonDioxideTank);
+
+                expect(tank.fps).toBe(5);
+                expect(tank.frameInterval).toBeCloseTo(1000 / 5);
+                expect(tank.maxFrame).toBe(4);
+                expect(tank.frameWidth).toBeCloseTo(40.2);
+                expect(tank.frameHeight).toBe(100);
+
+                const expectedX = game.width + game.width * 0.5 * 0.5;
+                expect(tank.x).toBeCloseTo(expectedX);
+
+                const expectedY = 0.5 * (game.height - tank.height - game.groundMargin);
+                expect(tank.y).toBeCloseTo(expectedY);
+
+                expect(tank.frameX).toBe(0);
+                expect(tank.frameY).toBe(0);
+                expect(tank.frameTimer).toBe(0);
+                expect(tank.markedForDeletion).toBe(false);
+            });
+
+            test('update moves left when cabin not visible', () => {
+                const startX = tank.x;
+                game.cabin.isFullyVisible = false;
+                tank.update(16);
+                expect(tank.x).toBe(startX - game.speed);
+            });
+
+            test('update does not move when cabin visible', () => {
+                const startX = tank.x;
+                game.cabin.isFullyVisible = true;
+                tank.update(16);
+                expect(tank.x).toBe(startX);
+            });
+
+            test('animation wraps frameX and resets timer', () => {
+                tank.frameTimer = tank.frameInterval + 1;
+                tank.frameX = tank.maxFrame;
+                tank.update(0);
+                expect(tank.frameX).toBe(0);
+                expect(tank.frameTimer).toBe(0);
+
+                tank.frameInterval = 1000;
+                tank.frameTimer = 0;
+                tank.update(100);
+                expect(tank.frameTimer).toBe(100);
+            });
+
+            test('animation advances frameX when below maxFrame', () => {
+                tank.frameTimer = tank.frameInterval + 1;
+                tank.frameX = 0;
+                tank.update(0);
+                expect(tank.frameX).toBe(1);
+            });
+
+            test('markedForDeletion when off-screen horizontally or vertically', () => {
+                tank.x = -tank.width - 1;
+                tank.y = 0;
+                tank.update(0);
+                expect(tank.markedForDeletion).toBe(true);
+
+                tank.markedForDeletion = false;
+                tank.x = 100;
+                tank.y = game.height + 1;
+                tank.update(0);
+                expect(tank.markedForDeletion).toBe(true);
+            });
+
+            test('draw uses red shadowBlur=10 and calls save/restore + drawImage', () => {
+                tank.draw(ctx);
+                expect(ctx.save).toHaveBeenCalled();
+                expect(ctx.shadowColor).toBe('red');
+                expect(ctx.shadowBlur).toBe(10);
+                expect(ctx.drawImage).toHaveBeenCalledWith(
+                    fakeImages.carbonDioxideTank,
+                    tank.frameX * tank.frameWidth,
+                    tank.frameY * tank.frameHeight,
+                    tank.frameWidth,
+                    tank.frameHeight,
+                    tank.x,
+                    tank.y,
+                    tank.width,
+                    tank.height
+                );
+                expect(ctx.restore).toHaveBeenCalled();
+            });
+
+            test('draw draws debug rect when game.debug=true', () => {
+                game.debug = true;
+                tank.draw(ctx);
+                expect(ctx.strokeRect).toHaveBeenCalledWith(tank.x, tank.y, tank.width, tank.height);
             });
         });
     });

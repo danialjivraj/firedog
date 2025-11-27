@@ -212,6 +212,23 @@ export class IceDrink extends PowerDown {
     draw(context) { super.draw(context, 10); }
 }
 
+export class IceCube extends PowerDown {
+    constructor(game) {
+        super(game);
+        this.width = 82.5;
+        this.height = 90;
+        this.image = document.getElementById('iceCube');
+        this.maxFrame = 3;
+        this.frameWidth = 82.5;
+        this.frameHeight = 90;
+        this.x = this.game.width + Math.random() * this.game.width * 0.5;
+        const minY = this.game.height - this.height - this.game.groundMargin;
+        const maxY = 130;
+        this.y = minY + Math.random() * (maxY - minY);
+    }
+    draw(context) { super.draw(context, 10); }
+}
+
 export class Cauldron extends PowerDown {
     constructor(game) {
         super(game);
@@ -407,6 +424,23 @@ export class DeadSkull extends PowerDown {
         const minY = this.game.height - this.height - this.game.groundMargin;
         const maxY = 130;
         this.y = minY + Math.random() * (maxY - minY);
+    }
+    draw(context) { super.draw(context, 10); }
+}
+
+export class CarbonDioxideTank extends PowerDown {
+    constructor(game) {
+        super(game);
+        this.fps = 5;
+        this.frameInterval = 1000 / this.fps;
+        this.width = 40.2;
+        this.height = 100;
+        this.image = document.getElementById('carbonDioxideTank');
+        this.maxFrame = 4;
+        this.frameWidth = 40.2;
+        this.frameHeight = 100;
+        this.x = this.game.width + Math.random() * this.game.width * 0.5;
+        this.y = Math.random() * (this.game.height - this.height - this.game.groundMargin);
     }
     draw(context) { super.draw(context, 10); }
 }

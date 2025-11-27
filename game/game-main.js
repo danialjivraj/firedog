@@ -14,7 +14,7 @@ import {
 import { InkBomb, MeteorAttack } from "./entities/enemies/elyvorg.js";
 import {
     RedPotion, BluePotion, HealthLive, Coin, OxygenTank,
-    BlackHole, Cauldron, IceDrink, Confuse, DeadSkull,
+    BlackHole, Cauldron, IceDrink, IceCube, Confuse, DeadSkull, CarbonDioxideTank,
     RandomPower
 } from "./entities/powerUpAndDown.js";
 // ingame
@@ -854,6 +854,9 @@ export class Game {
                     this.powerDowns.push(new IceDrink(this));
                 }
                 if (Math.random() < 0.005) {
+                    this.powerDowns.push(new IceCube(this));
+                }
+                if (Math.random() < 0.005) {
                     this.powerDowns.push(new Cauldron(this));
                 }
                 if (Math.random() < 0.005) {
@@ -864,6 +867,11 @@ export class Game {
                 }
                 if (Math.random() < 0.005) {
                     this.powerDowns.push(new DeadSkull(this));
+                }
+                if (this.player.isUnderwater) {
+                    if (Math.random() < 0.005) {
+                        this.powerDowns.push(new CarbonDioxideTank(this));
+                    }
                 }
             }
         }

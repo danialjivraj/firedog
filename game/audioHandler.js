@@ -282,6 +282,7 @@ export class PowerUpAndDownSFXAudioHandler extends AudioHandler {
       darkHoleLaughSound: 'darkHoleLaughSound',
       statusConfusedSound: 'statusConfusedSound',
       deadSkullLaugh: 'deadSkullLaugh',
+      carbonDioxideTankSound: 'carbonDioxideTankSound',
     };
     this.initializeSounds();
   }
