@@ -3,15 +3,18 @@ import { FloatingMessage } from '../../game/animations/floatingMessages.js';
 import {
     Collision,
     CollisionAnimation,
+    GhostFadeOut,
     ExplosionCollisionAnimation,
     MeteorExplosionCollision,
     ElectricityCollision,
     DarkExplosion,
     RedFireballExplosion,
     PurpleFireballExplosion,
+    PurpleThunderCollision,
     PoisonSpitSplash,
     PoisonDropCollision,
     PoisonDropGroundCollision,
+    DisintegrateCollision,
     InkSplashCollision,
     InkBombCollision,
     Blood,
@@ -52,6 +55,7 @@ const allImageIds = [
     'darkExplosion',
     'redFireballCollision',
     'purpleFireballCollision',
+    'purpleThunderCollision',
     'poisonSpitSplash',
     'poisonDropCollision',
     'poisonDropGroundCollision',
@@ -81,7 +85,7 @@ describe('Collision', () => {
         };
     });
 
-    test('constructor initializes correctly', () => {
+    test('constructor centers sprite and initializes frame data', () => {
         const c = new Collision(game, 100, 200, 'testImage', 50, 60, 3, 10);
         expect(c.x).toBe(100 - 25);
         expect(c.y).toBe(200 - 30);
@@ -91,14 +95,14 @@ describe('Collision', () => {
         expect(c.frameTimer).toBe(0);
     });
 
-    test('draw without debug: only drawImage', () => {
+    test('draw without debug only calls drawImage', () => {
         const c = new Collision(game, 0, 0, 'testImage', 10, 10, 1, 1);
         c.draw(ctx);
         expect(ctx.strokeRect).not.toHaveBeenCalled();
         expect(ctx.drawImage).toHaveBeenCalled();
     });
 
-    test('draw with debug: strokeRect and drawImage', () => {
+    test('draw with debug also calls strokeRect', () => {
         game.debug = true;
         const c = new Collision(game, 0, 0, 'testImage', 10, 10, 1, 1);
         c.draw(ctx);
@@ -106,7 +110,7 @@ describe('Collision', () => {
         expect(ctx.drawImage).toHaveBeenCalled();
     });
 
-    test('update advances frames correctly and eventually marks deletion', () => {
+    test('update moves with game speed, advances frames, and marks for deletion after last frame', () => {
         // initial x = 100 - (10/2) = 95
         const c = new Collision(game, 100, 100, 'testImage', 10, 10, 1, 10);
 
@@ -145,7 +149,7 @@ describe('CollisionAnimation', () => {
         game = { speed: 0 };
     });
 
-    test('default (non-blue) uses collisionAnimation settings', () => {
+    test('uses collisionAnimation sprite sheet when blue potion is not active', () => {
         jest.spyOn(Math, 'random').mockReturnValue(0);
         const ca = new CollisionAnimation(game, 100, 200, false);
         expect(ca.image).toBe(document.getElementById('collisionAnimation'));
@@ -156,13 +160,77 @@ describe('CollisionAnimation', () => {
         Math.random.mockRestore();
     });
 
-    test('blue potion active uses blueCollisionAnimation settings', () => {
+    test('uses blueCollisionAnimation sprite sheet when blue potion is active', () => {
         const ca = new CollisionAnimation(game, 100, 200, true);
         expect(ca.image).toBe(document.getElementById('blueCollisionAnimation'));
         expect(ca.spriteWidth).toBe(113.857);
         expect(ca.spriteHeight).toBe(110);
         expect(ca.maxFrame).toBe(6);
         expect(ca.fps).toBe(25);
+    });
+});
+
+describe('GhostFadeOut', () => {
+    let game, enemy, ctx;
+
+    beforeEach(() => {
+        game = { speed: 3, debug: false };
+        enemy = {
+            image: { width: 100, height: 120 },
+            width: 100,
+            height: 120,
+            x: 50,
+            y: 80,
+            frameX: 1,
+            frameY: 0,
+            incrementMovement: 1,
+        };
+        ctx = {
+            save: jest.fn(),
+            restore: jest.fn(),
+            translate: jest.fn(),
+            scale: jest.fn(),
+            strokeRect: jest.fn(),
+            drawImage: jest.fn(),
+            globalAlpha: 1,
+        };
+    });
+
+    test('constructor initializes bands and basic properties', () => {
+        const ghost = new GhostFadeOut(game, enemy);
+        expect(ghost.image).toBe(enemy.image);
+        expect(ghost.spriteWidth).toBe(enemy.width);
+        expect(ghost.spriteHeight).toBe(enemy.height);
+        expect(ghost.bands).toHaveLength(12);
+        expect(ghost.markedForDeletion).toBe(false);
+        expect(ghost.timer).toBe(0);
+        expect(ghost.alpha).toBe(1);
+    });
+
+    test('update moves with game speed and marks for deletion when duration elapses', () => {
+        const ghost = new GhostFadeOut(game, enemy);
+        const initialX = ghost.x;
+
+        ghost.update(100);
+        expect(ghost.x).toBe(initialX - game.speed);
+        expect(ghost.timer).toBe(100);
+        expect(ghost.alpha).toBeLessThan(1);
+        expect(ghost.markedForDeletion).toBe(false);
+
+        ghost.update(400); // total 500 >= duration(450)
+        expect(ghost.markedForDeletion).toBe(true);
+    });
+
+    test('draw uses debug strokeRect and draws image bands', () => {
+        game.debug = true;
+        const ghost = new GhostFadeOut(game, enemy);
+
+        ghost.draw(ctx);
+
+        expect(ctx.strokeRect).toHaveBeenCalledWith(ghost.x, ghost.y, ghost.width, ghost.height);
+        expect(ctx.drawImage).toHaveBeenCalled();
+        expect(ctx.save).toHaveBeenCalled();
+        expect(ctx.restore).toHaveBeenCalled();
     });
 });
 
@@ -186,7 +254,7 @@ describe('ExplosionCollisionAnimation', () => {
         };
     });
 
-    test('non-Skulnap enemy triggers poof, coin, messages, collision', () => {
+    test('non-Skulnap enemy grants coin, plays poof, spawns collision and floating message', () => {
         const enemy = { x: 50, y: 50, width: 10, height: 10, markedForDeletion: false };
         game.enemies.push(enemy);
         eca = new ExplosionCollisionAnimation(game, 55, 55, 'id');
@@ -200,7 +268,7 @@ describe('ExplosionCollisionAnimation', () => {
         expect(game.floatingMessages[0]).toBeInstanceOf(FloatingMessage);
     });
 
-    test('Skulnap enemy triggers second explosion and skeletonSFX', () => {
+    test('Skulnap with different id chains another explosion and plays skeleton SFX', () => {
         const skul = new Skulnap();
         skul.id = 'abc';
         skul.x = 60; skul.y = 60; skul.width = 10; skul.height = 10; skul.markedForDeletion = false;
@@ -216,7 +284,7 @@ describe('ExplosionCollisionAnimation', () => {
         expect(game.collisions[0]).toBeInstanceOf(ExplosionCollisionAnimation);
     });
 
-    test('Skulnap enemy with matching id does not chain explode again', () => {
+    test('Skulnap with matching id does not chain another explosion', () => {
         const skul = new Skulnap();
         skul.id = 'same';
         skul.x = 60; skul.y = 60; skul.width = 10; skul.height = 10; skul.markedForDeletion = false;
@@ -229,7 +297,7 @@ describe('ExplosionCollisionAnimation', () => {
         expect(game.audioHandler.collisionSFX.playSound).not.toHaveBeenCalled();
     });
 
-    test('Abyssaw enemy also stops spinningChainsaw', () => {
+    test('Abyssaw enemy also stops spinningChainsaw sound', () => {
         const ab = new Abyssaw();
         ab.x = 70; ab.y = 70; ab.width = 10; ab.height = 10; ab.markedForDeletion = false;
         game.enemies.push(ab);
@@ -241,7 +309,7 @@ describe('ExplosionCollisionAnimation', () => {
             .toHaveBeenCalledWith('spinningChainsaw');
     });
 
-    test('powerUps trigger poof and collision', () => {
+    test('powerUps overlapping explosion are removed and spawn poof collision', () => {
         const pu = { x: 10, y: 10, width: 5, height: 5, markedForDeletion: false };
         game.powerUps.push(pu);
         eca = new ExplosionCollisionAnimation(game, pu.x + pu.width / 2, pu.y + pu.height / 2, 'id');
@@ -253,7 +321,7 @@ describe('ExplosionCollisionAnimation', () => {
         expect(game.collisions[0]).toBeInstanceOf(CollisionAnimation);
     });
 
-    test('powerDowns trigger poof and collision', () => {
+    test('powerDowns overlapping explosion are removed and spawn poof collision', () => {
         const pd = { x: 20, y: 20, width: 5, height: 5, markedForDeletion: false };
         game.powerDowns.push(pd);
         eca = new ExplosionCollisionAnimation(game, pd.x + pd.width / 2, pd.y + pd.height / 2, 'id');
@@ -265,7 +333,7 @@ describe('ExplosionCollisionAnimation', () => {
         expect(game.collisions[0]).toBeInstanceOf(CollisionAnimation);
     });
 
-    test('does nothing when gameOver is true even on overlapping enemy', () => {
+    test('does nothing when gameOver is true even if enemy overlaps', () => {
         const enemy = { x: 50, y: 50, width: 10, height: 10, markedForDeletion: false };
         game.enemies.push(enemy);
         game.gameOver = true;
@@ -289,7 +357,7 @@ describe('MeteorExplosionCollision', () => {
         mec = new MeteorExplosionCollision(game, 100, 200);
     });
 
-    test('constructor sets correct properties', () => {
+    test('constructor sets meteor explosion image, size and timing', () => {
         expect(mec.image).toBe(document.getElementById('meteorExplosion'));
         expect(mec.spriteWidth).toBe(382);
         expect(mec.spriteHeight).toBe(332);
@@ -308,24 +376,144 @@ describe('ElectricityCollision', () => {
         ec = new ElectricityCollision(game, 0, 0);
     });
 
-    test('constructor sets size and frames', () => {
+    test('constructor sets electricity sprite size and frame count', () => {
         expect(ec.spriteWidth).toBe(215.25);
         expect(ec.spriteHeight).toBe(200);
         expect(ec.maxFrame).toBe(7);
         expect(ec.fps).toBe(20);
     });
 
-    test('updatePosition centers on enemy', () => {
+    test('updatePosition centers collision on enemy', () => {
         const enemy = { x: 100, y: 50, width: 20, height: 30 };
         ec.updatePosition(enemy);
         expect(ec.x).toBe(enemy.x + 10 - ec.width * 0.5);
         expect(ec.y).toBe(enemy.y + 15 - ec.height * 0.5);
     });
 
-    test('updatePositionWhereCollisionHappened sets absolute coords', () => {
+    test('updatePositionWhereCollisionHappened sets absolute coordinates', () => {
         ec.updatePositionWhereCollisionHappened(300, 400);
         expect(ec.x).toBe(300);
         expect(ec.y).toBe(400);
+    });
+});
+
+describe('DisintegrateCollision', () => {
+    let game;
+
+    beforeEach(() => {
+        game = { speed: 5, debug: false };
+    });
+
+    test('constructor derives size, position, angle and shards from source when no options are given', () => {
+        const image = { width: 70, height: 40 };
+        const source = {
+            image,
+            width: 70,
+            height: 40,
+            x: 10,
+            y: 20,
+            frameX: 2,
+            frameY: 1,
+            collisionDrawInfo: { angle: Math.PI / 4 },
+            direction: true,
+        };
+
+        const d = new DisintegrateCollision(game, source);
+
+        expect(d.image).toBe(image);
+        expect(d.spriteWidth).toBe(70);
+        expect(d.spriteHeight).toBe(40);
+
+        expect(d.width).toBe(70);
+        expect(d.height).toBe(40);
+
+        expect(d.x).toBe(10 + 70 * 0.5);
+        expect(d.y).toBe(20 + 40 * 0.5);
+
+        expect(d.frameX).toBe(2);
+        expect(d.frameY).toBe(1);
+
+        expect(d.angle).toBeCloseTo(Math.PI / 4);
+        expect(d.direction).toBe(true);
+
+        expect(d.duration).toBe(450);
+        expect(d.timer).toBe(0);
+        expect(d.markedForDeletion).toBe(false);
+
+        // default grid: cols=7, rows=4 => 28 shards
+        expect(d.shards).toHaveLength(28);
+    });
+
+    test('update moves left when not following a target and fades/scales all shards', () => {
+        const image = { width: 70, height: 40 };
+        const source = {
+            image,
+            width: 70,
+            height: 40,
+            x: 0,
+            y: 0,
+        };
+
+        const d = new DisintegrateCollision(game, source);
+        const initialX = d.x;
+
+        d.update(100);
+
+        expect(d.x).toBe(initialX - game.speed);
+        expect(d.timer).toBe(100);
+
+        const t = Math.min(1, d.timer / d.duration);
+        const expectedAlpha = 1 - t * 1.1;
+        const expectedScale = 1 - t * 0.85;
+
+        d.shards.forEach(shard => {
+            expect(shard.alpha).toBeCloseTo(expectedAlpha);
+            expect(shard.scale).toBeCloseTo(expectedScale);
+        });
+
+        expect(d.markedForDeletion).toBe(false);
+
+        d.update(450); // timer >= duration
+        expect(d.markedForDeletion).toBe(true);
+    });
+
+    test('update keeps position centered on followTarget when followTarget is provided', () => {
+        const image = { width: 40, height: 40 };
+        const source = { image, x: 0, y: 0, width: 40, height: 40 };
+
+        const followTarget = { x: 100, y: 200, width: 20, height: 30 };
+        const d = new DisintegrateCollision(game, source, { followTarget });
+
+        d.update(16);
+        expect(d.x).toBe(followTarget.x + followTarget.width * 0.5);
+        expect(d.y).toBe(followTarget.y + followTarget.height * 0.5);
+
+        followTarget.x = 150;
+        followTarget.y = 250;
+        d.update(16);
+        expect(d.x).toBe(followTarget.x + followTarget.width * 0.5);
+        expect(d.y).toBe(followTarget.y + followTarget.height * 0.5);
+    });
+
+    test('draw exits early and does not draw when image is missing', () => {
+        const source = {};
+        const d = new DisintegrateCollision(game, source);
+
+        d.image = null;
+
+        const ctx = {
+            save: jest.fn(),
+            restore: jest.fn(),
+            translate: jest.fn(),
+            scale: jest.fn(),
+            rotate: jest.fn(),
+            strokeRect: jest.fn(),
+            drawImage: jest.fn(),
+        };
+
+        d.draw(ctx);
+        expect(ctx.drawImage).not.toHaveBeenCalled();
+        expect(ctx.save).not.toHaveBeenCalled();
     });
 });
 
@@ -334,6 +522,7 @@ describe('Various simple Collision subclasses', () => {
         { Cls: DarkExplosion, id: 'darkExplosion', w: 300.0952380952381, h: 279, f: 50, m: 20 },
         { Cls: RedFireballExplosion, id: 'redFireballCollision', w: 300.0952380952381, h: 280, f: 50, m: 20 },
         { Cls: PurpleFireballExplosion, id: 'purpleFireballCollision', w: 300.0952380952381, h: 280, f: 50, m: 20 },
+        { Cls: PurpleThunderCollision, id: 'purpleThunderCollision', w: 304, h: 293, f: 50, m: 20 },
         { Cls: PoisonSpitSplash, id: 'poisonSpitSplash', w: 43, h: 73, f: 80, m: 10 },
         { Cls: PoisonDropCollision, id: 'poisonDropCollision', w: 112, h: 102, f: 30, m: 5 },
         { Cls: PoisonDropGroundCollision, id: 'poisonDropGroundCollision', w: 50, h: 50, f: 30, m: 6 },
@@ -347,7 +536,7 @@ describe('Various simple Collision subclasses', () => {
     ];
 
     cases.forEach(({ Cls, id, w, h, f, m }) => {
-        test(`${Cls.name} sets correct props`, () => {
+        test(`${Cls.name} constructor sets image, size and timing`, () => {
             const game = { speed: 0 };
             const inst = new Cls(game, 150, 250);
             expect(inst.image).toBe(document.getElementById(id));
@@ -429,11 +618,11 @@ describe('Blood', () => {
         blood = new Blood(game, 0, 0, enemy);
     });
 
-    test('constructor stores enemy', () => {
+    test('constructor stores enemy reference', () => {
         expect(blood.enemy).toBe(enemy);
     });
 
-    test('updatePosition centers on enemy', () => {
+    test('updatePosition centers blood on enemy', () => {
         blood.updatePosition(enemy);
         expect(blood.x).toBe(enemy.x + 25 - blood.width * 0.5);
         expect(blood.y).toBe(enemy.y + 25 - blood.height * 0.5);

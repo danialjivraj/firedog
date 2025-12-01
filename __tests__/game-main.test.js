@@ -1,6 +1,6 @@
 import { Game } from '../game/game-main.js';
 import { getDefaultKeyBindings } from '../game/config/keyBindings.js';
-import { Map6, Map3 } from '../game/background/background.js';
+import { Map6, Map3, BonusMap1 } from '../game/background/background.js';
 import {
   RedPotion,
   BluePotion,
@@ -29,6 +29,10 @@ import {
   Map6ElyvorgIngameCutsceneBeforeFight,
   Map6ElyvorgIngameCutsceneAfterFight
 } from '../game/cutscene/elyvorgCutscenes.js';
+import {
+  Map6GlacikalIngameCutsceneBeforeFight,
+  Map6GlacikalIngameCutsceneAfterFight
+} from '../game/cutscene/glacikalCutscenes.js';
 
 beforeAll(() => {
   jest.spyOn(console, 'error').mockImplementation(() => { });
@@ -210,6 +214,21 @@ describe('Game class (game-main.js)', () => {
       game.isTutorialActive = true;
       game.currentMap = 'Map2';
       expect(game.getEffectiveKeyBindings()).toEqual({ ...defaults, Jump: 'KeyJ' });
+    });
+
+    it('getEffectiveKeyBindings() returns confused keybindings when player is confused', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+      const defaults = getDefaultKeyBindings();
+      const confusedBindings = { ...defaults, MoveLeft: 'KeyJ' };
+
+      game.keyBindings = { ...defaults, MoveLeft: 'KeyA' };
+      game.isTutorialActive = false;
+      game.currentMap = 'Map2';
+
+      game.player.isConfused = true;
+      game.player.confusedKeyBindings = confusedBindings;
+
+      expect(game.getEffectiveKeyBindings()).toBe(confusedBindings);
     });
   });
 
@@ -1148,6 +1167,109 @@ describe('Game class (game-main.js)', () => {
       expect(game.boss.postFight).toBe(true);
     });
 
+    it('triggers Glacikal pre-fight cutscene on BonusMap1 via bossManager state', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+      jest.spyOn(game, 'startCutscene');
+
+      game.background = new BonusMap1(game);
+      game.currentMap = 'BonusMap1';
+
+      game.player = {
+        update: () => { },
+        x: 0,
+        width: 0,
+        energy: 0,
+        isInvisible: true,
+        invisibleTimer: 0,
+        invisibleCooldown: 1000,
+        invisibleActiveCooldownTimer: 0,
+      };
+
+      game.menu.pause.isPaused = false;
+      game.tutorial.tutorialPause = false;
+      game.cabin = { isFullyVisible: false };
+      game.background.update = () => { };
+
+      const bossState = game.bossManager.state;
+      Object.assign(bossState, {
+        current: {},
+        id: 'glacikal',
+        map: 'BonusMap1',
+        isVisible: true,
+        talkToBoss: false,
+        preFight: false,
+        inFight: false,
+        postFight: false,
+        runAway: false,
+        dialogueBeforeOnce: true,
+        dialogueAfterOnce: false,
+        dialogueAfterLeaving: false,
+        startAfterDialogueWhenAnimEnds: false,
+        poisonScreen: false,
+        poisonColourOpacity: 0,
+      });
+      game.menu.levelDifficulty.setDifficulty = jest.fn();
+
+      game.update(0);
+
+      expect(game.startCutscene).toHaveBeenCalled();
+      expect(game.cutscenes.some(c => c instanceof Map6GlacikalIngameCutsceneBeforeFight)).toBe(true);
+      expect(game.boss.dialogueBeforeOnce).toBe(false);
+      expect(game.boss.preFight).toBe(true);
+      expect(game.boss.postFight).toBe(false);
+    });
+
+    it('triggers Glacikal post-fight cutscene on BonusMap1 via bossManager state', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+      jest.spyOn(game, 'startCutscene');
+
+      game.background = new BonusMap1(game);
+      game.currentMap = 'BonusMap1';
+
+      game.player = {
+        update: () => { },
+        x: 0,
+        width: 0,
+        energy: 100,
+        isInvisible: false,
+        invisibleTimer: 0,
+        invisibleCooldown: 1000,
+        invisibleActiveCooldownTimer: 0,
+      };
+
+      game.menu.pause.isPaused = false;
+      game.tutorial.tutorialPause = false;
+      game.cabin = { isFullyVisible: false };
+      game.background.update = () => { };
+
+      const bossState = game.bossManager.state;
+      Object.assign(bossState, {
+        current: {},
+        id: 'glacikal',
+        map: 'BonusMap1',
+        isVisible: true,
+        talkToBoss: false,
+        preFight: true,
+        inFight: false,
+        postFight: false,
+        runAway: false,
+        dialogueBeforeOnce: false,
+        dialogueAfterOnce: true,
+        dialogueAfterLeaving: false,
+        startAfterDialogueWhenAnimEnds: true,
+        poisonScreen: false,
+        poisonColourOpacity: 0,
+      });
+
+      game.update(0);
+
+      expect(game.startCutscene).toHaveBeenCalled();
+      expect(game.cutscenes.some(c => c instanceof Map6GlacikalIngameCutsceneAfterFight)).toBe(true);
+      expect(game.boss.dialogueAfterOnce).toBe(false);
+      expect(game.boss.dialogueAfterLeaving).toBe(true);
+      expect(game.boss.postFight).toBe(true);
+    });
+
     it('sets enterCabin=500 and openDoor="submarineDoorOpening" for Map3 and plays sound', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
       game.saveGameState = jest.fn();
@@ -1252,7 +1374,7 @@ describe('Game class (game-main.js)', () => {
       expect(ctx.fillRect).toHaveBeenCalledTimes(2);
     });
 
-    it('draws poison overlay when boss fight poisonScreen is active', () => {
+    it('draws poison overlay when boss fight poison screen effect is active', () => {
       game.player.isUnderwater = false;
       game.player.isInvisible = false;
 

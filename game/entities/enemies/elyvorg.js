@@ -1,5 +1,5 @@
-import { EnemyBoss, GroundEnemy, FallingEnemy, Projectile, LaserBeam } from "./enemies.js";
-import { MeteorExplosionCollision, DarkExplosion, PoisonDropGroundCollision } from "../../animations/collisionAnimation.js";
+import { EnemyBoss, GroundEnemy, FallingEnemy, Projectile, ImmobileGroundEnemy } from "./enemies.js";
+import { MeteorExplosionCollision, DarkExplosion, PoisonDropGroundCollision, GhostFadeOut } from "../../animations/collisionAnimation.js";
 import { PurpleWarningIndicator } from "../../animations/damageIndicator.js";
 
 export class Barrier extends Projectile {
@@ -29,15 +29,66 @@ export class Barrier extends Projectile {
     }
 }
 
+export class PurpleLaserBeam extends Projectile {
+    constructor(game, x, y, speedX, speedY = 0) {
+        super(game, x, y, 100, 57, 0, 'elyvorg_laser_beam', speedX, 20);
+        this.speedY = speedY;
+
+        this.direction = this.speedX < 0;
+
+        this.collisionDrawInfo = {
+            angle: 0,
+            direction: this.direction,
+        };
+    }
+
+    draw(context) {
+        if (this.game.debug) {
+            context.strokeRect(this.x, this.y, this.width, this.height);
+        }
+
+        context.save();
+        context.translate(this.x + this.width / 2, this.y + this.height / 2);
+
+        let angle = Math.atan2(this.speedY, this.speedX);
+
+        if (this.direction) {
+            angle = Math.PI - angle;
+            context.scale(-1, -1);
+        } else {
+            context.scale(1, -1);
+        }
+
+        this.collisionDrawInfo.angle = angle;
+        this.collisionDrawInfo.direction = this.direction;
+
+        context.rotate(angle);
+
+        context.drawImage(
+            this.image,
+            this.frameX * this.width,
+            0,
+            this.width,
+            this.height,
+            -this.width / 2,
+            -this.height / 2,
+            this.width,
+            this.height
+        );
+
+        context.restore();
+    }
+}
+
 export class MeteorAttack extends FallingEnemy {
     constructor(game) {
-        super(game, 98.5, 197, 1, 'meteorAttack');
+        super(game, 132.5, 250, 5, 'meteorAttack');
         this.speedY = Math.random() * 5 + 2;
         this.x = Math.random() * (this.game.width - this.width);
     }
     update(deltaTime) {
         super.update(deltaTime);
-        if (this.y >= this.game.height - this.game.groundMargin - 190) {
+        if (this.y >= this.game.height - this.game.groundMargin - 230) {
             this.markedForDeletion = true;
             this.game.collisions.push(new MeteorExplosionCollision(this.game, this.x + this.width * 0.5, this.y + this.height * 0.5 - 30));
             this.game.audioHandler.collisionSFX.playSound('elyvorg_meteor_in_contact_with_ground_sound');
@@ -65,8 +116,7 @@ export class PoisonDrop extends FallingEnemy {
 export class GhostElyvorg extends GroundEnemy {
     constructor(game) {
         super(game, 153.23076923076923076923076923077, 180, 12, 'elyvorgGhostRun');
-        this.fps = 120;
-        this.frameInterval = 1000 / this.fps;
+        this.setFps(120);
         this.incrementMovement = 0;
     }
     update(deltaTime) {
@@ -135,17 +185,19 @@ export class GravitationalAura extends Projectile {
             this.y = 100;
         }
 
-        //pushes player
+        // pushes player
         const deltaXPlayer = this.player.x - this.x;
         const deltaYPlayer = this.player.y - this.y;
         const distancePlayer = Math.sqrt(deltaXPlayer * deltaXPlayer + deltaYPlayer * deltaYPlayer);
-        const directionXPlayer = deltaXPlayer / distancePlayer;
-        const pushbackDistancePlayer = 50;
-        const playerPushbackX = this.player.x - directionXPlayer * pushbackDistancePlayer;
-        if (this.player.isSlowed) {
-            this.player.x += (playerPushbackX - this.player.x) * 0.08;
-        } else {
-            this.player.x += (playerPushbackX - this.player.x) * 0.12;
+        if (distancePlayer > 0.0001) {
+            const directionXPlayer = deltaXPlayer / distancePlayer;
+            const pushbackDistancePlayer = 50;
+            const playerPushbackX = this.player.x - directionXPlayer * pushbackDistancePlayer;
+            if (this.player.isSlowed) {
+                this.player.x += (playerPushbackX - this.player.x) * 0.08;
+            } else {
+                this.player.x += (playerPushbackX - this.player.x) * 0.12;
+            }
         }
     }
 
@@ -197,6 +249,7 @@ export class ElectricWheel extends Projectile {
         context.restore();
     }
 }
+
 export class InkBomb extends Projectile {
     constructor(game, x, y, verticalSpeed, stopY, incrementMovement, direction) {
         super(game, x, y, 49.5, 48, 1, 'inkBomb', 0, 4);
@@ -301,7 +354,7 @@ export class PurpleFireball extends Projectile {
 
 export class Arrow extends Projectile {
     constructor(game, x, y, speedX, speedY, direction, imageId) {
-        super(game, x, y, 96, 30, 0, imageId, speedX, speedY);
+        super(game, x, y, 103.5, 40, 1, imageId, speedX, speedY);
         this.initialSize = 10;
         this.size = this.initialSize;
         this.x = x;
@@ -309,7 +362,14 @@ export class Arrow extends Projectile {
         this.speedX = speedX;
         this.speedY = speedY;
         this.direction = direction;
+        this.setFps(7);
+
+        this.collisionDrawInfo = {
+            angle: 0,
+            direction: this.direction,
+        };
     }
+
     draw(context) {
         if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
 
@@ -321,20 +381,42 @@ export class Arrow extends Projectile {
         } else if (this.image.id === 'blueArrow') {
             context.shadowColor = 'blue';
             context.shadowBlur = 10;
+        } else if (this.image.id === 'greenArrow') {
+            context.shadowColor = 'lime';
+            context.shadowBlur = 10;
+        } else if (this.image.id === 'cyanArrow') {
+            context.shadowColor = 'cyan';
+            context.shadowBlur = 10;
         }
 
         context.translate(this.x + this.width / 2, this.y + this.height / 2);
+
         let angle = Math.atan2(this.speedY, this.speedX);
 
         if (this.direction) {
             angle = Math.PI - angle;
-            context.scale(1, 1);
+            context.scale(-1, -1);
         } else {
-            context.scale(-1, 1);
+            context.scale(1, -1);
         }
 
+        this.collisionDrawInfo.angle = angle;
+        this.collisionDrawInfo.direction = this.direction;
+
         context.rotate(angle);
-        context.drawImage(this.image, this.frameX * this.width, 0, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
+
+        context.drawImage(
+            this.image,
+            this.frameX * this.width,
+            0,
+            this.width,
+            this.height,
+            -this.width / 2,
+            -this.height / 2,
+            this.width,
+            this.height
+        );
+
         context.restore();
     }
 }
@@ -384,6 +466,202 @@ export class PurpleSlash extends Projectile {
         context.restore();
     }
 }
+
+export class PurpleThunder extends ImmobileGroundEnemy {
+    constructor(game, centerX) {
+        super(game, 182, 662, 5, "purpleThunder");
+
+        this.game = game;
+        this.setFps(18);
+
+        this.isSlowEnemy = true;
+
+        this.dealsDirectHitDamage = false;
+
+        const halfW = this.width * 0.5;
+        const minCenter = halfW;
+        const maxCenter = this.game.width - halfW;
+        centerX = Math.max(minCenter, Math.min(maxCenter, centerX));
+
+        this.centerX = centerX;
+        this.x = centerX - halfW;
+
+        this.groundBottom = this.game.height - this.game.groundMargin;
+
+        this.warningY = -this.height + 1;
+        this.strikeY = 0;
+
+        this.y = this.warningY;
+
+        this.speedX = 0;
+        this.speedY = 0;
+
+        this.phase = "warning";
+        this.timer = 0;
+
+        this.warningDuration = 2000;
+    }
+
+    update(deltaTime) {
+        this.timer += deltaTime;
+
+        if (this.phase === "warning") {
+            this.y = this.warningY;
+            this.dealsDirectHitDamage = false;
+
+            if (this.timer >= this.warningDuration) {
+                this.phase = "strike";
+                this.timer = 0;
+                this.frameX = 0;
+                this.frameTimer = 0;
+
+                this.y = this.strikeY;
+                this.dealsDirectHitDamage = true;
+
+                const soundId = Math.random() < 0.5
+                    ? 'elyvorg_purple_thunder_attack_sound_effect_1'
+                    : 'elyvorg_purple_thunder_attack_sound_effect_2';
+                this.game.audioHandler.enemySFX.playSound(soundId, false, true);
+            }
+            return;
+        }
+
+        if (this.phase === "strike") {
+            this.frameTimer += deltaTime;
+            if (this.frameTimer >= this.frameInterval) {
+                this.frameTimer = 0;
+                if (this.frameX < this.maxFrame) {
+                    this.frameX++;
+                } else {
+                    this.dealsDirectHitDamage = false;
+                    this.markedForDeletion = true;
+                    this.phase = "done";
+                }
+            }
+        }
+    }
+
+    draw(context) {
+        const groundBottom = this.groundBottom;
+
+        if (this.phase === "warning") {
+            const centerX = this.x + this.width * 0.5;
+
+            if (this.game.debug) {
+                context.save();
+                context.strokeStyle = "rgba(0, 0, 0, 0.7)";
+                context.strokeRect(this.x, this.y, this.width, this.height);
+                context.restore();
+            }
+
+            const t = Math.max(0, Math.min(1, this.timer / this.warningDuration));
+
+            const pulse = 0.5 + 0.5 * Math.sin(t * Math.PI * 6);
+
+            const baseIntensity = t;
+
+            const globalAlpha = 0.5 + 0.5 * (baseIntensity * pulse);
+
+            context.save();
+
+            const glowWidth = this.width * 1.1;
+            const glowHeight = 44;
+
+            context.translate(centerX, groundBottom - 10);
+
+            const innerAlpha = 0.75 + 0.25 * baseIntensity;
+            const midAlpha = 0.5 + 0.35 * baseIntensity;
+
+            const gradient = context.createRadialGradient(
+                0, 0, 0,
+                0, 0, glowWidth * 0.75
+            );
+            gradient.addColorStop(0, `rgba(250, 220, 255, ${innerAlpha})`);
+            gradient.addColorStop(0.5, `rgba(210, 140, 255, ${midAlpha})`);
+            gradient.addColorStop(1, "rgba(140, 0, 255, 0)");
+
+            context.fillStyle = gradient;
+            context.globalAlpha = globalAlpha;
+
+            const blurBase = 40;
+            const blurExtra = 40 * baseIntensity;
+            context.shadowColor = "rgba(240, 200, 255, 1)";
+            context.shadowBlur = blurBase + blurExtra;
+
+            context.beginPath();
+            context.ellipse(
+                0,
+                0,
+                glowWidth * 0.5,
+                glowHeight * 0.5,
+                0,
+                0,
+                Math.PI * 2
+            );
+            context.fill();
+
+            const coreT = Math.min(1, t * 1.15);
+            const coreScale = 0.35 + 0.65 * coreT;
+
+            const coreRadiusX = glowWidth * coreScale * 0.5;
+            const coreRadiusY = glowHeight * coreScale * 0.5;
+
+            context.globalAlpha = 0.7 + 0.3 * baseIntensity;
+            context.shadowBlur = 25 + 45 * baseIntensity;
+            context.shadowColor = "rgba(255, 255, 255, 1)";
+
+            context.beginPath();
+            context.ellipse(
+                0,
+                0,
+                coreRadiusX,
+                coreRadiusY,
+                0,
+                0,
+                Math.PI * 2
+            );
+            context.strokeStyle = `rgba(255, 255, 255, ${0.65 + 0.35 * pulse})`;
+            context.lineWidth = 3 + 3 * baseIntensity;
+            context.stroke();
+
+            context.restore();
+            return;
+        }
+
+        if (this.phase === "strike") {
+            context.save();
+
+            context.beginPath();
+            context.rect(this.x, 0, this.width, groundBottom);
+            context.clip();
+
+            context.shadowColor = "rgba(220,180,255,0.95)";
+            context.shadowBlur = 24;
+
+            context.drawImage(
+                this.image,
+                this.frameX * this.width,
+                0,
+                this.width,
+                this.height,
+                this.x,
+                this.y,
+                this.width,
+                this.height
+            );
+
+            context.restore();
+        }
+
+        if (this.game.debug) {
+            context.save();
+            context.strokeStyle = "magenta";
+            context.strokeRect(this.x, this.y, this.width, this.height);
+            context.restore();
+        }
+    }
+}
+
 // ------------------------------------------------------------------- Final Boss ------------------------------------------------------------------------
 export class Elyvorg extends EnemyBoss {
     constructor(game) {
@@ -396,17 +674,15 @@ export class Elyvorg extends EnemyBoss {
         this.reachedLeftEdge = false;
         this.isInTheMiddle = false;
         this.originalY = this.y;
-        this.fps = 30;
-        this.frameInterval = 1000 / this.fps;
-        this.livesDefeatedAt = 5;
-        this.lives = 130;
-        this.maxLives = this.lives - this.livesDefeatedAt;
+        this.setFps(30);
+        this.maxLives = 125;
+        this.lives = this.maxLives;
+        this._defeatTriggered = false;
         this.stateRandomiserTimer = 5000;
         this.stateRandomiserCooldown = 5000;
         // run
         this.runAnimation = new EnemyBoss(game, 153.23076923076923076923076923077, 180, 12, 'elyvorgRun');
-        this.runAnimation.fps = 120;
-        this.runAnimation.frameInterval = 1000 / this.runAnimation.fps;
+        this.runAnimation.setFps(120);
         this.runAnimation.frameX = 0;
         this.runningDirection = 0; // switches between 10 and -10
         this.runStateCounter = 0;
@@ -423,6 +699,7 @@ export class Elyvorg extends EnemyBoss {
         this.jumpDuration = 0.7;
         this.jumpStartTime = 0;
         this.canJumpAttack = true;
+        this.isTeleportJump = false;
         // barrier
         this.barrier = new Barrier(this.game, this.x - 20, this.y - 20);
         this.oneBarrier = true;
@@ -459,6 +736,8 @@ export class Elyvorg extends EnemyBoss {
         this.meteorAnimation.frameX = 0;
         this.meteorThrowCount = 0;
         this.canMeteorAttack = true;
+        this.meteorShakeActive = false;
+        this.meteorShakeDuration = 1000;
         // poison
         this.poisonAnimation = new EnemyBoss(game, 153.20833333333333333333333333333, 180, 23, 'elyvorgPoisonIdle');
         this.poisonAnimation.frameX = 0;
@@ -487,28 +766,69 @@ export class Elyvorg extends EnemyBoss {
         this.fireballAnimation = new EnemyBoss(game, 153.20833333333333333333333333333, 180, 23, 'elyvorgIdleFireball');
         this.fireballAnimation.frameX = 0;
         this.canFireballAttack = true;
+        // thunder
+        this.thunderAnimation = new EnemyBoss(game, 153.20833333333333333333333333333, 180, 23, 'elyvorgThunderIdle');
+        this.thunderAnimation.frameX = 0;
+        this.isThunderSequenceActive = false;
+        this.thunderSequenceInitialised = false;
+        this.thunderMaxActive = 4;
+        this.thunderIterationsMax = 5;
+        this.thunderTotalSpawned = 0;
+        this.thunderMaxTotal = this.thunderMaxActive * this.thunderIterationsMax;
+        this.thunderGroup1Spawned = false;
+        this.thunderGroup2Spawned = false;
+        this.thunderInitialWavesDone = false;
+        this.thunderGroup2Delay = 1000;
+        this.thunderGroup2Timer = 0;
+        this.thunderStateCounter = 0;
+        this.thunderStateCounterLimit = Math.floor(Math.random() * 6) + 15;
+        // teleport
+        this.teleportPhase = 'none';
+        this.teleportTimer = 0;
+        this.teleportDuration = 450;
+        this.teleportMinDistance = 200;
+        this.teleportTargetX = this.x;
+        this.teleportTargetY = this.y;
+        this.teleportAir = false;
+        this.chainTeleportFromAir = false;
+        this.postTeleportSafeDuration = 350;
+        this.postTeleportSafeTimer = 0;
     }
 
     throwLaserBeam() {
-        const playerIsOnLeft = this.game.player.x + this.game.player.width / 2 < this.x + this.width / 2;
-        const initialSpeedX = playerIsOnLeft ? 20 : -20;
+        const playerIsOnLeft =
+            this.game.player.x + this.game.player.width / 2 <
+            this.x + this.width / 2;
 
-        const laserBeamX = playerIsOnLeft ? this.x - 70 : this.x + 110;
+        const speedX = playerIsOnLeft ? 20 : -20;
 
-        const laserBeam = new LaserBeam(
-            this.game, laserBeamX, this.y - 50 + this.height / 2 - 57 / 2, 100,
-            57, 0, 'elyvorg_laser_beam', initialSpeedX
+        const laserX = playerIsOnLeft ? this.x - 70 : this.x + 110;
+
+        const topY =
+            this.y - 50 + this.height / 2 - 57 / 2;
+        const bottomY =
+            this.y + 50 + this.height / 2 - 57 / 2;
+
+        const topBeam = new PurpleLaserBeam(
+            this.game,
+            laserX,
+            topY,
+            speedX,
+            0
         );
-        const laserBeam1X = playerIsOnLeft ? this.x - 70 : this.x + 110;
 
-        const laserBeam1 = new LaserBeam(
-            this.game, laserBeam1X, this.y + 50 + this.height / 2 - 57 / 2, 100,
-            57, 0, 'elyvorg_laser_beam', initialSpeedX
+        const bottomBeam = new PurpleLaserBeam(
+            this.game,
+            laserX,
+            bottomY,
+            speedX,
+            0
         );
 
-        this.game.enemies.push(laserBeam);
-        this.game.enemies.push(laserBeam1);
+        this.game.enemies.push(topBeam);
+        this.game.enemies.push(bottomBeam);
     }
+
     throwFireballAttack() {
         const playerIsOnLeft = this.game.player.x + this.game.player.width / 2 < this.x + this.width / 2;
         const horizontalSpeed = playerIsOnLeft ? 15 : -15;
@@ -531,6 +851,7 @@ export class Elyvorg extends EnemyBoss {
         );
         this.game.enemies.push(fireball);
     }
+
     throwArrowAttack() {
         const playerIsOnLeft = this.game.player.x + this.game.player.width / 2 < this.x + this.width / 2;
         const horizontalSpeed = playerIsOnLeft ? 18 : -18;
@@ -543,13 +864,16 @@ export class Elyvorg extends EnemyBoss {
 
         const verticalSpeed = Math.sin(angle) * 21;
 
+        const r = Math.random();
         let image;
-        if (Math.random() < 1 / 3) {
+        if (r < 1 / 4) {
             image = "blueArrow";
-        } else if (Math.random() < 2 / 3) {
+        } else if (r < 2 / 4) {
             image = "yellowArrow";
-        } else {
+        } else if (r < 3 / 4) {
             image = "greenArrow";
+        } else {
+            image = "cyanArrow";
         }
 
         const arrowX = playerIsOnLeft ? this.x + 10 : this.x + 110;
@@ -564,6 +888,7 @@ export class Elyvorg extends EnemyBoss {
         );
         this.game.enemies.push(arrow);
     }
+
     throwGravityAttack() {
         const offsetX = this.game.player.x + this.game.player.width / 2 > this.x + this.width / 2 ? 70 : 10;
         this.gravityOffset = offsetX;
@@ -571,6 +896,154 @@ export class Elyvorg extends EnemyBoss {
         this.game.enemies.push(this.gravitationalAura);
         this.isGravitySpinnerActive = true;
     }
+
+    getActiveThunders() {
+        const list = [];
+        for (const enemy of this.game.enemies) {
+            if (enemy instanceof PurpleThunder &&
+                !enemy.markedForDeletion &&
+                enemy.phase !== "done") {
+                list.push(enemy);
+            }
+        }
+        return list;
+    }
+
+    startMeteorShake() {
+        if (this.game.shakeActive === undefined) {
+            this.game.shakeActive = false;
+            this.game.shakeTimer = 0;
+            this.game.shakeDuration = 0;
+        }
+
+        this.meteorShakeActive = true;
+        this.game.shakeActive = true;
+        this.game.shakeTimer = 0;
+        this.game.shakeDuration = this.meteorShakeDuration;
+    }
+
+    updateMeteorShakeTimer(deltaTime) {
+        if (!this.meteorShakeActive) return;
+
+        if (this.state === 'thunder' || this.isThunderSequenceActive) {
+            this.meteorShakeActive = false;
+            return;
+        }
+
+        if (!this.game.shakeActive) {
+            this.meteorShakeActive = false;
+            return;
+        }
+
+        this.game.shakeTimer += deltaTime;
+        if (this.game.shakeTimer >= this.game.shakeDuration) {
+            this.game.shakeActive = false;
+            this.game.shakeTimer = 0;
+            this.game.shakeDuration = 0;
+            this.meteorShakeActive = false;
+        }
+    }
+
+    findThunderLaneCenter(preferredCenterX = null) {
+        const active = this.getActiveThunders();
+        const thunderWidth = 182;
+        const halfW = thunderWidth * 0.5;
+        const minCenter = halfW;
+        const maxCenter = this.game.width - halfW;
+        const minGap = thunderWidth;
+
+        let center = preferredCenterX != null
+            ? preferredCenterX
+            : (Math.random() * this.game.width);
+
+        center = Math.max(minCenter, Math.min(maxCenter, center));
+
+        const maxAttempts = 20;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            const candidate = (attempt === 0)
+                ? center
+                : (minCenter + Math.random() * (maxCenter - minCenter));
+
+            let ok = true;
+            for (const th of active) {
+                const thCenter = th.x + th.width * 0.5;
+                if (Math.abs(candidate - thCenter) < minGap) {
+                    ok = false;
+                    break;
+                }
+            }
+
+            if (ok) return candidate;
+        }
+        return center;
+    }
+
+    spawnThunderStrike(spawnAtPlayer) {
+        let preferredCenter = null;
+        if (spawnAtPlayer) {
+            preferredCenter = this.game.player.x + this.game.player.width / 2;
+        }
+
+        const centerX = this.findThunderLaneCenter(preferredCenter);
+        const thunder = new PurpleThunder(this.game, centerX);
+        this.game.enemies.push(thunder);
+        return thunder;
+    }
+
+    startThunderSequence() {
+        if (this.thunderSequenceInitialised) return;
+
+        this.thunderSequenceInitialised = true;
+        this.isThunderSequenceActive = true;
+
+        this.thunderTotalSpawned = 0;
+
+        this.thunderGroup1Spawned = false;
+        this.thunderGroup2Spawned = false;
+        this.thunderInitialWavesDone = false;
+        this.thunderGroup2Timer = 0;
+
+        this.game.audioHandler.enemySFX.playSound('elyvorg_purple_thunder_sound_effect', true);
+
+        if (this.game.shakeActive === undefined) {
+            this.game.shakeActive = false;
+            this.game.shakeTimer = 0;
+            this.game.shakeDuration = 0;
+        }
+        this.game.shakeActive = true;
+        this.game.shakeTimer = 0;
+        this.game.shakeDuration = 0;
+
+        this.game.bossManager.requestScreenEffect('elyvorg_thunder', {
+            rgb: [0, 0, 0],
+            fadeInSpeed: 0.0035,
+        });
+    }
+
+    endThunderSequence() {
+        this.isThunderSequenceActive = false;
+        this.thunderSequenceInitialised = false;
+
+        this.game.audioHandler.enemySFX.stopSound('elyvorg_purple_thunder_sound_effect');
+        this.game.bossManager.releaseScreenEffect('elyvorg_thunder');
+
+        this.game.shakeActive = false;
+        this.game.shakeTimer = 0;
+        this.game.shakeDuration = 0;
+
+        this.previousState = "thunder";
+
+        this.backToRechargeSetUp();
+    }
+
+    isThunderLaneCoveringPlayer(thunders) {
+        const playerCenterX = this.game.player.x + this.game.player.width / 2;
+        return thunders.some(th => {
+            const thCenter = th.x + th.width * 0.5;
+            return Math.abs(thCenter - playerCenterX) < th.width * 0.4;
+        });
+    }
+
     fireballThrownWhileInIdle() {
         let isFireballInRange = false;
         for (const fireball of this.game.behindPlayerParticles) {
@@ -592,18 +1065,56 @@ export class Elyvorg extends EnemyBoss {
         }
     }
 
+    fireJumpArrow() {
+        if (!this.canJumpAttack) return;
+
+        this.canJumpAttack = false;
+        this.throwArrowAttack();
+        this.game.audioHandler.enemySFX.playSound(
+            'elyvorg_arrow_attack_sound',
+            false,
+            true
+        );
+    }
+
     jumpLogic() {
+        if (this.isTeleportJump) {
+            if (!this.jumpedBeforeDistanceLogic) {
+                this.jumpStartTime = this.game.hiddenTime;
+                this.jumpedBeforeDistanceLogic = true;
+
+                this.fireJumpArrow();
+            }
+
+            const halfDurationMs = this.jumpDuration * 0.5 * 1000;
+            let t = (this.game.hiddenTime - this.jumpStartTime) / halfDurationMs;
+            t = Math.max(0, Math.min(1, t));
+
+            const progress = 0.5 + 0.5 * t;
+            this.y = this.originalY - this.jumpHeight * Math.sin(progress * Math.PI);
+
+            if (t >= 1) {
+                this.y = this.originalY;
+                this.backToIdleSetUp();
+                this.canJumpAttack = true;
+                this.jumpedBeforeDistanceLogic = false;
+                this.isTeleportJump = false;
+            }
+            return;
+        }
+
         if (this.jumpAnimation.frameX === 0 && !this.jumpedBeforeDistanceLogic) {
             this.jumpStartTime = this.game.hiddenTime;
             this.jumpedBeforeDistanceLogic = true;
         }
+
         const jumpProgress = (this.game.hiddenTime - this.jumpStartTime) / (this.jumpDuration * 1000);
+
         if (jumpProgress < 1) {
             this.y = this.originalY - this.jumpHeight * Math.sin(jumpProgress * Math.PI);
-            if (Math.abs(jumpProgress - 0.5) < 0.05 && this.canJumpAttack) {
-                this.canJumpAttack = false;
-                this.throwArrowAttack();
-                this.game.audioHandler.enemySFX.playSound('elyvorg_arrow_attack_sound', false, true);
+
+            if (Math.abs(jumpProgress - 0.5) < 0.05) {
+                this.fireJumpArrow();
             }
         } else {
             this.backToIdleSetUp();
@@ -629,6 +1140,7 @@ export class Elyvorg extends EnemyBoss {
             this.canLaserAttack = true;
         }
     }
+
     gravityLogic() {
         if (this.gravityAnimation.frameX === 9 && this.canGravityAttack === true) {
             this.throwGravityAttack();
@@ -641,20 +1153,29 @@ export class Elyvorg extends EnemyBoss {
             this.canGravityAttack = true;
         }
     }
+
     gravityLogicTimer(deltaTime) {
-        if (this.isGravitySpinnerActive) {
-            this.gravityCooldownTimer += deltaTime;
-            if (this.gravityCooldownTimer >= this.gravityCooldown || this.gravitationalAura.lives <= 0) {
-                this.isGravitySpinnerActive = false;
-                this.gravitationalAura.lives = 0;
-                this.gravityCooldownTimer = 0;
-                this.game.collisions.push(new DarkExplosion(this.game, this.gravitationalAura.x + this.gravitationalAura.width * 0.5, this.gravitationalAura.y + this.gravitationalAura.height * 0.5 - 30));
-                this.game.audioHandler.collisionSFX.playSound('darkExplosionCollisionSound', false, true);
-                this.game.audioHandler.enemySFX.stopSound('elyvorg_shield_up_sound');
-                this.game.audioHandler.enemySFX.stopSound('elyvorg_gravitational_aura_sound_effect');
-            }
+        if (!this.isGravitySpinnerActive) return;
+        if (!this.gravitationalAura) return;
+        if (this.gravitationalAura.lives <= 0 || this.gravitationalAura.markedForDeletion) {
+            this.isGravitySpinnerActive = false;
+            this.gravityCooldownTimer = 0;
+            this.game.audioHandler.enemySFX.stopSound('elyvorg_gravitational_aura_sound_effect');
+            return;
+        }
+
+        this.gravityCooldownTimer += deltaTime;
+
+        if (this.gravityCooldownTimer >= this.gravityCooldown) {
+            this.isGravitySpinnerActive = false;
+            this.gravityCooldownTimer = 0;
+            this.gravitationalAura.lives = 0;
+            this.game.collisions.push(new DarkExplosion(this.game, this.gravitationalAura.x + this.gravitationalAura.width * 0.5, this.gravitationalAura.y + this.gravitationalAura.height * 0.5 - 30));
+            this.game.audioHandler.collisionSFX.playSound('darkExplosionCollisionSound', false, true);
+            this.game.audioHandler.enemySFX.stopSound('elyvorg_gravitational_aura_sound_effect');
         }
     }
+
     meteorLogic() {
         if (this.meteorAnimation.frameX === 9) {
             this.game.audioHandler.enemySFX.playSound('elyvorg_meteor_attack_sound');
@@ -663,11 +1184,15 @@ export class Elyvorg extends EnemyBoss {
         if (this.meteorAnimation.frameX === 23 && this.canMeteorAttack === true) {
             this.canMeteorAttack = false;
             this.meteorThrowCount++;
+
             for (let i = 0; i < 7; i++) {
                 this.game.enemies.push(new MeteorAttack(this.game));
             }
             this.game.audioHandler.enemySFX.playSound('elyvorg_meteor_falling_sound', true);
+
+            this.startMeteorShake();
         }
+
         if (this.meteorThrowCount >= 5 && this.meteorAnimation.frameX === 23) {
             this.backToIdleSetUp();
             this.meteorThrowCount = 0;
@@ -676,15 +1201,21 @@ export class Elyvorg extends EnemyBoss {
             this.canMeteorAttack = true;
         }
     }
+
     poisonLogic() {
         if (this.poisonAnimation.frameX === 0) {
-            this.game.boss.screenEffect.active = true;
-            this.game.boss.screenEffect.rgb = [0, 50, 0];
-            this.game.boss.screenEffect.fadeInSpeed = 0.00298;
-            this.game.audioHandler.enemySFX.playSound('elyvorg_poison_drop_indicator_sound', false, true);
+            this.game.bossManager.requestScreenEffect('elyvorg_poison', {
+                rgb: [0, 50, 0],
+                fadeInSpeed: 0.00298,
+            });
+            this.game.audioHandler.enemySFX.playSound(
+                'elyvorg_poison_drop_indicator_sound',
+                false,
+                true
+            );
         }
         if (this.poisonAnimation.frameX === 17) {
-            this.game.audioHandler.enemySFX.playSound('elyvorg_poison_drop_rain_sound', false, true)
+            this.game.audioHandler.enemySFX.playSound('elyvorg_poison_drop_rain_sound', false, true);
         }
         if (this.poisonAnimation.frameX === 23 && this.canPoisonAttack === true) {
             this.isPoisonActive = true;
@@ -701,12 +1232,16 @@ export class Elyvorg extends EnemyBoss {
             this.canPoisonAttack = true;
         }
     }
+
     poisonLogicTimer(deltaTime) {
         if (this.isPoisonActive) {
             this.poisonCooldownTimer += deltaTime;
             this.passivePoisonCooldown += deltaTime;
+
             if (this.poisonCooldownTimer <= this.poisonCooldown) {
-                if (this.state !== 'meteor') {
+                const inBlockedState = this.state === 'meteor' || this.state === 'thunder';
+
+                if (!inBlockedState) {
                     if (this.passivePoisonCooldown >= 1000) {
                         this.passivePoisonCooldown -= 1000;
                         const numDrops = Math.floor(Math.random() * 3) + 1; // 1 to 3
@@ -718,13 +1253,14 @@ export class Elyvorg extends EnemyBoss {
                     this.passivePoisonCooldown = 0;
                 }
             } else {
-                this.game.boss.screenEffect.active = false;
+                this.game.bossManager.releaseScreenEffect('elyvorg_poison');
                 this.isPoisonActive = false;
                 this.poisonCooldownTimer = 0;
                 this.passivePoisonCooldown = 0;
             }
         }
     }
+
     pistolLogic() {
         if (this.pistolAnimation.frameX === 5) {
             this.electricWheel.shouldElectricWheelInvert();
@@ -733,12 +1269,10 @@ export class Elyvorg extends EnemyBoss {
             this.electricWheelThrown = true;
         }
         if (this.pistolAnimation.frameX === 23 || this.isElectricWheelActive === false) {
-            this.state = "recharge";
-            this.chooseStateOnce = true;
-            this.frameX = 0;
-            this.stateRandomiserTimer = 0;
+            this.backToIdleSetUp();
         }
     }
+
     ghostLogic() {
         if (this.ghostAnimation.frameX === 0) {
             this.game.audioHandler.enemySFX.playSound('elyvorg_ghost_attack_sound', false, true);
@@ -769,6 +1303,7 @@ export class Elyvorg extends EnemyBoss {
             this.canGhostAttack = true;
         }
     }
+
     inkLogic() {
         if (this.inkAnimation.frameX === 1 && this.canInkAttack === true) {
             this.canInkAttack = false;
@@ -803,6 +1338,7 @@ export class Elyvorg extends EnemyBoss {
             this.canInkAttack = true;
         }
     }
+
     fireballLogic() {
         if (this.fireballAnimation.frameX === 10 && this.canFireballAttack === true) {
             this.throwFireballAttack();
@@ -819,6 +1355,228 @@ export class Elyvorg extends EnemyBoss {
             this.canFireballAttack = true;
         }
     }
+
+    thunderLogic(deltaTime) {
+        this.startThunderSequence();
+        if (!this.isThunderSequenceActive) return;
+
+        if (!this.thunderGroup1Spawned) {
+            this.spawnThunderStrike(true);
+            this.spawnThunderStrike(false);
+            this.spawnThunderStrike(false);
+            this.thunderTotalSpawned += 3;
+
+            this.thunderGroup1Spawned = true;
+            return;
+        }
+
+        if (!this.thunderGroup2Spawned) {
+            this.thunderGroup2Timer += deltaTime;
+
+            if (this.thunderGroup2Timer >= this.thunderGroup2Delay) {
+                const currentThunders = this.getActiveThunders();
+                const spawnAtPlayer = !this.isThunderLaneCoveringPlayer(currentThunders);
+
+                this.spawnThunderStrike(spawnAtPlayer);
+                this.spawnThunderStrike(false);
+                this.thunderTotalSpawned += 2;
+
+                this.thunderGroup2Spawned = true;
+                this.thunderInitialWavesDone = true;
+            }
+
+            return;
+        }
+
+        if (this.thunderInitialWavesDone) {
+            const sustainedThunders = this.getActiveThunders();
+            let laneCovered = this.isThunderLaneCoveringPlayer(sustainedThunders);
+
+            while (sustainedThunders.length < this.thunderMaxActive &&
+                this.thunderTotalSpawned < this.thunderMaxTotal) {
+                const spawnAtPlayer = !laneCovered;
+                const thunder = this.spawnThunderStrike(spawnAtPlayer);
+                sustainedThunders.push(thunder);
+                this.thunderTotalSpawned++;
+
+                if (spawnAtPlayer) laneCovered = true;
+            }
+
+            if (this.thunderTotalSpawned >= this.thunderMaxTotal && sustainedThunders.length === 0) {
+                this.endThunderSequence();
+            }
+        }
+    }
+
+    pickTeleportTargetX() {
+        const player = this.game.player;
+        const margin = 30;
+        const minDistance = this.teleportMinDistance;
+
+        const minX = 0;
+        const maxX = this.game.width - this.width;
+
+        const forbiddenMin = player.x - this.width;
+        const forbiddenMax = player.x + player.width;
+
+        const intervalLeft = {
+            start: minX,
+            end: Math.min(forbiddenMin, maxX)
+        };
+        const intervalRight = {
+            start: Math.max(forbiddenMax, minX),
+            end: maxX
+        };
+
+        const sampleInInterval = (start, end, attempts = 10) => {
+            let innerStart = Math.max(start + margin, minX);
+            let innerEnd = Math.min(end - margin, maxX);
+
+            if (innerEnd <= innerStart) return null;
+
+            for (let i = 0; i < attempts; i++) {
+                const x = innerStart + Math.random() * (innerEnd - innerStart);
+                if (Math.abs(x - this.x) >= minDistance) return x;
+            }
+
+            const mid = (innerStart + innerEnd) / 2;
+            if (Math.abs(mid - this.x) >= minDistance) return mid;
+
+            return null;
+        };
+
+        const playerCenterX = player.x + player.width / 2;
+        const bossCenterX = this.x + this.width / 2;
+
+        let behindInterval;
+        let frontInterval;
+
+        if (bossCenterX < playerCenterX) {
+            behindInterval = intervalRight;
+            frontInterval = intervalLeft;
+        } else {
+            behindInterval = intervalLeft;
+            frontInterval = intervalRight;
+        }
+
+        let chosenX = null;
+
+        if (behindInterval && behindInterval.end - behindInterval.start > 2 * margin) {
+            chosenX = sampleInInterval(behindInterval.start, behindInterval.end);
+        }
+
+        if (chosenX === null && frontInterval && frontInterval.end - frontInterval.start > 2 * margin) {
+            const frontOffset = 60; // distance in front of the player
+            let desiredX;
+
+            if (bossCenterX < playerCenterX) {
+                desiredX = player.x - this.width - frontOffset;
+            } else {
+                desiredX = player.x + player.width + frontOffset;
+            }
+
+            let innerStart = Math.max(frontInterval.start + margin, minX);
+            let innerEnd = Math.min(frontInterval.end - margin, maxX);
+
+            desiredX = Math.max(innerStart, Math.min(innerEnd, desiredX));
+
+            if (Math.abs(desiredX - this.x) >= minDistance) {
+                chosenX = desiredX;
+            } else {
+                const towardEdge = desiredX < this.x ? innerStart : innerEnd;
+                if (Math.abs(towardEdge - this.x) >= minDistance) {
+                    chosenX = towardEdge;
+                } else {
+                    chosenX = desiredX;
+                }
+            }
+        }
+
+        if (chosenX === null) {
+            const midX = (minX + maxX) / 2;
+            chosenX = this.x < midX ? maxX : minX;
+        }
+
+        this.teleportTargetX = chosenX;
+    }
+
+    spawnTeleportGhostAt(x, y, inverted) {
+        const enemySnapshot = {
+            image: document.getElementById('elyvorgIdle'),
+            width: this.width,
+            height: this.height,
+            frameX: 0,
+            frameY: 0,
+            x: x,
+            y: y,
+            incrementMovement: inverted ? 1 : -1
+        };
+        this.game.collisions.push(new GhostFadeOut(this.game, enemySnapshot));
+    }
+
+    beginTeleport() {
+        this.teleportPhase = 'fadeOut';
+        this.teleportTimer = 0;
+        this.game.audioHandler.enemySFX.playSound('elyvorg_teleport_sound_effect', false, true);
+
+        this.teleportAir = Math.random() < 0.3;
+
+        if (this.teleportAir) {
+            this.chainTeleportFromAir = true;
+        }
+
+        this.pickTeleportTargetX();
+
+        if (this.teleportAir) {
+            this.teleportTargetY = this.originalY - this.jumpHeight;
+        } else {
+            this.teleportTargetY = this.originalY;
+        }
+
+        const playerCenterX = this.game.player.x + this.game.player.width / 2;
+        const bossCenterX = this.x + this.width / 2;
+        const invertedNow = playerCenterX > bossCenterX;
+        this.spawnTeleportGhostAt(this.x, this.y, invertedNow);
+    }
+
+    teleportLogic(deltaTime) {
+        this.teleportTimer += deltaTime;
+
+        if (this.teleportPhase === 'fadeOut') {
+            if (this.teleportTimer >= this.teleportDuration) {
+                this.x = this.teleportTargetX;
+                this.y = this.teleportTargetY;
+
+                this.teleportTimer = 0;
+                this.teleportPhase = 'fadeIn';
+
+                const playerCenterX = this.game.player.x + this.game.player.width / 2;
+                const bossCenterX = this.x + this.width / 2;
+                const invertedNew = playerCenterX > bossCenterX;
+                this.spawnTeleportGhostAt(this.x, this.y, invertedNew);
+            }
+        } else if (this.teleportPhase === 'fadeIn') {
+            if (this.teleportTimer >= this.teleportDuration) {
+                this.teleportPhase = 'none';
+                this.previousState = 'teleport';
+
+                this.postTeleportSafeTimer = this.postTeleportSafeDuration;
+
+                if (this.teleportAir) {
+                    this.teleportAir = false;
+                    this.state = 'jump';
+                    this.isTeleportJump = true;
+                    this.jumpAnimation.x = this.x;
+                    this.jumpAnimation.y = this.y;
+                    this.jumpAnimation.frameX = 0;
+                    this.jumpedBeforeDistanceLogic = false;
+                } else {
+                    this.backToIdleSetUp();
+                }
+            }
+        }
+    }
+
     barrierLogic(deltaTime) {
         if (this.oneBarrier) {
             this.game.enemies.push(this.barrier);
@@ -845,7 +1603,7 @@ export class Elyvorg extends EnemyBoss {
         if (this.barrier.lives <= 0 && this.barrierBreakingSetElyvorgTimer) {
             this.barrierBreakingSetElyvorgTimer = false;
             this.isBarrierActive = false;
-            this.game.player.elyvorgCollisionTimer = 1000;
+            this.game.player.bossCollisionTimer = 1000;
         }
 
         if (!this.shieldCrackLives2SoundPlayed && this.barrier.lives === 2) {
@@ -873,9 +1631,21 @@ export class Elyvorg extends EnemyBoss {
                 this.barrier.x = this.runAnimation.x + (this.runAnimation.width / 2) - (this.barrier.width / 2) - 10;
             } else {
                 this.barrier.x = this.x + (this.width / 2) - (this.barrier.width / 2);
-            } this.barrier.y = this.y - 20;
+            }
+            this.barrier.y = this.y - 20;
         }
     }
+
+    ensureElectricWheelOnTop() {
+        if (!this.electricWheel) return;
+        const enemies = this.game.enemies;
+        const idx = enemies.indexOf(this.electricWheel);
+        if (idx !== -1 && idx !== enemies.length - 1) {
+            enemies.splice(idx, 1);
+            enemies.push(this.electricWheel);
+        }
+    }
+
     electricWheelLogic(deltaTime) {
         if (this.oneElectricWheel) {
             this.electricWheel = new ElectricWheel(this.game, this.x - 45, this.y - 20);
@@ -901,11 +1671,15 @@ export class Elyvorg extends EnemyBoss {
             }
         }
 
-        if (this.electricWheel.lives <= 0 || this.electricWheel.x + this.electricWheel.width <= 0 || this.electricWheel.x >= this.game.width) {
+        if (this.electricWheel.lives <= 0 ||
+            this.electricWheel.x + this.electricWheel.width <= 0 ||
+            this.electricWheel.x >= this.game.width) {
+
             this.game.audioHandler.enemySFX.stopSound('elyvorg_electricity_wheel_sound');
             this.electricWheel.markedForDeletion = true;
             this.isElectricWheelActive = false;
             this.electricWheelThrown = false;
+
             if (this.game.player.resetElectricWheelCounters) {
                 this.game.player.resetElectricWheelCounters = false;
                 this.playElectricWarningSoundOnce = true;
@@ -914,6 +1688,7 @@ export class Elyvorg extends EnemyBoss {
                 this.electricWheelActivateStateCounterDeltaTime = false;
             }
         }
+
         if (!this.electricWheelThrown && this.isElectricWheelActive) {
             this.shouldInvert = this.runningDirection > 0;
             if (this.shouldInvert) {
@@ -934,14 +1709,28 @@ export class Elyvorg extends EnemyBoss {
         } else if (this.electricWheelThrown && this.isElectricWheelActive) {
             this.electricWheel.x += this.electricWheel.incrementMovement;
         }
+
+        if (this.isElectricWheelActive && !this.electricWheel.markedForDeletion) {
+            this.ensureElectricWheelOnTop();
+        }
     }
 
     checkIfDefeated() {
-        if (this.lives <= this.livesDefeatedAt) {
+        if (this._defeatTriggered) return;
+        if (this.lives <= 0) {
+            this._defeatTriggered = true;
+
             this.defeatCommon({
                 bossId: "elyvorg",
                 bossClass: Elyvorg,
                 battleThemeId: "elyvorgBattleTheme",
+                onBeforeClear: () => {
+                    this.game.shakeActive = false;
+                    this.game.shakeTimer = 0;
+                    this.game.shakeDuration = 0;
+                    this.game.bossManager.releaseScreenEffect("elyvorg_thunder");
+                    this.game.bossManager.releaseScreenEffect("elyvorg_poison");
+                }
             });
         }
     }
@@ -952,10 +1741,9 @@ export class Elyvorg extends EnemyBoss {
             this.backToIdleSetUp();
             this.runStopAtTheMiddle = false;
         }
-        const distanceToPlayer = Math.sqrt(
-            Math.pow(this.x - this.game.player.x, 2) +
-            Math.pow(this.y - this.game.player.y, 2)
-        );
+
+        const distanceToPlayer = this.getDistanceToPlayer();
+
         if (distanceToPlayer <= 300 && this.slashAttackOnce) {
             this.shouldInvert = this.runningDirection > 0;
             this.game.audioHandler.enemySFX.playSound('elyvorg_slash_attack_sound');
@@ -978,6 +1766,7 @@ export class Elyvorg extends EnemyBoss {
             this.isSlashActive = false;
         }
     }
+
     rechargeLogic(deltaTime) {
         this.stateRandomiserTimer += deltaTime;
         if (this.stateRandomiserTimer >= this.stateRandomiserCooldown && this.rechargeAnimation.frameX === this.rechargeAnimation.maxFrame) {
@@ -985,8 +1774,9 @@ export class Elyvorg extends EnemyBoss {
             this.stateRandomiserTimer = 0;
         }
     }
+
     stateRandomiser() {
-        const allStates = ['run', 'jump', 'laser', 'meteor', 'ghost', 'gravity', 'ink', 'fireball', 'poison'];
+        const allStates = ['run', 'jump', 'laser', 'meteor', 'ghost', 'gravity', 'ink', 'fireball', 'poison', 'teleport'];
 
         if (this.game.gameOver) {
             if (this.isInTheMiddle) {
@@ -1001,11 +1791,21 @@ export class Elyvorg extends EnemyBoss {
         this.runStateCounter++;
         this.electricWheelStateCounter++;
         this.slashAttackStateCounter++;
+        this.thunderStateCounter++;
         if (this.electricWheelActivateStateCounterDeltaTime) {
             this.electricWheelStateCounterDeltaTime++;
         }
         if (this.slashAttackStateCounter >= this.slashAttackStateCounterLimit) {
             this.slashAttackOnce = true;
+        }
+
+        if (this.chainTeleportFromAir) {
+            this.chainTeleportFromAir = false;
+            if (Math.random() < 0.5) {
+                this.state = 'teleport';
+                this.beginTeleport();
+                return;
+            }
         }
 
         this.shouldInvert = this.game.player.x + this.game.player.width / 2 > this.x + this.width / 2;
@@ -1034,17 +1834,32 @@ export class Elyvorg extends EnemyBoss {
             this.pistolAnimation.y = this.y;
             this.pistolAnimation.frameX = 0;
             return;
+        } else if (this.thunderStateCounter >= this.thunderStateCounterLimit) {
+            this.thunderStateCounter = 0;
+            this.thunderStateCounterLimit = Math.floor(Math.random() * 6) + 15; // 15 to 20
+            this.state = 'thunder';
+            this.thunderAnimation.x = this.x;
+            this.thunderAnimation.y = this.y;
+            this.thunderAnimation.frameX = 0;
+            return;
         }
 
         let selectedState;
 
-        if (Math.random() < 0.1 && this.previousState && !this.isGravitySpinnerActive && !this.isPoisonActive) {
+        if (Math.random() < 0.1 &&
+            this.previousState &&
+            this.previousState !== 'thunder' &&
+            !this.isGravitySpinnerActive &&
+            !this.isPoisonActive) {
             selectedState = this.previousState;
         } else {
             do {
                 selectedState = allStates[Math.floor(Math.random() * allStates.length)];
-            } while (selectedState === this.previousState || (this.isGravitySpinnerActive && selectedState === 'gravity')
-                || (this.isPoisonActive && selectedState === 'poison'));
+            } while (
+                selectedState === this.previousState ||
+                (this.isGravitySpinnerActive && selectedState === 'gravity') ||
+                (this.isPoisonActive && selectedState === 'poison')
+            );
         }
 
         this.state = selectedState;
@@ -1058,7 +1873,8 @@ export class Elyvorg extends EnemyBoss {
             'ink': this.inkAnimation,
             'fireball': this.fireballAnimation,
             'poison': this.poisonAnimation,
-            'jump': this.jumpAnimation
+            'jump': this.jumpAnimation,
+            'thunder': this.thunderAnimation,
         };
 
         const animation = stateAnimations[this.state];
@@ -1070,11 +1886,20 @@ export class Elyvorg extends EnemyBoss {
             animation.y = this.y;
             animation.frameX = 0;
         }
+
+        if (this.state === 'teleport') {
+            this.beginTeleport();
+        }
     }
 
     update(deltaTime) {
         super.update(deltaTime);
         this.checksBossIsFullyVisible("elyvorg");
+
+        if (this.postTeleportSafeTimer > 0) {
+            this.postTeleportSafeTimer -= deltaTime;
+            if (this.postTeleportSafeTimer < 0) this.postTeleportSafeTimer = 0;
+        }
 
         const boss = this.game.boss;
         const isTalkingToBoss = boss && boss.talkToBoss;
@@ -1129,7 +1954,14 @@ export class Elyvorg extends EnemyBoss {
                     } else if (this.state === "poison") {
                         this.poisonAnimation.update(deltaTime);
                         this.poisonLogic();
+                    } else if (this.state === "thunder") {
+                        this.thunderAnimation.update(deltaTime);
+                        this.thunderLogic(deltaTime);
+                    } else if (this.state === "teleport") {
+                        this.teleportLogic(deltaTime);
                     }
+
+                    this.updateMeteorShakeTimer(deltaTime);
 
                     if (this.x + this.width < 0 || this.x >= this.game.width) {
                         if (boss.current === this && boss.id === 'elyvorg') {
@@ -1157,11 +1989,15 @@ export class Elyvorg extends EnemyBoss {
             'gravity': 'gravityAnimation',
             'ink': 'inkAnimation',
             'fireball': 'fireballAnimation',
-            'poison': 'poisonAnimation'
+            'poison': 'poisonAnimation',
+            'thunder': 'thunderAnimation'
         };
 
         if (this.state === 'idle') {
             super.draw(context, this.shouldInvert);
+        } else if (this.state === 'teleport') {
+            // elyvorg invisible while teleport animation plays
+            return;
         } else {
             const animationName = stateAnimations[this.state];
             if (animationName) {

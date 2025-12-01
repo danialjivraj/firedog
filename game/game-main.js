@@ -628,19 +628,41 @@ export class Game {
 
         const effect = this.boss.screenEffect;
 
-        if (this.bossInFight && effect.active) {
-            effect.opacity = screenColourFadeIn(
-                effect.opacity,
-                effect.fadeInSpeed ?? 0.00298
-            );
-        } else if (effect) {
-            effect.opacity = screenColourFadeOut(effect.opacity);
-        }
+        if (effect) {
+            if (
+                effect.colorLerpT != null &&
+                effect.colorLerpT < 1 &&
+                effect.fromRgb &&
+                effect.targetRgb
+            ) {
+                const speed = effect.colorLerpSpeed ?? 0.04;
+                effect.colorLerpT = Math.min(1, effect.colorLerpT + speed);
+                const t = effect.colorLerpT;
 
-        if (effect && effect.opacity > 0) {
-            const [r, g, b] = effect.rgb ?? [0, 0, 0];
-            context.fillStyle = `rgba(${r}, ${g}, ${b}, ${effect.opacity})`;
-            context.fillRect(0, 0, this.width, this.height);
+                const [r0, g0, b0] = effect.fromRgb;
+                const [r1, g1, b1] = effect.targetRgb;
+
+                const r = Math.round(r0 + (r1 - r0) * t);
+                const g = Math.round(g0 + (g1 - g0) * t);
+                const b = Math.round(b0 + (b1 - b0) * t);
+
+                effect.rgb = [r, g, b];
+            }
+
+            if (this.bossInFight && effect.active) {
+                effect.opacity = screenColourFadeIn(
+                    effect.opacity,
+                    effect.fadeInSpeed ?? 0.00298
+                );
+            } else {
+                effect.opacity = screenColourFadeOut(effect.opacity);
+            }
+
+            if (effect.opacity > 0) {
+                const [r, g, b] = effect.rgb ?? [0, 0, 0];
+                context.fillStyle = `rgba(${r}, ${g}, ${b}, ${effect.opacity})`;
+                context.fillRect(0, 0, this.width, this.height);
+            }
         }
 
         if (this.player.isInvisible) {

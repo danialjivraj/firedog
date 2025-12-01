@@ -39,6 +39,7 @@ export class Enemy {
         this.soundId = undefined;
 
         this.dealsDirectHitDamage = true;
+        this.autoRemoveOnZeroLives = true;
 
         this.isStunEnemy = false;
         this.isRedEnemy = false;
@@ -94,7 +95,7 @@ export class Enemy {
         const offLeft = this.x + this.width < 0;
         const offBottom = this.y > this.game.height;
         const offTop = this.y + this.height < 0;
-        const dead = this.lives <= 0;
+        const dead = this.autoRemoveOnZeroLives && this.lives <= 0;
 
         if (offLeft || offBottom || offTop || dead) {
             this.markedForDeletion = true;
@@ -146,6 +147,8 @@ export class EnemyBoss extends Enemy {
         this.speedY = 0;
         this.maxFrame = maxFrame;
 
+        this.autoRemoveOnZeroLives = false;
+
         this.state = "idle";
         this.previousState = null;
         this.chooseStateOnce = true;
@@ -192,6 +195,13 @@ export class EnemyBoss extends Enemy {
         this.state = "idle";
         this.chooseStateOnce = true;
         this.frameX = 0;
+    }
+
+    backToRechargeSetUp() {
+        this.state = "recharge";
+        this.chooseStateOnce = true;
+        this.frameX = 0;
+        this.stateRandomiserTimer = 0;
     }
 
     checksBossIsFullyVisible(bossId) {
@@ -273,7 +283,7 @@ export class EnemyBoss extends Enemy {
         onAfterSetup = () => { },
     }) {
         this.game.boss.inFight = false;
-        this.lives = 110;
+        this.lives = 100;
 
         this.cutsceneBackgroundChange(200, 600, 300);
         this.game.audioHandler.mapSoundtrack.fadeOutAndStop(battleThemeId);
@@ -602,23 +612,6 @@ export class PoisonSpit extends Projectile {
 export class LaserBeam extends Projectile {
     constructor(game, x, y, width, height, maxFrame, imageId, speedX) {
         super(game, x, y, width, height, maxFrame, imageId, speedX, 30);
-    }
-    draw(context) {
-        super.draw(context);
-        if (this.game.isBossVisible &&
-            this.game.boss.current &&
-            this.game.boss.id === 'elyvorg') {
-            if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
-            const shouldFlipSprite = this.speedX < 0;
-            if (shouldFlipSprite) {
-                withCtx(context, () => {
-                    context.scale(-1, 1);
-                    context.drawImage(this.image, -(this.x + this.width), this.y, this.width, this.height);
-                });
-            } else {
-                context.drawImage(this.image, this.x, this.y, this.width, this.height);
-            }
-        }
     }
 }
 

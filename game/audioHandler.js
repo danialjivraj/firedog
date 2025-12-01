@@ -303,6 +303,7 @@ export class CollisionSFXAudioHandler extends AudioHandler {
       elyvorg_meteor_in_contact_with_ground_sound: 'elyvorg_meteor_in_contact_with_ground_sound',
       elyvorg_electricity_wheel_collision_sound: 'elyvorg_electricity_wheel_collision_sound',
       breakingIceNoDamageSound: 'breakingIceNoDamageSound',
+      elyvorg_ghost_hit_sound_effect: 'elyvorg_ghost_hit_sound_effect',
     };
     this.initializeSounds();
   }
@@ -328,10 +329,14 @@ export class EnemySFXAudioHandler extends AudioHandler {
       elyvorg_ink_bomb_sound: 'elyvorg_ink_bomb_sound',
       elyvorg_ink_bomb_throw_sound: 'elyvorg_ink_bomb_throw_sound',
       elyvorg_purple_fireball_sound_effect: 'elyvorg_purple_fireball_sound_effect',
+      elyvorg_purple_thunder_sound_effect: 'elyvorg_purple_thunder_sound_effect',
+      elyvorg_purple_thunder_attack_sound_effect_1: 'elyvorg_purple_thunder_attack_sound_effect_1',
+      elyvorg_purple_thunder_attack_sound_effect_2: 'elyvorg_purple_thunder_attack_sound_effect_2',
       elyvorg_poison_drop_indicator_sound: 'elyvorg_poison_drop_indicator_sound',
       elyvorg_poison_drop_rain_sound: 'elyvorg_poison_drop_rain_sound',
       elyvorg_slash_attack_sound: 'elyvorg_slash_attack_sound',
       elyvorg_arrow_attack_sound: 'elyvorg_arrow_attack_sound',
+      elyvorg_teleport_sound_effect: 'elyvorg_teleport_sound_effect',
       // glacikal sounds
       iceTrailSound: 'iceTrailSound',
       iceSlashSound: 'iceSlashSound',

@@ -1,5 +1,3 @@
-jest.useFakeTimers();
-
 jest.mock('../../../game/animations/fading.js', () => ({
     fadeInAndOut: jest.fn((canvas, fi, stay, fo, cb) => cb && cb()),
 }));
@@ -95,12 +93,16 @@ const makeGame = () => ({
         dialogueAfterLeaving: false,
         startAfterDialogueWhenAnimEnds: false,
     },
+    bossManager: {
+        requestScreenEffect: jest.fn(),
+        releaseScreenEffect: jest.fn(),
+    },
     audioHandler: {
         enemySFX: {
             playSound: jest.fn(),
             stopAllSounds: jest.fn(),
             fadeOutAndStop: jest.fn(),
-            // stopSound is optional in code; not required for tests
+            stopSound: jest.fn(),
         },
         collisionSFX: {
             playSound: jest.fn(),
@@ -143,7 +145,7 @@ const makeCtx = () => ({
 });
 
 describe('Helper enemies / projectiles', () => {
-    test('IceTrail positions on ground and is slow enemy', () => {
+    test('IceTrail spawns at given x on the ground and is marked as slow enemy', () => {
         const game = makeGame();
         const trail = new IceTrail(game, 123);
 
@@ -152,7 +154,7 @@ describe('Helper enemies / projectiles', () => {
         expect(trail.y).toBe(game.height - trail.height - game.groundMargin);
     });
 
-    test('PointyIcicleShard falls, hits ground, spawns collision & sound, then deletes', () => {
+    test('PointyIcicleShard reaching ground spawns collision, plays sound and deletes itself', () => {
         const game = makeGame();
         const shard = new PointyIcicleShard(game);
 
@@ -174,11 +176,11 @@ describe('Helper enemies / projectiles', () => {
         );
     });
 
-    test('PointyIcicleShard deletes when offscreen or dead', () => {
+    test('PointyIcicleShard is deleted when offscreen or when lives reach zero', () => {
         const game = makeGame();
         const shard = new PointyIcicleShard(game);
 
-        // y beyond bottom
+        // off bottom of screen
         shard.y = game.height + shard.height + 1;
         shard.update(16);
         expect(shard.markedForDeletion).toBe(true);
@@ -189,7 +191,7 @@ describe('Helper enemies / projectiles', () => {
         expect(shard2.markedForDeletion).toBe(true);
     });
 
-    test('IcyStormBall ground hit spawns collision and deletes', () => {
+    test('IcyStormBall reaching its ground hit point spawns collision and deletes itself', () => {
         const game = makeGame();
         const storm = new IcyStormBall(game);
 
@@ -206,7 +208,7 @@ describe('Helper enemies / projectiles', () => {
         );
     });
 
-    test('IceSlash draw inverts when speedX > 0, not when speedX < 0', () => {
+    test('IceSlash draw inverts horizontally when travelling right, not when travelling left', () => {
         const game = makeGame();
         const ctx = makeCtx();
 
@@ -220,7 +222,7 @@ describe('Helper enemies / projectiles', () => {
         expect(ctx2.scale).not.toHaveBeenCalledWith(-1, 1);
     });
 
-    test('IceSlash deletes when offscreen or dead', () => {
+    test('IceSlash is deleted when offscreen or when lives reach zero', () => {
         const game = makeGame();
         const slash = new IceSlash(game, 100, 10, 10);
 
@@ -234,7 +236,7 @@ describe('Helper enemies / projectiles', () => {
         expect(slash2.markedForDeletion).toBe(true);
     });
 
-    test('IceSpider deletes when offscreen and plays stop sound', () => {
+    test('IceSpider leaving viewport marks itself for deletion and plays stop sound', () => {
         const game = makeGame();
         const spider = new IceSpider(game);
         spider.state = 'chasing';
@@ -251,7 +253,7 @@ describe('Helper enemies / projectiles', () => {
         );
     });
 
-    test('SpinningIceBalls marks for deletion and stops sound when offscreen', () => {
+    test('SpinningIceBalls in travel phase delete offscreen and request sound stop', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
         const ball = new SpinningIceBalls(game, boss, 0, 2, true);
@@ -270,7 +272,26 @@ describe('Helper enemies / projectiles', () => {
         );
     });
 
-    test('UndergroundIcicle clamps centerX inside bounds', () => {
+    test('SpinningIceBalls emerge phase grows ball, snaps to travel and fires throw sound once', () => {
+        const game = makeGame();
+        const boss = new Glacikal(game);
+        const ball = new SpinningIceBalls(game, boss, 0, 2, true);
+
+        expect(ball.phase).toBe('emerge');
+        expect(ball.scale).toBeLessThan(ball.maxScale);
+
+        const playSpy = game.audioHandler.enemySFX.playSound;
+
+        ball.update(1000);
+
+        expect(ball.phase).toBe('travel');
+        expect(ball.scale).toBe(ball.maxScale);
+        expect(ball.speedX).toBeGreaterThan(0);
+        expect(ball.throwSoundPlayed).toBe(true);
+        expect(playSpy).toHaveBeenCalledWith('iceBallSound', false, true);
+    });
+
+    test('UndergroundIcicle clamps initial centerX inside horizontal bounds', () => {
         const game = makeGame();
         const tooLeft = new UndergroundIcicle(game, -999);
         const tooRight = new UndergroundIcicle(game, game.width + 999);
@@ -280,10 +301,29 @@ describe('Helper enemies / projectiles', () => {
             game.width - tooRight.width / 2,
         );
     });
+
+    test('UndergroundIcicle transitions from warning to emerge after warningDuration and plays sound', () => {
+        const game = makeGame();
+        const icicle = new UndergroundIcicle(game, 200);
+
+        icicle.timer = icicle.warningDuration;
+        const initialHiddenY = icicle.hiddenY;
+
+        icicle.update(0);
+
+        expect(icicle.phase).toBe('emerge');
+        expect(icicle.timer).toBe(0);
+        expect(icicle.y).toBe(initialHiddenY);
+        expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith(
+            'undergroundIcicleSound',
+            false,
+            true,
+        );
+    });
 });
 
 describe('Glacikal boss core', () => {
-    test('checksBossIsFullyVisible marks boss visible when inside screen', () => {
+    test('checksBossIsFullyVisible marks boss visible once fully inside screen', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
         game.boss.current = boss;
@@ -294,7 +334,7 @@ describe('Glacikal boss core', () => {
         expect(boss.x).toBe(game.width - boss.width);
     });
 
-    test('edgeConstraintLogic snaps to left edge and resets to idle', () => {
+    test('edgeConstraintLogic hitting left edge snaps, sets reachedLeftEdge and returns to idle', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
         game.boss.current = boss;
@@ -312,7 +352,7 @@ describe('Glacikal boss core', () => {
         expect(boss.chooseStateOnce).toBe(true);
     });
 
-    test('edgeConstraintLogic snaps to right edge and resets to idle', () => {
+    test('edgeConstraintLogic hitting right edge snaps, sets reachedRightEdge and returns to idle', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
         game.boss.current = boss;
@@ -328,7 +368,7 @@ describe('Glacikal boss core', () => {
         expect(boss.state).toBe('idle');
     });
 
-    test('trySpawnIceTrail respects min gap and chance', () => {
+    test('trySpawnIceTrail enforces minimum gap and randomness-based spawn chance', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
         game.boss.current = boss;
@@ -343,7 +383,7 @@ describe('Glacikal boss core', () => {
         expect(game.enemies.filter((e) => e instanceof IceTrail)).toHaveLength(1);
     });
 
-    test('spawnIcyStormBalls respects max on screen', () => {
+    test('spawnIcyStormBalls never exceeds configured maximum concurrent IcyStormBall count', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
 
@@ -357,8 +397,8 @@ describe('Glacikal boss core', () => {
     });
 });
 
-describe('Glacikal attack / IceSlash', () => {
-    test('iceSlashAttackLogic throws IceSlash once on last frame', () => {
+describe('Glacikal ice slash attack', () => {
+    test('iceSlashAttackLogic throws exactly one IceSlash when reaching last frame and flag is set', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
         game.boss.current = boss;
@@ -374,7 +414,7 @@ describe('Glacikal attack / IceSlash', () => {
         expect(boss.canIceSlashAttack).toBe(false);
     });
 
-    test('iceSlashAttackLogic returns to idle when animation resets', () => {
+    test('iceSlashAttackLogic goes back to idle when animation loops to frame 0 after attack', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
 
@@ -387,7 +427,7 @@ describe('Glacikal attack / IceSlash', () => {
         expect(boss.state).toBe('idle');
     });
 
-    test('throwIceSlash aims toward player side and spawns projectile', () => {
+    test('throwIceSlash fires projectile toward player side and sets projectile direction accordingly', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
         game.boss.current = boss;
@@ -406,7 +446,7 @@ describe('Glacikal attack / IceSlash', () => {
 });
 
 describe('Glacikal jump attack', () => {
-    test('ascend -> airborne when boss reaches offscreenY', () => {
+    test('jumpLogic from ascend phase switches to airborne once offscreenY is reached', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
         boss.jumpPhase = 'ascend';
@@ -416,14 +456,13 @@ describe('Glacikal jump attack', () => {
         expect(boss.jumpPhase).toBe('airborne');
     });
 
-    test('airborne fires IceSpiders based on timer', () => {
+    test('airborne phase drops IceSpiders according to timers until target count reached', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
 
         boss.jumpPhase = 'airborne';
         boss.iceSpiderDropsTarget = 2;
         boss.iceSpiderDropsFired = 0;
-
         boss.iceSpiderDropCooldownMin = 0;
         boss.iceSpiderDropCooldownMax = 0;
 
@@ -444,7 +483,7 @@ describe('Glacikal jump attack', () => {
         expect(boss.iceSpiderDropsFired).toBe(2);
     });
 
-    test('descend returns to idle at originalY', () => {
+    test('descend phase lands at originalY and transitions back to idle', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
         boss.jumpPhase = 'descend';
@@ -459,8 +498,8 @@ describe('Glacikal jump attack', () => {
     });
 });
 
-describe('Glacikal icy storm full cycle', () => {
-    test('icyStormLogic at frame 0 enables screenEffect and resets rain flag', () => {
+describe('Glacikal icy storm sequence', () => {
+    test('icyStormLogic at frame 0 requests screen effect, plays start sounds and clears rain flag', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
         game.boss.current = boss;
@@ -471,12 +510,48 @@ describe('Glacikal icy storm full cycle', () => {
 
         boss.icyStormLogic();
 
-        expect(game.boss.screenEffect.active).toBe(true);
-        expect(game.boss.screenEffect.rgb).toEqual([0, 60, 120]);
+        expect(game.bossManager.requestScreenEffect).toHaveBeenCalledWith(
+            'glacikal_icy_storm',
+            {
+                rgb: [0, 60, 120],
+                fadeInSpeed: 0.00298,
+            },
+        );
         expect(boss.icyStormRainStarted).toBe(false);
+        expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith(
+            'elyvorg_poison_drop_indicator_sound',
+            false,
+            true,
+        );
+        expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith(
+            'glacikal_icy_storm_start',
+            false,
+            true,
+        );
     });
 
-    test('icyStormLogic activates on maxFrame when canIcyStormAttack is true, spawns balls, then returns idle', () => {
+    test('icyStormLogic on rainFrame starts rain sound and sets rainStarted flag', () => {
+        const game = makeGame();
+        const boss = new Glacikal(game);
+        const rainFrame = Math.max(
+            1,
+            Math.floor(boss.icyStormAnimation.maxFrame * (17 / 23)),
+        );
+
+        boss.icyStormAnimation.frameX = rainFrame;
+        boss.icyStormRainStarted = false;
+
+        boss.icyStormLogic();
+
+        expect(boss.icyStormRainStarted).toBe(true);
+        expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith(
+            'glacikal_icy_storm_rain',
+            false,
+            true,
+        );
+    });
+
+    test('icyStormLogic activates storm and spawns initial balls at max frame, then returns to idle', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
         game.boss.current = boss;
@@ -498,7 +573,23 @@ describe('Glacikal icy storm full cycle', () => {
         expect(idleSpy).toHaveBeenCalled();
     });
 
-    test('icyStormLogicTimer spawns over time and ends after duration', () => {
+    test('icyStormLogic re-enables canIcyStormAttack at resetFrame before animation ends', () => {
+        const game = makeGame();
+        const boss = new Glacikal(game);
+        const resetFrame = Math.max(
+            1,
+            Math.floor(boss.icyStormAnimation.maxFrame * (20 / 23)),
+        );
+
+        boss.icyStormAnimation.frameX = resetFrame;
+        boss.canIcyStormAttack = false;
+
+        boss.icyStormLogic();
+
+        expect(boss.canIcyStormAttack).toBe(true);
+    });
+
+    test('icyStormLogicTimer periodically spawns balls while active and ends after duration, clearing screen effect', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
         game.boss.current = boss;
@@ -516,12 +607,14 @@ describe('Glacikal icy storm full cycle', () => {
         boss.icyStormLogicTimer(16);
 
         expect(boss.isIcyStormActive).toBe(false);
-        expect(game.boss.screenEffect.active).toBe(false);
+        expect(game.bossManager.releaseScreenEffect).toHaveBeenCalledWith(
+            'glacikal_icy_storm',
+        );
     });
 });
 
 describe('Glacikal kneel down full cycle', () => {
-    test('startKneelDownAttack resets flags and ensures shake fields', () => {
+    test('startKneelDownAttack resets flags, timers and ensures shake bookkeeping fields exist', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
 
@@ -536,7 +629,7 @@ describe('Glacikal kneel down full cycle', () => {
         expect(game.shakeDuration).toBe(0);
     });
 
-    test('kneelDownLogic forward anim locks, starts shake, and plays rumble once', () => {
+    test('kneelDownLogic forward animation reaches lock, starts shake and plays rumble exactly once', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
         boss.startKneelDownAttack();
@@ -559,7 +652,7 @@ describe('Glacikal kneel down full cycle', () => {
         );
     });
 
-    test('kneelDownLogic active (topIcicles) spawns PointyIcicleShard, then reverses after duration', () => {
+    test('kneelDownLogic topIcicles mode spawns PointyIcicleShard and reverses after duration, stopping shake', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
         boss.startKneelDownAttack();
@@ -586,7 +679,7 @@ describe('Glacikal kneel down full cycle', () => {
         );
     });
 
-    test('kneelDownLogic reverse transitions to glacikalRecharge and resets cooldown', () => {
+    test('kneelDownLogic reverse phase transitions into glacikalRecharge and resets kneel cooldown flags', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
         boss.startKneelDownAttack();
@@ -611,14 +704,12 @@ describe('Glacikal kneel down full cycle', () => {
         expect(boss.rechargeLoops).toBe(0);
     });
 
-    test('kneelDownLogic (undergroundIcicle) ends when all UndergroundIcicles are gone', () => {
+    test('kneelDownLogic undergroundIcicle mode ends once all spawned UndergroundIcicles are deleted', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
         boss.startKneelDownAttack();
 
         boss.currentKneelAbility = 'undergroundIcicle';
-
-        // Simulate locked / active state with a finished set of icicles
         boss.kneelDownLocked = true;
         boss.isKneelDownActive = true;
         boss.kneelUndergroundIcicles = [
@@ -636,7 +727,7 @@ describe('Glacikal kneel down full cycle', () => {
 });
 
 describe('Glacikal spinning ice balls (extendedArm)', () => {
-    test('startSpinningIceBallsAttack resets flags and prepares animation', () => {
+    test('startSpinningIceBallsAttack resets spinning flags and reinitialises extended arm animation', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
 
@@ -654,7 +745,7 @@ describe('Glacikal spinning ice balls (extendedArm)', () => {
         expect(boss.glacikalExtendedArmAnimation.frameX).toBe(0);
     });
 
-    test('spinningIceBallsLogic forward anim locks and fires volley once', () => {
+    test('spinningIceBallsLogic forward phase locks animation, activates spinning and fires volley exactly once', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
         game.boss.current = boss;
@@ -676,7 +767,7 @@ describe('Glacikal spinning ice balls (extendedArm)', () => {
         ).toHaveLength(2);
     });
 
-    test('spinningIceBallsLogic reverse returns to idle and re-enables attack', () => {
+    test('spinningIceBallsLogic reverse phase returns to idle and re-enables extendedArm attack', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
 
@@ -702,7 +793,7 @@ describe('Glacikal spinning ice balls (extendedArm)', () => {
         expect(idleSpy).toHaveBeenCalled();
     });
 
-    test('fireSpinningVolley spawns balls toward player side', () => {
+    test('fireSpinningVolley spawns spinning balls toward the correct side of the player', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
         game.boss.current = boss;
@@ -712,7 +803,7 @@ describe('Glacikal spinning ice balls (extendedArm)', () => {
         boss.y = 100;
         boss.width = 100;
 
-        // Player on the right
+        // player on the right
         game.player.x = 600;
         boss.fireSpinningVolley();
 
@@ -720,7 +811,7 @@ describe('Glacikal spinning ice balls (extendedArm)', () => {
         expect(balls).toHaveLength(3);
         balls.forEach((b) => expect(b.directionRight).toBe(true));
 
-        // Player on the left
+        // player on the left
         game.enemies = [];
         game.player.x = 0;
         boss.fireSpinningVolley();
@@ -731,8 +822,77 @@ describe('Glacikal spinning ice balls (extendedArm)', () => {
     });
 });
 
+describe('Glacikal recharge & run sound handling', () => {
+    test('rechargeLogic loops animation maxFrame and returns to idle after configured loops', () => {
+        const game = makeGame();
+        const boss = new Glacikal(game);
+
+        const anim = boss.glacikalRechargeAnimation;
+        boss.state = 'glacikalRecharge';
+        boss.rechargeLoopsMax = 2;
+
+        const idleSpy = jest.spyOn(boss, 'backToIdleSetUp');
+
+        anim.frameX = anim.maxFrame;
+        boss.rechargeLogic(0);
+        expect(boss.rechargeLoops).toBe(1);
+        expect(anim.frameX).toBe(0);
+
+        anim.frameX = anim.maxFrame;
+        boss.rechargeLogic(0);
+
+        expect(boss.rechargeLoops).toBe(0);
+        expect(boss.state).toBe('idle');
+        expect(idleSpy).toHaveBeenCalled();
+    });
+
+    test('handleRunSound plays run loop when entering run state', () => {
+        const game = makeGame();
+        const boss = new Glacikal(game);
+
+        boss.state = 'run';
+        boss.isRunSoundPlaying = false;
+
+        boss.handleRunSound();
+
+        expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith(
+            'glacikalRunSound',
+            false,
+            true,
+        );
+        expect(boss.isRunSoundPlaying).toBe(true);
+    });
+
+    test('handleRunSound stops run sound when leaving run state', () => {
+        const game = makeGame();
+        const boss = new Glacikal(game);
+
+        boss.state = 'idle';
+        boss.isRunSoundPlaying = true;
+
+        boss.handleRunSound();
+
+        expect(game.audioHandler.enemySFX.stopSound).toHaveBeenCalledWith('glacikalRunSound');
+        expect(boss.isRunSoundPlaying).toBe(false);
+    });
+
+    test('handleRunSound also stops run sound when boss dies or is marked for deletion', () => {
+        const game = makeGame();
+        const boss = new Glacikal(game);
+
+        boss.state = 'run';
+        boss.isRunSoundPlaying = true;
+        boss.lives = 0;
+
+        boss.handleRunSound();
+
+        expect(game.audioHandler.enemySFX.stopSound).toHaveBeenCalledWith('glacikalRunSound');
+        expect(boss.isRunSoundPlaying).toBe(false);
+    });
+});
+
 describe('Glacikal stateRandomiser', () => {
-    test('when gameOver, runs if in middle else idle', () => {
+    test('when game is over, stateRandomiser chooses run if in middle, otherwise idle', () => {
         const game = makeGame();
         game.gameOver = true;
         const boss = new Glacikal(game);
@@ -746,7 +906,7 @@ describe('Glacikal stateRandomiser', () => {
         expect(boss.state).toBe('idle');
     });
 
-    test('runStateCounter exceeding limit forces run and direction based on shouldInvert', () => {
+    test('runStateCounter at or above limit forces run and runningDirection based on shouldInvert', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
 
@@ -760,7 +920,25 @@ describe('Glacikal stateRandomiser', () => {
         expect(boss.runningDirection).toBe(10);
     });
 
-    test('random selection does not repeat previousState and respects exclusions', () => {
+    test('stateRandomiser can force kneelDown when cooldown reached and kneelDown is available', () => {
+        const game = makeGame();
+        const boss = new Glacikal(game);
+
+        boss.statesSinceKneelDown = boss.kneelDownStateCooldown;
+        boss.canKneelDownAttack = true;
+        boss.isIcyStormActive = false;
+        boss.runStateCounter = 0;
+        boss.runStateCounterLimit = 999;
+
+        const kneelSpy = jest.spyOn(boss, 'startKneelDownAttack');
+
+        boss.stateRandomiser();
+
+        expect(boss.state).toBe('kneelDown');
+        expect(kneelSpy).toHaveBeenCalled();
+    });
+
+    test('random selection does not repeat previousState and respects state exclusions', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
 
@@ -772,10 +950,10 @@ describe('Glacikal stateRandomiser', () => {
 
         withMockedRandom(
             [
-                0.5,   // skip "reuse previousState"
-                2 / 5, // icyStorm (excluded because isIcyStormActive)
-                4 / 5, // kneelDown (excluded because !canKneelDownAttack)
-                1 / 5, // jump
+                0.5,
+                2 / 5,
+                4 / 5,
+                1 / 5,
             ],
             () => boss.stateRandomiser(),
         );
@@ -785,7 +963,7 @@ describe('Glacikal stateRandomiser', () => {
 });
 
 describe('Glacikal runningAway', () => {
-    test('runningAway moves right and clears boss when offscreen', () => {
+    test('runningAway moves boss offscreen and clears boss state when runAway is set', () => {
         const game = makeGame();
         const boss = new Glacikal(game);
         game.boss.current = boss;

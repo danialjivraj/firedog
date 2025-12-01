@@ -85,6 +85,12 @@ describe('BossManager', () => {
                     rgb: [0, 50, 0],
                     opacity: 0,
                     fadeInSpeed: 0.00298,
+                    currentId: null,
+                    stack: [],
+                    fromRgb: null,
+                    targetRgb: null,
+                    colorLerpT: 1,
+                    colorLerpSpeed: 0.04,
                 },
 
                 dialogueBeforeOnce: true,
@@ -254,6 +260,11 @@ describe('BossManager', () => {
             game.coins = 7;
             expect(manager.bossGateReached()).toBe(true);
         });
+
+        it('returns false when there is no gate for the current map', () => {
+            jest.spyOn(manager, 'getGateForCurrentMap').mockReturnValue(null);
+            expect(manager.bossGateReached()).toBe(false);
+        });
     });
 
     describe('spawnBossIfNeeded', () => {
@@ -332,6 +343,104 @@ describe('BossManager', () => {
             expect(manager.state.id).toBe('glacikal');
             expect(manager.state.map).toBe('BonusMap1');
             expect(game.enemies[0]).toBe(manager.state.current);
+        });
+    });
+
+    describe('screenEffect stack (requestScreenEffect / releaseScreenEffect)', () => {
+        it('initial requestScreenEffect creates first layer and initializes effect state', () => {
+            const effect = manager.state.screenEffect;
+            expect(effect.stack).toEqual([]);
+            expect(effect.active).toBe(false);
+
+            manager.requestScreenEffect('intro', {
+                rgb: [10, 20, 30],
+                fadeInSpeed: 0.01,
+                colorLerpSpeed: 0.1,
+            });
+
+            expect(effect.stack).toHaveLength(1);
+            expect(effect.stack[0]).toEqual({
+                id: 'intro',
+                rgb: [10, 20, 30],
+                fadeInSpeed: 0.01,
+                colorLerpSpeed: 0.1,
+            });
+
+            expect(effect.active).toBe(true);
+            expect(effect.currentId).toBe('intro');
+            expect(effect.rgb).toEqual([10, 20, 30]);
+            expect(effect.fromRgb).toEqual([10, 20, 30]);
+            expect(effect.targetRgb).toEqual([10, 20, 30]);
+            expect(effect.colorLerpT).toBe(1);
+            expect(effect.opacity).toBe(0);
+        });
+
+        it('pushing a second layer updates currentId and starts color lerp from previous rgb', () => {
+            const effect = manager.state.screenEffect;
+
+            manager.requestScreenEffect('base', { rgb: [0, 50, 0] });
+            manager.requestScreenEffect('overlay', {
+                rgb: [100, 0, 0],
+                fadeInSpeed: 0.02,
+                colorLerpSpeed: 0.2,
+            });
+
+            expect(effect.stack.map(l => l.id)).toEqual(['base', 'overlay']);
+            expect(effect.currentId).toBe('overlay');
+            expect(effect.fadeInSpeed).toBe(0.02);
+            expect(effect.colorLerpSpeed).toBe(0.2);
+
+            expect(effect.fromRgb).toEqual([0, 50, 0]);
+            expect(effect.targetRgb).toEqual([100, 0, 0]);
+            expect(effect.colorLerpT).toBe(0);
+        });
+
+        it('updating an existing top layer snaps color to new rgb without starting a lerp', () => {
+            const effect = manager.state.screenEffect;
+
+            manager.requestScreenEffect('layer', { rgb: [10, 20, 30] });
+            manager.requestScreenEffect('layer', { rgb: [40, 50, 60] });
+
+            expect(effect.stack).toHaveLength(1);
+            expect(effect.stack[0].id).toBe('layer');
+            expect(effect.stack[0].rgb).toEqual([40, 50, 60]);
+
+            expect(effect.currentId).toBe('layer');
+            expect(effect.rgb).toEqual([40, 50, 60]);
+            expect(effect.fromRgb).toEqual([40, 50, 60]);
+            expect(effect.targetRgb).toEqual([40, 50, 60]);
+            expect(effect.colorLerpT).toBe(1);
+        });
+
+        it('releaseScreenEffect drops the top layer and transitions back to previous layer', () => {
+            const effect = manager.state.screenEffect;
+
+            manager.requestScreenEffect('base', { rgb: [0, 50, 0] });
+            manager.requestScreenEffect('overlay', { rgb: [100, 0, 0] });
+
+            expect(effect.stack.map(l => l.id)).toEqual(['base', 'overlay']);
+            expect(effect.currentId).toBe('overlay');
+
+            manager.releaseScreenEffect('overlay');
+
+            expect(effect.stack.map(l => l.id)).toEqual(['base']);
+            expect(effect.currentId).toBe('base');
+            expect(effect.active).toBe(true);
+            expect(effect.targetRgb).toEqual([0, 50, 0]);
+            expect(effect.colorLerpT).toBe(0);
+        });
+
+        it('releaseScreenEffect clears effect when last layer is removed', () => {
+            const effect = manager.state.screenEffect;
+
+            manager.requestScreenEffect('solo', { rgb: [1, 2, 3] });
+            expect(effect.stack).toHaveLength(1);
+
+            manager.releaseScreenEffect('solo');
+
+            expect(effect.stack).toHaveLength(0);
+            expect(effect.currentId).toBeNull();
+            expect(effect.active).toBe(false);
         });
     });
 

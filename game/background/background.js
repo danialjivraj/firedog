@@ -303,8 +303,8 @@ export class BonusMap1 extends Background {
 export class BonusMap2 extends Background {
     constructor(game) {
         super(game,
-            { imageId: 'bonusMap1Background', bgSpeed: 0 },
-            { imageId: 'bonusMap1Ground', bgSpeed: 1 },
+            { imageId: 'bonusMap2Background', bgSpeed: 0 },
+            { imageId: 'bonusMap2Ground', bgSpeed: 1 },
         );
         this.soundId = 'map3Soundtrack';
     }

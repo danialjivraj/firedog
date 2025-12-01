@@ -45,9 +45,9 @@ body {
     #penguinBatSprite, #penguinPistolSprite, #penguinDead,
     /* enemies */
         /* elyvorg */
-        #elyvorgIdle, #elyvorgLaserIdle, #elyvorgGravityIdle, #elyvorgMeteorIdle, #elyvorgPoisonIdle, #elyvorgPistolIdle, #elyvorgGhostIdle, #elyvorgInkIdle, #elyvorgIdleFireball, #elyvorgRechargeIdle, #elyvorgRun, #elyvorgJump, 
+        #elyvorgIdle, #elyvorgLaserIdle, #elyvorgGravityIdle, #elyvorgMeteorIdle, #elyvorgPoisonIdle, #elyvorgPistolIdle, #elyvorgGhostIdle, #elyvorgInkIdle, #elyvorgIdleFireball, #elyvorgRechargeIdle, #elyvorgRun, #elyvorgJump, #elyvorgThunderIdle, 
             /* abilities */
-            #barrier, #barrier1, #barrier2, #elyvorgGhostRun, #elyvorg_laser_beam, #meteorAttack, #poisonDrop, #electricWheel, #gravitationalAura, #inkBomb, #purpleFireball, #purpleSlash, #blueArrow, #yellowArrow, #greenArrow, 
+            #barrier, #barrier1, #barrier2, #elyvorgGhostRun, #elyvorg_laser_beam, #meteorAttack, #poisonDrop, #electricWheel, #gravitationalAura, #inkBomb, #purpleFireball, #purpleSlash, #purpleThunder, #blueArrow, #yellowArrow, #greenArrow, #cyanArrow,
         /* glacikal */
         #glacikalIdle, #glacikalRunning, #glacikalJumping, #glacikalAttacking, #glacikalIcyStorm, #glacikalKneelDown, #glacikalExtendedArm, #glacikalRecharge,
             /* abilities */
@@ -69,7 +69,7 @@ body {
         /* map6 */
         #theRock, #theRockSmash, #dragon, #cactus, #petroPlant, #plazer, #veynoculus, #volcanurtle, #rollhogWalk, #rollhogRoll, #volcanoWasp,  
     /* cabin */
-    #map1cabin, #map2cabin, #map3submarine, #map4cabin, #map5cabin, #map6cave, #bonusmap1cabin,
+    #map1cabin, #map2cabin, #map3submarine, #map4cabin, #map5cabin, #map6cave, #bonusmap1cabin, #bonusmap2cabin,
     /* power up */ 
     #redpotion, #bluepotion, #healthlive, #coin, #oxygenTank,
     /* power down */
@@ -89,16 +89,18 @@ body {
 /* map6 */ 
 #map6Background, #map6Ground, #map6spikeStones, #map6rocks1, #map6rocks2, #map6cactus, 
 /* bonusmap1 */ 
-#map6Background, #bonusMap1Background, #bonusMap1Ground, 
+#bonusMap1Background, #bonusMap1Ground, 
+/* bonusmap2 */ 
+#bonusMap2Background, #bonusMap2Ground,
 /* fish */ 
 #jellyfish, #fish, #fish2, #fish3, #fish4, #fish5, #fish6, #fish7, #fish8, #fish9, #fish10, #fish11, #shark, #whale, 
 /* ink */ 
 #paint_splatter_1, #paint_splatter_2, #paint_splatter_3, #paint_splatter_4, #paint_splatter_5, #paint_splatter_6, #paint_splatter_7, #paint_splatter_8, #paint_splatter_9, 
 #paint_splatter_10, #paint_splatter_11, #paint_splatter_12, #paint_splatter_13, #paint_splatter_14, #paint_splatter_15, #paint_splatter_16, #paint_splatter_17, #paint_splatter_18,
 /* collision animations */ 
-#singleCoin, #collisionAnimation, #explosionCollisionAnimation, #darkExplosion, #redFireballCollision, #purpleFireballCollision, #meteorExplosion, #electricityCollision, 
-#blueCollisionAnimation, #poisonSpitSplash, #poisonDropCollision, #blackInk, #inkBombCollision, #blood, #raindropSplash, #poisonDropGroundCollision, #icyStormBallCollision, 
-#iceSlashCollision, #iceTrailCollision, #spinningIceBallsCollision, #pointyIcicleShardCollision, #undergroundIcicleCollision,
+#singleCoin, #collisionAnimation, #explosionCollisionAnimation, #darkExplosion, #redFireballCollision, #purpleFireballCollision, #purpleThunderCollision, #meteorExplosion,
+#electricityCollision, #blueCollisionAnimation, #poisonSpitSplash, #poisonDropCollision, #blackInk, #inkBombCollision, #blood, #raindropSplash, #poisonDropGroundCollision,
+#icyStormBallCollision, #iceSlashCollision, #iceTrailCollision, #spinningIceBallsCollision, #pointyIcicleShardCollision, #undergroundIcicleCollision,
 /* cutscene images */
     /* background images */
     #toBeContinued, #madeByDanial,

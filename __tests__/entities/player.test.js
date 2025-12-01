@@ -8,14 +8,14 @@ import {
     AngryBee, Bee, IceBall, Garry, InkBeam, Cactus, TheRock, Tauro,
 } from '../../game/entities/enemies/enemies';
 import {
-    ElectricWheel, Elyvorg, Arrow, Barrier,
-    InkBomb, PurpleFireball, MeteorAttack, PurpleSlash, PoisonDrop
+    ElectricWheel, Elyvorg, Arrow, Barrier, GhostElyvorg, GravitationalAura, PurpleLaserBeam,
+    InkBomb, PurpleFireball, MeteorAttack, PurpleSlash, PoisonDrop, PurpleThunder
 } from '../../game/entities/enemies/elyvorg';
 import {
     ElectricityCollision, PoisonSpitSplash, PoisonDropCollision,
     InkBombCollision, InkSplashCollision, ExplosionCollisionAnimation,
     PurpleFireballExplosion, CollisionAnimation, MeteorExplosionCollision,
-    RedFireballExplosion, Blood
+    RedFireballExplosion, Blood, PurpleThunderCollision, GhostFadeOut, DarkExplosion, DisintegrateCollision,
 } from '../../game/animations/collisionAnimation';
 import { FloatingMessage } from '../../game/animations/floatingMessages';
 
@@ -48,6 +48,10 @@ jest.mock('../../game/animations/collisionAnimation', () => ({
     PurpleFireballExplosion: jest.fn(),
     PoisonDropCollision: jest.fn(),
     MeteorExplosionCollision: jest.fn(),
+    PurpleThunderCollision: jest.fn(),
+    GhostFadeOut: jest.fn(),
+    DarkExplosion: jest.fn(),
+    DisintegrateCollision: jest.fn(),
 }));
 
 jest.mock('../../game/entities/powerUpAndDown', () => {
@@ -155,10 +159,14 @@ jest.mock('../../game/entities/enemies/elyvorg', () => {
     class PoisonDrop { }
     class MeteorAttack { }
     class PurpleSlash { }
+    class PurpleThunder { }
+    class GhostElyvorg { }
+    class PurpleLaserBeam { }
 
     return {
-        Elyvorg, Arrow, Barrier, ElectricWheel, GravitationalAura,
-        InkBomb, PurpleFireball, PoisonDrop, MeteorAttack, PurpleSlash,
+        Elyvorg, Arrow, Barrier, ElectricWheel, GravitationalAura, InkBomb,
+        PurpleFireball, PoisonDrop, MeteorAttack, PurpleSlash, PurpleThunder,
+        GhostElyvorg, PurpleLaserBeam,
     };
 });
 
@@ -1198,6 +1206,54 @@ describe('Player', () => {
         });
     });
 
+    describe('CollisionLogic.shouldSkipElyvorgTeleportCollision', () => {
+        let logic;
+        let boss;
+
+        beforeEach(() => {
+            logic = new CollisionLogic(game);
+
+            boss = new Elyvorg();
+            boss.x = 0;
+            boss.y = 0;
+            boss.width = 10;
+            boss.height = 10;
+
+            game.boss.current = boss;
+            game.bossInFight = true;
+        });
+
+        test('skips collision only for Elyvorg/Barrier during teleport safe phase when player not rolling or diving', () => {
+            const enemyElyvorg = new Elyvorg();
+            const enemyBarrier = new Barrier();
+            const otherEnemy = new Goblin();
+
+            boss.state = 'teleport';
+            boss.postTeleportSafeTimer = 500;
+
+            player.currentState = player.states[8];
+            expect(player.rollingOrDiving()).toBe(false);
+
+            expect(logic.shouldSkipElyvorgTeleportCollision(enemyElyvorg, player)).toBe(true);
+            expect(logic.shouldSkipElyvorgTeleportCollision(enemyBarrier, player)).toBe(true);
+
+            expect(logic.shouldSkipElyvorgTeleportCollision(otherEnemy, player)).toBe(false);
+
+            boss.state = 'attack';
+            boss.postTeleportSafeTimer = 0;
+
+            expect(logic.shouldSkipElyvorgTeleportCollision(enemyElyvorg, player)).toBe(false);
+            expect(logic.shouldSkipElyvorgTeleportCollision(enemyBarrier, player)).toBe(false);
+
+            boss.state = 'teleport';
+            boss.postTeleportSafeTimer = 500;
+            player.currentState = player.states[4];
+            expect(player.rollingOrDiving()).toBe(true);
+
+            expect(logic.shouldSkipElyvorgTeleportCollision(enemyElyvorg, player)).toBe(false);
+        });
+    });
+
     describe('CollisionLogic.handleNormalCollision branches', () => {
         let logic;
 
@@ -1207,6 +1263,7 @@ describe('Player', () => {
             jest.spyOn(player, 'bloodOrPoof');
             jest.spyOn(player, 'stunned');
             jest.spyOn(player, 'triggerInkSplash');
+            jest.spyOn(player, 'startFrozen');
             jest.spyOn(logic, 'collisionAnimationBasedOnEnemy');
         });
 
@@ -1366,15 +1423,15 @@ describe('Player', () => {
             expect(MeteorExplosionCollision).toHaveBeenCalled();
         });
 
-        test('Arrow blue slows and blood/poof', () => {
+        test('Arrow blue slows and plays iceSlowedSound', () => {
             const arr = new Arrow();
             arr.image = { id: 'blueArrow' };
             arr.x = 0; arr.y = 0; arr.width = 10; arr.height = 10;
             player.isInvisible = false;
             logic.handleNormalCollision(arr);
             expect(player.isSlowed).toBe(true);
-            expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith('iceSlowedSound', false, true);
-            expect(player.bloodOrPoof).toHaveBeenCalledWith(arr);
+            expect(game.audioHandler.enemySFX.playSound)
+                .toHaveBeenCalledWith('iceSlowedSound', false, true);
         });
 
         test('Arrow yellow stuns', () => {
@@ -1393,7 +1450,19 @@ describe('Player', () => {
             player.isInvisible = false;
             logic.handleNormalCollision(arr);
             expect(player.isPoisonedActive).toBe(true);
-            expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith('acidSoundEffect', false, true);
+            expect(game.audioHandler.enemySFX.playSound)
+                .toHaveBeenCalledWith('acidSoundEffect', false, true);
+        });
+
+        test('Arrow cyan freezes the player', () => {
+            const arr = new Arrow();
+            arr.image = { id: 'cyanArrow' };
+            arr.x = 0; arr.y = 0; arr.width = 10; arr.height = 10;
+            player.isInvisible = false;
+            logic.handleNormalCollision(arr);
+            expect(player.startFrozen).toHaveBeenCalled();
+            expect(player.isFrozen).toBe(true);
+            expect(player.frozenTimer).toBeGreaterThan(0);
         });
     });
 
@@ -1407,6 +1476,7 @@ describe('Player', () => {
             jest.spyOn(player, 'bloodOrPoof');
             jest.spyOn(player, 'stunned');
             jest.spyOn(player, 'triggerInkSplash');
+            jest.spyOn(player, 'startFrozen');
             jest.spyOn(logic, 'collisionAnimationBasedOnEnemy');
         });
 
@@ -1536,17 +1606,6 @@ describe('Player', () => {
             expect(logic.collisionAnimationBasedOnEnemy).toHaveBeenCalledWith(ma);
         });
 
-        test('Arrow blue in rolling slows and blood/poof', () => {
-            const arr = new Arrow();
-            arr.image = { id: 'blueArrow' };
-            arr.x = 0; arr.y = 0; arr.width = 10; arr.height = 10;
-            player.isInvisible = false;
-            logic.handleRollingOrDivingCollision(arr);
-            expect(player.isSlowed).toBe(true);
-            expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith('iceSlowedSound', false, true);
-            expect(player.bloodOrPoof).toHaveBeenCalledWith(arr);
-        });
-
         test('Arrow yellow in rolling dies arrow when invisible', () => {
             const arr = new Arrow();
             arr.image = { id: 'yellowArrow' };
@@ -1554,18 +1613,28 @@ describe('Player', () => {
             player.isInvisible = true;
             logic.handleRollingOrDivingCollision(arr);
             expect(arr.lives).toBe(1);
-            expect(player.bloodOrPoof).toHaveBeenCalledWith(arr);
         });
 
-        test('Arrow green in rolling poisons and blood/poof', () => {
+        test('Arrow green in rolling poisons and plays acidSoundEffect', () => {
             const arr = new Arrow();
             arr.image = { id: 'greenArrow' };
             arr.x = 0; arr.y = 0; arr.width = 10; arr.height = 10;
             player.isInvisible = false;
             logic.handleRollingOrDivingCollision(arr);
             expect(player.isPoisonedActive).toBe(true);
-            expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith('acidSoundEffect', false, true);
-            expect(player.bloodOrPoof).toHaveBeenCalledWith(arr);
+            expect(game.audioHandler.enemySFX.playSound)
+                .toHaveBeenCalledWith('acidSoundEffect', false, true);
+        });
+
+        test('Arrow cyan in rolling freezes the player', () => {
+            const arr = new Arrow();
+            arr.image = { id: 'cyanArrow' };
+            arr.x = 0; arr.y = 0; arr.width = 10; arr.height = 10;
+            player.isInvisible = false;
+            logic.handleRollingOrDivingCollision(arr);
+            expect(player.startFrozen).toHaveBeenCalled();
+            expect(player.isFrozen).toBe(true);
+            expect(player.frozenTimer).toBeGreaterThan(0);
         });
     });
 
@@ -1594,6 +1663,25 @@ describe('Player', () => {
             player.energyLogic(100);
             expect(game.enemyInterval).toBe(100);
             expect(player.energy).toBeGreaterThan(50);
+        });
+    });
+
+    describe('updateBluePotionTimer', () => {
+        test('when timer elapses while rolling, disables potion and sets game speed to 12', () => {
+            player.blueFireTimer = 10;
+            player.isBluePotionActive = true;
+            player.bluePotionSpeed = 20;
+            game.speed = player.bluePotionSpeed;
+            game.isBossVisible = false;
+            player.isFrozen = false;
+            player.currentState = player.states[4];
+
+            player.updateBluePotionTimer(20);
+
+            expect(player.blueFireTimer).toBe(0);
+            expect(player.isBluePotionActive).toBe(false);
+            expect(game.audioHandler.firedogSFX.stopSound).toHaveBeenCalledWith('bluePotionEnergyGoingUp');
+            expect(game.speed).toBe(12);
         });
     });
 
@@ -1684,6 +1772,10 @@ describe('Player', () => {
             { Ctor: ElectricWheel, anim: ElectricityCollision, key: 'ElectricWheel' },
             { Ctor: Goblin, anim: CollisionAnimation, key: 'Goblin' },
             { Ctor: PoisonSpit, anim: PoisonSpitSplash, key: 'PoisonSpit' },
+            { Ctor: PurpleThunder, anim: PurpleThunderCollision, key: 'PurpleThunder' },
+            { Ctor: GhostElyvorg, anim: GhostFadeOut, key: 'GhostElyvorg' },
+            { Ctor: GravitationalAura, anim: DarkExplosion, key: 'GravitationalAura' },
+            { Ctor: PurpleLaserBeam, anim: DisintegrateCollision, key: 'PurpleLaserBeam' },
         ];
 
         cases.forEach(({ Ctor, anim, key }) => {
@@ -1706,6 +1798,77 @@ describe('Player', () => {
         });
     });
 
+    describe('PurpleThunder collision positioning', () => {
+        beforeEach(() => {
+            PurpleThunderCollision.mockClear();
+        });
+
+        test('collisionAnimationBasedOnEnemy uses enemy center X and player center Y for PurpleThunder', () => {
+            const enemy = new PurpleThunder();
+            enemy.x = 200;
+            enemy.y = 50;
+            enemy.width = 40;
+            enemy.height = 80;
+
+            player.x = 10;
+            player.y = 100;
+            player.width = 100;
+            player.height = 60;
+
+            player.collisionLogic.collisionAnimationBasedOnEnemy(enemy);
+
+            expect(PurpleThunderCollision).toHaveBeenCalled();
+
+            const [argGame, argX, argY] = PurpleThunderCollision.mock.calls[0];
+            const expectedX = enemy.x + enemy.width * 0.5;
+            const expectedY = player.y + player.height * 0.5;
+
+            expect(argGame).toBe(game);
+            expect(argX).toBeCloseTo(expectedX);
+            expect(argY).toBeCloseTo(expectedY);
+        });
+
+        test('fireball collision with PurpleThunder uses enemy center X and fireball center Y', () => {
+            const enemy = new PurpleThunder();
+            enemy.x = 100;
+            enemy.y = 200;
+            enemy.width = 40;
+            enemy.height = 40;
+            enemy.lives = 2;
+
+            game.enemies = [enemy];
+
+            const fb = new Fireball();
+            Object.assign(fb, {
+                x: enemy.x + enemy.width / 2,
+                y: enemy.y + enemy.height / 2,
+                size: 20,
+                type: 'normalMode',
+                markedForDeletion: false,
+            });
+
+            game.behindPlayerParticles = [fb];
+
+            player.x = 50;
+            player.y = 300;
+            player.width = 100;
+            player.height = 60;
+
+            player.collisionWithEnemies(0);
+
+            expect(PurpleThunderCollision).toHaveBeenCalled();
+
+            const [argGame, argX, argY] = PurpleThunderCollision.mock.calls[0];
+
+            const expectedX = enemy.x + enemy.width * 0.5;
+            const expectedY = fb.y + fb.size * 0.5;
+
+            expect(argGame).toBe(game);
+            expect(argX).toBeCloseTo(expectedX);
+            expect(argY).toBeCloseTo(expectedY);
+        });
+    });
+
     describe('collisionAnimationBasedOnEnemy all branches', () => {
         it.each([
             [Sluggie, InkSplashCollision],
@@ -1718,6 +1881,10 @@ describe('Player', () => {
             [PoisonDrop, PoisonDropCollision],
             [PurpleFireball, PurpleFireballExplosion],
             [MeteorAttack, MeteorExplosionCollision],
+            [PurpleThunder, PurpleThunderCollision],
+            [GhostElyvorg, GhostFadeOut],
+            [GravitationalAura, DarkExplosion],
+            [PurpleLaserBeam, DisintegrateCollision],
         ])('enemy %p pushes %p', (EnemyCtor, anim) => {
             const e = new EnemyCtor();
             e.x = 0; e.y = 0; e.width = 10; e.height = 10;

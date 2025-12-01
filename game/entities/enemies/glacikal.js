@@ -200,34 +200,81 @@ export class UndergroundIcicle extends ImmobileGroundEnemy {
 
             if (this.game.debug) {
                 context.save();
-                context.strokeStyle = "rgba(255,0,0,0.5)";
-                context.strokeRect(this.x, groundBottom - 10, this.width, 20);
+                context.strokeStyle = "rgba(0, 0, 0, 0.7)";
+                context.strokeRect(this.x, this.y, this.width, this.height);
                 context.restore();
             }
 
+            const t = Math.max(0, Math.min(1, this.timer / this.warningDuration));
+
+            const pulse = 0.5 + 0.5 * Math.sin(t * Math.PI * 6);
+            const baseIntensity = t;
+
+            const globalAlpha = 0.5 + 0.5 * (baseIntensity * pulse);
+
             context.save();
 
-            const glowWidth = this.width * 0.9;
-            const glowHeight = 32;
+            const glowWidth = this.width * 1.1;
+            const glowHeight = 44;
 
             context.translate(centerX, groundBottom - 10);
 
-            const gradient = context.createRadialGradient(0, 0, 0, 0, 0, glowWidth * 0.7);
-            gradient.addColorStop(0, "rgba(255, 80, 80, 0.6)");
-            gradient.addColorStop(0.6, "rgba(255, 0, 0, 0.35)");
+            const innerAlpha = 0.75 + 0.25 * baseIntensity;
+            const midAlpha = 0.5 + 0.35 * baseIntensity;
+
+            const gradient = context.createRadialGradient(
+                0, 0, 0,
+                0, 0, glowWidth * 0.75
+            );
+            gradient.addColorStop(0, `rgba(255, 230, 230, ${innerAlpha})`);
+            gradient.addColorStop(0.5, `rgba(255, 120, 120, ${midAlpha})`);
             gradient.addColorStop(1, "rgba(255, 0, 0, 0)");
 
             context.fillStyle = gradient;
-            context.globalAlpha = 0.95;
-            context.shadowColor = "rgba(255, 0, 0, 0.9)";
-            context.shadowBlur = 35;
+            context.globalAlpha = globalAlpha;
+
+            const blurBase = 40;
+            const blurExtra = 40 * baseIntensity;
+            context.shadowColor = "rgba(255, 140, 140, 1)";
+            context.shadowBlur = blurBase + blurExtra;
 
             context.beginPath();
-            context.ellipse(0, 0, glowWidth * 0.5, glowHeight * 0.5, 0, 0, Math.PI * 2);
+            context.ellipse(
+                0,
+                0,
+                glowWidth * 0.5,
+                glowHeight * 0.5,
+                0,
+                0,
+                Math.PI * 2
+            );
             context.fill();
 
-            context.restore();
+            const coreT = Math.min(1, t * 1.15);
+            const coreScale = 0.35 + 0.65 * coreT;
 
+            const coreRadiusX = glowWidth * coreScale * 0.5;
+            const coreRadiusY = glowHeight * coreScale * 0.5;
+
+            context.globalAlpha = 0.7 + 0.3 * baseIntensity;
+            context.shadowBlur = 25 + 45 * baseIntensity;
+            context.shadowColor = "rgba(255, 255, 255, 1)";
+
+            context.beginPath();
+            context.ellipse(
+                0,
+                0,
+                coreRadiusX,
+                coreRadiusY,
+                0,
+                0,
+                Math.PI * 2
+            );
+            context.strokeStyle = `rgba(255, 255, 255, ${0.65 + 0.35 * pulse})`;
+            context.lineWidth = 3 + 3 * baseIntensity;
+            context.stroke();
+
+            context.restore();
             return;
         }
 
@@ -610,9 +657,9 @@ export class Glacikal extends EnemyBoss {
     constructor(game) {
         super(game, 116, 180, 5, "glacikalIdle");
         this.setFps(10);
-        this.livesDefeatedAt = 5;
-        this.lives = 65;
-        this.maxLives = this.lives - this.livesDefeatedAt;
+        this.maxLives = 60;
+        this.lives = this.maxLives;
+        this._defeatTriggered = false;
         // run
         this.runAnimation = new EnemyBoss(game, 142.8333333333333, 180, 5, "glacikalRunning");
         this.runAnimation.setFps(10);
@@ -654,6 +701,7 @@ export class Glacikal extends EnemyBoss {
         this.icyStormPassiveTimer = 0;
         this.icyStormMaxOnScreen = 2;
         this.icyStormRainStarted = false;
+        this.icyStormEffectRequested = false;
         // kneel down
         this.glacikalKneelDownAnimation = new EnemyBoss(game, 126.1666666666667, 180, 5, "glacikalKneelDown");
         this.glacikalKneelDownAnimation.setFps(10);
@@ -737,7 +785,9 @@ export class Glacikal extends EnemyBoss {
     }
 
     checkIfDefeated() {
-        if (this.lives <= this.livesDefeatedAt) {
+        if (this._defeatTriggered) return;
+        if (this.lives <= 0) {
+            this._defeatTriggered = true;
             this.defeatCommon({
                 bossId: "glacikal",
                 bossClass: Glacikal,
@@ -746,6 +796,8 @@ export class Glacikal extends EnemyBoss {
                     this.game.shakeActive = false;
                     this.game.shakeTimer = 0;
                     this.game.shakeDuration = 0;
+                    this.game.bossManager.releaseScreenEffect("glacikal_icy_storm");
+                    this.icyStormEffectRequested = false;
                 }
             });
         }
@@ -997,10 +1049,13 @@ export class Glacikal extends EnemyBoss {
         const rainFrame = Math.max(1, Math.floor(this.icyStormAnimation.maxFrame * (17 / 23)));
         const resetFrame = Math.max(1, Math.floor(this.icyStormAnimation.maxFrame * (20 / 23)));
 
-        if (this.icyStormAnimation.frameX === 0) {
-            this.game.boss.screenEffect.active = true;
-            this.game.boss.screenEffect.rgb = [0, 60, 120];
-            this.game.boss.screenEffect.fadeInSpeed = 0.00298;
+        if (this.icyStormAnimation.frameX === 0 && !this.icyStormEffectRequested) {
+            this.icyStormEffectRequested = true;
+
+            this.game.bossManager.requestScreenEffect("glacikal_icy_storm", {
+                rgb: [0, 60, 120],
+                fadeInSpeed: 0.00298,
+            });
 
             this.game.audioHandler.enemySFX.playSound("elyvorg_poison_drop_indicator_sound", false, true);
             this.game.audioHandler.enemySFX.playSound("glacikal_icy_storm_start", false, true);
@@ -1054,7 +1109,8 @@ export class Glacikal extends EnemyBoss {
             this.icyStormTimer = 0;
             this.icyStormPassiveTimer = 0;
 
-            this.game.boss.screenEffect.active = false;
+            this.game.bossManager.releaseScreenEffect("glacikal_icy_storm");
+            this.icyStormEffectRequested = false;
         }
     }
 

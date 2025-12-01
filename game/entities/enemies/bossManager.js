@@ -22,6 +22,21 @@ const BOSS_CONFIG = {
     },
 };
 
+function createInitialScreenEffect() {
+    return {
+        active: false,
+        rgb: [0, 50, 0],
+        opacity: 0,
+        fadeInSpeed: 0.00298,
+        currentId: null,
+        stack: [],
+        fromRgb: null,
+        targetRgb: null,
+        colorLerpT: 1,
+        colorLerpSpeed: 0.04,
+    };
+}
+
 export class BossManager {
     constructor(game) {
         this.game = game;
@@ -36,12 +51,7 @@ export class BossManager {
             inFight: false,
             postFight: false,
             runAway: false,
-            screenEffect: {
-                active: false,
-                rgb: [0, 50, 0],
-                opacity: 0,
-                fadeInSpeed: 0.00298,
-            },
+            screenEffect: createInitialScreenEffect(),
             dialogueBeforeOnce: true,
             dialogueAfterOnce: false,
             dialogueAfterLeaving: false,
@@ -170,6 +180,91 @@ export class BossManager {
         return true;
     }
 
+    requestScreenEffect(id, { rgb, fadeInSpeed, colorLerpSpeed } = {}) {
+        const effect = this.state.screenEffect;
+
+        const idx = effect.stack.findIndex(e => e.id === id);
+        const layer = {
+            id,
+            rgb: rgb ?? (idx !== -1 ? effect.stack[idx].rgb : effect.rgb),
+            fadeInSpeed: fadeInSpeed ?? effect.fadeInSpeed,
+            colorLerpSpeed: colorLerpSpeed ?? effect.colorLerpSpeed,
+        };
+
+        if (idx !== -1) {
+            effect.stack[idx] = layer;
+        } else {
+            effect.stack.push(layer);
+        }
+
+        const prevId = effect.currentId;
+        const hadPrev = effect.active && prevId != null;
+
+        const top = effect.stack[effect.stack.length - 1];
+
+        effect.currentId = top.id;
+        effect.active = true;
+
+        effect.fadeInSpeed = top.fadeInSpeed;
+        effect.colorLerpSpeed = top.colorLerpSpeed;
+
+        if (!hadPrev) {
+            effect.rgb = top.rgb;
+            effect.fromRgb = top.rgb;
+            effect.targetRgb = top.rgb;
+            effect.colorLerpT = 1;
+            effect.opacity = 0;
+            return;
+        }
+
+        if (prevId === top.id) {
+            effect.rgb = top.rgb;
+            effect.fromRgb = top.rgb;
+            effect.targetRgb = top.rgb;
+            effect.colorLerpT = 1;
+            return;
+        }
+
+        effect.fromRgb = effect.rgb || top.rgb;
+        effect.targetRgb = top.rgb;
+        effect.colorLerpT = 0;
+    }
+
+    releaseScreenEffect(id) {
+        const effect = this.state.screenEffect;
+        const prevId = effect.currentId;
+
+        effect.stack = effect.stack.filter(e => e.id !== id);
+
+        if (effect.stack.length === 0) {
+            effect.currentId = null;
+            effect.active = false;
+            return;
+        }
+
+        const top = effect.stack[effect.stack.length - 1];
+        const hadPrev = effect.active && prevId != null;
+
+        effect.currentId = top.id;
+        effect.active = true;
+        effect.fadeInSpeed = top.fadeInSpeed;
+        effect.colorLerpSpeed = top.colorLerpSpeed;
+        if (!hadPrev) {
+            effect.rgb = top.rgb;
+            effect.fromRgb = top.rgb;
+            effect.targetRgb = top.rgb;
+            effect.colorLerpT = 1;
+            effect.opacity = 0;
+            return;
+        }
+        if (prevId === top.id) {
+            return;
+        }
+        effect.fromRgb = effect.rgb || top.rgb;
+        effect.targetRgb = top.rgb;
+        effect.colorLerpT = 0;
+    }
+
     resetState() {
         this.state = {
             current: null,
@@ -182,12 +277,7 @@ export class BossManager {
             inFight: false,
             postFight: false,
             runAway: false,
-            screenEffect: {
-                active: false,
-                rgb: [0, 50, 0],
-                opacity: 0,
-                fadeInSpeed: 0.00298,
-            },
+            screenEffect: createInitialScreenEffect(),
             dialogueBeforeOnce: true,
             dialogueAfterOnce: false,
             dialogueAfterLeaving: false,

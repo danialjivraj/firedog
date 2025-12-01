@@ -50,6 +50,157 @@ export class CollisionAnimation extends Collision {
     }
 }
 
+export class GhostFadeOut {
+    constructor(game, enemy) {
+        this.game = game;
+
+        this.image = enemy.image;
+        this.spriteWidth = enemy.width;
+        this.spriteHeight = enemy.height;
+
+        this.frameX = enemy.frameX || 0;
+        this.frameY = enemy.frameY || 0;
+
+        this.width = enemy.width;
+        this.height = enemy.height;
+
+        this.x = enemy.x;
+        this.y = enemy.y;
+
+        this.inverted = enemy.incrementMovement > 0;
+
+        this.duration = 450;
+        this.timer = 0;
+        this.alpha = 1;
+
+        this.bands = [];
+        const bandCount = 12;
+        const bandHeight = this.spriteHeight / bandCount;
+
+        const baseSy = this.frameY * this.spriteHeight;
+
+        for (let i = 0; i < bandCount; i++) {
+            const sy = baseSy + i * bandHeight;
+            const sh = i === bandCount - 1
+                ? this.spriteHeight - i * bandHeight
+                : bandHeight;
+
+            this.bands.push({
+                sy,
+                sh,
+                offsetX: 0,
+                offsetY: 0,
+                jitterStrength: 3 + Math.random() * 12,
+                flicker: Math.random() * 0.6 + 0.4,
+                phase: Math.random() * Math.PI * 2,
+                currentAlpha: 1,
+            });
+        }
+
+        this.markedForDeletion = false;
+    }
+
+    update(deltaTime) {
+        this.x -= this.game.speed;
+
+        this.timer += deltaTime;
+        const t = Math.min(1, this.timer / this.duration);
+
+        this.alpha = 1 - t;
+
+        const time = this.timer / 60;
+
+        for (let i = 0; i < this.bands.length; i++) {
+            const band = this.bands[i];
+            const f = i / this.bands.length;
+
+            const noise = Math.sin(time * 0.9 + band.phase + f * 6);
+            band.offsetX = noise * band.jitterStrength * (1 + t * 2);
+
+            const noiseY = Math.cos(time * 1.3 + band.phase * 1.5);
+            band.offsetY = noiseY * 1.3;
+
+            band.currentAlpha =
+                this.alpha *
+                (0.3 +
+                    band.flicker *
+                    (0.7 + 0.3 * Math.sin(time * 3 + f * 10)));
+        }
+
+        if (this.timer >= this.duration) {
+            this.markedForDeletion = true;
+        }
+    }
+
+    draw(context) {
+        context.save();
+
+        const centerX = this.x + this.width * 0.5;
+        const centerY = this.y + this.height * 0.5;
+
+        if (this.game.debug) {
+            context.strokeRect(this.x, this.y, this.width, this.height);
+        }
+
+        context.translate(centerX, centerY);
+        context.scale(this.inverted ? -1 : 1, 1);
+
+        const baseSx = this.frameX * this.spriteWidth;
+
+        const scaleY = this.height / this.spriteHeight;
+
+        for (let i = 0; i < this.bands.length; i++) {
+            const band = this.bands[i];
+            const dyTop =
+                -this.height / 2 +
+                (band.sy - this.frameY * this.spriteHeight) * scaleY;
+            const sh = band.sh;
+
+            const destBandHeight = sh * scaleY;
+
+            context.save();
+            context.globalAlpha = band.currentAlpha;
+
+            const dx = -this.width / 2 + band.offsetX;
+            const dy = dyTop + band.offsetY;
+
+            context.drawImage(
+                this.image,
+                baseSx,
+                band.sy,
+                this.spriteWidth,
+                sh,
+                dx,
+                dy,
+                this.width,
+                destBandHeight
+            );
+            context.restore();
+
+            context.save();
+            context.globalAlpha = band.currentAlpha * 0.55;
+
+            const dx2 = -this.width / 2 - band.offsetX * 0.7;
+            const dy2 = dyTop - band.offsetY * 0.7;
+
+            context.drawImage(
+                this.image,
+                baseSx,
+                band.sy,
+                this.spriteWidth,
+                sh,
+                dx2,
+                dy2,
+                this.width,
+                destBandHeight
+            );
+            context.restore();
+        }
+
+        context.restore();
+    }
+}
+
 export class ExplosionCollisionAnimation extends Collision {
     constructor(game, x, y, enemyId) {
         const adjustedY = y - 50;
@@ -155,6 +306,12 @@ export class PurpleFireballExplosion extends Collision {
     }
 }
 
+export class PurpleThunderCollision extends Collision {
+    constructor(game, x, y) {
+        super(game, x, y, 'purpleThunderCollision', 304, 293, 20, 50);
+    }
+}
+
 export class PoisonSpitSplash extends Collision {
     constructor(game, x, y) {
         super(game, x, y, 'poisonSpitSplash', 43, 73, 10, 80);
@@ -170,6 +327,231 @@ export class PoisonDropCollision extends Collision {
 export class PoisonDropGroundCollision extends Collision {
     constructor(game, x, y) {
         super(game, x, y, 'poisonDropGroundCollision', 50, 50, 6, 30);
+    }
+}
+
+export class DisintegrateCollision {
+    constructor(game, source, options = {}) {
+        this.game = game;
+
+        this.followTarget = options.followTarget || null;
+
+        this.image = options.image || source.image;
+
+        this.spriteWidth =
+            options.spriteWidth ??
+            source.width ??
+            source.spriteWidth ??
+            (this.image ? this.image.width : 0);
+
+        this.spriteHeight =
+            options.spriteHeight ??
+            source.height ??
+            source.spriteHeight ??
+            (this.image ? this.image.height : 0);
+
+        this.width = options.width ?? source.width ?? this.spriteWidth;
+        this.height = options.height ?? source.height ?? this.spriteHeight;
+
+        const srcW = source.width ?? this.width;
+        const srcH = source.height ?? this.height;
+
+        const cxFromSource = (source.x ?? 0) + srcW * 0.5;
+        const cyFromSource = (source.y ?? 0) + srcH * 0.5;
+
+        this.x = options.x ?? cxFromSource;
+        this.y = options.y ?? cyFromSource;
+
+        this.frameX = options.frameX ?? source.frameX ?? 0;
+        this.frameY = options.frameY ?? source.frameY ?? 0;
+
+        const drawInfo = source.collisionDrawInfo || {};
+
+        if (typeof options.angle === 'number') {
+            this.angle = options.angle;
+        } else if (typeof drawInfo.angle === 'number') {
+            this.angle = drawInfo.angle;
+        } else if (typeof source.angle === 'number') {
+            this.angle = source.angle;
+        } else {
+            const vx = drawInfo.vx ?? source.speedX ?? source.vx ?? 0;
+            const vy = drawInfo.vy ?? source.speedY ?? source.vy ?? 0;
+            this.angle = (vx || vy) ? Math.atan2(vy, vx) : 0;
+        }
+
+        this.direction =
+            options.direction ??
+            drawInfo.direction ??
+            source.direction ??
+            false;
+
+        this.duration = options.duration ?? 450;
+        this.timer = 0;
+        this.markedForDeletion = false;
+
+        const cols = options.cols ?? 7;
+        const rows = options.rows ?? 4;
+
+        const shardW = this.spriteWidth / cols;
+        const shardH = this.spriteHeight / rows;
+
+        this.shards = [];
+
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                const sx = col * shardW;
+                const sy = row * shardH;
+
+                const sw = (col === cols - 1)
+                    ? this.spriteWidth - sx
+                    : shardW;
+                const sh = (row === rows - 1)
+                    ? this.spriteHeight - sy
+                    : shardH;
+
+                const fx = (col + 0.5) / cols - 0.5;
+                const fy = (row + 0.5) / rows - 0.5;
+
+                let dirX = fx;
+                let dirY = fy;
+
+                const len = Math.hypot(dirX, dirY) || 1;
+                dirX /= len;
+                dirY /= len;
+
+                const jitterAngle = (Math.random() - 0.5) * 0.6;
+                const cosA = Math.cos(jitterAngle);
+                const sinA = Math.sin(jitterAngle);
+                const jx = dirX * cosA - dirY * sinA;
+                const jy = dirX * sinA + dirY * cosA;
+
+                const baseSpeed = (options.minShardSpeed ?? 25) +
+                    Math.random() * ((options.maxShardSpeed ?? 60) - (options.minShardSpeed ?? 25));
+
+                this.shards.push({
+                    sx,
+                    sy,
+                    sw,
+                    sh,
+                    dirX: jx,
+                    dirY: jy,
+                    baseSpeed,
+                    jitterPhase: Math.random() * Math.PI * 2,
+                    jitterStrength: (options.jitterStrengthBase ?? 1) +
+                        Math.random() * (options.jitterStrengthRange ?? 1.5),
+                    alpha: 1,
+                    scale: 1,
+                    offsetX: 0,
+                    offsetY: 0,
+                });
+            }
+        }
+    }
+
+    update(deltaTime) {
+        if (this.followTarget) {
+            this.x = this.followTarget.x + this.followTarget.width * 0.5;
+            this.y = this.followTarget.y + this.followTarget.height * 0.5;
+        } else {
+            this.x -= this.game.speed;
+        }
+
+        this.timer += deltaTime;
+        const t = Math.min(1, this.timer / this.duration);
+
+        const travelFactor = t * t;
+
+        this.shards.forEach(shard => {
+            const baseDist = shard.baseSpeed * travelFactor;
+
+            let dx = shard.dirX * baseDist;
+            let dy = shard.dirY * baseDist;
+
+            const time = this.timer * 0.01;
+            const wiggle = Math.sin(time + shard.jitterPhase) * shard.jitterStrength;
+            dx += -shard.dirY * wiggle * 0.5;
+            dy += shard.dirX * wiggle * 0.5;
+
+            shard.offsetX = dx;
+            shard.offsetY = dy;
+
+            shard.alpha = 1 - t * 1.1;
+            shard.scale = 1 - t * 0.85;
+
+            if (shard.alpha < 0) shard.alpha = 0;
+            if (shard.scale < 0) shard.scale = 0;
+        });
+
+        if (this.timer >= this.duration) {
+            this.markedForDeletion = true;
+        }
+    }
+
+    draw(context) {
+        if (!this.image) return;
+
+        context.save();
+
+        if (this.game.debug) {
+            context.strokeRect(
+                this.x - this.width / 2,
+                this.y - this.height / 2,
+                this.width,
+                this.height
+            );
+        }
+
+        context.translate(this.x, this.y);
+
+        if (this.direction) {
+            context.scale(-1, -1);
+        } else {
+            context.scale(1, -1);
+        }
+        context.rotate(this.angle);
+
+        const baseSx = this.frameX * this.spriteWidth;
+        const baseSy = this.frameY * this.spriteHeight;
+
+        const widthScale = this.width / this.spriteWidth;
+        const heightScale = this.height / this.spriteHeight;
+
+        for (const shard of this.shards) {
+            if (shard.alpha <= 0 || shard.scale <= 0) continue;
+
+            const localCenterX =
+                -this.width / 2 +
+                (shard.sx + shard.sw * 0.5) * widthScale;
+
+            const localCenterY =
+                -this.height / 2 +
+                (shard.sy + shard.sh * 0.5) * heightScale;
+
+            const dx = localCenterX + shard.offsetX;
+            const dy = localCenterY + shard.offsetY;
+
+            const dw = shard.sw * widthScale * shard.scale;
+            const dh = shard.sh * heightScale * shard.scale;
+
+            context.save();
+            context.globalAlpha = shard.alpha;
+
+            context.drawImage(
+                this.image,
+                baseSx + shard.sx,
+                baseSy + shard.sy,
+                shard.sw,
+                shard.sh,
+                dx - dw / 2,
+                dy - dh / 2,
+                dw,
+                dh
+            );
+
+            context.restore();
+        }
+
+        context.restore();
     }
 }
 

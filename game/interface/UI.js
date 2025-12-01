@@ -15,8 +15,6 @@ export class UI {
         this.divingUIWhiteBorder = document.getElementById('divingUIWhiteBorder');
         this.invisibleUI = document.getElementById('invisibleUI');
         this.invisibleUIWhiteBorder = document.getElementById('invisibleUIWhiteBorder');
-        this.poisonUI = document.getElementById('poisonUI');
-        this.gravityUI = document.getElementById('gravityUI');
         this.slashUI = document.getElementById('slashUI');
         this.slashWarningUI = document.getElementById('slashWarningUI');
         this.electricUI = document.getElementById('electricUI');
@@ -301,24 +299,28 @@ export class UI {
         const boss = bossState && bossState.current;
         if (!boss) return;
 
-        const defeatedOffset = boss.livesDefeatedAt ?? 0;
-        let remainingLives = boss.lives - defeatedOffset;
-        remainingLives = Math.max(0, remainingLives);
+        const rawMaxLives = boss.maxLives ?? boss.lives ?? 1;
+        const maxLives = Math.max(1, rawMaxLives);
 
-        const maxLives = boss.maxLives || 1;
+        const rawLives = boss.lives ?? maxLives;
+        const currentLives = Math.max(0, Math.min(rawLives, maxLives));
 
-        const percentage = (remainingLives / maxLives) * 100;
-        const clampedPct = boss.lives > 0 ? Math.max(percentage, 1) : 0;
+        const ratio = currentLives / maxLives;
+        const pct = ratio * 100;
 
-        const filledWidth = boss.lives > 0
-            ? Math.max((remainingLives / maxLives) * this.barWidth, 0.01 * this.barWidth)
+        const isAlive = currentLives > 0;
+
+        const displayPct = isAlive ? Math.max(pct, 1) : 0;
+
+        const filledWidth = isAlive
+            ? Math.max(ratio * this.barWidth, 0.01 * this.barWidth)
             : 0;
 
         this.progressBar(
             context,
-            clampedPct,
+            displayPct,
             filledWidth,
-            filledWidth,
+            this.barWidth,
             'red'
         );
     }
@@ -590,14 +592,6 @@ export class UI {
 
         if (!elyvorg) return;
 
-        // poison
-        const isPoisonActive = elyvorg.isPoisonActive;
-        const poisonCooldownTime = elyvorg.poisonCooldown;
-        const poisonCooldownTimer = elyvorg.poisonCooldownTimer;
-        // gravity
-        const isGravitySpinnerActive = elyvorg.isGravitySpinnerActive;
-        const gravityCooldownTime = elyvorg.gravityCooldown;
-        const gravityCooldownTimer = elyvorg.gravityCooldownTimer;
         // slash
         const slashAttackOnce = elyvorg.slashAttackOnce;
         const slashAttackStateCounter = elyvorg.slashAttackStateCounter;
@@ -610,62 +604,8 @@ export class UI {
         const spaceBetweenAbilities = 10;
         const yPosition = 20;
 
-        // poison
-        const poisonX = this.game.width - elyvorgBorderSize - spaceBetweenAbilities * 2;
-        if (poisonCooldownTimer > 0) {
-            if (isPoisonActive) {
-                context.drawImage(this.poisonUI, poisonX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
-            }
-            context.save();
-            const poisonTimerX = poisonX + elyvorgBorderSize / 2;
-            const poisonTimerY = yPosition + 87;
-            const poisonCooldown = Math.max(0, poisonCooldownTime / 1000 - poisonCooldownTimer / 1000);
-            const poisonCountdownText = poisonCooldown.toFixed(1);
-            context.fillStyle = 'white';
-            context.shadowColor = 'black';
-            context.font = 'bold 22px Arial';
-            context.strokeStyle = 'black';
-            context.lineWidth = 2;
-            context.textAlign = 'center';
-            context.strokeText(poisonCountdownText, poisonTimerX, poisonTimerY);
-            context.fillText(poisonCountdownText, poisonTimerX, poisonTimerY);
-            context.restore();
-        } else {
-            context.save();
-            context.filter = 'grayscale(100%)';
-            context.drawImage(this.poisonUI, poisonX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
-            context.restore();
-        }
-
-        // gravity
-        const gravityX = poisonX - elyvorgBorderSize - spaceBetweenAbilities;
-        if (gravityCooldownTimer > 0) {
-            if (isGravitySpinnerActive) {
-                context.drawImage(this.gravityUI, gravityX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
-            }
-            context.save();
-            const gravityTimerX = gravityX + elyvorgBorderSize / 2;
-            const gravityTimerY = yPosition + 87;
-            const gravityCooldown = Math.max(0, gravityCooldownTime / 1000 - gravityCooldownTimer / 1000);
-            const gravityCountdownText = gravityCooldown.toFixed(1);
-            context.fillStyle = 'white';
-            context.shadowColor = 'black';
-            context.font = 'bold 22px Arial';
-            context.strokeStyle = 'black';
-            context.lineWidth = 2;
-            context.textAlign = 'center';
-            context.strokeText(gravityCountdownText, gravityTimerX, gravityTimerY);
-            context.fillText(gravityCountdownText, gravityTimerX, gravityTimerY);
-            context.restore();
-        } else {
-            context.save();
-            context.filter = 'grayscale(100%)';
-            context.drawImage(this.gravityUI, gravityX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
-            context.restore();
-        }
-
         // slash
-        const slashX = gravityX - elyvorgBorderSize - spaceBetweenAbilities;
+        const slashX = this.game.width - elyvorgBorderSize - spaceBetweenAbilities;
         if (slashAttackOnce) {
             context.drawImage(this.slashUI, slashX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
         } else {
