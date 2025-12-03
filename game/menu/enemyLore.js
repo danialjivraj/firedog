@@ -1,3 +1,4 @@
+import { isLocalNight } from '../config/timeOfDay.js';
 import { BaseMenu } from "./baseMenu.js";
 
 export class EnemyLore extends BaseMenu {
@@ -216,7 +217,7 @@ export class EnemyLore extends BaseMenu {
             + "THEIR FACES NEVER CHANGE, BUT PEOPLE SWEAR THEIR EXPRESSIONS SHIFT WHEN NO ONE IS LOOKING.\n"
             + "SOME SAY THEY DRIFT TOWARD ANY PLACE WHERE A SECRET WAS ONCE WHISPERED, AS IF STILL LISTENING FOR THE REST OF THE STORY.",
             [
-                this.createImage('gloomlet', 78, 74, 0, this.pageWidth - 160, 50, 1.3),
+                this.createImage('gloomlet', 78, 74, 0, this.pageWidth - 160, 50, 1.3, 'red'),
             ],
             "map2"
         );
@@ -751,6 +752,17 @@ export class EnemyLore extends BaseMenu {
         this.game.audioHandler.menu.stopSound('soundtrack');
     }
 
+    isNightMode() {
+        const forestMenu = this.game.menu?.forestMap;
+        if (forestMenu && typeof forestMenu.isNightMode === 'function') {
+            return forestMenu.isNightMode();
+        }
+
+        const storyNight = this.game.map2Unlocked && this.game.map3Unlocked === false;
+        const clockNight = isLocalNight(20, 6);
+        return storyNight || clockNight;
+    }
+
     buildHighlightTokens(phraseColors) {
         return Object.entries(phraseColors).map(([phrase, style]) => ({
             phrase,
@@ -788,7 +800,7 @@ export class EnemyLore extends BaseMenu {
             enemyX,
             enemyY,
             size,
-            type // 'red' or 'stun' or null
+            type // 'red' or 'stun' or 'poison' or 'slow' or null
         };
     }
 
@@ -1045,11 +1057,9 @@ export class EnemyLore extends BaseMenu {
 
         this.game.audioHandler.menu.stopSound('soundtrack');
 
-        if (this.game.map2Unlocked && this.game.map3Unlocked === false) {
-            context.drawImage(this.backgroundImageNight, 0, 0, this.game.width, this.game.height);
-        } else {
-            context.drawImage(this.backgroundImage, 0, 0, this.game.width, this.game.height);
-        }
+        const isNight = this.isNightMode();
+        const bg = isNight ? this.backgroundImageNight : this.backgroundImage;
+        context.drawImage(bg, 0, 0, this.game.width, this.game.height);
 
         context.save();
 

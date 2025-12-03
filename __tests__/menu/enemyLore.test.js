@@ -1,4 +1,9 @@
 import { EnemyLore } from '../../game/menu/enemyLore.js';
+import { isLocalNight } from '../../game/config/timeOfDay.js';
+
+jest.mock('../../game/config/timeOfDay.js', () => ({
+    isLocalNight: jest.fn(() => false),
+}));
 
 describe('EnemyLore', () => {
     const W = 1920;
@@ -41,14 +46,14 @@ describe('EnemyLore', () => {
             audioHandler: {
                 menu: {
                     stopSound: jest.fn(),
-                    playSound: jest.fn()
-                }
+                    playSound: jest.fn(),
+                },
             },
             canvas: {
                 width: W,
                 height: H,
-                getBoundingClientRect: () => ({ left: 0, top: 0, width: W, height: H })
-            }
+                getBoundingClientRect: () => ({ left: 0, top: 0, width: W, height: H }),
+            },
         };
 
         ctx = {
@@ -79,16 +84,18 @@ describe('EnemyLore', () => {
             fillStyle: '',
             strokeStyle: '',
             lineWidth: 0,
-            textAlign: ''
+            textAlign: '',
         };
 
         menu = new EnemyLore(mockGame);
         menu.activateMenu();
+
         jest.clearAllMocks();
+        isLocalNight.mockReturnValue(false);
     });
 
     describe('initialization', () => {
-        it('sets up pages and book geometry correctly', () => {
+        it('sets up pages and book geometry based on canvas size', () => {
             expect(menu.pages.length).toBeGreaterThan(0);
             expect(menu.pageWidth).toBeCloseTo(W * 0.43, 2);
             expect(menu.pageHeight).toBeCloseTo(H * 0.8, 2);
@@ -97,11 +104,55 @@ describe('EnemyLore', () => {
         });
     });
 
+    describe('update()', () => {
+        it('stops the soundtrack on each update call', () => {
+            menu.update();
+            expect(mockGame.audioHandler.menu.stopSound).toHaveBeenCalledWith('soundtrack');
+        });
+    });
+
+    describe('isNightMode()', () => {
+        it('uses forestMap.isNightMode if available on the game menu', () => {
+            const forestMapIsNightMode = jest.fn(() => true);
+            mockGame.menu = { forestMap: { isNightMode: forestMapIsNightMode } };
+            const loreWithMenu = new EnemyLore(mockGame);
+
+            const result = loreWithMenu.isNightMode();
+
+            expect(forestMapIsNightMode).toHaveBeenCalled();
+            expect(result).toBe(true);
+        });
+
+        it('falls back to storyNight and clockNight when forestMap is not available', () => {
+            // story night: map2 unlocked, map3 locked
+            mockGame.map2Unlocked = true;
+            mockGame.map3Unlocked = false;
+            isLocalNight.mockReturnValue(false);
+
+            const lore = new EnemyLore(mockGame);
+            const result = lore.isNightMode();
+
+            expect(result).toBe(true);
+        });
+
+        it('returns true when clockNight is true even if storyNight is false', () => {
+            mockGame.map2Unlocked = false;
+            mockGame.map3Unlocked = false;
+            isLocalNight.mockReturnValue(true);
+
+            const lore = new EnemyLore(mockGame);
+            const result = lore.isNightMode();
+
+            expect(result).toBe(true);
+        });
+    });
+
     describe('paging logic', () => {
         it('nextPage() increments currentPage but never past the last index', () => {
             menu.currentPage = 0;
             menu.nextPage();
             expect(menu.currentPage).toBe(1);
+
             menu.currentPage = menu.pages.length - 1;
             menu.nextPage();
             expect(menu.currentPage).toBe(menu.pages.length - 1);
@@ -111,6 +162,7 @@ describe('EnemyLore', () => {
             menu.currentPage = 2;
             menu.previousPage();
             expect(menu.currentPage).toBe(1);
+
             menu.currentPage = 0;
             menu.previousPage();
             expect(menu.currentPage).toBe(0);
@@ -126,6 +178,7 @@ describe('EnemyLore', () => {
             menu.currentPage = 3;
             menu.clickPreviousPage();
             expect(menu.currentPage).toBe(1);
+
             menu.currentPage = 1;
             menu.clickPreviousPage();
             expect(menu.currentPage).toBe(0);
@@ -169,6 +222,24 @@ describe('EnemyLore', () => {
             menu.clickPreviousPage();
             expect(mockGame.audioHandler.menu.playSound)
                 .toHaveBeenCalledWith('bookFlip', false, true);
+        });
+    });
+
+    describe('getMaxValidIndex()', () => {
+        it('returns the last even index when the page count is even', () => {
+            const evenPages = menu.pages.slice(0, 10);
+            menu.pages = evenPages;
+
+            const maxIndex = menu.getMaxValidIndex();
+            expect(maxIndex).toBe(evenPages.length - 2);
+        });
+
+        it('returns the last index when the page count is odd', () => {
+            const oddPages = menu.pages.slice(0, 11);
+            menu.pages = oddPages;
+
+            const maxIndex = menu.getMaxValidIndex();
+            expect(maxIndex).toBe(oddPages.length - 1);
         });
     });
 
@@ -219,18 +290,22 @@ describe('EnemyLore', () => {
         it('handleKeyDown: ArrowRight calls nextPage and ArrowLeft calls previousPage', () => {
             jest.spyOn(menu, 'nextPage');
             jest.spyOn(menu, 'previousPage');
+
             menu.handleKeyDown({ key: 'ArrowRight' });
             expect(menu.nextPage).toHaveBeenCalled();
+
             menu.handleKeyDown({ key: 'ArrowLeft' });
             expect(menu.previousPage).toHaveBeenCalled();
         });
 
         it('handleKeyDown: ArrowUp/ArrowDown delegate to setCategory(main/bonus)', () => {
             jest.spyOn(menu, 'setCategory');
+
             menu.handleKeyDown({ key: 'ArrowUp' });
             expect(menu.setCategory).toHaveBeenCalledWith('main');
 
             jest.clearAllMocks();
+
             menu.handleKeyDown({ key: 'ArrowDown' });
             expect(menu.setCategory).toHaveBeenCalledWith('bonus');
         });
@@ -238,8 +313,10 @@ describe('EnemyLore', () => {
         it('handleMouseWheel: deltaY < 0 calls clickNextPage; deltaY > 0 calls clickPreviousPage', () => {
             jest.spyOn(menu, 'clickNextPage');
             jest.spyOn(menu, 'clickPreviousPage');
+
             menu.handleMouseWheel({ deltaY: -100 });
             expect(menu.clickNextPage).toHaveBeenCalled();
+
             menu.handleMouseWheel({ deltaY: 100 });
             expect(menu.clickPreviousPage).toHaveBeenCalled();
         });
@@ -249,14 +326,16 @@ describe('EnemyLore', () => {
             jest.spyOn(menu, 'clickNextPage');
             const insideY = menu.bookY + 10;
 
+            // left page
             menu.handleMouseClick({ clientX: menu.bookX + 10, clientY: insideY });
             expect(menu.clickPreviousPage).toHaveBeenCalled();
 
             jest.clearAllMocks();
 
+            // right page
             menu.handleMouseClick({
                 clientX: menu.bookX + menu.pageWidth + 10,
-                clientY: insideY
+                clientY: insideY,
             });
             expect(menu.clickNextPage).toHaveBeenCalled();
         });
@@ -272,7 +351,7 @@ describe('EnemyLore', () => {
 
             menu.handleMouseClick({
                 clientX: mainTab.x + 5,
-                clientY: mainTab.y + 5
+                clientY: mainTab.y + 5,
             });
             expect(menu.setCategory).toHaveBeenCalledWith('main');
 
@@ -280,7 +359,7 @@ describe('EnemyLore', () => {
 
             menu.handleMouseClick({
                 clientX: bonusTab.x + 5,
-                clientY: bonusTab.y + 5
+                clientY: bonusTab.y + 5,
             });
             expect(menu.setCategory).toHaveBeenCalledWith('bonus');
 
@@ -326,7 +405,7 @@ describe('EnemyLore', () => {
             menu.handleMouseClick({ clientX: menu.bookX - 50, clientY: menu.bookY - 50 });
             menu.handleMouseClick({
                 clientX: menu.bookX + menu.pageWidth * 2 + 50,
-                clientY: menu.bookY + menu.pageHeight + 50
+                clientY: menu.bookY + menu.pageHeight + 50,
             });
 
             expect(spyNext).not.toHaveBeenCalled();
@@ -348,35 +427,54 @@ describe('EnemyLore', () => {
                 .toHaveBeenCalledWith('soundtrack');
         });
 
-        it('draws day background when map2Unlocked is false', () => {
+        it('draws day background when storyNight and clockNight are both false', () => {
             mockGame.map2Unlocked = false;
+            mockGame.map3Unlocked = false;
+            isLocalNight.mockReturnValue(false);
             menu.menuActive = true;
+
             menu.draw(ctx);
+
             expect(ctx.drawImage).toHaveBeenCalledWith(
                 menu.backgroundImage,
-                0, 0, W, H
+                0,
+                0,
+                W,
+                H
             );
         });
 
-        it('draws night background when map2Unlocked is true and map3Unlocked is false', () => {
+        it('draws night background when map2Unlocked is true and map3Unlocked is false (story night)', () => {
             mockGame.map2Unlocked = true;
             mockGame.map3Unlocked = false;
+            isLocalNight.mockReturnValue(false);
             menu.menuActive = true;
+
             menu.draw(ctx);
+
             expect(ctx.drawImage).toHaveBeenCalledWith(
                 menu.backgroundImageNight,
-                0, 0, W, H
+                0,
+                0,
+                W,
+                H
             );
         });
 
-        it('draws day background when both map2Unlocked and map3Unlocked are true', () => {
+        it('draws day background when both map2Unlocked and map3Unlocked are true (story night off)', () => {
             mockGame.map2Unlocked = true;
             mockGame.map3Unlocked = true;
+            isLocalNight.mockReturnValue(false);
             menu.menuActive = true;
+
             menu.draw(ctx);
+
             expect(ctx.drawImage).toHaveBeenCalledWith(
                 menu.backgroundImage,
-                0, 0, W, H
+                0,
+                0,
+                W,
+                H
             );
         });
 
@@ -384,7 +482,9 @@ describe('EnemyLore', () => {
             mockGame.map2Unlocked = false;
             menu.menuActive = true;
             jest.spyOn(menu, 'drawPageContent');
+
             menu.draw(ctx);
+
             expect(menu.drawPageContent).toHaveBeenCalledTimes(2);
 
             expect(ctx.drawImage).toHaveBeenCalledWith(
@@ -394,11 +494,17 @@ describe('EnemyLore', () => {
             );
             expect(ctx.drawImage).toHaveBeenCalledWith(
                 menu.leftPageBackground,
-                menu.bookX, menu.bookY, menu.pageWidth, menu.pageHeight
+                menu.bookX,
+                menu.bookY,
+                menu.pageWidth,
+                menu.pageHeight
             );
             expect(ctx.drawImage).toHaveBeenCalledWith(
                 menu.rightPageBackground,
-                menu.bookX + menu.pageWidth, menu.bookY, menu.pageWidth, menu.pageHeight
+                menu.bookX + menu.pageWidth,
+                menu.bookY,
+                menu.pageWidth,
+                menu.pageHeight
             );
         });
     });
@@ -411,7 +517,7 @@ describe('EnemyLore', () => {
                 'NAME: ???',
                 'TYPE: ??? & ???',
                 'FOUND AT: ???',
-                'DESCRIPTION: ???'
+                'DESCRIPTION: ???',
             ]);
         });
 
@@ -421,7 +527,9 @@ describe('EnemyLore', () => {
             ctx.strokeText = (text, x, y) => {
                 records.push({ text, shadowColor: ctx.shadowColor, shadowBlur: ctx.shadowBlur });
             };
+
             menu.drawPageContent(ctx, 0, 0, 0);
+
             const entry = records.find(r => r.text === 'EVERYWHERE');
             expect(entry).toBeDefined();
             expect(entry.shadowColor).toBe('white');
@@ -440,7 +548,7 @@ describe('EnemyLore', () => {
             expect(chiquita).toBeDefined();
             expect(chiquita).toMatchObject({
                 type: 'FLY & NORMAL',
-                foundAt: 'VERDANT VINE'
+                foundAt: 'VERDANT VINE',
             });
             expect(chiquita.images[0].enemyImage.id).toBe('chiquita');
         });
@@ -448,9 +556,9 @@ describe('EnemyLore', () => {
         it('stores the full CHIQUITA description exactly', () => {
             const chiquita = menu.pages.find(p => p.name === 'CHIQUITA');
             expect(chiquita.description).toBe(
-                "CHIQUITA IS A DELIGHTFUL AND FRIENDLY BIRD WHO LOVES TO EXPLORE THE SKIES.\n" +
-                "HER PEACEFUL FLIGHTS ARE A SIGHT TO BEHOLD, AS SHE GLIDES EFFORTLESSLY AND GRACEFULLY.\n" +
-                "WITH A CHEERFUL CHIRP AND A GENTLE HEART, CHIQUITA BRINGS JOY AND TRANQUILITY TO EVERYONE SHE MEETS."
+                'CHIQUITA IS A DELIGHTFUL AND FRIENDLY BIRD WHO LOVES TO EXPLORE THE SKIES.\n' +
+                'HER PEACEFUL FLIGHTS ARE A SIGHT TO BEHOLD, AS SHE GLIDES EFFORTLESSLY AND GRACEFULLY.\n' +
+                'WITH A CHEERFUL CHIRP AND A GENTLE HEART, CHIQUITA BRINGS JOY AND TRANQUILITY TO EVERYONE SHE MEETS.'
             );
         });
     });
@@ -501,7 +609,14 @@ describe('EnemyLore', () => {
     describe('createImage helper', () => {
         it('returns an object with correct properties', () => {
             const imgObj = menu.createImage(
-                'goblin', 16, 32, 2, 100, 150, 1.5, 'stun'
+                'goblin',
+                16,
+                32,
+                2,
+                100,
+                150,
+                1.5,
+                'stun'
             );
             expect(imgObj.enemyImage).toBe(document.getElementById('goblin'));
             expect(imgObj.frameWidth).toBe(16);
@@ -527,13 +642,22 @@ describe('EnemyLore', () => {
             ['RED', 17, ['map2Unlocked', 'map3Unlocked'], 'black', 1],
             ['STUN', 6, [], 'black', 1],
         ];
+
         test.each(cases)(
             '"%s" on main page %i with flags %j sets stroke=%s blur=%i',
             (phrase, pageIndex, flags, stroke, blur) => {
-                flags.forEach(f => { mockGame[f] = true; });
+                flags.forEach(f => {
+                    mockGame[f] = true;
+                });
+
                 const rec = [];
                 ctx.strokeText = (t, x, y) =>
-                    rec.push({ text: String(t).trim(), strokeColor: ctx.shadowColor, shadowBlur: ctx.shadowBlur });
+                    rec.push({
+                        text: String(t).trim(),
+                        strokeColor: ctx.shadowColor,
+                        shadowBlur: ctx.shadowBlur,
+                    });
+
                 menu.drawPageContent(ctx, pageIndex, 0, 0);
                 const hit = rec.find(r => r.text === phrase);
                 expect(hit).toBeDefined();
@@ -553,12 +677,18 @@ describe('EnemyLore', () => {
         test.each(bonusCases)(
             '"%s" on bonus page %i with flags %j sets stroke=%s blur=%i',
             (token, pageIndex, flags, stroke, blur) => {
-                flags.forEach(f => { mockGame[f] = true; });
+                flags.forEach(f => {
+                    mockGame[f] = true;
+                });
                 menu.setCategory('bonus');
 
                 const rec = [];
                 ctx.strokeText = (t, x, y) =>
-                    rec.push({ text: String(t).trim(), strokeColor: ctx.shadowColor, shadowBlur: ctx.shadowBlur });
+                    rec.push({
+                        text: String(t).trim(),
+                        strokeColor: ctx.shadowColor,
+                        shadowBlur: ctx.shadowBlur,
+                    });
 
                 menu.drawPageContent(ctx, pageIndex, 0, 0);
 
@@ -602,7 +732,7 @@ describe('EnemyLore', () => {
                 records.push({
                     text: String(text),
                     shadowColor: ctx.shadowColor,
-                    shadowBlur: ctx.shadowBlur
+                    shadowBlur: ctx.shadowBlur,
                 });
             };
 
@@ -631,7 +761,7 @@ describe('EnemyLore', () => {
                 records.push({
                     text: String(text),
                     shadowColor: ctx.shadowColor,
-                    shadowBlur: ctx.shadowBlur
+                    shadowBlur: ctx.shadowBlur,
                 });
             };
 
@@ -666,7 +796,7 @@ describe('EnemyLore', () => {
                 records.push({
                     text: String(text),
                     shadowColor: ctx.shadowColor,
-                    shadowBlur: ctx.shadowBlur
+                    shadowBlur: ctx.shadowBlur,
                 });
             };
 

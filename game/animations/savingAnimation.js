@@ -1,3 +1,5 @@
+import { isLocalNight } from '../config/timeOfDay.js';
+
 export class SavingOrDeletingAnimation {
     constructor(game, width, height, imageId, maxFrame, x, y, fps) {
         this.game = game;
@@ -33,12 +35,12 @@ export class SavingOrDeletingAnimation {
     draw(context) {
         if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
 
+        const storyNight = this.game.map2Unlocked && this.game.map3Unlocked === false;
+        const clockNight = isLocalNight(20, 6);
+        const isNight = storyNight || clockNight;
+
         context.save();
-        if (this.game.map2Unlocked && this.game.map3Unlocked === false) {
-            context.shadowColor = 'orange';
-        } else {
-            context.shadowColor = 'white';
-        }
+        context.shadowColor = isNight ? 'orange' : 'white';
         context.shadowBlur = 10;
 
         context.drawImage(
@@ -59,24 +61,60 @@ export class SavingOrDeletingAnimation {
 
 export class SavingAnimation extends SavingOrDeletingAnimation {
     constructor(game) {
-        super(game, 177.66666666666666666666666666667, 60, 'savingAnimation', 2, game.width - 177.66666666666666666666666666667 - 30, game.height - 60, 3);
+        super(
+            game,
+            177.66666666666666666666666666667,
+            60,
+            'savingAnimation',
+            2,
+            game.width - 177.66666666666666666666666666667 - 30,
+            game.height - 60,
+            3
+        );
     }
 }
 
 export class SavingBookAnimation extends SavingOrDeletingAnimation {
     constructor(game) {
-        super(game, 192, 152, 'savingBookAnimation', 8, game.width - 192 - 45, game.height - 152 - 35, 8);
+        super(
+            game,
+            192,
+            152,
+            'savingBookAnimation',
+            8,
+            game.width - 192 - 45,
+            game.height - 152 - 35,
+            8
+        );
     }
 }
 
 export class DeleteProgressAnimation extends SavingOrDeletingAnimation {
     constructor(game) {
-        super(game, 179.33333333333333333333333333333, 100, 'deleteProgressAnimation', 2, game.width - 179.33333333333333333333333333333 - 45, game.height - 100, 2);
+        super(
+            game,
+            179.33333333333333333333333333333,
+            100,
+            'deleteProgressAnimation',
+            2,
+            game.width - 179.33333333333333333333333333333 - 45,
+            game.height - 100,
+            2
+        );
     }
 }
 
 export class DeleteProgressBookAnimation extends SavingOrDeletingAnimation {
     constructor(game) {
-        super(game, 194, 154, 'deleteProgressBookAnimation', 5, game.width - 194 - 45, game.height - 154 - 85, 5);
+        super(
+            game,
+            194,
+            154,
+            'deleteProgressBookAnimation',
+            5,
+            game.width - 194 - 45,
+            game.height - 154 - 85,
+            5
+        );
     }
 }

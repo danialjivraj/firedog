@@ -5,6 +5,11 @@ import {
     DeleteProgressAnimation,
     DeleteProgressBookAnimation,
 } from '../../game/animations/savingAnimation';
+import { isLocalNight } from '../../game/config/timeOfDay.js';
+
+jest.mock('../../game/config/timeOfDay.js', () => ({
+    isLocalNight: jest.fn(() => false),
+}));
 
 const fakeImages = {
     foobar: {},
@@ -18,6 +23,7 @@ beforeAll(() => {
     jest.spyOn(document, 'getElementById')
         .mockImplementation((id) => fakeImages[id] || null);
 });
+
 afterAll(() => {
     document.getElementById.mockRestore();
 });
@@ -40,9 +46,10 @@ describe('SavingOrDeletingAnimation (base class)', () => {
             shadowColor: '',
             shadowBlur: null,
         };
+        isLocalNight.mockReturnValue(false);
     });
 
-    it('constructor sets properties correctly', () => {
+    it('constructor initializes all properties from arguments', () => {
         expect(anim.game).toBe(game);
         expect(anim.width).toBe(WIDTH);
         expect(anim.height).toBe(HEIGHT);
@@ -59,46 +66,53 @@ describe('SavingOrDeletingAnimation (base class)', () => {
         expect(anim.frameTimer).toBe(0);
     });
 
-    it('update(delta = interval) does not advance or wrap', () => {
+    it('update(delta = frameInterval) does not advance frame and accumulates timer', () => {
         anim.update(anim.frameInterval);
         expect(anim.frameX).toBe(0);
         expect(anim.frameTimer).toBe(anim.frameInterval);
     });
 
-    it('update(delta > interval) advances by exactly one frame and resets timer', () => {
+    it('update(delta > frameInterval) advances by one frame and resets timer', () => {
         anim.update(anim.frameInterval + 1);
         expect(anim.frameX).toBe(1);
         expect(anim.frameTimer).toBe(0);
     });
 
-    it('update() accumulates across two small calls then advances once', () => {
+    it('update() accumulates time across calls and advances only once when threshold exceeded', () => {
         const half = anim.frameInterval / 2;
         anim.update(half);
         expect(anim.frameX).toBe(0);
         expect(anim.frameTimer).toBe(half);
+
         anim.update(half + 1);
         expect(anim.frameX).toBe(1);
         expect(anim.frameTimer).toBe(0);
     });
 
-    it('update() increments through frames then wraps sequentially', () => {
+    it('update() increments frames sequentially and wraps back to 0 after maxFrame', () => {
         const iv = anim.frameInterval + 1;
-        anim.update(iv); // frameX - 1
+        anim.update(iv); // 0 -> 1
         expect(anim.frameX).toBe(1);
-        anim.update(iv); // frameX - 2
+        anim.update(iv); // 1 -> 2
         expect(anim.frameX).toBe(2);
-        anim.update(iv); // frameX was at maxFrame - wraps to 0
+        anim.update(iv); // 2 (max) -> 0
         expect(anim.frameX).toBe(0);
     });
 
-    it('frameY remains at zero always', () => {
+    it('update() never changes frameY (always 0)', () => {
         anim.frameY = 0;
         anim.update(anim.frameInterval + 10);
         expect(anim.frameY).toBe(0);
     });
 
-    it('draw() without debug uses white shadow and calls drawImage', () => {
+    it('draw() with debug=false draws with white shadow and does not call strokeRect', () => {
+        game.debug = false;
+        game.map2Unlocked = false;
+        game.map3Unlocked = false;
+        isLocalNight.mockReturnValue(false);
+
         anim.draw(ctx);
+
         expect(ctx.save).toHaveBeenCalled();
         expect(ctx.shadowColor).toBe('white');
         expect(ctx.shadowBlur).toBe(10);
@@ -111,24 +125,37 @@ describe('SavingOrDeletingAnimation (base class)', () => {
         expect(ctx.strokeRect).not.toHaveBeenCalled();
     });
 
-    it('draw() with debug calls strokeRect', () => {
+    it('draw() with debug=true first calls strokeRect for the animation bounds', () => {
         game.debug = true;
         anim.draw(ctx);
         expect(ctx.strokeRect).toHaveBeenCalledWith(X, Y, WIDTH, HEIGHT);
     });
 
-    it('draw() uses orange shadow when map2Unlocked && !map3Unlocked', () => {
+    it('draw() uses orange shadow when story-night is active (map2Unlocked && !map3Unlocked)', () => {
         game.map2Unlocked = true;
         game.map3Unlocked = false;
+        isLocalNight.mockReturnValue(false);
+
         anim.draw(ctx);
         expect(ctx.shadowColor).toBe('orange');
     });
 
-    it('draw() uses white shadow when map3Unlocked=true regardless of map2', () => {
+    it('draw() uses white shadow when story-night is off because map3Unlocked=true', () => {
         game.map2Unlocked = true;
         game.map3Unlocked = true;
+        isLocalNight.mockReturnValue(false);
+
         anim.draw(ctx);
         expect(ctx.shadowColor).toBe('white');
+    });
+
+    it('draw() uses orange shadow when clockNight is true even if story-night is false', () => {
+        game.map2Unlocked = false;
+        game.map3Unlocked = false;
+        isLocalNight.mockReturnValue(true);
+
+        anim.draw(ctx);
+        expect(ctx.shadowColor).toBe('orange');
     });
 });
 
@@ -140,7 +167,7 @@ describe('Subclass constructors', () => {
         game = { width: GW, height: GH };
     });
 
-    it('SavingAnimation parameters', () => {
+    it('constructs SavingAnimation with correct dimensions, sprite, frame count, and position', () => {
         const sa = new SavingAnimation({ ...game, debug: false, map2Unlocked: false, map3Unlocked: false });
         expect(sa.width).toBeCloseTo(177.66666666666666);
         expect(sa.height).toBe(60);
@@ -151,7 +178,7 @@ describe('Subclass constructors', () => {
         expect(sa.y).toBeCloseTo(GH - 60);
     });
 
-    it('SavingBookAnimation parameters', () => {
+    it('constructs SavingBookAnimation with correct geometry and sprite', () => {
         const sb = new SavingBookAnimation(game);
         expect(sb.width).toBe(192);
         expect(sb.height).toBe(152);
@@ -162,7 +189,7 @@ describe('Subclass constructors', () => {
         expect(sb.y).toBe(GH - 152 - 35);
     });
 
-    it('DeleteProgressAnimation parameters', () => {
+    it('constructs DeleteProgressAnimation with correct geometry and sprite', () => {
         const dp = new DeleteProgressAnimation(game);
         expect(dp.width).toBeCloseTo(179.33333333333334);
         expect(dp.height).toBe(100);
@@ -173,7 +200,7 @@ describe('Subclass constructors', () => {
         expect(dp.y).toBe(GH - 100);
     });
 
-    it('DeleteProgressBookAnimation parameters', () => {
+    it('constructs DeleteProgressBookAnimation with correct geometry and sprite', () => {
         const db = new DeleteProgressBookAnimation(game);
         expect(db.width).toBe(194);
         expect(db.height).toBe(154);
