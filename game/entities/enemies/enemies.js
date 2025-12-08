@@ -2687,3 +2687,18 @@ export class Dragon extends FlyingEnemy {
         }
     }
 }
+
+// Bonus Map 1 --------------------------------------------------------------------------------------------------------------------------------------
+export class IceSilknoir extends ClimbingEnemy {
+    constructor(game) {
+        super(game, 120, 144, 5, 'iceSilknoir');
+        this.angle = 0;
+        this.va = Math.random() * 0.1 + 0.09;
+        this.soundId = 'nightSpiderSound';
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.y += this.speedY * Math.sin(this.angle);
+        this.angle += this.va;
+    }
+}

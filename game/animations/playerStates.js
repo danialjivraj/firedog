@@ -67,9 +67,10 @@ class State {
         this.game = game;
     }
     gameOver() {
+        const player = this.game.player;
         if (this.game.gameOver) {
             this.game.menu.gameOver.activateMenu();
-            this.game.player.setState(states.DYING, 1);
+            player.setState(states.DYING, 1);
         }
     }
 }
@@ -82,22 +83,25 @@ export class Sitting extends State {
         super("SITTING", game);
     }
     enter() {
-        setAnim(this.game.player, { x: 0, max: 4, y: 5 });
+        const player = this.game.player;
+        setAnim(player, { x: 0, max: 4, y: 5 });
     }
     handleInput(input) {
         this.gameOver();
 
+        const player = this.game.player;
+
         if (anyLR(this.game, input)) {
-            this.game.player.setState(states.RUNNING, 1);
+            player.setState(states.RUNNING, 1);
         } else if (jump(this.game, input)) {
-            this.game.player.setState(states.JUMPING, 1);
+            player.setState(states.JUMPING, 1);
         } else if (rollRequested(this.game, input) && !this.game.cabin.isFullyVisible) {
             if (this.game.isBossVisible) {
-                if (!this.game.player.energyReachedZero) {
-                    this.game.player.setState(states.ROLLING, 0);
+                if (!player.energyReachedZero) {
+                    player.setState(states.ROLLING, 0);
                 }
             } else {
-                this.game.player.setState(states.ROLLING, 2);
+                player.setState(states.ROLLING, 2);
             }
         }
     }
@@ -109,65 +113,57 @@ export class Running extends State {
     }
 
     enter() {
-        setAnim(this.game.player, { x: 0, max: 8, y: 3 });
+        const player = this.game.player;
+        setAnim(player, { x: 0, max: 8, y: 3 });
     }
 
     handleInput(input) {
         this.gameOver();
 
-        if (this.game.player.isSlowed) {
+        const player = this.game.player;
+
+        if (player.isSlowed) {
             spawnIceCrystal(
                 this.game,
-                this.game.player.x + this.game.player.width * 0.6 + 13,
-                this.game.player.y + this.game.player.height
+                player.x + player.width * 0.6 + 13,
+                player.y + player.height
             );
         } else {
             spawnDust(
                 this.game,
-                this.game.player.x + this.game.player.width * 0.6,
-                this.game.player.y + this.game.player.height
+                player.x + player.width * 0.6,
+                player.y + player.height
             );
         }
 
         if (this.game.boss.talkToBoss) {
             // do nothing
         } else if (this.game.isBossVisible && !this.oneTime) {
-            this.game.player.setState(states.STANDING, 0);
+            player.setState(states.STANDING, 0);
             this.oneTime = true;
         }
 
         if (this.game.boss.talkToBoss) {
             // do nothing
-        } else if (jump(this.game, input) && sit(this.game, input)) {
-            // do nothing
         } else if (jump(this.game, input)) {
-            this.game.player.setState(states.JUMPING, 1);
-        } else if (rollRequested(this.game, input)) {
-            if (this.game.isBossVisible === true) {
-                if (!this.game.player.energyReachedZero) {
-                    this.game.player.setState(states.ROLLING, 2);
-                }
-            } else if (!this.game.cabin.isFullyVisible) {
-                if (!this.game.player.energyReachedZero) {
-                    this.game.player.setState(states.ROLLING, 2);
-                }
+            player.setState(states.JUMPING, 1);
+        } else if (
+            rollRequested(this.game, input) &&
+            (this.game.isBossVisible === true || !this.game.cabin.isFullyVisible)
+        ) {
+            if (!player.energyReachedZero) {
+                player.setState(states.ROLLING, 2);
             }
+
         } else if (
             !anyLR(this.game, input) &&
             (this.game.cabin.isFullyVisible || this.game.isBossVisible)
         ) {
-            this.game.player.setState(states.STANDING, 0);
+            player.setState(states.STANDING, 0);
         } else if (sit(this.game, input) && anyLR(this.game, input)) {
             // do nothing
         } else if (sit(this.game, input)) {
-            this.game.player.setState(states.SITTING, 0);
-        } else if (
-            this.game.isBossVisible === true &&
-            this.game.player.energyReachedZero === true &&
-            rollRequested(this.game, input) &&
-            anyLR(this.game, input)
-        ) {
-            // do nothing
+            player.setState(states.SITTING, 0);
         }
     }
 }
@@ -177,51 +173,67 @@ export class Jumping extends State {
         super("JUMPING", game);
     }
     enter() {
-        if (this.game.player.onGround()) this.game.player.vy -= 27;
-        setAnim(this.game.player, { x: 0, max: 6, y: 1 });
-        if (this.game.player.onGround()) {
+        const player = this.game.player;
+
+        if (player.isSpace) {
+            player.vy = -9;
+
+            if (player.onGround()) {
+                player.canSpaceDoubleJump = true;
+            }
+
             this.game.audioHandler.firedogSFX.playSound("jumpSFX");
+        } else {
+            if (player.onGround()) {
+                player.vy -= 27;
+                this.game.audioHandler.firedogSFX.playSound("jumpSFX");
+            }
         }
+
+        setAnim(player, { x: 0, max: 6, y: 1 });
     }
+
     handleInput(input) {
         this.gameOver();
 
-        if (this.game.player.isUnderwater === true) {
+        const player = this.game.player;
+
+        if (player.isUnderwater === true) {
             spawnBubble(
                 this.game,
-                this.game.player.x + this.game.player.width * 0.8,
-                this.game.player.y + this.game.player.height
+                player.x + player.width * 0.8,
+                player.y + player.height
             );
             handleUnderwaterAscend(this.game, input);
         }
 
-        if (this.game.player.onGround()) {
-            this.game.player.setState(states.RUNNING, 1);
+        if (player.onGround()) {
+            player.setState(states.RUNNING, 1);
         } else if (
-            this.game.player.vy > this.game.player.weight &&
-            this.game.player.isUnderwater === false
+            player.vy > player.weight &&
+            player.isUnderwater === false
         ) {
-            this.game.player.setState(states.FALLING, 1);
+            player.setState(states.FALLING, 1);
         } else if (
             (dive(this.game, input) || (sit(this.game, input) && sitEqualsDive(this.game))) &&
-            this.game.player.divingTimer >= this.game.player.divingCooldown
+            player.divingTimer >= player.divingCooldown
         ) {
-            this.game.player.divingTimer = 0;
+            player.divingTimer = 0;
             if (anyLR(this.game, input)) {
-                this.game.player.setState(states.DIVING, 1);
+                player.setState(states.DIVING, 1);
             } else {
-                this.game.player.setState(states.DIVING, 0);
+                player.setState(states.DIVING, 0);
             }
         } else if (rollRequested(this.game, input) && !this.game.cabin.isFullyVisible) {
-            if (!this.game.player.energyReachedZero) {
-                this.game.player.setState(states.ROLLING, 2);
+            if (!player.energyReachedZero) {
+                player.setState(states.ROLLING, 2);
             } else if (
-                this.game.player.energyReachedZero === true &&
+                player.energyReachedZero === true &&
                 sit(this.game, input) &&
-                this.game.player.divingTimer >= this.game.player.divingCooldown
+                player.divingTimer >= player.divingCooldown
             ) {
-                this.game.player.divingTimer = 0;
-                this.game.player.setState(states.DIVING, 0);
+                player.divingTimer = 0;
+                player.setState(states.DIVING, 0);
             }
         }
     }
@@ -232,54 +244,68 @@ export class Falling extends State {
         super("FALLING", game);
     }
     enter() {
-        setAnim(this.game.player, { x: 0, max: 6, y: 2 });
+        const player = this.game.player;
+        setAnim(player, { x: 0, max: 6, y: 2 });
     }
     handleInput(input) {
         this.gameOver();
 
-        if (this.game.player.isUnderwater === true) {
+        const player = this.game.player;
+
+        if (
+            player.isSpace &&
+            !player.onGround() &&
+            jump(this.game, input) &&
+            player.canSpaceDoubleJump
+        ) {
+            player.canSpaceDoubleJump = false;
+            player.setState(states.JUMPING, 1);
+            return;
+        }
+
+        if (player.isUnderwater === true) {
             spawnBubble(
                 this.game,
-                this.game.player.x + this.game.player.width * 0.8,
-                this.game.player.y + this.game.player.height
+                player.x + player.width * 0.8,
+                player.y + player.height
             );
             if (jump(this.game, input)) {
-                this.game.player.y = this.game.player.y - 4;
-                this.game.player.setState(states.JUMPING, 1);
-                if (this.game.player.y < this.game.height - 400) {
-                    this.game.player.buoyancy = 1;
-                } else if (this.game.player.y < this.game.height - 300) {
-                    this.game.player.buoyancy = 2;
-                } else if (this.game.player.y < this.game.height - 200) {
-                    this.game.player.buoyancy = 3;
-                } else if (this.game.player.y < this.game.height - 100) {
-                    this.game.player.buoyancy = 4;
+                player.y = player.y - 4;
+                player.setState(states.JUMPING, 1);
+                if (player.y < this.game.height - 400) {
+                    player.buoyancy = 1;
+                } else if (player.y < this.game.height - 300) {
+                    player.buoyancy = 2;
+                } else if (player.y < this.game.height - 200) {
+                    player.buoyancy = 3;
+                } else if (player.y < this.game.height - 100) {
+                    player.buoyancy = 4;
                 }
             }
         }
 
-        if (rollRequested(this.game, input) && this.game.player.onGround() && this.game.cabin.isFullyVisible) {
-            this.game.player.setState(states.STANDING, 0);
-        } else if (this.game.player.onGround()) {
+        if (rollRequested(this.game, input) && player.onGround() && this.game.cabin.isFullyVisible) {
+            player.setState(states.STANDING, 0);
+        } else if (player.onGround()) {
             this.game.audioHandler.firedogSFX.playSound("fallingSFX");
-            this.game.player.setState(states.RUNNING, 1);
+            player.setState(states.RUNNING, 1);
         } else if (
             (dive(this.game, input) || (sit(this.game, input) && sitEqualsDive(this.game))) &&
-            this.game.player.divingTimer >= this.game.player.divingCooldown
+            player.divingTimer >= player.divingCooldown
         ) {
-            this.game.player.divingTimer = 0;
+            player.divingTimer = 0;
             if (anyLR(this.game, input)) {
-                this.game.player.setState(states.DIVING, 1);
+                player.setState(states.DIVING, 1);
             } else {
-                this.game.player.setState(states.DIVING, 0);
+                player.setState(states.DIVING, 0);
             }
         }
-        if (rollRequested(this.game, input) && this.game.isBossVisible && this.game.player.onGround()) {
-            this.game.player.setState(states.STANDING, 0);
+        if (rollRequested(this.game, input) && this.game.isBossVisible && player.onGround()) {
+            player.setState(states.STANDING, 0);
         } else if (rollRequested(this.game, input) && !this.game.cabin.isFullyVisible) {
-            if (this.game.player.energy > 0) {
-                if (!this.game.player.energyReachedZero) {
-                    this.game.player.setState(states.ROLLING, 2);
+            if (player.energy > 0) {
+                if (!player.energyReachedZero) {
+                    player.setState(states.ROLLING, 2);
                 }
             }
         }
@@ -292,59 +318,95 @@ export class Rolling extends State {
     }
 
     enter() {
-        setAnim(this.game.player, { x: 0, max: 6, y: 6 });
+        const player = this.game.player;
+        setAnim(player, { x: 0, max: 6, y: 6 });
     }
 
     handleInput(input) {
         this.gameOver();
 
-        if (!this.game.player.energyReachedZero) {
-            this.game.player.drainEnergy();
+        const player = this.game.player;
+
+        if (!player.energyReachedZero) {
+            player.drainEnergy();
+
+            if (
+                player.isSpace &&
+                !player.onGround() &&
+                player.vy >= 0 &&
+                jump(this.game, input) &&
+                player.canSpaceDoubleJump
+            ) {
+                player.canSpaceDoubleJump = false;
+                player.vy = -9;
+                this.game.audioHandler.firedogSFX.playSound("jumpSFX");
+                return;
+            }
 
             if (this.game.isBossVisible && !this.oneTime) {
-                this.game.player.setState(states.STANDING, 0);
+                player.setState(states.STANDING, 0);
                 this.oneTime = true;
             }
             if (this.game.cabin.isFullyVisible) {
-                this.game.player.setState(states.STANDING, 0);
+                player.setState(states.STANDING, 0);
             } else {
                 spawnFire(
                     this.game,
-                    this.game.player.x + this.game.player.width * 0.5,
-                    this.game.player.y + this.game.player.height * 0.5
+                    player.x + player.width * 0.5,
+                    player.y + player.height * 0.5
                 );
 
-                if (!rollRequested(this.game, input) && this.game.player.onGround()) {
-                    this.game.player.setState(states.RUNNING, 1);
-                } else if (!rollRequested(this.game, input) && !this.game.player.onGround()) {
-                    this.game.player.setState(states.FALLING, 1);
-                } else if (rollRequested(this.game, input) && jump(this.game, input) && this.game.player.onGround()) {
-                    this.game.player.vy -= 27;
+                if (!rollRequested(this.game, input) && player.onGround()) {
+                    player.setState(states.RUNNING, 1);
+
+                } else if (!rollRequested(this.game, input) && !player.onGround()) {
+                    player.setState(states.FALLING, 1);
+
+                } else if (
+                    rollRequested(this.game, input) &&
+                    jump(this.game, input) &&
+                    player.onGround()
+                ) {
+                    if (player.isSpace) {
+                        player.vy = -9;
+                        player.canSpaceDoubleJump = true;
+                    } else {
+                        player.vy -= 27;
+                    }
+                    this.game.audioHandler.firedogSFX.playSound("jumpSFX");
                 } else if (
                     sit(this.game, input) &&
-                    this.game.player.divingTimer >= this.game.player.divingCooldown &&
-                    !this.game.player.onGround()
+                    player.divingTimer >= player.divingCooldown &&
+                    !player.onGround()
                 ) {
-                    this.game.player.divingTimer = 0;
+                    player.divingTimer = 0;
                     if (anyLR(this.game, input)) {
-                        if (this.game.player.isBluePotionActive) {
-                            this.game.player.setState(states.DIVING, 4);
+                        if (player.isBluePotionActive) {
+                            player.setState(states.DIVING, 4);
                         } else {
-                            this.game.player.setState(states.DIVING, 2);
+                            player.setState(states.DIVING, 2);
                         }
                     } else {
-                        this.game.player.setState(states.DIVING, 0);
+                        player.setState(states.DIVING, 0);
                     }
                 }
             }
-        } else if (this.game.player.isUnderwater === false) {
-            if (this.game.isBossVisible) {
-                this.game.player.setState(states.STANDING, 0);
+        } else if (player.isUnderwater === false) {
+            if (player.onGround()) {
+                if (this.game.isBossVisible) {
+                    player.setState(states.STANDING, 0);
+                } else {
+                    player.setState(states.RUNNING, 1);
+                }
             } else {
-                this.game.player.setState(states.RUNNING, 1);
+                if (player.vy <= 0) {
+                    player.setState(states.JUMPING, 1);
+                } else {
+                    player.setState(states.FALLING, 1);
+                }
             }
         } else {
-            this.game.player.setState(states.FALLING, 1);
+            player.setState(states.FALLING, 1);
         }
     }
 }
@@ -354,54 +416,81 @@ export class Diving extends State {
         super("DIVING", game);
     }
     enter() {
-        setAnim(this.game.player, { x: 0, max: 6, y: 6 });
-        this.game.player.vy = 15;
+        const player = this.game.player;
+        setAnim(player, { x: 0, max: 6, y: 6 });
+
+        if (player.isSpace) {
+            player.vy = 7;
+        } else {
+            player.vy = 15;
+        }
     }
     handleInput(input) {
         this.gameOver();
 
-        if (this.game.player.isUnderwater === true) {
-            this.game.player.gravity = 1;
-            this.game.player.vy = 15;
+        const player = this.game.player;
+
+        if (
+            player.isSpace &&
+            !player.onGround() &&
+            jump(this.game, input) &&
+            player.canSpaceDoubleJump
+        ) {
+            player.canSpaceDoubleJump = false;
+
+            if (rollRequested(this.game, input)) {
+                player.vy = -9;
+                this.game.audioHandler.firedogSFX.playSound("jumpSFX");
+                player.setState(states.ROLLING, 2);
+            } else {
+                player.setState(states.JUMPING, 1);
+            }
+
+            return;
+        }
+
+        if (player.isUnderwater === true) {
+            player.gravity = 1;
+            player.vy = 15;
         }
 
         spawnFire(
             this.game,
-            this.game.player.x + this.game.player.width * 0.5,
-            this.game.player.y + this.game.player.height * 0.5
+            player.x + player.width * 0.5,
+            player.y + player.height * 0.5
         );
 
         const isBlueParticle =
-            this.game.player.particleImage === "bluefire" || this.game.player.particleImage === "bluebubble";
+            player.particleImage === "bluefire" || player.particleImage === "bluebubble";
         let numberOfParticles = isBlueParticle ? 90 : 30;
 
-        if (this.game.player.onGround()) {
+        if (player.onGround()) {
             this.game.audioHandler.firedogSFX.playSound("divingSFX", false, true);
-            if (this.game.player.onGround() && jump(this.game, input)) {
-                this.game.player.setState(states.JUMPING, 1);
+            if (player.onGround() && jump(this.game, input)) {
+                player.setState(states.JUMPING, 1);
             } else {
-                this.game.player.setState(states.RUNNING, 1);
+                player.setState(states.RUNNING, 1);
             }
             for (let i = 0; i < numberOfParticles; i++) {
                 this.game.particles.unshift(
                     new Splash(
                         this.game,
-                        this.game.player.x + this.game.player.width * -0.1,
-                        this.game.player.y
+                        player.x + player.width * -0.1,
+                        player.y
                     )
                 );
             }
         }
 
-        if (rollRequested(this.game, input) && this.game.player.onGround() && this.game.cabin.isFullyVisible) {
-            this.game.player.setState(states.STANDING, 0);
+        if (rollRequested(this.game, input) && player.onGround() && this.game.cabin.isFullyVisible) {
+            player.setState(states.STANDING, 0);
         }
 
-        if (this.game.player.isUnderwater === true) {
+        if (player.isUnderwater === true) {
             if (rollRequested(this.game, input) && jump(this.game, input)) {
-                this.game.player.setState(states.ROLLING, 2);
+                player.setState(states.ROLLING, 2);
             } else if (jump(this.game, input)) {
-                this.game.player.setState(states.JUMPING, 1);
+                player.setState(states.JUMPING, 1);
             }
         }
     }
@@ -412,18 +501,22 @@ export class Stunned extends State {
         super("STUNNED", game);
     }
     enter() {
-        setAnim(this.game.player, { x: 0, max: 10, y: 4 });
+        const player = this.game.player;
+        setAnim(player, { x: 0, max: 10, y: 4 });
     }
     handleInput() {
         this.gameOver();
-        if (this.game.player.frameX >= 10 && this.game.player.onGround()) {
-            if (this.game.player.previousState === this.game.player.states[0]) {
-                this.game.player.setState(states.SITTING, 0);
+
+        const player = this.game.player;
+
+        if (player.frameX >= 10 && player.onGround()) {
+            if (player.previousState === player.states[0]) {
+                player.setState(states.SITTING, 0);
             } else {
-                this.game.player.setState(states.RUNNING, 1);
+                player.setState(states.RUNNING, 1);
             }
-        } else if (this.game.player.frameX >= 10 && !this.game.player.onGround()) {
-            this.game.player.setState(states.FALLING, 1);
+        } else if (player.frameX >= 10 && !player.onGround()) {
+            player.setState(states.FALLING, 1);
         }
     }
 }
@@ -433,18 +526,22 @@ export class Hit extends State {
         super("HIT", game);
     }
     enter() {
-        setAnim(this.game.player, { x: 0, max: 3, y: 9 });
+        const player = this.game.player;
+        setAnim(player, { x: 0, max: 3, y: 9 });
     }
     handleInput() {
         this.gameOver();
-        if (this.game.player.frameX >= 3 && this.game.player.onGround()) {
-            if (this.game.player.previousState === this.game.player.states[0]) {
-                this.game.player.setState(states.SITTING, 0);
+
+        const player = this.game.player;
+
+        if (player.frameX >= 3 && player.onGround()) {
+            if (player.previousState === player.states[0]) {
+                player.setState(states.SITTING, 0);
             } else {
-                this.game.player.setState(states.RUNNING, 1);
+                player.setState(states.RUNNING, 1);
             }
-        } else if (this.game.player.frameX >= 3 && !this.game.player.onGround()) {
-            this.game.player.setState(states.FALLING, 1);
+        } else if (player.frameX >= 3 && !player.onGround()) {
+            player.setState(states.FALLING, 1);
         }
     }
 }
@@ -454,29 +551,32 @@ export class Standing extends State {
         super("STANDING", game);
     }
     enter() {
-        setAnim(this.game.player, { x: 0, max: 6, y: 0 });
+        const player = this.game.player;
+        setAnim(player, { x: 0, max: 6, y: 0 });
     }
     handleInput(input) {
         this.gameOver();
 
-        if (this.game.player.isUnderwater === true) {
-            if (rollRequested(this.game, input) && !this.game.player.onGround()) {
-                this.game.player.setState(states.FALLING, 1);
+        const player = this.game.player;
+
+        if (player.isUnderwater === true) {
+            if (rollRequested(this.game, input) && !player.onGround()) {
+                player.setState(states.FALLING, 1);
             }
         }
 
         if (this.game.isBossVisible) {
-            if (rollRequested(this.game, input) && this.game.player.energyReachedZero === false) {
-                this.game.player.setState(states.ROLLING, 0);
+            if (rollRequested(this.game, input) && player.energyReachedZero === false) {
+                player.setState(states.ROLLING, 0);
             }
         }
 
         if (anyLR(this.game, input)) {
-            this.game.player.setState(states.RUNNING, 1);
+            player.setState(states.RUNNING, 1);
         } else if (sit(this.game, input)) {
-            this.game.player.setState(states.SITTING, 0);
+            player.setState(states.SITTING, 0);
         } else if (jump(this.game, input)) {
-            this.game.player.setState(states.JUMPING, 0);
+            player.setState(states.JUMPING, 0);
         }
     }
 }
@@ -487,21 +587,24 @@ export class Dying extends State {
         this.deathAnimation = false;
     }
     enter() {
-        setAnim(this.game.player, { x: 0, max: 11, y: 8 });
+        const player = this.game.player;
+        setAnim(player, { x: 0, max: 11, y: 8 });
     }
     handleInput() {
-        if (this.game.player.isUnderwater === true) {
-            if (this.game.player.frameX >= this.game.player.maxFrame) {
-                this.game.player.frameX = this.game.player.maxFrame;
+        const player = this.game.player;
+
+        if (player.isUnderwater === true) {
+            if (player.frameX >= player.maxFrame) {
+                player.frameX = player.maxFrame;
                 this.deathAnimation = true;
             }
         }
 
-        if (this.game.player.frameX >= this.game.player.maxFrame && this.game.player.onGround()) {
-            this.game.player.frameX = this.game.player.maxFrame;
+        if (player.frameX >= player.maxFrame && player.onGround()) {
+            player.frameX = player.maxFrame;
             this.deathAnimation = true;
         }
-        if (this.game.player.onGround()) {
+        if (player.onGround()) {
             this.game.audioHandler.firedogSFX.playSound("deathFall");
         }
     }

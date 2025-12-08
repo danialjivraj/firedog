@@ -13,15 +13,83 @@ export class Layer {
         this.groundSpeed = this.game.speed * this.bgSpeed;
         this.x -= this.groundSpeed;
 
-        // check if the first image is completely out of view
         if (this.x <= -this.game.width) {
             this.x += this.game.width;
         }
     }
 
     draw(context) {
-        context.drawImage(this.image, this.x, this.y, this.game.width, this.game.height);
-        context.drawImage(this.image, this.x + this.game.width, this.y, this.game.width, this.game.height);
+        const x = Math.round(this.x);
+        context.drawImage(this.image, x, this.y, this.game.width, this.game.height);
+        context.drawImage(this.image, x + this.game.width, this.y, this.game.width, this.game.height);
+    }
+}
+
+export class MovingLayer extends Layer {
+    constructor(
+        game,
+        bgSpeed,
+        imageId,
+        baseScrollSpeed = 0.3,
+        direction = 'left',
+        axis = 'x'
+    ) {
+        const image = document.getElementById(imageId);
+        super(game, bgSpeed, image);
+        this.baseScrollSpeed = baseScrollSpeed;
+        this.direction = direction;
+        this.axis = axis;
+    }
+
+    update(deltaTime) {
+        this.groundSpeed = this.game.speed * this.bgSpeed;
+
+        const axisSpeed = this.axis === 'x'
+            ? this.baseScrollSpeed + this.groundSpeed
+            : this.baseScrollSpeed;
+
+        if (this.direction === 'left') {
+            this.x -= axisSpeed;
+        } else if (this.direction === 'right') {
+            this.x += axisSpeed;
+        } else if (this.direction === 'up') {
+            this.y -= axisSpeed;
+        } else if (this.direction === 'down') {
+            this.y += axisSpeed;
+        }
+
+        if (this.axis === 'x') {
+            if (this.x <= -this.game.width) this.x += this.game.width;
+            if (this.x >= this.game.width) this.x -= this.game.width;
+        } else {
+            if (this.y <= -this.game.height) this.y += this.game.height;
+            if (this.y >= this.game.height) this.y -= this.game.height;
+        }
+    }
+
+    draw(context) {
+        const x = Math.round(this.x);
+        const y = Math.round(this.y);
+
+        if (this.axis === 'x') {
+            context.drawImage(this.image, x, this.y, this.game.width, this.game.height);
+            context.drawImage(
+                this.image,
+                x + this.game.width,
+                this.y,
+                this.game.width,
+                this.game.height
+            );
+        } else {
+            context.drawImage(this.image, this.x, y, this.game.width, this.game.height);
+            context.drawImage(
+                this.image,
+                this.x,
+                y + this.game.height,
+                this.game.width,
+                this.game.height
+            );
+        }
     }
 }
 
@@ -29,18 +97,28 @@ export class Background {
     constructor(game, ...layers) {
         this.game = game;
         this.totalDistanceTraveled = 0;
-        this.soundId;
-        this.backgroundLayers = layers.map(item => {
-            const image = document.getElementById(item.imageId);
-
-            if (item.hasOwnProperty('maxBackgroundEntities')) {
-                return new EntityAnimation(this.game);
-            } else {
-                return new Layer(this.game, item.bgSpeed, image);
-            }
-        });
+        this.soundId = undefined;
         this.soundPlayed = false;
+
+        this.backgroundLayers = layers.map(item => {
+            if (
+                item instanceof Layer ||
+                item instanceof MovingLayer ||
+                item instanceof EntityAnimation ||
+                item instanceof RaindropAnimation ||
+                item instanceof SnowflakeAnimation ||
+                item instanceof RedBubbleAnimation ||
+                item instanceof StarField ||
+                item instanceof ShootingStar
+            ) {
+                return item;
+            }
+
+            const image = document.getElementById(item.imageId);
+            return new Layer(this.game, item.bgSpeed, image);
+        });
     }
+
     update(deltaTime) {
         if (!this.soundPlayed) {
             if (!this.game.cabin.isFullyVisible && !this.game.isBossVisible) {
@@ -65,7 +143,12 @@ export class Background {
                 }
             } else {
                 layer.groundSpeed = 0;
-                if (layer instanceof EntityAnimation || layer instanceof RaindropAnimation || layer instanceof SnowflakeAnimation) {
+                if (
+                    layer instanceof EntityAnimation ||
+                    layer instanceof RaindropAnimation ||
+                    layer instanceof SnowflakeAnimation ||
+                    layer instanceof MovingLayer
+                ) {
                     layer.update(deltaTime);
                 }
             }
@@ -88,78 +171,72 @@ export class Background {
         this.backgroundLayers.forEach(layer => {
             layer.draw(context);
         });
-
     }
 }
 
 export class Map1 extends Background {
     constructor(game) {
-        super(
-            game,
-            { imageId: 'map1Background', bgSpeed: 0 },
-            { imageId: 'map1Trees7', bgSpeed: 0.1 },
-            { imageId: 'map1Trees1', bgSpeed: 0.2 },
-            { imageId: 'map1Trees2', bgSpeed: 0.3 },
-            { imageId: 'map1Trees5', bgSpeed: 0.35 },
-            { imageId: 'map1Trees3', bgSpeed: 0.4 },
-            { imageId: 'map1Trees4', bgSpeed: 0.5 },
-            { imageId: 'map1Rocks', bgSpeed: 0.6 },
-            { imageId: 'map1Bush', bgSpeed: 0.65 },
-            { imageId: 'map1Trees6', bgSpeed: 0.7 },
-            { imageId: 'map1Ground', bgSpeed: 1 }),
-            this.soundId = 'map1Soundtrack';
-
         const fireflyLayer = new Firefly(game, 5);
         const fireflyLayer2 = new Firefly(game, 5);
         const fireflyLayer3 = new Firefly(game, 5);
         const fireflyLayer4 = new Firefly(game, 5);
         const fireflyLayer5 = new Firefly(game, 5);
 
-        this.backgroundLayers.splice(2, 0, fireflyLayer);
-        this.backgroundLayers.splice(5, 0, fireflyLayer2);
-        this.backgroundLayers.splice(7, 0, fireflyLayer3);
-        this.backgroundLayers.splice(10, 0, fireflyLayer4);
-        this.backgroundLayers.splice(14, 0, fireflyLayer5);
+        super(
+            game,
+            { imageId: 'map1Background', bgSpeed: 0 },
+            { imageId: 'map1Trees7', bgSpeed: 0.1 },
+            fireflyLayer,
+            { imageId: 'map1Trees1', bgSpeed: 0.2 },
+            { imageId: 'map1Trees2', bgSpeed: 0.3 },
+            fireflyLayer2,
+            { imageId: 'map1Trees5', bgSpeed: 0.35 },
+            fireflyLayer3,
+            { imageId: 'map1Trees3', bgSpeed: 0.4 },
+            { imageId: 'map1Trees4', bgSpeed: 0.5 },
+            fireflyLayer4,
+            { imageId: 'map1Rocks', bgSpeed: 0.6 },
+            { imageId: 'map1Bush', bgSpeed: 0.65 },
+            { imageId: 'map1Trees6', bgSpeed: 0.7 },
+            fireflyLayer5,
+            { imageId: 'map1Ground', bgSpeed: 1 },
+        );
+
+        this.soundId = 'map1Soundtrack';
     }
 }
 
 export class Map2 extends Background {
     constructor(game) {
-        super(
-            game,
-            { imageId: 'map2Background', bgSpeed: 0 },
-            { imageId: 'map2CityLights2', bgSpeed: 0.1 },
-            { imageId: 'map2CityLights1', bgSpeed: 0.2 },
-            { imageId: 'map2Trees1', bgSpeed: 0.4 },
-            { imageId: 'map2Ground', bgSpeed: 1 },
-        );
-        this.soundId = 'map2Soundtrack';
-
         const fireflyLayer = new Firefly(game, 5);
         const fireflyLayer2 = new Firefly(game, 5);
 
-        this.backgroundLayers.splice(3, 0, fireflyLayer);
-        this.backgroundLayers.splice(5, 0, fireflyLayer2);
+        const starField = new StarField(game, {
+            top: 0,
+            height: game.height * 0.5,
+            density: 0.15,
+            color: "white",
+            sizeScale: 0.5
+        });
+
+        super(
+            game,
+            { imageId: 'map2Background', bgSpeed: 0 },
+            starField,
+            { imageId: 'map2CityLights2', bgSpeed: 0.1 },
+            { imageId: 'map2CityLights1', bgSpeed: 0.2 },
+            fireflyLayer,
+            { imageId: 'map2Trees1', bgSpeed: 0.4 },
+            fireflyLayer2,
+            { imageId: 'map2Ground', bgSpeed: 1 },
+        );
+
+        this.soundId = 'map2Soundtrack';
     }
 }
 
 export class Map3 extends Background {
     constructor(game) {
-        super(
-            game,
-            { imageId: 'map3Background', bgSpeed: 0 },
-            { imageId: 'map3BackgroundRocks', bgSpeed: 0 },
-            { imageId: 'map3seaPlants3', bgSpeed: 0.15 },
-            { imageId: 'map3seaPlants1', bgSpeed: 0.2 },
-            { imageId: 'map3seaPlants2', bgSpeed: 0.3 },
-            { imageId: 'map3seaPlants4', bgSpeed: 0.4 },
-            { imageId: 'map3seaPlants6', bgSpeed: 0.45 },
-            { imageId: 'map3seaPlants5', bgSpeed: 0.5 },
-            { imageId: 'map3seaPlants7', bgSpeed: 0.54 },
-            { imageId: 'map3Ground', bgSpeed: 1 }
-        );
-        this.soundId = 'map3Soundtrack';
-
         const smallFish = new SmallFish(game, 4);
         const bigFish = new BigFish(game, 1);
         const smallFish2 = new SmallFish(game, 4);
@@ -167,57 +244,57 @@ export class Map3 extends Background {
         const smallFish4 = new SmallFish(game, 3);
         const smallFish5 = new SmallFish(game, 3);
 
-        this.backgroundLayers.splice(1, 0, smallFish);
-        this.backgroundLayers.splice(1, 0, bigFish);
-        this.backgroundLayers.splice(3, 0, smallFish2);
-        this.backgroundLayers.splice(5, 0, smallFish3);
-        this.backgroundLayers.splice(7, 0, smallFish4);
-        this.backgroundLayers.splice(13, 0, smallFish5);
+        super(
+            game,
+            { imageId: 'map3Background', bgSpeed: 0 },
+            bigFish,
+            smallFish,
+            smallFish2,
+            { imageId: 'map3BackgroundRocks', bgSpeed: 0 },
+            smallFish3,
+            { imageId: 'map3seaPlants3', bgSpeed: 0.15 },
+            smallFish4,
+            { imageId: 'map3seaPlants1', bgSpeed: 0.2 },
+            { imageId: 'map3seaPlants2', bgSpeed: 0.3 },
+            { imageId: 'map3seaPlants4', bgSpeed: 0.4 },
+            { imageId: 'map3seaPlants6', bgSpeed: 0.45 },
+            { imageId: 'map3seaPlants5', bgSpeed: 0.5 },
+            smallFish5,
+            { imageId: 'map3seaPlants7', bgSpeed: 0.54 },
+            { imageId: 'map3Ground', bgSpeed: 1 },
+        );
+
+        this.soundId = 'map3Soundtrack';
     }
 }
 
 export class Map4 extends Background {
     constructor(game) {
-        super(game,
-            { imageId: 'map4Background', bgSpeed: 0 },
-            { imageId: 'map4BottomVines', bgSpeed: 0.3 },
-            { imageId: 'map4Trees3', bgSpeed: 0.34 },
-            { imageId: 'map4Trees4', bgSpeed: 0.38 },
-            { imageId: 'map4Trees2', bgSpeed: 0.42 },
-            { imageId: 'map4Trees1', bgSpeed: 0.55 },
-            { imageId: 'map4TopVines', bgSpeed: 0.92 },
-            { imageId: 'map4Ground', bgSpeed: 1 }
-        );
-        this.soundId = 'map4Soundtrack';
-
         const fireflyLayer = new Firefly(game, 6);
         const fireflyLayer2 = new Firefly(game, 6);
         const fireflyLayer3 = new Firefly(game, 6);
 
-        this.backgroundLayers.splice(1, 0, fireflyLayer);
-        this.backgroundLayers.splice(4, 0, fireflyLayer2);
-        this.backgroundLayers.splice(8, 0, fireflyLayer3);
+        super(
+            game,
+            { imageId: 'map4Background', bgSpeed: 0 },
+            fireflyLayer,
+            { imageId: 'map4BottomVines', bgSpeed: 0.3 },
+            { imageId: 'map4Trees3', bgSpeed: 0.34 },
+            fireflyLayer2,
+            { imageId: 'map4Trees4', bgSpeed: 0.38 },
+            { imageId: 'map4Trees2', bgSpeed: 0.42 },
+            { imageId: 'map4Trees1', bgSpeed: 0.55 },
+            fireflyLayer3,
+            { imageId: 'map4TopVines', bgSpeed: 0.92 },
+            { imageId: 'map4Ground', bgSpeed: 1 },
+        );
+
+        this.soundId = 'map4Soundtrack';
     }
 }
 
 export class Map5 extends Background {
     constructor(game) {
-        super(
-            game,
-            { imageId: 'map5Background', bgSpeed: 0 },
-            { imageId: 'map5Trees5', bgSpeed: 0.3 },
-            { imageId: 'map5Trees2', bgSpeed: 0.32 },
-            { imageId: 'map5Trees4', bgSpeed: 0.34 },
-            { imageId: 'map5Trees3', bgSpeed: 0.4 },
-            { imageId: 'map5Trees1', bgSpeed: 0.44 },
-            { imageId: 'map5Bush2', bgSpeed: 0.5 },
-            { imageId: 'map5Bush1', bgSpeed: 0.54 },
-            { imageId: 'map5Flowers2', bgSpeed: 0.6 },
-            { imageId: 'map5Flowers1', bgSpeed: 0.7 },
-            { imageId: 'map5Ground', bgSpeed: 1 }
-        );
-        this.soundId = 'map5Soundtrack';
-
         const fireflyLayer = new Firefly(game, 5);
         const fireflyLayer2 = new Firefly(game, 7);
         const fireflyLayer3 = new Firefly(game, 5);
@@ -225,15 +302,32 @@ export class Map5 extends Background {
         const fireflyLayer5 = new Firefly(game, 5);
         const fireflyLayer6 = new Firefly(game, 10);
 
-        this.backgroundLayers.splice(1, 0, fireflyLayer);
-        this.backgroundLayers.splice(4, 0, fireflyLayer2);
-        this.backgroundLayers.splice(7, 0, fireflyLayer3);
-        this.backgroundLayers.splice(9, 0, fireflyLayer4);
-        this.backgroundLayers.splice(11, 0, fireflyLayer5);
-        this.backgroundLayers.splice(15, 0, fireflyLayer6);
-
         const raindropAnimationLayer = new RaindropAnimation(game, 100);
-        this.backgroundLayers.push(raindropAnimationLayer);
+
+        super(
+            game,
+            { imageId: 'map5Background', bgSpeed: 0 },
+            fireflyLayer,
+            { imageId: 'map5Trees5', bgSpeed: 0.3 },
+            { imageId: 'map5Trees2', bgSpeed: 0.32 },
+            fireflyLayer2,
+            { imageId: 'map5Trees4', bgSpeed: 0.34 },
+            { imageId: 'map5Trees3', bgSpeed: 0.4 },
+            fireflyLayer3,
+            { imageId: 'map5Trees1', bgSpeed: 0.44 },
+            fireflyLayer4,
+            { imageId: 'map5Bush2', bgSpeed: 0.5 },
+            fireflyLayer5,
+            { imageId: 'map5Bush1', bgSpeed: 0.54 },
+            { imageId: 'map5Flowers2', bgSpeed: 0.6 },
+            { imageId: 'map5Flowers1', bgSpeed: 0.7 },
+            fireflyLayer6,
+            { imageId: 'map5Ground', bgSpeed: 1 },
+            raindropAnimationLayer,
+        );
+
+        this.soundId = 'map5Soundtrack';
+        this.isRaining = false;
     }
 
     update(deltaTime) {
@@ -267,7 +361,8 @@ export class Map5 extends Background {
 
 export class Map6 extends Background {
     constructor(game) {
-        super(game,
+        super(
+            game,
             { imageId: 'map6Background', bgSpeed: 0 },
             { imageId: 'map6rocks2', bgSpeed: 0.3 },
             { imageId: 'map6rocks1', bgSpeed: 0.5 },
@@ -281,41 +376,106 @@ export class Map6 extends Background {
 
 export class BonusMap1 extends Background {
     constructor(game) {
-        super(game,
-            { imageId: 'bonusMap1Background', bgSpeed: 0 },
-            { imageId: 'bonusMap1Ground', bgSpeed: 1 },
-        );
-        this.soundId = 'map3Soundtrack';
-
         const totalFlakes = 220;
-        this.snowMid = new SnowflakeAnimation(game, Math.floor(totalFlakes * 0.8));
-        this.snowFront = new SnowflakeAnimation(game, Math.ceil(totalFlakes * 0.2));
+        const snowBack = new SnowflakeAnimation(game, Math.floor(totalFlakes * 0.2));
+        const snowMid = new SnowflakeAnimation(game, Math.floor(totalFlakes * 0.2));
+        const snowFront = new SnowflakeAnimation(game, Math.ceil(totalFlakes * 0.6));
 
-        for (const f of this.snowFront.flakes) {
+        for (const f of snowFront.flakes) {
             f.r *= 1.2;
             f.opacity = Math.min(1, f.opacity * 1.25);
         }
 
-        this.backgroundLayers.push(this.snowMid, this.snowFront);
+        super(
+            game,
+            snowBack,
+            { imageId: 'bonusMap1Background', bgSpeed: 0 },
+            { imageId: 'bonusMap1IceRings', bgSpeed: 0.1 },
+            { imageId: 'bonusMap2BigIceCrystal', bgSpeed: 0.2 },
+            snowMid,
+            { imageId: 'bonusMap1IceRocks1', bgSpeed: 0.3 },
+            { imageId: 'bonusMap1IceRocks2', bgSpeed: 0.4 },
+            { imageId: 'bonusMap2TopIcicles', bgSpeed: 0.95 },
+            { imageId: 'bonusMap2IceSpikes', bgSpeed: 1 },
+            { imageId: 'bonusMap1Ground', bgSpeed: 1 },
+            snowFront,
+        );
+
+        this.soundId = 'map3Soundtrack';
     }
 }
 
 export class BonusMap2 extends Background {
     constructor(game) {
-        super(game,
+        const redMist = new MovingLayer(game, 0, 'bonusMap2RedMist', 0.9, 'up', 'y');
+
+        const redBubbles1 = new RedBubbleAnimation(game, 20, 0.65, { min: 0.0, max: 0.33 });
+        const redBubbles2 = new RedBubbleAnimation(game, 20, 0.85, { min: 0.33, max: 0.66 });
+        const redBubbles3 = new RedBubbleAnimation(game, 10, 1.0, { min: 0.66, max: 1.0, spawnBelowGround: true });
+
+        const dragon1 = new DragonSilhouette(game, 0.45, 0.4);
+        const dragon1Extra = new DragonSilhouette(game, 0.45, 0.4);
+        const dragon2 = new DragonSilhouette(game, 0.55, 0.5);
+        const dragon2Extra = new DragonSilhouette(game, 0.55, 0.5);
+        const dragon3 = new DragonSilhouette(game, 0.65, 0.6);
+        const dragon4 = new DragonSilhouette(game, 0.75, 0.7);
+        const dragon5 = new DragonSilhouette(game, 0.85, 0.8);
+        const dragon6 = new DragonSilhouette(game, 1, 0.9);
+
+        super(
+            game,
             { imageId: 'bonusMap2Background', bgSpeed: 0 },
+            dragon1,
+            dragon1Extra,
+            { imageId: 'bonusMap2RockLayer1', bgSpeed: 0 },
+            dragon2,
+            dragon2Extra,
+            { imageId: 'bonusMap2RockLayer2', bgSpeed: 0 },
+            dragon3,
+            { imageId: 'bonusMap2RockLayer3', bgSpeed: 0 },
+            dragon4,
+
+            { imageId: 'bonusMap2RockLayer4', bgSpeed: 0 },
+            dragon5,
+            { imageId: 'bonusMap2RockLayer5', bgSpeed: 0 },
+            dragon6,
+            redBubbles1,
+            redBubbles2,
+            redBubbles3,
+            redMist,
+            { imageId: 'bonusMap2CrypticRocks1', bgSpeed: 0.1 },
+            { imageId: 'bonusMap2CrypticRocks2', bgSpeed: 0.2 },
+            { imageId: 'bonusMap2DeadTrees', bgSpeed: 0.4 },
+            { imageId: 'bonusMap2SpikeRocks', bgSpeed: 1 },
             { imageId: 'bonusMap2Ground', bgSpeed: 1 },
         );
+
         this.soundId = 'map3Soundtrack';
     }
 }
 
 export class BonusMap3 extends Background {
     constructor(game) {
-        super(game,
-            { imageId: 'bonusMap1Background', bgSpeed: 0 },
-            { imageId: 'bonusMap1Ground', bgSpeed: 1 },
+        const starField = new StarField(game);
+        const shootingStars = new ShootingStar(game, 4);
+        const meteors = new MeteorBackground(game, 5, {
+            minSpeed: 0.03,
+            maxSpeed: 0.06,
+        });
+
+        super(
+            game,
+            { imageId: 'bonusMap3Background', bgSpeed: 0 },
+            starField,
+            shootingStars,
+            meteors,
+            { imageId: 'bonusMap3Stars', bgSpeed: 0.1 },
+            { imageId: 'bonusMap3Planets', bgSpeed: 0.2 },
+            { imageId: 'bonusMap3Nebula', bgSpeed: 0.35 },
+            { imageId: 'bonusMap3PurpleSpiral', bgSpeed: 0.4 },
+            { imageId: 'bonusMap3Ground', bgSpeed: 1 },
         );
+
         this.soundId = 'map3Soundtrack';
     }
 }
@@ -697,11 +857,11 @@ export class RaindropAnimation {
                 context.stroke();
             }
             this.splashes.forEach(splash => splash.draw(context));
-
         }
         context.restore();
     }
 }
+
 export class RaindropSplashAnimation {
     constructor(game, x) {
         this.game = game;
@@ -815,5 +975,806 @@ export class SnowflakeAnimation {
         }
         context.globalAlpha = 1;
         context.restore();
+    }
+}
+
+export class RedBubbleAnimation extends EntityAnimation {
+    constructor(
+        game,
+        maxBackgroundEntities = 70,
+        sizeScale = 1,
+        band = { min: 0, max: 1, spawnBelowGround: false },
+    ) {
+        super(game, maxBackgroundEntities);
+        this.bubbles = [];
+
+        this.waterDepth = Math.min(300, this.game.height * 0.45);
+        this.waterTopY = this.game.height - this.waterDepth;
+
+        this.lifeTime = 6000;
+        this.fadeFraction = 0.25;
+        this.minRadius = 2;
+        this.maxRadius = 10;
+        this.minRise = 0.02;
+        this.maxRise = 0.07;
+        this.minOpacity = 0.2;
+        this.maxOpacity = 0.8;
+
+        this.sizeScale = sizeScale;
+        this.bandMin = Math.max(0, Math.min(1, band.min ?? 0));
+        this.bandMax = Math.max(this.bandMin, Math.min(1, band.max ?? 1));
+        this.spawnBelowGround = !!band.spawnBelowGround;
+
+        this.spawnAll();
+    }
+
+    spawnAll() {
+        for (let i = 0; i < this.maxBackgroundEntities; i++) {
+            this.bubbles.push(this.makeBubble(true));
+        }
+    }
+
+    makeBubble(randomAge = false) {
+        const x = Math.random() * this.game.width;
+
+        let depthNorm;
+        if (this.spawnBelowGround) {
+            depthNorm = 1;
+        } else {
+            const depthSample =
+                this.bandMin + Math.random() * (this.bandMax - this.bandMin);
+            depthNorm = depthSample;
+        }
+
+        const baseRadius =
+            this.minRadius + depthNorm * (this.maxRadius - this.minRadius);
+
+        const jitter = 0.85 + Math.random() * 0.3;
+        const radius = baseRadius * this.sizeScale * jitter;
+
+        let y;
+
+        if (this.spawnBelowGround) {
+            const groundMargin = this.game.groundMargin || 0;
+            const groundTopY = this.game.height - groundMargin;
+
+            const spawnMinY = groundTopY + radius;
+            const spawnMaxY = groundTopY + radius * 3;
+
+            y = spawnMinY + Math.random() * (spawnMaxY - spawnMinY);
+        } else {
+            const localBandHeight = this.waterDepth * (this.bandMax - this.bandMin);
+            const bandTop = this.waterTopY + this.waterDepth * this.bandMin;
+            y = bandTop + Math.random() * localBandHeight;
+        }
+
+        const depthCurve = Math.pow(depthNorm, 2.2);
+        const riseSpeed =
+            this.minRise + depthCurve * (this.maxRise - this.minRise);
+
+        const baseOpacity =
+            this.minOpacity + depthNorm * (this.maxOpacity - this.minOpacity);
+
+        const drift = (Math.random() * 0.04 - 0.02) * (0.5 + depthNorm);
+
+        const alivePhase = this.lifeTime * (1 - this.fadeFraction);
+        const age = randomAge ? Math.random() * alivePhase : 0;
+
+        return {
+            x,
+            y,
+            radius,
+            riseSpeed,
+            baseOpacity,
+            opacity: 0,
+            drift,
+            age,
+        };
+    }
+
+    update(deltaTime) {
+        const dt = deltaTime;
+
+        for (let i = 0; i < this.bubbles.length; i++) {
+            let b = this.bubbles[i];
+
+            b.age += dt;
+            const lifeRatio = b.age / this.lifeTime;
+
+            if (
+                lifeRatio >= 1 ||
+                b.y < -50 ||
+                b.x < -40 ||
+                b.x > this.game.width + 40
+            ) {
+                this.bubbles[i] = this.makeBubble(false);
+                continue;
+            }
+
+            b.y -= b.riseSpeed * dt;
+            b.x += b.drift * dt;
+
+            const fadeInEnd = this.lifeTime * this.fadeFraction;
+            const fadeOutStart = this.lifeTime * (1 - this.fadeFraction);
+
+            let alphaFactor = 1;
+
+            if (b.age < fadeInEnd) {
+                alphaFactor = b.age / fadeInEnd;
+            } else if (b.age > fadeOutStart) {
+                alphaFactor =
+                    1 - (b.age - fadeOutStart) / (this.lifeTime - fadeOutStart);
+            }
+
+            alphaFactor = Math.max(0, Math.min(1, alphaFactor));
+            b.opacity = b.baseOpacity * alphaFactor;
+        }
+    }
+
+    draw(context) {
+        context.save();
+        context.globalCompositeOperation = 'lighter';
+
+        for (let i = 0; i < this.bubbles.length; i++) {
+            const b = this.bubbles[i];
+            if (b.opacity <= 0) continue;
+
+            context.globalAlpha = b.opacity;
+
+            context.shadowBlur = b.radius * 2;
+            context.shadowColor = `rgba(255, 60, 90, ${b.opacity})`;
+
+            context.fillStyle = '#d12932ff';
+            context.beginPath();
+            context.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+            context.fill();
+
+            context.shadowBlur = 0;
+            context.globalAlpha = b.opacity * 0.8;
+            context.fillStyle = '#ffb6c4';
+            context.beginPath();
+            context.arc(
+                b.x - b.radius * 0.35,
+                b.y - b.radius * 0.35,
+                b.radius * 0.45,
+                0,
+                Math.PI * 2
+            );
+            context.fill();
+        }
+
+        context.globalAlpha = 1;
+        context.shadowBlur = 0;
+        context.shadowColor = 'transparent';
+        context.globalCompositeOperation = 'source-over';
+
+        context.restore();
+    }
+}
+
+export class StarField extends EntityAnimation {
+    constructor(game, options = {}) {
+        super(game, 0);
+        this.game = game;
+        this.stars = [];
+
+        this.layers = [
+            { speed: 0.015, scale: 0.2, count: 320 },
+            { speed: 0.03, scale: 0.5, count: 50 },
+            { speed: 0.05, scale: 0.75, count: 30 },
+        ];
+
+        this.starBaseRadius = 2;
+        this.starsAngleDeg = 145;
+        this.starsAngleRad = this.degreesToRads(this.starsAngleDeg);
+
+        const {
+            top = 0,
+            height = game.height,
+            density = 1,
+            color = "rgb(255, 221, 157)",
+            sizeScale = 1
+        } = options;
+
+        this.top = top;
+        this.height = height;
+        this.density = density;
+        this.color = color;
+        this.sizeScale = sizeScale;
+
+        this.initStars();
+    }
+
+    degreesToRads(deg) {
+        return (deg * Math.PI) / 180;
+    }
+
+    initStars() {
+        const width = this.game.width;
+        const top = this.top;
+        const height = this.height;
+
+        for (let j = 0; j < this.layers.length; j++) {
+            const layer = this.layers[j];
+
+            const count = Math.floor(layer.count * this.density);
+
+            for (let i = 0; i < count; i++) {
+                const x = Math.random() * width;
+                const y = top + Math.random() * height;
+
+                const speed = layer.speed;
+                const vx = Math.cos(this.starsAngleRad) * speed;
+                const vy = Math.sin(this.starsAngleRad) * speed;
+
+                this.stars.push({
+                    x,
+                    y,
+                    vx,
+                    vy,
+                    radius: this.starBaseRadius * layer.scale * this.sizeScale
+                });
+            }
+        }
+    }
+
+    update(deltaTime) {
+        const width = this.game.width;
+        const dt = deltaTime / 16.67;
+
+        const top = this.top;
+        const bottom = this.top + this.height;
+
+        for (let i = 0; i < this.stars.length; i++) {
+            const s = this.stars[i];
+
+            s.x += s.vx * dt;
+            s.y += s.vy * dt;
+
+            s.x = ((s.x % width) + width) % width;
+
+            if (s.y < top) s.y += this.height;
+            if (s.y > bottom) s.y -= this.height;
+        }
+    }
+
+    draw(context) {
+        context.save();
+        context.fillStyle = this.color;
+
+        for (let i = 0; i < this.stars.length; i++) {
+            const star = this.stars[i];
+            context.beginPath();
+            context.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+            context.fill();
+        }
+
+        context.restore();
+    }
+}
+
+
+export class ShootingStar extends EntityAnimation {
+    constructor(game, maxBackgroundEntities = 4) {
+        super(game, maxBackgroundEntities);
+
+        this.game = game;
+        this.shootingStars = [];
+
+        this.starsAngleDeg = 145;
+        this.starsAngleRad = this.degreesToRads(this.starsAngleDeg);
+        this.starsAngleRadFlipped = this.degreesToRads(180 - this.starsAngleDeg);
+
+        this.shootingStarSpeed = {
+            min: 15,
+            max: 20,
+        };
+
+        this.shootingStarOpacityDelta = 0.01;
+        this.trailLengthDelta = 0.01;
+
+        this.shootingStarEmittingInterval = 5000;
+        this.shootingStarLifeTime = 500;
+        this.maxTrailLength = 300;
+        this.shootingStarRadius = 3;
+
+        this.spawnTimer = 0;
+
+        this.createShootingStar();
+    }
+
+    degreesToRads(deg) {
+        return (deg / 180) * Math.PI;
+    }
+
+    randomRange(min, max) {
+        return min + Math.random() * (max - min);
+    }
+
+    lineToAngle(x1, y1, length, radians) {
+        const x2 = x1 + length * Math.cos(radians);
+        const y2 = y1 + length * Math.sin(radians);
+        return { x: x2, y: y2 };
+    }
+
+    createShootingStar() {
+        if (this.shootingStars.length >= this.maxBackgroundEntities) return;
+
+        const width = this.game.width;
+        const height = this.game.height;
+
+        const variant = Math.floor(Math.random() * 4);
+
+        let x, y, heading;
+
+        switch (variant) {
+            case 0:
+                x = this.randomRange(width / 2, width);
+                y = this.randomRange(0, height / 2);
+                heading = this.starsAngleRad;
+                break;
+
+            case 1:
+                x = this.randomRange(0, width / 2);
+                y = this.randomRange(0, height / 2);
+                heading = this.starsAngleRadFlipped;
+                break;
+
+            case 2:
+                x = this.randomRange(width / 2, width);
+                y = this.randomRange(height / 2, height);
+                heading = -this.starsAngleRad;
+                break;
+
+            case 3:
+            default:
+                x = this.randomRange(0, width / 2);
+                y = this.randomRange(height / 2, height);
+                heading = -this.starsAngleRadFlipped;
+                break;
+        }
+
+        const speed = this.randomRange(
+            this.shootingStarSpeed.min,
+            this.shootingStarSpeed.max
+        );
+
+        const vx = Math.cos(heading) * speed;
+        const vy = Math.sin(heading) * speed;
+
+        const shootingStar = {
+            x,
+            y,
+            vx,
+            vy,
+            radius: this.shootingStarRadius,
+            opacity: 0,
+            trailLengthDelta: 0,
+            isSpawning: true,
+            isDying: false,
+            isDead: false,
+            heading,
+            lifeTimer: 0,
+        };
+
+        this.shootingStars.push(shootingStar);
+    }
+
+    update(deltaTime) {
+        const dt = deltaTime / 16.67;
+
+        this.spawnTimer += deltaTime;
+        if (this.spawnTimer >= this.shootingStarEmittingInterval) {
+            this.spawnTimer = 0;
+
+            const burstCount = Math.random() < 0.1 ? 2 : 1;
+            for (let i = 0; i < burstCount; i++) {
+                this.createShootingStar();
+            }
+        }
+
+        const width = this.game.width;
+        const height = this.game.height;
+
+        for (let i = 0; i < this.shootingStars.length; i++) {
+            const p = this.shootingStars[i];
+
+            if (p.isSpawning) {
+                p.opacity += this.shootingStarOpacityDelta * dt;
+                if (p.opacity >= 1.0) {
+                    p.opacity = 1.0;
+                    p.isSpawning = false;
+                    p.lifeTimer = 0;
+                }
+            } else if (p.isDying) {
+                p.opacity -= this.shootingStarOpacityDelta * dt;
+                if (p.opacity <= 0.0) {
+                    p.opacity = 0.0;
+                    p.isDying = false;
+                    p.isDead = true;
+                }
+            } else {
+                p.lifeTimer += deltaTime;
+                if (p.lifeTimer >= this.shootingStarLifeTime) {
+                    p.isDying = true;
+                }
+            }
+
+            p.trailLengthDelta += this.trailLengthDelta * dt;
+
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+
+            if (
+                p.x < -this.maxTrailLength ||
+                p.x > width + this.maxTrailLength ||
+                p.y < -this.maxTrailLength ||
+                p.y > height + this.maxTrailLength
+            ) {
+                p.isDead = true;
+            }
+        }
+
+        for (let i = this.shootingStars.length - 1; i >= 0; i--) {
+            if (this.shootingStars[i].isDead) {
+                this.shootingStars.splice(i, 1);
+            }
+        }
+    }
+
+    drawShootingStar(context, p) {
+        const x = p.x;
+        const y = p.y;
+        const currentTrailLength = this.maxTrailLength * p.trailLengthDelta;
+        const pos = this.lineToAngle(x, y, -currentTrailLength, p.heading);
+
+        context.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
+
+        const starLength = 5;
+        context.beginPath();
+        context.moveTo(x - 1, y + 1);
+
+        context.lineTo(x, y + starLength);
+        context.lineTo(x + 1, y + 1);
+
+        context.lineTo(x + starLength, y);
+        context.lineTo(x + 1, y - 1);
+        context.lineTo(x, y + 1);
+        context.lineTo(x, y - starLength);
+
+        context.lineTo(x - 1, y - 1);
+        context.lineTo(x - starLength, y);
+
+        context.lineTo(x - 1, y + 1);
+        context.lineTo(x - starLength, y);
+
+        context.closePath();
+        context.fill();
+
+        context.fillStyle = `rgba(255, 221, 157, ${p.opacity})`;
+        context.beginPath();
+        context.moveTo(x - 1, y - 1);
+        context.lineTo(pos.x, pos.y);
+        context.lineTo(x + 1, y + 1);
+        context.closePath();
+        context.fill();
+    }
+
+    draw(context) {
+        context.save();
+        for (let i = 0; i < this.shootingStars.length; i++) {
+            const p = this.shootingStars[i];
+            if (p.opacity > 0.0) {
+                this.drawShootingStar(context, p);
+            }
+        }
+        context.restore();
+    }
+}
+export class DragonSilhouette extends EntityAnimation {
+    constructor(
+        game,
+        scale = 1,
+        opacity = 1
+    ) {
+        super(game, 1);
+        this.game = game;
+
+        this.frameWidth = 52.91666666666667;
+        this.frameHeight = 50;
+
+        this.scale = scale;
+        this.width = this.frameWidth * this.scale;
+        this.height = this.frameHeight * this.scale;
+
+        this.opacity = opacity;
+
+        this.maxFrame = 11;
+        this.frameX = Math.floor(Math.random() * (this.maxFrame + 1));
+        this.frameY = 0;
+
+        this.fps = 14;
+        this.frameInterval = 1000 / this.fps;
+        this.frameTimer = 0;
+
+        this.imageId = 'dragonSilhouette';
+        this.image = document.getElementById(this.imageId);
+
+        this.direction = -1;
+        this.flipped = false;
+
+        this.speedX = 0;
+        this.speedY = 0;
+
+        this.angle = 0;
+        this.va = Math.random() * 0.1 + 0.1;
+
+        this.resetPosition();
+    }
+
+    ensureImageLoaded() {
+        if (!this.image) {
+            this.image = document.getElementById(this.imageId);
+        }
+    }
+
+    resetPosition() {
+        const spawnFromLeft = Math.random() < 0.5;
+
+        this.width = this.frameWidth * this.scale;
+        this.height = this.frameHeight * this.scale;
+
+        const randomBase = Math.random() * 0.5 + 0.5;
+        this.speedX = randomBase * this.scale;
+
+        this.angle = 0;
+        this.va = Math.random() * 0.1 + 0.1;
+
+        const minY = 0;
+        const maxY = this.game.height / 2;
+        this.y = minY + Math.random() * (maxY - minY);
+
+        if (spawnFromLeft) {
+            this.direction = 1;
+            this.flipped = true;
+            this.x = -this.width - Math.random() * this.game.width * 0.5;
+        } else {
+            this.direction = -1;
+            this.flipped = false;
+            this.x = this.game.width + Math.random() * this.game.width * 0.5;
+        }
+    }
+
+    advanceFrame(deltaTime) {
+        this.frameTimer += deltaTime;
+        if (this.frameTimer > this.frameInterval) {
+            this.frameTimer = 0;
+            this.frameX = this.frameX < this.maxFrame ? this.frameX + 1 : 0;
+        }
+    }
+
+    update(deltaTime) {
+        this.x += this.speedX * this.direction;
+        this.y += this.speedY;
+
+        this.va = (Math.random() * 0.1 + 0.1) * this.speedX;
+
+        this.angle += this.va;
+
+        this.y += Math.sin(this.angle) * this.speedX * this.scale;
+
+        this.advanceFrame(deltaTime);
+
+        const offLeft = this.x + this.width < 0;
+        const offRight = this.x > this.game.width;
+        const offBottom = this.y > this.game.height;
+        const offTop = this.y + this.height < 0;
+
+        if (offLeft || offRight || offBottom || offTop) {
+            this.resetPosition();
+        }
+    }
+
+    draw(context) {
+        this.ensureImageLoaded();
+        if (!this.image) return;
+
+        const sx = this.frameX * this.frameWidth;
+        const sy = 0;
+        const sw = this.frameWidth;
+        const sh = this.frameHeight;
+
+        const dw = this.width;
+        const dh = this.height;
+
+        context.save();
+        context.globalAlpha = this.opacity;
+
+        if (this.flipped) {
+            context.translate(this.x + dw, this.y);
+            context.scale(-1, 1);
+            context.drawImage(
+                this.image,
+                sx,
+                sy,
+                sw,
+                sh,
+                0,
+                0,
+                dw,
+                dh
+            );
+        } else {
+            context.translate(this.x, this.y);
+            context.drawImage(
+                this.image,
+                sx,
+                sy,
+                sw,
+                sh,
+                0,
+                0,
+                dw,
+                dh
+            );
+        }
+
+        context.restore();
+    }
+}
+export class MeteorBackground extends EntityAnimation {
+    constructor(
+        game,
+        maxBackgroundEntities = 5,
+        {
+            minSpeed = 0.03,
+            maxSpeed = 0.07,
+            minAngularSpeed = 0.0007,
+            maxAngularSpeed = 0.0025,
+            verticalBand = { min: 0.2, max: 0.8 },
+        } = {}
+    ) {
+        super(game, maxBackgroundEntities);
+
+        this.game = game;
+        this.meteors = [];
+
+        this.imageId = 'meteorBackground';
+        this.image = document.getElementById(this.imageId);
+
+        this.spriteWidth = 47;
+        this.spriteHeight = 47;
+
+        this.minSpeed = minSpeed;
+        this.maxSpeed = maxSpeed;
+        this.minAngularSpeed = minAngularSpeed;
+        this.maxAngularSpeed = maxAngularSpeed;
+        this.verticalBand = verticalBand;
+
+        this.minScale = 0.6;
+        this.maxScale = 1.0;
+
+        this.offscreenMargin = 100;
+
+        this.spawnAll();
+    }
+
+    ensureImageLoaded() {
+        if (!this.image) {
+            this.image = document.getElementById(this.imageId);
+        }
+    }
+
+    randomRange(min, max) {
+        return min + Math.random() * (max - min);
+    }
+
+    spawnAll() {
+        for (let i = 0; i < this.maxBackgroundEntities; i++) {
+            this.meteors.push(this.makeMeteor(true));
+        }
+    }
+
+    makeMeteor(spawnInScreen = false) {
+        const width = this.game.width;
+        const height = this.game.height;
+
+        const fromLeft = Math.random() < 0.5;
+
+        const bandMin = Math.max(0, Math.min(1, this.verticalBand.min ?? 0));
+        const bandMax = Math.max(bandMin, Math.min(1, this.verticalBand.max ?? 1));
+        const yMin = height * bandMin;
+        const yMax = height * bandMax;
+        const y = yMin + Math.random() * (yMax - yMin);
+
+        let x;
+        if (spawnInScreen) {
+            x = Math.random() * width;
+        } else {
+            x = fromLeft
+                ? -this.offscreenMargin
+                : width + this.offscreenMargin;
+        }
+
+        const spreadDeg = 40;
+        const spread = (spreadDeg * Math.PI) / 180;
+        const baseAngle = fromLeft ? 0 : Math.PI;
+        const angleHeading = baseAngle + this.randomRange(-spread, spread);
+
+        const speed = this.randomRange(this.minSpeed, this.maxSpeed);
+        const vx = Math.cos(angleHeading) * speed;
+        const vy = Math.sin(angleHeading) * speed;
+
+        const angularSpeed = this.randomRange(
+            this.minAngularSpeed,
+            this.maxAngularSpeed
+        );
+        const rotationDir = Math.random() < 0.5 ? -1 : 1;
+
+        const scale = this.randomRange(this.minScale, this.maxScale);
+
+        return {
+            x,
+            y,
+            vx,
+            vy,
+            angle: Math.random() * Math.PI * 2,
+            angularSpeed,
+            rotationDir,
+            scale,
+        };
+    }
+
+    update(deltaTime) {
+        this.ensureImageLoaded();
+        if (!this.image) return;
+
+        const width = this.game.width;
+        const height = this.game.height;
+
+        for (let i = 0; i < this.meteors.length; i++) {
+            const m = this.meteors[i];
+
+            m.x += m.vx * deltaTime;
+            m.y += m.vy * deltaTime;
+
+            m.angle += m.angularSpeed * m.rotationDir * deltaTime;
+
+            const off =
+                m.x < -this.offscreenMargin ||
+                m.x > width + this.offscreenMargin ||
+                m.y < -this.offscreenMargin ||
+                m.y > height + this.offscreenMargin;
+
+            if (off) {
+                this.meteors[i] = this.makeMeteor(false);
+            }
+        }
+    }
+
+    draw(context) {
+        this.ensureImageLoaded();
+        if (!this.image) return;
+
+        for (let i = 0; i < this.meteors.length; i++) {
+            const m = this.meteors[i];
+
+            const drawW = this.spriteWidth * m.scale;
+            const drawH = this.spriteHeight * m.scale;
+
+            context.save();
+            context.translate(m.x, m.y);
+            context.rotate(m.angle);
+
+            context.drawImage(
+                this.image,
+                -drawW / 2,
+                -drawH / 2,
+                drawW,
+                drawH
+            );
+
+            context.restore();
+        }
     }
 }

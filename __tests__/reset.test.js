@@ -22,6 +22,7 @@ jest.mock('../game/entities/player.js', () => ({
         isDarkWhiteBorder: false,
         isUnderwater: false,
         isIce: false,
+        isSpace: false,
     })),
 }));
 
@@ -33,15 +34,28 @@ describe('Reset', () => {
         game = {
             coins: 100,
             notEnoughCoins: false,
-            tutorial: { elapsedTime: 10, currentStepIndex: 2, tutorialPause: false },
+
+            // cutscenes
             currentCutscene: { removeEventListeners: jest.fn() },
             cutscenes: [],
             isEndCutscene: true,
             endCutscene: jest.fn(),
+
+            // tutorial
+            tutorial: { elapsedTime: 10, currentStepIndex: 2, tutorialPause: false },
+
+            // shake
+            shakeActive: true,
+            shakeTimer: 5,
+            shakeDuration: 10,
+
+            // core game flags
             speed: 5,
             time: 10,
             invisibleColourOpacity: 1,
             gameOver: true,
+
+            // audio
             audioHandler: {
                 mapSoundtrack: { stopAllSounds: jest.fn() },
                 firedogSFX: { stopAllSounds: jest.fn() },
@@ -50,6 +64,8 @@ describe('Reset', () => {
                 powerUpAndDownSFX: { stopAllSounds: jest.fn() },
                 cutsceneMusic: { stopAllSounds: jest.fn() },
             },
+
+            // collections
             enemies: [1],
             behindPlayerParticles: [1],
             particles: [1],
@@ -59,18 +75,24 @@ describe('Reset', () => {
             powerDowns: [1],
             cabins: [1],
             penguins: [1],
+
+            // input
             input: { keys: ['A'] },
 
+            // cabin
             cabinAppeared: true,
             cabin: { isFullyVisible: true, x: 0 },
 
+            // penguin
             penguinAppeared: true,
             talkToPenguin: true,
             enterToTalkToPenguin: true,
             talkToPenguinOneTimeOnly: false,
 
+            // boss
             bossManager: { resetState: jest.fn() },
 
+            // menu / difficulty / maps
             menu: {
                 levelDifficulty: { setDifficulty: jest.fn() },
                 forestMap: { setMap: jest.fn() },
@@ -81,6 +103,7 @@ describe('Reset', () => {
             height: 600,
             maxDistance: 500,
 
+            // default background / player
             background: { constructor: Maps.Map3 },
             player: null,
         };
@@ -110,7 +133,7 @@ describe('Reset', () => {
             expect(game.coins).toBe(0);
         });
 
-        it('handles negative coins', () => {
+        it('handles negative coin amounts', () => {
             game.coins = -10;
             game.notEnoughCoins = true;
             reset.coinReset();
@@ -119,23 +142,36 @@ describe('Reset', () => {
     });
 
     describe('reset()', () => {
+        describe('cutscene handling', () => {
+            it('does not throw when currentCutscene is null', () => {
+                game.currentCutscene = null;
+                expect(() => reset.reset()).not.toThrow();
+            });
 
-        it('does not throw when currentCutscene is null', () => {
-            game.currentCutscene = null;
-            expect(() => reset.reset()).not.toThrow();
+            it('removes cutscene listeners when a cutscene is active', () => {
+                reset.reset();
+                expect(game.currentCutscene.removeEventListeners).toHaveBeenCalled();
+            });
+
+            it('does not remove listeners on a previous cutscene when currentCutscene is null', () => {
+                const dummy = { removeEventListeners: jest.fn() };
+                game.currentCutscene = dummy;
+                game.currentCutscene = null;
+                reset.reset();
+                expect(dummy.removeEventListeners).not.toHaveBeenCalled();
+            });
         });
 
-        it('removes cutscene listeners when present', () => {
-            reset.reset();
-            expect(game.currentCutscene.removeEventListeners).toHaveBeenCalled();
-        });
+        it('resets screen shake state', () => {
+            game.shakeActive = true;
+            game.shakeTimer = 20;
+            game.shakeDuration = 40;
 
-        it('does not remove listeners when cutscene is null', () => {
-            const dummy = { removeEventListeners: jest.fn() };
-            game.currentCutscene = dummy;
-            game.currentCutscene = null;
             reset.reset();
-            expect(dummy.removeEventListeners).not.toHaveBeenCalled();
+
+            expect(game.shakeActive).toBe(false);
+            expect(game.shakeTimer).toBe(0);
+            expect(game.shakeDuration).toBe(0);
         });
 
         it('resets tutorial state', () => {
@@ -144,11 +180,11 @@ describe('Reset', () => {
             expect(game.tutorial).toEqual({
                 elapsedTime: 0,
                 currentStepIndex: 0,
-                tutorialPause: true
+                tutorialPause: true,
             });
         });
 
-        it('resets main game flags', () => {
+        it('resets core game flags', () => {
             reset.reset();
             expect(game.speed).toBe(0);
             expect(game.time).toBe(0);
@@ -156,7 +192,7 @@ describe('Reset', () => {
             expect(game.gameOver).toBe(false);
         });
 
-        it('resets coins and notEnoughCoins', () => {
+        it('resets coins and clears notEnoughCoins flag', () => {
             game.coins = 80;
             game.notEnoughCoins = true;
             reset.reset();
@@ -164,7 +200,14 @@ describe('Reset', () => {
             expect(game.notEnoughCoins).toBe(false);
         });
 
-        it('creates a new player', () => {
+        it('ends any active end cutscene and clears isEndCutscene flag', () => {
+            game.isEndCutscene = true;
+            reset.reset();
+            expect(game.endCutscene).toHaveBeenCalledTimes(1);
+            expect(game.isEndCutscene).toBe(false);
+        });
+
+        it('creates a new player instance on each reset', () => {
             Player.mockClear();
             reset.reset();
             const first = game.player;
@@ -186,7 +229,7 @@ describe('Reset', () => {
             );
         });
 
-        it('clears all arrays', () => {
+        it('clears all game object arrays', () => {
             reset.reset();
             [
                 'enemies',
@@ -212,6 +255,7 @@ describe('Reset', () => {
             expect(game.cabinAppeared).toBe(false);
             expect(game.cabin.isFullyVisible).toBe(false);
             expect(game.cabin.x).toBe(game.width);
+
             expect(game.penguinAppeared).toBe(false);
             expect(game.talkToPenguin).toBe(false);
             expect(game.enterToTalkToPenguin).toBe(false);
@@ -223,46 +267,95 @@ describe('Reset', () => {
             expect(game.bossManager.resetState).toHaveBeenCalledTimes(1);
         });
 
-        it('Map1 loads correctly', () => {
-            game.background = { constructor: Maps.Map1 };
+        it('sets difficulty according to selectedDifficulty', () => {
             reset.reset();
-            expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map1));
+            expect(game.menu.levelDifficulty.setDifficulty).toHaveBeenCalledWith('hard');
         });
 
-        it('Map2 enables darkWhiteBorder', () => {
-            game.background = { constructor: Maps.Map2 };
-            reset.reset();
-            expect(game.player.isDarkWhiteBorder).toBe(true);
-        });
+        describe('map selection', () => {
+            it('loads Map1 and updates forest map', () => {
+                game.background = { constructor: Maps.Map1 };
+                reset.reset();
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(
+                    expect.any(Maps.Map1)
+                );
+            });
 
-        it('Map3 enables underwater', () => {
-            game.background = { constructor: Maps.Map3 };
-            reset.reset();
-            expect(game.player.isUnderwater).toBe(true);
-        });
+            it('loads Map2 and enables darkWhiteBorder', () => {
+                game.background = { constructor: Maps.Map2 };
+                reset.reset();
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(
+                    expect.any(Maps.Map2)
+                );
+                expect(game.player.isDarkWhiteBorder).toBe(true);
+            });
 
-        it('Map6 sets maxDistance', () => {
-            game.background = { constructor: Maps.Map6 };
-            reset.reset();
-            expect(game.maxDistance).toBe(9999999);
-        });
+            it('loads Map3 and enables underwater mode', () => {
+                game.background = { constructor: Maps.Map3 };
+                reset.reset();
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(
+                    expect.any(Maps.Map3)
+                );
+                expect(game.player.isUnderwater).toBe(true);
+            });
 
-        it('BonusMap1 enables ice', () => {
-            game.background = { constructor: Maps.BonusMap1 };
-            reset.reset();
-            expect(game.player.isIce).toBe(true);
-        });
+            it('loads Map4 and updates forest map', () => {
+                game.background = { constructor: Maps.Map4 };
+                reset.reset();
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(
+                    expect.any(Maps.Map4)
+                );
+            });
 
-        it('unrecognized map constructor does not throw', () => {
-            game.background = { constructor: class Foo { } };
-            expect(() => reset.reset()).not.toThrow();
-            expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(undefined);
-        });
+            it('loads Map5 and updates forest map', () => {
+                game.background = { constructor: Maps.Map5 };
+                reset.reset();
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(
+                    expect.any(Maps.Map5)
+                );
+            });
 
-        it('sets difficulty correctly', () => {
-            reset.reset();
-            expect(game.menu.levelDifficulty.setDifficulty)
-                .toHaveBeenCalledWith('hard');
+            it('loads Map6, updates forest map, and sets maxDistance', () => {
+                game.background = { constructor: Maps.Map6 };
+                reset.reset();
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(
+                    expect.any(Maps.Map6)
+                );
+                expect(game.maxDistance).toBe(9999999);
+            });
+
+            it('loads BonusMap1, updates forest map, sets maxDistance, and enables ice mode', () => {
+                game.background = { constructor: Maps.BonusMap1 };
+                reset.reset();
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(
+                    expect.any(Maps.BonusMap1)
+                );
+                expect(game.maxDistance).toBe(9999999);
+                expect(game.player.isIce).toBe(true);
+            });
+
+            it('loads BonusMap2 and updates forest map', () => {
+                game.background = { constructor: Maps.BonusMap2 };
+                reset.reset();
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(
+                    expect.any(Maps.BonusMap2)
+                );
+            });
+
+            it('loads BonusMap3, updates forest map, and enables space mode', () => {
+                game.background = { constructor: Maps.BonusMap3 };
+                reset.reset();
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(
+                    expect.any(Maps.BonusMap3)
+                );
+                expect(game.player.isSpace).toBe(true);
+            });
+
+            it('handles unrecognized map constructors without throwing and passes undefined to setMap', () => {
+                game.background = { constructor: class Foo { } };
+                expect(() => reset.reset()).not.toThrow();
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(undefined);
+            });
         });
 
         it('is idempotent', () => {

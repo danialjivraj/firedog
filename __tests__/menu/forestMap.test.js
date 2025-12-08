@@ -1,5 +1,18 @@
 import { ForestMapMenu } from '../../game/menu/forestMap.js';
 import { isLocalNight } from '../../game/config/timeOfDay.js';
+import {
+    Map3Cutscene,
+    BonusMap1Cutscene,
+} from '../../game/cutscene/storyCutscenes.js';
+import {
+    Map1,
+    Map3,
+    Map6,
+    BonusMap1,
+    BonusMap3,
+} from '../../game/background/background.js';
+import { Cabin } from '../../game/entities/cabin.js';
+import { Penguini } from '../../game/entities/penguini.js';
 
 jest.mock('../../game/config/timeOfDay.js', () => ({
     isLocalNight: jest.fn(() => false),
@@ -13,12 +26,80 @@ jest.mock('../../game/config/skins.js', () => ({
     })),
 }));
 
+jest.mock('../../game/cutscene/storyCutscenes.js', () => {
+    const makeCutscene = (label) =>
+        jest.fn().mockImplementation((game) => ({
+            game,
+            label,
+            displayDialogue: jest.fn(),
+        }));
+
+    return {
+        Map1Cutscene: makeCutscene('Map1Cutscene'),
+        Map2Cutscene: makeCutscene('Map2Cutscene'),
+        Map3Cutscene: makeCutscene('Map3Cutscene'),
+        Map4Cutscene: makeCutscene('Map4Cutscene'),
+        Map5Cutscene: makeCutscene('Map5Cutscene'),
+        Map6Cutscene: makeCutscene('Map6Cutscene'),
+        BonusMap1Cutscene: makeCutscene('BonusMap1Cutscene'),
+        BonusMap2Cutscene: makeCutscene('BonusMap2Cutscene'),
+        BonusMap3Cutscene: makeCutscene('BonusMap3Cutscene'),
+    };
+});
+
+jest.mock('../../game/background/background.js', () => {
+    class Map1 { constructor(game) { this.game = game; } }
+    class Map2 { constructor(game) { this.game = game; } }
+    class Map3 { constructor(game) { this.game = game; } }
+    class Map4 { constructor(game) { this.game = game; } }
+    class Map5 { constructor(game) { this.game = game; } }
+    class Map6 { constructor(game) { this.game = game; } }
+    class BonusMap1 { constructor(game) { this.game = game; } }
+    class BonusMap2 { constructor(game) { this.game = game; } }
+    class BonusMap3 { constructor(game) { this.game = game; } }
+
+    return {
+        Map1,
+        Map2,
+        Map3,
+        Map4,
+        Map5,
+        Map6,
+        BonusMap1,
+        BonusMap2,
+        BonusMap3,
+    };
+});
+
+jest.mock('../../game/entities/cabin.js', () => ({
+    Cabin: jest.fn().mockImplementation((game, spriteId, width, height, cabinY) => ({
+        game,
+        spriteId,
+        width,
+        height,
+        cabinY,
+    })),
+}));
+
+jest.mock('../../game/entities/penguini.js', () => ({
+    Penguini: jest.fn().mockImplementation((game, width, height, sprite, frames) => ({
+        game,
+        width,
+        height,
+        sprite,
+        frames,
+        y: 0,
+    })),
+}));
+
 jest.useFakeTimers();
 
 describe('ForestMapMenu', () => {
     const W = 1920;
     const H = 689;
-    let menu, mockGame, ctx;
+    let menu;
+    let mockGame;
+    let ctx;
 
     beforeAll(() => {
         document.body.innerHTML = `
@@ -59,10 +140,13 @@ describe('ForestMapMenu', () => {
                 },
                 main: { closeAllMenus: jest.fn() },
             },
-            player: { isUnderwater: null, isDarkWhiteBorder: null, isIce: null },
-            updateMapSelection: jest.fn(),
+            player: {
+                isUnderwater: null,
+                isDarkWhiteBorder: null,
+                isIce: null,
+                isSpace: null,
+            },
             startCutscene: jest.fn(),
-            maxCoinsToFightElyvorg: 999,
             groundMargin: 0,
             gameCompleted: false,
         };
@@ -97,6 +181,7 @@ describe('ForestMapMenu', () => {
 
         menu = new ForestMapMenu(mockGame);
         menu.activateMenu();
+
         jest.clearAllMocks();
         isLocalNight.mockClear();
         isLocalNight.mockReturnValue(false);
@@ -170,6 +255,21 @@ describe('ForestMapMenu', () => {
         });
     });
 
+    describe('getMapKeyByIndex()', () => {
+        it('maps indices 0–5 to main map keys and 6–8 to bonus map keys', () => {
+            expect(menu.getMapKeyByIndex(0)).toBe('map1');
+            expect(menu.getMapKeyByIndex(5)).toBe('map6');
+            expect(menu.getMapKeyByIndex(6)).toBe('bonus1');
+            expect(menu.getMapKeyByIndex(7)).toBe('bonus2');
+            expect(menu.getMapKeyByIndex(8)).toBe('bonus3');
+        });
+
+        it('returns null for indices outside the known range', () => {
+            expect(menu.getMapKeyByIndex(-1)).toBeNull();
+            expect(menu.getMapKeyByIndex(9)).toBeNull();
+        });
+    });
+
     describe('computeMapNameParts()', () => {
         it('returns correct labels and color for a main map index', () => {
             const result = menu.computeMapNameParts(0); // map1
@@ -223,9 +323,28 @@ describe('ForestMapMenu', () => {
             );
 
             expect(ctx.measureText).not.toHaveBeenCalled();
-
             expect(ctx.createLinearGradient).toHaveBeenCalledTimes(2);
             expect(ctx.fillRect).toHaveBeenCalledTimes(2);
+        });
+
+        it('computes and caches fixedLeftRibbonWidth on first call', () => {
+            menu.fixedLeftRibbonWidth = null;
+
+            const ribbonY = mockGame.height - 60;
+            const ribbonHeight = 60;
+
+            menu.drawRibbonBackgroundsAndLines(
+                ctx,
+                ribbonY,
+                ribbonHeight,
+                'MAP 1 LUNAR MOONLIT GLADE',
+                'TAB FOR ENEMY LORE',
+                false,
+                true
+            );
+
+            expect(menu.fixedLeftRibbonWidth).not.toBeNull();
+            expect(ctx.measureText).toHaveBeenCalled();
         });
     });
 
@@ -240,6 +359,11 @@ describe('ForestMapMenu', () => {
             expect(menu.isNodeUnlocked(2)).toBe(true); // map3
             expect(menu.isNodeUnlocked(7)).toBe(true); // bonusMap2
             expect(menu.isNodeUnlocked(8)).toBe(false); // bonusMap3
+        });
+
+        it('isNodeUnlocked() returns false for indices outside known range', () => {
+            expect(menu.isNodeUnlocked(-1)).toBe(false);
+            expect(menu.isNodeUnlocked(9)).toBe(false);
         });
 
         it('getUnlockedCircles() returns only circles whose nodes are unlocked', () => {
@@ -360,6 +484,150 @@ describe('ForestMapMenu', () => {
             jest.spyOn(menu, 'handleMenuSelection').mockImplementation(() => { });
             menu.handleKeyDown({ key: 'Enter' });
             expect(menu.handleMenuSelection).toHaveBeenCalled();
+        });
+    });
+
+    describe('handleMenuSelection()', () => {
+        beforeEach(() => {
+            mockGame.canSelectForestMap = true;
+            menu.menuActive = true;
+        });
+
+        it('sets up Map3, cutscene and player flags when selecting main map circle', () => {
+            menu.selectedCircleIndex = 2; // map3
+
+            menu.handleMenuSelection();
+
+            expect(mockGame.player.isUnderwater).toBe(true);
+            expect(mockGame.player.isDarkWhiteBorder).toBe(true);
+            expect(mockGame.player.isIce).toBe(false);
+            expect(mockGame.player.isSpace).toBe(false);
+
+            expect(mockGame.maxDistance).toBe(270);
+            expect(mockGame.winningCoins).toBe(200);
+
+            expect(Map3Cutscene).toHaveBeenCalledWith(mockGame);
+            const cutsceneInstance = Map3Cutscene.mock.results[0].value;
+            expect(mockGame.startCutscene).toHaveBeenCalledWith(cutsceneInstance);
+            expect(cutsceneInstance.displayDialogue).toHaveBeenCalled();
+
+            expect(mockGame.background).toBeInstanceOf(Map3);
+            expect(mockGame.currentMap).toBe('Map3');
+
+            expect(mockGame.menu.main.closeAllMenus).toHaveBeenCalled();
+        });
+
+        it('sets up BonusMap1 with isIce flag when selecting bonus circle', () => {
+            menu.selectedCircleIndex = 6; // bonusMap1
+
+            menu.handleMenuSelection();
+
+            expect(mockGame.player.isUnderwater).toBe(false);
+            expect(mockGame.player.isDarkWhiteBorder).toBe(false);
+            expect(mockGame.player.isIce).toBe(true);
+            expect(mockGame.player.isSpace).toBe(false);
+
+            expect(mockGame.maxDistance).toBe(9999999);
+            expect(mockGame.winningCoins).toBe(0);
+
+            expect(BonusMap1Cutscene).toHaveBeenCalledWith(mockGame);
+            const cutsceneInstance = BonusMap1Cutscene.mock.results[0].value;
+            expect(mockGame.startCutscene).toHaveBeenCalledWith(cutsceneInstance);
+            expect(cutsceneInstance.displayDialogue).toHaveBeenCalled();
+
+            expect(mockGame.background).toBeInstanceOf(BonusMap1);
+            expect(mockGame.currentMap).toBe('BonusMap1');
+            expect(mockGame.menu.main.closeAllMenus).toHaveBeenCalled();
+        });
+
+        it('plays hover sound and does nothing else when selected index has no map entry', () => {
+            menu.selectedCircleIndex = 99;
+
+            menu.handleMenuSelection();
+
+            expect(mockGame.audioHandler.menu.playSound)
+                .toHaveBeenCalledWith('optionHoveredSound', false, true);
+            expect(mockGame.startCutscene).not.toHaveBeenCalled();
+            expect(mockGame.menu.main.closeAllMenus).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('setMap()', () => {
+        it('configures cabin and penguini correctly for Map1', () => {
+            const map = new Map1(mockGame);
+
+            menu.setMap(map);
+
+            expect(mockGame.background).toBe(map);
+            expect(mockGame.currentMap).toBe('Map1');
+            expect(Cabin).toHaveBeenCalled();
+            expect(Penguini).toHaveBeenCalled();
+
+            const cabinInstance = Cabin.mock.results[0].value;
+            const penguiniInstance = Penguini.mock.results[0].value;
+
+            expect(cabinInstance.spriteId).toBe('map1cabin');
+            expect(penguiniInstance.sprite).toBe('penguinBatSprite');
+        });
+
+        it('configures penguini position for Map6 based on height and groundMargin', () => {
+            mockGame.groundMargin = 10;
+            const map = new Map6(mockGame);
+
+            menu.setMap(map);
+
+            const penguiniInstance = Penguini.mock.results[Penguini.mock.results.length - 1].value;
+            expect(penguiniInstance.height).toBe(80);
+            expect(penguiniInstance.y).toBe(H - 80 - 10);
+        });
+
+        it('configures cabin and penguini for BonusMap3 with pistol sprite', () => {
+            const map = new BonusMap3(mockGame);
+
+            menu.setMap(map);
+
+            const cabinInstance = Cabin.mock.results[Cabin.mock.results.length - 1].value;
+            const penguiniInstance = Penguini.mock.results[Penguini.mock.results.length - 1].value;
+
+            expect(cabinInstance.spriteId).toBe('bonusmap3cabin');
+            expect(penguiniInstance.sprite).toBe('penguinPistolSprite');
+        });
+    });
+
+    describe('connection helpers', () => {
+        it('drawStraightConnection does nothing when distance is zero', () => {
+            const circle = { x: 100, y: 100, radius: 20 };
+
+            menu.drawStraightConnection(ctx, circle, circle);
+
+            expect(ctx.beginPath).not.toHaveBeenCalled();
+            expect(ctx.moveTo).not.toHaveBeenCalled();
+            expect(ctx.lineTo).not.toHaveBeenCalled();
+            expect(ctx.stroke).not.toHaveBeenCalled();
+        });
+
+        it('drawStraightConnection draws a line between two distinct circles', () => {
+            const from = { x: 0, y: 0, radius: 10 };
+            const to = { x: 100, y: 0, radius: 10 };
+
+            menu.drawStraightConnection(ctx, from, to);
+
+            expect(ctx.beginPath).toHaveBeenCalled();
+            expect(ctx.moveTo).toHaveBeenCalled();
+            expect(ctx.lineTo).toHaveBeenCalled();
+            expect(ctx.stroke).toHaveBeenCalled();
+        });
+
+        it('drawElbowConnection draws an elbowed line between two distinct circles', () => {
+            const from = { x: 0, y: 0, radius: 10 };
+            const to = { x: 100, y: 100, radius: 10 };
+
+            menu.drawElbowConnection(ctx, from, to);
+
+            expect(ctx.beginPath).toHaveBeenCalled();
+            expect(ctx.moveTo).toHaveBeenCalled();
+            expect(ctx.lineTo).toHaveBeenCalledTimes(2);
+            expect(ctx.stroke).toHaveBeenCalled();
         });
     });
 

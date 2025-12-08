@@ -67,6 +67,9 @@ export class Player {
         this.isUnderwater = false;
         this.loopDamageIndicator = true;
         this.buoyancy = 4;
+        // space vars
+        this.isSpace = false;
+        this.canSpaceDoubleJump = false;
         // ice vars
         this.isIce = false;
         this.vx = 0;
@@ -1038,6 +1041,31 @@ export class Player {
     playerVerticalMovement(input) {
         if (this.isFrozen) return;
 
+        if (this.isSpace) {
+            const spaceGravity = 0.07;
+            const fallClamp = 3;
+
+            this.y += this.vy;
+
+            if (this.vy < fallClamp) {
+                this.vy += spaceGravity;
+            }
+
+            const minY = 0;
+            const maxY = this.game.height - this.height - this.game.groundMargin;
+
+            if (this.y < minY) {
+                this.y = minY;
+                this.vy = 0;
+            } else if (this.y > maxY) {
+                this.y = maxY;
+                this.vy = 0;
+                this.canSpaceDoubleJump = false;
+            }
+
+            return;
+        }
+
         this.y += this.vy;
         if (!this.onGround()) {
             this.vy += this.weight;
@@ -1059,6 +1087,7 @@ export class Player {
 
         if (this.y > this.game.height - this.height - this.game.groundMargin) {
             this.y = this.game.height - this.height - this.game.groundMargin;
+            this.canSpaceDoubleJump = false;
         }
     }
 
@@ -1637,6 +1666,7 @@ export class CollisionLogic {
             IceDrink() {
                 player.isSlowed = true;
                 player.slowedTimer = 7000;
+                game.audioHandler.powerUpAndDownSFX.playSound('drinkSoundEffect', false, true);
             },
             IceCube() {
                 player.startFrozen(3000);

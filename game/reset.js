@@ -104,6 +104,7 @@ export class Reset {
                 break;
             case BonusMap3:
                 selectedMap = new BonusMap3(this.game);
+                this.game.player.isSpace = true;
                 break;
             default:
                 break;

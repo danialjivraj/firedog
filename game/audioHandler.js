@@ -225,6 +225,7 @@ export class MapSoundtrackAudioHandler extends AudioHandler {
       map4Soundtrack: 'map4Soundtrack',
       map5Soundtrack: 'map5Soundtrack',
       map6Soundtrack: 'map6Soundtrack',
+      ntharaxBattleTheme: 'ntharaxBattleTheme',
       elyvorgBattleTheme: 'elyvorgBattleTheme',
       crypticTokenDarkAmbienceSoundInGame: 'crypticTokenDarkAmbienceSoundInGame',
       timeTickingSound: 'timeTickingSound',

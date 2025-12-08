@@ -84,8 +84,8 @@ export class DamageIndicator extends BaseIndicator {
             Map5: 0.27,
             Map6: 0.26,
             BonusMap1: 0.35,
-            BonusMap2: 0.47,
-            BonusMap3: 0.47,
+            BonusMap2: 0.19,
+            BonusMap3: 0.15,
         };
 
         const initialOpacity = opacityByMap[mapName] ?? 0.4;

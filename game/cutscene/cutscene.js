@@ -43,6 +43,7 @@ export class Cutscene {
         this.valdonotski = "Valdonotski";
         this.zephyrion = "Zephyrion";
         this.glacikal = "Glacikal";
+        this.ntharax = "N'Tharax";
         // maps
         this.lunarMoonlitGlade = "Lunar Moonlit Glade";
         this.nightfallCityPhantom = "Nightfall City Phantom";
@@ -73,6 +74,7 @@ export class Cutscene {
             [this.everyone]: 'SkyBlue',
             [this.questionMark]: 'red',
             [this.glacikal]: 'cyan',
+            [this.ntharax]: 'DeepPink',
             // map phrases
             [this.lunarMoonlitGlade]: 'green',
             [this.nightfallCityPhantom]: 'green',

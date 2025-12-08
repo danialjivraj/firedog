@@ -1,5 +1,6 @@
 import { Elyvorg } from "./elyvorg.js";
 import { Glacikal } from "./glacikal.js";
+import { NTharax } from "./ntharax.js";
 
 const BOSS_CONFIG = {
     BonusMap1: {
@@ -9,6 +10,15 @@ const BOSS_CONFIG = {
             mode: "coinsAndDistance",
             minDistance: 100,
             minCoins: 100,
+        },
+    },
+    BonusMap3: {
+        id: "ntharax",
+        type: NTharax,
+        gate: {
+            mode: "coinsAndDistance",
+            minDistance: 110,
+            minCoins: 110,
         },
     },
     Map6: {

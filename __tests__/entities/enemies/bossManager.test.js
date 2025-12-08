@@ -8,6 +8,10 @@ jest.mock('../../../game/entities/enemies/glacikal.js', () => ({
     Glacikal: jest.fn().mockImplementation((game) => ({ game, name: 'mockGlacikal' })),
 }));
 
+jest.mock('../../../game/entities/enemies/ntharax.js', () => ({
+    NTharax: jest.fn().mockImplementation((game) => ({ game, name: 'mockNTharax' })),
+}));
+
 describe('BossManager', () => {
     let game;
     let manager;
@@ -25,7 +29,7 @@ describe('BossManager', () => {
         manager = new BossManager(game);
     });
 
-    describe('basic getters & resetState', () => {
+    describe('state getters & resetState', () => {
         it('has initial state with no active boss', () => {
             expect(manager.hasActiveBoss).toBe(false);
             expect(manager.isBossVisible).toBe(false);
@@ -34,7 +38,7 @@ describe('BossManager', () => {
             expect(manager.state.spawned).toBe(false);
         });
 
-        it('exposes hasActiveBoss / isBossVisible / bossInFight correctly', () => {
+        it('exposes hasActiveBoss / isBossVisible / bossInFight based on state flags', () => {
             manager.state.current = { foo: 'boss' };
             manager.state.isVisible = true;
             manager.state.inFight = true;
@@ -44,7 +48,7 @@ describe('BossManager', () => {
             expect(manager.bossInFight).toBe(true);
         });
 
-        it('resetState clears all flags and current boss', () => {
+        it('resetState clears all flags and current boss to initial values', () => {
             manager.state.current = { dummy: true };
             manager.state.id = 'elyvorg';
             manager.state.map = 'Map6';
@@ -131,6 +135,16 @@ describe('BossManager', () => {
             });
         });
 
+        it('returns null when neither currentMap nor background constructor name is available', () => {
+            game.currentMap = null;
+            game.background = null;
+
+            const cfg = manager.getConfigForCurrentMap();
+            expect(cfg).toBeNull();
+            expect(manager.getGateForCurrentMap()).toBeNull();
+            expect(manager.hasBossConfiguredForCurrentMap()).toBe(false);
+        });
+
         it('returns null when no matching map configuration', () => {
             game.currentMap = 'Map1';
             const cfg = manager.getConfigForCurrentMap();
@@ -158,41 +172,8 @@ describe('BossManager', () => {
         });
     });
 
-    describe('bossIsEngaged', () => {
-        it('returns false when no boss id is set', () => {
-            expect(manager.bossIsEngaged()).toBe(false);
-        });
-
-        it('returns false when config is missing or map mismatch', () => {
-            manager.state.id = 'elyvorg';
-            manager.state.map = 'Map6';
-            game.currentMap = 'Map1';
-            expect(manager.bossIsEngaged()).toBe(false);
-        });
-
-        it('returns true when any engagement flag is true and map/config match', () => {
-            game.currentMap = 'Map6';
-            manager.state.id = 'elyvorg';
-            manager.state.map = 'Map6';
-
-            const flags = ['talkToBoss', 'preFight', 'inFight', 'postFight', 'runAway'];
-            for (const flag of flags) {
-                manager.state.talkToBoss = false;
-                manager.state.preFight = false;
-                manager.state.inFight = false;
-                manager.state.postFight = false;
-                manager.state.runAway = false;
-
-                manager.state[flag] = true;
-                expect(manager.bossIsEngaged()).toBe(true);
-            }
-        });
-    });
-
     describe('bossGateReached', () => {
-        it('returns true for Map6 (coins mode) when coins >= minCoins', () => {
-            game.currentMap = 'Map6';
-
+        it('returns true in coins mode when coins >= minCoins', () => {
             jest.spyOn(manager, 'getGateForCurrentMap').mockReturnValue({
                 mode: 'coins',
                 minCoins: 0,
@@ -205,7 +186,7 @@ describe('BossManager', () => {
             expect(manager.bossGateReached()).toBe(true);
         });
 
-        it('returns false for coins mode when coins < minCoins (via mocked gate)', () => {
+        it('returns false in coins mode when coins < minCoins', () => {
             jest.spyOn(manager, 'getGateForCurrentMap').mockReturnValue({
                 mode: 'coins',
                 minCoins: 100,
@@ -214,9 +195,7 @@ describe('BossManager', () => {
             expect(manager.bossGateReached()).toBe(false);
         });
 
-        it('uses distance for BonusMap1 (distance mode)', () => {
-            game.currentMap = 'BonusMap1';
-
+        it('returns true in distance mode when distance >= minDistance', () => {
             jest.spyOn(manager, 'getGateForCurrentMap').mockReturnValue({
                 mode: 'distance',
                 minDistance: 0,
@@ -229,7 +208,7 @@ describe('BossManager', () => {
             expect(manager.bossGateReached()).toBe(true);
         });
 
-        it('supports coinsAndDistance mode (both must pass)', () => {
+        it('requires both coins and distance to meet thresholds in coinsAndDistance mode', () => {
             jest.spyOn(manager, 'getGateForCurrentMap').mockReturnValue({
                 mode: 'coinsAndDistance',
                 minCoins: 10,
@@ -264,6 +243,37 @@ describe('BossManager', () => {
         it('returns false when there is no gate for the current map', () => {
             jest.spyOn(manager, 'getGateForCurrentMap').mockReturnValue(null);
             expect(manager.bossGateReached()).toBe(false);
+        });
+    });
+
+    describe('bossIsEngaged', () => {
+        it('returns false when no boss id is set', () => {
+            expect(manager.bossIsEngaged()).toBe(false);
+        });
+
+        it('returns false when config is missing or map mismatch', () => {
+            manager.state.id = 'elyvorg';
+            manager.state.map = 'Map6';
+            game.currentMap = 'Map1';
+            expect(manager.bossIsEngaged()).toBe(false);
+        });
+
+        it('returns true when any engagement flag is true and map/config match', () => {
+            game.currentMap = 'Map6';
+            manager.state.id = 'elyvorg';
+            manager.state.map = 'Map6';
+
+            const flags = ['talkToBoss', 'preFight', 'inFight', 'postFight', 'runAway'];
+            for (const flag of flags) {
+                manager.state.talkToBoss = false;
+                manager.state.preFight = false;
+                manager.state.inFight = false;
+                manager.state.postFight = false;
+                manager.state.runAway = false;
+
+                manager.state[flag] = true;
+                expect(manager.bossIsEngaged()).toBe(true);
+            }
         });
     });
 
@@ -308,7 +318,7 @@ describe('BossManager', () => {
             expect(result).toBe(false);
         });
 
-        it('spawns Elyvorg for Map6 when gate reached and no enemies present', () => {
+        it('spawns Elyvorg for Map6 when gate is reached and no enemies are present', () => {
             const { Elyvorg } = require('../../../game/entities/enemies/elyvorg.js');
 
             game.currentMap = 'Map6';
@@ -328,7 +338,7 @@ describe('BossManager', () => {
             expect(manager.hasActiveBoss).toBe(true);
         });
 
-        it('spawns Glacikal for BonusMap1 when distance gate is reached', () => {
+        it('spawns Glacikal for BonusMap1 when gate is reached and no enemies are present', () => {
             const { Glacikal } = require('../../../game/entities/enemies/glacikal.js');
 
             game.currentMap = 'BonusMap1';
@@ -343,6 +353,56 @@ describe('BossManager', () => {
             expect(manager.state.id).toBe('glacikal');
             expect(manager.state.map).toBe('BonusMap1');
             expect(game.enemies[0]).toBe(manager.state.current);
+        });
+
+        it('spawns NTharax for BonusMap3 when gate is reached and no enemies are present', () => {
+            const { NTharax } = require('../../../game/entities/enemies/ntharax.js');
+
+            game.currentMap = 'BonusMap3';
+            game.enemies = [];
+
+            jest.spyOn(manager, 'bossGateReached').mockReturnValue(true);
+
+            const result = manager.spawnBossIfNeeded();
+
+            expect(result).toBe(true);
+            expect(NTharax).toHaveBeenCalledWith(game);
+            expect(manager.state.id).toBe('ntharax');
+            expect(manager.state.map).toBe('BonusMap3');
+            expect(game.enemies[0]).toBe(manager.state.current);
+        });
+    });
+
+    describe('canSpawnNormalEnemies', () => {
+        it('returns true when no boss is configured for the current map', () => {
+            game.currentMap = 'Map1';
+            expect(manager.canSpawnNormalEnemies()).toBe(true);
+        });
+
+        it('returns false when boss is engaged', () => {
+            game.currentMap = 'Map6';
+            manager.state.id = 'elyvorg';
+            manager.state.map = 'Map6';
+            manager.state.inFight = true;
+
+            expect(manager.canSpawnNormalEnemies()).toBe(false);
+        });
+
+        it('returns false when boss gate is already reached', () => {
+            game.currentMap = 'Map6';
+            jest.spyOn(manager, 'bossGateReached').mockReturnValue(true);
+            manager.state.id = null;
+            manager.state.map = null;
+
+            expect(manager.canSpawnNormalEnemies()).toBe(false);
+        });
+
+        it('returns true when boss exists for map but is not engaged and gate not reached', () => {
+            game.currentMap = 'Map6';
+            jest.spyOn(manager, 'bossGateReached').mockReturnValue(false);
+            jest.spyOn(manager, 'bossIsEngaged').mockReturnValue(false);
+
+            expect(manager.canSpawnNormalEnemies()).toBe(true);
         });
     });
 
@@ -412,7 +472,7 @@ describe('BossManager', () => {
             expect(effect.colorLerpT).toBe(1);
         });
 
-        it('releaseScreenEffect drops the top layer and transitions back to previous layer', () => {
+        it('releaseScreenEffect on the top layer drops it and transitions back to previous layer', () => {
             const effect = manager.state.screenEffect;
 
             manager.requestScreenEffect('base', { rgb: [0, 50, 0] });
@@ -430,6 +490,29 @@ describe('BossManager', () => {
             expect(effect.colorLerpT).toBe(0);
         });
 
+        it('releaseScreenEffect on a non-top layer leaves current layer and transition state unchanged', () => {
+            const effect = manager.state.screenEffect;
+
+            manager.requestScreenEffect('base', { rgb: [0, 50, 0] });
+            manager.requestScreenEffect('overlay', { rgb: [100, 0, 0] });
+
+            const before = {
+                currentId: effect.currentId,
+                fromRgb: effect.fromRgb,
+                targetRgb: effect.targetRgb,
+                colorLerpT: effect.colorLerpT,
+            };
+
+            manager.releaseScreenEffect('base');
+
+            expect(effect.stack.map(l => l.id)).toEqual(['overlay']);
+            expect(effect.currentId).toBe(before.currentId);
+            expect(effect.fromRgb).toEqual(before.fromRgb);
+            expect(effect.targetRgb).toEqual(before.targetRgb);
+            expect(effect.colorLerpT).toBe(before.colorLerpT);
+            expect(effect.active).toBe(true);
+        });
+
         it('releaseScreenEffect clears effect when last layer is removed', () => {
             const effect = manager.state.screenEffect;
 
@@ -441,39 +524,6 @@ describe('BossManager', () => {
             expect(effect.stack).toHaveLength(0);
             expect(effect.currentId).toBeNull();
             expect(effect.active).toBe(false);
-        });
-    });
-
-    describe('canSpawnNormalEnemies', () => {
-        it('returns true when no boss is configured for the current map', () => {
-            game.currentMap = 'Map1';
-            expect(manager.canSpawnNormalEnemies()).toBe(true);
-        });
-
-        it('returns false when boss is engaged', () => {
-            game.currentMap = 'Map6';
-            manager.state.id = 'elyvorg';
-            manager.state.map = 'Map6';
-            manager.state.inFight = true;
-
-            expect(manager.canSpawnNormalEnemies()).toBe(false);
-        });
-
-        it('returns false when boss gate is already reached', () => {
-            game.currentMap = 'Map6';
-            jest.spyOn(manager, 'bossGateReached').mockReturnValue(true);
-            manager.state.id = null;
-            manager.state.map = null;
-
-            expect(manager.canSpawnNormalEnemies()).toBe(false);
-        });
-
-        it('returns true when boss exists for map but not engaged and gate not reached', () => {
-            game.currentMap = 'Map6';
-            jest.spyOn(manager, 'bossGateReached').mockReturnValue(false);
-            jest.spyOn(manager, 'bossIsEngaged').mockReturnValue(false);
-
-            expect(manager.canSpawnNormalEnemies()).toBe(true);
         });
     });
 });

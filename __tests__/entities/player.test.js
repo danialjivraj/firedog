@@ -592,18 +592,48 @@ describe('Player', () => {
     });
 
     describe('playerVerticalMovement', () => {
-        test('applies gravity when airborne', () => {
-            player.y = 0;
+        test('in space: applies low gravity and clamps fall speed', () => {
+            player.isSpace = true;
+            player.y = 100;
             player.vy = 0;
+
             player.playerVerticalMovement([]);
-            expect(player.vy).toBe(player.weight);
-            expect(player.y).toBe(0);
+            expect(player.y).toBe(100);
+            expect(player.vy).toBeCloseTo(0.07);
+
+            player.vy = 3;
+            player.playerVerticalMovement([]);
+            expect(player.vy).toBe(3);
         });
 
-        test('does not sink below ground', () => {
-            player.y = game.height + 100;
+        test('in space: clamps y within min and max bounds', () => {
+            player.isSpace = true;
+
+            player.y = -10;
+            player.vy = -1;
+            player.playerVerticalMovement([]);
+            expect(player.y).toBe(0);
+            expect(player.vy).toBe(0);
+
+            player.y = game.height;
+            player.vy = 5;
+            player.canSpaceDoubleJump = true;
             player.playerVerticalMovement([]);
             expect(player.y).toBe(game.height - player.height - game.groundMargin);
+            expect(player.vy).toBe(0);
+            expect(player.canSpaceDoubleJump).toBe(false);
+        });
+
+        test('in space: early return when frozen', () => {
+            player.isSpace = true;
+            player.isFrozen = true;
+            const initialY = player.y;
+            const initialVy = player.vy;
+
+            player.playerVerticalMovement([]);
+
+            expect(player.y).toBe(initialY);
+            expect(player.vy).toBe(initialVy);
         });
     });
 

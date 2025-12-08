@@ -8,6 +8,7 @@ import {
     Sluggie, BigGreener, Chiquita, LilHornet, KarateCroco, Zabkous, SpidoLazer, Jerry,
     Snailey, RedFlyer, PurpleFlyer, LazyMosquito, LeafSlug, Sunflora, Eggry, Tauro, AngryBee, Bee, HangingSpidoLazer,
     Cactus, PetroPlant, Plazer, Veynoculus, Volcanurtle, TheRock, VolcanoWasp, Rollhog, Dragon,
+    IceSilknoir,
     WindAttack,
     ImmobileGroundEnemy,
 } from "./entities/enemies/enemies.js";
@@ -25,7 +26,7 @@ import { GameOverMenu } from "./menu/gameOverMenu.js";
 import { InputHandler } from "./interface/input.js";
 import { UI } from "./interface/UI.js";
 import { Tutorial } from "./interface/tutorial.js";
-import { Map3, Map6, BonusMap1 } from "./background/background.js";
+import { Map3, Map6, BonusMap1, BonusMap3 } from "./background/background.js";
 // menus
 import { MainMenu } from "./menu/mainMenu.js";
 import { LevelDifficultyMenu } from "./menu/levelDifficultyMenu.js";
@@ -65,6 +66,10 @@ import {
     Map6GlacikalIngameCutsceneBeforeFight,
     Map6GlacikalIngameCutsceneAfterFight
 } from "./cutscene/glacikalCutscenes.js";
+import {
+    Map6NTharaxIngameCutsceneBeforeFight,
+    Map6NTharaxIngameCutsceneAfterFight
+} from "./cutscene/ntharaxCutscene.js";
 import { EnemyLore } from "./menu/enemyLore.js";
 import {
     saveGameState as persistGameState,
@@ -498,6 +503,12 @@ export class Game {
                         afterCutscene: Map6GlacikalIngameCutsceneAfterFight,
                     },
                     {
+                        mapClass: BonusMap3,
+                        bossId: "ntharax",
+                        beforeCutscene: Map6NTharaxIngameCutsceneBeforeFight,
+                        afterCutscene: Map6NTharaxIngameCutsceneAfterFight,
+                    },
+                    {
                         mapClass: Map6,
                         bossId: "elyvorg",
                         beforeCutscene: Map6ElyvorgIngameCutsceneBeforeFight,
@@ -777,21 +788,11 @@ export class Game {
             ],
             BonusMap1: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: Vertibat, probability: 0.1, spawningDistance: 0 },
-                { type: DuskPlant, probability: 0.2, spawningDistance: 0 },
-                { type: Silknoir, probability: 0.4, spawningDistance: 0 },
-                { type: WalterTheGhost, probability: 0.2, spawningDistance: 0 },
-                { type: Ben, probability: 0.2, spawningDistance: 0 },
-                { type: Dolly, probability: 0.01, spawningDistance: 100 },
+                { type: IceSilknoir, probability: 1, spawningDistance: 0 },
             ],
             BonusMap2: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: Vertibat, probability: 0.1, spawningDistance: 0 },
-                { type: DuskPlant, probability: 0.2, spawningDistance: 0 },
                 { type: Silknoir, probability: 0.4, spawningDistance: 0 },
-                { type: WalterTheGhost, probability: 0.2, spawningDistance: 0 },
-                { type: Ben, probability: 0.2, spawningDistance: 0 },
-                { type: Dolly, probability: 0.01, spawningDistance: 100 },
             ],
         };
 

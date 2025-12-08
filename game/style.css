@@ -33,7 +33,7 @@ body {
 #howToPlay1, #howToPlay2, #howToPlay3, #howToPlay4, #howToPlay5, #howToPlay6, #howToPlay7, #howToPlay8, #howToPlay9, #howToPlay10, 
 /* ability UI */
     /* firedog UI */
-    #fireballUI, #fireballRedPotionUI, #divingUI, #fireballUIWhiteBorder, #divingUIWhiteBorder, #invisibleUI, #invisibleUIWhiteBorder, 
+    #fireballUI, #fireballRedPotionUI, #divingUI, #fireballUIWhiteBorder, #divingUIWhiteBorder, #invisibleUI, #invisibleUIWhiteBorder,
     /* elyvorg UI */
     #poisonUI, #gravityUI, #slashUI, #slashWarningUI, #electricUI, #electricWarningUI,
 /* entities */
@@ -68,8 +68,10 @@ body {
         #bee, #angryBee, #hangingSpidoLazer, #tauro, #snailey, #redFlyer, #purpleFlyer, #lazyMosquito, #leafSlug, #sunflora, #eggry, 
         /* map6 */
         #theRock, #theRockSmash, #dragon, #cactus, #petroPlant, #plazer, #veynoculus, #volcanurtle, #rollhogWalk, #rollhogRoll, #volcanoWasp,  
+        /* bonusmap1 */
+        #iceSilknoir,
     /* cabin */
-    #map1cabin, #map2cabin, #map3submarine, #map4cabin, #map5cabin, #map6cave, #bonusmap1cabin, #bonusmap2cabin,
+    #map1cabin, #map2cabin, #map3submarine, #map4cabin, #map5cabin, #map6cave, #bonusmap1cabin, #bonusmap2cabin, #bonusmap3cabin,
     /* power up */ 
     #redpotion, #bluepotion, #healthlive, #coin, #oxygenTank,
     /* power down */
@@ -89,14 +91,21 @@ body {
 /* map6 */ 
 #map6Background, #map6Ground, #map6spikeStones, #map6rocks1, #map6rocks2, #map6cactus, 
 /* bonusmap1 */ 
-#bonusMap1Background, #bonusMap1Ground, 
+#bonusMap1Background, #bonusMap1Ground, #bonusMap2TopIcicles, #bonusMap2IceSpikes, #bonusMap1IceRocks1, #bonusMap1IceRocks2, #bonusMap1IceRings, #bonusMap2BigIceCrystal,
 /* bonusmap2 */ 
-#bonusMap2Background, #bonusMap2Ground,
-/* fish */ 
-#jellyfish, #fish, #fish2, #fish3, #fish4, #fish5, #fish6, #fish7, #fish8, #fish9, #fish10, #fish11, #shark, #whale, 
-/* ink */ 
-#paint_splatter_1, #paint_splatter_2, #paint_splatter_3, #paint_splatter_4, #paint_splatter_5, #paint_splatter_6, #paint_splatter_7, #paint_splatter_8, #paint_splatter_9, 
-#paint_splatter_10, #paint_splatter_11, #paint_splatter_12, #paint_splatter_13, #paint_splatter_14, #paint_splatter_15, #paint_splatter_16, #paint_splatter_17, #paint_splatter_18,
+#bonusMap2Background,  #bonusMap2Ground, #bonusMap2SpikeRocks, #bonusMap2RockLayer1, #bonusMap2RockLayer2, #bonusMap2RockLayer3, #bonusMap2RockLayer4, #bonusMap2RockLayer5, #bonusMap2CrypticRocks1, #bonusMap2CrypticRocks2, #bonusMap2DeadTrees, #bonusMap2RedMist,
+/* bonusmap3 */ 
+#bonusMap3Background, #bonusMap3Ground, #bonusMap3Stars, #bonusMap3PurpleSpiral, #bonusMap3Nebula, #bonusMap3Planets,
+/* secondaryImageLayers */ 
+    /* fish */ 
+    #jellyfish, #fish, #fish2, #fish3, #fish4, #fish5, #fish6, #fish7, #fish8, #fish9, #fish10, #fish11, #shark, #whale, 
+    /* dragon */ 
+    #dragonSilhouette,
+    /* meteor */ 
+    #meteorBackground,
+    /* ink */ 
+    #paint_splatter_1, #paint_splatter_2, #paint_splatter_3, #paint_splatter_4, #paint_splatter_5, #paint_splatter_6, #paint_splatter_7, #paint_splatter_8, #paint_splatter_9, 
+    #paint_splatter_10, #paint_splatter_11, #paint_splatter_12, #paint_splatter_13, #paint_splatter_14, #paint_splatter_15, #paint_splatter_16, #paint_splatter_17, #paint_splatter_18,
 /* collision animations */ 
 #singleCoin, #collisionAnimation, #explosionCollisionAnimation, #darkExplosion, #redFireballCollision, #purpleFireballCollision, #purpleThunderCollision, #meteorExplosion,
 #electricityCollision, #blueCollisionAnimation, #poisonSpitSplash, #poisonDropCollision, #blackInk, #inkBombCollision, #blood, #raindropSplash, #poisonDropGroundCollision,
