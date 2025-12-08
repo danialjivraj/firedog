@@ -1509,12 +1509,37 @@ export class DragonSilhouette extends EntityAnimation {
         this.angle = 0;
         this.va = Math.random() * 0.1 + 0.1;
 
-        this.resetPosition();
+        this.spawnInitialInScreen();
     }
 
     ensureImageLoaded() {
         if (!this.image) {
             this.image = document.getElementById(this.imageId);
+        }
+    }
+
+    spawnInitialInScreen() {
+        this.width = this.frameWidth * this.scale;
+        this.height = this.frameHeight * this.scale;
+
+        const randomBase = Math.random() * 0.5 + 0.5;
+        this.speedX = randomBase * this.scale;
+
+        this.angle = 0;
+        this.va = Math.random() * 0.1 + 0.1;
+
+        const minY = 0;
+        const maxY = this.game.height / 2;
+        this.y = minY + Math.random() * (maxY - minY);
+
+        this.x = Math.random() * (this.game.width - this.width);
+
+        if (Math.random() < 0.5) {
+            this.direction = 1;
+            this.flipped = true;
+        } else {
+            this.direction = -1;
+            this.flipped = false;
         }
     }
 
@@ -1622,6 +1647,7 @@ export class DragonSilhouette extends EntityAnimation {
         context.restore();
     }
 }
+
 export class MeteorBackground extends EntityAnimation {
     constructor(
         game,
