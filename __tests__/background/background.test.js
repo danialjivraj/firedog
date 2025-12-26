@@ -1005,14 +1005,13 @@ describe('MeteorBackground', () => {
     });
 
     test('update respawns meteor when it goes offscreen', () => {
-        const mb = new MeteorBackground(game, 1);
-        const original = mb.meteors[0];
-        original.x = -mb.offscreenMargin - 1;
+    const mb = new MeteorBackground(game, 1);
+    const original = mb.meteors[0];
+    original.x = -mb.offscreenMargin - 1;
 
-        mb.update(16);
+    mb.update(0);
 
-        const replacement = mb.meteors[0];
-        expect(replacement).not.toBe(original);
+    expect(mb.meteors[0]).not.toBe(original);
     });
 
     test('draw renders each meteor sprite when image is available', () => {

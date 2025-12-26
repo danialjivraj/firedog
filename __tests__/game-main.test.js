@@ -33,6 +33,7 @@ import {
   Map6GlacikalIngameCutsceneBeforeFight,
   Map6GlacikalIngameCutsceneAfterFight
 } from '../game/cutscene/glacikalCutscenes.js';
+import { DistortionEffect } from '../game/animations/distortion.js';
 
 beforeAll(() => {
   jest.spyOn(console, 'error').mockImplementation(() => { });
@@ -72,6 +73,62 @@ describe('Game class (game-main.js)', () => {
     expect(game.maxLives).toBe(10);
     expect(game.selectedDifficulty).toBe('Normal');
     expect(game.menu.main).toBeDefined();
+  });
+
+  it('constructor initializes shake and distortion state', () => {
+    const game = new Game(canvas, canvas.width, canvas.height);
+
+    expect(game.shakeActive).toBe(false);
+    expect(game.shakeTimer).toBe(0);
+    expect(game.shakeDuration).toBe(0);
+
+    expect(game.distortionActive).toBe(false);
+    expect(game.distortionEffect).toBeInstanceOf(DistortionEffect);
+  });
+
+  describe('shake lifecycle', () => {
+    it('startShake() enables shake and clamps negative durations to 0', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+
+      game.startShake(-100);
+      expect(game.shakeActive).toBe(true);
+      expect(game.shakeTimer).toBe(0);
+      expect(game.shakeDuration).toBe(0);
+    });
+
+    it('startShake() sets duration and update() stops shake after duration elapses', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+
+      game.menu.pause.isPaused = false;
+      game.tutorial.tutorialPause = false;
+      game.cabin = { isFullyVisible: false };
+      game.player = { update: jest.fn(), isUnderwater: false, x: 0, width: 0 };
+      game.background = { update: jest.fn(), totalDistanceTraveled: 0 };
+
+      game.startShake(100);
+      expect(game.shakeActive).toBe(true);
+
+      game.update(60);
+      expect(game.shakeActive).toBe(true);
+      expect(game.shakeTimer).toBe(60);
+
+      game.update(50);
+      expect(game.shakeActive).toBe(false);
+      expect(game.shakeTimer).toBe(0);
+      expect(game.shakeDuration).toBe(0);
+    });
+
+    it('stopShake() resets shake flags and timers', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+      game.shakeActive = true;
+      game.shakeTimer = 123;
+      game.shakeDuration = 456;
+
+      game.stopShake();
+      expect(game.shakeActive).toBe(false);
+      expect(game.shakeTimer).toBe(0);
+      expect(game.shakeDuration).toBe(0);
+    });
   });
 
   // ------------------------------------------------------------
@@ -1364,7 +1421,7 @@ describe('Game class (game-main.js)', () => {
       ].forEach(entity => {
         expect(entity.draw).toHaveBeenCalledWith(ctx);
       });
-      expect(game.UI.draw).toHaveBeenCalledWith(ctx);
+      expect(game.UI.draw).not.toHaveBeenCalled();
     });
 
     it('draws underwater overlay when player.isUnderwater is true', () => {

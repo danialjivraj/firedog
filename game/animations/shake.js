@@ -1,7 +1,9 @@
 export function preShake(context) {
   context.save();
-  var dx = Math.random() * 10;
-  var dy = Math.random() * 10;
+
+  const dx = Math.round(Math.random() * 10);
+  const dy = Math.round(Math.random() * 10);
+
   context.translate(dx, dy);
 }
 

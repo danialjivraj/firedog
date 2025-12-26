@@ -49,6 +49,16 @@ describe('Reset', () => {
             shakeTimer: 5,
             shakeDuration: 10,
 
+            stopShake: jest.fn(function () {
+                this.shakeActive = false;
+                this.shakeTimer = 0;
+                this.shakeDuration = 0;
+            }),
+
+            // distortion
+            distortionActive: true,
+            distortionEffect: { reset: jest.fn() },
+
             // core game flags
             speed: 5,
             time: 10,
@@ -169,6 +179,7 @@ describe('Reset', () => {
 
             reset.reset();
 
+            expect(game.stopShake).toHaveBeenCalledTimes(1);
             expect(game.shakeActive).toBe(false);
             expect(game.shakeTimer).toBe(0);
             expect(game.shakeDuration).toBe(0);

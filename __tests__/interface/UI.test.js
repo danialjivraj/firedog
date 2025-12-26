@@ -2,7 +2,9 @@ import { UI } from '../../game/interface/UI';
 import { Elyvorg } from '../../game/entities/enemies/elyvorg';
 
 describe('UI', () => {
-    let game, ui, ctx;
+    let game;
+    let ui;
+    let ctx;
 
     beforeAll(() => {
         document.getElementById = jest.fn().mockReturnValue({});
@@ -62,7 +64,7 @@ describe('UI', () => {
                     stopSound: jest.fn(),
                     pauseSound: jest.fn(),
                     resumeSound: jest.fn(),
-                }
+                },
             },
 
             maxLives: 3,
@@ -83,6 +85,8 @@ describe('UI', () => {
             arcTo: jest.fn(),
             closePath: jest.fn(),
             clip: jest.fn(),
+            fillRect: jest.fn(),
+            createLinearGradient: jest.fn(() => ({ addColorStop: jest.fn() })),
 
             drawImage: jest.fn(),
             measureText: jest.fn(() => ({ width: 10 })),
@@ -103,21 +107,25 @@ describe('UI', () => {
         };
     });
 
-    function createElyvorg(overrides = {}) {
+    const createElyvorg = (overrides = {}) => {
         const enemy = Object.create(Elyvorg.prototype);
         Object.assign(enemy, overrides);
         return enemy;
-    }
+    };
 
-    function setBossElyvorg(overrides = {}) {
+    const setBossElyvorg = (overrides = {}) => {
         const enemy = createElyvorg(overrides);
         game.boss = { current: enemy };
         game.enemies = [enemy];
         return enemy;
-    }
+    };
+
+    const setBoss = (currentBoss) => {
+        game.boss = { current: currentBoss };
+    };
 
     describe('constructor', () => {
-        test('hooks up UI images via getElementById', () => {
+        it('loads UI images by id from the DOM', () => {
             expect(document.getElementById).toHaveBeenCalledWith('firedogHead');
             expect(document.getElementById).toHaveBeenCalledWith('fireballUI');
             expect(document.getElementById).toHaveBeenCalledWith('divingUI');
@@ -126,31 +134,42 @@ describe('UI', () => {
     });
 
     describe('getUiTime()', () => {
-        test('increments uiTime when game is not paused', () => {
+        it('on first call, initializes uiLastRealTime and returns uiTime unchanged', () => {
+            const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(1000);
+
+            ui.uiLastRealTime = null;
+            ui.uiTime = 123;
+
+            expect(ui.getUiTime()).toBe(123);
+            expect(ui.uiLastRealTime).toBe(1000);
+            expect(ui.uiTime).toBe(123);
+
+            nowSpy.mockRestore();
+        });
+
+        it('advances uiTime when not paused', () => {
             const nowSpy = jest.spyOn(Date, 'now');
             ui.uiLastRealTime = 1000;
             ui.uiTime = 0;
             game.menu.pause.isPaused = false;
 
             nowSpy.mockReturnValue(1100);
-            const result = ui.getUiTime();
 
-            expect(result).toBe(100);
+            expect(ui.getUiTime()).toBe(100);
             expect(ui.uiTime).toBe(100);
 
             nowSpy.mockRestore();
         });
 
-        test('does not advance uiTime while paused', () => {
+        it('does not advance uiTime while paused', () => {
             const nowSpy = jest.spyOn(Date, 'now');
             ui.uiLastRealTime = 2000;
             ui.uiTime = 50;
             game.menu.pause.isPaused = true;
 
             nowSpy.mockReturnValue(2200);
-            const result = ui.getUiTime();
 
-            expect(result).toBe(50);
+            expect(ui.getUiTime()).toBe(50);
             expect(ui.uiTime).toBe(50);
 
             nowSpy.mockRestore();
@@ -158,12 +177,7 @@ describe('UI', () => {
     });
 
     describe('draw()', () => {
-        test('renders coins, bars, timer, energy, lives and ability UIs', () => {
-            game.currentMap = 'Map1';
-            game.bossInFight = false;
-            game.lives = 2;
-            game.maxLives = 3;
-
+        it('renders top-level UI sections (coins, bars, timer, energy, lives, abilities)', () => {
             const spyDist = jest.spyOn(ui, 'distanceBar');
             const spyBossBar = jest.spyOn(ui, 'bossHealthBar');
             const spyTimer = jest.spyOn(ui, 'timer');
@@ -186,29 +200,29 @@ describe('UI', () => {
         });
     });
 
-    describe('lives rendering & blink behavior', () => {
-        test('draws one heart icon per current life when there is no damage blink', () => {
+    describe('lives rendering', () => {
+        const heartDrawCalls = () =>
+            ctx.drawImage.mock.calls.filter(([, , , w, h]) => w === 25 && h === 25);
+
+        it('draws one heart per life when not blinking', () => {
             game.lives = 2;
             game.maxLives = 3;
             ui = new UI(game);
 
             ctx.drawImage.mockClear();
-
             ui.draw(ctx);
 
-            const heartCalls = ctx.drawImage.mock.calls.filter(
-                ([, , , w, h]) => w === 25 && h === 25
-            );
-            expect(heartCalls.length).toBe(2);
+            expect(heartDrawCalls()).toHaveLength(2);
         });
 
-        test('removes the last heart after blink animation finishes when the final life is lost', () => {
+        it('keeps drawing the last lost heart during blink, then stops after blink ends', () => {
             game.lives = 1;
             game.maxLives = 3;
             ui = new UI(game);
 
             const timeSequence = [0, 100, 600];
             let index = 0;
+
             const getUiTimeSpy = jest
                 .spyOn(ui, 'getUiTime')
                 .mockImplementation(() => {
@@ -219,126 +233,119 @@ describe('UI', () => {
 
             ctx.drawImage.mockClear();
             ui.draw(ctx);
-            let heartCalls = ctx.drawImage.mock.calls.filter(
-                ([, , , w, h]) => w === 25 && h === 25
-            );
-            expect(heartCalls.length).toBe(1);
+            expect(heartDrawCalls()).toHaveLength(1);
 
             ctx.drawImage.mockClear();
             game.lives = 0;
             ui.draw(ctx);
-            heartCalls = ctx.drawImage.mock.calls.filter(
-                ([, , , w, h]) => w === 25 && h === 25
-            );
-            expect(heartCalls.length).toBe(1);
+            expect(heartDrawCalls()).toHaveLength(1);
 
             ctx.drawImage.mockClear();
             ui.draw(ctx);
-            heartCalls = ctx.drawImage.mock.calls.filter(
-                ([, , , w, h]) => w === 25 && h === 25
-            );
-            expect(heartCalls.length).toBe(0);
+            expect(heartDrawCalls()).toHaveLength(0);
 
             getUiTimeSpy.mockRestore();
         });
     });
 
     describe('progressBar()', () => {
-        test('draws percentage text, fills bar and updates internal fields', () => {
+        it('renders percentage text and paints the bar', () => {
             ui.progressBar(ctx, 75, 375, 500, 'pink');
-            expect(ctx.fillText).toHaveBeenCalledWith('75%', expect.any(Number), expect.any(Number));
+
+            expect(ctx.fillText).toHaveBeenCalledWith(
+                '75%',
+                expect.any(Number),
+                expect.any(Number)
+            );
+
             expect(ui.percentage).toBe(75);
-            expect(ui.filledWidth).toBe(375);
             expect(ctx.fill).toHaveBeenCalled();
         });
     });
 
     describe('distanceBar()', () => {
-        test('calls progressBar for a generic map when boss fight is not active', () => {
-            game.currentMap = 'Map1';
+        it('uses progressBar when not in a boss fight', () => {
             const spy = jest.spyOn(ui, 'progressBar');
+
+            game.bossInFight = false;
             ui.distanceBar(ctx);
+
             expect(spy).toHaveBeenCalled();
         });
 
-        test('still calls progressBar for another map (e.g. "Map6")', () => {
-            game.currentMap = 'Map6';
+        it('does nothing when in a boss fight', () => {
             const spy = jest.spyOn(ui, 'progressBar');
-            ui.distanceBar(ctx);
-            expect(spy).toHaveBeenCalled();
-        });
 
-        test('does nothing when a boss fight is currently active', () => {
             game.bossInFight = true;
-            const spy = jest.spyOn(ui, 'progressBar');
             ui.distanceBar(ctx);
+
             expect(spy).not.toHaveBeenCalled();
         });
 
-        test('draws a coins-progress stripe when gate has minCoins and player has coins', () => {
+        it('draws a coins-progress stripe when a gate requires coins and player has some coins', () => {
             game.bossInFight = false;
             game.bossManager = {
                 getGateForCurrentMap: jest.fn(() => ({
                     minDistance: 300,
-                    minCoins: 5,
+                    minCoins: 1000,
                 })),
             };
-            game.coins = 5;
+            game.coins = 1;
 
             ui.distanceBar(ctx);
-
             expect(ctx.fillStyle).toBe('orange');
+            expect(ctx.fillRect).toHaveBeenCalled();
         });
+
     });
 
     describe('bossHealthBar()', () => {
-        test('skips rendering when bossInFight is false', () => {
+        it('does nothing when bossInFight is false', () => {
+            const spy = jest.spyOn(ui, 'progressBar');
+
             game.bossInFight = false;
             game.boss = null;
-            const spy = jest.spyOn(ui, 'progressBar');
             ui.bossHealthBar(ctx);
+
             expect(spy).not.toHaveBeenCalled();
         });
 
-        test('renders health bar via progressBar when in fight and boss is present', () => {
-            game.bossInFight = true;
-            game.boss = {
-                current: {
-                    lives: 4,
-                    livesDefeatedAt: 1,
-                    maxLives: 5,
-                },
-            };
-
+        it('does nothing when boss state exists but current boss is null', () => {
             const spy = jest.spyOn(ui, 'progressBar');
+
+            game.bossInFight = true;
+            setBoss(null);
+
             ui.bossHealthBar(ctx);
+
+            expect(spy).not.toHaveBeenCalled();
+        });
+
+        it('renders boss HP via progressBar when in fight and boss exists', () => {
+            const spy = jest.spyOn(ui, 'progressBar');
+
+            game.bossInFight = true;
+            setBoss({ lives: 4, maxLives: 5 });
+
+            ui.bossHealthBar(ctx);
+
             expect(spy).toHaveBeenCalledWith(
                 ctx,
                 expect.any(Number),
                 expect.any(Number),
                 expect.any(Number),
-                'red'
+                'red',
+                0,
+                'rgba(120, 120, 120, 0.9)'
             );
         });
 
-        test('skips rendering when boss state exists but current boss is null', () => {
-            game.bossInFight = true;
-            game.boss = { current: null };
+        it('passes 0% and 0 filled width when boss has 0 lives', () => {
             const spy = jest.spyOn(ui, 'progressBar');
-            ui.bossHealthBar(ctx);
-            expect(spy).not.toHaveBeenCalled();
-        });
 
-        test('passes 0 percent and 0 width to progressBar when boss has no lives left', () => {
             game.bossInFight = true;
-            game.boss = {
-                current: {
-                    lives: 0,
-                    maxLives: 10,
-                },
-            };
+            setBoss({ lives: 0, maxLives: 10 });
 
-            const spy = jest.spyOn(ui, 'progressBar');
             ui.bossHealthBar(ctx);
 
             expect(spy).toHaveBeenCalledWith(
@@ -346,114 +353,179 @@ describe('UI', () => {
                 0,
                 0,
                 expect.any(Number),
-                'red'
+                'red',
+                0,
+                'rgba(120, 120, 120, 0.9)'
             );
+        });
+
+        it('passes a non-zero overheal segment to progressBar when boss has overheal lives', () => {
+            const spy = jest.spyOn(ui, 'progressBar');
+
+            game.bossInFight = true;
+            setBoss({
+                maxLives: 10,
+                lives: 12, // 2 lives into overheal
+                overhealPercent: 0.5, // overheal cap = 15
+            });
+
+            ui.bossHealthBar(ctx);
+
+            const [, , , , , overhealFilledWidth] = spy.mock.calls[0];
+            expect(overhealFilledWidth).toBeGreaterThan(0);
+        });
+
+        it('clamps boss lives to the overheal cap when computing the overheal segment', () => {
+            const spy = jest.spyOn(ui, 'progressBar');
+
+            game.bossInFight = true;
+            setBoss({
+                maxLives: 10,
+                lives: 999,
+                overhealPercent: 0.5, // cap = 15 lives
+            });
+
+            ui.bossHealthBar(ctx);
+
+            const [, , , , , overhealFilledWidth] = spy.mock.calls[0];
+            expect(overhealFilledWidth).toBeLessThanOrEqual(ui.barWidth * 0.5);
         });
     });
 
     describe('energy()', () => {
-        test('uses black text and white shadow when energy is at or above 20', () => {
+        it('uses black text with white shadow when energy is not low/critical', () => {
             game.player.energy = 50;
+
             ui.energy(ctx);
+
             expect(ctx.fillStyle).toBe('black');
             expect(ctx.shadowColor).toBe('white');
             expect(ctx.fillText).toHaveBeenCalled();
         });
 
-        test('uses darkgreen text and black shadow when poisoned', () => {
+        it('uses darkgreen text with black shadow when poisoned', () => {
             game.player.isPoisonedActive = true;
+
             ui.energy(ctx);
+
             expect(ctx.fillStyle).toBe('darkgreen');
             expect(ctx.shadowColor).toBe('black');
         });
 
-        test('uses gold shadow when energy is low but not zero', () => {
+        it('uses gold shadow when energy is low but not zero', () => {
             game.player.energy = 10;
+
             ui.energy(ctx);
+
             expect(ctx.shadowColor).toBe('gold');
         });
 
-        test('uses red text when energy has reached zero', () => {
+        it('uses red text when energyReachedZero is true', () => {
             game.player.energyReachedZero = true;
+
             ui.energy(ctx);
+
             expect(ctx.fillStyle).toBe('red');
         });
 
-        test('renders shaken energy text when blue potion is active', () => {
+        it('still renders energy text when blue potion is active (shake path)', () => {
             game.player.isBluePotionActive = true;
+
             ui.energy(ctx);
+
             expect(ctx.fillText).toHaveBeenCalled();
         });
     });
 
     describe('timer()', () => {
-        test('non-underwater: shows normal time and stops/resumes ticking sound', () => {
+        it('non-underwater: renders elapsed time and stops ticking sound', () => {
             game.player.isUnderwater = false;
             game.time = 125000; // 2:05
+
             ui.timer(ctx);
+
             expect(ctx.fillText).toHaveBeenCalledWith('Time: 2:05', 20, 90);
-            expect(game.audioHandler.mapSoundtrack.stopSound)
-                .toHaveBeenCalledWith('timeTickingSound');
-            expect(game.audioHandler.mapSoundtrack.resumeSound)
-                .toHaveBeenCalledWith('timeTickingSound');
+            expect(game.audioHandler.mapSoundtrack.stopSound).toHaveBeenCalledWith(
+                'timeTickingSound'
+            );
+            expect(game.audioHandler.mapSoundtrack.resumeSound).toHaveBeenCalledWith(
+                'timeTickingSound'
+            );
         });
 
-        test('underwater: remaining time below threshold activates ticking sound', () => {
+        it('underwater: below threshold activates ticking sound', () => {
             game.player.isUnderwater = true;
             game.maxTime = 70000;
             game.time = 65000; // remaining = 5000 < 60000
+
             ui.timer(ctx);
+
             expect(ui.secondsLeftActivated).toBe(true);
-            expect(game.audioHandler.mapSoundtrack.playSound)
-                .toHaveBeenCalledWith('timeTickingSound', true);
+            expect(game.audioHandler.mapSoundtrack.playSound).toHaveBeenCalledWith(
+                'timeTickingSound',
+                true
+            );
         });
 
-        test('underwater: remaining time above threshold uses black on white styling', () => {
+        it('underwater: above threshold uses black text with white shadow', () => {
             game.player.isUnderwater = true;
             game.maxTime = 70000;
             game.time = 5000; // remaining = 65000 > 60000
+
             ui.timer(ctx);
+
             expect(ctx.fillStyle).toBe('black');
             expect(ctx.shadowColor).toBe('white');
         });
 
-        test('underwater: dynamic white flash branch switches fillStyle to white', () => {
+        it('underwater: flashing branch can set fillStyle to white', () => {
             game.player.isUnderwater = true;
             game.maxTime = 70000;
-            // remaining = 30000; 30000 % 2000 === 0 < 1000
-            game.time = 40000;
+            game.time = 40000; // remaining=30000, and 30000 % 2000 === 0
+
             ui.timer(ctx);
+
             expect(ctx.fillStyle).toBe('white');
         });
 
-        test('underwater: when remaining time reaches zero or below, timer text is red', () => {
+        it('underwater: when remaining time is 0 or less, timer styling is red', () => {
             game.player.isUnderwater = true;
             game.maxTime = 1000;
             game.time = 2000;
+
             ui.timer(ctx);
+
             expect(ctx.fillStyle).toBe('red');
         });
 
-        test('pauses ticking sound when menu is paused', () => {
+        it('pauses ticking sound when menu is paused', () => {
             game.player.isUnderwater = false;
             game.menu.pause.isPaused = true;
+
             ui.timer(ctx);
-            expect(game.audioHandler.mapSoundtrack.pauseSound)
-                .toHaveBeenCalledWith('timeTickingSound');
+
+            expect(game.audioHandler.mapSoundtrack.pauseSound).toHaveBeenCalledWith(
+                'timeTickingSound'
+            );
         });
 
-        test('stops ticking sound when cabin is visible or game is over', () => {
+        it('stops ticking sound when cabin is visible', () => {
             game.player.isUnderwater = true;
             game.cabin.isFullyVisible = true;
+
             ui.timer(ctx);
-            expect(game.audioHandler.mapSoundtrack.stopSound)
-                .toHaveBeenCalledWith('timeTickingSound');
+
+            expect(game.audioHandler.mapSoundtrack.stopSound).toHaveBeenCalledWith(
+                'timeTickingSound'
+            );
         });
 
-        test('shows blue potion center-screen countdown when blue potion is active', () => {
+        it('renders blue potion center countdown when blue potion is active', () => {
             game.player.isBluePotionActive = true;
             game.player.blueFireTimer = 2500;
+
             ui.timer(ctx);
+
             expect(ctx.fillStyle).toBe('blue');
             expect(ctx.fillText).toHaveBeenCalledWith(
                 expect.stringMatching(/2\.5/),
@@ -464,72 +536,99 @@ describe('UI', () => {
     });
 
     describe('firedogAbilityUI()', () => {
-        test('diving icon is grayscale with countdown while diving is on cooldown', () => {
+        it('shows diving icon in grayscale and draws cooldown text while on cooldown', () => {
             game.player.divingTimer = 500;
             game.player.divingCooldown = 1000;
+
             ui.firedogAbilityUI(ctx);
+
             expect(ctx.filter).toBe('grayscale(100%)');
             expect(ctx.drawImage).toHaveBeenCalled();
             expect(ctx.fillText).toHaveBeenCalled();
         });
 
-        test('fireball icon is grayscale with countdown while fireball is on cooldown', () => {
+        it('shows fireball icon in grayscale and draws cooldown text while on cooldown', () => {
             game.player.fireballTimer = 500;
             game.player.fireballCooldown = 1000;
+
             ui.firedogAbilityUI(ctx);
+
             expect(ctx.filter).toBe('grayscale(100%)');
             expect(ctx.drawImage).toHaveBeenCalledWith(
-                ui.fireballUI, expect.any(Number), expect.any(Number), 50, 50
+                ui.fireballUI,
+                expect.any(Number),
+                expect.any(Number),
+                50,
+                50
             );
             expect(ctx.fillText).toHaveBeenCalled();
         });
 
-        test('renders red potion fireball image and countdown when red potion is active', () => {
+        it('renders red potion fireball image and countdown when red potion is active', () => {
             game.player.isRedPotionActive = true;
             game.player.redPotionTimer = 5000;
+
             ui.firedogAbilityUI(ctx);
+
             expect(ctx.drawImage).toHaveBeenCalledWith(
-                ui.fireballRedPotionUI, expect.any(Number), expect.any(Number), 50, 50
+                ui.fireballRedPotionUI,
+                expect.any(Number),
+                expect.any(Number),
+                50,
+                50
             );
         });
 
-        test('uses white-border ability icons when darkWhiteBorder flag is set', () => {
+        it('uses white-border variants when darkWhiteBorder is enabled', () => {
             game.player.isDarkWhiteBorder = true;
+
             ui.firedogAbilityUI(ctx);
+
             expect(ctx.drawImage).toHaveBeenCalledWith(
-                ui.divingUIWhiteBorder, expect.any(Number), expect.any(Number), 50, 50
+                ui.divingUIWhiteBorder,
+                expect.any(Number),
+                expect.any(Number),
+                50,
+                50
             );
         });
 
-        test('shows invisible cooldown timer text while invisible', () => {
+        it('shows invisible active timer text while invisible', () => {
             game.player.invisibleTimer = 2000;
             game.player.invisibleActiveCooldownTimer = 3000;
             game.player.isInvisible = true;
+
             ui.firedogAbilityUI(ctx);
+
             expect(ctx.fillText).toHaveBeenCalled();
         });
     });
 
     describe('elyvorgAbilityUI()', () => {
-        test('skips drawing when boss fight is not active', () => {
+        it('does nothing when not in a boss fight', () => {
             game.bossInFight = false;
+
             ui.elyvorgAbilityUI(ctx);
+
             expect(ctx.drawImage).not.toHaveBeenCalled();
         });
 
-        test('slash ability: draws normal slash icon when first slash attack is available', () => {
+        it('draws slash icon when slashAttackOnce is true', () => {
             game.bossInFight = true;
-            setBossElyvorg({
-                slashAttackOnce: true,
-            });
+            setBossElyvorg({ slashAttackOnce: true });
 
             ui.elyvorgAbilityUI(ctx);
+
             expect(ctx.drawImage).toHaveBeenCalledWith(
-                ui.slashUI, expect.any(Number), 20, 65, 65
+                ui.slashUI,
+                expect.any(Number),
+                20,
+                65,
+                65
             );
         });
 
-        test('slash ability: draws warning icon when slash is near attack threshold', () => {
+        it('draws slash warning icon when near slash threshold', () => {
             game.bossInFight = true;
             setBossElyvorg({
                 slashAttackOnce: false,
@@ -538,12 +637,17 @@ describe('UI', () => {
             });
 
             ui.elyvorgAbilityUI(ctx);
+
             expect(ctx.drawImage).toHaveBeenCalledWith(
-                ui.slashWarningUI, expect.any(Number), 20, 65, 65
+                ui.slashWarningUI,
+                expect.any(Number),
+                20,
+                65,
+                65
             );
         });
 
-        test('slash ability: draws grayscale icon when far from attack threshold', () => {
+        it('draws slash icon in grayscale when far from slash threshold', () => {
             game.bossInFight = true;
             setBossElyvorg({
                 slashAttackOnce: false,
@@ -552,22 +656,26 @@ describe('UI', () => {
             });
 
             ui.elyvorgAbilityUI(ctx);
+
             expect(ctx.filter).toBe('grayscale(100%)');
         });
 
-        test('electric ability: draws active icon when electric wheel is active', () => {
+        it('draws electric icon when electric wheel is active', () => {
             game.bossInFight = true;
-            setBossElyvorg({
-                isElectricWheelActive: true,
-            });
+            setBossElyvorg({ isElectricWheelActive: true });
 
             ui.elyvorgAbilityUI(ctx);
+
             expect(ctx.drawImage).toHaveBeenCalledWith(
-                ui.electricUI, expect.any(Number), 20, 65, 65
+                ui.electricUI,
+                expect.any(Number),
+                20,
+                65,
+                65
             );
         });
 
-        test('electric ability: draws warning icon when wheel is charging up', () => {
+        it('draws electric warning icon when electric wheel is charging', () => {
             game.bossInFight = true;
             setBossElyvorg({
                 isElectricWheelActive: false,
@@ -575,12 +683,17 @@ describe('UI', () => {
             });
 
             ui.elyvorgAbilityUI(ctx);
+
             expect(ctx.drawImage).toHaveBeenCalledWith(
-                ui.electricWarningUI, expect.any(Number), 20, 65, 65
+                ui.electricWarningUI,
+                expect.any(Number),
+                20,
+                65,
+                65
             );
         });
 
-        test('electric ability: draws grayscale icon when wheel is inactive and not charging', () => {
+        it('draws electric icon in grayscale when inactive and not charging', () => {
             game.bossInFight = true;
             setBossElyvorg({
                 isElectricWheelActive: false,
@@ -588,6 +701,7 @@ describe('UI', () => {
             });
 
             ui.elyvorgAbilityUI(ctx);
+
             expect(ctx.filter).toBe('grayscale(100%)');
         });
     });

@@ -31,26 +31,34 @@ export class AudioHandler {
     }
   }
 
-  playSound(soundName, loop = false, currentTimeZero = false, shouldPause = false) {
+  playSound(soundName, loop = false, currentTimeZero = false, shouldPause = false, opts = {}) {
     const audioElement = this.sounds[soundName];
     if (audioElement) {
       if (shouldPause) {
         this.stopSound(soundName);
       } else {
-        this.prePlaySound(audioElement, loop, currentTimeZero);
+        this.prePlaySound(audioElement, loop, currentTimeZero, opts);
       }
     }
     return audioElement;
   }
 
-  prePlaySound(audioElement, loop = false, currentTimeZero = false) {
-    if (audioElement) {
-      if (currentTimeZero) {
-        audioElement.currentTime = 0;
-      }
-      audioElement.loop = loop;
-      audioElement.play();
+  prePlaySound(audioElement, loop = false, currentTimeZero = false, opts = {}) {
+    if (!audioElement) return audioElement;
+
+    const { playbackRate = 1.0 } = opts;
+
+    audioElement.playbackRate = playbackRate;
+
+    if (currentTimeZero) {
+      audioElement.currentTime = 0;
     }
+
+    audioElement.loop = loop;
+
+    const p = audioElement.play();
+    if (p && typeof p.catch === "function") p.catch(() => { });
+
     return audioElement;
   }
 
@@ -300,6 +308,10 @@ export class CollisionSFXAudioHandler extends AudioHandler {
       slugExplosion: 'slugExplosion',
       fireballExplosionSound: 'fireballExplosionSound',
       poisonDropCollisionSound: 'poisonDropCollisionSound',
+      galacticSpikeCollisionSound: 'galacticSpikeCollisionSound',
+      ntharaxTentacleCollisionSound: 'ntharaxTentacleCollisionSound',
+      ntharaxKamehamehaCollisionSound: 'ntharaxKamehamehaCollisionSound',
+      ntharaxSplitBeamCollisionSound: 'ntharaxSplitBeamCollisionSound',
       elyvorg_meteor_in_contact_sound: 'elyvorg_meteor_in_contact_sound',
       elyvorg_meteor_in_contact_with_ground_sound: 'elyvorg_meteor_in_contact_with_ground_sound',
       elyvorg_electricity_wheel_collision_sound: 'elyvorg_electricity_wheel_collision_sound',
@@ -346,6 +358,41 @@ export class EnemySFXAudioHandler extends AudioHandler {
       glacikalRunSound: 'glacikalRunSound',
       spinningIceBallsSound: 'spinningIceBallsSound',
       undergroundIcicleSound: 'undergroundIcicleSound',
+      // ntharax sounds
+      burrowInSound: 'burrowInSound',
+      burrowOutSound: 'burrowOutSound',
+      healingStarSound: 'healingStarSound',
+      ntharaxWingFlapSound: 'ntharaxWingFlapSound',
+      ntharaxWindGustSound: 'ntharaxWindGustSound',
+      whileInAirSound: 'whileInAirSound',
+      ntharaxWingFlapFly1Sound: 'ntharaxWingFlapFly1Sound',
+      ntharaxWingFlapFly2Sound: 'ntharaxWingFlapFly2Sound',
+      purpleChargeSound: 'purpleChargeSound',
+      purpleReleaseSound: 'purpleReleaseSound',
+      yellowChargeSound: 'yellowChargeSound',
+      yellowReleaseSound: 'yellowReleaseSound',
+      blackChargeSound: 'blackChargeSound',
+      blackReleaseSound: 'blackReleaseSound',
+      distortionChargeSound: 'distortionChargeSound',
+      galacticSpikeEmergingSound: 'galacticSpikeEmergingSound',
+      galacticSpikeRetractSound: 'galacticSpikeRetractSound',
+      purpleBallOrbStartSound: 'purpleBallOrbStartSound',
+      purpleBallOrbLaunchSound: 'purpleBallOrbLaunchSound',
+      distortionStartSound: 'distortionStartSound',
+      distortionEndSound: 'distortionEndSound',
+      diveFallingSound: 'diveFallingSound',
+      diveImpactSound: 'diveImpactSound',
+      kamehamehaBeamAttackSound: 'kamehamehaBeamAttackSound',
+      kamehamehaBeamChargeSound: 'kamehamehaBeamChargeSound',
+      laserBallSound: 'laserBallSound',
+      slapGroundSound: 'slapGroundSound',
+      tentacleEmergeSound: 'tentacleEmergeSound',
+      tentacleRetractSound: 'tentacleRetractSound',
+      mode2TranformationSound: 'mode2TranformationSound',
+      mode2ExplosionSound: 'mode2ExplosionSound',
+      bossJumpingSound: 'bossJumpingSound',
+      bossLandingSound: 'bossLandingSound',
+      bossRunningSound: 'bossRunningSound',
       //projectiles
       windAttackAudio: 'windAttackAudio',
       tornadoAudio: 'tornadoAudio',

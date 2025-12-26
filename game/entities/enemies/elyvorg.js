@@ -1,30 +1,22 @@
-import { EnemyBoss, GroundEnemy, FallingEnemy, Projectile, ImmobileGroundEnemy } from "./enemies.js";
-import { MeteorExplosionCollision, DarkExplosion, PoisonDropGroundCollision, GhostFadeOut } from "../../animations/collisionAnimation.js";
+import { EnemyBoss, Barrier, Projectile, GroundEnemy, FallingEnemy, ImmobileGroundEnemy } from "./enemies.js";
+import { MeteorExplosionCollision, DarkExplosionCollision, PoisonDropGroundCollision, GhostFadeOut } from "../../animations/collisionAnimation.js";
 import { PurpleWarningIndicator } from "../../animations/damageIndicator.js";
 
-export class Barrier extends Projectile {
+export class PurpleBarrier extends Barrier {
     constructor(game, x, y) {
-        super(game, x, y, 170, 210, 0, 'barrier', 0, 30);
-        this.lives = 3;
-        this.images = ['barrier2', 'barrier1', 'barrier'];
-    }
-
-    draw(context) {
-        if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
-
-        const imageIndex = Math.max(0, Math.min(this.lives - 1, this.images.length - 1));
-        const imageName = this.images[imageIndex];
-
-        context.drawImage(
-            document.getElementById(imageName),
-            this.frameX * this.width,
-            0,
-            this.width,
-            this.height,
-            this.x,
-            this.y,
-            this.width,
-            this.height
+        super(game, x, y, 170, 210,
+            ['barrier2', 'barrier1', 'barrier'],
+            3,
+            {
+                sounds: {
+                    crackSoundsByLives: {
+                        2: 'elyvorg_shield_crack_1_sound',
+                        1: 'elyvorg_shield_crack_2_sound',
+                    },
+                    breakSound: 'elyvorg_shield_crack_3_sound',
+                    spawnSound: 'elyvorg_shield_up_sound',
+                },
+            }
         );
     }
 }
@@ -516,7 +508,6 @@ export class PurpleThunder extends ImmobileGroundEnemy {
                 this.frameTimer = 0;
 
                 this.y = this.strikeY;
-                this.dealsDirectHitDamage = true;
 
                 const soundId = Math.random() < 0.5
                     ? 'elyvorg_purple_thunder_attack_sound_effect_1'
@@ -668,13 +659,14 @@ export class Elyvorg extends EnemyBoss {
         super(game, 153.20833333333333333333333333333, 180, 23, 'elyvorgIdle');
         this.state = "idle";
         this.previousState = null;
-        this.chooseStateOnce = true;
         this.shouldInvert = false;
         this.reachedRightEdge = false;
         this.reachedLeftEdge = false;
         this.isInTheMiddle = false;
         this.originalY = this.y;
         this.setFps(30);
+        this.runSfxPlaying = false;
+        this.wasRunningLastFrame = false;
         this.maxLives = 125;
         this.lives = this.maxLives;
         this._defeatTriggered = false;
@@ -701,12 +693,12 @@ export class Elyvorg extends EnemyBoss {
         this.canJumpAttack = true;
         this.isTeleportJump = false;
         // barrier
-        this.barrier = new Barrier(this.game, this.x - 20, this.y - 20);
+        this.barrier = null;
         this.oneBarrier = true;
         this.barrierBreakingSetElyvorgTimer = true;
-        this.barrierCooldown = Math.floor(Math.random() * (60000 - 35000 + 1)) + 35000; // 35 to 60 seconds
+        this.barrierCooldown = Math.floor(Math.random() * (60000 - 35000 + 1)) + 35000;
         this.barrierCooldownTimer = 0;
-        this.isBarrierActive = true;
+        this.isBarrierActive = false;
         // electricWheel
         this.electricWheel = new ElectricWheel(this.game, this.x - 45, this.y - 20);
         this.oneElectricWheel = false;
@@ -737,7 +729,6 @@ export class Elyvorg extends EnemyBoss {
         this.meteorThrowCount = 0;
         this.canMeteorAttack = true;
         this.meteorShakeActive = false;
-        this.meteorShakeDuration = 1000;
         // poison
         this.poisonAnimation = new EnemyBoss(game, 153.20833333333333333333333333333, 180, 23, 'elyvorgPoisonIdle');
         this.poisonAnimation.frameX = 0;
@@ -793,6 +784,27 @@ export class Elyvorg extends EnemyBoss {
         this.chainTeleportFromAir = false;
         this.postTeleportSafeDuration = 350;
         this.postTeleportSafeTimer = 0;
+
+        this.jumpedBeforeDistanceLogic = false;
+    }
+
+    startRunSFX() {
+        if (this.runSfxPlaying) return;
+        this.runSfxPlaying = true;
+        this.game.audioHandler.enemySFX.playSound("bossRunningSound", true, true, false, { playbackRate: 1.2 });
+    }
+
+    stopRunSFX() {
+        if (!this.runSfxPlaying) return;
+        this.runSfxPlaying = false;
+        this.game.audioHandler.enemySFX.stopSound("bossRunningSound");
+    }
+
+    updateRunSFXEdge() {
+        const runningNow = this.state === "run";
+        if (runningNow && !this.wasRunningLastFrame) this.startRunSFX();
+        if (!runningNow && this.wasRunningLastFrame) this.stopRunSFX();
+        this.wasRunningLastFrame = runningNow;
     }
 
     throwLaserBeam() {
@@ -801,29 +813,13 @@ export class Elyvorg extends EnemyBoss {
             this.x + this.width / 2;
 
         const speedX = playerIsOnLeft ? 20 : -20;
-
         const laserX = playerIsOnLeft ? this.x - 70 : this.x + 110;
 
-        const topY =
-            this.y - 50 + this.height / 2 - 57 / 2;
-        const bottomY =
-            this.y + 50 + this.height / 2 - 57 / 2;
+        const topY = this.y - 50 + this.height / 2 - 57 / 2;
+        const bottomY = this.y + 50 + this.height / 2 - 57 / 2;
 
-        const topBeam = new PurpleLaserBeam(
-            this.game,
-            laserX,
-            topY,
-            speedX,
-            0
-        );
-
-        const bottomBeam = new PurpleLaserBeam(
-            this.game,
-            laserX,
-            bottomY,
-            speedX,
-            0
-        );
+        const topBeam = new PurpleLaserBeam(this.game, laserX, topY, speedX, 0);
+        const bottomBeam = new PurpleLaserBeam(this.game, laserX, bottomY, speedX, 0);
 
         this.game.enemies.push(topBeam);
         this.game.enemies.push(bottomBeam);
@@ -900,9 +896,7 @@ export class Elyvorg extends EnemyBoss {
     getActiveThunders() {
         const list = [];
         for (const enemy of this.game.enemies) {
-            if (enemy instanceof PurpleThunder &&
-                !enemy.markedForDeletion &&
-                enemy.phase !== "done") {
+            if (enemy instanceof PurpleThunder && !enemy.markedForDeletion && enemy.phase !== "done") {
                 list.push(enemy);
             }
         }
@@ -910,19 +904,11 @@ export class Elyvorg extends EnemyBoss {
     }
 
     startMeteorShake() {
-        if (this.game.shakeActive === undefined) {
-            this.game.shakeActive = false;
-            this.game.shakeTimer = 0;
-            this.game.shakeDuration = 0;
-        }
-
         this.meteorShakeActive = true;
-        this.game.shakeActive = true;
-        this.game.shakeTimer = 0;
-        this.game.shakeDuration = this.meteorShakeDuration;
+        this.game.startShake(1000);
     }
 
-    updateMeteorShakeTimer(deltaTime) {
+    updateMeteorShakeTimer() {
         if (!this.meteorShakeActive) return;
 
         if (this.state === 'thunder' || this.isThunderSequenceActive) {
@@ -934,14 +920,6 @@ export class Elyvorg extends EnemyBoss {
             this.meteorShakeActive = false;
             return;
         }
-
-        this.game.shakeTimer += deltaTime;
-        if (this.game.shakeTimer >= this.game.shakeDuration) {
-            this.game.shakeActive = false;
-            this.game.shakeTimer = 0;
-            this.game.shakeDuration = 0;
-            this.meteorShakeActive = false;
-        }
     }
 
     findThunderLaneCenter(preferredCenterX = null) {
@@ -952,10 +930,7 @@ export class Elyvorg extends EnemyBoss {
         const maxCenter = this.game.width - halfW;
         const minGap = thunderWidth;
 
-        let center = preferredCenterX != null
-            ? preferredCenterX
-            : (Math.random() * this.game.width);
-
+        let center = preferredCenterX != null ? preferredCenterX : (Math.random() * this.game.width);
         center = Math.max(minCenter, Math.min(maxCenter, center));
 
         const maxAttempts = 20;
@@ -1005,14 +980,7 @@ export class Elyvorg extends EnemyBoss {
 
         this.game.audioHandler.enemySFX.playSound('elyvorg_purple_thunder_sound_effect', true);
 
-        if (this.game.shakeActive === undefined) {
-            this.game.shakeActive = false;
-            this.game.shakeTimer = 0;
-            this.game.shakeDuration = 0;
-        }
-        this.game.shakeActive = true;
-        this.game.shakeTimer = 0;
-        this.game.shakeDuration = 0;
+        this.game.startShake(0);
 
         this.game.bossManager.requestScreenEffect('elyvorg_thunder', {
             rgb: [0, 0, 0],
@@ -1027,9 +995,7 @@ export class Elyvorg extends EnemyBoss {
         this.game.audioHandler.enemySFX.stopSound('elyvorg_purple_thunder_sound_effect');
         this.game.bossManager.releaseScreenEffect('elyvorg_thunder');
 
-        this.game.shakeActive = false;
-        this.game.shakeTimer = 0;
-        this.game.shakeDuration = 0;
+        this.game.stopShake();
 
         this.previousState = "thunder";
 
@@ -1070,11 +1036,7 @@ export class Elyvorg extends EnemyBoss {
 
         this.canJumpAttack = false;
         this.throwArrowAttack();
-        this.game.audioHandler.enemySFX.playSound(
-            'elyvorg_arrow_attack_sound',
-            false,
-            true
-        );
+        this.game.audioHandler.enemySFX.playSound('elyvorg_arrow_attack_sound', false, true);
     }
 
     jumpLogic() {
@@ -1082,6 +1044,8 @@ export class Elyvorg extends EnemyBoss {
             if (!this.jumpedBeforeDistanceLogic) {
                 this.jumpStartTime = this.game.hiddenTime;
                 this.jumpedBeforeDistanceLogic = true;
+
+                this.game.audioHandler.enemySFX.playSound("bossJumpingSound", false, true);
 
                 this.fireJumpArrow();
             }
@@ -1095,6 +1059,7 @@ export class Elyvorg extends EnemyBoss {
 
             if (t >= 1) {
                 this.y = this.originalY;
+                this.game.audioHandler.enemySFX.playSound("bossLandingSound", false, true);
                 this.backToIdleSetUp();
                 this.canJumpAttack = true;
                 this.jumpedBeforeDistanceLogic = false;
@@ -1106,6 +1071,7 @@ export class Elyvorg extends EnemyBoss {
         if (this.jumpAnimation.frameX === 0 && !this.jumpedBeforeDistanceLogic) {
             this.jumpStartTime = this.game.hiddenTime;
             this.jumpedBeforeDistanceLogic = true;
+            this.game.audioHandler.enemySFX.playSound("bossJumpingSound", false, true);
         }
 
         const jumpProgress = (this.game.hiddenTime - this.jumpStartTime) / (this.jumpDuration * 1000);
@@ -1117,9 +1083,10 @@ export class Elyvorg extends EnemyBoss {
                 this.fireJumpArrow();
             }
         } else {
+            this.y = this.originalY;
+            this.game.audioHandler.enemySFX.playSound("bossLandingSound", false, true);
             this.backToIdleSetUp();
             this.canJumpAttack = true;
-            this.y = this.originalY;
             this.jumpedBeforeDistanceLogic = false;
         }
     }
@@ -1170,7 +1137,7 @@ export class Elyvorg extends EnemyBoss {
             this.isGravitySpinnerActive = false;
             this.gravityCooldownTimer = 0;
             this.gravitationalAura.lives = 0;
-            this.game.collisions.push(new DarkExplosion(this.game, this.gravitationalAura.x + this.gravitationalAura.width * 0.5, this.gravitationalAura.y + this.gravitationalAura.height * 0.5 - 30));
+            this.game.collisions.push(new DarkExplosionCollision(this.game, this.gravitationalAura.x + this.gravitationalAura.width * 0.5, this.gravitationalAura.y + this.gravitationalAura.height * 0.5 - 30));
             this.game.audioHandler.collisionSFX.playSound('darkExplosionCollisionSound', false, true);
             this.game.audioHandler.enemySFX.stopSound('elyvorg_gravitational_aura_sound_effect');
         }
@@ -1208,11 +1175,7 @@ export class Elyvorg extends EnemyBoss {
                 rgb: [0, 50, 0],
                 fadeInSpeed: 0.00298,
             });
-            this.game.audioHandler.enemySFX.playSound(
-                'elyvorg_poison_drop_indicator_sound',
-                false,
-                true
-            );
+            this.game.audioHandler.enemySFX.playSound('elyvorg_poison_drop_indicator_sound', false, true);
         }
         if (this.poisonAnimation.frameX === 17) {
             this.game.audioHandler.enemySFX.playSound('elyvorg_poison_drop_rain_sound', false, true);
@@ -1223,7 +1186,6 @@ export class Elyvorg extends EnemyBoss {
             for (let i = 0; i < 7; i++) {
                 this.game.enemies.push(new PoisonDrop(this.game));
             }
-
         }
         if (this.poisonAnimation.frameX === 23) {
             this.backToIdleSetUp();
@@ -1579,9 +1541,13 @@ export class Elyvorg extends EnemyBoss {
 
     barrierLogic(deltaTime) {
         if (this.oneBarrier) {
+            this.barrier = new PurpleBarrier(this.game, this.x - 20, this.y - 20);
             this.game.enemies.push(this.barrier);
-            this.game.audioHandler.enemySFX.playSound('elyvorg_shield_up_sound');
+
             this.oneBarrier = false;
+            this.isBarrierActive = true;
+            this.barrierBreakingSetElyvorgTimer = true;
+            this.barrierCooldownTimer = 0;
         }
 
         if (!this.isBarrierActive) {
@@ -1589,35 +1555,21 @@ export class Elyvorg extends EnemyBoss {
 
             if (this.barrierCooldownTimer >= this.barrierCooldown) {
                 this.barrierCooldownTimer = 0;
-                this.barrierCooldown = Math.floor(Math.random() * (60000 - 35000 + 1)) + 35000; // 35 to 60 seconds
-                this.barrier = new Barrier(this.game, this.x - 20, this.y - 20);
+                this.barrierCooldown = Math.floor(Math.random() * (60000 - 35000 + 1)) + 35000;
+                this.barrier = new PurpleBarrier(this.game, this.x - 20, this.y - 20);
                 this.game.enemies.push(this.barrier);
                 this.barrierBreakingSetElyvorgTimer = true;
                 this.isBarrierActive = true;
-                this.shieldCrackLives2SoundPlayed = false;
-                this.shieldCrackLives1SoundPlayed = false;
-                this.shieldCrackLives0SoundPlayed = false;
-                this.game.audioHandler.enemySFX.playSound('elyvorg_shield_up_sound');
             }
         }
-        if (this.barrier.lives <= 0 && this.barrierBreakingSetElyvorgTimer) {
+
+        if (this.barrier && this.barrier.lives <= 0 && this.barrierBreakingSetElyvorgTimer) {
             this.barrierBreakingSetElyvorgTimer = false;
             this.isBarrierActive = false;
             this.game.player.bossCollisionTimer = 1000;
         }
 
-        if (!this.shieldCrackLives2SoundPlayed && this.barrier.lives === 2) {
-            this.game.audioHandler.enemySFX.playSound('elyvorg_shield_crack_1_sound');
-            this.shieldCrackLives2SoundPlayed = true;
-        }
-        if (!this.shieldCrackLives1SoundPlayed && this.barrier.lives === 1) {
-            this.game.audioHandler.enemySFX.playSound('elyvorg_shield_crack_2_sound');
-            this.shieldCrackLives1SoundPlayed = true;
-        }
-        if (!this.shieldCrackLives0SoundPlayed && this.barrier.lives <= 0) {
-            this.game.audioHandler.enemySFX.playSound('elyvorg_shield_crack_3_sound');
-            this.shieldCrackLives0SoundPlayed = true;
-        }
+        if (!this.barrier) return;
 
         if (this.runningDirection > 0) {
             if (this.state === 'run') {
@@ -1719,15 +1671,14 @@ export class Elyvorg extends EnemyBoss {
         if (this._defeatTriggered) return;
         if (this.lives <= 0) {
             this._defeatTriggered = true;
+            this.stopRunSFX();
 
             this.defeatCommon({
                 bossId: "elyvorg",
                 bossClass: Elyvorg,
                 battleThemeId: "elyvorgBattleTheme",
                 onBeforeClear: () => {
-                    this.game.shakeActive = false;
-                    this.game.shakeTimer = 0;
-                    this.game.shakeDuration = 0;
+                    this.game.stopShake();
                     this.game.bossManager.releaseScreenEffect("elyvorg_thunder");
                     this.game.bossManager.releaseScreenEffect("elyvorg_poison");
                 }
@@ -1776,12 +1727,24 @@ export class Elyvorg extends EnemyBoss {
     }
 
     stateRandomiser() {
-        const allStates = ['run', 'jump', 'laser', 'meteor', 'ghost', 'gravity', 'ink', 'fireball', 'poison', 'teleport'];
+        const allStates = [
+            'run',
+            'jump',
+            'laser',
+            'meteor',
+            'ghost',
+            'gravity',
+            'ink',
+            'fireball',
+            'poison',
+            'teleport'
+        ];
 
         if (this.game.gameOver) {
             if (this.isInTheMiddle) {
                 this.runningDirection = 10;
                 this.state = 'run';
+                this.startRunSFX();
             } else {
                 this.state = 'idle';
             }
@@ -1818,6 +1781,7 @@ export class Elyvorg extends EnemyBoss {
             this.runStateCounterLimit = Math.floor(4 + Math.random() * 3); // 4 to 6
             this.runningDirection = this.shouldInvert ? 10 : -10;
             this.state = 'run';
+            this.startRunSFX();
             this.runAnimation.x = this.x;
             this.runAnimation.y = this.y;
             this.runAnimation.frameX = 0;
@@ -1881,6 +1845,7 @@ export class Elyvorg extends EnemyBoss {
         if (animation) {
             if (this.state === 'run') {
                 this.runningDirection = this.shouldInvert ? 10 : -10;
+                this.startRunSFX();
             }
             animation.x = this.x;
             animation.y = this.y;
@@ -1895,6 +1860,7 @@ export class Elyvorg extends EnemyBoss {
     update(deltaTime) {
         super.update(deltaTime);
         this.checksBossIsFullyVisible("elyvorg");
+        this.updateRunSFXEdge();
 
         if (this.postTeleportSafeTimer > 0) {
             this.postTeleportSafeTimer -= deltaTime;
@@ -1961,7 +1927,7 @@ export class Elyvorg extends EnemyBoss {
                         this.teleportLogic(deltaTime);
                     }
 
-                    this.updateMeteorShakeTimer(deltaTime);
+                    this.updateMeteorShakeTimer();
 
                     if (this.x + this.width < 0 || this.x >= this.game.width) {
                         if (boss.current === this && boss.id === 'elyvorg') {

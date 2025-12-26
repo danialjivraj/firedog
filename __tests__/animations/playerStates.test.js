@@ -11,6 +11,15 @@ import {
     Dying,
 } from '../../game/animations/playerStates';
 
+jest.mock('../../game/animations/particles.js', () => {
+    class Dust { constructor() { } }
+    class Bubble { constructor() { } }
+    class Fire { constructor() { } }
+    class Splash { constructor() { } }
+    class IceCrystal { constructor() { } }
+    return { Dust, Bubble, Fire, Splash, IceCrystal };
+});
+
 const states = {
     SITTING: 0,
     RUNNING: 1,
@@ -24,47 +33,73 @@ const states = {
     DYING: 9,
 };
 
-describe('Player State Machine', () => {
+describe('playerStates.js', () => {
     let game, player, input, sfx;
 
-    beforeEach(() => {
+    const makeGame = () => {
         sfx = { firedogSFX: { playSound: jest.fn() } };
-        input = { isRollAttack: jest.fn(() => false) };
+        input = {
+            isRollAttack: jest.fn(() => false),
+        };
 
         player = {
             setState: jest.fn(),
-            x: 100, y: 200,
-            width: 50, height: 80,
-            vy: 0, weight: 5,
+
+            x: 100,
+            y: 200,
+            width: 50,
+            height: 80,
+
+            vy: 0,
+            weight: 5,
+            gravity: undefined,
+
             onGround: jest.fn(() => true),
-            energy: 10, energyReachedZero: false,
-            divingTimer: 0, divingCooldown: 100,
-            isUnderwater: false, isSlowed: false,
+
+            energy: 10,
+            energyReachedZero: false,
+
+            divingTimer: 0,
+            divingCooldown: 100,
+
+            isUnderwater: false,
+            isSlowed: false,
+
             previousState: states.SITTING,
             states: Object.values(states),
+
             drainEnergy: jest.fn(),
+
             particleImage: 'fire',
             buoyancy: 0,
-            frameX: 0, maxFrame: 0, frameY: 0,
+
+            frameX: 0,
+            maxFrame: 0,
+            frameY: 0,
+
             isSpace: false,
             canSpaceDoubleJump: false,
+
             isBluePotionActive: false,
         };
 
         game = {
             gameOver: false,
             menu: { gameOver: { activateMenu: jest.fn() } },
+
             player,
             particles: [],
+
             input,
+
             cabin: { isFullyVisible: false },
 
-            boss: {
-                talkToBoss: false,
-            },
+            boss: { talkToBoss: false },
             isBossVisible: false,
 
-            width: 1920, height: 689,
+            width: 1920,
+            height: 689,
+
             audioHandler: sfx,
             collisions: [],
         };
@@ -84,15 +119,28 @@ describe('Player State Machine', () => {
             if (keys && typeof keys === 'object') return !!keys[key];
             return false;
         };
+
+        return game;
+    };
+
+    const lastParticleName = () =>
+        game.particles.length ? game.particles[0].constructor.name : null;
+
+    beforeEach(() => {
+        makeGame();
     });
 
-    it('short-circuits to DYING and opens game-over menu when game.gameOver is true', () => {
-        game.gameOver = true;
-        input.isRollAttack.mockReturnValue(true);
-        const st = new Running(game);
-        st.handleInput([]);
-        expect(game.menu.gameOver.activateMenu).toHaveBeenCalled();
-        expect(player.setState).toHaveBeenCalledWith(states.DYING, 1);
+    describe('Base State gameOver()', () => {
+        it('short-circuits to DYING and opens game-over menu when game.gameOver is true', () => {
+            game.gameOver = true;
+            input.isRollAttack.mockReturnValue(true);
+
+            const st = new Running(game);
+            st.handleInput([]);
+
+            expect(game.menu.gameOver.activateMenu).toHaveBeenCalled();
+            expect(player.setState).toHaveBeenCalledWith(states.DYING, 1);
+        });
     });
 
     // -------------------------------------------------------------------------
@@ -100,7 +148,9 @@ describe('Player State Machine', () => {
     // -------------------------------------------------------------------------
     describe('Sitting', () => {
         let st;
-        beforeEach(() => { st = new Sitting(game); });
+        beforeEach(() => {
+            st = new Sitting(game);
+        });
 
         it('enter() sets sitting animation frames', () => {
             st.enter();
@@ -109,34 +159,36 @@ describe('Player State Machine', () => {
             expect(player.frameY).toBe(5);
         });
 
-        it('a/d pressed while sitting → RUNNING', () => {
+        it('left/right input transitions to RUNNING', () => {
             st.handleInput(['a']);
             expect(player.setState).toHaveBeenCalledWith(states.RUNNING, 1);
         });
 
-        it('w pressed while sitting → JUMPING', () => {
+        it('jump input transitions to JUMPING', () => {
             st.handleInput(['w']);
             expect(player.setState).toHaveBeenCalledWith(states.JUMPING, 1);
         });
 
-        it('roll click with cabin locked and no boss → ROLLING(2)', () => {
+        it('roll click when cabin is not fully visible and boss is not visible → ROLLING(2)', () => {
             input.isRollAttack.mockReturnValue(true);
             st.handleInput([]);
             expect(player.setState).toHaveBeenCalledWith(states.ROLLING, 2);
         });
 
-        it('roll click with boss visible and energy>0 → ROLLING(0)', () => {
+        it('roll click when boss is visible and energy not depleted → ROLLING(0)', () => {
             game.isBossVisible = true;
             input.isRollAttack.mockReturnValue(true);
             st.handleInput([]);
             expect(player.setState).toHaveBeenCalledWith(states.ROLLING, 0);
         });
 
-        it('roll click with boss visible but energy depleted → no ROLLING transition', () => {
+        it('roll click when boss is visible but energy depleted → no transition', () => {
             game.isBossVisible = true;
             player.energyReachedZero = true;
             input.isRollAttack.mockReturnValue(true);
+
             st.handleInput([]);
+
             expect(player.setState).not.toHaveBeenCalled();
         });
     });
@@ -146,7 +198,9 @@ describe('Player State Machine', () => {
     // -------------------------------------------------------------------------
     describe('Running', () => {
         let st;
-        beforeEach(() => { st = new Running(game); });
+        beforeEach(() => {
+            st = new Running(game);
+        });
 
         it('enter() sets running animation frames', () => {
             st.enter();
@@ -155,77 +209,89 @@ describe('Player State Machine', () => {
             expect(player.frameY).toBe(3);
         });
 
-        it('isSlowed true while running → spawns IceCrystal', () => {
+        it('spawns IceCrystal when slowed, otherwise spawns Dust', () => {
             player.isSlowed = true;
             st.handleInput([]);
-            expect(game.particles[0].constructor.name).toBe('IceCrystal');
-        });
+            expect(lastParticleName()).toBe('IceCrystal');
 
-        it('normal running → spawns Dust', () => {
+            game.particles = [];
+            player.isSlowed = false;
             st.handleInput([]);
-            expect(game.particles[0].constructor.name).toBe('Dust');
+            expect(lastParticleName()).toBe('Dust');
         });
 
-        it('boss appears once then subsequent inputs without a/d still go to STANDING', () => {
+        it('when boss is visible, first tick sets STANDING (oneTime) and subsequent ticks still idle to STANDING', () => {
             game.isBossVisible = true;
+
             st.handleInput([]);
             st.handleInput([]);
-            st.handleInput([]);
-            expect(player.setState).toHaveBeenCalledTimes(4);
-            expect(player.setState).toHaveBeenNthCalledWith(1, states.STANDING, 0);
-            expect(player.setState).toHaveBeenNthCalledWith(2, states.STANDING, 0);
-            expect(player.setState).toHaveBeenNthCalledWith(3, states.STANDING, 0);
-            expect(player.setState).toHaveBeenNthCalledWith(4, states.STANDING, 0);
+
+            const standingCalls = player.setState.mock.calls.filter(
+                ([state, speed]) => state === states.STANDING && speed === 0
+            );
+
+            expect(standingCalls).toHaveLength(3);
+            expect(player.setState).toHaveBeenCalledWith(states.STANDING, 0);
         });
 
-        it('w+s pressed together while running → JUMPING (jump wins over sit)', () => {
-            player.setState.mockClear();
+        it('jump has priority over sit when both are pressed', () => {
             st.handleInput(['w', 's']);
             expect(player.setState).toHaveBeenCalledWith(states.JUMPING, 1);
         });
 
-        it('w pressed while running → JUMPING', () => {
+        it('jump input transitions to JUMPING', () => {
             st.handleInput(['w']);
             expect(player.setState).toHaveBeenCalledWith(states.JUMPING, 1);
         });
 
-        it('a+d opposite directions → remains in RUNNING (no state change)', () => {
-            const st2 = new Running(game);
+        it('pressing both left and right results in no state change (still running)', () => {
             player.setState.mockClear();
-            st2.handleInput(['a', 'd']);
+            st.handleInput(['a', 'd']);
             expect(player.setState).not.toHaveBeenCalled();
         });
 
-        it('roll click & !cabin & energy>0 → ROLLING(2)', () => {
+        it('roll click when cabin is not fully visible and energy not depleted → ROLLING(2)', () => {
             input.isRollAttack.mockReturnValue(true);
             st.handleInput([]);
             expect(player.setState).toHaveBeenCalledWith(states.ROLLING, 2);
         });
 
-        it('no a/d & cabin visible → STANDING', () => {
+        it('no left/right input when cabin is fully visible → STANDING', () => {
             game.cabin.isFullyVisible = true;
             st.handleInput([]);
             expect(player.setState).toHaveBeenCalledWith(states.STANDING, 0);
         });
 
-        it('s only while running → SITTING', () => {
+        it('sit input (without left/right) transitions to SITTING', () => {
             st.handleInput(['s']);
             expect(player.setState).toHaveBeenCalledWith(states.SITTING, 0);
         });
 
-        it('s with lateral input while running → remain in RUNNING (do nothing)', () => {
+        it('sit input while moving left/right does nothing (stays RUNNING)', () => {
             player.setState.mockClear();
             st.handleInput(['a', 's']);
             expect(player.setState).not.toHaveBeenCalled();
         });
 
-        it('boss visible but energy depleted → click does not cause ROLLING', () => {
+        it('boss visible with energy depleted: roll click does not trigger ROLLING; falls back to STANDING', () => {
             game.isBossVisible = true;
             player.energyReachedZero = true;
             input.isRollAttack.mockReturnValue(true);
+
             st.handleInput([]);
+
             expect(player.setState).toHaveBeenCalledWith(states.STANDING, 0);
             expect(player.setState).not.toHaveBeenCalledWith(states.ROLLING, expect.any(Number));
+        });
+
+        it('when boss.talkToBoss is true, transition logic is blocked (still spawns particles)', () => {
+            game.boss.talkToBoss = true;
+
+            st.handleInput(['w']);
+
+            expect(game.particles.length).toBeGreaterThan(0);
+
+            expect(player.setState).not.toHaveBeenCalledWith(states.JUMPING, expect.any(Number));
         });
     });
 
@@ -233,83 +299,116 @@ describe('Player State Machine', () => {
     // Jumping
     // -------------------------------------------------------------------------
     describe('Jumping', () => {
-        let st, baseY;
+        let st;
+
         beforeEach(() => {
-            player.onGround.mockReturnValue(true);
             st = new Jumping(game);
-            baseY = player.y;
+            player.onGround.mockReturnValue(true);
         });
 
-        it('enter() (non-space) applies strong jump, plays SFX, and sets jumping frames', () => {
+        it('enter() (non-space) applies strong jump when onGround, plays SFX, and sets frames', () => {
             st.enter();
             expect(player.vy).toBe(-27);
             expect(sfx.firedogSFX.playSound).toHaveBeenCalledWith('jumpSFX');
             expect(player.frameY).toBe(1);
+            expect(player.maxFrame).toBe(6);
         });
 
-        it('underwater + w → spawns Bubble, ascends 4px, sets JUMPING, and updates buoyancy', () => {
+        it('enter() (space) sets vy=-9, enables canSpaceDoubleJump when onGround, and plays SFX', () => {
+            player.isSpace = true;
+            player.canSpaceDoubleJump = false;
+            player.onGround.mockReturnValue(true);
+
+            st.enter();
+
+            expect(player.vy).toBe(-9);
+            expect(player.canSpaceDoubleJump).toBe(true);
+            expect(sfx.firedogSFX.playSound).toHaveBeenCalledWith('jumpSFX');
+            expect(player.frameY).toBe(1);
+        });
+
+        it('underwater + jump input spawns Bubble, moves up 4px, sets JUMPING, and updates buoyancy', () => {
             game.player.isUnderwater = true;
             player.onGround.mockReturnValue(false);
+
+            const baseY = player.y;
+
             st.handleInput(['w']);
+
             expect(game.particles[0].constructor.name).toBe('Bubble');
             expect(player.y).toBe(baseY - 4);
             expect(player.setState).toHaveBeenCalledWith(states.JUMPING, 1);
             expect([1, 2, 3, 4]).toContain(player.buoyancy);
         });
 
-        it('s with divingTimer ready (no LR) → DIVING(0)', () => {
+        it('sit key with dive ready and no left/right → DIVING(0)', () => {
             player.onGround.mockReturnValue(false);
-            player.divingTimer = 100; player.divingCooldown = 100;
+            player.divingTimer = 100;
+            player.divingCooldown = 100;
+
             st.handleInput(['s']);
+
             expect(player.divingTimer).toBe(0);
             expect(player.setState).toHaveBeenCalledWith(states.DIVING, 0);
         });
 
-        it('s + lateral input with divingTimer ready → DIVING(1)', () => {
+        it('sit key with dive ready and left/right → DIVING(1)', () => {
             player.onGround.mockReturnValue(false);
             player.divingTimer = player.divingCooldown;
+
             st.handleInput(['s', 'd']);
+
             expect(player.divingTimer).toBe(0);
             expect(player.setState).toHaveBeenCalledWith(states.DIVING, 1);
         });
 
-        it('separate diveAttack key triggers dive when ready', () => {
+        it('separate diveAttack binding triggers dive when ready', () => {
             player.onGround.mockReturnValue(false);
             player.divingTimer = player.divingCooldown;
             game.keyBindings.diveAttack = 'Shift';
             game.keyBindings.sit = 's'; // different keys
+
             st.handleInput(['Shift']);
+
             expect(player.divingTimer).toBe(0);
             expect(player.setState).toHaveBeenCalledWith(states.DIVING, 0);
         });
 
-        it('click & !cabin & energy>0 while jumping → ROLLING(2)', () => {
+        it('roll click while jumping with energy not depleted and cabin not fully visible → ROLLING(2)', () => {
             input.isRollAttack.mockReturnValue(true);
             player.onGround.mockReturnValue(false);
+
             st.handleInput([]);
+
             expect(player.setState).toHaveBeenCalledWith(states.ROLLING, 2);
         });
 
-        it('roll requested but energy depleted + sit + ready timer → DIVING(0) instead of ROLLING', () => {
+        it('roll requested but energy depleted + sit + dive ready → DIVING(0) instead of ROLLING', () => {
             player.onGround.mockReturnValue(false);
             player.divingTimer = player.divingCooldown;
             player.energyReachedZero = true;
             input.isRollAttack.mockReturnValue(true);
+
             st.handleInput(['s']);
+
             expect(player.divingTimer).toBe(0);
             expect(player.setState).toHaveBeenCalledWith(states.DIVING, 0);
         });
 
-        it('vy>weight and not underwater → FALLING', () => {
+        it('vy > weight and not underwater → FALLING', () => {
             player.onGround.mockReturnValue(false);
             player.vy = 10;
+
             st.handleInput([]);
+
             expect(player.setState).toHaveBeenCalledWith(states.FALLING, 1);
         });
 
-        it('onGround while jumping → RUNNING', () => {
+        it('onGround → RUNNING', () => {
             player.onGround.mockReturnValue(true);
+
             st.handleInput([]);
+
             expect(player.setState).toHaveBeenCalledWith(states.RUNNING, 1);
         });
     });
@@ -319,9 +418,10 @@ describe('Player State Machine', () => {
     // -------------------------------------------------------------------------
     describe('Falling', () => {
         let st;
+
         beforeEach(() => {
-            player.onGround.mockReturnValue(false);
             st = new Falling(game);
+            player.onGround.mockReturnValue(false);
         });
 
         it('enter() sets falling animation frames', () => {
@@ -330,62 +430,79 @@ describe('Player State Machine', () => {
             expect(player.frameY).toBe(2);
         });
 
-        it('space double jump in air → sets JUMPING and disables double jump', () => {
+        it('space double jump in air → JUMPING and disables double jump', () => {
             player.isSpace = true;
             player.canSpaceDoubleJump = true;
             player.onGround.mockReturnValue(false);
+
             st.handleInput(['w']);
+
             expect(player.canSpaceDoubleJump).toBe(false);
             expect(player.setState).toHaveBeenCalledWith(states.JUMPING, 1);
         });
 
-        it('underwater + w while falling → Bubble + JUMPING + buoyancy update', () => {
+        it('underwater + jump input spawns Bubble and transitions to JUMPING', () => {
             game.player.isUnderwater = true;
+
             st.handleInput(['w']);
+
             expect(game.particles[0].constructor.name).toBe('Bubble');
             expect(player.setState).toHaveBeenCalledWith(states.JUMPING, 1);
         });
 
-        it('click & onGround & cabin visible → STANDING', () => {
+        it('roll click while onGround and cabin fully visible → STANDING', () => {
             player.onGround.mockReturnValue(true);
             game.cabin.isFullyVisible = true;
             input.isRollAttack.mockReturnValue(true);
+
             st.handleInput([]);
+
             expect(player.setState).toHaveBeenCalledWith(states.STANDING, 0);
         });
 
-        it('onGround after falling → plays fallingSFX then RUNNING', () => {
+        it('landing after falling plays fallingSFX then transitions to RUNNING', () => {
             player.onGround.mockReturnValue(true);
+
             st.handleInput([]);
+
             expect(sfx.firedogSFX.playSound).toHaveBeenCalledWith('fallingSFX');
             expect(player.setState).toHaveBeenCalledWith(states.RUNNING, 1);
         });
 
-        it('s with divingTimer ready and no LR → DIVING(0)', () => {
-            player.divingTimer = 100; player.divingCooldown = 100;
+        it('sit key with dive ready and no left/right → DIVING(0)', () => {
+            player.divingTimer = 100;
+            player.divingCooldown = 100;
+
             st.handleInput(['s']);
+
             expect(player.divingTimer).toBe(0);
             expect(player.setState).toHaveBeenCalledWith(states.DIVING, 0);
         });
 
-        it('s with divingTimer ready and lateral input → DIVING(1)', () => {
+        it('sit key with dive ready and left/right → DIVING(1)', () => {
             player.divingTimer = player.divingCooldown;
+
             st.handleInput(['s', 'd']);
+
             expect(player.setState).toHaveBeenCalledWith(states.DIVING, 1);
         });
 
-        it('click & boss visible & onGround → STANDING', () => {
+        it('boss visible + roll click while onGround → STANDING', () => {
             player.onGround.mockReturnValue(true);
             game.isBossVisible = true;
             input.isRollAttack.mockReturnValue(true);
+
             st.handleInput([]);
+
             expect(player.setState).toHaveBeenCalledWith(states.STANDING, 0);
         });
 
-        it('click & !cabin & energy>0 in air → ROLLING(2)', () => {
+        it('roll click in air with energy not depleted and cabin not fully visible → ROLLING(2)', () => {
             input.isRollAttack.mockReturnValue(true);
             player.onGround.mockReturnValue(false);
+
             st.handleInput([]);
+
             expect(player.setState).toHaveBeenCalledWith(states.ROLLING, 2);
         });
     });
@@ -395,7 +512,9 @@ describe('Player State Machine', () => {
     // -------------------------------------------------------------------------
     describe('Rolling', () => {
         let st;
-        beforeEach(() => { st = new Rolling(game); });
+        beforeEach(() => {
+            st = new Rolling(game);
+        });
 
         it('enter() sets rolling animation frames', () => {
             st.enter();
@@ -403,18 +522,23 @@ describe('Player State Machine', () => {
             expect(player.maxFrame).toBe(6);
         });
 
-        it('onGround without roll input → drainEnergy, spawn Fire, then RUNNING', () => {
+        it('when roll input is not held: drains energy, spawns Fire, and transitions based on groundedness', () => {
+            // on ground -> RUNNING
             player.onGround.mockReturnValue(true);
             st.handleInput([]);
             expect(player.drainEnergy).toHaveBeenCalled();
             expect(game.particles[0].constructor.name).toBe('Fire');
             expect(player.setState).toHaveBeenCalledWith(states.RUNNING, 1);
-        });
 
-        it('no roll input while airborne → drainEnergy, spawn Fire, then FALLING', () => {
+            // in air -> FALLING
+            player.setState.mockClear();
+            player.drainEnergy.mockClear();
+            game.particles = [];
+
             player.onGround.mockReturnValue(false);
             input.isRollAttack.mockReturnValue(false);
             st.handleInput([]);
+
             expect(player.drainEnergy).toHaveBeenCalled();
             expect(game.particles[0].constructor.name).toBe('Fire');
             expect(player.setState).toHaveBeenCalledWith(states.FALLING, 1);
@@ -425,64 +549,86 @@ describe('Player State Machine', () => {
             player.canSpaceDoubleJump = true;
             player.vy = 0;
             player.onGround.mockReturnValue(false);
+
             st.handleInput(['w']);
+
             expect(player.canSpaceDoubleJump).toBe(false);
             expect(player.vy).toBe(-9);
             expect(sfx.firedogSFX.playSound).toHaveBeenCalledWith('jumpSFX');
         });
 
-        it('roll click + w on ground (non-space) → strong jump vy=-27', () => {
+        it('roll click + jump on ground (non-space) applies strong jump vy=-27', () => {
             player.onGround.mockReturnValue(true);
             input.isRollAttack.mockReturnValue(true);
+
             st.handleInput(['w']);
+
             expect(player.vy).toBe(-27);
         });
 
-        it('s+divingTimer in air with blue potion and LR → DIVING(4)', () => {
+        it('sit + dive ready mid-air with left/right: blue potion → DIVING(4)', () => {
             player.onGround.mockReturnValue(false);
             player.divingTimer = player.divingCooldown;
             player.isBluePotionActive = true;
             input.isRollAttack.mockReturnValue(true);
+
             st.handleInput(['s', 'a']);
+
             expect(player.divingTimer).toBe(0);
             expect(player.setState).toHaveBeenCalledWith(states.DIVING, 4);
         });
 
-        it('energyReachedZero & energy<=0 onGround → RUNNING fallback', () => {
+        it('when energyReachedZero and onGround → transitions to RUNNING fallback', () => {
             player.energyReachedZero = true;
             player.energy = 0;
+
             st.handleInput([]);
+
             expect(player.setState).toHaveBeenCalledWith(states.RUNNING, 1);
         });
 
-        it('energy depleted mid-air with vy<=0 → JUMPING', () => {
+        it('when energyReachedZero mid-air: vy<=0 → JUMPING, vy>0 → FALLING', () => {
             player.energyReachedZero = true;
             player.onGround.mockReturnValue(false);
+
             player.vy = 0;
             st.handleInput([]);
             expect(player.setState).toHaveBeenCalledWith(states.JUMPING, 1);
-        });
 
-        it('energy depleted mid-air while falling (vy>0) → FALLING', () => {
-            player.energyReachedZero = true;
-            player.onGround.mockReturnValue(false);
+            player.setState.mockClear();
             player.vy = 5;
             st.handleInput([]);
             expect(player.setState).toHaveBeenCalledWith(states.FALLING, 1);
         });
 
-        it('energy depleted while underwater → FALLING', () => {
+        it('when energyReachedZero while underwater → FALLING', () => {
             player.energyReachedZero = true;
             player.isUnderwater = true;
+
             st.handleInput([]);
+
             expect(player.setState).toHaveBeenCalledWith(states.FALLING, 1);
         });
 
-        it('cabin visible while rolling → STANDING(0)', () => {
-            const rollState = new Rolling(game);
+        it('when cabin is fully visible while rolling → STANDING(0)', () => {
             game.cabin.isFullyVisible = true;
-            rollState.enter();
-            rollState.handleInput([]);
+
+            st.enter();
+            st.handleInput([]);
+
+            expect(player.setState).toHaveBeenCalledWith(states.STANDING, 0);
+        });
+
+        it('boss visible while rolling triggers one-time STANDING(0)', () => {
+            game.isBossVisible = true;
+
+            st.handleInput([]);
+            st.handleInput([]);
+
+            const standingCalls = player.setState.mock.calls.filter(
+                ([state]) => state === states.STANDING
+            );
+            expect(standingCalls.length).toBe(1);
             expect(player.setState).toHaveBeenCalledWith(states.STANDING, 0);
         });
     });
@@ -493,94 +639,112 @@ describe('Player State Machine', () => {
     describe('Diving', () => {
         let st;
         beforeEach(() => {
-            player.onGround.mockReturnValue(true);
             st = new Diving(game);
+            player.onGround.mockReturnValue(true);
         });
 
-        it('enter() sets diving animation frames and downward vy', () => {
+        it('enter() sets diving frames and vy=15 for non-space', () => {
+            player.isSpace = false;
             st.enter();
             expect(player.frameY).toBe(6);
             expect(player.vy).toBe(15);
         });
 
-        it('underwater and onGround → Fire + 30 Splash', () => {
-            game.player.isUnderwater = true;
-            st.handleInput(['x']);
-            expect(game.particles.filter(p => p.constructor.name === 'Splash')).toHaveLength(30);
-            expect(game.particles.find(p => p.constructor.name === 'Fire')).toBeTruthy();
+        it('enter() sets vy=7 for space', () => {
+            player.isSpace = true;
+            st.enter();
+            expect(player.vy).toBe(7);
         });
 
-        it('underwater in air → adjusts gravity/vy, Fire only, no Splash burst', () => {
+        it('underwater and onGround: spawns Fire and 30 Splash', () => {
+            game.player.isUnderwater = true;
+
+            st.handleInput(['x']);
+
+            expect(game.particles.some(p => p.constructor.name === 'Fire')).toBe(true);
+            expect(game.particles.filter(p => p.constructor.name === 'Splash')).toHaveLength(30);
+        });
+
+        it('underwater in air: sets gravity/vy, spawns Fire only (no Splash burst)', () => {
             game.player.isUnderwater = true;
             player.onGround.mockReturnValue(false);
+
             const start = game.particles.length;
             st.handleInput([]);
+
             expect(player.gravity).toBe(1);
             expect(player.vy).toBe(15);
+
             const newParticles = game.particles.slice(start);
             expect(newParticles.some(p => p.constructor.name === 'Fire')).toBe(true);
             expect(newParticles.some(p => p.constructor.name === 'Splash')).toBe(false);
         });
 
-        it('onGround + w (no roll) → plays divingSFX, 30 Splash, then JUMPING', () => {
+        it('onGround + jump (no roll) plays divingSFX, spawns Splash burst, then transitions to JUMPING', () => {
             input.isRollAttack.mockReturnValue(false);
+
             st.handleInput(['w']);
+
             expect(sfx.firedogSFX.playSound).toHaveBeenCalledWith('divingSFX', false, true);
             expect(player.setState).toHaveBeenCalledWith(states.JUMPING, 1);
+            expect(game.particles.filter(p => p.constructor.name === 'Splash')).toHaveLength(30);
         });
 
-        it('click & cabin visible while diving → STANDING', () => {
+        it('roll click + cabin fully visible while diving → STANDING', () => {
             game.cabin.isFullyVisible = true;
             input.isRollAttack.mockReturnValue(true);
+
             st.handleInput([]);
+
             expect(player.setState).toHaveBeenCalledWith(states.STANDING, 0);
         });
 
-        it('underwater + click+w → ROLLING(2)', () => {
+        it('underwater + roll click + jump → ROLLING(2)', () => {
             game.player.isUnderwater = true;
             input.isRollAttack.mockReturnValue(true);
+
             st.handleInput(['w']);
+
             expect(player.setState).toHaveBeenCalledWith(states.ROLLING, 2);
         });
 
         it('blue particle image while diving onGround → 90 Splash', () => {
-            const st2 = new Diving(game);
             player.onGround.mockReturnValue(true);
             player.particleImage = 'bluefire';
-            const start = game.particles.length;
-            st2.handleInput([]);
-            const splashes = game.particles
-                .slice(start)
-                .filter(p => p.constructor.name === 'Splash');
-            expect(splashes).toHaveLength(90);
+
+            st.handleInput([]);
+
+            expect(game.particles.filter(p => p.constructor.name === 'Splash')).toHaveLength(90);
         });
 
-        it('click & onGround & !cabin → RUNNING', () => {
-            const st2 = new Diving(game);
+        it('roll click onGround when cabin not fully visible → RUNNING', () => {
             player.onGround.mockReturnValue(true);
             game.cabin.isFullyVisible = false;
             input.isRollAttack.mockReturnValue(true);
-            st2.handleInput([]);
+
+            st.handleInput([]);
+
             expect(player.setState).toHaveBeenCalledWith(states.RUNNING, 1);
         });
 
-        it('space double jump out of dive with roll → ROLLING(2)', () => {
+        it('space double jump out of dive: with roll → ROLLING(2) + jumpSFX; without roll → JUMPING', () => {
             player.isSpace = true;
             player.canSpaceDoubleJump = true;
             player.onGround.mockReturnValue(false);
+
             input.isRollAttack.mockReturnValue(true);
             st.handleInput(['w']);
             expect(player.canSpaceDoubleJump).toBe(false);
             expect(player.setState).toHaveBeenCalledWith(states.ROLLING, 2);
             expect(sfx.firedogSFX.playSound).toHaveBeenCalledWith('jumpSFX');
-        });
 
-        it('space double jump out of dive without roll → JUMPING', () => {
-            player.isSpace = true;
+            player.setState.mockClear();
+            sfx.firedogSFX.playSound.mockClear();
+
             player.canSpaceDoubleJump = true;
-            player.onGround.mockReturnValue(false);
             input.isRollAttack.mockReturnValue(false);
             st.handleInput(['w']);
+
             expect(player.canSpaceDoubleJump).toBe(false);
             expect(player.setState).toHaveBeenCalledWith(states.JUMPING, 1);
         });
@@ -602,26 +766,26 @@ describe('Player State Machine', () => {
             expect(player.frameY).toBe(4);
         });
 
-        it('frameX>=10 & onGround & previousState=SITTING → SITTING', () => {
+        it('when animation completes on ground: returns to SITTING if previousState was SITTING, else RUNNING', () => {
             player.frameX = 10;
             player.onGround.mockReturnValue(true);
+
             player.previousState = states.SITTING;
             st.handleInput();
             expect(player.setState).toHaveBeenCalledWith(states.SITTING, 0);
-        });
 
-        it('frameX>=10 & onGround & previousState!=SITTING → RUNNING', () => {
-            player.frameX = 10;
-            player.onGround.mockReturnValue(true);
+            player.setState.mockClear();
             player.previousState = states.RUNNING;
             st.handleInput();
             expect(player.setState).toHaveBeenCalledWith(states.RUNNING, 1);
         });
 
-        it('frameX>=10 & not onGround → FALLING', () => {
+        it('when animation completes in air → FALLING', () => {
             player.frameX = 10;
             player.onGround.mockReturnValue(false);
+
             st.handleInput();
+
             expect(player.setState).toHaveBeenCalledWith(states.FALLING, 1);
         });
     });
@@ -642,26 +806,26 @@ describe('Player State Machine', () => {
             expect(player.frameY).toBe(9);
         });
 
-        it('frameX>=3 & onGround & previousState=SITTING → SITTING', () => {
+        it('when animation completes on ground: returns to SITTING if previousState was SITTING, else RUNNING', () => {
             player.frameX = 3;
             player.onGround.mockReturnValue(true);
+
             player.previousState = states.SITTING;
             st.handleInput();
             expect(player.setState).toHaveBeenCalledWith(states.SITTING, 0);
-        });
 
-        it('frameX>=3 & onGround & previousState!=SITTING → RUNNING', () => {
-            player.frameX = 3;
-            player.onGround.mockReturnValue(true);
+            player.setState.mockClear();
             player.previousState = states.RUNNING;
             st.handleInput();
             expect(player.setState).toHaveBeenCalledWith(states.RUNNING, 1);
         });
 
-        it('frameX>=3 & not onGround → FALLING', () => {
+        it('when animation completes in air → FALLING', () => {
             player.frameX = 3;
             player.onGround.mockReturnValue(false);
+
             st.handleInput();
+
             expect(player.setState).toHaveBeenCalledWith(states.FALLING, 1);
         });
     });
@@ -671,7 +835,9 @@ describe('Player State Machine', () => {
     // -------------------------------------------------------------------------
     describe('Standing', () => {
         let st;
-        beforeEach(() => { st = new Standing(game); });
+        beforeEach(() => {
+            st = new Standing(game);
+        });
 
         it('enter() sets standing animation frames', () => {
             st.enter();
@@ -679,40 +845,46 @@ describe('Player State Machine', () => {
             expect(player.frameY).toBe(0);
         });
 
-        it('underwater roll click while not onGround → FALLING', () => {
+        it('underwater + roll click while not onGround → FALLING', () => {
             game.player.isUnderwater = true;
             player.onGround.mockReturnValue(false);
             input.isRollAttack.mockReturnValue(true);
+
             st.handleInput([]);
+
             expect(player.setState).toHaveBeenCalledWith(states.FALLING, 1);
         });
 
-        it('boss visible & roll click & energy>0 → ROLLING(0)', () => {
+        it('boss visible + roll click with energy not depleted → ROLLING(0)', () => {
             game.isBossVisible = true;
             input.isRollAttack.mockReturnValue(true);
+
             st.handleInput([]);
+
             expect(player.setState).toHaveBeenCalledWith(states.ROLLING, 0);
         });
 
-        it('boss visible but energy depleted → no ROLLING from roll click', () => {
+        it('boss visible + roll click with energy depleted → no ROLLING transition', () => {
             game.isBossVisible = true;
             player.energyReachedZero = true;
             input.isRollAttack.mockReturnValue(true);
+
             st.handleInput([]);
+
             expect(player.setState).not.toHaveBeenCalledWith(states.ROLLING, expect.any(Number));
         });
 
-        it('a/d while standing → RUNNING', () => {
+        it('left/right input → RUNNING', () => {
             st.handleInput(['a']);
             expect(player.setState).toHaveBeenCalledWith(states.RUNNING, 1);
         });
 
-        it('s while standing → SITTING', () => {
+        it('sit input → SITTING', () => {
             st.handleInput(['s']);
             expect(player.setState).toHaveBeenCalledWith(states.SITTING, 0);
         });
 
-        it('w while standing → JUMPING(0)', () => {
+        it('jump input → JUMPING(0)', () => {
             st.handleInput(['w']);
             expect(player.setState).toHaveBeenCalledWith(states.JUMPING, 0);
         });
@@ -723,9 +895,11 @@ describe('Player State Machine', () => {
     // -------------------------------------------------------------------------
     describe('Dying', () => {
         let st;
-        beforeEach(() => { st = new Dying(game); });
+        beforeEach(() => {
+            st = new Dying(game);
+        });
 
-        it('constructor initializes deathAnimation to false', () => {
+        it('constructor initializes deathAnimation=false', () => {
             expect(st.deathAnimation).toBe(false);
         });
 
@@ -735,27 +909,45 @@ describe('Player State Machine', () => {
             expect(player.frameY).toBe(8);
         });
 
-        it('underwater & frameX>=maxFrame → clamps frameX and sets deathAnimation true', () => {
+        it('underwater + frameX>=maxFrame clamps frameX and sets deathAnimation', () => {
             player.isUnderwater = true;
             player.maxFrame = 11;
             player.frameX = 11;
+
             st.handleInput();
+
             expect(player.frameX).toBe(player.maxFrame);
             expect(st.deathAnimation).toBe(true);
         });
 
-        it('frameX>=maxFrame & onGround → clamps frameX and sets deathAnimation true', () => {
+        it('space + frameX>=maxFrame clamps frameX and sets deathAnimation (space path)', () => {
+            player.isUnderwater = false;
+            player.isSpace = true;
+            player.maxFrame = 11;
+            player.frameX = 11;
+
+            st.handleInput();
+
+            expect(player.frameX).toBe(player.maxFrame);
+            expect(st.deathAnimation).toBe(true);
+        });
+
+        it('frameX>=maxFrame onGround clamps frameX and sets deathAnimation', () => {
             player.maxFrame = 11;
             player.frameX = 11;
             player.onGround.mockReturnValue(true);
+
             st.handleInput();
+
             expect(player.frameX).toBe(player.maxFrame);
             expect(st.deathAnimation).toBe(true);
         });
 
-        it('onGround while dying → plays deathFall SFX', () => {
+        it('onGround plays deathFall SFX', () => {
             player.onGround.mockReturnValue(true);
+
             st.handleInput();
+
             expect(sfx.firedogSFX.playSound).toHaveBeenCalledWith('deathFall');
         });
     });

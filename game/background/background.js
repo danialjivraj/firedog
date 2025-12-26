@@ -458,7 +458,7 @@ export class BonusMap3 extends Background {
     constructor(game) {
         const starField = new StarField(game);
         const shootingStars = new ShootingStar(game, 4);
-        const meteors = new MeteorBackground(game, 5, {
+        const meteors = new MeteorBackground(game, 8, {
             minSpeed: 0.03,
             maxSpeed: 0.06,
         });

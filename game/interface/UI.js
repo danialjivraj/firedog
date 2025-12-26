@@ -128,7 +128,15 @@ export class UI {
         this.elyvorgAbilityUI(context);
     }
 
-    progressBar(context, percentage, filledWidth, barOrFilledWidth, colour) {
+    progressBar(
+        context,
+        percentage,
+        filledWidth,
+        barOrFilledWidth,
+        colour,
+        overhealFilledWidth = 0,
+        overhealColour = 'rgba(120, 120, 120, 0.9)'
+    ) {
         this.percentage = percentage;
         const barHeight = 10;
         const barX = (this.game.width / 2) - (this.barWidth / 2);
@@ -145,6 +153,7 @@ export class UI {
         context.shadowOffsetY = 0;
         context.shadowBlur = 0;
 
+        // background bar
         context.fillStyle = 'rgba(255, 255, 255, 0.25)';
         context.beginPath();
         context.moveTo(barX + 5, barY);
@@ -158,8 +167,6 @@ export class UI {
         context.arcTo(barX, barY, barX + 5, barY, 5);
         context.closePath();
         context.fill();
-
-        this.filledWidth = filledWidth;
 
         context.beginPath();
         context.moveTo(barX + 5, barY);
@@ -177,16 +184,36 @@ export class UI {
         context.fillStyle = colour;
         context.beginPath();
         context.moveTo(barX + 10, barY);
-        context.lineTo(barX + this.filledWidth - 5, barY);
-        context.arcTo(barX + this.filledWidth, barY, barX + this.filledWidth, barY + 5, 5);
-        context.lineTo(barX + this.filledWidth, barY + barHeight - 5);
-        context.arcTo(barX + this.filledWidth, barY + barHeight, barX + this.filledWidth - 5, barY + barHeight, 5);
+        context.lineTo(barX + filledWidth - 5, barY);
+        context.arcTo(barX + filledWidth, barY, barX + filledWidth, barY + 5, 5);
+        context.lineTo(barX + filledWidth, barY + barHeight - 5);
+        context.arcTo(barX + filledWidth, barY + barHeight, barX + filledWidth - 5, barY + barHeight, 5);
         context.lineTo(barX + 5, barY + barHeight);
         context.arcTo(barX, barY + barHeight, barX, barY + barHeight - 5, 5);
         context.lineTo(barX, barY + 5);
         context.arcTo(barX, barY, barX + 10, barY, 5);
         context.closePath();
         context.fill();
+
+        if (overhealFilledWidth > 0.5) {
+            const endX = barX + this.barWidth;
+            const startX = Math.max(barX, endX - overhealFilledWidth);
+
+            const grey = 'rgba(170, 170, 170, 0.92)';
+
+            context.fillStyle = grey;
+            context.fillRect(startX, barY, endX - startX, barHeight);
+
+            const feather = Math.min(2, overhealFilledWidth);
+
+            if (feather > 0) {
+                const g = context.createLinearGradient(startX - feather, 0, startX, 0);
+                g.addColorStop(0, 'rgba(170, 170, 170, 0)');
+                g.addColorStop(1, grey);
+                context.fillStyle = g;
+                context.fillRect(startX - feather, barY, feather, barHeight);
+            }
+        }
         context.restore();
     }
 
@@ -299,29 +326,41 @@ export class UI {
         const boss = bossState && bossState.current;
         if (!boss) return;
 
-        const rawMaxLives = boss.maxLives ?? boss.lives ?? 1;
-        const maxLives = Math.max(1, rawMaxLives);
+        const rawBaseMax = boss.maxLives ?? boss.lives ?? 1;
+        const baseMaxLives = Math.max(1, rawBaseMax);
 
-        const rawLives = boss.lives ?? maxLives;
-        const currentLives = Math.max(0, Math.min(rawLives, maxLives));
+        const overhealPercent = boss.overhealPercent ?? 0;
+        const overhealCapLives = baseMaxLives * (1 + overhealPercent);
 
-        const ratio = currentLives / maxLives;
-        const pct = ratio * 100;
+        const rawLives = boss.lives ?? baseMaxLives;
+        const currentLives = Math.max(0, Math.min(rawLives, overhealCapLives));
+
+        const pct = (currentLives / baseMaxLives) * 100;
 
         const isAlive = currentLives > 0;
 
-        const displayPct = isAlive ? Math.max(pct, 1) : 0;
-
+        const baseFillRatio = Math.min(currentLives / baseMaxLives, 1);
         const filledWidth = isAlive
-            ? Math.max(ratio * this.barWidth, 0.01 * this.barWidth)
+            ? Math.max(baseFillRatio * this.barWidth, 0.01 * this.barWidth)
             : 0;
+
+        const overhealLives = Math.max(0, currentLives - baseMaxLives);
+        const overhealMaxLives = Math.max(1, overhealCapLives - baseMaxLives);
+        const overhealRatio = overhealPercent > 0 ? (overhealLives / overhealMaxLives) : 0;
+
+        const overhealSegmentMaxWidth = this.barWidth * overhealPercent;
+        const overhealFilledWidth = overhealSegmentMaxWidth * overhealRatio;
+
+        const displayPct = isAlive ? Math.max(pct, 1) : 0;
 
         this.progressBar(
             context,
             displayPct,
             filledWidth,
             this.barWidth,
-            'red'
+            'red',
+            overhealFilledWidth,
+            'rgba(120, 120, 120, 0.9)'
         );
     }
 

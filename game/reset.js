@@ -18,9 +18,12 @@ export class Reset {
             this.game.currentCutscene.removeEventListeners();
         }
         // shake
-        this.game.shakeActive = false;
-        this.game.shakeTimer = 0;
-        this.game.shakeDuration = 0;
+        this.game.stopShake();
+        // distortion
+        this.game.distortionActive = false;
+        if (this.game.distortionEffect && this.game.distortionEffect.reset) {
+            this.game.distortionEffect.reset();
+        }
         // tutorial
         this.game.tutorial.elapsedTime = 0;
         this.game.tutorial.currentStepIndex = 0;
@@ -104,6 +107,7 @@ export class Reset {
                 break;
             case BonusMap3:
                 selectedMap = new BonusMap3(this.game);
+                this.game.maxDistance = 9999999;
                 this.game.player.isSpace = true;
                 break;
             default:

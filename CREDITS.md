@@ -55,7 +55,7 @@ These are the programs I've used to be able to edit my assets:
 
 ## Audio
 
-**Note:** Most, if not all sound effects used were found on Youtube. <br>
+**Note:** Most, if not all sound effects used were found on Youtube and Pixabay. <br>
 Below, only soundtracks will be credited.
 
 ### Menu
@@ -77,6 +77,13 @@ Below, only soundtracks will be credited.
 - **Map 4:** [Tribal Jungle Music - Amazon Princess](https://www.youtube.com/watch?v=Uj5H4vJoCOw)
 - **Map 5:** [Relaxing Celtic Music - Spring Charm by Adrian von Ziegler](https://www.youtube.com/watch?v=YGkuJlEZy04&t)
 - **Map 6:** [Fire Volcano - Pokémon Snap](https://www.youtube.com/watch?v=fNo-c6p7pBw&t)
-- **Elyvorg Themes:** 
-    - [Super Meat Boy: The Battle of Lil' Slugger](https://www.youtube.com/watch?v=WL-8rU8ltA4)
-    - [Unbound Purpose by Greg Dombrowski](https://www.youtube.com/watch?v=Kw1-B9FGYTA)
+    - **Elyvorg Themes:** 
+        - [Super Meat Boy: The Battle of Lil' Slugger](https://www.youtube.com/watch?v=WL-8rU8ltA4)
+        - [Unbound Purpose by Greg Dombrowski](https://www.youtube.com/watch?v=Kw1-B9FGYTA)
+- **Bonus Map 1:** [XXX]()
+    - **Glacikal Themes:**
+        - [XXX]()
+- **Bonus Map 2:** [XXX]()
+- **Bonus Map 3:** [XXX]()
+    - **N'Tharax Themes:**
+        - [Hotline Miami 2: Wrong Number Soundtrack - Acid Spit](https://www.youtube.com/watch?v=Qf6-xx2fLa8)

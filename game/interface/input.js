@@ -47,6 +47,7 @@ export class InputHandler {
             }
 
             if (
+                e.ctrlKey &&
                 lowercaseKey === 'b' &&
                 this.game.isPlayerInGame &&
                 this.game.menu.pause.isPaused === false &&
@@ -67,7 +68,7 @@ export class InputHandler {
             }
 
             if (lowercaseKey === 'm') {
-                this.game.debug = !this.game.debug;
+                //this.game.debug = !this.game.debug;
             }
 
             if (lowercaseKey === 't' && this.game.currentMenu === this.game.menu.howToPlay) {
@@ -95,13 +96,13 @@ export class InputHandler {
                 }
 
                 if (this.game.isPlayerInGame) {
-                    if (this.game.audioHandler.cutsceneSFX.isPlaying('battleStarting')) {
+                    if (!this.game.enterDuringBackgroundTransition) {
                         return;
                     }
+
                     if (
                         (!this.game.currentMenu && !this.game.cutsceneActive && !this.game.notEnoughCoins && !this.game.gameOver) ||
                         (this.game.cutsceneActive &&
-                            this.game.enterDuringBackgroundTransition &&
                             (this.game.boss.talkToBoss || this.game.talkToPenguin))
                     ) {
                         this.game.menu.pause.togglePause();

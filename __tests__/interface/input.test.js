@@ -175,11 +175,11 @@ describe('InputHandler', () => {
 
         describe('"b" bark key', () => {
             test('plays barkSound when in-game and not paused/tutorial/over', () => {
-                game.isPlayerInGame = true;
+            game.isPlayerInGame = true;
 
-                keyDown('b');
+            keyDown('b', { ctrlKey: true });
 
-                expect(game.audioHandler.firedogSFX.playSound).toHaveBeenCalledWith('barkSound');
+            expect(game.audioHandler.firedogSFX.playSound).toHaveBeenCalledWith('barkSound');
             });
 
             test('does not play barkSound when tutorial is paused', () => {
@@ -253,15 +253,6 @@ describe('InputHandler', () => {
         });
 
         describe('Escape key (pause / menu / cutscene handling)', () => {
-            test('when battleStarting SFX is playing, ignores Escape completely', () => {
-                game.isPlayerInGame = true;
-                game.audioHandler.cutsceneSFX.isPlaying.mockReturnValue(true);
-
-                keyDown('Escape');
-
-                expect(game.menu.pause.togglePause).not.toHaveBeenCalled();
-            });
-
             test('when in-game with no menu and no blockers, toggles pause menu', () => {
                 game.isPlayerInGame = true;
                 game.audioHandler.cutsceneSFX.isPlaying.mockReturnValue(false);

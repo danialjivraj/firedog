@@ -52,6 +52,10 @@ body {
         #glacikalIdle, #glacikalRunning, #glacikalJumping, #glacikalAttacking, #glacikalIcyStorm, #glacikalKneelDown, #glacikalExtendedArm, #glacikalRecharge,
             /* abilities */
             #iceTrail, #icyStormBall, #iceSlash, #spinningIceBalls, #pointyIcicleShard, #iceSpider, #undergroundIcicle,
+        /* ntharax */
+        #ntharaxIdle, #ntharaxRun, #ntharaxJump, #ntharaxDive, #ntharaxBall, #ntharaxWing, #ntharaxKneel, #ntharaxYellow, #ntharaxAsteroid, #ntharaxBlack, #ntharaxPurple, #ntharaxDistortion, #ntharaxSlap, #ntharaxHealing, #ntharaxTentacle, #ntharaxFly, #ntharaxLaser,
+            /* abilities */
+            #healingStar, #galacticSpike, #antennaeTentacleUpward, #laserBall, #laserBallMode2, #purpleAsteroid, #blueAsteroid, #healingBarrier, #healingBarrier1, #healingBarrier2, #healingBarrier3, #healingBarrier4,
         /* projectiles */ 
         #leafAttack, #darkLeafAttack, #windAttack, #poison_spit,  #laser_beam, #iceBall, #darkLaser, #yellowBeam, #rockProjectile, #purpleLaser, #inkBeam,
         /* goblin */
@@ -107,9 +111,9 @@ body {
     #paint_splatter_1, #paint_splatter_2, #paint_splatter_3, #paint_splatter_4, #paint_splatter_5, #paint_splatter_6, #paint_splatter_7, #paint_splatter_8, #paint_splatter_9, 
     #paint_splatter_10, #paint_splatter_11, #paint_splatter_12, #paint_splatter_13, #paint_splatter_14, #paint_splatter_15, #paint_splatter_16, #paint_splatter_17, #paint_splatter_18,
 /* collision animations */ 
-#singleCoin, #collisionAnimation, #explosionCollisionAnimation, #darkExplosion, #redFireballCollision, #purpleFireballCollision, #purpleThunderCollision, #meteorExplosion,
+#singleCoin, #collisionAnimation, #explosionCollisionAnimation, #darkExplosion, #redFireballCollision, #purpleFireballCollision, #purpleThunderCollision, #meteorExplosion, #asteroidExplosion,
 #electricityCollision, #blueCollisionAnimation, #poisonSpitSplash, #poisonDropCollision, #blackInk, #inkBombCollision, #blood, #raindropSplash, #poisonDropGroundCollision,
-#icyStormBallCollision, #iceSlashCollision, #iceTrailCollision, #spinningIceBallsCollision, #pointyIcicleShardCollision, #undergroundIcicleCollision,
+#icyStormBallCollision, #iceSlashCollision, #iceTrailCollision, #spinningIceBallsCollision, #pointyIcicleShardCollision, #undergroundIcicleCollision, #galacticSpikeCollision, #purpleFireballCollision,
 /* cutscene images */
     /* background images */
     #toBeContinued, #madeByDanial,
@@ -179,7 +183,9 @@ body {
         /* elyvorg */
         #elyvorgBorder, #elyvorgTokenBorder,
         /* glacikal */
-        #glacikalBorder
+        #glacikalBorder,
+        /* ntharax */
+        #ntharaxBorder
 {
     display: none;
 }

@@ -593,11 +593,9 @@ export class Dying extends State {
     handleInput() {
         const player = this.game.player;
 
-        if (player.isUnderwater === true) {
-            if (player.frameX >= player.maxFrame) {
-                player.frameX = player.maxFrame;
-                this.deathAnimation = true;
-            }
+        if ((player.isUnderwater || player.isSpace) && player.frameX >= player.maxFrame) {
+            player.frameX = player.maxFrame;
+            this.deathAnimation = true;
         }
 
         if (player.frameX >= player.maxFrame && player.onGround()) {

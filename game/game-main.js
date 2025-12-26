@@ -1,5 +1,6 @@
 import { Player } from "./entities/player.js";
 import { preShake, postShake } from './animations/shake.js';
+import { DistortionEffect } from "./animations/distortion.js";
 import {
     Goblin,
     Dotter, Vertibat, Ghobat, Ravengloom, MeatSoldier, Skulnap, Abyssaw, GlidoSpike,
@@ -190,6 +191,13 @@ export class Game {
         this.talkToPenguinOneTimeOnly = true;
         // boss
         this.bossManager = new BossManager(this);
+        // shake
+        this.shakeActive = false;
+        this.shakeTimer = 0;
+        this.shakeDuration = 0;
+        // distortion
+        this.distortionActive = false;
+        this.distortionEffect = new DistortionEffect(this);
         // loading game state
         this.loadGameState();
     }
@@ -279,6 +287,18 @@ export class Game {
         }
     }
 
+    startShake(durationMs = 0) {
+        this.shakeActive = true;
+        this.shakeTimer = 0;
+        this.shakeDuration = Math.max(0, durationMs);
+    }
+
+    stopShake() {
+        this.shakeActive = false;
+        this.shakeTimer = 0;
+        this.shakeDuration = 0;
+    }
+
     getEffectiveKeyBindings() {
         const tutorialMapActive =
             this.isTutorialActive && this.currentMap === "Map1";
@@ -362,6 +382,13 @@ export class Game {
             }
 
             this.hiddenTime += deltaTime; // hiddenTime doesn't stop when player dies
+
+            if (this.shakeActive && this.shakeDuration > 0) {
+                this.shakeTimer += deltaTime;
+                if (this.shakeTimer >= this.shakeDuration) {
+                    this.stopShake();
+                }
+            }
 
             this.player.update(this.input.keys, deltaTime);
             this.coins = Math.max(0, this.coins);
@@ -596,6 +623,9 @@ export class Game {
                     cutscene.displayDialogue();
                 }
             }
+            if (this.distortionActive || this.distortionEffect.amount > 0.01) {
+                this.distortionEffect.update(deltaTime);
+            }
         }
     }
 
@@ -698,7 +728,6 @@ export class Game {
             this.tutorial.draw(context);
         }
 
-        this.UI.draw(context);
     }
 
     addEnemy() {
@@ -952,7 +981,6 @@ window.addEventListener("load", function () {
     function animate(timeStamp) {
         const deltaTime = timeStamp - lastTime;
         lastTime = timeStamp;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
         if (
             game.cutsceneActive &&
             !game.talkToPenguin &&
@@ -987,6 +1015,12 @@ window.addEventListener("load", function () {
             game.draw(ctx);
 
             if (canShake) postShake(ctx);
+
+            if (game.distortionActive || game.distortionEffect.amount > 0.01) {
+                game.distortionEffect.apply(ctx);
+            }
+
+            game.UI.draw(ctx);
 
             if (game.currentMenu || game.gameOver) {
                 game.currentMenu.menuActive = true;

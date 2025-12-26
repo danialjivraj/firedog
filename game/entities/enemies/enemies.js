@@ -41,10 +41,14 @@ export class Enemy {
         this.dealsDirectHitDamage = true;
         this.autoRemoveOnZeroLives = true;
 
+        this.autoRemoveOffBottom = true;
+        this.autoRemoveOffTop = true;
+
         this.isStunEnemy = false;
         this.isRedEnemy = false;
         this.isPoisonEnemy = false;
         this.isSlowEnemy = false;
+        this.isFrozenEnemy = false;
     }
 
     setFps(fps) {
@@ -93,8 +97,8 @@ export class Enemy {
         this.advanceFrame(deltaTime);
 
         const offLeft = this.x + this.width < 0;
-        const offBottom = this.y > this.game.height;
-        const offTop = this.y + this.height < 0;
+        const offBottom = this.autoRemoveOffBottom && (this.y > this.game.height);
+        const offTop = this.autoRemoveOffTop && (this.y + this.height < 0);
         const dead = this.autoRemoveOnZeroLives && this.lives <= 0;
 
         if (offLeft || offBottom || offTop || dead) {
@@ -149,9 +153,11 @@ export class EnemyBoss extends Enemy {
 
         this.autoRemoveOnZeroLives = false;
 
+        this.autoRemoveOffBottom = false;
+        this.autoRemoveOffTop = false;
+
         this.state = "idle";
         this.previousState = null;
-        this.chooseStateOnce = true;
         this.shouldInvert = false;
 
         this.reachedRightEdge = false;
@@ -190,16 +196,17 @@ export class EnemyBoss extends Enemy {
         });
     }
 
-    backToIdleSetUp() {
-        this.previousState = this.state;
+    backToIdleSetUp({ recordPreviousState = true } = {}) {
+        if (recordPreviousState) {
+            this.previousState = this.state;
+        }
+
         this.state = "idle";
-        this.chooseStateOnce = true;
         this.frameX = 0;
     }
 
     backToRechargeSetUp() {
         this.state = "recharge";
-        this.chooseStateOnce = true;
         this.frameX = 0;
         this.stateRandomiserTimer = 0;
     }
@@ -216,7 +223,7 @@ export class EnemyBoss extends Enemy {
     }
 
     edgeConstraintLogic(bossId, middleTolerance = 11, stopAtMiddleChance = 0.7) {
-        if (this.game.isBossVisible &&
+        if (this.game.boss.isVisible &&
             this.game.boss.current === this &&
             this.game.boss.id === bossId) {
 
@@ -228,14 +235,12 @@ export class EnemyBoss extends Enemy {
                 this.x = 1;
                 pickRunStopAtMiddle();
                 this.reachedLeftEdge = true;
-                this.chooseStateOnce = true;
                 if (this.state === "run") this.previousState = this.state;
                 this.state = "idle";
             } else if (this.x + this.width >= this.game.width) {
                 this.x = this.game.width - this.width - 1;
                 pickRunStopAtMiddle();
                 this.reachedRightEdge = true;
-                this.chooseStateOnce = true;
                 if (this.state === "run") this.previousState = this.state;
                 this.state = "idle";
             } else {
@@ -243,11 +248,8 @@ export class EnemyBoss extends Enemy {
                 this.reachedLeftEdge = false;
             }
 
-            if (this.runAnimation) {
-                this.isInTheMiddle =
-                    this.runAnimation.x >= this.game.width / 2 - middleTolerance &&
-                    this.runAnimation.x <= this.game.width / 2 + middleTolerance;
-            }
+            const bossCenterX = this.x + this.width * 0.5;
+            this.isInTheMiddle = Math.abs(bossCenterX - this.game.width * 0.5) <= middleTolerance;
         }
     }
 
@@ -312,7 +314,8 @@ export class EnemyBoss extends Enemy {
             this.game.player.setState(8, 0);
             this.game.player.x = 1;
             this.game.player.y = this.game.height - this.game.player.height - this.game.groundMargin;
-
+            this.game.player.vy = 0;
+            this.game.player.vx = 0;
             this.game.player.isInvisible = false;
             this.game.player.invisibleTimer = this.game.player.invisibleCooldown;
             this.game.player.invisibleActiveCooldownTimer = 5000;
@@ -328,6 +331,171 @@ export class EnemyBoss extends Enemy {
                 if (!(enemy instanceof bossClass)) enemy.markedForDeletion = true;
             }
         }, 1200);
+    }
+}
+
+export class Barrier extends Enemy {
+    constructor(
+        game,
+        x,
+        y,
+        width,
+        height,
+        images,
+        lives,
+        {
+            owner = null,
+            followOwner = false,
+            dealsDirectHitDamage = true,
+            autoRemoveOnZeroLives = true,
+            sounds = null,
+
+            clipWithOwnerBurrow = false,
+        } = {}
+    ) {
+        super();
+
+        this.game = game;
+        this.owner = owner;
+
+        this.width = width;
+        this.height = height;
+
+        this.x = x;
+        this.y = y;
+
+        this.images = images;
+        this.lives = lives;
+
+        this.image = document.getElementById(this.images[this.images.length - 1]);
+        this.maxFrame = 0;
+
+        this.setFps(0);
+        this.frameX = 0;
+        this.frameY = 0;
+
+        this.followOwner = followOwner;
+
+        this.dealsDirectHitDamage = dealsDirectHitDamage;
+
+        this.autoRemoveOnZeroLives = autoRemoveOnZeroLives;
+
+        this.markedForDeletion = false;
+
+        this.sounds = sounds || null;
+
+        this.clipWithOwnerBurrow = clipWithOwnerBurrow;
+
+        this._prevLives = this.lives;
+        this._breakSoundPlayed = false;
+        this._crackPlayedForLives = new Set();
+
+        if (this.sounds && this.sounds.spawnSound) {
+            this._playBarrierSound(this.sounds.spawnSound);
+        }
+    }
+
+    _playBarrierSound(soundId, loop = false) {
+        if (!soundId) return;
+        if (!this.game || !this.game.audioHandler || !this.game.audioHandler.enemySFX) return;
+        this.game.audioHandler.enemySFX.playSound(soundId, loop, true);
+    }
+
+    _handleBarrierSoundTransitions() {
+        if (!this.sounds) {
+            this._prevLives = this.lives;
+            return;
+        }
+
+        if (this.lives > this._prevLives) {
+            this._crackPlayedForLives.clear();
+            this._breakSoundPlayed = false;
+        }
+
+        if (this.lives < this._prevLives) {
+            if (this.lives <= 0) {
+                if (!this._breakSoundPlayed && this.sounds.breakSound) {
+                    this._playBarrierSound(this.sounds.breakSound);
+                    this._breakSoundPlayed = true;
+                }
+            } else {
+                const crackMap = this.sounds.crackSoundsByLives || null;
+                const soundId = crackMap ? crackMap[this.lives] : null;
+
+                if (soundId && !this._crackPlayedForLives.has(this.lives)) {
+                    this._playBarrierSound(soundId);
+                    this._crackPlayedForLives.add(this.lives);
+                }
+            }
+        }
+
+        this._prevLives = this.lives;
+    }
+
+    update(deltaTime) {
+        if (this.followOwner) {
+            if (!this.owner || this.owner.markedForDeletion) {
+                this.markedForDeletion = true;
+                return;
+            }
+
+            const centerX = this.owner.x + this.owner.width / 2;
+            const centerY = this.owner.y + this.owner.height / 2;
+
+            this.x = centerX - this.width / 2;
+            this.y = centerY - this.height / 2;
+        }
+
+        this._handleBarrierSoundTransitions();
+
+        if (this.autoRemoveOnZeroLives && this.lives <= 0) {
+            this.markedForDeletion = true;
+            return;
+        }
+
+        this.advanceFrame(deltaTime);
+    }
+
+    draw(context) {
+        if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
+
+        const owner = this.owner;
+        const shouldClip =
+            this.clipWithOwnerBurrow &&
+            owner &&
+            owner.state === "burrow";
+
+        if (shouldClip) {
+            const groundY =
+                (owner.burrow && owner.burrow.groundY != null)
+                    ? owner.burrow.groundY
+                    : (owner.originalY + owner.height);
+
+            context.save();
+            context.beginPath();
+            context.rect(0, 0, owner.game.width, groundY);
+            context.clip();
+        }
+
+        const imageIndex = Math.max(0, Math.min(this.lives - 1, this.images.length - 1));
+        const imageName = this.images[imageIndex];
+
+        const img = document.getElementById(imageName);
+        this.image = img;
+
+        context.drawImage(
+            img,
+            this.frameX * this.width,
+            0,
+            this.width,
+            this.height,
+            this.x,
+            this.y,
+            this.width,
+            this.height
+        );
+
+        if (shouldClip) context.restore();
     }
 }
 
@@ -502,6 +670,343 @@ export class BeeInstances extends FlyingEnemy {
     }
 }
 
+export class BurrowingGroundEnemy extends ImmobileGroundEnemy {
+    constructor(game, width, height, maxFrame, imageId, centerX, options = {}) {
+        super(game, width, height, maxFrame, imageId);
+
+        const {
+            baseWarningDuration = 1500,
+            baseRiseDuration = 550,
+            baseHoldDuration = 350,
+            baseRetractDuration = 750,
+            warningJitter = { warning: 300, rise: 150, hold: 120, retract: 200 },
+            cyclesMax = 1,
+            moveBetweenCycles = false,
+            randomiseDurations = true,
+            soundIds = {},
+        } = options;
+
+        this.flipHorizontal = Math.random() < 0.5;
+
+        const halfW = this.width * 0.5;
+        const clampedCenterX = clamp(centerX, halfW, this.game.width - halfW);
+        this.centerX = clampedCenterX;
+        this.x = clampedCenterX - halfW;
+
+        const groundBottom = this.game.height - this.game.groundMargin;
+        this.groundBottom = groundBottom;
+
+        this.visibleY = groundBottom - this.height;
+        this.hiddenY = this.game.height + this.height;
+        this.y = this.hiddenY;
+
+        this.speedX = 0;
+        this.speedY = 0;
+
+        this.baseWarningDuration = baseWarningDuration;
+        this.baseRiseDuration = baseRiseDuration;
+        this.baseHoldDuration = baseHoldDuration;
+        this.baseRetractDuration = baseRetractDuration;
+
+        this.warningJitter = warningJitter;
+        this.randomiseDurationsFlag = randomiseDurations;
+
+        this.cyclesDone = 0;
+        this.cyclesMax = cyclesMax;
+        this.moveBetweenCycles = moveBetweenCycles;
+
+        this.phase = "warning";
+        this.timer = 0;
+
+        this.soundIds = soundIds;
+
+        if (this.randomiseDurationsFlag) {
+            this.randomiseDurations();
+        } else {
+            this.warningDuration = this.baseWarningDuration;
+            this.riseDuration = this.baseRiseDuration;
+            this.holdDuration = this.baseHoldDuration;
+            this.retractDuration = this.baseRetractDuration;
+        }
+    }
+
+    jitter(base, spread) {
+        return base + (Math.random() * 2 - 1) * spread;
+    }
+
+    randomiseDurations() {
+        const j = this.warningJitter || {};
+        const wSpread = j.warning ?? 300;
+        const rSpread = j.rise ?? 150;
+        const hSpread = j.hold ?? 120;
+        const reSpread = j.retract ?? 200;
+
+        this.warningDuration = Math.max(0, this.jitter(this.baseWarningDuration, wSpread));
+        this.riseDuration = Math.max(0, this.jitter(this.baseRiseDuration, rSpread));
+        this.holdDuration = Math.max(0, this.jitter(this.baseHoldDuration, hSpread));
+        this.retractDuration = Math.max(0, this.jitter(this.baseRetractDuration, reSpread));
+    }
+
+    pickNewGroundPosition() {
+        if (!this.moveBetweenCycles) return;
+
+        const halfW = this.width * 0.5;
+        const minCenter = halfW;
+        const maxCenter = this.game.width - halfW;
+
+        const others = this.game.enemies.filter(
+            (e) => e instanceof this.constructor && e !== this && !e.markedForDeletion
+        );
+
+        const minGap = this.width + 4;
+
+        let centerX = this.centerX;
+        const maxAttempts = 20;
+
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            let candidate;
+
+            if (Math.random() < 0.5) {
+                const playerCenterX =
+                    this.game.player.x + this.game.player.width / 2;
+                const spread = 260;
+                candidate =
+                    playerCenterX + (Math.random() * spread - spread / 2);
+            } else {
+                candidate = Math.random() * this.game.width;
+            }
+
+            candidate = clamp(candidate, minCenter, maxCenter);
+
+            let ok = true;
+            for (const other of others) {
+                if (Math.abs(candidate - other.centerX) < minGap) {
+                    ok = false;
+                    break;
+                }
+            }
+
+            centerX = candidate;
+            if (ok) break;
+        }
+
+        this.centerX = centerX;
+        this.x = centerX - halfW;
+    }
+
+    startNewCycle() {
+        if (this.randomiseDurationsFlag) this.randomiseDurations();
+        this.pickNewGroundPosition();
+        this.y = this.hiddenY;
+        this.timer = 0;
+        this.phase = "warning";
+        this.onCycleStart();
+    }
+
+    onCycleStart() { }
+
+    onEmergeStart() {
+        const id = this.soundIds?.emerge;
+        if (id && this.game.audioHandler.enemySFX) {
+            this.game.audioHandler.enemySFX.playSound(id, false, true);
+        }
+    }
+
+    onEmergeUpdate(_t, _deltaTime) { }
+    onEmergeComplete() { }
+
+    onHoldComplete() { }
+
+    onRetractStart() {
+        const id = this.soundIds?.retract;
+        if (id && this.game?.audioHandler?.enemySFX) {
+            this.game.audioHandler.enemySFX.playSound(id, false, true);
+        }
+    }
+
+    onRetractUpdate(_t, _deltaTime) { }
+    onRetractComplete() { }
+    onDone() { }
+
+    update(deltaTime) {
+        this.timer += deltaTime;
+
+        if (this.phase === "warning") {
+            if (this.timer >= this.warningDuration) {
+                this.flipHorizontal = Math.random() < 0.5;
+
+                this.phase = "emerge";
+                this.timer = 0;
+                this.y = this.hiddenY;
+
+                this.onEmergeStart();
+            }
+        } else if (this.phase === "emerge") {
+            const t = this.riseDuration > 0 ? Math.min(1, this.timer / this.riseDuration) : 1;
+            this.y = this.hiddenY - (this.hiddenY - this.visibleY) * t;
+
+            this.onEmergeUpdate(t, deltaTime);
+
+            if (t >= 1) {
+                this.y = this.visibleY;
+                this.timer = 0;
+                this.phase = this.holdDuration > 0 ? "hold" : "retract";
+                this.onEmergeComplete();
+            }
+        } else if (this.phase === "hold") {
+            if (this.timer >= this.holdDuration) {
+                this.timer = 0;
+                this.phase = "retract";
+                this.onHoldComplete();
+                this.onRetractStart();
+            }
+        } else if (this.phase === "retract") {
+            const t = this.retractDuration > 0 ? Math.min(1, this.timer / this.retractDuration) : 1;
+            this.y = this.visibleY + (this.hiddenY - this.visibleY) * t;
+
+            this.onRetractUpdate(t, deltaTime);
+
+            if (t >= 1) {
+                this.y = this.hiddenY;
+                this.cyclesDone++;
+
+                if (this.cyclesDone >= this.cyclesMax) {
+                    this.phase = "done";
+                    this.timer = 0;
+                    this.onRetractComplete();
+                } else {
+                    this.onRetractComplete();
+                    this.startNewCycle();
+                }
+            }
+        } else if (this.phase === "done") {
+            this.markedForDeletion = true;
+            this.onDone();
+        }
+    }
+
+    drawWarning(context) {
+        const groundBottom = this.groundBottom;
+        const centerX = this.x + this.width * 0.5;
+
+        const t = clamp(this.timer / this.warningDuration, 0, 1);
+
+        const pulse = 0.5 + 0.5 * Math.sin(t * Math.PI * 6);
+        const baseIntensity = t;
+
+        const globalAlpha = 0.5 + 0.5 * (baseIntensity * pulse);
+
+        context.save();
+
+        const glowWidth = this.width * 1.1;
+        const glowHeight = 44;
+
+        context.translate(centerX, groundBottom - 10);
+
+        const innerAlpha = 0.75 + 0.25 * baseIntensity;
+        const midAlpha = 0.5 + 0.35 * baseIntensity;
+
+        const gradient = context.createRadialGradient(
+            0, 0, 0,
+            0, 0, glowWidth * 0.75
+        );
+        gradient.addColorStop(0, `rgba(255, 230, 230, ${innerAlpha})`);
+        gradient.addColorStop(0.5, `rgba(255, 120, 120, ${midAlpha})`);
+        gradient.addColorStop(1, "rgba(255, 0, 0, 0)");
+
+        context.fillStyle = gradient;
+        context.globalAlpha = globalAlpha;
+
+        const blurBase = 40;
+        const blurExtra = 40 * baseIntensity;
+        context.shadowColor = "rgba(255, 140, 140, 1)";
+        context.shadowBlur = blurBase + blurExtra;
+
+        context.beginPath();
+        context.ellipse(
+            0,
+            0,
+            glowWidth * 0.5,
+            glowHeight * 0.5,
+            0,
+            0,
+            Math.PI * 2
+        );
+        context.fill();
+
+        const coreT = Math.min(1, t * 1.15);
+        const coreScale = 0.35 + 0.65 * coreT;
+
+        const coreRadiusX = glowWidth * coreScale * 0.5;
+        const coreRadiusY = glowHeight * coreScale * 0.5;
+
+        context.globalAlpha = 0.7 + 0.3 * baseIntensity;
+        context.shadowBlur = 25 + 45 * baseIntensity;
+        context.shadowColor = "rgba(255, 255, 255, 1)";
+
+        context.beginPath();
+        context.ellipse(
+            0,
+            0,
+            coreRadiusX,
+            coreRadiusY,
+            0,
+            0,
+            Math.PI * 2
+        );
+        context.strokeStyle = `rgba(255, 255, 255, ${0.65 + 0.35 * pulse})`;
+        context.lineWidth = 3 + 3 * baseIntensity;
+        context.stroke();
+
+        context.restore();
+    }
+
+    drawActivePhase(context) {
+        const groundBottom = this.groundBottom;
+
+        context.save();
+        context.beginPath();
+        context.rect(this.x, 0, this.width, groundBottom);
+        context.clip();
+
+        const drawW = this.width;
+        const drawH = this.height;
+
+        const cx = this.x + drawW / 2;
+        const cy = this.y + drawH / 2;
+
+        context.translate(cx, cy);
+        context.scale(this.flipHorizontal ? -1 : 1, 1);
+
+        context.drawImage(
+            this.image,
+            (this.frameX || 0) * this.width,
+            0,
+            this.width,
+            this.height,
+            -drawW / 2,
+            -drawH / 2,
+            drawW,
+            drawH
+        );
+
+        context.restore();
+    }
+
+    draw(context) {
+        if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
+
+        if (this.phase === "warning") {
+            this.drawWarning(context);
+            return;
+        }
+
+        if (this.phase === "emerge" || this.phase === "hold" || this.phase === "retract") {
+            this.drawActivePhase(context);
+        }
+    }
+}
+
 // Projectiles --------------------------------------------------------------------------------------------------------------------------------
 export class Projectile extends Enemy {
     constructor(game, x, y, width, height, maxFrame, imageId, speedX, fps) {
@@ -520,7 +1025,6 @@ export class Projectile extends Enemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        this.advanceFrame(deltaTime);
     }
 }
 

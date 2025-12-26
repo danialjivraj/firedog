@@ -252,7 +252,7 @@ export class Map6NTharaxIngameCutsceneBeforeFight extends NTharaxCutscene {
             `${this.ntharax}`,
             `Why have you come to this place? This is my territory!`,
             this.addImage(this.setfiredogNormalExclamationMarkBorder(), 0.7, 100, 400, 200, 200),
-            this.addImage('glacikalBorder', 1, 1560, 400, 200, 200),
+            this.addImage('ntharaxBorder', 1, 1560, 400, 200, 200),
         );
     }
 }
@@ -265,14 +265,14 @@ export class Map6NTharaxIngameCutsceneAfterFight extends NTharaxCutscene {
             `${this.ntharax}`,
             `You're strong.`,
             this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-            this.addImage("glacikalBorder", 1, 1100, 400, 200, 200),
+            this.addImage("ntharaxBorder", 1, 1100, 400, 200, 200),
         );
 
         this.addDialogue(
             `${this.firedog}`,
             `How do you know my fireball ability? How is this possible?`,
             this.addImage(this.setfiredogNormalBorder(), 1, 100, 400, 200, 200),
-            this.addImage("glacikalBorder", 0.7, 1100, 400, 200, 200),
+            this.addImage("ntharaxBorder", 0.7, 1100, 400, 200, 200),
         );
     }
 }

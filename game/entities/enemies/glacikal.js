@@ -1,4 +1,4 @@
-import { EnemyBoss, ImmobileGroundEnemy, Projectile, FallingEnemy } from "./enemies.js";
+import { EnemyBoss, ImmobileGroundEnemy, Projectile, FallingEnemy, BurrowingGroundEnemy } from "./enemies.js";
 import { IcyStormBallCollision, PointyIcicleShardCollision } from "../../animations/collisionAnimation.js";
 
 export class IceTrail extends ImmobileGroundEnemy {
@@ -37,7 +37,9 @@ export class PointyIcicleShard extends FallingEnemy {
             this.y = groundHitY;
             this.markedForDeletion = true;
 
-            this.game.collisions.push(new PointyIcicleShardCollision(this.game, this.x + this.width * 0.5, this.y + this.height * 0.5));
+            this.game.collisions.push(
+                new PointyIcicleShardCollision(this.game, this.x + this.width * 0.5, this.y + this.height * 0.5)
+            );
             this.game.audioHandler.collisionSFX.playSound("breakingIceNoDamageSound", false, true);
             return;
         }
@@ -48,265 +50,28 @@ export class PointyIcicleShard extends FallingEnemy {
     }
 }
 
-export class UndergroundIcicle extends ImmobileGroundEnemy {
+export class UndergroundIcicle extends BurrowingGroundEnemy {
     constructor(game, centerX) {
-        super(game, 132, 400, 0, "undergroundIcicle");
-
+        super(game, 132, 400, 0, "undergroundIcicle", centerX, {
+            baseWarningDuration: 1500,
+            baseRiseDuration: 550,
+            baseHoldDuration: 350,
+            baseRetractDuration: 750,
+            warningJitter: {
+                warning: 300,
+                rise: 150,
+                hold: 120,
+                retract: 200,
+            },
+            randomiseDurations: true,
+            cyclesMax: 4,
+            moveBetweenCycles: true,
+            soundIds: {
+                emerge: "undergroundIcicleSound",
+            },
+        });
+        this.lives = 50;
         this.isSlowEnemy = true;
-
-        this.flipHorizontal = Math.random() < 0.5;
-
-        const halfW = this.width * 0.5;
-        const clampedCenterX = Math.max(halfW, Math.min(this.game.width - halfW, centerX));
-        this.centerX = clampedCenterX;
-        this.x = clampedCenterX - halfW;
-
-        const groundBottom = this.game.height - this.game.groundMargin;
-        this.groundBottom = groundBottom;
-
-        this.visibleY = groundBottom - this.height;
-
-        this.hiddenY = this.game.height + this.height;
-        this.y = this.hiddenY;
-
-        this.speedX = 0;
-        this.speedY = 0;
-
-        this.phase = "warning";
-        this.timer = 0;
-
-        this.baseWarningDuration = 1500;
-        this.baseRiseDuration = 550;
-        this.baseHoldDuration = 350;
-        this.baseRetractDuration = 750;
-
-        this.randomiseDurations();
-
-        this.cyclesDone = 0;
-        this.cyclesMax = 4;
-    }
-
-    randomiseDurations() {
-        const jitter = (base, spread) => base + (Math.random() * 2 - 1) * spread;
-
-        this.warningDuration = Math.max(900, jitter(this.baseWarningDuration, 300));
-        this.riseDuration = Math.max(380, jitter(this.baseRiseDuration, 150));
-        this.holdDuration = Math.max(200, jitter(this.baseHoldDuration, 120));
-        this.retractDuration = Math.max(450, jitter(this.baseRetractDuration, 200));
-    }
-
-    pickNewGroundPosition() {
-        const halfW = this.width * 0.5;
-        const minCenter = halfW;
-        const maxCenter = this.game.width - halfW;
-
-        const others = this.game.enemies.filter(
-            (e) => e instanceof UndergroundIcicle && e !== this && !e.markedForDeletion
-        );
-
-        const minGap = this.width + 4;
-
-        let centerX = this.centerX;
-        const maxAttempts = 20;
-
-        for (let attempt = 0; attempt < maxAttempts; attempt++) {
-            let candidate;
-            if (Math.random() < 0.5) {
-                const playerCenterX = this.game.player.x + this.game.player.width / 2;
-                const spread = 260;
-                candidate = playerCenterX + (Math.random() * spread - spread / 2);
-            } else {
-                candidate = Math.random() * this.game.width;
-            }
-
-            candidate = Math.max(minCenter, Math.min(maxCenter, candidate));
-
-            let ok = true;
-            for (const other of others) {
-                if (Math.abs(candidate - other.centerX) < minGap) {
-                    ok = false;
-                    break;
-                }
-            }
-
-            centerX = candidate;
-            if (ok) break;
-        }
-
-        this.centerX = centerX;
-        this.x = centerX - halfW;
-    }
-
-    startNewCycle() {
-        this.randomiseDurations();
-        this.pickNewGroundPosition();
-        this.y = this.hiddenY;
-        this.timer = 0;
-        this.phase = "warning";
-    }
-
-    update(deltaTime) {
-        this.timer += deltaTime;
-
-        if (this.phase === "warning") {
-            if (this.timer >= this.warningDuration) {
-                this.flipHorizontal = Math.random() < 0.5;
-
-                this.phase = "emerge";
-                this.timer = 0;
-                this.y = this.hiddenY;
-
-                this.game.audioHandler.enemySFX.playSound("undergroundIcicleSound", false, true);
-            }
-        } else if (this.phase === "emerge") {
-            const t = Math.min(1, this.timer / this.riseDuration);
-            this.y = this.hiddenY - (this.hiddenY - this.visibleY) * t;
-
-            if (t >= 1) {
-                this.y = this.visibleY;
-                this.timer = 0;
-                this.phase = this.holdDuration > 0 ? "hold" : "retract";
-            }
-        } else if (this.phase === "hold") {
-            if (this.timer >= this.holdDuration) {
-                this.timer = 0;
-                this.phase = "retract";
-            }
-        } else if (this.phase === "retract") {
-            const t = Math.min(1, this.timer / this.retractDuration);
-            this.y = this.visibleY + (this.hiddenY - this.visibleY) * t;
-
-            if (t >= 1) {
-                this.y = this.hiddenY;
-                this.cyclesDone++;
-
-                if (this.cyclesDone >= this.cyclesMax) {
-                    this.phase = "done";
-                    this.timer = 0;
-                } else {
-                    this.startNewCycle();
-                }
-            }
-        } else if (this.phase === "done") {
-            this.markedForDeletion = true;
-        }
-    }
-
-    draw(context) {
-        const groundBottom = this.groundBottom;
-
-        if (this.phase === "warning") {
-            const centerX = this.x + this.width * 0.5;
-
-            if (this.game.debug) {
-                context.save();
-                context.strokeStyle = "rgba(0, 0, 0, 0.7)";
-                context.strokeRect(this.x, this.y, this.width, this.height);
-                context.restore();
-            }
-
-            const t = Math.max(0, Math.min(1, this.timer / this.warningDuration));
-
-            const pulse = 0.5 + 0.5 * Math.sin(t * Math.PI * 6);
-            const baseIntensity = t;
-
-            const globalAlpha = 0.5 + 0.5 * (baseIntensity * pulse);
-
-            context.save();
-
-            const glowWidth = this.width * 1.1;
-            const glowHeight = 44;
-
-            context.translate(centerX, groundBottom - 10);
-
-            const innerAlpha = 0.75 + 0.25 * baseIntensity;
-            const midAlpha = 0.5 + 0.35 * baseIntensity;
-
-            const gradient = context.createRadialGradient(
-                0, 0, 0,
-                0, 0, glowWidth * 0.75
-            );
-            gradient.addColorStop(0, `rgba(255, 230, 230, ${innerAlpha})`);
-            gradient.addColorStop(0.5, `rgba(255, 120, 120, ${midAlpha})`);
-            gradient.addColorStop(1, "rgba(255, 0, 0, 0)");
-
-            context.fillStyle = gradient;
-            context.globalAlpha = globalAlpha;
-
-            const blurBase = 40;
-            const blurExtra = 40 * baseIntensity;
-            context.shadowColor = "rgba(255, 140, 140, 1)";
-            context.shadowBlur = blurBase + blurExtra;
-
-            context.beginPath();
-            context.ellipse(
-                0,
-                0,
-                glowWidth * 0.5,
-                glowHeight * 0.5,
-                0,
-                0,
-                Math.PI * 2
-            );
-            context.fill();
-
-            const coreT = Math.min(1, t * 1.15);
-            const coreScale = 0.35 + 0.65 * coreT;
-
-            const coreRadiusX = glowWidth * coreScale * 0.5;
-            const coreRadiusY = glowHeight * coreScale * 0.5;
-
-            context.globalAlpha = 0.7 + 0.3 * baseIntensity;
-            context.shadowBlur = 25 + 45 * baseIntensity;
-            context.shadowColor = "rgba(255, 255, 255, 1)";
-
-            context.beginPath();
-            context.ellipse(
-                0,
-                0,
-                coreRadiusX,
-                coreRadiusY,
-                0,
-                0,
-                Math.PI * 2
-            );
-            context.strokeStyle = `rgba(255, 255, 255, ${0.65 + 0.35 * pulse})`;
-            context.lineWidth = 3 + 3 * baseIntensity;
-            context.stroke();
-
-            context.restore();
-            return;
-        }
-
-        if (this.phase === "emerge" || this.phase === "hold" || this.phase === "retract") {
-            context.save();
-            context.beginPath();
-            context.rect(this.x, 0, this.width, groundBottom);
-            context.clip();
-
-            const drawW = this.width;
-            const drawH = this.height;
-
-            const cx = this.x + drawW / 2;
-            const cy = this.y + drawH / 2;
-
-            context.translate(cx, cy);
-            context.scale(this.flipHorizontal ? -1 : 1, 1);
-
-            context.drawImage(
-                this.image,
-                (this.frameX || 0) * this.width,
-                0,
-                this.width,
-                this.height,
-                -drawW / 2,
-                -drawH / 2,
-                drawW,
-                drawH
-            );
-
-            context.restore();
-        }
     }
 }
 
@@ -433,7 +198,9 @@ export class IcyStormBall extends FallingEnemy {
 
         if (this.y >= groundHitY) {
             this.markedForDeletion = true;
-            this.game.collisions.push(new IcyStormBallCollision(this.game, this.x + this.width * 0.5, this.y + this.height * 0.5 - 12));
+            this.game.collisions.push(
+                new IcyStormBallCollision(this.game, this.x + this.width * 0.5, this.y + this.height * 0.5 - 12)
+            );
         }
     }
 }
@@ -520,7 +287,7 @@ export class SpinningIceBalls extends Projectile {
         const startOutT = 0.22;
         this.startCenter = {
             x: bodyC.x + (armC.x - bodyC.x) * startOutT,
-            y: bodyC.y + (armC.y - bodyC.y) * startOutT
+            y: bodyC.y + (armC.y - bodyC.y) * startOutT,
         };
 
         this.targetCenter = { x: armC.x, y: armC.y + this.offsetY };
@@ -547,9 +314,7 @@ export class SpinningIceBalls extends Projectile {
     getArmTipCenter() {
         const facingRight = !!this.boss.shouldInvert;
 
-        let cx = facingRight
-            ? this.boss.x + this.boss.width - this.width * 0.6
-            : this.boss.x - this.width * 0.4;
+        let cx = facingRight ? this.boss.x + this.boss.width - this.width * 0.6 : this.boss.x - this.width * 0.4;
 
         let cy = this.boss.y + this.boss.height * 0.55 - this.height / 2;
 
@@ -659,7 +424,10 @@ export class Glacikal extends EnemyBoss {
         this.setFps(10);
         this.maxLives = 60;
         this.lives = this.maxLives;
+        this.stateRandomiserTimer = 5000;
+        this.stateRandomiserCooldown = 5000;
         this._defeatTriggered = false;
+
         // run
         this.runAnimation = new EnemyBoss(game, 142.8333333333333, 180, 5, "glacikalRunning");
         this.runAnimation.setFps(10);
@@ -673,6 +441,7 @@ export class Glacikal extends EnemyBoss {
         this.iceTrailCooldownMax = 700;
         this.iceTrailSpawnChance = 0.65;
         this.iceTrailMinGap = 60;
+
         // jump
         this.jumpAnimation = new EnemyBoss(game, 118.8333333333333, 180, 5, "glacikalJumping");
         this.jumpPhase = "ascend";
@@ -688,10 +457,12 @@ export class Glacikal extends EnemyBoss {
         this.iceSpiderDropCooldownMax = 520;
         this.postSpiderHangDuration = 1000;
         this.postSpiderHangTimer = 0;
+
         // ice slash
         this.iceSlashAttackAnimation = new EnemyBoss(game, 131.3333333333333, 180, 5, "glacikalAttacking");
         this.iceSlashAttackAnimation.setFps(10);
         this.canIceSlashAttack = true;
+
         // icy storm
         this.icyStormAnimation = new EnemyBoss(game, 116, 180, 23, "glacikalIcyStorm");
         this.canIcyStormAttack = true;
@@ -702,6 +473,7 @@ export class Glacikal extends EnemyBoss {
         this.icyStormMaxOnScreen = 2;
         this.icyStormRainStarted = false;
         this.icyStormEffectRequested = false;
+
         // kneel down
         this.glacikalKneelDownAnimation = new EnemyBoss(game, 126.1666666666667, 180, 5, "glacikalKneelDown");
         this.glacikalKneelDownAnimation.setFps(10);
@@ -719,15 +491,18 @@ export class Glacikal extends EnemyBoss {
         this.kneelRumbleStarted = false;
         this.kneelDownStateCooldown = 10;
         this.statesSinceKneelDown = 5;
+
         // kneel-down sub-abilities
         this.kneelAbilityTypes = ["topIcicles", "undergroundIcicle"];
         this.currentKneelAbility = "topIcicles";
         this.kneelUndergroundIcicles = [];
+
         // recharge
         this.glacikalRechargeAnimation = new EnemyBoss(game, 116, 180, 23, "glacikalRecharge");
         this.glacikalRechargeAnimation.setFps(10);
         this.rechargeLoops = 0;
         this.rechargeLoopsMax = 2;
+
         // extended arm / spinning ice balls
         this.glacikalExtendedArmAnimation = new EnemyBoss(game, 146, 180, 5, "glacikalExtendedArm");
         this.glacikalExtendedArmAnimation.setFps(10);
@@ -740,8 +515,10 @@ export class Glacikal extends EnemyBoss {
         this.spinningHoldTimer = 0;
         this.spinningHoldDuration = 450;
         this.spinningReverseTimer = 0;
+
         this.isRunSoundPlaying = false;
         this.canPlayJumpLandSound = false;
+
         // anchors
         this.stateAnchors = {
             idle: { x: 58, y: 180 },
@@ -751,7 +528,7 @@ export class Glacikal extends EnemyBoss {
             icyStorm: { x: 58, y: 180 },
             iceSlashAttack: { x: 66, y: 180 },
             kneelDown: { x: 63, y: 180 },
-            glacikalRecharge: { x: 58, y: 180 }
+            recharge: { x: 58, y: 180 },
         };
     }
 
@@ -766,24 +543,6 @@ export class Glacikal extends EnemyBoss {
         this.state = newState;
     }
 
-    baseUpdateNoOffTopDespawn(deltaTime) {
-        this.x -= this.speedX;
-        this.y += this.speedY;
-
-        this.advanceFrame(deltaTime);
-
-        const offLeft = this.x + this.width < 0;
-        const offBottom = this.y > this.game.height;
-        const dead = this.lives <= 0;
-
-        if (offLeft || offBottom || dead) {
-            this.markedForDeletion = true;
-            this.game.audioHandler.enemySFX.playSound(this.soundId, false, true, true);
-        } else {
-            this.playIfOnScreen(this.soundId);
-        }
-    }
-
     checkIfDefeated() {
         if (this._defeatTriggered) return;
         if (this.lives <= 0) {
@@ -793,19 +552,12 @@ export class Glacikal extends EnemyBoss {
                 bossClass: Glacikal,
                 battleThemeId: "elyvorgBattleTheme",
                 onBeforeClear: () => {
-                    this.game.shakeActive = false;
-                    this.game.shakeTimer = 0;
-                    this.game.shakeDuration = 0;
+                    this.game.stopShake();
                     this.game.bossManager.releaseScreenEffect("glacikal_icy_storm");
                     this.icyStormEffectRequested = false;
-                }
+                },
             });
         }
-    }
-
-    backToIdleSetUp() {
-        super.backToIdleSetUp();
-        this.canIceSlashAttack = true;
     }
 
     startSpinningIceBallsAttack() {
@@ -902,9 +654,7 @@ export class Glacikal extends EnemyBoss {
     }
 
     throwIceSlash() {
-        const playerIsOnRight =
-            this.game.player.x + this.game.player.width / 2 >
-            this.x + this.width / 2;
+        const playerIsOnRight = this.game.player.x + this.game.player.width / 2 > this.x + this.width / 2;
 
         const ICE_SLASH_SPEED = 13;
         const speedX = playerIsOnRight ? ICE_SLASH_SPEED : -ICE_SLASH_SPEED;
@@ -918,10 +668,7 @@ export class Glacikal extends EnemyBoss {
     }
 
     iceSlashAttackLogic() {
-        if (
-            this.iceSlashAttackAnimation.frameX === this.iceSlashAttackAnimation.maxFrame &&
-            this.canIceSlashAttack
-        ) {
+        if (this.iceSlashAttackAnimation.frameX === this.iceSlashAttackAnimation.maxFrame && this.canIceSlashAttack) {
             this.canIceSlashAttack = false;
             this.throwIceSlash();
         }
@@ -935,8 +682,7 @@ export class Glacikal extends EnemyBoss {
         this.iceSpiderDropsFired = 0;
         this.iceSpiderDropTimer = 0;
         this.iceSpiderNextDrop =
-            this.iceSpiderDropCooldownMin +
-            Math.random() * (this.iceSpiderDropCooldownMax - this.iceSpiderDropCooldownMin);
+            this.iceSpiderDropCooldownMin + Math.random() * (this.iceSpiderDropCooldownMax - this.iceSpiderDropCooldownMin);
 
         this.postSpiderHangTimer = 0;
     }
@@ -997,10 +743,7 @@ export class Glacikal extends EnemyBoss {
         } else if (this.jumpPhase === "airborne") {
             this.iceSpiderDropTimer += deltaTime;
 
-            if (
-                this.iceSpiderDropsFired < this.iceSpiderDropsTarget &&
-                this.iceSpiderDropTimer >= this.iceSpiderNextDrop
-            ) {
+            if (this.iceSpiderDropsFired < this.iceSpiderDropsTarget && this.iceSpiderDropTimer >= this.iceSpiderNextDrop) {
                 this.spawnIceSpider();
                 this.iceSpiderDropsFired++;
 
@@ -1047,7 +790,6 @@ export class Glacikal extends EnemyBoss {
 
     icyStormLogic() {
         const rainFrame = Math.max(1, Math.floor(this.icyStormAnimation.maxFrame * (17 / 23)));
-        const resetFrame = Math.max(1, Math.floor(this.icyStormAnimation.maxFrame * (20 / 23)));
 
         if (this.icyStormAnimation.frameX === 0 && !this.icyStormEffectRequested) {
             this.icyStormEffectRequested = true;
@@ -1079,13 +821,7 @@ export class Glacikal extends EnemyBoss {
         }
 
         if (this.icyStormAnimation.frameX === this.icyStormAnimation.maxFrame) {
-            this.previousState = "icyStorm";
-            this.state = "idle";
-            this.backToIdleSetUp();
-        }
-
-        if (this.icyStormAnimation.frameX === resetFrame) {
-            this.canIcyStormAttack = true;
+            this.backToIdleSetUp({ recordPreviousState: false });
         }
     }
 
@@ -1106,6 +842,8 @@ export class Glacikal extends EnemyBoss {
             }
         } else {
             this.isIcyStormActive = false;
+            this.canIcyStormAttack = true;
+
             this.icyStormTimer = 0;
             this.icyStormPassiveTimer = 0;
 
@@ -1115,9 +853,7 @@ export class Glacikal extends EnemyBoss {
     }
 
     trySpawnIceTrail() {
-        const hasNearbyTrail = this.game.enemies.some(
-            (e) => e instanceof IceTrail && Math.abs(e.x - this.x) < this.iceTrailMinGap
-        );
+        const hasNearbyTrail = this.game.enemies.some((e) => e instanceof IceTrail && Math.abs(e.x - this.x) < this.iceTrailMinGap);
         if (hasNearbyTrail) return;
 
         if (Math.random() < this.iceTrailSpawnChance) {
@@ -1139,9 +875,7 @@ export class Glacikal extends EnemyBoss {
         if (this.iceTrailTimer > this.iceTrailNextSpawn) {
             this.trySpawnIceTrail();
             this.iceTrailTimer = 0;
-            this.iceTrailNextSpawn =
-                this.iceTrailCooldownMin +
-                Math.random() * (this.iceTrailCooldownMax - this.iceTrailCooldownMin);
+            this.iceTrailNextSpawn = this.iceTrailCooldownMin + Math.random() * (this.iceTrailCooldownMax - this.iceTrailCooldownMin);
         }
     }
 
@@ -1171,9 +905,7 @@ export class Glacikal extends EnemyBoss {
 
         this.kneelDownTimer = 0;
         this.kneelIcicleTimer = 0;
-        this.kneelNextIcicle =
-            this.kneelIcicleCooldownMin +
-            Math.random() * (this.kneelIcicleCooldownMax - this.kneelIcicleCooldownMin);
+        this.kneelNextIcicle = this.kneelIcicleCooldownMin + Math.random() * (this.kneelIcicleCooldownMax - this.kneelIcicleCooldownMin);
 
         this.kneelReverseTimer = 0;
 
@@ -1185,15 +917,8 @@ export class Glacikal extends EnemyBoss {
 
         this.kneelRumbleStarted = false;
 
-        this.currentKneelAbility =
-            this.kneelAbilityTypes[Math.floor(Math.random() * this.kneelAbilityTypes.length)];
+        this.currentKneelAbility = this.kneelAbilityTypes[Math.floor(Math.random() * this.kneelAbilityTypes.length)];
         this.kneelUndergroundIcicles = [];
-
-        if (this.game.shakeActive === undefined) {
-            this.game.shakeActive = false;
-            this.game.shakeTimer = 0;
-            this.game.shakeDuration = 0;
-        }
     }
 
     kneelDownLogic(deltaTime) {
@@ -1213,9 +938,7 @@ export class Glacikal extends EnemyBoss {
                     this.kneelDownTimer = 0;
                     this.kneelIcicleTimer = 0;
 
-                    this.game.shakeActive = true;
-                    this.game.shakeTimer = 0;
-                    this.game.shakeDuration = this.kneelDownDuration;
+                    this.game.startShake();
 
                     if (!this.kneelRumbleStarted) {
                         this.kneelRumbleStarted = true;
@@ -1241,10 +964,7 @@ export class Glacikal extends EnemyBoss {
                             do {
                                 cx = this.pickUndergroundIcicleX();
                                 attempts++;
-                            } while (
-                                spawnCenters.some((existing) => Math.abs(cx - existing) < minGap) &&
-                                attempts < maxAttempts
-                            );
+                            } while (spawnCenters.some((existing) => Math.abs(cx - existing) < minGap) && attempts < maxAttempts);
 
                             spawnCenters.push(cx);
                         }
@@ -1266,21 +986,13 @@ export class Glacikal extends EnemyBoss {
             this.kneelIcicleTimer += deltaTime;
 
             if (this.currentKneelAbility === "topIcicles") {
-                if (this.game.shakeActive) {
-                    this.game.shakeTimer += deltaTime;
-                    if (this.game.shakeTimer >= this.game.shakeDuration) {
-                        this.game.shakeActive = false;
-                    }
-                }
-
                 if (this.kneelIcicleTimer > this.kneelNextIcicle) {
                     if (!this.isIcyStormActive) {
                         this.game.enemies.push(new PointyIcicleShard(this.game));
                     }
                     this.kneelIcicleTimer = 0;
                     this.kneelNextIcicle =
-                        this.kneelIcicleCooldownMin +
-                        Math.random() * (this.kneelIcicleCooldownMax - this.kneelIcicleCooldownMin);
+                        this.kneelIcicleCooldownMin + Math.random() * (this.kneelIcicleCooldownMax - this.kneelIcicleCooldownMin);
                 }
 
                 if (this.kneelDownTimer >= this.kneelDownDuration) {
@@ -1288,8 +1000,7 @@ export class Glacikal extends EnemyBoss {
                     this.isKneelDownReversing = true;
                     this.kneelReverseTimer = 0;
 
-                    this.game.shakeActive = false;
-
+                    this.game.stopShake();
                     this.game.audioHandler.enemySFX.fadeOutAndStop("groundRumbleSound", 1200);
                 }
             } else if (this.currentKneelAbility === "undergroundIcicle") {
@@ -1302,9 +1013,7 @@ export class Glacikal extends EnemyBoss {
                     this.isKneelDownReversing = true;
                     this.kneelReverseTimer = 0;
 
-                    this.game.shakeActive = false;
-                    this.game.shakeTimer = 0;
-
+                    this.game.stopShake();
                     this.game.audioHandler.enemySFX.fadeOutAndStop("groundRumbleSound", 1200);
                 }
             }
@@ -1325,7 +1034,8 @@ export class Glacikal extends EnemyBoss {
                     this.canKneelDownAttack = true;
 
                     this.previousState = "kneelDown";
-                    this.enterState("glacikalRecharge");
+
+                    this.backToRechargeSetUp();
 
                     const r = this.glacikalRechargeAnimation;
                     r.frameX = 0;
@@ -1343,22 +1053,26 @@ export class Glacikal extends EnemyBoss {
         const anim = this.glacikalRechargeAnimation;
         anim.update(deltaTime);
 
-        if (anim.frameX >= anim.maxFrame) {
-            this.rechargeLoops++;
-            anim.frameX = 0;
-            anim.frameTimer = 0;
+        this.stateRandomiserTimer += deltaTime;
 
-            if (this.rechargeLoops >= this.rechargeLoopsMax) {
-                this.rechargeLoops = 0;
-                this.state = "idle";
-                this.backToIdleSetUp();
-            }
+        if (
+            this.stateRandomiserTimer >= this.stateRandomiserCooldown &&
+            anim.frameX === anim.maxFrame
+        ) {
+            this.stateRandomiserTimer = 0;
+            this.stateRandomiser();
         }
     }
 
     stateRandomiser() {
-        const allStates = ["run", "jump", "icyStorm", "iceSlashAttack", "kneelDown", "extendedArm"];
-
+        const allStates = [
+            "run",
+            "jump",
+            "icyStorm",
+            "iceSlashAttack",
+            "kneelDown",
+            "extendedArm"
+        ];
         if (this.game.gameOver) {
             if (this.isInTheMiddle) {
                 this.runningDirection = 10;
@@ -1371,15 +1085,11 @@ export class Glacikal extends EnemyBoss {
 
         this.runStateCounter++;
 
-        this.shouldInvert =
-            this.game.player.x + this.game.player.width / 2 >
-            this.x + this.width / 2;
+        this.shouldInvert = this.game.player.x + this.game.player.width / 2 > this.x + this.width / 2;
 
         if (
             (this.runStateCounter >= this.runStateCounterLimit && !this.isInTheMiddle) ||
-            (this.runStateCounter >= this.runStateCounterLimit &&
-                this.isInTheMiddle &&
-                this.previousState !== "run")
+            (this.runStateCounter >= this.runStateCounterLimit && this.isInTheMiddle && this.previousState !== "run")
         ) {
             this.runStopAtTheMiddle = false;
             this.runStateCounter = 0;
@@ -1394,9 +1104,7 @@ export class Glacikal extends EnemyBoss {
         }
 
         const shouldForceKneelDown =
-            this.statesSinceKneelDown >= this.kneelDownStateCooldown &&
-            this.canKneelDownAttack &&
-            !this.isIcyStormActive;
+            this.statesSinceKneelDown >= this.kneelDownStateCooldown && this.canKneelDownAttack && !this.isIcyStormActive;
 
         let selectedState;
 
@@ -1414,8 +1122,7 @@ export class Glacikal extends EnemyBoss {
                     (this.isIcyStormActive && selectedState === "kneelDown") ||
                     (!this.canKneelDownAttack && selectedState === "kneelDown") ||
                     (!this.canSpinningIceBallsAttack && selectedState === "extendedArm") ||
-                    (selectedState === "kneelDown" &&
-                        this.statesSinceKneelDown < this.kneelDownStateCooldown)
+                    (selectedState === "kneelDown" && this.statesSinceKneelDown < this.kneelDownStateCooldown)
                 );
             }
         }
@@ -1428,7 +1135,7 @@ export class Glacikal extends EnemyBoss {
             icyStorm: this.icyStormAnimation,
             iceSlashAttack: this.iceSlashAttackAnimation,
             kneelDown: this.glacikalKneelDownAnimation,
-            extendedArm: this.glacikalExtendedArmAnimation
+            extendedArm: this.glacikalExtendedArmAnimation,
         };
 
         const animation = stateAnimations[this.state];
@@ -1486,11 +1193,7 @@ export class Glacikal extends EnemyBoss {
     }
 
     update(deltaTime) {
-        if (this.state === "jump") {
-            this.baseUpdateNoOffTopDespawn(deltaTime);
-        } else {
-            super.update(deltaTime);
-        }
+        super.update(deltaTime);
 
         this.checksBossIsFullyVisible("glacikal");
 
@@ -1524,7 +1227,7 @@ export class Glacikal extends EnemyBoss {
                     this.iceSlashAttackLogic();
                 } else if (this.state === "kneelDown") {
                     this.kneelDownLogic(deltaTime);
-                } else if (this.state === "glacikalRecharge") {
+                } else if (this.state === "recharge") {
                     this.rechargeLogic(deltaTime);
                 } else if (this.state === "extendedArm") {
                     this.spinningIceBallsLogic(deltaTime);
@@ -1542,9 +1245,7 @@ export class Glacikal extends EnemyBoss {
     }
 
     draw(context) {
-        this.shouldInvert =
-            this.game.player.x + this.game.player.width / 2 >
-            this.x + this.width / 2;
+        this.shouldInvert = this.game.player.x + this.game.player.width / 2 > this.x + this.width / 2;
 
         const stateAnimations = {
             run: this.runAnimation,
@@ -1552,8 +1253,8 @@ export class Glacikal extends EnemyBoss {
             icyStorm: this.icyStormAnimation,
             iceSlashAttack: this.iceSlashAttackAnimation,
             kneelDown: this.glacikalKneelDownAnimation,
-            glacikalRecharge: this.glacikalRechargeAnimation,
-            extendedArm: this.glacikalExtendedArmAnimation
+            recharge: this.glacikalRechargeAnimation,
+            extendedArm: this.glacikalExtendedArmAnimation,
         };
 
         if (this.state === "idle") {
@@ -1573,7 +1274,6 @@ export class Glacikal extends EnemyBoss {
         const worldAnchorY = this.y + this.height;
 
         const a = this.stateAnchors[this.state] || this.stateAnchors.idle;
-
         const anchorX = invertForState ? animation.width - a.x : a.x;
 
         animation.x = worldAnchorX - anchorX;

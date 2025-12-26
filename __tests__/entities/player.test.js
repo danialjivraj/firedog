@@ -8,14 +8,14 @@ import {
     AngryBee, Bee, IceBall, Garry, InkBeam, Cactus, TheRock, Tauro,
 } from '../../game/entities/enemies/enemies';
 import {
-    ElectricWheel, Elyvorg, Arrow, Barrier, GhostElyvorg, GravitationalAura, PurpleLaserBeam,
+    ElectricWheel, Elyvorg, Arrow, PurpleBarrier, GhostElyvorg, GravitationalAura, PurpleLaserBeam,
     InkBomb, PurpleFireball, MeteorAttack, PurpleSlash, PoisonDrop, PurpleThunder
 } from '../../game/entities/enemies/elyvorg';
 import {
     ElectricityCollision, PoisonSpitSplash, PoisonDropCollision,
     InkBombCollision, InkSplashCollision, ExplosionCollisionAnimation,
-    PurpleFireballExplosion, CollisionAnimation, MeteorExplosionCollision,
-    RedFireballExplosion, Blood, PurpleThunderCollision, GhostFadeOut, DarkExplosion, DisintegrateCollision,
+    PurpleFireballCollision, CollisionAnimation, MeteorExplosionCollision,
+    RedFireballCollision, Blood, PurpleThunderCollision, GhostFadeOut, DarkExplosionCollision, DisintegrateCollision,
 } from '../../game/animations/collisionAnimation';
 import { FloatingMessage } from '../../game/animations/floatingMessages';
 
@@ -44,13 +44,13 @@ jest.mock('../../game/animations/collisionAnimation', () => ({
     Blood: jest.fn(),
     ElectricityCollision: jest.fn(),
     InkBombCollision: jest.fn(),
-    RedFireballExplosion: jest.fn(),
-    PurpleFireballExplosion: jest.fn(),
+    RedFireballCollision: jest.fn(),
+    PurpleFireballCollision: jest.fn(),
     PoisonDropCollision: jest.fn(),
     MeteorExplosionCollision: jest.fn(),
     PurpleThunderCollision: jest.fn(),
     GhostFadeOut: jest.fn(),
-    DarkExplosion: jest.fn(),
+    DarkExplosionCollision: jest.fn(),
     DisintegrateCollision: jest.fn(),
 }));
 
@@ -121,11 +121,12 @@ jest.mock('../../game/entities/enemies/enemies', () => {
     class VolcanoWasp { }
     class Volcanurtle { }
     class EnemyBoss { }
+    class Barrier { }
     return {
         Goblin, PoisonSpit, PoisonDrop, AngryBee, Bee, Skulnap, Sluggie,
         Voltzeel, Tauro, Gloomlet, Aura, KarateCroco, SpearFish, TheRock,
         LilHornet, Cactus, IceBall, Garry, InkBeam, RockProjectile,
-        VolcanoWasp, Volcanurtle, EnemyBoss,
+        VolcanoWasp, Volcanurtle, EnemyBoss, Barrier,
     };
 });
 
@@ -151,7 +152,7 @@ jest.mock('../../game/entities/enemies/elyvorg', () => {
     }
 
     class Arrow { constructor() { this.image = { id: null }; } }
-    class Barrier { }
+    class PurpleBarrier { }
     class ElectricWheel { }
     class GravitationalAura { }
     class InkBomb { }
@@ -164,9 +165,41 @@ jest.mock('../../game/entities/enemies/elyvorg', () => {
     class PurpleLaserBeam { }
 
     return {
-        Elyvorg, Arrow, Barrier, ElectricWheel, GravitationalAura, InkBomb,
+        Elyvorg, Arrow, PurpleBarrier, ElectricWheel, GravitationalAura, InkBomb,
         PurpleFireball, PoisonDrop, MeteorAttack, PurpleSlash, PurpleThunder,
         GhostElyvorg, PurpleLaserBeam,
+    };
+});
+
+jest.mock('../../game/entities/enemies/ntharax', () => {
+    class NTharax { }
+    class Kamehameha { constructor() { this.isKamehameha = true; } }
+    class HealingBarrier { }
+    class GalacticSpike { }
+    class PurpleBallOrb { }
+    class AntennaeTentacle { }
+    class YellowBeamOrb { }
+    class BlackBeamOrb { }
+    class PurpleBeamOrb { }
+    class PurpleAsteroid { }
+    class BlueAsteroid { }
+    class GroundShockwaveRing { }
+    class LaserBall { }
+
+    return {
+        NTharax,
+        Kamehameha,
+        HealingBarrier,
+        GalacticSpike,
+        PurpleBallOrb,
+        AntennaeTentacle,
+        YellowBeamOrb,
+        BlackBeamOrb,
+        PurpleBeamOrb,
+        PurpleAsteroid,
+        BlueAsteroid,
+        GroundShockwaveRing,
+        LaserBall,
     };
 });
 
@@ -1253,9 +1286,9 @@ describe('Player', () => {
             game.bossInFight = true;
         });
 
-        test('skips collision only for Elyvorg/Barrier during teleport safe phase when player not rolling or diving', () => {
+        test('skips collision only for Elyvorg/PurpleBarrier during teleport safe phase when player not rolling or diving', () => {
             const enemyElyvorg = new Elyvorg();
-            const enemyBarrier = new Barrier();
+            const enemyBarrier = new PurpleBarrier();
             const otherEnemy = new Goblin();
 
             boss.state = 'teleport';
@@ -1416,8 +1449,8 @@ describe('Player', () => {
             expect(player.hit).toHaveBeenCalledWith(boss);
         });
 
-        test('Barrier resets timer and hits when allowed', () => {
-            const bar = new Barrier();
+        test('PurpleBarrier resets timer and hits when allowed', () => {
+            const bar = new PurpleBarrier();
             bar.x = 0; bar.y = 0; bar.width = 10; bar.height = 10;
             player.bossCollisionTimer = 1000;
             player.currentState = player.states[0];
@@ -1435,13 +1468,13 @@ describe('Player', () => {
             expect(player.hit).toHaveBeenCalledWith(ps);
         });
 
-        test('PurpleFireball hits and plays PurpleFireballExplosion', () => {
+        test('PurpleFireball hits and plays PurpleFireballCollision', () => {
             const pf = new PurpleFireball();
             pf.x = 0; pf.y = 0; pf.width = 10; pf.height = 10;
             player.isInvisible = false;
             logic.handleNormalCollision(pf);
             expect(player.hit).toHaveBeenCalledWith(pf);
-            expect(PurpleFireballExplosion).toHaveBeenCalled();
+            expect(PurpleFireballCollision).toHaveBeenCalled();
         });
 
         test('MeteorAttack hits and plays MeteorExplosionCollision', () => {
@@ -1605,8 +1638,8 @@ describe('Player', () => {
             expect(player.bloodOrPoof).toHaveBeenCalledWith(boss);
         });
 
-        test('Barrier in rolling resets timer only', () => {
-            const bar = new Barrier();
+        test('PurpleBarrier in rolling resets timer only', () => {
+            const bar = new PurpleBarrier();
             bar.x = 0; bar.y = 0; bar.width = 10; bar.height = 10;
             player.bossCollisionTimer = 123;
             logic.handleRollingOrDivingCollision(bar);
@@ -1621,12 +1654,12 @@ describe('Player', () => {
             expect(player.hit).toHaveBeenCalledWith(ps);
         });
 
-        test('PurpleFireball in rolling hits and plays PurpleFireballExplosion', () => {
+        test('PurpleFireball in rolling hits and plays PurpleFireballCollision', () => {
             const pf = new PurpleFireball();
             pf.x = 0; pf.y = 0; pf.width = 10; pf.height = 10;
             logic.handleRollingOrDivingCollision(pf);
             expect(player.hit).toHaveBeenCalledWith(pf);
-            expect(PurpleFireballExplosion).toHaveBeenCalled();
+            expect(PurpleFireballCollision).toHaveBeenCalled();
         });
 
         test('MeteorAttack in rolling only collision animation', () => {
@@ -1796,7 +1829,7 @@ describe('Player', () => {
         });
 
         const cases = [
-            { Ctor: PurpleFireball, anim: RedFireballExplosion, key: 'PurpleFireball' },
+            { Ctor: PurpleFireball, anim: RedFireballCollision, key: 'PurpleFireball' },
             { Ctor: MeteorAttack, anim: MeteorExplosionCollision, key: 'MeteorAttack' },
             { Ctor: PoisonDrop, anim: PoisonDropCollision, key: 'PoisonDrop' },
             { Ctor: ElectricWheel, anim: ElectricityCollision, key: 'ElectricWheel' },
@@ -1804,7 +1837,7 @@ describe('Player', () => {
             { Ctor: PoisonSpit, anim: PoisonSpitSplash, key: 'PoisonSpit' },
             { Ctor: PurpleThunder, anim: PurpleThunderCollision, key: 'PurpleThunder' },
             { Ctor: GhostElyvorg, anim: GhostFadeOut, key: 'GhostElyvorg' },
-            { Ctor: GravitationalAura, anim: DarkExplosion, key: 'GravitationalAura' },
+            { Ctor: GravitationalAura, anim: DarkExplosionCollision, key: 'GravitationalAura' },
             { Ctor: PurpleLaserBeam, anim: DisintegrateCollision, key: 'PurpleLaserBeam' },
         ];
 
@@ -1909,11 +1942,11 @@ describe('Player', () => {
             [ElectricWheel, ElectricityCollision],
             [PoisonSpit, PoisonSpitSplash],
             [PoisonDrop, PoisonDropCollision],
-            [PurpleFireball, PurpleFireballExplosion],
+            [PurpleFireball, PurpleFireballCollision],
             [MeteorAttack, MeteorExplosionCollision],
             [PurpleThunder, PurpleThunderCollision],
             [GhostElyvorg, GhostFadeOut],
-            [GravitationalAura, DarkExplosion],
+            [GravitationalAura, DarkExplosionCollision],
             [PurpleLaserBeam, DisintegrateCollision],
         ])('enemy %p pushes %p', (EnemyCtor, anim) => {
             const e = new EnemyCtor();
