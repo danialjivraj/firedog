@@ -25,7 +25,8 @@ describe('EnemyLore', () => {
       <img id="meatSoldier" />
       <img id="skulnapSleep" />
       <img id="skulnapAwake" />
-      <img id="chiquita" />`;
+      <img id="chiquita" />
+      <img id="cactus" />`;
     });
 
     beforeEach(() => {
@@ -39,6 +40,8 @@ describe('EnemyLore', () => {
             map4Unlocked: false,
             map5Unlocked: false,
             map6Unlocked: false,
+            map7Unlocked: false,
+
             bonusMap1Unlocked: false,
             bonusMap2Unlocked: false,
             bonusMap3Unlocked: false,
@@ -637,7 +640,8 @@ describe('EnemyLore', () => {
             ['CORAL', 15, ['map2Unlocked', 'map3Unlocked'], 'darkblue', 5],
             ['VERDANT', 22, ['map2Unlocked', 'map3Unlocked', 'map4Unlocked'], 'black', 15],
             ['SPRINGLY', 30, ['map2Unlocked', 'map3Unlocked', 'map4Unlocked', 'map5Unlocked'], 'orange', 5],
-            ['INFERNAL', 41, ['map2Unlocked', 'map3Unlocked', 'map4Unlocked', 'map5Unlocked', 'map6Unlocked'], 'black', 10],
+            ['VENOMVEIL', 41, ['map2Unlocked', 'map3Unlocked', 'map4Unlocked', 'map5Unlocked', 'map6Unlocked'], '#003b00', 10],
+            ['INFERNAL', 42, ['map2Unlocked', 'map3Unlocked', 'map4Unlocked', 'map5Unlocked', 'map6Unlocked', 'map7Unlocked'], 'black', 10],
 
             ['RED', 17, ['map2Unlocked', 'map3Unlocked'], 'black', 1],
             ['STUN', 6, [], 'black', 1],

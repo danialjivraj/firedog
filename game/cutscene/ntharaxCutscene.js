@@ -232,7 +232,7 @@ export class NTharaxCutscene extends Cutscene {
     }
 }
 
-export class Map6NTharaxIngameCutsceneBeforeFight extends NTharaxCutscene {
+export class BonusMap3NTharaxIngameCutsceneBeforeFight extends NTharaxCutscene {
     constructor(game) {
         super(game);
 
@@ -257,7 +257,7 @@ export class Map6NTharaxIngameCutsceneBeforeFight extends NTharaxCutscene {
     }
 }
 
-export class Map6NTharaxIngameCutsceneAfterFight extends NTharaxCutscene {
+export class BonusMap3NTharaxIngameCutsceneAfterFight extends NTharaxCutscene {
     constructor(game) {
         super(game);
 

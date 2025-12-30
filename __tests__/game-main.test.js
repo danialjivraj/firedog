@@ -1,6 +1,6 @@
 import { Game } from '../game/game-main.js';
 import { getDefaultKeyBindings } from '../game/config/keyBindings.js';
-import { Map6, Map3, BonusMap1 } from '../game/background/background.js';
+import { Map7, Map3, BonusMap1 } from '../game/background/background.js';
 import {
   RedPotion,
   BluePotion,
@@ -18,20 +18,20 @@ import {
 import { Goblin, ImmobileGroundEnemy } from '../game/entities/enemies/enemies.js';
 import {
   Map1EndCutscene, Map2EndCutscene, Map3EndCutscene,
-  Map4EndCutscene, Map5EndCutscene, Map6EndCutscene
+  Map4EndCutscene, Map5EndCutscene, Map6EndCutscene, Map7EndCutscene
 } from '../game/cutscene/storyCutscenes.js';
 import {
   Map1PenguinIngameCutscene, Map2PenguinIngameCutscene,
   Map3PenguinIngameCutscene, Map4PenguinIngameCutscene,
-  Map5PenguinIngameCutscene, Map6PenguinIngameCutscene
+  Map5PenguinIngameCutscene, Map7PenguinIngameCutscene
 } from '../game/cutscene/penguiniCutscenes.js';
 import {
-  Map6ElyvorgIngameCutsceneBeforeFight,
-  Map6ElyvorgIngameCutsceneAfterFight
+  Map7ElyvorgIngameCutsceneBeforeFight,
+  Map7ElyvorgIngameCutsceneAfterFight
 } from '../game/cutscene/elyvorgCutscenes.js';
 import {
-  Map6GlacikalIngameCutsceneBeforeFight,
-  Map6GlacikalIngameCutsceneAfterFight
+  BonusMap1GlacikalIngameCutsceneBeforeFight,
+  BonusMap1GlacikalIngameCutsceneAfterFight
 } from '../game/cutscene/glacikalCutscenes.js';
 import { DistortionEffect } from '../game/animations/distortion.js';
 
@@ -45,9 +45,116 @@ describe('Game class (game-main.js)', () => {
   beforeAll(() => {
     document.body.innerHTML = `
       <canvas id="canvas1"></canvas>
+
+      <!-- skins -->
       <img id="defaultSkin"><img id="hatSkin"><img id="choloSkin">
       <img id="zabkaSkin"><img id="shinySkin">
       <img id="skinStage">
+
+      <!-- Map1 -->
+      <img id="map1Background">
+      <img id="map1Trees7">
+      <img id="map1Trees1">
+      <img id="map1Trees2">
+      <img id="map1Trees5">
+      <img id="map1Trees3">
+      <img id="map1Trees4">
+      <img id="map1Rocks">
+      <img id="map1Bush">
+      <img id="map1Trees6">
+      <img id="map1Ground">
+
+      <!-- Map2 -->
+      <img id="map2Background">
+      <img id="map2CityLights2">
+      <img id="map2CityLights1">
+      <img id="map2Trees1">
+      <img id="map2Ground">
+
+      <!-- Map3 -->
+      <img id="map3Background">
+      <img id="map3BackgroundRocks">
+      <img id="map3seaPlants3">
+      <img id="map3seaPlants1">
+      <img id="map3seaPlants2">
+      <img id="map3seaPlants4">
+      <img id="map3seaPlants6">
+      <img id="map3seaPlants5">
+      <img id="map3seaPlants7">
+      <img id="map3Ground">
+
+      <!-- Map4 -->
+      <img id="map4Background">
+      <img id="map4BottomVines">
+      <img id="map4Trees3">
+      <img id="map4Trees4">
+      <img id="map4Trees2">
+      <img id="map4Trees1">
+      <img id="map4TopVines">
+      <img id="map4Ground">
+
+      <!-- Map5 -->
+      <img id="map5Background">
+      <img id="map5Trees5">
+      <img id="map5Trees2">
+      <img id="map5Trees4">
+      <img id="map5Trees3">
+      <img id="map5Trees1">
+      <img id="map5Bush2">
+      <img id="map5Bush1">
+      <img id="map5Flowers2">
+      <img id="map5Flowers1">
+      <img id="map5Ground">
+
+      <!-- Map6 -->
+      <img id="map6Background">
+      <img id="map6Trees1"><img id="map6Trees2"><img id="map6Trees3"><img id="map6Trees4">
+      <img id="map6BigMushrooms">
+      <img id="map6Rocks1"><img id="map6Rocks2">
+      <img id="map6DeadBranches1"><img id="map6DeadBranches2">
+      <img id="map6SmallMushrooms1"><img id="map6SmallMushrooms2">
+      <img id="map6GreenMist">
+      <img id="map6Ground">
+
+      <!-- Map7 -->
+      <img id="map7Background">
+      <img id="map7rocks2">
+      <img id="map7rocks1">
+      <img id="map7cactus">
+      <img id="map7spikeStones">
+      <img id="map7Ground">
+
+      <!-- BonusMap1 -->
+      <img id="bonusMap1Background">
+      <img id="bonusMap1IceRings">
+      <img id="bonusMap2BigIceCrystal">
+      <img id="bonusMap1IceRocks1">
+      <img id="bonusMap1IceRocks2">
+      <img id="bonusMap2TopIcicles">
+      <img id="bonusMap2IceSpikes">
+      <img id="bonusMap1Ground">
+
+      <!-- BonusMap2 -->
+      <img id="bonusMap2Background">
+      <img id="bonusMap2RockLayer1">
+      <img id="bonusMap2RockLayer2">
+      <img id="bonusMap2RockLayer3">
+      <img id="bonusMap2RockLayer4">
+      <img id="bonusMap2RockLayer5">
+      <img id="bonusMap2RedMist">
+      <img id="bonusMap2CrypticRocks1">
+      <img id="bonusMap2CrypticRocks2">
+      <img id="bonusMap2DeadTrees">
+      <img id="bonusMap2SpikeRocks">
+      <img id="bonusMap2Ground">
+
+      <!-- BonusMap3 -->
+      <img id="bonusMap3Background">
+      <img id="bonusMap3Stars">
+      <img id="bonusMap3Planets">
+      <img id="bonusMap3Nebula">
+      <img id="bonusMap3PurpleSpiral">
+      <img id="bonusMap3Ground">
     `;
 
     canvas = document.getElementById('canvas1');
@@ -318,6 +425,7 @@ describe('Game class (game-main.js)', () => {
         map4Unlocked: false,
         map5Unlocked: false,
         map6Unlocked: false,
+        map7Unlocked: false,
         bonusMap1Unlocked: false,
         bonusMap2Unlocked: false,
         bonusMap3Unlocked: false,
@@ -335,6 +443,7 @@ describe('Game class (game-main.js)', () => {
       expect(game.map4Unlocked).toBe(false);
       expect(game.map5Unlocked).toBe(false);
       expect(game.map6Unlocked).toBe(false);
+      expect(game.map7Unlocked).toBe(false);
       expect(game.gameCompleted).toBe(false);
 
       expect(game.menu.forestMap.resetSelectedCircleIndex).toHaveBeenCalled();
@@ -390,12 +499,12 @@ describe('Game class (game-main.js)', () => {
       expect(game.currentMenu).toBeNull();
     });
 
-    it('when player in cabin & not Map6, resets and shows forestMap, then re-enables after 4s', () => {
+    it('when player in cabin & not Map7, resets and shows forestMap, then re-enables after 4s', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
       game.player.x = 300;
       game.player.width = 50;
       game.cabin = { x: 100, width: 200 };
-      game.background = { constructor: { name: 'NotMap6' }, totalDistanceTraveled: game.maxDistance };
+      game.background = { constructor: { name: 'NotMap7' }, totalDistanceTraveled: game.maxDistance };
       game.resetInstance = { reset: jest.fn() };
       game.menu.forestMap.showSavingSprite = false;
       game.canSelectForestMap = true;
@@ -415,12 +524,12 @@ describe('Game class (game-main.js)', () => {
       expect(game.menu.forestMap.selectedCircleIndex).toBe(0);
     });
 
-    it('when player in cabin & background is Map6, resets and shows main menu, then re-enables', () => {
+    it('when player in cabin & background is Map7, resets and shows main menu, then re-enables', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
       game.player.x = 300;
       game.player.width = 50;
       game.cabin = { x: 100, width: 200 };
-      game.background = new Map6(game);
+      game.background = new Map7(game);
       game.resetInstance = { reset: jest.fn() };
       game.menu.main.showSavingSprite = false;
       game.canSelect = true;
@@ -466,6 +575,7 @@ describe('Game class (game-main.js)', () => {
       game.map4Unlocked = true;
       game.map5Unlocked = true;
       game.map6Unlocked = true;
+      game.map7Unlocked = true;
       game.bonusMap1Unlocked = true;
       game.bonusMap2Unlocked = true;
       game.bonusMap3Unlocked = true;
@@ -550,6 +660,21 @@ describe('Game class (game-main.js)', () => {
       expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
     });
 
+    it('moves to the correct map selection after Map6 end cutscene', () => {
+      game.background = {
+        constructor: { name: 'Map6' },
+        totalDistanceTraveled: game.maxDistance
+      };
+      game.currentMap = 'Map6';
+      forestMapMenu.selectedCircleIndex = 5;
+
+      game.endCutscene();
+      jest.advanceTimersByTime(4000);
+
+      expect(forestMapMenu.selectedCircleIndex).toBe(6);
+      expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
+    });
+
     it('moves to the correct map selection after BonusMap1 end cutscene', () => {
       game.background = {
         constructor: { name: 'BonusMap1' },
@@ -576,7 +701,7 @@ describe('Game class (game-main.js)', () => {
       game.endCutscene();
       jest.advanceTimersByTime(4000);
 
-      expect(forestMapMenu.selectedCircleIndex).toBe(8);
+      expect(forestMapMenu.selectedCircleIndex).toBe(9);
       expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
     });
 
@@ -652,7 +777,7 @@ describe('Game class (game-main.js)', () => {
     beforeEach(() => {
       jest.spyOn(Math, 'random').mockReturnValue(0);
       game = new Game(canvas, canvas.width, canvas.height);
-      game.background = { constructor: { name: 'NotMap6' }, totalDistanceTraveled: 0 };
+      game.background = { constructor: { name: 'NotMap7' }, totalDistanceTraveled: 0 };
       game.player.isBluePotionActive = false;
       game.player.isUnderwater = true;
       game.powerUps = [];
@@ -662,7 +787,7 @@ describe('Game class (game-main.js)', () => {
       Math.random.mockRestore();
     });
 
-    it('spawns all power-up types when random < thresholds and not Map6', () => {
+    it('spawns all power-up types when random < thresholds and not Map7', () => {
       game.speed = 10;
       game.addPowerUp();
       expect(game.powerUps.some(p => p instanceof RedPotion)).toBe(true);
@@ -672,8 +797,8 @@ describe('Game class (game-main.js)', () => {
       expect(game.powerUps.some(p => p instanceof OxygenTank)).toBe(true);
     });
 
-    it('spawns no power-ups on Map6', () => {
-      game.background = new Map6(game);
+    it('spawns no power-ups on Map7', () => {
+      game.background = new Map7(game);
       game.powerUps = [];
       game.addPowerUp();
       expect(game.powerUps).toHaveLength(0);
@@ -699,7 +824,7 @@ describe('Game class (game-main.js)', () => {
     beforeEach(() => {
       jest.spyOn(Math, 'random').mockReturnValue(0);
       game = new Game(canvas, canvas.width, canvas.height);
-      game.background = { constructor: { name: 'NotMap6' }, totalDistanceTraveled: 0 };
+      game.background = { constructor: { name: 'NotMap7' }, totalDistanceTraveled: 0 };
       game.speed = 10;
     });
 
@@ -723,7 +848,7 @@ describe('Game class (game-main.js)', () => {
     beforeEach(() => {
       jest.spyOn(Math, 'random').mockReturnValue(0);
       game = new Game(canvas, canvas.width, canvas.height);
-      game.background = { constructor: { name: 'NotMap6' }, totalDistanceTraveled: 0 };
+      game.background = { constructor: { name: 'NotMap7' }, totalDistanceTraveled: 0 };
       game.speed = 10;
       game.player.isBlackHoleActive = false;
       game.player.isUnderwater = true;
@@ -734,7 +859,7 @@ describe('Game class (game-main.js)', () => {
       Math.random.mockRestore();
     });
 
-    it('spawns all power-down types when random < thresholds and not Map6', () => {
+    it('spawns all power-down types when random < thresholds and not Map7', () => {
       game.addPowerDown();
       expect(game.powerDowns.some(p => p instanceof IceDrink)).toBe(true);
       expect(game.powerDowns.some(p => p instanceof IceCube)).toBe(true);
@@ -745,8 +870,8 @@ describe('Game class (game-main.js)', () => {
       expect(game.powerDowns.some(p => p instanceof CarbonDioxideTank)).toBe(true);
     });
 
-    it('spawns no power-downs on Map6', () => {
-      game.background = new Map6(game);
+    it('spawns no power-downs on Map7', () => {
+      game.background = new Map7(game);
       game.powerDowns = [];
       game.addPowerDown();
       expect(game.powerDowns).toHaveLength(0);
@@ -772,7 +897,7 @@ describe('Game class (game-main.js)', () => {
     beforeEach(() => {
       jest.spyOn(Math, 'random').mockReturnValue(0);
       game = new Game(canvas, canvas.width, canvas.height);
-      game.background = { constructor: { name: 'NotMap6' }, totalDistanceTraveled: 0 };
+      game.background = { constructor: { name: 'NotMap7' }, totalDistanceTraveled: 0 };
       game.speed = 10;
     });
 
@@ -822,8 +947,8 @@ describe('Game class (game-main.js)', () => {
 
     it('delegates boss spawning to bossManager and skips normal enemies when a boss is spawned', () => {
       game.gameOver = false;
-      game.background = { totalDistanceTraveled: 0, constructor: { name: 'Map6' } };
-      game.currentMap = 'Map6';
+      game.background = { totalDistanceTraveled: 0, constructor: { name: 'Map7' } };
+      game.currentMap = 'Map7';
 
       const boss = { isBoss: true };
       const spawnBossSpy = jest.spyOn(game.bossManager, 'spawnBossIfNeeded')
@@ -866,10 +991,10 @@ describe('Game class (game-main.js)', () => {
       expect(game.enemies).toHaveLength(0);
     });
 
-    it('can spawn normal enemies on Map6 via enemy table when bossManager allows it', () => {
+    it('can spawn normal enemies on Map7 via enemy table when bossManager allows it', () => {
       game.gameOver = false;
-      game.background = new Map6(game);
-      game.currentMap = 'Map6';
+      game.background = new Map7(game);
+      game.currentMap = 'Map7';
       game.enemies = [];
 
       jest.spyOn(game.bossManager, 'spawnBossIfNeeded').mockReturnValue(false);
@@ -1105,28 +1230,28 @@ describe('Game class (game-main.js)', () => {
       expect(game.cutscenes.some(c => c instanceof Map5PenguinIngameCutscene)).toBe(true);
     });
 
-    it('triggers in-game penguin cutscene on Map6 when flags are set', () => {
+    it('triggers in-game penguin cutscene on Map7 when flags are set', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
       jest.spyOn(game, 'startCutscene');
       game.talkToPenguin = true;
       game.talkToPenguinOneTimeOnly = true;
       game.enterToTalkToPenguin = true;
-      game.background = { constructor: { name: 'Map6' }, update: () => { } };
-      game.currentMap = 'Map6';
+      game.background = { constructor: { name: 'Map7' }, update: () => { } };
+      game.currentMap = 'Map7';
       game.player = { update: () => { } };
       game.menu.pause.isPaused = false;
       game.tutorial.tutorialPause = false;
       game.cabin = { isFullyVisible: false };
       game.update(0);
-      expect(game.cutscenes.some(c => c instanceof Map6PenguinIngameCutscene)).toBe(true);
+      expect(game.cutscenes.some(c => c instanceof Map7PenguinIngameCutscene)).toBe(true);
     });
 
-    it('triggers Elyvorg pre-fight cutscene on Map6 via bossManager state', () => {
+    it('triggers Elyvorg pre-fight cutscene on Map7 via bossManager state', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
       jest.spyOn(game, 'startCutscene');
 
-      game.background = new Map6(game);
-      game.currentMap = 'Map6';
+      game.background = new Map7(game);
+      game.currentMap = 'Map7';
 
       game.player = {
         update: () => { },
@@ -1148,7 +1273,7 @@ describe('Game class (game-main.js)', () => {
       Object.assign(bossState, {
         current: {},
         id: 'elyvorg',
-        map: 'Map6',
+        map: 'Map7',
         isVisible: true,
         talkToBoss: false,
         preFight: false,
@@ -1167,18 +1292,18 @@ describe('Game class (game-main.js)', () => {
       game.update(0);
 
       expect(game.startCutscene).toHaveBeenCalled();
-      expect(game.cutscenes.some(c => c instanceof Map6ElyvorgIngameCutsceneBeforeFight)).toBe(true);
+      expect(game.cutscenes.some(c => c instanceof Map7ElyvorgIngameCutsceneBeforeFight)).toBe(true);
       expect(game.boss.dialogueBeforeOnce).toBe(false);
       expect(game.boss.preFight).toBe(true);
       expect(game.boss.postFight).toBe(false);
     });
 
-    it('triggers Elyvorg post-fight cutscene on Map6 via bossManager state', () => {
+    it('triggers Elyvorg post-fight cutscene on Map7 via bossManager state', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
       jest.spyOn(game, 'startCutscene');
 
-      game.background = new Map6(game);
-      game.currentMap = 'Map6';
+      game.background = new Map7(game);
+      game.currentMap = 'Map7';
 
       game.player = {
         update: () => { },
@@ -1200,7 +1325,7 @@ describe('Game class (game-main.js)', () => {
       Object.assign(bossState, {
         current: {},
         id: 'elyvorg',
-        map: 'Map6',
+        map: 'Map7',
         isVisible: true,
         talkToBoss: false,
         preFight: true,
@@ -1218,7 +1343,7 @@ describe('Game class (game-main.js)', () => {
       game.update(0);
 
       expect(game.startCutscene).toHaveBeenCalled();
-      expect(game.cutscenes.some(c => c instanceof Map6ElyvorgIngameCutsceneAfterFight)).toBe(true);
+      expect(game.cutscenes.some(c => c instanceof Map7ElyvorgIngameCutsceneAfterFight)).toBe(true);
       expect(game.boss.dialogueAfterOnce).toBe(false);
       expect(game.boss.dialogueAfterLeaving).toBe(true);
       expect(game.boss.postFight).toBe(true);
@@ -1270,7 +1395,7 @@ describe('Game class (game-main.js)', () => {
       game.update(0);
 
       expect(game.startCutscene).toHaveBeenCalled();
-      expect(game.cutscenes.some(c => c instanceof Map6GlacikalIngameCutsceneBeforeFight)).toBe(true);
+      expect(game.cutscenes.some(c => c instanceof BonusMap1GlacikalIngameCutsceneBeforeFight)).toBe(true);
       expect(game.boss.dialogueBeforeOnce).toBe(false);
       expect(game.boss.preFight).toBe(true);
       expect(game.boss.postFight).toBe(false);
@@ -1321,7 +1446,7 @@ describe('Game class (game-main.js)', () => {
       game.update(0);
 
       expect(game.startCutscene).toHaveBeenCalled();
-      expect(game.cutscenes.some(c => c instanceof Map6GlacikalIngameCutsceneAfterFight)).toBe(true);
+      expect(game.cutscenes.some(c => c instanceof BonusMap1GlacikalIngameCutsceneAfterFight)).toBe(true);
       expect(game.boss.dialogueAfterOnce).toBe(false);
       expect(game.boss.dialogueAfterLeaving).toBe(true);
       expect(game.boss.postFight).toBe(true);
@@ -1358,6 +1483,7 @@ describe('Game class (game-main.js)', () => {
       { name: 'Map4', cls: Map4EndCutscene },
       { name: 'Map5', cls: Map5EndCutscene },
       { name: 'Map6', cls: Map6EndCutscene },
+      { name: 'Map7', cls: Map7EndCutscene },
     ].forEach(({ name, cls }) => {
       it(`triggers end-of-map cutscene for ${name} when player enters cabin`, () => {
         const game = new Game(canvas, canvas.width, canvas.height);
@@ -1462,7 +1588,7 @@ describe('Game class (game-main.js)', () => {
   });
 
   describe('enterCabin & door sound branches', () => {
-    it('sets enterCabin=570 and openDoor="walkingCutsceneSound" for Map6 and plays sound', () => {
+    it('sets enterCabin=570 and openDoor="walkingCutsceneSound" for Map7 and plays sound', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
       game.saveGameState = jest.fn();
       game.menu.skins.currentSkin = { id: 'defaultSkin' };
@@ -1471,8 +1597,8 @@ describe('Game class (game-main.js)', () => {
 
       jest.spyOn(game.audioHandler.cutsceneSFX, 'playSound');
 
-      game.background = new Map6(game);
-      game.currentMap = 'Map6';
+      game.background = new Map7(game);
+      game.currentMap = 'Map7';
       game.cabin = { isFullyVisible: true, x: 100, width: 1000 };
       game.player = { update: () => { }, x: 100 + 570, width: 10 };
       game.menu.pause.isPaused = false;
@@ -1487,7 +1613,7 @@ describe('Game class (game-main.js)', () => {
         .toHaveBeenCalledWith('walkingCutsceneSound');
     });
 
-    it('sets enterCabin=290 and openDoor="doorOpening" for non-Map3/Map6 maps and plays sound', () => {
+    it('sets enterCabin=290 and openDoor="doorOpening" for non-Map3/Map7 maps and plays sound', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
 
       game.saveGameState = jest.fn();

@@ -1,4 +1,4 @@
-import { Map1, Map2, Map3, Map4, Map5, Map6, BonusMap1, BonusMap2, BonusMap3 } from "./background/background.js";
+import { Map1, Map2, Map3, Map4, Map5, Map6, Map7, BonusMap1, BonusMap2, BonusMap3 } from "./background/background.js";
 import { Player } from "./entities/player.js";
 
 export class Reset {
@@ -95,6 +95,9 @@ export class Reset {
                 break;
             case Map6:
                 selectedMap = new Map6(this.game);
+                break;
+            case Map7:
+                selectedMap = new Map7(this.game);
                 this.game.maxDistance = 9999999;
                 break;
             case BonusMap1:

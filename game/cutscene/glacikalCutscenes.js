@@ -232,7 +232,7 @@ export class GlacikalCutscene extends Cutscene {
     }
 }
 
-export class Map6GlacikalIngameCutsceneBeforeFight extends GlacikalCutscene {
+export class BonusMap1GlacikalIngameCutsceneBeforeFight extends GlacikalCutscene {
     constructor(game) {
         super(game);
 
@@ -257,7 +257,7 @@ export class Map6GlacikalIngameCutsceneBeforeFight extends GlacikalCutscene {
     }
 }
 
-export class Map6GlacikalIngameCutsceneAfterFight extends GlacikalCutscene {
+export class BonusMap1GlacikalIngameCutsceneAfterFight extends GlacikalCutscene {
     constructor(game) {
         super(game);
 

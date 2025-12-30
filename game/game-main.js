@@ -27,7 +27,7 @@ import { GameOverMenu } from "./menu/gameOverMenu.js";
 import { InputHandler } from "./interface/input.js";
 import { UI } from "./interface/UI.js";
 import { Tutorial } from "./interface/tutorial.js";
-import { Map3, Map6, BonusMap1, BonusMap3 } from "./background/background.js";
+import { Map3, Map7, BonusMap1, BonusMap3 } from "./background/background.js";
 // menus
 import { MainMenu } from "./menu/mainMenu.js";
 import { LevelDifficultyMenu } from "./menu/levelDifficultyMenu.js";
@@ -51,25 +51,25 @@ import { screenColourFadeIn, screenColourFadeOut } from "./animations/screenColo
 // cutscenes
 import {
     Map1EndCutscene, Map2EndCutscene, Map3EndCutscene,
-    Map4EndCutscene, Map5EndCutscene, Map6EndCutscene,
+    Map4EndCutscene, Map5EndCutscene, Map6EndCutscene, Map7EndCutscene,
     BonusMap1EndCutscene, BonusMap2EndCutscene, BonusMap3EndCutscene
 } from "./cutscene/storyCutscenes.js";
 import {
     Map1PenguinIngameCutscene, Map2PenguinIngameCutscene, Map3PenguinIngameCutscene,
-    Map4PenguinIngameCutscene, Map5PenguinIngameCutscene, Map6PenguinIngameCutscene,
+    Map4PenguinIngameCutscene, Map5PenguinIngameCutscene, Map6PenguinIngameCutscene, Map7PenguinIngameCutscene,
     BonusMap1PenguinIngameCutscene, BonusMap2PenguinIngameCutscene, BonusMap3PenguinIngameCutscene,
 } from "./cutscene/penguiniCutscenes.js";
 import {
-    Map6ElyvorgIngameCutsceneBeforeFight,
-    Map6ElyvorgIngameCutsceneAfterFight
+    Map7ElyvorgIngameCutsceneBeforeFight,
+    Map7ElyvorgIngameCutsceneAfterFight
 } from "./cutscene/elyvorgCutscenes.js";
 import {
-    Map6GlacikalIngameCutsceneBeforeFight,
-    Map6GlacikalIngameCutsceneAfterFight
+    BonusMap1GlacikalIngameCutsceneBeforeFight,
+    BonusMap1GlacikalIngameCutsceneAfterFight
 } from "./cutscene/glacikalCutscenes.js";
 import {
-    Map6NTharaxIngameCutsceneBeforeFight,
-    Map6NTharaxIngameCutsceneAfterFight
+    BonusMap3NTharaxIngameCutsceneBeforeFight,
+    BonusMap3NTharaxIngameCutsceneAfterFight
 } from "./cutscene/ntharaxCutscene.js";
 import { EnemyLore } from "./menu/enemyLore.js";
 import {
@@ -162,6 +162,7 @@ export class Game {
         this.map4Unlocked = false;
         this.map5Unlocked = false;
         this.map6Unlocked = false;
+        this.map7Unlocked = false;
         this.bonusMap1Unlocked = false;
         this.bonusMap2Unlocked = false;
         this.bonusMap3Unlocked = false;
@@ -228,7 +229,7 @@ export class Game {
         ) {
             this.reset();
             this.isPlayerInGame = false;
-            if (!(this.background instanceof Map6)) {
+            if (!(this.background instanceof Map7)) {
                 this.canSelectForestMap = false;
                 this.currentMenu = this.menu.forestMap;
                 this.menu.forestMap.showSavingSprite = true;
@@ -248,8 +249,9 @@ export class Game {
                         Map3: 3,
                         Map4: 4,
                         Map5: 5,
+                        Map6: 6,
                         BonusMap1: 1,
-                        BonusMap2: 8,
+                        BonusMap2: 9,
                         BonusMap3: 3,
                     };
 
@@ -262,10 +264,10 @@ export class Game {
                     nextIndex = Math.max(0, Math.min(maxIdx, nextIndex));
 
                     const isUnlocked = (idx) => {
-                        if (idx === 6) return !!this.bonusMap1Unlocked;
-                        if (idx === 7) return !!this.bonusMap2Unlocked;
-                        if (idx === 8) return !!this.bonusMap3Unlocked;
-                        if (idx >= 0 && idx <= 5) return !!this[`map${idx + 1}Unlocked`];
+                        if (idx === 7) return !!this.bonusMap1Unlocked;
+                        if (idx === 8) return !!this.bonusMap2Unlocked;
+                        if (idx === 9) return !!this.bonusMap3Unlocked;
+                        if (idx >= 0 && idx <= 6) return !!this[`map${idx + 1}Unlocked`];
                         return false;
                     };
 
@@ -500,6 +502,7 @@ export class Game {
                     Map4: Map4PenguinIngameCutscene,
                     Map5: Map5PenguinIngameCutscene,
                     Map6: Map6PenguinIngameCutscene,
+                    Map7: Map7PenguinIngameCutscene,
                     BonusMap1: BonusMap1PenguinIngameCutscene,
                     BonusMap2: BonusMap2PenguinIngameCutscene,
                     BonusMap3: BonusMap3PenguinIngameCutscene,
@@ -526,20 +529,20 @@ export class Game {
                     {
                         mapClass: BonusMap1,
                         bossId: "glacikal",
-                        beforeCutscene: Map6GlacikalIngameCutsceneBeforeFight,
-                        afterCutscene: Map6GlacikalIngameCutsceneAfterFight,
+                        beforeCutscene: BonusMap1GlacikalIngameCutsceneBeforeFight,
+                        afterCutscene: BonusMap1GlacikalIngameCutsceneAfterFight,
                     },
                     {
                         mapClass: BonusMap3,
                         bossId: "ntharax",
-                        beforeCutscene: Map6NTharaxIngameCutsceneBeforeFight,
-                        afterCutscene: Map6NTharaxIngameCutsceneAfterFight,
+                        beforeCutscene: BonusMap3NTharaxIngameCutsceneBeforeFight,
+                        afterCutscene: BonusMap3NTharaxIngameCutsceneAfterFight,
                     },
                     {
-                        mapClass: Map6,
+                        mapClass: Map7,
                         bossId: "elyvorg",
-                        beforeCutscene: Map6ElyvorgIngameCutsceneBeforeFight,
-                        afterCutscene: Map6ElyvorgIngameCutsceneAfterFight,
+                        beforeCutscene: Map7ElyvorgIngameCutsceneBeforeFight,
+                        afterCutscene: Map7ElyvorgIngameCutsceneAfterFight,
                     },
                 ];
 
@@ -586,7 +589,7 @@ export class Game {
             if (this.background instanceof Map3) {
                 this.enterCabin = 500;
                 this.openDoor = "submarineDoorOpening";
-            } else if (this.background instanceof Map6) {
+            } else if (this.background instanceof Map7) {
                 this.enterCabin = 570;
                 this.openDoor = "walkingCutsceneSound";
             } else {
@@ -609,6 +612,7 @@ export class Game {
                     Map4: Map4EndCutscene,
                     Map5: Map5EndCutscene,
                     Map6: Map6EndCutscene,
+                    Map7: Map7EndCutscene,
                     BonusMap1: BonusMap1EndCutscene,
                     BonusMap2: BonusMap2EndCutscene,
                     BonusMap3: BonusMap3EndCutscene,
@@ -805,6 +809,10 @@ export class Game {
             ],
             Map6: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
+                { type: IceSilknoir, probability: 1, spawningDistance: 0 },
+            ],
+            Map7: [
+                { type: Goblin, probability: 0.05, spawningDistance: 0 },
                 { type: Cactus, probability: 0.1, spawningDistance: 0 },
                 { type: PetroPlant, probability: 0.1, spawningDistance: 0 },
                 { type: Plazer, probability: 0.05, spawningDistance: 0 },
@@ -820,6 +828,10 @@ export class Game {
                 { type: IceSilknoir, probability: 1, spawningDistance: 0 },
             ],
             BonusMap2: [
+                { type: Goblin, probability: 0.05, spawningDistance: 0 },
+                { type: Silknoir, probability: 0.4, spawningDistance: 0 },
+            ],
+            BonusMap3: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
                 { type: Silknoir, probability: 0.4, spawningDistance: 0 },
             ],
@@ -862,7 +874,7 @@ export class Game {
     }
 
     addPowerUp() {
-        if (!(this.background instanceof Map6)) {
+        if (!(this.background instanceof Map7)) {
             if (
                 this.speed > 0 &&
                 this.background &&
@@ -893,7 +905,7 @@ export class Game {
     }
 
     addPowerDown() {
-        if (!(this.background instanceof Map6)) {
+        if (!(this.background instanceof Map7)) {
             if (
                 this.speed > 0 &&
                 this.background &&

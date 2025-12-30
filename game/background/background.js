@@ -1,27 +1,44 @@
 export class Layer {
-    constructor(game, bgSpeed, image) {
+    constructor(game, bgSpeed, imageOrImages) {
         this.game = game;
         this.bgSpeed = bgSpeed;
-        this.image = image;
+
+        this.images = Array.isArray(imageOrImages) ? imageOrImages : [imageOrImages];
+        this.sequenceIndex = 0;
+
         this.x = 0;
         this.y = 0;
         this.groundSpeed = 0;
         this.isRaining = false;
     }
 
+    _nextIndex() {
+        if (this.images.length <= 1) return;
+        this.sequenceIndex = (this.sequenceIndex + 1) % this.images.length;
+    }
+
     update() {
         this.groundSpeed = this.game.speed * this.bgSpeed;
         this.x -= this.groundSpeed;
 
-        if (this.x <= -this.game.width) {
+        while (this.x <= -this.game.width) {
             this.x += this.game.width;
+            this._nextIndex();
         }
     }
 
     draw(context) {
         const x = Math.round(this.x);
-        context.drawImage(this.image, x, this.y, this.game.width, this.game.height);
-        context.drawImage(this.image, x + this.game.width, this.y, this.game.width, this.game.height);
+        const y = Math.round(this.y);
+
+        const img0 = this.images[this.sequenceIndex % this.images.length];
+        const img1 =
+            this.images.length > 1
+                ? this.images[(this.sequenceIndex + 1) % this.images.length]
+                : img0;
+
+        context.drawImage(img0, x, y, this.game.width, this.game.height);
+        context.drawImage(img1, x + this.game.width, y, this.game.width, this.game.height);
     }
 }
 
@@ -29,13 +46,21 @@ export class MovingLayer extends Layer {
     constructor(
         game,
         bgSpeed,
-        imageId,
+        imageIdOrIds,
         baseScrollSpeed = 0.3,
         direction = 'left',
         axis = 'x'
     ) {
-        const image = document.getElementById(imageId);
-        super(game, bgSpeed, image);
+        const ids = Array.isArray(imageIdOrIds) ? imageIdOrIds : [imageIdOrIds];
+        const images = ids.map((id) => document.getElementById(id)).filter(Boolean);
+
+        if (images.length === 0) {
+            throw new Error(
+                `MovingLayer: no valid images found for imageId(s): ${JSON.stringify(imageIdOrIds)}`
+            );
+        }
+
+        super(game, bgSpeed, images);
         this.baseScrollSpeed = baseScrollSpeed;
         this.direction = direction;
         this.axis = axis;
@@ -45,8 +70,8 @@ export class MovingLayer extends Layer {
         this.groundSpeed = this.game.speed * this.bgSpeed;
 
         const axisSpeed = this.axis === 'x'
-            ? this.baseScrollSpeed + this.groundSpeed
-            : this.baseScrollSpeed;
+                ? this.baseScrollSpeed + this.groundSpeed
+                : this.baseScrollSpeed;
 
         if (this.direction === 'left') {
             this.x -= axisSpeed;
@@ -59,11 +84,23 @@ export class MovingLayer extends Layer {
         }
 
         if (this.axis === 'x') {
-            if (this.x <= -this.game.width) this.x += this.game.width;
-            if (this.x >= this.game.width) this.x -= this.game.width;
+            while (this.x <= -this.game.width) {
+                this.x += this.game.width;
+                this._nextIndex();
+            }
+            while (this.x >= this.game.width) {
+                this.x -= this.game.width;
+                this._nextIndex();
+            }
         } else {
-            if (this.y <= -this.game.height) this.y += this.game.height;
-            if (this.y >= this.game.height) this.y -= this.game.height;
+            while (this.y <= -this.game.height) {
+                this.y += this.game.height;
+                this._nextIndex();
+            }
+            while (this.y >= this.game.height) {
+                this.y -= this.game.height;
+                this._nextIndex();
+            }
         }
     }
 
@@ -71,24 +108,18 @@ export class MovingLayer extends Layer {
         const x = Math.round(this.x);
         const y = Math.round(this.y);
 
+        const img0 = this.images[this.sequenceIndex % this.images.length];
+        const img1 =
+            this.images.length > 1
+                ? this.images[(this.sequenceIndex + 1) % this.images.length]
+                : img0;
+
         if (this.axis === 'x') {
-            context.drawImage(this.image, x, this.y, this.game.width, this.game.height);
-            context.drawImage(
-                this.image,
-                x + this.game.width,
-                this.y,
-                this.game.width,
-                this.game.height
-            );
+            context.drawImage(img0, x, this.y, this.game.width, this.game.height);
+            context.drawImage(img1, x + this.game.width, this.y, this.game.width, this.game.height);
         } else {
-            context.drawImage(this.image, this.x, y, this.game.width, this.game.height);
-            context.drawImage(
-                this.image,
-                this.x,
-                y + this.game.height,
-                this.game.width,
-                this.game.height
-            );
+            context.drawImage(img0, this.x, y, this.game.width, this.game.height);
+            context.drawImage(img1, this.x, y + this.game.height, this.game.width, this.game.height);
         }
     }
 }
@@ -100,22 +131,30 @@ export class Background {
         this.soundId = undefined;
         this.soundPlayed = false;
 
-        this.backgroundLayers = layers.map(item => {
+        this.backgroundLayers = layers.map((item) => {
             if (
                 item instanceof Layer ||
                 item instanceof MovingLayer ||
                 item instanceof EntityAnimation ||
                 item instanceof RaindropAnimation ||
                 item instanceof SnowflakeAnimation ||
-                item instanceof RedBubbleAnimation ||
+                item instanceof BubbleAnimation ||
                 item instanceof StarField ||
                 item instanceof ShootingStar
             ) {
                 return item;
             }
 
-            const image = document.getElementById(item.imageId);
-            return new Layer(this.game, item.bgSpeed, image);
+            const ids = Array.isArray(item.imageId) ? item.imageId : [item.imageId];
+            const images = ids.map((id) => document.getElementById(id)).filter(Boolean);
+
+            if (images.length === 0) {
+                throw new Error(
+                    `Background: no valid images found for imageId(s): ${JSON.stringify(item.imageId)}`
+                );
+            }
+
+            return new Layer(this.game, item.bgSpeed, images);
         });
     }
 
@@ -168,7 +207,7 @@ export class Background {
     }
 
     draw(context) {
-        this.backgroundLayers.forEach(layer => {
+        this.backgroundLayers.forEach((layer) => {
             layer.draw(context);
         });
     }
@@ -361,16 +400,57 @@ export class Map5 extends Background {
 
 export class Map6 extends Background {
     constructor(game) {
+        const greenMist = new MovingLayer(game, 0, 'map6GreenMist', 0.9, 'up', 'y');
+
+        const greenBubbles1 = new BubbleAnimation(game, 15, 0.65, { min: 0.0, max: 0.33 }, {
+            base: '#7CFF2B',
+            highlight: '#DFFF6A',
+            shadow: '#4FBF1A',
+        });
+
+        const greenBubbles2 = new BubbleAnimation(game, 15, 0.85, { min: 0.33, max: 0.66 }, {
+            base: '#7CFF2B',
+            highlight: '#DFFF6A',
+            shadow: '#4FBF1A',
+        });
+
+        const greenBubbles3 = new BubbleAnimation(game, 10, 1.0, { min: 0.66, max: 1.0, spawnBelowGround: true }, {
+            base: '#7CFF2B',
+            highlight: '#DFFF6A',
+            shadow: '#4FBF1A',
+        });
+
         super(
             game,
             { imageId: 'map6Background', bgSpeed: 0 },
-            { imageId: 'map6rocks2', bgSpeed: 0.3 },
-            { imageId: 'map6rocks1', bgSpeed: 0.5 },
-            { imageId: 'map6cactus', bgSpeed: 0.6 },
-            { imageId: 'map6spikeStones', bgSpeed: 0.7 },
+            greenBubbles1,
+            greenBubbles2,
+            greenBubbles3,
+            { imageId: ['map6Trees1', 'map6Trees2', 'map6Trees3', 'map6Trees4'], bgSpeed: 0.2 },
+            { imageId: 'map6BigMushrooms', bgSpeed: 0.3 },
+            { imageId: ['map6Rocks1', 'map6Rocks2'], bgSpeed: 0.4 },
+            { imageId: ['map6DeadBranches1', 'map6DeadBranches2'], bgSpeed: 0.5 },
+            { imageId: ['map6SmallMushrooms1', 'map6SmallMushrooms2'], bgSpeed: 0.7 },
+            greenMist,
             { imageId: 'map6Ground', bgSpeed: 1 },
         );
+
         this.soundId = 'map6Soundtrack';
+    }
+}
+
+export class Map7 extends Background {
+    constructor(game) {
+        super(
+            game,
+            { imageId: 'map7Background', bgSpeed: 0 },
+            { imageId: 'map7rocks2', bgSpeed: 0.3 },
+            { imageId: 'map7rocks1', bgSpeed: 0.5 },
+            { imageId: 'map7cactus', bgSpeed: 0.6 },
+            { imageId: 'map7spikeStones', bgSpeed: 0.7 },
+            { imageId: 'map7Ground', bgSpeed: 1 },
+        );
+        this.soundId = 'map7Soundtrack';
     }
 }
 
@@ -409,9 +489,9 @@ export class BonusMap2 extends Background {
     constructor(game) {
         const redMist = new MovingLayer(game, 0, 'bonusMap2RedMist', 0.9, 'up', 'y');
 
-        const redBubbles1 = new RedBubbleAnimation(game, 20, 0.65, { min: 0.0, max: 0.33 });
-        const redBubbles2 = new RedBubbleAnimation(game, 20, 0.85, { min: 0.33, max: 0.66 });
-        const redBubbles3 = new RedBubbleAnimation(game, 10, 1.0, { min: 0.66, max: 1.0, spawnBelowGround: true });
+        const redBubbles1 = new BubbleAnimation(game, 20, 0.65, { min: 0.0, max: 0.33 });
+        const redBubbles2 = new BubbleAnimation(game, 20, 0.85, { min: 0.33, max: 0.66 });
+        const redBubbles3 = new BubbleAnimation(game, 10, 1.0, { min: 0.66, max: 1.0, spawnBelowGround: true });
 
         const dragon1 = new DragonSilhouette(game, 0.45, 0.4);
         const dragon1Extra = new DragonSilhouette(game, 0.45, 0.4);
@@ -978,14 +1058,22 @@ export class SnowflakeAnimation {
     }
 }
 
-export class RedBubbleAnimation extends EntityAnimation {
+export class BubbleAnimation extends EntityAnimation {
     constructor(
         game,
         maxBackgroundEntities = 70,
         sizeScale = 1,
         band = { min: 0, max: 1, spawnBelowGround: false },
+        colors = {}
     ) {
         super(game, maxBackgroundEntities);
+
+        this.colors = {
+            base: colors.base || '#d12932ff',
+            highlight: colors.highlight || '#ffb6c4',
+            shadow: colors.shadow || '#ff3c5a',
+        };
+
         this.bubbles = [];
 
         this.waterDepth = Math.min(300, this.game.height * 0.45);
@@ -1017,72 +1105,54 @@ export class RedBubbleAnimation extends EntityAnimation {
     makeBubble(randomAge = false) {
         const x = Math.random() * this.game.width;
 
-        let depthNorm;
-        if (this.spawnBelowGround) {
-            depthNorm = 1;
-        } else {
-            const depthSample =
-                this.bandMin + Math.random() * (this.bandMax - this.bandMin);
-            depthNorm = depthSample;
-        }
+        const depthNorm = this.spawnBelowGround
+            ? 1
+            : this.bandMin + Math.random() * (this.bandMax - this.bandMin);
 
         const baseRadius =
             this.minRadius + depthNorm * (this.maxRadius - this.minRadius);
 
-        const jitter = 0.85 + Math.random() * 0.3;
-        const radius = baseRadius * this.sizeScale * jitter;
+        const radius = baseRadius * this.sizeScale * (0.85 + Math.random() * 0.3);
 
         let y;
-
         if (this.spawnBelowGround) {
-            const groundMargin = this.game.groundMargin || 0;
-            const groundTopY = this.game.height - groundMargin;
-
-            const spawnMinY = groundTopY + radius;
-            const spawnMaxY = groundTopY + radius * 3;
-
-            y = spawnMinY + Math.random() * (spawnMaxY - spawnMinY);
+            const groundTop = this.game.height - (this.game.groundMargin || 0);
+            y = groundTop + radius + Math.random() * radius * 2;
         } else {
-            const localBandHeight = this.waterDepth * (this.bandMax - this.bandMin);
-            const bandTop = this.waterTopY + this.waterDepth * this.bandMin;
-            y = bandTop + Math.random() * localBandHeight;
+            const bandHeight = this.waterDepth * (this.bandMax - this.bandMin);
+            y =
+                this.waterTopY +
+                this.waterDepth * this.bandMin +
+                Math.random() * bandHeight;
         }
 
-        const depthCurve = Math.pow(depthNorm, 2.2);
         const riseSpeed =
-            this.minRise + depthCurve * (this.maxRise - this.minRise);
+            this.minRise + Math.pow(depthNorm, 2.2) * (this.maxRise - this.minRise);
 
         const baseOpacity =
             this.minOpacity + depthNorm * (this.maxOpacity - this.minOpacity);
-
-        const drift = (Math.random() * 0.04 - 0.02) * (0.5 + depthNorm);
-
-        const alivePhase = this.lifeTime * (1 - this.fadeFraction);
-        const age = randomAge ? Math.random() * alivePhase : 0;
 
         return {
             x,
             y,
             radius,
             riseSpeed,
+            drift: (Math.random() * 0.04 - 0.02) * (0.5 + depthNorm),
             baseOpacity,
             opacity: 0,
-            drift,
-            age,
+            age: randomAge
+                ? Math.random() * this.lifeTime * (1 - this.fadeFraction)
+                : 0,
         };
     }
 
     update(deltaTime) {
-        const dt = deltaTime;
-
         for (let i = 0; i < this.bubbles.length; i++) {
-            let b = this.bubbles[i];
-
-            b.age += dt;
-            const lifeRatio = b.age / this.lifeTime;
+            const b = this.bubbles[i];
+            b.age += deltaTime;
 
             if (
-                lifeRatio >= 1 ||
+                b.age >= this.lifeTime ||
                 b.y < -50 ||
                 b.x < -40 ||
                 b.x > this.game.width + 40
@@ -1091,23 +1161,18 @@ export class RedBubbleAnimation extends EntityAnimation {
                 continue;
             }
 
-            b.y -= b.riseSpeed * dt;
-            b.x += b.drift * dt;
+            b.y -= b.riseSpeed * deltaTime;
+            b.x += b.drift * deltaTime;
 
-            const fadeInEnd = this.lifeTime * this.fadeFraction;
-            const fadeOutStart = this.lifeTime * (1 - this.fadeFraction);
+            const fadeIn = this.lifeTime * this.fadeFraction;
+            const fadeOut = this.lifeTime * (1 - this.fadeFraction);
 
-            let alphaFactor = 1;
+            let alpha = 1;
+            if (b.age < fadeIn) alpha = b.age / fadeIn;
+            else if (b.age > fadeOut)
+                alpha = 1 - (b.age - fadeOut) / (this.lifeTime - fadeOut);
 
-            if (b.age < fadeInEnd) {
-                alphaFactor = b.age / fadeInEnd;
-            } else if (b.age > fadeOutStart) {
-                alphaFactor =
-                    1 - (b.age - fadeOutStart) / (this.lifeTime - fadeOutStart);
-            }
-
-            alphaFactor = Math.max(0, Math.min(1, alphaFactor));
-            b.opacity = b.baseOpacity * alphaFactor;
+            b.opacity = b.baseOpacity * Math.max(0, Math.min(1, alpha));
         }
     }
 
@@ -1115,23 +1180,21 @@ export class RedBubbleAnimation extends EntityAnimation {
         context.save();
         context.globalCompositeOperation = 'lighter';
 
-        for (let i = 0; i < this.bubbles.length; i++) {
-            const b = this.bubbles[i];
+        for (const b of this.bubbles) {
             if (b.opacity <= 0) continue;
 
             context.globalAlpha = b.opacity;
-
             context.shadowBlur = b.radius * 2;
-            context.shadowColor = `rgba(255, 60, 90, ${b.opacity})`;
+            context.shadowColor = this.colors.shadow;
 
-            context.fillStyle = '#d12932ff';
+            context.fillStyle = this.colors.base;
             context.beginPath();
             context.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
             context.fill();
 
             context.shadowBlur = 0;
             context.globalAlpha = b.opacity * 0.8;
-            context.fillStyle = '#ffb6c4';
+            context.fillStyle = this.colors.highlight;
             context.beginPath();
             context.arc(
                 b.x - b.radius * 0.35,
@@ -1142,11 +1205,6 @@ export class RedBubbleAnimation extends EntityAnimation {
             );
             context.fill();
         }
-
-        context.globalAlpha = 1;
-        context.shadowBlur = 0;
-        context.shadowColor = 'transparent';
-        context.globalCompositeOperation = 'source-over';
 
         context.restore();
     }
@@ -1252,7 +1310,6 @@ export class StarField extends EntityAnimation {
         context.restore();
     }
 }
-
 
 export class ShootingStar extends EntityAnimation {
     constructor(game, maxBackgroundEntities = 4) {
@@ -1471,6 +1528,7 @@ export class ShootingStar extends EntityAnimation {
         context.restore();
     }
 }
+
 export class DragonSilhouette extends EntityAnimation {
     constructor(
         game,

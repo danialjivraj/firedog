@@ -1,7 +1,7 @@
 import {
     NTharaxCutscene,
-    Map6NTharaxIngameCutsceneBeforeFight,
-    Map6NTharaxIngameCutsceneAfterFight
+    BonusMap3NTharaxIngameCutsceneBeforeFight,
+    BonusMap3NTharaxIngameCutsceneAfterFight
 } from '../../game/cutscene/ntharaxCutscene.js';
 import * as fading from '../../game/animations/fading.js';
 
@@ -58,7 +58,7 @@ const createBaseGame = () => {
     };
 };
 
-const createMap6Game = (overrides = {}) => ({
+const createBonusMap3 = (overrides = {}) => ({
     menu: {
         skins: {
             defaultSkin: 'default',
@@ -489,12 +489,12 @@ describe('NTharaxCutscene', () => {
     });
 });
 
-describe('Map6NTharaxIngameCutsceneBeforeFight', () => {
+describe('BonusMap3NTharaxIngameCutsceneBeforeFight', () => {
     let game, m6pre;
 
     beforeEach(() => {
-        game = createMap6Game();
-        m6pre = new Map6NTharaxIngameCutsceneBeforeFight(game);
+        game = createBonusMap3();
+        m6pre = new BonusMap3NTharaxIngameCutsceneBeforeFight(game);
     });
 
     it('registers exactly 3 dialogues', () => {
@@ -507,12 +507,12 @@ describe('Map6NTharaxIngameCutsceneBeforeFight', () => {
     });
 });
 
-describe('Map6NTharaxIngameCutsceneAfterFight', () => {
+describe('BonusMap3NTharaxIngameCutsceneAfterFight', () => {
     let game, m6post;
 
     beforeEach(() => {
-        game = createMap6Game();
-        m6post = new Map6NTharaxIngameCutsceneAfterFight(game);
+        game = createBonusMap3();
+        m6post = new BonusMap3NTharaxIngameCutsceneAfterFight(game);
     });
 
     it('registers exactly 2 dialogues', () => {

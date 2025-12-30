@@ -170,8 +170,8 @@ export class ElyvorgCutscene extends Cutscene {
     }
 }
 
-// Map 6 Elyvorg Cutscenes -----------------------------------------------------------------------------------------------------------------------------------------------------
-export class Map6ElyvorgIngameCutsceneBeforeFight extends ElyvorgCutscene {
+// Map 7 Elyvorg Cutscenes -----------------------------------------------------------------------------------------------------------------------------------------------------
+export class Map7ElyvorgIngameCutsceneBeforeFight extends ElyvorgCutscene {
     constructor(game) {
         super(game);
         this.addDialogue( //0
@@ -357,7 +357,7 @@ export class Map6ElyvorgIngameCutsceneBeforeFight extends ElyvorgCutscene {
         );
     }
 }
-export class Map6ElyvorgIngameCutsceneAfterFight extends ElyvorgCutscene {
+export class Map7ElyvorgIngameCutsceneAfterFight extends ElyvorgCutscene {
     constructor(game) {
         super(game);
         this.addDialogue( //0

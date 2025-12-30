@@ -9,6 +9,7 @@ jest.mock('../game/background/background.js', () => ({
     Map4: class { },
     Map5: class { },
     Map6: class { },
+    Map7: class { },
     BonusMap1: class { },
     BonusMap2: class { },
     BonusMap3: class { },
@@ -326,11 +327,19 @@ describe('Reset', () => {
                 );
             });
 
-            it('loads Map6, updates forest map, and sets maxDistance', () => {
+            it('loads Map6 and updates forest map', () => {
                 game.background = { constructor: Maps.Map6 };
                 reset.reset();
                 expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(
                     expect.any(Maps.Map6)
+                );
+            });
+
+            it('loads Map7, updates forest map, and sets maxDistance', () => {
+                game.background = { constructor: Maps.Map7 };
+                reset.reset();
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(
+                    expect.any(Maps.Map7)
                 );
                 expect(game.maxDistance).toBe(9999999);
             });

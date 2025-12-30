@@ -11,6 +11,7 @@ function buildGameState(game) {
         map4Unlocked: game.map4Unlocked,
         map5Unlocked: game.map5Unlocked,
         map6Unlocked: game.map6Unlocked,
+        map7Unlocked: game.map7Unlocked,
         bonusMap1Unlocked: game.bonusMap1Unlocked,
         bonusMap2Unlocked: game.bonusMap2Unlocked,
         bonusMap3Unlocked: game.bonusMap3Unlocked,
@@ -51,6 +52,7 @@ export function loadGameState(game) {
         game.map4Unlocked = gameState.map4Unlocked ?? game.map4Unlocked;
         game.map5Unlocked = gameState.map5Unlocked ?? game.map5Unlocked;
         game.map6Unlocked = gameState.map6Unlocked ?? game.map6Unlocked;
+        game.map7Unlocked = gameState.map7Unlocked ?? game.map7Unlocked;
         game.bonusMap1Unlocked = gameState.bonusMap1Unlocked ?? game.bonusMap1Unlocked;
         game.bonusMap2Unlocked = gameState.bonusMap2Unlocked ?? game.bonusMap2Unlocked;
         game.bonusMap3Unlocked = gameState.bonusMap3Unlocked ?? game.bonusMap3Unlocked;
@@ -91,6 +93,7 @@ export function clearSavedData(game) {
     game.map4Unlocked = false;
     game.map5Unlocked = false;
     game.map6Unlocked = false;
+    game.map7Unlocked = false;
     game.bonusMap1Unlocked = false;
     game.bonusMap2Unlocked = false;
     game.bonusMap3Unlocked = false;

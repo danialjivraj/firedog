@@ -1,7 +1,7 @@
 import {
     GlacikalCutscene,
-    Map6GlacikalIngameCutsceneBeforeFight,
-    Map6GlacikalIngameCutsceneAfterFight
+    BonusMap1GlacikalIngameCutsceneBeforeFight,
+    BonusMap1GlacikalIngameCutsceneAfterFight
 } from '../../game/cutscene/glacikalCutscenes.js';
 import * as fading from '../../game/animations/fading.js';
 
@@ -58,7 +58,7 @@ const createBaseGame = () => {
     };
 };
 
-const createMap6Game = (overrides = {}) => ({
+const createMap = (overrides = {}) => ({
     menu: {
         skins: {
             defaultSkin: 'default',
@@ -489,12 +489,12 @@ describe('GlacikalCutscene', () => {
     });
 });
 
-describe('Map6GlacikalIngameCutsceneBeforeFight', () => {
+describe('BonusMap1GlacikalIngameCutsceneBeforeFight', () => {
     let game, m6pre;
 
     beforeEach(() => {
-        game = createMap6Game();
-        m6pre = new Map6GlacikalIngameCutsceneBeforeFight(game);
+        game = createMap();
+        m6pre = new BonusMap1GlacikalIngameCutsceneBeforeFight(game);
     });
 
     it('registers exactly 3 dialogues', () => {
@@ -507,12 +507,12 @@ describe('Map6GlacikalIngameCutsceneBeforeFight', () => {
     });
 });
 
-describe('Map6GlacikalIngameCutsceneAfterFight', () => {
+describe('BonusMap1GlacikalIngameCutsceneAfterFight', () => {
     let game, m6post;
 
     beforeEach(() => {
-        game = createMap6Game();
-        m6post = new Map6GlacikalIngameCutsceneAfterFight(game);
+        game = createMap();
+        m6post = new BonusMap1GlacikalIngameCutsceneAfterFight(game);
     });
 
     it('registers exactly 2 dialogues', () => {

@@ -212,6 +212,15 @@ export class StoryCutscene extends Cutscene {
 
             map6: {
                 start: {
+                    0: () => { /* no cutscene changes here */ },
+                },
+                end: {
+                    0: () => { /* no cutscene changes here */ },
+                }
+            },
+
+            map7: {
+                start: {
                     5: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, 'dreamLight5', this.halfASecond * 2 + 100, null, () => {
                         this.playMusic('echoesOfTime', true);
                     }),
@@ -4345,8 +4354,58 @@ export class Map5EndCutscene extends StoryCutscene {
         this.game.saveGameState();
     }
 }
+
 // Map 6 Cutscenes -----------------------------------------------------------------------------------------------------------------------------------------------------
 export class Map6Cutscene extends StoryCutscene {
+    constructor(game) {
+        super(game, true);
+        this.backgroundImage = document.getElementById('map1blackBackground');
+        this.addDialogue( //0
+            `${this.questionMark}`,
+            `Map6Cutscene toxic map`,
+        );
+        this.addDialogue( //1
+            `${this.questionMark}`,
+            `No one is going to stop you.`,
+        );
+        this.addDialogue( //2
+            `${this.questionMark}`,
+            `And everyone will suffer!`,
+        );
+        this.addDialogue( //3
+            `${this.questionMark}`,
+            `Space-time will be reshaped into whatever you want!`,
+        );
+    }
+}
+
+export class Map6EndCutscene extends StoryCutscene {
+    constructor(game) {
+        super(game, true);
+        this.backgroundImage = document.getElementById('map1blackBackground');
+        this.addDialogue( //0
+            `${this.questionMark}`,
+            `Map6EndCutscene toxic map`,
+        );
+        this.addDialogue( //1
+            `${this.questionMark}`,
+            `No one is going to stop you.`,
+        );
+        this.addDialogue( //2
+            `${this.questionMark}`,
+            `And everyone will suffer!`,
+        );
+        this.addDialogue( //3
+            `${this.questionMark}`,
+            `Space-time will be reshaped into whatever you want!`,
+        );
+        this.game.map7Unlocked = true;
+        this.game.saveGameState();
+    }
+}
+
+// Map 7 Cutscenes -----------------------------------------------------------------------------------------------------------------------------------------------------
+export class Map7Cutscene extends StoryCutscene {
     constructor(game) {
         super(game, true);
         this.backgroundImage = document.getElementById('map1blackBackground');
@@ -4548,7 +4607,8 @@ export class Map6Cutscene extends StoryCutscene {
         );
     }
 }
-export class Map6EndCutscene extends StoryCutscene {
+
+export class Map7EndCutscene extends StoryCutscene {
     constructor(game) {
         super(game);
         this.backgroundImage = document.getElementById('map1blackBackground');

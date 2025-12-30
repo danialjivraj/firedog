@@ -32,6 +32,7 @@ export class EnemyLore extends BaseMenu {
             "CORAL ABYSS": { fill: 'dodgerblue', stroke: 'darkblue', strokeBlur: 5 },
             "VERDANT VINE": { fill: 'seagreen', stroke: 'black', strokeBlur: 15 },
             "SPRINGLY LEMONY": { fill: 'yellow', stroke: 'orange', strokeBlur: 5 },
+            "VENOMVEIL LAKE": { fill: '#39ff14', stroke: '#003b00', strokeBlur: 10 },
             "INFERNAL CRATER PEAK": { fill: 'red', stroke: 'black', strokeBlur: 10 },
             "ICEBOUND CAVE": { fill: '#8fd7ff', stroke: '#1c4a7f', strokeBlur: 10 },
             "COSMIC RIFT": { fill: '#ff4bff', stroke: '#270033', strokeBlur: 10 },
@@ -582,7 +583,20 @@ export class EnemyLore extends BaseMenu {
             "map5"
         );
 
-        // MAP 6 - Infernal Crater Peak
+        // MAP 6 - Venomveil Lake
+        // 41
+        this.createPage(
+            "CACTUS",
+            "GROUND & STUN",
+            "VENOMVEIL LAKE",
+            "THERE'S QUITE A FEW CACTUSES AROUND THIS AREA.",
+            [
+                this.createImage('cactus', 71, 90, 0, this.pageWidth - 180, this.pageHeight - 120, 1, 'stun'),
+            ],
+            "map6"
+        );
+
+        // MAP 7 - Infernal Crater Peak
         // 41
         this.createPage(
             "CACTUS",
@@ -592,7 +606,7 @@ export class EnemyLore extends BaseMenu {
             [
                 this.createImage('cactus', 71, 90, 0, this.pageWidth - 180, this.pageHeight - 120, 1, 'stun'),
             ],
-            "map6"
+            "map7"
         );
         // 42
         this.createPage(
@@ -607,7 +621,7 @@ export class EnemyLore extends BaseMenu {
                 this.createImage('rockProjectile', 37, 40, 0, this.pageWidth - 240, this.pageHeight - 100, 1, 'stun'),
                 this.createImage('rockProjectile', 37, 40, 0, this.pageWidth - 430, this.pageHeight - 100, 1, 'stun'),
             ],
-            "map6"
+            "map7"
         );
         // 43
         this.createPage(
@@ -622,7 +636,7 @@ export class EnemyLore extends BaseMenu {
                 this.createImage('purpleLaser', 82, 48, 0, this.pageWidth - 450, this.pageHeight - 101, 1),
                 this.createImage('purpleLaser', 82, 48, 0, this.pageWidth - 650, this.pageHeight - 101, 1),
             ],
-            "map6"
+            "map7"
         );
         // 44
         this.createPage(
@@ -635,7 +649,7 @@ export class EnemyLore extends BaseMenu {
             [
                 this.createImage('veynoculus', 57, 37, 0, this.pageWidth - 140, 70, 1.3),
             ],
-            "map6"
+            "map7"
         );
         // 45
         this.createPage(
@@ -647,7 +661,7 @@ export class EnemyLore extends BaseMenu {
             [
                 this.createImage('volcanurtle', 177, 107, 4, this.pageWidth - 300, this.pageHeight - 120, 1, 'red'),
             ],
-            "map6"
+            "map7"
         );
         // 46
         this.createPage(
@@ -659,7 +673,7 @@ export class EnemyLore extends BaseMenu {
             [
                 this.createImage('theRock', 132, 132, 0, this.pageWidth - 210, this.pageHeight - 140, 1, 'red'),
             ],
-            "map6"
+            "map7"
         );
         // 47
         this.createPage(
@@ -672,7 +686,7 @@ export class EnemyLore extends BaseMenu {
             [
                 this.createImage('volcanoWasp', 113, 125, 0, this.pageWidth - 170, 70, 1, 'stun'),
             ],
-            "map6"
+            "map7"
         );
         // 48
         this.createPage(
@@ -686,7 +700,7 @@ export class EnemyLore extends BaseMenu {
                 this.createImage('rollhogWalk', 125, 85, 0, this.pageWidth - 210, this.pageHeight - 110, 1),
                 this.createImage('rollhogRoll', 97, 92, 0, this.pageWidth - 510, this.pageHeight - 110, 1),
             ],
-            "map6"
+            "map7"
         );
         // 49
         this.createPage(
@@ -700,7 +714,7 @@ export class EnemyLore extends BaseMenu {
                 this.createImage('dragon', 182, 172, 0, this.pageWidth - 230, 30, 1),
                 this.createImage('windAttack', 105, 120, 0, this.pageWidth - 240, 180, 1),
             ],
-            "map6"
+            "map7"
         );
 
         // BONUS MAPS 1 - Icebound Cave

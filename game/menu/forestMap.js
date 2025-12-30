@@ -2,10 +2,10 @@ import { isLocalNight } from '../config/timeOfDay.js';
 import { getMapIconElement } from '../config/skins.js';
 import { BaseMenu } from './baseMenu.js';
 import {
-    Map1Cutscene, Map2Cutscene, Map3Cutscene, Map4Cutscene, Map5Cutscene, Map6Cutscene,
+    Map1Cutscene, Map2Cutscene, Map3Cutscene, Map4Cutscene, Map5Cutscene, Map6Cutscene, Map7Cutscene,
     BonusMap1Cutscene, BonusMap2Cutscene, BonusMap3Cutscene
 } from '../cutscene/storyCutscenes.js';
-import { Map1, Map2, Map3, Map4, Map5, Map6, BonusMap1, BonusMap2, BonusMap3 } from '../background/background.js';
+import { Map1, Map2, Map3, Map4, Map5, Map6, Map7, BonusMap1, BonusMap2, BonusMap3 } from '../background/background.js';
 import { SavingAnimation, SavingBookAnimation } from '../animations/savingAnimation.js';
 import { Cabin } from '../entities/cabin.js';
 import { Penguini } from '../entities/penguini.js';
@@ -18,11 +18,12 @@ export class ForestMapMenu extends BaseMenu {
             { x: 1140, y: 205, radius: 20 }, // Map 3 (2)
             { x: 1300, y: 300, radius: 20 }, // Map 4 (3)
             { x: 1427, y: 396, radius: 20 }, // Map 5 (4)
-            { x: 1210, y: 620, radius: 20 }, // Map 6 (5)
+            { x: 1355, y: 500, radius: 20 }, // Map 6 (5)
+            { x: 1210, y: 620, radius: 20 }, // Map 7 (6)
 
-            { x: 883, y: 97, radius: 18 },   // Bonus Map 1 (6)
-            { x: 1670, y: 484, radius: 18 }, // Bonus Map 2 (7)
-            { x: 1570, y: 210, radius: 18 }, // Bonus Map 3 (8)
+            { x: 883, y: 97, radius: 18 },   // Bonus Map 1 (7)
+            { x: 1670, y: 484, radius: 18 }, // Bonus Map 2 (8)
+            { x: 1570, y: 210, radius: 18 }, // Bonus Map 3 (9)
         ];
         super(game);
 
@@ -32,7 +33,8 @@ export class ForestMapMenu extends BaseMenu {
             map3: 'Coral Abyss',
             map4: 'Verdant Vine',
             map5: 'Springly Lemony',
-            map6: 'Infernal Crater Peak',
+            map6: 'Venomveil Lake',
+            map7: 'Infernal Crater Peak',
             bonus1: 'Icebound Cave',
             bonus2: 'Crimson Fissure',
             bonus3: 'Cosmic Rift',
@@ -44,7 +46,8 @@ export class ForestMapMenu extends BaseMenu {
             map3: { fill: 'dodgerblue', stroke: 'darkblue', strokeBlur: 5 },
             map4: { fill: 'seagreen', stroke: 'black', strokeBlur: 15 },
             map5: { fill: 'yellow', stroke: 'orange', strokeBlur: 5 },
-            map6: { fill: 'red', stroke: 'black', strokeBlur: 10 },
+            map6: { fill: '#39ff14', stroke: '#003b00', strokeBlur: 10 },
+            map7: { fill: 'red', stroke: 'black', strokeBlur: 10 },
             bonus1: { fill: '#8fd7ff', stroke: '#1c4a7f', strokeBlur: 10 },
             bonus2: { fill: '#ff1f32ff', stroke: '#7A0F22', strokeBlur: 12 },
             bonus3: { fill: '#ff4bff', stroke: '#270033', strokeBlur: 10 },
@@ -94,7 +97,8 @@ export class ForestMapMenu extends BaseMenu {
             { index: 3, underwater: true, darkWhiteBorder: true, maxDistance: 270, winningCoins: 200, Cutscene: Map3Cutscene, Map: Map3 },
             { index: 4, underwater: false, darkWhiteBorder: false, maxDistance: 240, winningCoins: 280, Cutscene: Map4Cutscene, Map: Map4 },
             { index: 5, underwater: false, darkWhiteBorder: false, maxDistance: 250, winningCoins: 300, Cutscene: Map5Cutscene, Map: Map5 },
-            { index: 6, underwater: false, darkWhiteBorder: false, maxDistance: 9999999, winningCoins: 0, Cutscene: Map6Cutscene, Map: Map6 },
+            { index: 6, underwater: false, darkWhiteBorder: false, maxDistance: 100, winningCoins: 0, Cutscene: Map6Cutscene, Map: Map6 },
+            { index: 7, underwater: false, darkWhiteBorder: false, maxDistance: 9999999, winningCoins: 0, Cutscene: Map7Cutscene, Map: Map7 },
 
             { underwater: false, darkWhiteBorder: false, isIce: true, maxDistance: 9999999, winningCoins: 0, Cutscene: BonusMap1Cutscene, Map: BonusMap1 },
             { underwater: false, darkWhiteBorder: false, maxDistance: 250, winningCoins: 0, Cutscene: BonusMap2Cutscene, Map: BonusMap2 },
@@ -215,10 +219,10 @@ export class ForestMapMenu extends BaseMenu {
     }
 
     getMapKeyByIndex(index) {
-        if (index >= 0 && index <= 5) return `map${index + 1}`;
-        if (index === 6) return 'bonus1';
-        if (index === 7) return 'bonus2';
-        if (index === 8) return 'bonus3';
+        if (index >= 0 && index <= 6) return `map${index + 1}`;
+        if (index === 7) return 'bonus1';
+        if (index === 8) return 'bonus2';
+        if (index === 9) return 'bonus3';
         return null;
     }
 
@@ -229,10 +233,10 @@ export class ForestMapMenu extends BaseMenu {
         let mapIndexLabel = '';
         let mapNameLabel = rawName ? rawName.toUpperCase() : '';
 
-        if (idx >= 0 && idx <= 5) {
+        if (idx >= 0 && idx <= 6) {
             mapIndexLabel = `MAP ${idx + 1}`;
-        } else if (idx >= 6 && idx <= 8) {
-            const bonusNumber = idx - 5;
+        } else if (idx >= 7 && idx <= 9) {
+            const bonusNumber = idx - 6;
             mapIndexLabel = `BONUS MAP ${bonusNumber}`;
         }
 
@@ -335,13 +339,13 @@ export class ForestMapMenu extends BaseMenu {
     }
 
     isNodeUnlocked(index) {
-        if (index >= 0 && index <= 5) {
+        if (index >= 0 && index <= 6) {
             return !!this.game[`map${index + 1}Unlocked`];
-        } else if (index === 6) {
-            return !!this.game.bonusMap1Unlocked;
         } else if (index === 7) {
-            return !!this.game.bonusMap2Unlocked;
+            return !!this.game.bonusMap1Unlocked;
         } else if (index === 8) {
+            return !!this.game.bonusMap2Unlocked;
+        } else if (index === 9) {
             return !!this.game.bonusMap3Unlocked;
         }
         return false;
@@ -460,7 +464,10 @@ export class ForestMapMenu extends BaseMenu {
             this.game.cabin = new Cabin(this.game, 'map5cabin', 630, 375, cabinY);
             this.game.penguini = new Penguini(this.game, 139.325, 140, 'penguinPistolSprite', 39);
         } else if (map instanceof Map6) {
-            this.game.cabin = new Cabin(this.game, 'map6cave', 913, 618, 0);
+            this.game.cabin = new Cabin(this.game, 'map6cabin', 630, 375, cabinY);
+            this.game.penguini = new Penguini(this.game, 139.325, 140, 'penguinPistolSprite', 39);
+        } else if (map instanceof Map7) {
+            this.game.cabin = new Cabin(this.game, 'map7cave', 913, 618, 0);
             this.game.penguini = new Penguini(this.game, 185, 80, 'penguinDead', 0);
             this.game.penguini.y = this.game.height - this.game.penguini.height - this.game.groundMargin;
         } else if (map instanceof BonusMap1) {
@@ -481,8 +488,8 @@ export class ForestMapMenu extends BaseMenu {
         if (this.menuActive && this.justOpened && this.game.currentMap) {
             const name = this.game.currentMap;
             const mapIndexByName = {
-                Map1: 0, Map2: 1, Map3: 2, Map4: 3, Map5: 4, Map6: 5,
-                BonusMap1: 6, BonusMap2: 7, BonusMap3: 8
+                Map1: 0, Map2: 1, Map3: 2, Map4: 3, Map5: 4, Map6: 5, Map7: 6,
+                BonusMap1: 7, BonusMap2: 8, BonusMap3: 9
             };
             const idx = mapIndexByName[name];
             if (idx !== undefined && this.isNodeUnlocked(idx)) {
@@ -530,7 +537,7 @@ export class ForestMapMenu extends BaseMenu {
                 context.fill();
                 context.closePath();
 
-                if (index >= 0 && index <= 4) {
+                if (index >= 0 && index <= 5) {
                     const nextIndex = index + 1;
                     const nextCircle = this.circleOptions[nextIndex];
                     if (nextCircle && this.isNodeUnlocked(nextIndex)) {
@@ -567,27 +574,27 @@ export class ForestMapMenu extends BaseMenu {
             const lineShadowColor = isNight ? 'orange' : 'white';
             const lineShadowBlur = isNight ? 14 : 30;
 
-            if (this.circleOptions[1] && this.circleOptions[6] && this.game.bonusMap1Unlocked) {
+            if (this.circleOptions[1] && this.circleOptions[7] && this.game.bonusMap1Unlocked) {
                 context.save();
                 context.shadowColor = lineShadowColor;
                 context.shadowBlur = lineShadowBlur;
-                this.drawStraightConnection(context, this.circleOptions[1], this.circleOptions[6]);
+                this.drawStraightConnection(context, this.circleOptions[1], this.circleOptions[7]);
                 context.restore();
             }
 
-            if (this.circleOptions[3] && this.circleOptions[7] && this.game.bonusMap2Unlocked) {
+            if (this.circleOptions[3] && this.circleOptions[8] && this.game.bonusMap2Unlocked) {
                 context.save();
                 context.shadowColor = lineShadowColor;
                 context.shadowBlur = lineShadowBlur;
-                this.drawElbowConnection(context, this.circleOptions[3], this.circleOptions[7]);
+                this.drawElbowConnection(context, this.circleOptions[3], this.circleOptions[8]);
                 context.restore();
             }
 
-            if (this.circleOptions[7] && this.circleOptions[8] && this.game.bonusMap3Unlocked) {
+            if (this.circleOptions[8] && this.circleOptions[9] && this.game.bonusMap3Unlocked) {
                 context.save();
                 context.shadowColor = lineShadowColor;
                 context.shadowBlur = lineShadowBlur;
-                this.drawStraightConnection(context, this.circleOptions[7], this.circleOptions[8]);
+                this.drawStraightConnection(context, this.circleOptions[8], this.circleOptions[9]);
                 context.restore();
             }
 

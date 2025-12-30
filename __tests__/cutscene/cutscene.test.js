@@ -221,15 +221,15 @@ describe('Cutscene', () => {
             expect(c.getCurrentMapId()).toBeNull();
         });
 
-        it('getSelectedMapIndex parses Map1–Map6 into a number', () => {
+        it('getSelectedMapIndex parses Map7 into a number', () => {
             const c = new Cutscene(game);
 
             game.currentMap = 'Map1';
             expect(c.getSelectedMapIndex()).toBe(1);
 
             delete game.currentMap;
-            game.background = { constructor: { name: 'Map6' } };
-            expect(c.getSelectedMapIndex()).toBe(6);
+            game.background = { constructor: { name: 'Map7' } };
+            expect(c.getSelectedMapIndex()).toBe(7);
         });
 
         it('getSelectedMapIndex returns null for non-standard ids', () => {
@@ -238,7 +238,7 @@ describe('Cutscene', () => {
             game.currentMap = 'Map0';
             expect(c.getSelectedMapIndex()).toBeNull();
 
-            game.currentMap = 'Map7';
+            game.currentMap = 'Map8';
             expect(c.getSelectedMapIndex()).toBeNull();
 
             game.currentMap = 'BonusMap1';

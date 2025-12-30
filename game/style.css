@@ -75,7 +75,7 @@ body {
         /* bonusmap1 */
         #iceSilknoir,
     /* cabin */
-    #map1cabin, #map2cabin, #map3submarine, #map4cabin, #map5cabin, #map6cave, #bonusmap1cabin, #bonusmap2cabin, #bonusmap3cabin,
+    #map1cabin, #map2cabin, #map3submarine, #map4cabin, #map5cabin, #map6cabin, #map7cave, #bonusmap1cabin, #bonusmap2cabin, #bonusmap3cabin,
     /* power up */ 
     #redpotion, #bluepotion, #healthlive, #coin, #oxygenTank,
     /* power down */
@@ -93,7 +93,9 @@ body {
 /* map5 */ 
 #map5Background, #map5Ground, #map5Flowers1, #map5Flowers2, #map5Bush1, #map5Bush2, #map5Trees1, #map5Trees2, #map5Trees3, #map5Trees4, #map5Trees5, 
 /* map6 */ 
-#map6Background, #map6Ground, #map6spikeStones, #map6rocks1, #map6rocks2, #map6cactus, 
+#map6Background, #map6Ground, #map6SmallMushrooms1, #map6SmallMushrooms2, #map6BigMushrooms, #map6DeadBranches1, #map6DeadBranches2, #map6Trees1, #map6Trees2, #map6Trees3, #map6Trees4, #map6Rocks1, #map6Rocks2, #map6GreenMist, 
+/* map7 */ 
+#map7Background, #map7Ground, #map7spikeStones, #map7rocks1, #map7rocks2, #map7cactus,
 /* bonusmap1 */ 
 #bonusMap1Background, #bonusMap1Ground, #bonusMap2TopIcicles, #bonusMap2IceSpikes, #bonusMap1IceRocks1, #bonusMap1IceRocks2, #bonusMap1IceRings, #bonusMap2BigIceCrystal,
 /* bonusmap2 */ 

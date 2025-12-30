@@ -83,6 +83,7 @@ export class DamageIndicator extends BaseIndicator {
             Map4: 0.25,
             Map5: 0.27,
             Map6: 0.26,
+            Map7: 0.26,
             BonusMap1: 0.35,
             BonusMap2: 0.19,
             BonusMap3: 0.15,

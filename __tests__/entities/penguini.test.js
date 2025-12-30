@@ -157,7 +157,7 @@ describe('Penguini', () => {
             );
         });
 
-        test('renders the Enter prompt at y−170 when currentMap != Map6', () => {
+        test('renders the Enter prompt at y−170 when currentMap != Map7', () => {
             penguini.showEnterToTalkToPenguini = true;
             game.talkToPenguinOneTimeOnly = true;
             penguini.x = 250;
@@ -171,12 +171,12 @@ describe('Penguini', () => {
             );
         });
 
-        test('renders the Enter prompt at y−235 when currentMap === Map6', () => {
+        test('renders the Enter prompt at y−235 when currentMap === Map7', () => {
             penguini.showEnterToTalkToPenguini = true;
             game.talkToPenguinOneTimeOnly = true;
             penguini.x = 300;
             penguini.y = 130;
-            game.currentMap = 'Map6';
+            game.currentMap = 'Map7';
             penguini.draw(ctx);
             expect(ctx.drawImage).toHaveBeenCalledWith(
                 fakePressImg,

@@ -6,6 +6,7 @@ import {
     Map4EndCutscene,
     Map5EndCutscene,
     Map6EndCutscene,
+    Map7EndCutscene,
     BonusMap1EndCutscene,
     BonusMap2EndCutscene,
     BonusMap3EndCutscene,
@@ -57,7 +58,7 @@ describe('StoryCutscene', () => {
         };
 
         jest.spyOn(fading, 'fadeInAndOut')
-            .mockImplementation((c, i, s, o, cb) => cb());
+            .mockImplementation((_c, _i, _s, _o, cb) => cb());
 
         cutscene = new StoryCutscene(game);
     });
@@ -137,7 +138,7 @@ describe('StoryCutscene', () => {
 
         it('moves to the next dialogue when the current one has finished and there is more left', () => {
             cutscene.dialogueIndex = 0;
-            cutscene.textIndex = cutscene.dialogue[0].dialogue.length; // 5
+            cutscene.textIndex = cutscene.dialogue[0].dialogue.length;
             cutscene.enterOrLeftClick();
             expect(cutscene.dialogueIndex).toBe(1);
             expect(cutscene.textIndex).toBe(0);
@@ -147,7 +148,7 @@ describe('StoryCutscene', () => {
 
         it('triggers the end-of-cutscene flow when on the last dialogue and it has finished', () => {
             cutscene.dialogueIndex = 1;
-            cutscene.textIndex = cutscene.dialogue[1].dialogue.length; // 3
+            cutscene.textIndex = cutscene.dialogue[1].dialogue.length;
             jest.spyOn(cutscene, 'cutsceneBackgroundChange');
             cutscene.enterOrLeftClick();
             expect(cutscene.cutsceneBackgroundChange)
@@ -192,6 +193,14 @@ describe('StoryCutscene', () => {
                 .toBe(document.getElementById('dreamLight1'));
             expect(game.audioHandler.cutsceneMusic.playSound)
                 .toHaveBeenCalledWith('echoesOfTime', true);
+        });
+
+        it('Map6 has no actions at dialogueIndex=0 (should not trigger SFX/music)', () => {
+            game.currentMap = 'Map6';
+            cutscene.dialogueIndex = 0;
+            cutscene.cutsceneController();
+            expect(game.audioHandler.cutsceneSFX.playSound).not.toHaveBeenCalled();
+            expect(game.audioHandler.cutsceneMusic.playSound).not.toHaveBeenCalled();
         });
     });
 
@@ -278,6 +287,7 @@ describe('EndCutscene classes: unlock flags and save behavior', () => {
             map4Unlocked: false,
             map5Unlocked: false,
             map6Unlocked: false,
+            map7Unlocked: false,
             bonusMap1Unlocked: false,
             bonusMap2Unlocked: false,
             bonusMap3Unlocked: false,
@@ -369,10 +379,20 @@ describe('EndCutscene classes: unlock flags and save behavior', () => {
         expect(game.saveGameState).toHaveBeenCalledTimes(1);
     });
 
-    it('Map6EndCutscene: saves the game state', () => {
+    it('Map6EndCutscene: unlocks Map7 and saves the game state', () => {
         const game = { ...baseGame };
+        expect(game.map7Unlocked).toBe(false);
 
         new Map6EndCutscene(game);
+
+        expect(game.map7Unlocked).toBe(true);
+        expect(game.saveGameState).toHaveBeenCalledTimes(1);
+    });
+
+    it('Map7EndCutscene: saves the game state', () => {
+        const game = { ...baseGame };
+
+        new Map7EndCutscene(game);
 
         expect(game.saveGameState).toHaveBeenCalledTimes(1);
     });

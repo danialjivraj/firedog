@@ -21,7 +21,7 @@ const BOSS_CONFIG = {
             minCoins: 110,
         },
     },
-    Map6: {
+    Map7: {
         id: "elyvorg",
         type: Elyvorg,
         gate: {

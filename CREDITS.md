@@ -76,7 +76,8 @@ Below, only soundtracks will be credited.
 - **Map 3:** [Pokémon Omega Ruby & Alpha Sapphire OST Dive Music](https://youtube.com/watch?v=SuSM_krLYME)
 - **Map 4:** [Tribal Jungle Music - Amazon Princess](https://www.youtube.com/watch?v=Uj5H4vJoCOw)
 - **Map 5:** [Relaxing Celtic Music - Spring Charm by Adrian von Ziegler](https://www.youtube.com/watch?v=YGkuJlEZy04&t)
-- **Map 6:** [Fire Volcano - Pokémon Snap](https://www.youtube.com/watch?v=fNo-c6p7pBw&t)
+- **Map 6:** [Preparing Ingredients by Sergey Eybog](https://www.youtube.com/watch?v=BaTGuz3JdRQ)
+- **Map 7:** [Fire Volcano - Pokémon Snap](https://www.youtube.com/watch?v=fNo-c6p7pBw&t)
     - **Elyvorg Themes:** 
         - [Super Meat Boy: The Battle of Lil' Slugger](https://www.youtube.com/watch?v=WL-8rU8ltA4)
         - [Unbound Purpose by Greg Dombrowski](https://www.youtube.com/watch?v=Kw1-B9FGYTA)

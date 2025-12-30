@@ -58,13 +58,13 @@ export class Penguini {
             this.height
         );
 
-        const isMap6 =
-            this.game.currentMap === 'Map6' ||
+        const isMap7 =
+            this.game.currentMap === 'Map7' ||
             (this.game.background &&
                 this.game.background.constructor &&
-                this.game.background.constructor.name === 'Map6');
+                this.game.background.constructor.name === 'Map7');
 
-        const yPosition = this.y - (isMap6 ? 235 : 170);
+        const yPosition = this.y - (isMap7 ? 235 : 170);
 
         if (this.showEnterToTalkToPenguini && this.game.talkToPenguinOneTimeOnly) {
             context.drawImage(this.showPressEnterImage, this.x - 320, yPosition);

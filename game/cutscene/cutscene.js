@@ -205,7 +205,7 @@ export class Cutscene {
 
     getSelectedMapIndex() {
         const id = this.getCurrentMapId();
-        const m = /^Map([1-6])$/.exec(id || '');
+        const m = /^Map([1-7])$/.exec(id || '');
         return m ? Number(m[1]) : null;
     }
 

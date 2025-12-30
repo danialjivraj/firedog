@@ -7,7 +7,7 @@ import {
 import {
     Map1,
     Map3,
-    Map6,
+    Map7,
     BonusMap1,
     BonusMap3,
 } from '../../game/background/background.js';
@@ -41,6 +41,7 @@ jest.mock('../../game/cutscene/storyCutscenes.js', () => {
         Map4Cutscene: makeCutscene('Map4Cutscene'),
         Map5Cutscene: makeCutscene('Map5Cutscene'),
         Map6Cutscene: makeCutscene('Map6Cutscene'),
+        Map7Cutscene: makeCutscene('Map7Cutscene'),
         BonusMap1Cutscene: makeCutscene('BonusMap1Cutscene'),
         BonusMap2Cutscene: makeCutscene('BonusMap2Cutscene'),
         BonusMap3Cutscene: makeCutscene('BonusMap3Cutscene'),
@@ -54,6 +55,7 @@ jest.mock('../../game/background/background.js', () => {
     class Map4 { constructor(game) { this.game = game; } }
     class Map5 { constructor(game) { this.game = game; } }
     class Map6 { constructor(game) { this.game = game; } }
+    class Map7 { constructor(game) { this.game = game; } }
     class BonusMap1 { constructor(game) { this.game = game; } }
     class BonusMap2 { constructor(game) { this.game = game; } }
     class BonusMap3 { constructor(game) { this.game = game; } }
@@ -65,6 +67,7 @@ jest.mock('../../game/background/background.js', () => {
         Map4,
         Map5,
         Map6,
+        Map7,
         BonusMap1,
         BonusMap2,
         BonusMap3,
@@ -129,6 +132,7 @@ describe('ForestMapMenu', () => {
             map4Unlocked: false,
             map5Unlocked: false,
             map6Unlocked: false,
+            map7Unlocked: false,
             bonusMap1Unlocked: false,
             bonusMap2Unlocked: false,
             bonusMap3Unlocked: false,
@@ -256,17 +260,22 @@ describe('ForestMapMenu', () => {
     });
 
     describe('getMapKeyByIndex()', () => {
-        it('maps indices 0–5 to main map keys and 6–8 to bonus map keys', () => {
+        it('maps indices 0–6 to main map keys and 7–9 to bonus map keys', () => {
             expect(menu.getMapKeyByIndex(0)).toBe('map1');
+            expect(menu.getMapKeyByIndex(1)).toBe('map2');
+            expect(menu.getMapKeyByIndex(2)).toBe('map3');
+            expect(menu.getMapKeyByIndex(3)).toBe('map4');
+            expect(menu.getMapKeyByIndex(4)).toBe('map5');
             expect(menu.getMapKeyByIndex(5)).toBe('map6');
-            expect(menu.getMapKeyByIndex(6)).toBe('bonus1');
-            expect(menu.getMapKeyByIndex(7)).toBe('bonus2');
-            expect(menu.getMapKeyByIndex(8)).toBe('bonus3');
+            expect(menu.getMapKeyByIndex(6)).toBe('map7');
+            expect(menu.getMapKeyByIndex(7)).toBe('bonus1');
+            expect(menu.getMapKeyByIndex(8)).toBe('bonus2');
+            expect(menu.getMapKeyByIndex(9)).toBe('bonus3');
         });
 
         it('returns null for indices outside the known range', () => {
             expect(menu.getMapKeyByIndex(-1)).toBeNull();
-            expect(menu.getMapKeyByIndex(9)).toBeNull();
+            expect(menu.getMapKeyByIndex(10)).toBeNull();
         });
     });
 
@@ -280,8 +289,17 @@ describe('ForestMapMenu', () => {
             expect(result.colorCfg).toBe(menu.mapColors.map1);
         });
 
+        it('returns correct labels and color for the new Map6 (Venomveil Lake)', () => {
+            const result = menu.computeMapNameParts(5);
+
+            expect(result.nameKey).toBe('map6');
+            expect(result.mapIndexLabel).toBe('MAP 6');
+            expect(result.mapNameLabel).toBe('VENOMVEIL LAKE');
+            expect(result.colorCfg).toBe(menu.mapColors.map6);
+        });
+
         it('returns correct labels and color for a bonus map index', () => {
-            const result = menu.computeMapNameParts(6); // bonus1
+            const result = menu.computeMapNameParts(7); // bonus1
 
             expect(result.nameKey).toBe('bonus1');
             expect(result.mapIndexLabel).toBe('BONUS MAP 1');
@@ -357,13 +375,13 @@ describe('ForestMapMenu', () => {
             expect(menu.isNodeUnlocked(0)).toBe(true); // map1
             expect(menu.isNodeUnlocked(1)).toBe(false); // map2
             expect(menu.isNodeUnlocked(2)).toBe(true); // map3
-            expect(menu.isNodeUnlocked(7)).toBe(true); // bonusMap2
-            expect(menu.isNodeUnlocked(8)).toBe(false); // bonusMap3
+            expect(menu.isNodeUnlocked(8)).toBe(true); // bonusMap2
+            expect(menu.isNodeUnlocked(9)).toBe(false); // bonusMap3
         });
 
         it('isNodeUnlocked() returns false for indices outside known range', () => {
             expect(menu.isNodeUnlocked(-1)).toBe(false);
-            expect(menu.isNodeUnlocked(9)).toBe(false);
+            expect(menu.isNodeUnlocked(10)).toBe(false);
         });
 
         it('getUnlockedCircles() returns only circles whose nodes are unlocked', () => {
@@ -375,7 +393,7 @@ describe('ForestMapMenu', () => {
             const expectedCircles = [
                 menu.circleOptions[0], // map1
                 menu.circleOptions[3], // map4
-                menu.circleOptions[6], // bonus1
+                menu.circleOptions[7], // bonus1
             ];
 
             expect(unlocked).toEqual(expectedCircles);
@@ -518,7 +536,7 @@ describe('ForestMapMenu', () => {
         });
 
         it('sets up BonusMap1 with isIce flag when selecting bonus circle', () => {
-            menu.selectedCircleIndex = 6; // bonusMap1
+            menu.selectedCircleIndex = 7; // bonusMap1
 
             menu.handleMenuSelection();
 
@@ -570,9 +588,9 @@ describe('ForestMapMenu', () => {
             expect(penguiniInstance.sprite).toBe('penguinBatSprite');
         });
 
-        it('configures penguini position for Map6 based on height and groundMargin', () => {
+        it('configures penguini position for Map7 based on height and groundMargin', () => {
             mockGame.groundMargin = 10;
-            const map = new Map6(mockGame);
+            const map = new Map7(mockGame);
 
             menu.setMap(map);
 

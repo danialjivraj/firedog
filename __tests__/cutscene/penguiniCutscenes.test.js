@@ -6,6 +6,7 @@ import {
     Map4PenguinIngameCutscene,
     Map5PenguinIngameCutscene,
     Map6PenguinIngameCutscene,
+    Map7PenguinIngameCutscene,
     BonusMap1PenguinIngameCutscene,
     BonusMap2PenguinIngameCutscene,
     BonusMap3PenguinIngameCutscene,
@@ -66,7 +67,7 @@ describe('PenguiniCutscene & subclasses', () => {
         };
 
         jest.spyOn(fading, 'fadeInAndOut')
-            .mockImplementation((canvas, f, s, o, cb) => cb());
+            .mockImplementation((_canvas, _f, _s, _o, cb) => cb());
 
         cutscene = new PenguiniCutscene(game);
     });
@@ -241,12 +242,9 @@ describe('PenguiniCutscene & subclasses', () => {
             expect(fading.fadeInAndOut).toHaveBeenCalledWith(
                 game.canvas, 200, 300, 200, expect.any(Function)
             );
-            expect(game.audioHandler.cutsceneDialogue.stopAllSounds)
-                .toHaveBeenCalled();
-            expect(game.audioHandler.cutsceneSFX.stopAllSounds)
-                .toHaveBeenCalled();
-            expect(game.audioHandler.cutsceneMusic.stopAllSounds)
-                .toHaveBeenCalled();
+            expect(game.audioHandler.cutsceneDialogue.stopAllSounds).toHaveBeenCalled();
+            expect(game.audioHandler.cutsceneSFX.stopAllSounds).toHaveBeenCalled();
+            expect(game.audioHandler.cutsceneMusic.stopAllSounds).toHaveBeenCalled();
             expect(game.audioHandler.cutsceneDialogue.playSound)
                 .toHaveBeenCalledWith('bit1', false, true, true);
 
@@ -351,7 +349,7 @@ describe('PenguiniCutscene & subclasses', () => {
             expect(arr[0].dialogue).toBe("That's good enough, give me that!");
         });
 
-        ['Map2', 'Map3', 'Map4', 'Map5'].forEach(name => {
+        ['Map2', 'Map3', 'Map4', 'Map5', 'Map6'].forEach(name => {
             it(`${name}: coins < winningCoins ⇒ notEnoughCoins & multiple`, () => {
                 game.currentMap = name;
                 game.coins = 50;
@@ -391,7 +389,7 @@ describe('PenguiniCutscene & subclasses', () => {
         });
     });
 
-    describe('Early-return when game.notEnoughCoins === true for Map1–Map5', () => {
+    describe('Early-return when game.notEnoughCoins === true for Map1–Map6', () => {
         beforeEach(() => {
             game.notEnoughCoins = true;
             jest.spyOn(CoinDialogueConditionCutscene.prototype, 'checkPlayerCoins')
@@ -430,6 +428,12 @@ describe('PenguiniCutscene & subclasses', () => {
             const m5 = new Map5PenguinIngameCutscene(game);
             expect(m5.dialogue.length).toBe(20);
         });
+
+        it('Map6 stops after its initial 11 entries', () => {
+            game.currentMap = 'Map6';
+            const m6 = new Map6PenguinIngameCutscene(game);
+            expect(m6.dialogue.length).toBe(11);
+        });
     });
 
     describe('Early-return when game.notEnoughCoins === true for Bonus maps', () => {
@@ -461,12 +465,12 @@ describe('PenguiniCutscene & subclasses', () => {
         });
     });
 
-    describe('Map6PenguinIngameCutscene always includes full dialogues', () => {
+    describe('Map7PenguinIngameCutscene always includes full dialogues', () => {
         it('includes all 12 entries even if notEnoughCoins is true', () => {
             game.notEnoughCoins = true;
-            game.currentMap = 'Map6';
-            const m6 = new Map6PenguinIngameCutscene(game);
-            expect(m6.dialogue.length).toBe(12);
+            game.currentMap = 'Map7';
+            const m7 = new Map7PenguinIngameCutscene(game);
+            expect(m7.dialogue.length).toBe(12);
         });
     });
 

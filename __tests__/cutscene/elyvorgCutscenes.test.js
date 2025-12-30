@@ -1,7 +1,7 @@
 import {
     ElyvorgCutscene,
-    Map6ElyvorgIngameCutsceneBeforeFight,
-    Map6ElyvorgIngameCutsceneAfterFight
+    Map7ElyvorgIngameCutsceneBeforeFight,
+    Map7ElyvorgIngameCutsceneAfterFight
 } from '../../game/cutscene/elyvorgCutscenes.js';
 import * as fading from '../../game/animations/fading.js';
 
@@ -42,7 +42,7 @@ const createBaseGame = () => {
     };
 };
 
-const createMap6Game = (overrides = {}) => ({
+const createMap = (overrides = {}) => ({
     menu: {
         skins: {
             defaultSkin: 'default',
@@ -433,12 +433,12 @@ describe('ElyvorgCutscene', () => {
     });
 });
 
-describe('Map6ElyvorgIngameCutsceneBeforeFight', () => {
+describe('Map7ElyvorgIngameCutsceneBeforeFight', () => {
     let game, m6pre;
 
     beforeEach(() => {
-        game = createMap6Game();
-        m6pre = new Map6ElyvorgIngameCutsceneBeforeFight(game);
+        game = createMap();
+        m6pre = new Map7ElyvorgIngameCutsceneBeforeFight(game);
     });
 
     it('registers exactly 29 dialogues', () => {
@@ -451,12 +451,12 @@ describe('Map6ElyvorgIngameCutsceneBeforeFight', () => {
     });
 });
 
-describe('Map6ElyvorgIngameCutsceneAfterFight', () => {
+describe('Map7ElyvorgIngameCutsceneAfterFight', () => {
     let game, m6post;
 
     beforeEach(() => {
-        game = createMap6Game();
-        m6post = new Map6ElyvorgIngameCutsceneAfterFight(game);
+        game = createMap();
+        m6post = new Map7ElyvorgIngameCutsceneAfterFight(game);
     });
 
     it('registers exactly 44 dialogues', () => {

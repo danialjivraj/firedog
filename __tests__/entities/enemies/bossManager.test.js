@@ -21,7 +21,7 @@ describe('BossManager', () => {
             coins: 0,
             currentMap: null,
             background: {
-                constructor: { name: 'Map6' },
+                constructor: { name: 'Map7' },
                 totalDistanceTraveled: 0,
             },
             enemies: [],
@@ -51,7 +51,7 @@ describe('BossManager', () => {
         it('resetState clears all flags and current boss to initial values', () => {
             manager.state.current = { dummy: true };
             manager.state.id = 'elyvorg';
-            manager.state.map = 'Map6';
+            manager.state.map = 'Map7';
             manager.state.spawned = true;
             manager.state.isVisible = true;
             manager.state.talkToBoss = true;
@@ -107,8 +107,8 @@ describe('BossManager', () => {
     });
 
     describe('getConfigForCurrentMap / getGateForCurrentMap / hasBossConfiguredForCurrentMap', () => {
-        it('returns config when currentMap is Map6', () => {
-            game.currentMap = 'Map6';
+        it('returns config when currentMap is Map7', () => {
+            game.currentMap = 'Map7';
             const cfg = manager.getConfigForCurrentMap();
 
             expect(cfg).not.toBeNull();
@@ -154,7 +154,7 @@ describe('BossManager', () => {
         });
 
         it('getGateForCurrentMap returns just the gate object when present', () => {
-            game.currentMap = 'Map6';
+            game.currentMap = 'Map7';
             const gate = manager.getGateForCurrentMap();
             expect(gate).toEqual({
                 mode: 'coinsAndDistance',
@@ -164,7 +164,7 @@ describe('BossManager', () => {
         });
 
         it('hasBossConfiguredForCurrentMap reflects existence of config', () => {
-            game.currentMap = 'Map6';
+            game.currentMap = 'Map7';
             expect(manager.hasBossConfiguredForCurrentMap()).toBe(true);
 
             game.currentMap = 'NonExistingMap';
@@ -253,15 +253,15 @@ describe('BossManager', () => {
 
         it('returns false when config is missing or map mismatch', () => {
             manager.state.id = 'elyvorg';
-            manager.state.map = 'Map6';
+            manager.state.map = 'Map7';
             game.currentMap = 'Map1';
             expect(manager.bossIsEngaged()).toBe(false);
         });
 
         it('returns true when any engagement flag is true and map/config match', () => {
-            game.currentMap = 'Map6';
+            game.currentMap = 'Map7';
             manager.state.id = 'elyvorg';
-            manager.state.map = 'Map6';
+            manager.state.map = 'Map7';
 
             const flags = ['talkToBoss', 'preFight', 'inFight', 'postFight', 'runAway'];
             for (const flag of flags) {
@@ -287,21 +287,21 @@ describe('BossManager', () => {
         });
 
         it('does nothing when boss already spawned', () => {
-            game.currentMap = 'Map6';
+            game.currentMap = 'Map7';
             manager.state.spawned = true;
             const result = manager.spawnBossIfNeeded();
             expect(result).toBe(false);
         });
 
         it('does nothing when there is already an active boss', () => {
-            game.currentMap = 'Map6';
+            game.currentMap = 'Map7';
             manager.state.current = { foo: 'boss' };
             const result = manager.spawnBossIfNeeded();
             expect(result).toBe(false);
         });
 
         it('does nothing when boss gate has not been reached', () => {
-            game.currentMap = 'Map6';
+            game.currentMap = 'Map7';
             jest.spyOn(manager, 'bossGateReached').mockReturnValue(false);
 
             const result = manager.spawnBossIfNeeded();
@@ -310,7 +310,7 @@ describe('BossManager', () => {
         });
 
         it('does nothing when there are still normal enemies on screen', () => {
-            game.currentMap = 'Map6';
+            game.currentMap = 'Map7';
             jest.spyOn(manager, 'bossGateReached').mockReturnValue(true);
             game.enemies.push({ id: 'regularEnemy' });
 
@@ -318,10 +318,10 @@ describe('BossManager', () => {
             expect(result).toBe(false);
         });
 
-        it('spawns Elyvorg for Map6 when gate is reached and no enemies are present', () => {
+        it('spawns Elyvorg for Map7 when gate is reached and no enemies are present', () => {
             const { Elyvorg } = require('../../../game/entities/enemies/elyvorg.js');
 
-            game.currentMap = 'Map6';
+            game.currentMap = 'Map7';
             game.enemies = [];
 
             jest.spyOn(manager, 'bossGateReached').mockReturnValue(true);
@@ -332,7 +332,7 @@ describe('BossManager', () => {
             expect(Elyvorg).toHaveBeenCalledWith(game);
             expect(manager.state.current).toBe(game.enemies[0]);
             expect(manager.state.id).toBe('elyvorg');
-            expect(manager.state.map).toBe('Map6');
+            expect(manager.state.map).toBe('Map7');
             expect(manager.state.spawned).toBe(true);
             expect(manager.state.talkToBoss).toBe(true);
             expect(manager.hasActiveBoss).toBe(true);
@@ -380,16 +380,16 @@ describe('BossManager', () => {
         });
 
         it('returns false when boss is engaged', () => {
-            game.currentMap = 'Map6';
+            game.currentMap = 'Map7';
             manager.state.id = 'elyvorg';
-            manager.state.map = 'Map6';
+            manager.state.map = 'Map7';
             manager.state.inFight = true;
 
             expect(manager.canSpawnNormalEnemies()).toBe(false);
         });
 
         it('returns false when boss gate is already reached', () => {
-            game.currentMap = 'Map6';
+            game.currentMap = 'Map7';
             jest.spyOn(manager, 'bossGateReached').mockReturnValue(true);
             manager.state.id = null;
             manager.state.map = null;
@@ -398,7 +398,7 @@ describe('BossManager', () => {
         });
 
         it('returns true when boss exists for map but is not engaged and gate not reached', () => {
-            game.currentMap = 'Map6';
+            game.currentMap = 'Map7';
             jest.spyOn(manager, 'bossGateReached').mockReturnValue(false);
             jest.spyOn(manager, 'bossIsEngaged').mockReturnValue(false);
 
