@@ -15,7 +15,7 @@ export class DeleteProgress extends BaseMenu {
             this.game.currentMenu = this.game.menu.deleteProgress2;
             this.game.menu.deleteProgress2.selectedOption = 1;
         } else if (selectedOption === 'No') {
-            this.game.menu.main.activateMenu(5);
+            this.game.menu.settings.activateMenu(3);
         }
         this.menuActive = false;
     }
@@ -50,8 +50,7 @@ export class DeleteProgress2 extends BaseMenu {
             this.game.audioHandler.menu.stopSound('soundtrack');
             this.game.audioHandler.menu.playSound('soundtrack');
         } else if (selectedOption === "No, I do not want to delete my game progress") {
-            this.game.menu.main.activateMenu(5);
+            this.game.menu.settings.activateMenu(3);
         }
-
     }
 }

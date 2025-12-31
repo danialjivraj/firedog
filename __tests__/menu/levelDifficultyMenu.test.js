@@ -33,7 +33,10 @@ describe('LevelDifficultyMenu', () => {
         mockGame = {
             lives: null,
             selectedDifficulty: null,
-            menu: { main: { activateMenu: jest.fn() } },
+            menu: {
+                main: { activateMenu: jest.fn() },
+                settings: { activateMenu: jest.fn() },
+            },
         };
         menu = new LevelDifficultyMenu(mockGame);
     });
@@ -136,7 +139,7 @@ describe('LevelDifficultyMenu', () => {
             menu.selectedOption = 4;
             menu.menuOptions[4] = 'Go Back';
             menu.handleMenuSelection();
-            expect(mockGame.menu.main.activateMenu).toHaveBeenCalledWith(2);
+            expect(mockGame.menu.settings.activateMenu).toHaveBeenCalledWith(2);
             expect(menu.menuOptions[4]).toBe('Go Back');
         });
     });
@@ -193,7 +196,7 @@ describe('LevelDifficultyMenu', () => {
             mockGame.saveGameState.mockClear();
             menu.selectedOption = 4;
             menu.handleMenuSelection();
-            expect(mockGame.menu.main.activateMenu).toHaveBeenCalledWith(2);
+            expect(mockGame.menu.settings.activateMenu).toHaveBeenCalledWith(2);
             expect(mockGame.saveGameState).not.toHaveBeenCalled();
         });
 

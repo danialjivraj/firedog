@@ -39,7 +39,7 @@ export class LevelDifficultyMenu extends SelectMenu {
     }
 
     onGoBack() {
-        this.game.menu.main.activateMenu(2);
+        this.game.menu.settings.activateMenu(2);
     }
 
     getSelectedOption() {

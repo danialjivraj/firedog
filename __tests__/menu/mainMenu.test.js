@@ -1,5 +1,21 @@
 import { MainMenu } from '../../game/menu/mainMenu.js';
 
+jest.mock('../../game/animations/savingAnimation.js', () => {
+  const makeAnim = (label) =>
+    jest.fn().mockImplementation(() => ({
+      label,
+      update: jest.fn(),
+      draw: jest.fn(),
+    }));
+
+  return {
+    SavingAnimation: makeAnim('SavingAnimation'),
+    SavingBookAnimation: makeAnim('SavingBookAnimation'),
+    DeleteProgressAnimation: makeAnim('DeleteProgressAnimation'),
+    DeleteProgressBookAnimation: makeAnim('DeleteProgressBookAnimation'),
+  };
+});
+
 describe('MainMenu', () => {
   let menu, mockGame, ctx;
 
@@ -7,28 +23,48 @@ describe('MainMenu', () => {
     window.electronAPI = { quitApp: jest.fn() };
     document.body.innerHTML = `
       <img id="mainmenubackground" />
+      <img id="greenBand" />
+      <img id="blankStarLeft" />
+      <img id="blankStarMiddle" />
+      <img id="blankStarRight" />
+      <img id="filledStarLeft" />
+      <img id="filledStarMiddle" />
+      <img id="filledStarRight" />
+      <img id="storyCompleteText" />
     `;
   });
 
   beforeEach(() => {
-    const makeMenu = () => ({ activateMenu: jest.fn() });
+    const makeMenu = () => ({ activateMenu: jest.fn(), menuActive: false });
+
     mockGame = {
       width: 1920,
       height: 689,
       canSelect: true,
-      audioHandler: { menu: { playSound: jest.fn() } },
+      canSelectForestMap: true,
+      isPlayerInGame: false,
+
+      glacikalDefeated: false,
+      elyvorgDefeated: false,
+      ntharaxDefeated: false,
+
+      audioHandler: { menu: { playSound: jest.fn(), stopSound: jest.fn() } },
       menu: {
         forestMap: makeMenu(),
-        skins: { ...makeMenu() },
-        levelDifficulty: { ...makeMenu(), selectedDifficultyIndex: 1 },
+        skins: makeMenu(),
         howToPlay: makeMenu(),
         settings: makeMenu(),
-        deleteProgress: makeMenu(),
         deleteProgress2: { showSavingSprite: false },
         pause: { isPaused: false },
       },
       currentMenu: null,
       saveGameState: jest.fn(),
+      canvas: {
+        width: 1920,
+        height: 689,
+        getBoundingClientRect: () => ({ left: 0, top: 0, width: 1920, height: 689 }),
+      },
+      input: { handleEscapeKey: jest.fn() },
     };
 
     ctx = {
@@ -37,29 +73,22 @@ describe('MainMenu', () => {
       drawImage: jest.fn(),
       fillRect: jest.fn(),
       fillText: jest.fn(),
+      beginPath: jest.fn(),
+      arc: jest.fn(),
+      fill: jest.fn(),
+      closePath: jest.fn(),
     };
 
     menu = new MainMenu(mockGame);
     menu.activateMenu();
 
-    menu.savingAnimation.update = jest.fn();
-    menu.savingBookAnimation.update = jest.fn();
-    menu.deleteProgressAnimation.update = jest.fn();
-    menu.deleteProgressBookAnimation.update = jest.fn();
-    menu.savingAnimation.draw = jest.fn();
-    menu.savingBookAnimation.draw = jest.fn();
-    menu.deleteProgressAnimation.draw = jest.fn();
-    menu.deleteProgressBookAnimation.draw = jest.fn();
+    jest.clearAllMocks();
   });
 
   describe('constructor and initial state', () => {
     it('initializes with the correct title, options and offsets', () => {
       expect(menu.title).toBe('Main Menu');
-      expect(menu.menuOptions).toEqual([
-        'Play', 'Skins', 'Level Difficulty',
-        'How to Play', 'Settings',
-        'Delete Progress', 'Exit'
-      ]);
+      expect(menu.menuOptions).toEqual(['Play', 'Skins', 'How to Play', 'Settings', 'Exit']);
       expect(menu.positionOffset).toBe(240);
       expect(menu.menuOptionsPositionOffset).toBe(50);
       expect(menu.showSavingSprite).toBe(false);
@@ -72,19 +101,11 @@ describe('MainMenu', () => {
       menu.handleMenuSelection();
     };
 
-    it('always plays optionSelectedSound first', () => {
+    it('always plays optionSelectedSound first when canSelect=true', () => {
       mockGame.audioHandler.menu.playSound.mockClear();
       selectOptionAndHandle(0);
       expect(mockGame.audioHandler.menu.playSound.mock.calls[0])
         .toEqual(['optionSelectedSound', false, true]);
-    });
-
-    it('does not play any extra sound when Skins is selected', () => {
-      mockGame.audioHandler.menu.playSound.mockClear();
-      selectOptionAndHandle(1);
-      expect(mockGame.audioHandler.menu.playSound.mock.calls[0])
-        .toEqual(['optionSelectedSound', false, true]);
-      expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledTimes(1);
     });
 
     it('navigates to ForestMap when "Play" is selected', () => {
@@ -100,41 +121,36 @@ describe('MainMenu', () => {
       expect(mockGame.menu.skins.activateMenu).toHaveBeenCalledWith();
     });
 
-    it('activates Level Difficulty submenu when "Level Difficulty" is selected', () => {
-      selectOptionAndHandle(2);
-      expect(mockGame.currentMenu).toBe(mockGame.menu.levelDifficulty);
-      expect(mockGame.menu.levelDifficulty.activateMenu)
-        .toHaveBeenCalledWith(mockGame.menu.levelDifficulty.selectedDifficultyIndex);
-    });
-
     it('activates How to Play submenu when "How to Play" is selected', () => {
-      selectOptionAndHandle(3);
+      selectOptionAndHandle(2);
       expect(mockGame.currentMenu).toBe(mockGame.menu.howToPlay);
       expect(mockGame.menu.howToPlay.activateMenu).toHaveBeenCalledWith();
     });
 
     it('activates Settings submenu when "Settings" is selected', () => {
-      selectOptionAndHandle(4);
+      selectOptionAndHandle(3);
       expect(mockGame.currentMenu).toBe(mockGame.menu.settings);
       expect(mockGame.menu.settings.activateMenu).toHaveBeenCalledWith();
     });
 
-    it('activates Delete Progress submenu when "Delete Progress" is selected', () => {
-      selectOptionAndHandle(5);
-      expect(mockGame.currentMenu).toBe(mockGame.menu.deleteProgress);
-      expect(mockGame.menu.deleteProgress.activateMenu).toHaveBeenCalledWith(1);
-    });
-
     it('calls quitApp when "Exit" is selected', () => {
-      selectOptionAndHandle(6);
+      selectOptionAndHandle(4);
       expect(window.electronAPI.quitApp).toHaveBeenCalled();
     });
 
     it('does nothing when canSelect is false', () => {
       mockGame.canSelect = false;
-      selectOptionAndHandle(0);
+      mockGame.audioHandler.menu.playSound.mockClear();
+      mockGame.menu.forestMap.activateMenu.mockClear();
+
+      const beforeMenu = mockGame.currentMenu;
+
+      menu.selectedOption = 0;
+      menu.handleMenuSelection();
+
       expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalled();
-      expect(mockGame.currentMenu).not.toBe(mockGame.menu.forestMap);
+      expect(mockGame.currentMenu).toBe(beforeMenu);
+      expect(mockGame.menu.forestMap.activateMenu).not.toHaveBeenCalled();
     });
   });
 
@@ -143,6 +159,7 @@ describe('MainMenu', () => {
       mockGame.menu.deleteProgress2.showSavingSprite = true;
       menu.showSavingSprite = true;
       menu.update(42);
+
       expect(menu.deleteProgressAnimation.update).toHaveBeenCalledWith(42);
       expect(menu.deleteProgressBookAnimation.update).toHaveBeenCalledWith(42);
       expect(menu.savingAnimation.update).not.toHaveBeenCalled();
@@ -153,7 +170,9 @@ describe('MainMenu', () => {
       mockGame.menu.deleteProgress2.showSavingSprite = true;
       menu.showSavingSprite = false;
       menu.update(123);
+
       expect(menu.deleteProgressAnimation.update).toHaveBeenCalledWith(123);
+      expect(menu.deleteProgressBookAnimation.update).toHaveBeenCalledWith(123);
       expect(menu.savingAnimation.update).not.toHaveBeenCalled();
     });
 
@@ -161,7 +180,9 @@ describe('MainMenu', () => {
       menu.showSavingSprite = true;
       mockGame.menu.deleteProgress2.showSavingSprite = false;
       menu.update(456);
+
       expect(menu.savingAnimation.update).toHaveBeenCalledWith(456);
+      expect(menu.savingBookAnimation.update).toHaveBeenCalledWith(456);
       expect(menu.deleteProgressAnimation.update).not.toHaveBeenCalled();
     });
 
@@ -169,6 +190,7 @@ describe('MainMenu', () => {
       menu.showSavingSprite = false;
       mockGame.menu.deleteProgress2.showSavingSprite = false;
       menu.update(789);
+
       expect(menu.savingAnimation.update).not.toHaveBeenCalled();
       expect(menu.deleteProgressAnimation.update).not.toHaveBeenCalled();
     });
@@ -179,6 +201,7 @@ describe('MainMenu', () => {
       mockGame.menu.deleteProgress2.showSavingSprite = true;
       menu.showSavingSprite = true;
       menu.draw(ctx);
+
       expect(menu.deleteProgressAnimation.draw).toHaveBeenCalledWith(ctx);
       expect(menu.deleteProgressBookAnimation.draw).toHaveBeenCalledWith(ctx);
       expect(menu.savingAnimation.draw).toHaveBeenCalledWith(ctx);
@@ -189,7 +212,9 @@ describe('MainMenu', () => {
       mockGame.menu.deleteProgress2.showSavingSprite = true;
       menu.showSavingSprite = false;
       menu.draw(ctx);
+
       expect(menu.deleteProgressAnimation.draw).toHaveBeenCalledWith(ctx);
+      expect(menu.deleteProgressBookAnimation.draw).toHaveBeenCalledWith(ctx);
       expect(menu.savingAnimation.draw).not.toHaveBeenCalled();
     });
 
@@ -197,7 +222,9 @@ describe('MainMenu', () => {
       menu.showSavingSprite = true;
       mockGame.menu.deleteProgress2.showSavingSprite = false;
       menu.draw(ctx);
+
       expect(menu.savingAnimation.draw).toHaveBeenCalledWith(ctx);
+      expect(menu.savingBookAnimation.draw).toHaveBeenCalledWith(ctx);
       expect(menu.deleteProgressAnimation.draw).not.toHaveBeenCalled();
     });
 
@@ -205,6 +232,7 @@ describe('MainMenu', () => {
       menu.showSavingSprite = false;
       mockGame.menu.deleteProgress2.showSavingSprite = false;
       menu.draw(ctx);
+
       expect(menu.savingAnimation.draw).not.toHaveBeenCalled();
       expect(menu.deleteProgressAnimation.draw).not.toHaveBeenCalled();
     });

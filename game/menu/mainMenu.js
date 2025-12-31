@@ -3,7 +3,7 @@ import { DeleteProgressAnimation, DeleteProgressBookAnimation, SavingAnimation, 
 
 export class MainMenu extends BaseMenu {
     constructor(game) {
-        const menuOptions = ['Play', 'Skins', 'Level Difficulty', 'How to Play', 'Settings', 'Delete Progress', 'Exit'];
+        const menuOptions = ['Play', 'Skins', 'How to Play', 'Settings', 'Exit'];
         super(game, menuOptions, 'Main Menu');
         this.menuOptionsPositionOffset = 50;
         this.positionOffset = 240;
@@ -22,9 +22,6 @@ export class MainMenu extends BaseMenu {
                 this.game.audioHandler.menu.playSound('mapOpening');
                 this.game.currentMenu = this.game.menu.forestMap;
                 this.game.menu.forestMap.activateMenu();
-            } else if (selectedOption === 'Level Difficulty') {
-                this.game.currentMenu = this.game.menu.levelDifficulty;
-                this.game.menu.levelDifficulty.activateMenu(this.game.menu.levelDifficulty.selectedDifficultyIndex);
             } else if (selectedOption === 'Skins') {
                 this.game.currentMenu = this.game.menu.skins;
                 this.game.menu.skins.activateMenu();
@@ -34,9 +31,6 @@ export class MainMenu extends BaseMenu {
             } else if (selectedOption === 'Settings') {
                 this.game.currentMenu = this.game.menu.settings;
                 this.game.menu.settings.activateMenu();
-            } else if (selectedOption === 'Delete Progress') {
-                this.game.currentMenu = this.game.menu.deleteProgress;
-                this.game.menu.deleteProgress.activateMenu(1);
             } else if (selectedOption === 'Exit') {
                 window.electronAPI.quitApp();
             }

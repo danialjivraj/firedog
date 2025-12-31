@@ -17,8 +17,9 @@ describe('DeleteProgress', () => {
     beforeEach(() => {
         mockGame = {
             menu: {
-                deleteProgress2: { activateMenu: jest.fn() },
+                deleteProgress2: { activateMenu: jest.fn(), selectedOption: 0 },
                 main: { activateMenu: jest.fn() },
+                settings: { activateMenu: jest.fn() },
             },
             audioHandler: {
                 menu: {
@@ -49,9 +50,11 @@ describe('DeleteProgress', () => {
         expect(mockGame.currentMenu).toBe(mockGame.menu.deleteProgress2);
         expect(menu.menuActive).toBe(false);
         expect(mockGame.menu.deleteProgress2.selectedOption).toBe(1);
+
+        expect(mockGame.menu.settings.activateMenu).not.toHaveBeenCalled();
     });
 
-    it('“No” branch: returns to main menu at index 5', () => {
+    it('“No” branch: returns to settings menu at index 3', () => {
         menu.selectedOption = 1; // No
         menu.handleMenuSelection();
 
@@ -59,7 +62,9 @@ describe('DeleteProgress', () => {
             .toHaveBeenCalledWith('optionSelectedSound', false, true);
 
         expect(menu.menuActive).toBe(false);
-        expect(mockGame.menu.main.activateMenu).toHaveBeenCalledWith(5);
+        expect(mockGame.menu.settings.activateMenu).toHaveBeenCalledWith(3);
+
+        expect(mockGame.menu.main.activateMenu).not.toHaveBeenCalled();
     });
 });
 
@@ -78,6 +83,7 @@ describe('DeleteProgress2', () => {
             canSelect: true,
             menu: {
                 main: { activateMenu: jest.fn() },
+                settings: { activateMenu: jest.fn() },
             },
             clearSavedData: jest.fn(),
             audioHandler: {
@@ -97,7 +103,7 @@ describe('DeleteProgress2', () => {
         expect(menu2.title).toBe('All your progress will be lost!');
         expect(menu2.menuOptions).toEqual([
             'Yes, I want to delete my game progress',
-            'No, I do not want to delete my game progress'
+            'No, I do not want to delete my game progress',
         ]);
         expect(menu2.selectedOption).toBe(1);
         expect(menu2.showSavingSprite).toBe(false);
@@ -131,11 +137,12 @@ describe('DeleteProgress2', () => {
         expect(fadeIn).toHaveBeenCalled();
         expect(mockGame.menu.main.activateMenu).toHaveBeenCalledWith(0);
         expect(mockGame.audioHandler.menu.stopSound).toHaveBeenCalledWith('soundtrack');
-        expect(mockGame.audioHandler.menu.playSound)
-            .toHaveBeenCalledWith('soundtrack');
+        expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('soundtrack');
+
+        expect(mockGame.menu.settings.activateMenu).not.toHaveBeenCalled();
     });
 
-    it('“No” branch: returns to main[5] without clearing or restarting soundtrack', () => {
+    it('“No” branch: returns to settings[3] without clearing or restarting soundtrack', () => {
         menu2.selectedOption = 1; // No
         menu2.handleMenuSelection();
 
@@ -143,7 +150,11 @@ describe('DeleteProgress2', () => {
             .toHaveBeenCalledWith('optionSelectedSound', false, true);
 
         expect(mockGame.clearSavedData).not.toHaveBeenCalled();
-        expect(mockGame.menu.main.activateMenu).toHaveBeenCalledWith(5);
+
+        expect(mockGame.menu.settings.activateMenu).toHaveBeenCalledWith(3);
+
+        expect(mockGame.menu.main.activateMenu).not.toHaveBeenCalled();
+
         expect(mockGame.audioHandler.menu.stopSound).not.toHaveBeenCalled();
         expect(mockGame.audioHandler.menu.playSound)
             .not.toHaveBeenCalledWith('soundtrack');

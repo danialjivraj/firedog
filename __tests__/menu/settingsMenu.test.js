@@ -18,6 +18,8 @@ describe('SettingsMenu', () => {
       main: { activateMenu: jest.fn() },
       audioSettings: { activateMenu: jest.fn() },
       controlsSettings: { activateMenu: jest.fn() },
+      levelDifficulty: { activateMenu: jest.fn(), selectedDifficultyIndex: 1 },
+      deleteProgress: { activateMenu: jest.fn() },
       pause: { isPaused: false }
     },
     currentMenu: null,
@@ -65,8 +67,10 @@ describe('SettingsMenu', () => {
       expect(menu).toBeInstanceOf(BaseMenu);
       expect(menu.title).toBe('Settings');
       expect(menu.menuOptions).toEqual([
-        'Audio Settings',
-        'Controls Settings',
+        'Audio',
+        'Controls',
+        'Level Difficulty',
+        'Delete Progress',
         'Go Back'
       ]);
     });
@@ -79,7 +83,7 @@ describe('SettingsMenu', () => {
   });
 
   describe('handleMenuSelection', () => {
-    test('selecting "Audio Settings" activates audio settings menu and does not save', () => {
+    test('selecting "Audio" activates audio settings menu and does not save', () => {
       menu.selectedOption = 0;
       mockGame.saveGameState.mockClear();
 
@@ -95,7 +99,7 @@ describe('SettingsMenu', () => {
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });
 
-    test('selecting "Controls Settings" activates controls settings menu and does not save', () => {
+    test('selecting "Controls" activates controls settings menu and does not save', () => {
       menu.selectedOption = 1;
       mockGame.saveGameState.mockClear();
 
@@ -111,7 +115,7 @@ describe('SettingsMenu', () => {
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });
 
-    test('selecting "Go Back" activates main menu at index 4 and does not save', () => {
+    test('selecting "Level Difficulty" activates level difficulty menu with its selectedDifficultyIndex and does not save', () => {
       menu.selectedOption = 2;
       mockGame.saveGameState.mockClear();
 
@@ -122,7 +126,41 @@ describe('SettingsMenu', () => {
         false,
         true
       );
-      expect(mockGame.menu.main.activateMenu).toHaveBeenCalledWith(4);
+      expect(mockGame.menu.levelDifficulty.activateMenu).toHaveBeenCalledWith(
+        mockGame.menu.levelDifficulty.selectedDifficultyIndex
+      );
+      expect(mockGame.currentMenu).toBe(mockGame.menu.levelDifficulty);
+      expect(mockGame.saveGameState).not.toHaveBeenCalled();
+    });
+
+    test('selecting "Delete Progress" activates delete progress menu at index 1 and does not save', () => {
+      menu.selectedOption = 3;
+      mockGame.saveGameState.mockClear();
+
+      menu.handleMenuSelection();
+
+      expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith(
+        'optionSelectedSound',
+        false,
+        true
+      );
+      expect(mockGame.menu.deleteProgress.activateMenu).toHaveBeenCalledWith(1);
+      expect(mockGame.currentMenu).toBe(mockGame.menu.deleteProgress);
+      expect(mockGame.saveGameState).not.toHaveBeenCalled();
+    });
+
+    test('selecting "Go Back" activates main menu at index 4 and does not save', () => {
+      menu.selectedOption = 4;
+      mockGame.saveGameState.mockClear();
+
+      menu.handleMenuSelection();
+
+      expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith(
+        'optionSelectedSound',
+        false,
+        true
+      );
+      expect(mockGame.menu.main.activateMenu).toHaveBeenCalledWith(3);
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });
   });
