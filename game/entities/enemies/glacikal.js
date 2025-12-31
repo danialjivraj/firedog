@@ -481,7 +481,7 @@ export class Glacikal extends EnemyBoss {
         this.isKneelDownActive = false;
         this.isKneelDownReversing = false;
         this.kneelDownLocked = false;
-        this.kneelDownDuration = 10000;
+        this.kneelDownDuration = 7000;
         this.kneelDownTimer = 0;
         this.kneelIcicleTimer = 0;
         this.kneelNextIcicle = 0;

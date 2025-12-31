@@ -450,9 +450,15 @@ export class Player {
         this.energyTimer += deltaTime;
         this.energy = Math.max(0, Math.min(100, this.energy));
 
+        let regenAmount = 0.4;
+
+        if (this.currentState === this.states[5]) { // dive attack slows regen
+            regenAmount *= 0.07;
+        }
+
         if (this.energyTimer >= this.energyInterval) {
             this.energyTimer = 0;
-            this.energy = Math.min(100, this.energy + 0.4);
+            this.energy = Math.min(100, this.energy + regenAmount);
         }
 
         // blue potion
