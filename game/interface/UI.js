@@ -15,10 +15,6 @@ export class UI {
         this.divingUIWhiteBorder = document.getElementById('divingUIWhiteBorder');
         this.invisibleUI = document.getElementById('invisibleUI');
         this.invisibleUIWhiteBorder = document.getElementById('invisibleUIWhiteBorder');
-        this.slashUI = document.getElementById('slashUI');
-        this.slashWarningUI = document.getElementById('slashWarningUI');
-        this.electricUI = document.getElementById('electricUI');
-        this.electricWarningUI = document.getElementById('electricWarningUI');
 
         this.secondsLeft = 60000;
         this.secondsLeftActivated = false;
@@ -125,7 +121,6 @@ export class UI {
 
         // abilities
         this.firedogAbilityUI(context);
-        this.elyvorgAbilityUI(context);
     }
 
     progressBar(
@@ -616,65 +611,6 @@ export class UI {
             context.fillStyle = 'white';
             context.font = 'bold 20px Arial';
             context.fillText(countdownText, textXActive, textY);
-        }
-    }
-
-    elyvorgAbilityUI(context) {
-        if (!this.game.bossInFight) return;
-
-        let elyvorg = null;
-        if (this.game.boss && this.game.boss.current instanceof Elyvorg) {
-            elyvorg = this.game.boss.current;
-        } else {
-            elyvorg = this.game.enemies.find(e => e instanceof Elyvorg) || null;
-        }
-
-        if (!elyvorg) return;
-
-        // slash
-        const slashAttackOnce = elyvorg.slashAttackOnce;
-        const slashAttackStateCounter = elyvorg.slashAttackStateCounter;
-        const slashAttackStateCounterLimit = elyvorg.slashAttackStateCounterLimit;
-        // electric
-        const electricWheelTimer = elyvorg.electricWheelTimer;
-        const isElectricWheelActive = elyvorg.isElectricWheelActive;
-
-        const elyvorgBorderSize = 65;
-        const spaceBetweenAbilities = 10;
-        const yPosition = 20;
-
-        // slash
-        const slashX = this.game.width - elyvorgBorderSize - spaceBetweenAbilities;
-        if (slashAttackOnce) {
-            context.drawImage(this.slashUI, slashX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
-        } else {
-            if (slashAttackStateCounter >= slashAttackStateCounterLimit - 2) {
-                context.save();
-                context.drawImage(this.slashWarningUI, slashX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
-                context.restore();
-            } else {
-                context.save();
-                context.filter = 'grayscale(100%)';
-                context.drawImage(this.slashUI, slashX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
-                context.restore();
-            }
-        }
-
-        // electric
-        const electricX = slashX - elyvorgBorderSize - spaceBetweenAbilities;
-        if (isElectricWheelActive) {
-            context.drawImage(this.electricUI, electricX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
-        } else {
-            if (electricWheelTimer > 0) {
-                context.save();
-                context.drawImage(this.electricWarningUI, electricX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
-                context.restore();
-            } else {
-                context.save();
-                context.filter = 'grayscale(100%)';
-                context.drawImage(this.electricUI, electricX, yPosition, elyvorgBorderSize, elyvorgBorderSize);
-                context.restore();
-            }
         }
     }
 }

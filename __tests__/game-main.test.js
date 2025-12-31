@@ -236,6 +236,46 @@ describe('Game class (game-main.js)', () => {
       expect(game.shakeTimer).toBe(0);
       expect(game.shakeDuration).toBe(0);
     });
+
+    it('startShake({ ifNotActive: true }) does not restart an active shake', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+
+      game.startShake(500);
+      game.shakeTimer = 123;
+
+      game.startShake(1000, { ifNotActive: true });
+
+      expect(game.shakeActive).toBe(true);
+      expect(game.shakeDuration).toBe(500);
+      expect(game.shakeTimer).toBe(123);
+    });
+
+    it('does not restart shake when already active with zero duration', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+
+      game.shakeActive = true;
+      game.shakeDuration = 0;
+      game.shakeTimer = 999;
+
+      game.startShake(300);
+
+      expect(game.shakeActive).toBe(true);
+      expect(game.shakeDuration).toBe(0);
+      expect(game.shakeTimer).toBe(999);
+    });
+
+    it('restarts shake when already active but duration > 0', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+
+      game.startShake(500);
+      game.shakeTimer = 200;
+
+      game.startShake(1000);
+
+      expect(game.shakeActive).toBe(true);
+      expect(game.shakeTimer).toBe(0);
+      expect(game.shakeDuration).toBe(1000);
+    });
   });
 
   // ------------------------------------------------------------
@@ -1347,6 +1387,7 @@ describe('Game class (game-main.js)', () => {
       expect(game.boss.dialogueAfterOnce).toBe(false);
       expect(game.boss.dialogueAfterLeaving).toBe(true);
       expect(game.boss.postFight).toBe(true);
+      expect(game.boss.postFight).toBe(true);
     });
 
     it('triggers Glacikal pre-fight cutscene on BonusMap1 via bossManager state', () => {
@@ -1492,7 +1533,6 @@ describe('Game class (game-main.js)', () => {
         game.menu.skins.currentSkin = { id: 'defaultSkin' };
         game.menu.audioSettings.getState = () => ({});
         game.menu.ingameAudioSettings.getState = () => ({});
-
         jest.spyOn(game, 'startCutscene');
         game.background = { constructor: { name }, update: () => { } };
         game.currentMap = name;

@@ -24,6 +24,7 @@ import {
     MeteorExplosionCollision,
     PoisonDropGroundCollision,
     DarkExplosionCollision,
+    GhostFadeOut,
 } from "../../../game/animations/collisionAnimation.js";
 
 import { EnemyBoss } from "../../../game/entities/enemies/enemies.js";
@@ -31,51 +32,64 @@ import { PurpleWarningIndicator } from "../../../game/animations/damageIndicator
 import { fadeInAndOut } from "../../../game/animations/fading.js";
 
 describe("elyvorg.js entities – behavior coverage", () => {
-    let mockGame, ctx;
+    let mockGame;
+    let ctx;
 
-    const imgIds = [
-        "barrier", "barrier1", "barrier2",
-        "meteorAttack", "poisonDrop", "elyvorgGhostRun",
-        "gravitationalAura", "electricWheel", "inkBomb",
-        "purpleFireball", "yellowArrow", "blueArrow", "greenArrow", "cyanArrow",
-        "purpleSlash", "elyvorgIdle", "elyvorgRun", "elyvorgJump",
-        "elyvorgRechargeIdle", "elyvorgPistolIdle", "elyvorgLaserIdle",
-        "elyvorgMeteorIdle", "elyvorgPoisonIdle", "elyvorgGhostIdle",
-        "elyvorgGravityIdle", "elyvorgInkIdle", "elyvorgIdleFireball",
-        "elyvorg_laser_beam", "purpleThunder",
+    const IMG_IDS = [
+        "barrier",
+        "barrier1",
+        "barrier2",
+        "meteorAttack",
+        "poisonDrop",
+        "elyvorgGhostRun",
+        "gravitationalAura",
+        "electricWheel",
+        "inkBomb",
+        "purpleFireball",
+        "yellowArrow",
+        "blueArrow",
+        "greenArrow",
+        "cyanArrow",
+        "purpleSlash",
+        "elyvorgIdle",
+        "elyvorgRun",
+        "elyvorgJump",
+        "elyvorgRechargeIdle",
+        "elyvorgPistolIdle",
+        "elyvorgLaserIdle",
+        "elyvorgMeteorIdle",
+        "elyvorgPoisonIdle",
+        "elyvorgGhostIdle",
+        "elyvorgGravityIdle",
+        "elyvorgInkIdle",
+        "elyvorgIdleFireball",
+        "elyvorg_laser_beam",
+        "purpleThunder",
     ];
 
-    beforeAll(() => {
-        imgIds.forEach(id => {
-            const img = document.createElement("img");
-            img.id = id;
-            document.body.appendChild(img);
-        });
+    const createCtx = () => ({
+        drawImage: jest.fn(),
+        strokeRect: jest.fn(),
+        save: jest.fn(),
+        restore: jest.fn(),
+        translate: jest.fn(),
+        scale: jest.fn(),
+        rotate: jest.fn(),
+        shadowColor: null,
+        shadowBlur: null,
+        createRadialGradient: jest.fn(() => ({
+            addColorStop: jest.fn(),
+        })),
+        beginPath: jest.fn(),
+        ellipse: jest.fn(),
+        fill: jest.fn(),
+        stroke: jest.fn(),
+        rect: jest.fn(),
+        clip: jest.fn(),
     });
 
-    beforeEach(() => {
-        ctx = {
-            drawImage: jest.fn(),
-            strokeRect: jest.fn(),
-            save: jest.fn(),
-            restore: jest.fn(),
-            translate: jest.fn(),
-            scale: jest.fn(),
-            rotate: jest.fn(),
-            shadowColor: null,
-            shadowBlur: null,
-            createRadialGradient: jest.fn(() => ({
-                addColorStop: jest.fn(),
-            })),
-            beginPath: jest.fn(),
-            ellipse: jest.fn(),
-            fill: jest.fn(),
-            stroke: jest.fn(),
-            rect: jest.fn(),
-            clip: jest.fn(),
-        };
-
-        mockGame = {
+    const createMockGame = () => {
+        const game = {
             width: 800,
             height: 600,
             groundMargin: 50,
@@ -84,19 +98,27 @@ describe("elyvorg.js entities – behavior coverage", () => {
             enemies: [],
             speed: 0,
             cabin: { isFullyVisible: true },
+
             audioHandler: {
                 collisionSFX: { playSound: jest.fn() },
-                enemySFX: { playSound: jest.fn(), stopSound: jest.fn(), stopAllSounds: jest.fn() },
+                enemySFX: {
+                    playSound: jest.fn(),
+                    stopSound: jest.fn(),
+                    stopAllSounds: jest.fn(),
+                },
                 mapSoundtrack: { fadeOutAndStop: jest.fn() },
             },
+
             player: {
                 x: 100,
                 y: 100,
                 width: 50,
                 height: 50,
                 isSlowed: false,
+
                 setState: jest.fn(),
                 invisibleCooldown: 5000,
+
                 resetElectricWheelCounters: false,
                 bossCollisionTimer: 0,
 
@@ -107,9 +129,11 @@ describe("elyvorg.js entities – behavior coverage", () => {
                 invisibleTimer: 0,
                 invisibleActiveCooldownTimer: 0,
             },
+
             behindPlayerParticles: [],
             gameOver: false,
             hiddenTime: 0,
+
             input: { keys: [] },
             background: { totalDistanceTraveled: 0 },
             maxDistance: 1000,
@@ -123,6 +147,7 @@ describe("elyvorg.js entities – behavior coverage", () => {
                 map: null,
                 spawned: false,
                 isVisible: false,
+
                 talkToBoss: false,
                 preFight: false,
                 inFight: false,
@@ -156,25 +181,60 @@ describe("elyvorg.js entities – behavior coverage", () => {
             }),
         };
 
-        mockGame.bossManager = {
+        game.bossManager = {
             requestScreenEffect: jest.fn(),
             releaseScreenEffect: jest.fn(),
         };
+
+        return game;
+    };
+
+    beforeAll(() => {
+        IMG_IDS.forEach((id) => {
+            const img = document.createElement("img");
+            img.id = id;
+            document.body.appendChild(img);
+        });
+    });
+
+    afterAll(() => {
+        IMG_IDS.forEach((id) => document.getElementById(id)?.remove());
+    });
+
+    beforeEach(() => {
+        ctx = createCtx();
+        mockGame = createMockGame();
     });
 
     // -----------------------------------------------------------------------
-    // EnemyBoss & PurpleBarrier basics
+    // Base enemies / simple primitives
     // -----------------------------------------------------------------------
-    describe("EnemyBoss & PurpleBarrier basics", () => {
-        it("EnemyBoss constructor positions boss at right edge on ground and loads sprite image", () => {
+    describe("EnemyBoss", () => {
+        it("positions at right edge on ground and loads sprite image", () => {
             const e = new EnemyBoss(mockGame, 100, 80, 5, "elyvorgIdle");
             expect(e.x).toBe(800);
             expect(e.y).toBe(600 - 80 - 50);
             expect(e.image.id).toBe("elyvorgIdle");
         });
 
-        it("PurpleBarrier.draw chooses sprite based on lives with clamped index", () => {
+        it("draws hitbox outline when debug mode is enabled", () => {
+            mockGame.debug = true;
+            const e = new EnemyBoss(mockGame, 30, 40, 1, "elyvorgIdle");
+            e.frameX = 0;
+            e.frameY = 0;
+            e.x = 5;
+            e.y = 6;
+
+            e.draw(ctx, false);
+
+            expect(ctx.strokeRect).toHaveBeenCalledWith(5, 6, 30, 40);
+        });
+    });
+
+    describe("PurpleBarrier", () => {
+        it("draw chooses sprite based on lives using clamped index", () => {
             const b = new PurpleBarrier(mockGame, 10, 20);
+
             b.lives = 5;
             b.draw(ctx);
             expect(ctx.drawImage).toHaveBeenCalledWith(
@@ -188,7 +248,9 @@ describe("elyvorg.js entities – behavior coverage", () => {
                 b.width,
                 b.height
             );
+
             ctx.drawImage.mockClear();
+
             b.lives = -1;
             b.draw(ctx);
             expect(ctx.drawImage).toHaveBeenCalledWith(
@@ -204,93 +266,159 @@ describe("elyvorg.js entities – behavior coverage", () => {
             );
         });
 
-        it("EnemyBoss.draw strokes hitbox when debug mode is enabled", () => {
-            mockGame.debug = true;
-            const e = new EnemyBoss(mockGame, 30, 40, 1, "elyvorgIdle");
-            e.frameX = 0; e.frameY = 0; e.x = 5; e.y = 6;
-            e.draw(ctx, false);
-            expect(ctx.strokeRect).toHaveBeenCalledWith(5, 6, 30, 40);
-        });
-
-        it("PurpleBarrier.draw strokes hitbox when debug mode is enabled", () => {
+        it("draws hitbox outline when debug mode is enabled", () => {
             mockGame.debug = true;
             const b = new PurpleBarrier(mockGame, 10, 20);
+
             b.draw(ctx);
+
             expect(ctx.strokeRect).toHaveBeenCalledWith(10, 20, b.width, b.height);
+        });
+
+        it("plays spawn/crack/break sounds as lives cross thresholds (handled by Barrier.update)", () => {
+            const playSpy = jest.spyOn(mockGame.audioHandler.enemySFX, "playSound");
+
+            const b = new PurpleBarrier(mockGame, 0, 0);
+            expect(playSpy).toHaveBeenCalledWith("elyvorg_shield_up_sound", false, true);
+
+            b.update(0);
+
+            b.lives = 2;
+            b.update(0);
+            expect(playSpy).toHaveBeenCalledWith("elyvorg_shield_crack_1_sound", false, true);
+
+            b.lives = 1;
+            b.update(0);
+            expect(playSpy).toHaveBeenCalledWith("elyvorg_shield_crack_2_sound", false, true);
+
+            b.lives = 0;
+            b.update(0);
+            expect(playSpy).toHaveBeenCalledWith("elyvorg_shield_crack_3_sound", false, true);
         });
     });
 
-    describe("MeteorAttack & PoisonDrop collision branches", () => {
-        it("MeteorAttack explodes on ground impact and spawns MeteorExplosionCollision", () => {
+    // -----------------------------------------------------------------------
+    // Falling enemies
+    // -----------------------------------------------------------------------
+    describe("MeteorAttack", () => {
+        it("marks for deletion, spawns MeteorExplosionCollision, and plays impact SFX when hitting ground", () => {
             const m = new MeteorAttack(mockGame);
             mockGame.cabin.isFullyVisible = false;
-            m.y = mockGame.height - mockGame.groundMargin - 190 + 1;
+
+            m.y = mockGame.height - mockGame.groundMargin - 230 + 1;
+
             m.update(0);
+
             expect(m.markedForDeletion).toBe(true);
             expect(mockGame.collisions[0]).toBeInstanceOf(MeteorExplosionCollision);
-            expect(mockGame.audioHandler.collisionSFX.playSound)
-                .toHaveBeenCalledWith("elyvorg_meteor_in_contact_with_ground_sound");
+            expect(mockGame.audioHandler.collisionSFX.playSound).toHaveBeenCalledWith(
+                "elyvorg_meteor_in_contact_with_ground_sound"
+            );
         });
+    });
 
-        it("PoisonDrop creates PoisonDropGroundCollision when reaching ground", () => {
+    describe("PoisonDrop", () => {
+        it("marks for deletion and spawns PoisonDropGroundCollision when reaching ground", () => {
             const p = new PoisonDrop(mockGame);
             mockGame.cabin.isFullyVisible = false;
+
             p.y = mockGame.height - mockGame.groundMargin - 53 + 1;
+
             p.update(0);
+
             expect(p.markedForDeletion).toBe(true);
             expect(mockGame.collisions[0]).toBeInstanceOf(PoisonDropGroundCollision);
         });
     });
 
     // -----------------------------------------------------------------------
-    // GhostElyvorg & GravitationalAura dynamics
+    // Ghost Elyvorg
     // -----------------------------------------------------------------------
-    describe("GhostElyvorg & GravitationalAura dynamics", () => {
-        it("GhostElyvorg.update moves horizontally by incrementMovement", () => {
+    describe("GhostElyvorg", () => {
+        it("update moves horizontally by incrementMovement", () => {
             const g = new GhostElyvorg(mockGame);
             g.incrementMovement = 7;
+
             const start = g.x;
             g.update(0);
+
             expect(g.x).toBe(start + 7);
         });
 
-        it("GhostElyvorg.draw flips sprite horizontally when moving right", () => {
+        it("draw flips sprite horizontally when moving right", () => {
             const g = new GhostElyvorg(mockGame);
             g.incrementMovement = 5;
-            g.frameX = 0; g.frameY = 0; g.x = 10; g.y = 10;
+            g.frameX = 0;
+            g.frameY = 0;
+            g.x = 10;
+            g.y = 10;
+
             g.draw(ctx);
+
             expect(ctx.save).toHaveBeenCalled();
             expect(ctx.scale).toHaveBeenCalledWith(-1, 1);
+            expect(ctx.restore).toHaveBeenCalled();
         });
 
-        it("GhostElyvorg.draw keeps orientation when incrementMovement <= 0", () => {
+        it("draw keeps orientation when incrementMovement <= 0", () => {
             const g = new GhostElyvorg(mockGame);
             g.incrementMovement = -3;
-            g.frameX = 0; g.frameY = 0; g.x = 10; g.y = 10;
+            g.frameX = 0;
+            g.frameY = 0;
+            g.x = 10;
+            g.y = 10;
+
             g.draw(ctx);
+
             expect(ctx.scale).toHaveBeenCalledWith(1, 1);
         });
+    });
 
-        it("GravitationalAura.update follows boss, clamps minimum y, and pushes player horizontally", () => {
+    // -----------------------------------------------------------------------
+    // Projectiles / projectile-like enemies
+    // -----------------------------------------------------------------------
+    describe("GravitationalAura", () => {
+        it("update: follows boss, clamps minimum y, and pushes player horizontally (slowed vs normal)", () => {
             const bossStub = { x: 50, width: 100, reachedLeftEdge: true };
             const aura = new GravitationalAura(mockGame, 0, 20, mockGame.player, bossStub);
+
             aura.speedX = 0;
+
             mockGame.player.x = 200;
             mockGame.player.y = 200;
             mockGame.player.isSlowed = true;
+
             aura.update(0);
+
             expect(aura.y).toBe(100);
             expect(aura.rotationAngle).toBeGreaterThan(0);
             expect(mockGame.player.x).toBeLessThan(200);
         });
 
-        it("GravitationalAura.draw applies rotation and renders image around center", () => {
+        it("update: increments rotationAngle and toggles shouldInvert based on player position", () => {
+            const bossStub = { x: 50, width: 10, reachedLeftEdge: false };
+            const aura = new GravitationalAura(mockGame, 0, 150, mockGame.player, bossStub);
+            aura.speedX = 0;
+
+            mockGame.player.x = 300;
+            const before = aura.rotationAngle;
+            aura.update(16);
+
+            expect(aura.rotationAngle).toBeCloseTo(before + aura.rotationSpeed);
+            expect(aura.shouldInvert).toBe(true);
+
+            mockGame.player.x = 0;
+            aura.update(16);
+            expect(aura.shouldInvert).toBe(false);
+        });
+
+        it("draw applies rotation and renders image around center", () => {
             const bossStub = { x: 0, width: 10, reachedLeftEdge: false };
             const aura = new GravitationalAura(mockGame, 20, 30, mockGame.player, bossStub);
             aura.rotationAngle = 1.23;
-            ctx.rotate.mockClear();
-            ctx.drawImage.mockClear();
+
             aura.draw(ctx);
+
             expect(ctx.save).toHaveBeenCalled();
             expect(ctx.rotate).toHaveBeenCalledWith(1.23);
             expect(ctx.drawImage).toHaveBeenCalled();
@@ -298,84 +426,137 @@ describe("elyvorg.js entities – behavior coverage", () => {
         });
     });
 
-    // -----------------------------------------------------------------------
-    // ElectricWheel, InkBomb, PurpleFireball
-    // -----------------------------------------------------------------------
-    describe("ElectricWheel, InkBomb, PurpleFireball", () => {
-        it("ElectricWheel.draw adds yellow glow shadow around sprite", () => {
+    describe("ElectricWheel", () => {
+        it("update increases rotationAngle by rotationSpeed each frame", () => {
+            const ew = new ElectricWheel(mockGame, 0, 0);
+            ew.rotationAngle = 0;
+
+            const before = ew.rotationAngle;
+            ew.update(0);
+
+            expect(ew.rotationAngle).toBeCloseTo(before + ew.rotationSpeed);
+        });
+
+        it("draw adds yellow glow shadow around sprite", () => {
             const ew = new ElectricWheel(mockGame, 0, 0);
             ew.rotationAngle = 1.2;
+
             ew.draw(ctx);
+
             expect(ctx.shadowColor).toBe("yellow");
             expect(ctx.shadowBlur).toBe(10);
         });
 
-        it("InkBomb.draw flips horizontally when direction is true", () => {
+        it("shouldElectricWheelInvert updates direction + incrementMovement based on player side", () => {
+            const ew = new ElectricWheel(mockGame, 0, 0);
+
+            mockGame.player.x = ew.x + 100;
+            ew.shouldElectricWheelInvert();
+            expect(ew.shouldInvert).toBe(true);
+            expect(ew.incrementMovement).toBeGreaterThan(0);
+
+            mockGame.player.x = ew.x - 100;
+            ew.shouldElectricWheelInvert();
+            expect(ew.shouldInvert).toBe(false);
+            expect(ew.incrementMovement).toBeLessThan(0);
+        });
+    });
+
+    describe("InkBomb", () => {
+        it("draw flips horizontally when direction is true", () => {
             const ib = new InkBomb(mockGame, 100, 100, 1, 50, 10, true);
             ib.scale = 1;
+
             ib.draw(ctx);
+
             expect(ctx.save).toHaveBeenCalled();
             expect(ctx.restore).toHaveBeenCalled();
+            expect(ctx.drawImage).toHaveBeenCalled();
         });
 
-        it("PurpleFireball.draw applies purple glow shadow", () => {
+        it("update grows scale to target, sets speedX when stopping, and plays both sounds once", () => {
+            const ib = new InkBomb(mockGame, 100, 200, 5, 180, 20, false);
+            const playSoundSpy = jest.spyOn(mockGame.audioHandler.enemySFX, "playSound");
+
+            for (let i = 0; i < 200; i++) ib.update(16);
+
+            expect(playSoundSpy).toHaveBeenCalledWith("elyvorg_ink_bomb_sound", false, true);
+            expect(playSoundSpy).toHaveBeenCalledWith("elyvorg_ink_bomb_throw_sound", false, true);
+            expect(ib.scale).toBe(1);
+            expect(ib.speedX).toBe(20);
+        });
+    });
+
+    describe("PurpleFireball", () => {
+        it("draw applies purple glow shadow", () => {
             const pf = new PurpleFireball(mockGame, 10, 10, 2, 2);
+
             pf.draw(ctx);
+
             expect(ctx.shadowColor).toBe("purple");
             expect(ctx.shadowBlur).toBe(20);
         });
 
-        it("ElectricWheel.update increases rotationAngle by rotationSpeed each frame", () => {
-            const ew = new ElectricWheel(mockGame, 0, 0);
-            ew.rotationAngle = 0;
-            const before = ew.rotationAngle;
-            ew.update(0);
-            expect(ew.rotationAngle).toBeCloseTo(before + ew.rotationSpeed);
+        it("update grows size to maxSize, moves upwards, and increases rotationAngle", () => {
+            const pf = new PurpleFireball(mockGame, 50, 300, 5, 0);
+            const beforeAngle = pf.rotationAngle;
+
+            for (let t = 0; t < 100; t++) pf.update(16);
+
+            expect(pf.size).toBe(pf.maxSize);
+            expect(pf.y).toBeLessThan(300);
+            expect(pf.rotationAngle).toBeGreaterThan(beforeAngle);
         });
     });
 
-    // -----------------------------------------------------------------------
-    // Arrow, PurpleSlash & PurpleLaserBeam
-    // -----------------------------------------------------------------------
-    describe("Arrow, PurpleSlash & PurpleLaserBeam drawing", () => {
-        it("Arrow.draw applies blue glow when using blueArrow sprite", () => {
-            const arr = new Arrow(mockGame, 0, 0, 5, 5, false, "blueArrow");
+    describe("Arrow", () => {
+        it.each([
+            ["blueArrow", "blue"],
+            ["yellowArrow", "yellow"],
+            ["greenArrow", "lime"],
+            ["cyanArrow", "cyan"],
+        ])("draw applies correct glow for %s", (imageId, expectedShadowColor) => {
+            const arr = new Arrow(mockGame, 0, 0, 5, 5, false, imageId);
             arr.draw(ctx);
-            expect(ctx.shadowColor).toBe("blue");
+
+            expect(ctx.shadowColor).toBe(expectedShadowColor);
             expect(ctx.shadowBlur).toBe(10);
         });
 
-        it("Arrow.draw applies yellow glow when using yellowArrow sprite", () => {
-            const arrY = new Arrow(mockGame, 0, 0, 5, 5, false, "yellowArrow");
-            arrY.draw(ctx);
-            expect(ctx.shadowColor).toBe("yellow");
-            expect(ctx.shadowBlur).toBe(10);
-        });
+        it("draw flips correctly when direction=true", () => {
+            const arr = new Arrow(mockGame, 0, 0, 5, 0, true, "greenArrow");
+            arr.draw(ctx);
 
-        it("PurpleSlash.draw flips when direction>0 and uses purple glow", () => {
+            expect(ctx.scale).toHaveBeenCalledWith(-1, -1);
+        });
+    });
+
+    describe("PurpleSlash", () => {
+        it("draw uses purple glow and flips when direction>0", () => {
             const ps = new PurpleSlash(mockGame, 0, 0, true);
             ps.draw(ctx);
+
             expect(ctx.shadowColor).toBe("purple");
             expect(ctx.shadowBlur).toBe(20);
             expect(ctx.scale).toHaveBeenCalledWith(-1, 1);
         });
 
-        it("PurpleSlash.update ends animation by marking for deletion when last frame reached", () => {
+        it("update ends animation by marking for deletion when last frame reached", () => {
             const ps = new PurpleSlash(mockGame, 0, 0, false);
             ps.frameX = ps.maxFrame;
             ps.lives = 3;
             ps.markedForDeletion = false;
+
             ps.update(0);
+
             expect(ps.markedForDeletion).toBe(true);
             expect(ps.lives).toBe(0);
         });
+    });
 
-        it("PurpleLaserBeam.draw rotates beam and stores collision info for right-facing beams", () => {
+    describe("PurpleLaserBeam", () => {
+        it("draw (right-facing): rotates beam and stores collision info", () => {
             const beam = new PurpleLaserBeam(mockGame, 10, 20, 5, 0);
-            ctx.save.mockClear();
-            ctx.scale.mockClear();
-            ctx.rotate.mockClear();
-            ctx.drawImage.mockClear();
 
             beam.draw(ctx);
 
@@ -387,10 +568,8 @@ describe("elyvorg.js entities – behavior coverage", () => {
             expect(typeof beam.collisionDrawInfo.angle).toBe("number");
         });
 
-        it("PurpleLaserBeam.draw mirrors beam and updates collision angle for left-facing beams", () => {
+        it("draw (left-facing): mirrors beam and updates collision angle", () => {
             const beam = new PurpleLaserBeam(mockGame, 10, 20, -5, 2);
-            ctx.scale.mockClear();
-            ctx.rotate.mockClear();
 
             beam.draw(ctx);
 
@@ -403,7 +582,41 @@ describe("elyvorg.js entities – behavior coverage", () => {
         });
     });
 
-    describe("Elyvorg special-attack helpers", () => {
+    // -----------------------------------------------------------------------
+    // Thunder
+    // -----------------------------------------------------------------------
+    describe("PurpleThunder", () => {
+        it("transitions from warning to strike after warningDuration", () => {
+            const th = new PurpleThunder(mockGame, 120);
+
+            expect(th.phase).toBe("warning");
+            expect(th.dealsDirectHitDamage).toBe(false);
+
+            th.update(th.warningDuration + 1);
+
+            expect(th.phase).toBe("strike");
+            expect(th.y).toBe(th.strikeY);
+        });
+
+        it("completes strike animation and marks itself for deletion", () => {
+            const th = new PurpleThunder(mockGame, 120);
+            th.phase = "strike";
+            th.frameX = th.maxFrame;
+            th.dealsDirectHitDamage = true;
+            th.frameTimer = th.frameInterval;
+
+            th.update(0);
+
+            expect(th.phase).toBe("done");
+            expect(th.dealsDirectHitDamage).toBe(false);
+            expect(th.markedForDeletion).toBe(true);
+        });
+    });
+
+    // -----------------------------------------------------------------------
+    // Elyvorg – focused helper/unit tests
+    // -----------------------------------------------------------------------
+    describe("Elyvorg helpers", () => {
         let boss;
         beforeEach(() => {
             boss = new Elyvorg(mockGame);
@@ -413,6 +626,7 @@ describe("elyvorg.js entities – behavior coverage", () => {
 
         it("cutsceneBackgroundChange triggers fade effect and sets transition flag", () => {
             boss.cutsceneBackgroundChange(1, 1, 1);
+
             expect(fadeInAndOut).toHaveBeenCalled();
             expect(mockGame.enterDuringBackgroundTransition).toBe(true);
         });
@@ -420,24 +634,30 @@ describe("elyvorg.js entities – behavior coverage", () => {
         it("backToIdleSetUp stores previous state, resets to idle, and zeroes frameX", () => {
             boss.state = "run";
             boss.previousState = "jump";
+
             boss.backToIdleSetUp();
+
             expect(boss.previousState).toBe("run");
             expect(boss.state).toBe("idle");
             expect(boss.frameX).toBe(0);
         });
 
-        it("throwLaserBeam adds two PurpleLaserBeam projectiles in player-facing direction", () => {
+        it("throwLaserBeam adds two PurpleLaserBeam projectiles toward the player", () => {
             mockGame.player.x = boss.x - 100;
+
             boss.throwLaserBeam();
-            const beams = mockGame.enemies.filter(e => e instanceof PurpleLaserBeam);
+
+            const beams = mockGame.enemies.filter((e) => e instanceof PurpleLaserBeam);
             expect(beams).toHaveLength(2);
-            beams.forEach(b => expect(b.speedX).toBe(20));
+            beams.forEach((b) => expect(b.speedX).toBe(20));
         });
 
-        it("throwFireballAttack spawns a PurpleFireball aimed toward the player", () => {
+        it("throwFireballAttack spawns a PurpleFireball aimed toward the player horizontally", () => {
             mockGame.player.x = boss.x - 200;
+
             boss.throwFireballAttack();
-            const fbs = mockGame.enemies.filter(e => e instanceof PurpleFireball);
+
+            const fbs = mockGame.enemies.filter((e) => e instanceof PurpleFireball);
             expect(fbs).toHaveLength(1);
             expect(fbs[0].speedX).toBe(15);
         });
@@ -446,7 +666,9 @@ describe("elyvorg.js entities – behavior coverage", () => {
             it("uses blueArrow when Math.random() < 0.25", () => {
                 const rand = jest.spyOn(Math, "random").mockReturnValue(0.2);
                 mockGame.enemies = [];
+
                 boss.throwArrowAttack();
+
                 expect(mockGame.enemies[0].image.id).toBe("blueArrow");
                 rand.mockRestore();
             });
@@ -454,7 +676,9 @@ describe("elyvorg.js entities – behavior coverage", () => {
             it("uses yellowArrow when 0.25 <= Math.random() < 0.5", () => {
                 const rand = jest.spyOn(Math, "random").mockReturnValue(0.3);
                 mockGame.enemies = [];
+
                 boss.throwArrowAttack();
+
                 expect(mockGame.enemies[0].image.id).toBe("yellowArrow");
                 rand.mockRestore();
             });
@@ -462,7 +686,9 @@ describe("elyvorg.js entities – behavior coverage", () => {
             it("uses greenArrow when 0.5 <= Math.random() < 0.75", () => {
                 const rand = jest.spyOn(Math, "random").mockReturnValue(0.6);
                 mockGame.enemies = [];
+
                 boss.throwArrowAttack();
+
                 expect(mockGame.enemies[0].image.id).toBe("greenArrow");
                 rand.mockRestore();
             });
@@ -470,7 +696,9 @@ describe("elyvorg.js entities – behavior coverage", () => {
             it("uses cyanArrow when Math.random() >= 0.75", () => {
                 const rand = jest.spyOn(Math, "random").mockReturnValue(0.9);
                 mockGame.enemies = [];
+
                 boss.throwArrowAttack();
+
                 expect(mockGame.enemies[0].image.id).toBe("cyanArrow");
                 rand.mockRestore();
             });
@@ -478,13 +706,55 @@ describe("elyvorg.js entities – behavior coverage", () => {
 
         it("throwGravityAttack spawns GravitationalAura and marks spinner as active", () => {
             mockGame.player.x = boss.x + 200;
+
             boss.throwGravityAttack();
+
             expect(boss.isGravitySpinnerActive).toBe(true);
-            expect(mockGame.enemies.filter(e => e instanceof GravitationalAura)).toHaveLength(1);
+            expect(mockGame.enemies.filter((e) => e instanceof GravitationalAura)).toHaveLength(1);
+        });
+
+        it("updateRunSFXEdge starts/stops running SFX only on transitions into/out of run", () => {
+            const playSpy = jest.spyOn(mockGame.audioHandler.enemySFX, "playSound");
+            const stopSpy = jest.spyOn(mockGame.audioHandler.enemySFX, "stopSound");
+
+            boss.state = "idle";
+            boss.wasRunningLastFrame = false;
+
+            boss.updateRunSFXEdge();
+            expect(playSpy).not.toHaveBeenCalled();
+
+            boss.state = "run";
+            boss.updateRunSFXEdge();
+            expect(playSpy).toHaveBeenCalledWith(
+                "bossRunningSound",
+                true,
+                true,
+                false,
+                { playbackRate: 1.2 }
+            );
+
+            boss.updateRunSFXEdge();
+            expect(playSpy).toHaveBeenCalledTimes(1);
+
+            boss.state = "idle";
+            boss.updateRunSFXEdge();
+            expect(stopSpy).toHaveBeenCalledWith("bossRunningSound");
+        });
+
+        it("spawnTeleportGhostAt pushes a GhostFadeOut collision snapshot", () => {
+            mockGame.collisions = [];
+
+            boss.spawnTeleportGhostAt(123, 456, true);
+
+            expect(mockGame.collisions).toHaveLength(1);
+            expect(mockGame.collisions[0]).toBeInstanceOf(GhostFadeOut);
         });
     });
 
-    describe("Elyvorg state-transition & logic methods", () => {
+    // -----------------------------------------------------------------------
+    // Elyvorg – state/logic methods
+    // -----------------------------------------------------------------------
+    describe("Elyvorg logic methods & state transitions", () => {
         let boss;
         beforeEach(() => {
             boss = new Elyvorg(mockGame);
@@ -492,14 +762,16 @@ describe("elyvorg.js entities – behavior coverage", () => {
             mockGame.boss.id = "elyvorg";
         });
 
-        it("fireballThrownWhileInIdle switches to jump when fireball is nearby", () => {
+        it("fireballThrownWhileInIdle switches to jump when a nearby fireball is detected", () => {
             boss.state = "idle";
             mockGame.behindPlayerParticles.push({
                 x: boss.x,
                 y: boss.y,
                 maxSize: boss.height,
             });
+
             boss.fireballThrownWhileInIdle();
+
             expect(boss.state).toBe("jump");
         });
 
@@ -513,7 +785,7 @@ describe("elyvorg.js entities – behavior coverage", () => {
             expect(boss.x).toBe(1);
             expect(boss.reachedLeftEdge).toBe(true);
 
-            boss.x = (mockGame.width / 2) - (boss.width / 2);
+            boss.x = mockGame.width / 2 - boss.width / 2;
             boss.edgeConstraintLogic("elyvorg");
             expect(boss.isInTheMiddle).toBe(true);
 
@@ -523,79 +795,123 @@ describe("elyvorg.js entities – behavior coverage", () => {
             expect(boss.reachedRightEdge).toBe(true);
         });
 
-        it("jumpLogic performs arc, fires arrows at midpoint, then returns to idle", () => {
+        it("jumpLogic performs arc, fires arrow at midpoint, then returns to idle", () => {
             boss.state = "jump";
             boss.jumpAnimation.frameX = 0;
+
             boss.jumpLogic();
             expect(boss.jumpedBeforeDistanceLogic).toBe(true);
 
-            boss.game.hiddenTime =
-                boss.jumpStartTime + boss.jumpDuration * 500;
+            boss.game.hiddenTime = boss.jumpStartTime + boss.jumpDuration * 500;
             boss.canJumpAttack = true;
-            boss.jumpLogic();
-            expect(mockGame.enemies.some(e => e instanceof Arrow)).toBe(true);
 
-            boss.game.hiddenTime =
-                boss.jumpStartTime + boss.jumpDuration * 1000 + 1;
+            boss.jumpLogic();
+            expect(mockGame.enemies.some((e) => e instanceof Arrow)).toBe(true);
+
+            boss.game.hiddenTime = boss.jumpStartTime + boss.jumpDuration * 1000 + 1;
             boss.jumpLogic();
             expect(boss.state).toBe("idle");
+        });
+
+        it("jumpLogic plays arrow attack sound when firing at midpoint", () => {
+            boss.state = "jump";
+            boss.jumpAnimation.frameX = 0;
+
+            boss.jumpLogic();
+
+            boss.game.hiddenTime = boss.jumpStartTime + boss.jumpDuration * 1000 * 0.5;
+            boss.canJumpAttack = true;
+
+            const spy = jest.spyOn(mockGame.audioHandler.enemySFX, "playSound");
+            boss.jumpLogic();
+
+            expect(spy).toHaveBeenCalledWith("elyvorg_arrow_attack_sound", false, true);
         });
 
         it("laserLogic fires up to three laser bursts then returns to idle", () => {
             boss.laserAnimation.frameX = 9;
             boss.canLaserAttack = true;
             boss.laserThrowCount = 0;
+
             boss.laserLogic();
             expect(boss.laserThrowCount).toBe(1);
 
             boss.laserThrowCount = 3;
             boss.laserAnimation.frameX = boss.laserAnimation.maxFrame;
+
             boss.laserLogic();
             expect(boss.state).toBe("idle");
         });
 
-        it("meteorLogic plays attack sound then spawns 7 meteors on casting frame", () => {
+        it("laserLogic re-enables canLaserAttack when animation reaches frame 20", () => {
+            boss.canLaserAttack = false;
+            boss.laserAnimation.frameX = 20;
+
+            boss.laserLogic();
+
+            expect(boss.canLaserAttack).toBe(true);
+        });
+
+        it("meteorLogic plays attack sound at frame 9 and spawns 7 meteors at cast frame", () => {
             boss.meteorAnimation.frameX = 9;
             boss.meteorLogic();
-            expect(mockGame.audioHandler.enemySFX.playSound)
-                .toHaveBeenCalledWith("elyvorg_meteor_attack_sound");
+            expect(mockGame.audioHandler.enemySFX.playSound).toHaveBeenCalledWith(
+                "elyvorg_meteor_attack_sound"
+            );
 
             boss.meteorAnimation.frameX = boss.meteorAnimation.maxFrame;
             boss.canMeteorAttack = true;
             boss.meteorThrowCount = 0;
+            mockGame.enemies = [];
+
             boss.meteorLogic();
-            expect(
-                mockGame.enemies.filter(e => e instanceof MeteorAttack)
-            ).toHaveLength(7);
+
+            expect(mockGame.enemies.filter((e) => e instanceof MeteorAttack)).toHaveLength(7);
         });
 
-        it("poisonLogic triggers screen effect, sound, and initial poison rain", () => {
+        it("meteorLogic spawns falling sound at frame 23 and re-enables casting at frame 20", () => {
+            boss.meteorAnimation.frameX = 23;
+            boss.canMeteorAttack = true;
+            mockGame.enemies = [];
+
+            const playSpy = jest.spyOn(mockGame.audioHandler.enemySFX, "playSound");
+            boss.meteorLogic();
+
+            expect(mockGame.enemies.filter((e) => e instanceof MeteorAttack)).toHaveLength(7);
+            expect(playSpy).toHaveBeenCalledWith("elyvorg_meteor_falling_sound", true);
+            expect(boss.canMeteorAttack).toBe(false);
+
+            boss.canMeteorAttack = false;
+            boss.meteorAnimation.frameX = 20;
+            boss.meteorLogic();
+
+            expect(boss.canMeteorAttack).toBe(true);
+        });
+
+        it("poisonLogic triggers screen effect, rain sound, and initial poison rain", () => {
             boss.poisonAnimation.frameX = 0;
             boss.poisonLogic();
-            expect(mockGame.bossManager.requestScreenEffect).toHaveBeenCalledWith(
-                "elyvorg_poison",
-                {
-                    rgb: [0, 50, 0],
-                    fadeInSpeed: 0.00298,
-                }
-            );
+
+            expect(mockGame.bossManager.requestScreenEffect).toHaveBeenCalledWith("elyvorg_poison", {
+                rgb: [0, 50, 0],
+                fadeInSpeed: 0.00298,
+            });
 
             boss.poisonAnimation.frameX = 17;
             boss.poisonLogic();
-            expect(mockGame.audioHandler.enemySFX.playSound)
-                .toHaveBeenCalledWith(
-                    "elyvorg_poison_drop_rain_sound",
-                    false,
-                    true
-                );
+            expect(mockGame.audioHandler.enemySFX.playSound).toHaveBeenCalledWith(
+                "elyvorg_poison_drop_rain_sound",
+                false,
+                true
+            );
 
             boss.poisonAnimation.frameX = boss.poisonAnimation.maxFrame;
             boss.canPoisonAttack = true;
+
             boss.poisonLogic();
+
             expect(boss.isPoisonActive).toBe(true);
-            expect(
-                mockGame.enemies.filter(e => e instanceof PoisonDrop).length
-            ).toBe(7);
+            expect(mockGame.enemies.filter((e) => e instanceof PoisonDrop)).toHaveLength(7);
         });
 
         it("poisonLogicTimer periodically spawns passive PoisonDrop rain while active", () => {
@@ -605,11 +921,46 @@ describe("elyvorg.js entities – behavior coverage", () => {
             mockGame.enemies = [];
             boss.passivePoisonCooldown = 0;
             boss.poisonCooldownTimer = 0;
+
             boss.poisonLogicTimer(1000);
-            expect(
-                mockGame.enemies.filter(e => e instanceof PoisonDrop)
-            ).toHaveLength(1);
+
+            expect(mockGame.enemies.filter((e) => e instanceof PoisonDrop)).toHaveLength(1);
             rand.mockRestore();
+        });
+
+        it("poisonLogicTimer disables poison and releases screenEffect after cooldown", () => {
+            boss.isPoisonActive = true;
+            boss.poisonCooldown = 50;
+            boss.poisonCooldownTimer = 51;
+
+            boss.poisonLogicTimer(0);
+
+            expect(boss.isPoisonActive).toBe(false);
+            expect(mockGame.bossManager.releaseScreenEffect).toHaveBeenCalledWith("elyvorg_poison");
+        });
+
+        it("gravityLogic spawns aura + both sounds at cast frame and resets on frame 23", () => {
+            boss.gravityAnimation.frameX = 9;
+            boss.canGravityAttack = true;
+            mockGame.enemies = [];
+
+            const playSpy = jest.spyOn(mockGame.audioHandler.enemySFX, "playSound");
+
+            boss.gravityLogic();
+
+            expect(mockGame.enemies.some((e) => e instanceof GravitationalAura)).toBe(true);
+            expect(playSpy).toHaveBeenCalledWith("elyvorg_gravitational_aura_release_sound_effect");
+            expect(playSpy).toHaveBeenCalledWith("elyvorg_gravitational_aura_sound_effect", true);
+            expect(boss.canGravityAttack).toBe(false);
+
+            boss.gravityAnimation.frameX = 23;
+            boss.canGravityAttack = false;
+            boss.backToIdleSetUp = jest.fn();
+
+            boss.gravityLogic();
+
+            expect(boss.backToIdleSetUp).toHaveBeenCalled();
+            expect(boss.canGravityAttack).toBe(true);
         });
 
         it("gravityLogicTimer detonates gravitational aura on cooldown and stops sounds", () => {
@@ -623,18 +974,20 @@ describe("elyvorg.js entities – behavior coverage", () => {
                 markedForDeletion: false,
             };
             boss.gravityCooldownTimer = boss.gravityCooldown;
+
             boss.gravityLogicTimer(0);
+
             expect(boss.isGravitySpinnerActive).toBe(false);
-            expect(
-                mockGame.collisions.some(c => c instanceof DarkExplosionCollision)
-            ).toBe(true);
+            expect(mockGame.collisions.some((c) => c instanceof DarkExplosionCollision)).toBe(true);
         });
 
         it("pistolLogic returns to idle when animation completes or wheel is inactive", () => {
             boss.state = "pistol";
             boss.pistolAnimation.frameX = boss.pistolAnimation.maxFrame;
             boss.isElectricWheelActive = true;
+
             boss.pistolLogic();
+
             expect(boss.state).toBe("idle");
         });
 
@@ -652,89 +1005,132 @@ describe("elyvorg.js entities – behavior coverage", () => {
             expect(boss.electricWheelThrown).toBe(true);
         });
 
-        it("ghostLogic plays sound, spawns ghost(s), and then returns to idle", () => {
+        it("ghostLogic plays sound and can spawn 2 ghosts when random < 0.5", () => {
             boss.ghostAnimation.frameX = 0;
             boss.ghostLogic();
-            expect(mockGame.audioHandler.enemySFX.playSound)
-                .toHaveBeenCalledWith(
-                    "elyvorg_ghost_attack_sound",
-                    false,
-                    true
-                );
+            expect(mockGame.audioHandler.enemySFX.playSound).toHaveBeenCalledWith(
+                "elyvorg_ghost_attack_sound",
+                false,
+                true
+            );
 
             boss.ghostAnimation.frameX = 17;
             boss.canGhostAttack = true;
             mockGame.enemies = [];
-            jest.spyOn(Math, "random").mockReturnValue(0.4);
+
+            const rand = jest.spyOn(Math, "random").mockReturnValue(0.4);
             boss.ghostLogic();
-            const ghosts = mockGame.enemies.filter(
-                e => e instanceof GhostElyvorg
-            );
-            expect(ghosts.length).toBe(2);
-            Math.random.mockRestore();
+
+            const ghosts = mockGame.enemies.filter((e) => e instanceof GhostElyvorg);
+            expect(ghosts).toHaveLength(2);
+
+            rand.mockRestore();
         });
 
         it("inkLogic spawns exactly 5 InkBomb projectiles", () => {
             boss.inkAnimation.frameX = 1;
             boss.canInkAttack = true;
             mockGame.enemies = [];
+
             boss.inkLogic();
-            expect(
-                mockGame.enemies.filter(e => e instanceof InkBomb).length
-            ).toBe(5);
+
+            expect(mockGame.enemies.filter((e) => e instanceof InkBomb)).toHaveLength(5);
         });
 
         it("fireballLogic spawns fireball at cast frame and returns to idle at end", () => {
             boss.fireballAnimation.frameX = 10;
             boss.canFireballAttack = true;
             mockGame.enemies = [];
+
             boss.fireballLogic();
-            expect(
-                mockGame.enemies.filter(e => e instanceof PurpleFireball)
-            ).toHaveLength(1);
+
+            expect(mockGame.enemies.filter((e) => e instanceof PurpleFireball)).toHaveLength(1);
             expect(boss.canFireballAttack).toBe(false);
 
             boss.fireballAnimation.frameX = boss.fireballAnimation.maxFrame;
             boss.fireballLogic();
+
             expect(boss.state).toBe("idle");
         });
 
-        it("barrier sound transitions (spawn + crack + break) are handled by Barrier.update()", () => {
-            const playSpy = jest.spyOn(mockGame.audioHandler.enemySFX, "playSound");
+        it("barrierLogic sets player collision timer when barrier is destroyed", () => {
+            boss.oneBarrier = false;
+            boss.isBarrierActive = true;
+            boss.barrierBreakingSetElyvorgTimer = true;
+            boss.barrier = new PurpleBarrier(mockGame, 0, 0);
+            boss.barrier.lives = 0;
 
-            const b = new PurpleBarrier(mockGame, 0, 0);
+            mockGame.player.bossCollisionTimer = 0;
 
-            expect(playSpy).toHaveBeenCalledWith("elyvorg_shield_up_sound", false, true);
+            boss.barrierLogic(0);
 
-            b.update(0);
+            expect(boss.isBarrierActive).toBe(false);
+            expect(boss.barrierBreakingSetElyvorgTimer).toBe(false);
+            expect(mockGame.player.bossCollisionTimer).toBe(1000);
+        });
 
-            b.lives = 2;
-            b.update(0);
-            expect(playSpy).toHaveBeenCalledWith("elyvorg_shield_crack_1_sound", false, true);
+        it("barrierLogic regenerates barrier after cooldown expires", () => {
+            boss.oneBarrier = false;
+            boss.isBarrierActive = false;
+            boss.barrierCooldown = 100;
+            boss.barrierCooldownTimer = 100;
+            mockGame.enemies = [];
 
-            b.lives = 1;
-            b.update(0);
-            expect(playSpy).toHaveBeenCalledWith("elyvorg_shield_crack_2_sound", false, true);
+            boss.barrierLogic(0);
 
-            b.lives = 0;
-            b.update(0);
-            expect(playSpy).toHaveBeenCalledWith("elyvorg_shield_crack_3_sound", false, true);
+            expect(mockGame.enemies.some((e) => e instanceof PurpleBarrier)).toBe(true);
+            expect(mockGame.audioHandler.enemySFX.playSound).toHaveBeenCalledWith(
+                "elyvorg_shield_up_sound",
+                false,
+                true
+            );
         });
 
         it("electricWheelLogic spawns initial ElectricWheel and starts looping sound", () => {
             boss.oneElectricWheel = true;
             mockGame.enemies = [];
             boss.isElectricWheelActive = false;
+
             boss.electricWheelLogic(0);
-            expect(
-                mockGame.enemies.filter(e => e instanceof ElectricWheel)
-            ).toHaveLength(1);
+
+            expect(mockGame.enemies.filter((e) => e instanceof ElectricWheel)).toHaveLength(1);
             expect(boss.isElectricWheelActive).toBe(true);
-            expect(mockGame.audioHandler.enemySFX.playSound)
-                .toHaveBeenCalledWith(
-                    "elyvorg_electricity_wheel_sound",
-                    true
-                );
+            expect(mockGame.audioHandler.enemySFX.playSound).toHaveBeenCalledWith(
+                "elyvorg_electricity_wheel_sound",
+                true
+            );
+        });
+
+        it("electricWheelLogic issues warning indicator/sound then cleans up when wheel dies", () => {
+            boss.oneElectricWheel = false;
+            boss.isElectricWheelActive = false;
+            boss.electricWheelStateCounter = boss.electricWheelStateCounterLimit;
+
+            const playSpy = jest.spyOn(mockGame.audioHandler.enemySFX, "playSound");
+            boss.electricWheelLogic(0);
+
+            expect(playSpy).toHaveBeenCalledWith("elyvorg_electricity_wheel_warning_sound");
+            expect(mockGame.collisions.some((c) => c instanceof PurpleWarningIndicator)).toBe(true);
+
+            boss.electricWheel.lives = 0;
+            mockGame.player.resetElectricWheelCounters = true;
+
+            boss.electricWheelLogic(0);
+
+            expect(boss.isElectricWheelActive).toBe(false);
+            expect(boss.electricWheel.markedForDeletion).toBe(true);
+        });
+
+        it("ensureElectricWheelOnTop moves wheel to end of enemies array", () => {
+            const e1 = new MeteorAttack(mockGame);
+            const e2 = new PoisonDrop(mockGame);
+            boss.electricWheel = new ElectricWheel(mockGame, 0, 0);
+
+            mockGame.enemies = [e1, boss.electricWheel, e2];
+
+            boss.ensureElectricWheelOnTop();
+
+            expect(mockGame.enemies[mockGame.enemies.length - 1]).toBe(boss.electricWheel);
         });
 
         it("checksBossIsFullyVisible marks boss visible and snaps x when fully onscreen", () => {
@@ -752,6 +1148,7 @@ describe("elyvorg.js entities – behavior coverage", () => {
         it("stateRandomiser returns idle or run only when gameOver=true", () => {
             boss.isInTheMiddle = false;
             mockGame.gameOver = true;
+
             boss.stateRandomiser();
             expect(boss.state).toBe("idle");
 
@@ -760,9 +1157,35 @@ describe("elyvorg.js entities – behavior coverage", () => {
             expect(boss.state).toBe("run");
         });
 
+        it("stateRandomiser may reuse previousState when random<0.1 and no conflicting flags", () => {
+            const localBoss = new Elyvorg(mockGame);
+            localBoss.previousState = "meteor";
+            localBoss.isGravitySpinnerActive = false;
+            localBoss.isPoisonActive = false;
+
+            const rand = jest.spyOn(Math, "random").mockReturnValue(0.05);
+            localBoss.stateRandomiser();
+
+            expect(localBoss.state).toBe("meteor");
+            rand.mockRestore();
+        });
+
+        it("stateRandomiser prioritises run state when counters demand it", () => {
+            boss.previousState = "laser";
+            boss.isGravitySpinnerActive = true;
+            boss.isPoisonActive = true;
+            boss.runStateCounter = boss.runStateCounterLimit + 1;
+            boss.isInTheMiddle = false;
+
+            boss.stateRandomiser();
+
+            expect(boss.state).toBe("run");
+        });
+
         it("draw delegates to run animation when state is run, and uses base draw when idle", () => {
             boss.state = "run";
             boss.runningDirection = 5;
+
             const spy = jest.spyOn(boss.runAnimation, "draw");
             boss.draw(ctx);
             expect(spy).toHaveBeenCalledWith(ctx, true);
@@ -780,6 +1203,7 @@ describe("elyvorg.js entities – behavior coverage", () => {
             mockGame.boss.current = boss;
 
             jest.useFakeTimers();
+
             boss.checkIfDefeated();
             expect(mockGame.boss.inFight).toBe(false);
 
@@ -800,10 +1224,10 @@ describe("elyvorg.js entities – behavior coverage", () => {
             mockGame.boss.talkToBoss = true;
 
             boss.x = mockGame.width - 1;
+
             boss.runningAway(0, "elyvorg");
 
-            expect(mockGame.background.totalDistanceTraveled)
-                .toBe(mockGame.maxDistance - 6);
+            expect(mockGame.background.totalDistanceTraveled).toBe(mockGame.maxDistance - 6);
             expect(boss.markedForDeletion).toBe(true);
             expect(mockGame.boss.current).toBeNull();
             expect(mockGame.boss.isVisible).toBe(false);
@@ -811,130 +1235,36 @@ describe("elyvorg.js entities – behavior coverage", () => {
             expect(mockGame.boss.runAway).toBe(false);
         });
 
-        it("runLogic moves Elyvorg and spawns PurpleSlash when player is in range", () => {
+        it("runLogic spawns PurpleSlash when player is in range and slashAttackOnce is true", () => {
             boss.runningDirection = 0;
             boss.slashAttackOnce = true;
             boss.x = mockGame.player.x;
             mockGame.enemies = [];
+
             boss.runLogic();
-            expect(
-                mockGame.enemies.some(e => e instanceof PurpleSlash)
-            ).toBe(true);
+
+            expect(mockGame.enemies.some((e) => e instanceof PurpleSlash)).toBe(true);
         });
 
         it("rechargeLogic calls stateRandomiser once timer passes cooldown on last frame", () => {
             boss.state = "recharge";
             boss.rechargeAnimation.frameX = boss.rechargeAnimation.maxFrame;
             boss.stateRandomiserTimer = boss.stateRandomiserCooldown;
+
             jest.spyOn(boss, "stateRandomiser");
+
             boss.rechargeLogic(0);
+
             expect(boss.stateRandomiser).toHaveBeenCalled();
         });
+    });
 
-        it("stateRandomiser prioritises run state when counters or wheel position demand it", () => {
-            boss.previousState = "laser";
-            boss.isGravitySpinnerActive = true;
-            boss.isPoisonActive = true;
-            boss.runStateCounter = boss.runStateCounterLimit + 1;
-            boss.isInTheMiddle = false;
-            boss.stateRandomiser();
-            expect(boss.state).toBe("run");
-        });
-
-        it("jumpLogic plays arrow sound when reaching midpoint of jump", () => {
-            boss.state = "jump";
-            boss.jumpAnimation.frameX = 0;
-            boss.jumpLogic();
-
-            boss.game.hiddenTime =
-                boss.jumpStartTime + boss.jumpDuration * 1000 * 0.5;
-            boss.canJumpAttack = true;
-            const spy = jest.spyOn(
-                mockGame.audioHandler.enemySFX,
-                "playSound"
-            );
-            boss.jumpLogic();
-            expect(spy).toHaveBeenCalledWith(
-                "elyvorg_arrow_attack_sound",
-                false,
-                true
-            );
-        });
-
-        it("laserLogic re-enables canLaserAttack when animation reaches frame 20", () => {
-            boss.canLaserAttack = false;
-            boss.laserAnimation.frameX = 20;
-            boss.laserLogic();
-            expect(boss.canLaserAttack).toBe(true);
-        });
-
-        it("gravityLogic spawns aura with both sounds at cast frame, and resets on frame 23", () => {
-            boss.gravityAnimation.frameX = 9;
-            boss.canGravityAttack = true;
-            const playSpy = jest.spyOn(
-                mockGame.audioHandler.enemySFX,
-                "playSound"
-            );
-            mockGame.enemies = [];
-            boss.gravityLogic();
-            expect(
-                mockGame.enemies.some(e => e instanceof GravitationalAura)
-            ).toBe(true);
-            expect(playSpy).toHaveBeenCalledWith(
-                "elyvorg_gravitational_aura_release_sound_effect"
-            );
-            expect(playSpy).toHaveBeenCalledWith(
-                "elyvorg_gravitational_aura_sound_effect",
-                true
-            );
-            expect(boss.canGravityAttack).toBe(false);
-
-            boss.gravityAnimation.frameX = 23;
-            boss.canGravityAttack = false;
-            boss.backToIdleSetUp = jest.fn();
-            boss.gravityLogic();
-            expect(boss.backToIdleSetUp).toHaveBeenCalled();
-            expect(boss.canGravityAttack).toBe(true);
-        });
-
-        it("meteorLogic spawns 7 meteors and falling sound at frame 23, and re-enables at frame 20", () => {
-            boss.meteorAnimation.frameX = 23;
-            boss.canMeteorAttack = true;
-            mockGame.enemies = [];
-            const playSpy = jest.spyOn(
-                mockGame.audioHandler.enemySFX,
-                "playSound"
-            );
-            boss.meteorLogic();
-            expect(
-                mockGame.enemies.filter(e => e instanceof MeteorAttack)
-            ).toHaveLength(7);
-            expect(playSpy).toHaveBeenCalledWith(
-                "elyvorg_meteor_falling_sound",
-                true
-            );
-            expect(boss.canMeteorAttack).toBe(false);
-
-            boss.canMeteorAttack = false;
-            boss.meteorAnimation.frameX = 20;
-            boss.meteorLogic();
-            expect(boss.canMeteorAttack).toBe(true);
-        });
-
-        it("barrierLogic sets player collision timer when barrier is destroyed", () => {
-            boss.oneBarrier = false;
-            boss.isBarrierActive = true;
-            boss.barrierBreakingSetElyvorgTimer = true;
-            boss.barrier = new PurpleBarrier(mockGame, 0, 0);
-            boss.barrier.lives = 0;
-            mockGame.player.bossCollisionTimer = 0;
-            boss.barrierLogic(0);
-            expect(boss.isBarrierActive).toBe(false);
-            expect(boss.barrierBreakingSetElyvorgTimer).toBe(false);
-            expect(mockGame.player.bossCollisionTimer).toBe(1000);
-        });
-
+    // -----------------------------------------------------------------------
+    // Elyvorg – thunder sequence helpers + behavior
+    // -----------------------------------------------------------------------
+    describe("Elyvorg thunder sequence", () => {
         it("thunderLogic initialises thunder sequence and spawns opening PurpleThunder wave", () => {
+            const boss = new Elyvorg(mockGame);
             boss.state = "thunder";
             mockGame.enemies = [];
             boss.thunderSequenceInitialised = false;
@@ -947,8 +1277,8 @@ describe("elyvorg.js entities – behavior coverage", () => {
             expect(boss.thunderSequenceInitialised).toBe(true);
             expect(boss.isThunderSequenceActive).toBe(true);
 
-            const thunders = mockGame.enemies.filter(e => e instanceof PurpleThunder);
-            expect(thunders.length).toBe(3);
+            const thunders = mockGame.enemies.filter((e) => e instanceof PurpleThunder);
+            expect(thunders).toHaveLength(3);
             expect(boss.thunderGroup1Spawned).toBe(true);
             expect(boss.thunderTotalSpawned).toBe(3);
 
@@ -956,13 +1286,132 @@ describe("elyvorg.js entities – behavior coverage", () => {
             expect(mockGame.startShake).toHaveBeenCalledWith(0);
         });
 
-        it("beginTeleport sets up fade-out phase and target positions", () => {
+        it("getActiveThunders returns only non-deleted PurpleThunder not in 'done' phase", () => {
+            const boss = new Elyvorg(mockGame);
+            const t1 = new PurpleThunder(mockGame, 100);
+            const t2 = new PurpleThunder(mockGame, 200);
+            const t3 = new PurpleThunder(mockGame, 300);
+
+            t2.markedForDeletion = true;
+            t3.phase = "done";
+
+            mockGame.enemies = [t1, t2, t3];
+
+            const active = boss.getActiveThunders();
+            expect(active).toEqual([t1]);
+        });
+
+        it("isThunderLaneCoveringPlayer returns true when thunder overlaps player X", () => {
+            const boss = new Elyvorg(mockGame);
+            mockGame.player.x = 100;
+
+            const t = new PurpleThunder(mockGame, 125);
+            const result = boss.isThunderLaneCoveringPlayer([t]);
+
+            expect(result).toBe(true);
+        });
+
+        it("endThunderSequence stops thunder sound, clears shake, and transitions back to recharge", () => {
+            const boss = new Elyvorg(mockGame);
+            boss.isThunderSequenceActive = true;
+            boss.thunderSequenceInitialised = true;
+
+            mockGame.shakeActive = true;
+            mockGame.shakeTimer = 10;
+            mockGame.shakeDuration = 20;
+
+            const stopSpy = jest.spyOn(mockGame.audioHandler.enemySFX, "stopSound");
+            const releaseSpy = jest.spyOn(mockGame.bossManager, "releaseScreenEffect");
+            boss.backToRechargeSetUp = jest.fn();
+
+            boss.endThunderSequence();
+
+            expect(boss.isThunderSequenceActive).toBe(false);
+            expect(boss.thunderSequenceInitialised).toBe(false);
+
+            expect(stopSpy).toHaveBeenCalledWith("elyvorg_purple_thunder_sound_effect");
+            expect(releaseSpy).toHaveBeenCalledWith("elyvorg_thunder");
+
+            expect(mockGame.stopShake).toHaveBeenCalled();
+            expect(mockGame.shakeActive).toBe(false);
+            expect(mockGame.shakeTimer).toBe(0);
+            expect(mockGame.shakeDuration).toBe(0);
+
+            expect(boss.previousState).toBe("thunder");
+            expect(boss.backToRechargeSetUp).toHaveBeenCalled();
+        });
+    });
+
+    // -----------------------------------------------------------------------
+    // Elyvorg – meteor shake
+    // -----------------------------------------------------------------------
+    describe("Elyvorg meteor shake", () => {
+        it("startMeteorShake enables camera shake (currently hardcoded 1000 in Elyvorg)", () => {
+            const boss = new Elyvorg(mockGame);
+            boss.meteorShakeDuration = 1234;
+
+            mockGame.shakeActive = false;
+            mockGame.shakeTimer = 999;
+            mockGame.shakeDuration = 0;
+
+            boss.startMeteorShake();
+
+            expect(boss.meteorShakeActive).toBe(true);
+            expect(mockGame.startShake).toHaveBeenCalledWith(1000);
+            expect(mockGame.shakeActive).toBe(true);
+            expect(mockGame.shakeTimer).toBe(0);
+            expect(mockGame.shakeDuration).toBe(1000);
+        });
+
+        it("updateMeteorShakeTimer stops shake flag when game shake has ended and not in thunder", () => {
+            const boss = new Elyvorg(mockGame);
+            boss.meteorShakeActive = true;
+
+            mockGame.shakeActive = false;
+            mockGame.shakeTimer = 900;
+            mockGame.shakeDuration = 1000;
+
+            boss.state = "meteor";
+            boss.isThunderSequenceActive = false;
+
+            boss.updateMeteorShakeTimer(200);
+
+            expect(boss.meteorShakeActive).toBe(false);
+        });
+
+        it("updateMeteorShakeTimer cancels meteor shake immediately during thunder", () => {
+            const boss = new Elyvorg(mockGame);
+            boss.meteorShakeActive = true;
+
+            mockGame.shakeActive = true;
+            boss.state = "thunder";
+            boss.isThunderSequenceActive = true;
+
+            boss.updateMeteorShakeTimer(100);
+
+            expect(boss.meteorShakeActive).toBe(false);
+        });
+    });
+
+    // -----------------------------------------------------------------------
+    // Elyvorg – teleport
+    // -----------------------------------------------------------------------
+    describe("Elyvorg teleport", () => {
+        let boss;
+        beforeEach(() => {
+            boss = new Elyvorg(mockGame);
+            mockGame.boss.current = boss;
+            mockGame.boss.id = "elyvorg";
+        });
+
+        it("beginTeleport sets fade-out phase and target positions (ground teleport path)", () => {
             boss.teleportDuration = 10;
             boss.pickTeleportTargetX = jest.fn(() => {
                 boss.teleportTargetX = boss.x + 100;
             });
+
             const ghostSpy = jest.spyOn(boss, "spawnTeleportGhostAt");
-            const rand = jest.spyOn(Math, "random").mockReturnValue(0.9); // teleportAir = false
+            const rand = jest.spyOn(Math, "random").mockReturnValue(0.9);
 
             boss.beginTeleport();
 
@@ -980,19 +1429,20 @@ describe("elyvorg.js entities – behavior coverage", () => {
             boss.pickTeleportTargetX = jest.fn(() => {
                 boss.teleportTargetX = 300;
             });
-            const rand = jest.spyOn(Math, "random").mockReturnValue(0.9); // ground teleport
+
+            const rand = jest.spyOn(Math, "random").mockReturnValue(0.9);
             boss.beginTeleport();
             rand.mockRestore();
 
             boss.teleportTargetY = boss.originalY;
             boss.backToIdleSetUp = jest.fn();
 
-            boss.teleportLogic(10); // complete fadeOut
+            boss.teleportLogic(10);
             expect(boss.teleportPhase).toBe("fadeIn");
             expect(boss.x).toBe(300);
             expect(boss.y).toBe(boss.originalY);
 
-            boss.teleportLogic(10); // complete fadeIn
+            boss.teleportLogic(10);
             expect(boss.teleportPhase).toBe("none");
             expect(boss.previousState).toBe("teleport");
             expect(boss.backToIdleSetUp).toHaveBeenCalled();
@@ -1003,352 +1453,36 @@ describe("elyvorg.js entities – behavior coverage", () => {
             boss.pickTeleportTargetX = jest.fn(() => {
                 boss.teleportTargetX = 300;
             });
-            const rand = jest.spyOn(Math, "random").mockReturnValue(0.0); // teleportAir = true
+
+            const rand = jest.spyOn(Math, "random").mockReturnValue(0.0);
             boss.beginTeleport();
             rand.mockRestore();
 
             boss.teleportTargetY = boss.originalY - boss.jumpHeight;
 
-            boss.teleportLogic(10); // fadeOut
-            boss.teleportLogic(10); // fadeIn complete
+            boss.teleportLogic(10);
+            boss.teleportLogic(10);
 
             expect(boss.teleportPhase).toBe("none");
             expect(boss.state).toBe("jump");
             expect(boss.isTeleportJump).toBe(true);
         });
-    });
 
-    describe("Additional behaviors and edge cases", () => {
-        describe("GravitationalAura extra", () => {
-            it("update increments rotationAngle and toggles shouldInvert with player position", () => {
-                const bossStub = { x: 50, width: 10, reachedLeftEdge: false };
-                const aura = new GravitationalAura(
-                    mockGame,
-                    0,
-                    150,
-                    mockGame.player,
-                    bossStub
-                );
-                aura.speedX = 0;
-                mockGame.player.x = 300;
-                bossStub.x = 0;
+        it("pickTeleportTargetX chooses a valid x within bounds and not overlapping player lane", () => {
+            boss.x = 100;
+            mockGame.player.x = 300;
 
-                const before = aura.rotationAngle;
-                aura.update(16);
-                expect(aura.rotationAngle).toBeCloseTo(
-                    before + aura.rotationSpeed
-                );
-                expect(aura.shouldInvert).toBe(true);
+            boss.pickTeleportTargetX();
 
-                mockGame.player.x = 0;
-                aura.update(16);
-                expect(aura.shouldInvert).toBe(false);
-            });
-        });
+            expect(boss.teleportTargetX).toBeGreaterThanOrEqual(0);
+            expect(boss.teleportTargetX).toBeLessThanOrEqual(mockGame.width - boss.width);
 
-        describe("ElectricWheel.shouldElectricWheelInvert()", () => {
-            it("updates direction and incrementMovement based on player side", () => {
-                const ew = new ElectricWheel(mockGame, 0, 0);
-                mockGame.player.x = ew.x + 100;
-                ew.shouldElectricWheelInvert();
-                expect(ew.shouldInvert).toBe(true);
-                expect(ew.incrementMovement).toBeGreaterThan(0);
+            const forbiddenMin = mockGame.player.x - boss.width;
+            const forbiddenMax = mockGame.player.x + mockGame.player.width;
 
-                mockGame.player.x = ew.x - 100;
-                ew.shouldElectricWheelInvert();
-                expect(ew.shouldInvert).toBe(false);
-                expect(ew.incrementMovement).toBeLessThan(0);
-            });
-        });
-
-        describe("InkBomb scaling and sounds", () => {
-            it("update grows scale to target, sets speedX when stopping, and plays both sounds once", () => {
-                const ib = new InkBomb(mockGame, 100, 200, 5, 180, 20, false);
-                const playSoundSpy = jest.spyOn(mockGame.audioHandler.enemySFX, "playSound");
-                for (let i = 0; i < 200; i++) {
-                    ib.update(16);
-                }
-                expect(playSoundSpy).toHaveBeenCalledWith("elyvorg_ink_bomb_sound", false, true);
-                expect(playSoundSpy).toHaveBeenCalledWith("elyvorg_ink_bomb_throw_sound", false, true);
-                expect(ib.scale).toBe(1);
-                expect(ib.speedX).toBe(20);
-            });
-        });
-
-        describe("PurpleFireball growth and rotation", () => {
-            it("update grows size to maxSize, moves upwards, and increases rotationAngle", () => {
-                const pf = new PurpleFireball(mockGame, 50, 300, 5, 0);
-                const beforeAngle = pf.rotationAngle;
-                for (let t = 0; t < 100; t++) {
-                    pf.update(16);
-                }
-                expect(pf.size).toBe(pf.maxSize);
-                expect(pf.y).toBeLessThan(300);
-                expect(pf.rotationAngle).toBeGreaterThan(beforeAngle);
-            });
-        });
-
-        describe("Arrow greenArrow behavior", () => {
-            it("draw uses lime shadow for greenArrow and flips correctly when direction=true", () => {
-                const arr = new Arrow(mockGame, 0, 0, 5, 0, true, "greenArrow");
-                arr.draw(ctx);
-                expect(ctx.shadowColor).toBe("lime");
-                expect(ctx.shadowBlur).toBe(10);
-                expect(ctx.scale).toHaveBeenCalledWith(-1, -1);
-            });
-        });
-
-        describe("PurpleBarrier regeneration", () => {
-            it("barrierLogic regenerates barrier after cooldown expires", () => {
-                const boss = new Elyvorg(mockGame);
-                mockGame.boss.current = boss;
-                mockGame.boss.id = "elyvorg";
-
-                boss.oneBarrier = false;
-                boss.isBarrierActive = false;
-                boss.barrierCooldown = 100;
-                boss.barrierCooldownTimer = 100;
-                mockGame.enemies = [];
-                boss.barrierLogic(0);
-
-                expect(
-                    mockGame.enemies.some(e => e instanceof PurpleBarrier)
-                ).toBe(true);
-
-                expect(mockGame.audioHandler.enemySFX.playSound)
-                    .toHaveBeenCalledWith("elyvorg_shield_up_sound", false, true);
-            });
-        });
-
-        describe("ElectricWheel warning and teardown", () => {
-            it("electricWheelLogic issues warning then cleans up when wheel dies", () => {
-                const boss = new Elyvorg(mockGame);
-                mockGame.boss.current = boss;
-                mockGame.boss.id = "elyvorg";
-
-                boss.oneElectricWheel = false;
-                boss.isElectricWheelActive = false;
-                boss.electricWheelStateCounter = boss.electricWheelStateCounterLimit;
-
-                const playSpy = jest.spyOn(
-                    mockGame.audioHandler.enemySFX,
-                    "playSound"
-                );
-                boss.electricWheelLogic(0);
-                expect(playSpy).toHaveBeenCalledWith(
-                    "elyvorg_electricity_wheel_warning_sound"
-                );
-                expect(
-                    mockGame.collisions.some(
-                        c => c instanceof PurpleWarningIndicator
-                    )
-                ).toBe(true);
-
-                boss.electricWheel.lives = 0;
-                mockGame.player.resetElectricWheelCounters = true;
-                boss.electricWheelLogic(0);
-                expect(boss.isElectricWheelActive).toBe(false);
-                expect(boss.electricWheel.markedForDeletion).toBe(true);
-            });
-        });
-
-        describe("PoisonLogicTimer reset", () => {
-            it("poisonLogicTimer disables poison effect and clears screenEffect after cooldown", () => {
-                const boss = new Elyvorg(mockGame);
-                mockGame.boss.current = boss;
-                mockGame.boss.id = "elyvorg";
-
-                boss.isPoisonActive = true;
-                boss.poisonCooldown = 50;
-                boss.poisonCooldownTimer = 51;
-
-                boss.poisonLogicTimer(0);
-
-                expect(boss.isPoisonActive).toBe(false);
-                expect(mockGame.bossManager.releaseScreenEffect)
-                    .toHaveBeenCalledWith("elyvorg_poison");
-            });
-        });
-
-        describe("stateRandomiser previousState branch", () => {
-            it("stateRandomiser sometimes reuses previousState when random<0.1 and no conflicting flags", () => {
-                const boss = new Elyvorg(mockGame);
-                boss.previousState = "meteor";
-                boss.isGravitySpinnerActive = false;
-                boss.isPoisonActive = false;
-                jest.spyOn(Math, "random").mockReturnValue(0.05);
-                boss.stateRandomiser();
-                expect(boss.state).toBe("meteor");
-                Math.random.mockRestore();
-            });
-        });
-
-        describe("Elyvorg.draw for non-idle states", () => {
-            let boss;
-            beforeEach(() => {
-                boss = new Elyvorg(mockGame);
-                mockGame.boss.current = boss;
-                mockGame.boss.id = "elyvorg";
-            });
-
-            it("draw calls ghostAnimation.draw when state is 'ghost'", () => {
-                boss.state = "ghost";
-                const spy = jest.spyOn(boss.ghostAnimation, "draw");
-                boss.draw(ctx);
-                expect(spy).toHaveBeenCalledWith(ctx, expect.any(Boolean));
-                spy.mockRestore();
-            });
-
-            it("draw calls pistolAnimation.draw when state is 'pistol'", () => {
-                boss.state = "pistol";
-                const spy = jest.spyOn(boss.pistolAnimation, "draw");
-                boss.draw(ctx);
-                expect(spy).toHaveBeenCalledWith(ctx, expect.any(Boolean));
-                spy.mockRestore();
-            });
-        });
-
-        describe("Thunder helpers", () => {
-            it("getActiveThunders returns only non-deleted PurpleThunder not in 'done' phase", () => {
-                const boss = new Elyvorg(mockGame);
-                const t1 = new PurpleThunder(mockGame, 100);
-                const t2 = new PurpleThunder(mockGame, 200);
-                const t3 = new PurpleThunder(mockGame, 300);
-
-                t2.markedForDeletion = true;
-                t3.phase = "done";
-
-                mockGame.enemies = [t1, t2, t3];
-
-                const active = boss.getActiveThunders();
-                expect(active).toEqual([t1]);
-            });
-
-            it("isThunderLaneCoveringPlayer returns true when thunder overlaps player X", () => {
-                const boss = new Elyvorg(mockGame);
-                mockGame.player.x = 100;
-                const t = new PurpleThunder(mockGame, 125);
-                const result = boss.isThunderLaneCoveringPlayer([t]);
-                expect(result).toBe(true);
-            });
-
-            it("PurpleThunder transitions from warning to strike after warningDuration", () => {
-                const th = new PurpleThunder(mockGame, 120);
-
-                expect(th.phase).toBe("warning");
-                expect(th.dealsDirectHitDamage).toBe(false);
-
-                th.update(th.warningDuration + 1);
-
-                expect(th.phase).toBe("strike");
-                expect(th.y).toBe(th.strikeY);
-            });
-
-            it("PurpleThunder completes strike animation and marks itself for deletion", () => {
-                const th = new PurpleThunder(mockGame, 120);
-                th.phase = "strike";
-                th.frameX = th.maxFrame;
-                th.dealsDirectHitDamage = true;
-                th.frameTimer = th.frameInterval;
-
-                th.update(0);
-
-                expect(th.phase).toBe("done");
-                expect(th.dealsDirectHitDamage).toBe(false);
-                expect(th.markedForDeletion).toBe(true);
-            });
-
-            it("endThunderSequence stops thunder sound, clears shake, and transitions back to recharge", () => {
-                const boss = new Elyvorg(mockGame);
-                boss.isThunderSequenceActive = true;
-                boss.thunderSequenceInitialised = true;
-
-                mockGame.shakeActive = true;
-                mockGame.shakeTimer = 10;
-                mockGame.shakeDuration = 20;
-
-                const stopSpy = jest.spyOn(mockGame.audioHandler.enemySFX, "stopSound");
-                const releaseSpy = jest.spyOn(mockGame.bossManager, "releaseScreenEffect");
-                boss.backToRechargeSetUp = jest.fn();
-
-                boss.endThunderSequence();
-
-                expect(boss.isThunderSequenceActive).toBe(false);
-                expect(boss.thunderSequenceInitialised).toBe(false);
-                expect(stopSpy).toHaveBeenCalledWith("elyvorg_purple_thunder_sound_effect");
-                expect(releaseSpy).toHaveBeenCalledWith("elyvorg_thunder");
-
-                expect(mockGame.stopShake).toHaveBeenCalled();
-                expect(mockGame.shakeActive).toBe(false);
-                expect(mockGame.shakeTimer).toBe(0);
-                expect(mockGame.shakeDuration).toBe(0);
-
-                expect(boss.previousState).toBe("thunder");
-                expect(boss.backToRechargeSetUp).toHaveBeenCalled();
-            });
-        });
-
-        describe("Meteor shake", () => {
-            it("startMeteorShake enables camera shake with configured duration (currently hardcoded 1000 in Elyvorg)", () => {
-                const boss = new Elyvorg(mockGame);
-
-                boss.meteorShakeDuration = 1234;
-
-                mockGame.shakeActive = false;
-                mockGame.shakeTimer = 999;
-                mockGame.shakeDuration = 0;
-
-                boss.startMeteorShake();
-
-                expect(boss.meteorShakeActive).toBe(true);
-                expect(mockGame.startShake).toHaveBeenCalledWith(1000);
-                expect(mockGame.shakeActive).toBe(true);
-                expect(mockGame.shakeTimer).toBe(0);
-                expect(mockGame.shakeDuration).toBe(1000);
-            });
-
-            it("updateMeteorShakeTimer stops shake when game shake has already ended (shakeActive=false) and not in thunder", () => {
-                const boss = new Elyvorg(mockGame);
-                boss.meteorShakeActive = true;
-
-                mockGame.shakeActive = false;
-                mockGame.shakeTimer = 900;
-                mockGame.shakeDuration = 1000;
-
-                boss.state = "meteor";
-                boss.isThunderSequenceActive = false;
-
-                boss.updateMeteorShakeTimer(200);
-
-                expect(boss.meteorShakeActive).toBe(false);
-            });
-
-            it("updateMeteorShakeTimer cancels meteor shake immediately during thunder", () => {
-                const boss = new Elyvorg(mockGame);
-                boss.meteorShakeActive = true;
-                mockGame.shakeActive = true;
-                boss.state = "thunder";
-                boss.isThunderSequenceActive = true;
-
-                boss.updateMeteorShakeTimer(100);
-
-                expect(boss.meteorShakeActive).toBe(false);
-            });
-        });
-
-        describe("ElectricWheel layering", () => {
-            it("ensureElectricWheelOnTop moves wheel to end of enemies array", () => {
-                const boss = new Elyvorg(mockGame);
-                const e1 = new MeteorAttack(mockGame);
-                const e2 = new PoisonDrop(mockGame);
-                boss.electricWheel = new ElectricWheel(mockGame, 0, 0);
-
-                mockGame.enemies = [e1, boss.electricWheel, e2];
-
-                boss.ensureElectricWheelOnTop();
-
-                expect(mockGame.enemies[mockGame.enemies.length - 1]).toBe(boss.electricWheel);
-            });
+            expect(
+                boss.teleportTargetX < forbiddenMin || boss.teleportTargetX > forbiddenMax
+            ).toBe(true);
         });
     });
 });

@@ -289,7 +289,11 @@ export class Game {
         }
     }
 
-    startShake(durationMs = 0) {
+    startShake(durationMs = 0, { ifNotActive = false } = {}) {
+        if (ifNotActive && this.shakeActive) return;
+
+        if (this.shakeActive && this.shakeDuration === 0) return;
+
         this.shakeActive = true;
         this.shakeTimer = 0;
         this.shakeDuration = Math.max(0, durationMs);

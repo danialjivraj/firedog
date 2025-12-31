@@ -413,6 +413,126 @@ export class Arrow extends Projectile {
     }
 }
 
+export class PurpleSlashChargeIndicator {
+    constructor(game, boss) {
+        this.game = game;
+        this.boss = boss;
+
+        this.markedForDeletion = false;
+
+        this.spawnRate = 18;
+        this.spawnAccumulator = 0;
+
+        this.particles = [];
+        this.maxParticles = 40;
+
+        this.stopping = false;
+    }
+
+    spawnParticle() {
+        if (!this.boss) return;
+
+        const cx = this.boss.x + this.boss.width * 0.5;
+        const cy = this.boss.y + this.boss.height * 0.35;
+
+        const p = {
+            x: cx + (Math.random() * 60 - 30),
+            y: cy + (Math.random() * 40 - 10),
+            vx: (Math.random() * 0.6 - 0.3),
+            vy: -(1.2 + Math.random() * 1.4),
+            r: 3 + Math.random() * 4.5,
+            a: 0.9,
+            life: 420 + Math.random() * 260, // ms
+            age: 0,
+            wobble: Math.random() * Math.PI * 2,
+            wobbleSpeed: 0.02 + Math.random() * 0.03,
+        };
+
+        this.particles.push(p);
+        if (this.particles.length > this.maxParticles) {
+            this.particles.shift();
+        }
+    }
+
+    update(deltaTime) {
+        if (!this.boss) {
+            this.stopping = true;
+            this.spawnRate = 0;
+        }
+
+        if (!this.stopping && this.boss && this.boss.isSlashActive) {
+            this.stopping = true;
+            this.spawnRate = 0;
+        }
+
+        const bossCx = this.boss ? (this.boss.x + this.boss.width * 0.5) : 0;
+        const bossCy = this.boss ? (this.boss.y + this.boss.height * 0.35) : 0;
+
+        if (!this.stopping && this.spawnRate > 0) {
+            this.spawnAccumulator += deltaTime;
+            const interval = 1000 / this.spawnRate;
+            while (this.spawnAccumulator >= interval) {
+                this.spawnAccumulator -= interval;
+                this.spawnParticle();
+            }
+        }
+
+        for (const p of this.particles) {
+            p.age += deltaTime;
+
+            p.wobble += p.wobbleSpeed * deltaTime;
+            const wobbleX = Math.sin(p.wobble) * 0.35;
+
+            p.x += p.vx + wobbleX;
+            p.y += p.vy;
+
+            const t = Math.min(1, p.age / p.life);
+            p.a = 0.9 * (1 - t);
+
+            if (t > 0.6) p.r *= 0.995;
+
+            if (this.boss) {
+                const dx = bossCx - p.x;
+                const dy = bossCy - p.y;
+                p.x += dx * 0.003;
+                p.y += dy * 0.003;
+            }
+        }
+
+        this.particles = this.particles.filter(p => p.age < p.life && p.a > 0.02);
+
+        if (this.stopping && this.particles.length === 0) {
+            this.markedForDeletion = true;
+        }
+    }
+
+    draw(context) {
+        if (!this.boss) return;
+
+        context.save();
+
+        context.shadowColor = "rgba(190, 80, 255, 1)";
+        context.shadowBlur = 18;
+
+        for (const p of this.particles) {
+            context.globalAlpha = p.a;
+
+            context.fillStyle = "rgba(235, 210, 255, 1)";
+            context.beginPath();
+            context.arc(p.x, p.y, p.r * 0.55, 0, Math.PI * 2);
+            context.fill();
+
+            context.globalAlpha = p.a * 0.65;
+            context.fillStyle = "rgba(160, 40, 255, 1)";
+            context.beginPath();
+            context.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            context.fill();
+        }
+
+        context.restore();
+    }
+}
+
 export class PurpleSlash extends Projectile {
     constructor(game, x, y, direction) {
         super(game, x, y, 222, 267, 9, "purpleSlash", 0, 11);
@@ -464,6 +584,7 @@ export class PurpleThunder extends ImmobileGroundEnemy {
         super(game, 182, 662, 5, "purpleThunder");
 
         this.game = game;
+        this.lives = 50
         this.setFps(18);
 
         this.isSlowEnemy = true;
@@ -684,6 +805,7 @@ export class Elyvorg extends EnemyBoss {
         this.slashAttackOnce = false;
         this.slashAttackStateCounter = 15;
         this.slashAttackStateCounterLimit = 20;
+        this.slashChargeWarned = false;
         // jump
         this.jumpAnimation = new EnemyBoss(game, 153.25, 180, 11, 'elyvorgJump');
         this.jumpAnimation.frameX = 0;
@@ -727,6 +849,7 @@ export class Elyvorg extends EnemyBoss {
         this.meteorAnimation = new EnemyBoss(game, 153.20833333333333333333333333333, 180, 23, 'elyvorgMeteorIdle');
         this.meteorAnimation.frameX = 0;
         this.meteorThrowCount = 0;
+        this.meteorThrowTarget = Math.floor(Math.random() * 3) + 4; // 4 to 6
         this.canMeteorAttack = true;
         this.meteorShakeActive = false;
         // poison
@@ -1160,9 +1283,10 @@ export class Elyvorg extends EnemyBoss {
             this.startMeteorShake();
         }
 
-        if (this.meteorThrowCount >= 5 && this.meteorAnimation.frameX === 23) {
+        if (this.meteorThrowCount >= this.meteorThrowTarget && this.meteorAnimation.frameX === 23) {
             this.backToIdleSetUp();
             this.meteorThrowCount = 0;
+            this.meteorThrowTarget = Math.floor(Math.random() * 3) + 4; // 4 to 6
         }
         if (this.meteorAnimation.frameX === 20) {
             this.canMeteorAttack = true;
@@ -1605,6 +1729,7 @@ export class Elyvorg extends EnemyBoss {
             this.game.audioHandler.enemySFX.playSound('elyvorg_electricity_wheel_sound', true);
             this.isElectricWheelActive = true;
             this.oneElectricWheel = false;
+            this.game.startShake(150, { ifNotActive: true });
         }
 
         if (this.electricWheelStateCounter >= this.electricWheelStateCounterLimit &&
@@ -1704,6 +1829,7 @@ export class Elyvorg extends EnemyBoss {
             this.slashAttackOnce = false;
             this.slashAttackStateCounter = 0;
             this.slashAttackStateCounterLimit = Math.floor(Math.random() * 6) + 20; // 20 to 25
+            this.slashChargeWarned = false;
         }
         if (this.isSlashActive) {
             if (this.shouldInvert) {
@@ -1757,6 +1883,11 @@ export class Elyvorg extends EnemyBoss {
         this.thunderStateCounter++;
         if (this.electricWheelActivateStateCounterDeltaTime) {
             this.electricWheelStateCounterDeltaTime++;
+        }
+        if (this.slashAttackStateCounter === this.slashAttackStateCounterLimit - 1 && !this.slashChargeWarned) {
+            this.game.collisions.push(new PurpleSlashChargeIndicator(this.game, this));
+            this.slashChargeWarned = true;
+            this.game.audioHandler.enemySFX.playSound('elyvorg_slash_warning_sound');
         }
         if (this.slashAttackStateCounter >= this.slashAttackStateCounterLimit) {
             this.slashAttackOnce = true;

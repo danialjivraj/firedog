@@ -349,6 +349,7 @@ export class EnemySFXAudioHandler extends AudioHandler {
       elyvorg_poison_drop_indicator_sound: 'elyvorg_poison_drop_indicator_sound',
       elyvorg_poison_drop_rain_sound: 'elyvorg_poison_drop_rain_sound',
       elyvorg_slash_attack_sound: 'elyvorg_slash_attack_sound',
+      elyvorg_slash_warning_sound: 'elyvorg_slash_warning_sound',
       elyvorg_arrow_attack_sound: 'elyvorg_arrow_attack_sound',
       elyvorg_teleport_sound_effect: 'elyvorg_teleport_sound_effect',
       // glacikal sounds

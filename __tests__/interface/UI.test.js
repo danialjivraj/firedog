@@ -1,5 +1,4 @@
 import { UI } from '../../game/interface/UI';
-import { Elyvorg } from '../../game/entities/enemies/elyvorg';
 
 describe('UI', () => {
     let game;
@@ -107,19 +106,6 @@ describe('UI', () => {
         };
     });
 
-    const createElyvorg = (overrides = {}) => {
-        const enemy = Object.create(Elyvorg.prototype);
-        Object.assign(enemy, overrides);
-        return enemy;
-    };
-
-    const setBossElyvorg = (overrides = {}) => {
-        const enemy = createElyvorg(overrides);
-        game.boss = { current: enemy };
-        game.enemies = [enemy];
-        return enemy;
-    };
-
     const setBoss = (currentBoss) => {
         game.boss = { current: currentBoss };
     };
@@ -127,9 +113,16 @@ describe('UI', () => {
     describe('constructor', () => {
         it('loads UI images by id from the DOM', () => {
             expect(document.getElementById).toHaveBeenCalledWith('firedogHead');
+
             expect(document.getElementById).toHaveBeenCalledWith('fireballUI');
+            expect(document.getElementById).toHaveBeenCalledWith('fireballUIWhiteBorder');
+            expect(document.getElementById).toHaveBeenCalledWith('fireballRedPotionUI');
+
             expect(document.getElementById).toHaveBeenCalledWith('divingUI');
-            expect(document.getElementById).toHaveBeenCalledWith('electricWarningUI');
+            expect(document.getElementById).toHaveBeenCalledWith('divingUIWhiteBorder');
+
+            expect(document.getElementById).toHaveBeenCalledWith('invisibleUI');
+            expect(document.getElementById).toHaveBeenCalledWith('invisibleUIWhiteBorder');
         });
     });
 
@@ -183,7 +176,6 @@ describe('UI', () => {
             const spyTimer = jest.spyOn(ui, 'timer');
             const spyEnergy = jest.spyOn(ui, 'energy');
             const spyFiredog = jest.spyOn(ui, 'firedogAbilityUI');
-            const spyElyvorg = jest.spyOn(ui, 'elyvorgAbilityUI');
 
             ui.draw(ctx);
 
@@ -193,7 +185,6 @@ describe('UI', () => {
             expect(spyTimer).toHaveBeenCalledWith(ctx);
             expect(spyEnergy).toHaveBeenCalledWith(ctx);
             expect(spyFiredog).toHaveBeenCalledWith(ctx);
-            expect(spyElyvorg).toHaveBeenCalledWith(ctx);
 
             // 2 hearts + 3 firedog ability icons
             expect(ctx.drawImage).toHaveBeenCalledTimes(5);
@@ -252,11 +243,7 @@ describe('UI', () => {
         it('renders percentage text and paints the bar', () => {
             ui.progressBar(ctx, 75, 375, 500, 'pink');
 
-            expect(ctx.fillText).toHaveBeenCalledWith(
-                '75%',
-                expect.any(Number),
-                expect.any(Number)
-            );
+            expect(ctx.fillText).toHaveBeenCalledWith('75%', expect.any(Number), expect.any(Number));
 
             expect(ui.percentage).toBe(75);
             expect(ctx.fill).toHaveBeenCalled();
@@ -296,7 +283,6 @@ describe('UI', () => {
             expect(ctx.fillStyle).toBe('orange');
             expect(ctx.fillRect).toHaveBeenCalled();
         });
-
     });
 
     describe('bossHealthBar()', () => {
@@ -601,108 +587,6 @@ describe('UI', () => {
             ui.firedogAbilityUI(ctx);
 
             expect(ctx.fillText).toHaveBeenCalled();
-        });
-    });
-
-    describe('elyvorgAbilityUI()', () => {
-        it('does nothing when not in a boss fight', () => {
-            game.bossInFight = false;
-
-            ui.elyvorgAbilityUI(ctx);
-
-            expect(ctx.drawImage).not.toHaveBeenCalled();
-        });
-
-        it('draws slash icon when slashAttackOnce is true', () => {
-            game.bossInFight = true;
-            setBossElyvorg({ slashAttackOnce: true });
-
-            ui.elyvorgAbilityUI(ctx);
-
-            expect(ctx.drawImage).toHaveBeenCalledWith(
-                ui.slashUI,
-                expect.any(Number),
-                20,
-                65,
-                65
-            );
-        });
-
-        it('draws slash warning icon when near slash threshold', () => {
-            game.bossInFight = true;
-            setBossElyvorg({
-                slashAttackOnce: false,
-                slashAttackStateCounterLimit: 5,
-                slashAttackStateCounter: 4,
-            });
-
-            ui.elyvorgAbilityUI(ctx);
-
-            expect(ctx.drawImage).toHaveBeenCalledWith(
-                ui.slashWarningUI,
-                expect.any(Number),
-                20,
-                65,
-                65
-            );
-        });
-
-        it('draws slash icon in grayscale when far from slash threshold', () => {
-            game.bossInFight = true;
-            setBossElyvorg({
-                slashAttackOnce: false,
-                slashAttackStateCounterLimit: 5,
-                slashAttackStateCounter: 1,
-            });
-
-            ui.elyvorgAbilityUI(ctx);
-
-            expect(ctx.filter).toBe('grayscale(100%)');
-        });
-
-        it('draws electric icon when electric wheel is active', () => {
-            game.bossInFight = true;
-            setBossElyvorg({ isElectricWheelActive: true });
-
-            ui.elyvorgAbilityUI(ctx);
-
-            expect(ctx.drawImage).toHaveBeenCalledWith(
-                ui.electricUI,
-                expect.any(Number),
-                20,
-                65,
-                65
-            );
-        });
-
-        it('draws electric warning icon when electric wheel is charging', () => {
-            game.bossInFight = true;
-            setBossElyvorg({
-                isElectricWheelActive: false,
-                electricWheelTimer: 2000,
-            });
-
-            ui.elyvorgAbilityUI(ctx);
-
-            expect(ctx.drawImage).toHaveBeenCalledWith(
-                ui.electricWarningUI,
-                expect.any(Number),
-                20,
-                65,
-                65
-            );
-        });
-
-        it('draws electric icon in grayscale when inactive and not charging', () => {
-            game.bossInFight = true;
-            setBossElyvorg({
-                isElectricWheelActive: false,
-                electricWheelTimer: 0,
-            });
-
-            ui.elyvorgAbilityUI(ctx);
-
-            expect(ctx.filter).toBe('grayscale(100%)');
         });
     });
 });
