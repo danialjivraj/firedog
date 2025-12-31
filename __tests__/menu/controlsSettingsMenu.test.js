@@ -40,7 +40,6 @@ describe('ControlsSettingsMenu', () => {
     beforeAll(() => {
         document.body.innerHTML = `
       <img id="mainmenubackground" />
-      <img id="greenCompleted" />
     `;
         jest.spyOn(BaseMenu.prototype, 'draw').mockImplementation(() => {});
     });
@@ -56,7 +55,6 @@ describe('ControlsSettingsMenu', () => {
             canSelect: true,
             canSelectForestMap: true,
             isPlayerInGame: true,
-            gameCompleted: false,
             audioHandler: { menu: { playSound: jest.fn() } },
             menu: { settings: { activateMenu: jest.fn() } },
             canvas: {

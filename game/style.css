@@ -22,7 +22,9 @@ body {
 /* icon */
 #firedogHead, 
 /* menu images */ 
-#mainmenubackground, #mainmenubackgroundhowtoplay, #skinStage, #greenCompleted, 
+#mainmenubackground, #mainmenubackgroundhowtoplay, #skinStage,
+/* stars sticker */ 
+#greenBand, #blankStarLeft, #blankStarMiddle, #blankStarRight, #filledStarLeft, #filledStarMiddle, #filledStarRight, #storyCompleteText,
 /* enemy lore images */ 
 #enemyLoreBookBackground, #enemyLoreLeftPageBackground, #enemyLoreRightPageBackground, #blackLine, 
     /* forest images */ 

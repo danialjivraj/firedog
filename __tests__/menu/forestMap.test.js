@@ -106,13 +106,22 @@ describe('ForestMapMenu', () => {
 
     beforeAll(() => {
         document.body.innerHTML = `
-      <img id="forestmap" />
-      <img id="forestmapNight" />
-      <img id="forestmapFiredog" />
-      <img id="forestmapHatFiredog" />
-      <img id="forestmapCholoFiredog" />
-      <img id="forestmapZabkaFiredog" />
-      <img id="forestmapFiredogShiny" />
+        <img id="forestmap" />
+        <img id="forestmapNight" />
+        <img id="forestmapFiredog" />
+        <img id="forestmapHatFiredog" />
+        <img id="forestmapCholoFiredog" />
+        <img id="forestmapZabkaFiredog" />
+        <img id="forestmapFiredogShiny" />
+
+        <img id="greenBand" />
+        <img id="blankStarLeft" />
+        <img id="blankStarMiddle" />
+        <img id="blankStarRight" />
+        <img id="filledStarLeft" />
+        <img id="filledStarMiddle" />
+        <img id="filledStarRight" />
+        <img id="storyCompleteText" />
     `;
     });
 
@@ -152,7 +161,9 @@ describe('ForestMapMenu', () => {
             },
             startCutscene: jest.fn(),
             groundMargin: 0,
-            gameCompleted: false,
+            glacikalDefeated: false,
+            elyvorgDefeated: false,
+            ntharaxDefeated: false,
         };
 
         ctx = {
@@ -769,14 +780,28 @@ describe('ForestMapMenu', () => {
             expect(menu.savingBookAnimation.draw).toHaveBeenCalledWith(ctx);
         });
 
-        it('draws the game completed overlay when gameCompleted is true', () => {
+        it('draws the stars sticker when there is any boss progress (menu not in-game)', () => {
             menu.menuActive = false;
-            mockGame.gameCompleted = true;
+            menu.menuInGame = false;
+            menu.showStarsSticker = true;
 
+            mockGame.elyvorgDefeated = true;
+
+            ctx.drawImage.mockClear();
             menu.draw(ctx);
 
-            expect(ctx.drawImage).toHaveBeenCalledWith(menu.greenCompletedImage, 10, 10);
-            expect(ctx.globalAlpha).toBe(1);
+            const drawnImages = ctx.drawImage.mock.calls.map(call => call[0]);
+
+            expect(drawnImages).toContain(menu.greenBandImage);
+
+            expect(
+                drawnImages.includes(menu.filledStarMiddleImage) ||
+                drawnImages.includes(menu.blankStarMiddleImage)
+            ).toBe(true);
+
+            expect(drawnImages).toContain(menu.storyCompleteTextImage);
+
+            expect(ctx.globalAlpha).toBe(0.9);
         });
     });
 });

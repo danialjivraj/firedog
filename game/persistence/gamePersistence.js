@@ -15,7 +15,9 @@ function buildGameState(game) {
         bonusMap1Unlocked: game.bonusMap1Unlocked,
         bonusMap2Unlocked: game.bonusMap2Unlocked,
         bonusMap3Unlocked: game.bonusMap3Unlocked,
-        gameCompleted: game.gameCompleted,
+        glacikalDefeated: game.glacikalDefeated,
+        elyvorgDefeated: game.elyvorgDefeated,
+        ntharaxDefeated: game.ntharaxDefeated,
 
         audioSettingsState: game.menu.audioSettings.getState(),
         ingameAudioSettingsState: game.menu.ingameAudioSettings.getState(),
@@ -56,7 +58,9 @@ export function loadGameState(game) {
         game.bonusMap1Unlocked = gameState.bonusMap1Unlocked ?? game.bonusMap1Unlocked;
         game.bonusMap2Unlocked = gameState.bonusMap2Unlocked ?? game.bonusMap2Unlocked;
         game.bonusMap3Unlocked = gameState.bonusMap3Unlocked ?? game.bonusMap3Unlocked;
-        game.gameCompleted = gameState.gameCompleted ?? game.gameCompleted;
+        game.glacikalDefeated = gameState.glacikalDefeated ?? game.glacikalDefeated;
+        game.elyvorgDefeated = gameState.elyvorgDefeated ?? game.elyvorgDefeated;
+        game.ntharaxDefeated = gameState.ntharaxDefeated ?? game.ntharaxDefeated;
 
         if (gameState.audioSettingsState) {
             game.menu.audioSettings.setState(gameState.audioSettingsState);
@@ -97,7 +101,9 @@ export function clearSavedData(game) {
     game.bonusMap1Unlocked = false;
     game.bonusMap2Unlocked = false;
     game.bonusMap3Unlocked = false;
-    game.gameCompleted = false;
+    game.glacikalDefeated = false;
+    game.elyvorgDefeated = false;
+    game.ntharaxDefeated = false;
 
     game.menu.forestMap.resetSelectedCircleIndex();
     game.menu.enemyLore.currentPage = 0;

@@ -289,7 +289,9 @@ describe('Game class (game-main.js)', () => {
       game = new Game(canvas, canvas.width, canvas.height);
       game.coins = 42;
       game.map3Unlocked = true;
-      game.gameCompleted = true;
+      game.glacikalDefeated = true;
+      game.elyvorgDefeated = true;
+      game.ntharaxDefeated = false;
       game.selectedDifficulty = 'Hard';
       game.menu.skins.currentSkin = { id: 'zabka' };
       game.menu.audioSettings.getState = () => ({ foo: 'bar' });
@@ -306,7 +308,9 @@ describe('Game class (game-main.js)', () => {
       expect(snapshot.selectedDifficulty).toBe('Hard');
       expect(snapshot.audioSettingsState).toEqual({ foo: 'bar' });
       expect(snapshot.ingameAudioSettingsState).toEqual({ baz: 'qux' });
-      expect(snapshot.gameCompleted).toBe(true);
+      expect(snapshot.glacikalDefeated).toBe(true);
+      expect(snapshot.elyvorgDefeated).toBe(true);
+      expect(snapshot.ntharaxDefeated).toBe(false);
       expect(snapshot.keyBindings).toBeDefined();
     });
 
@@ -315,8 +319,10 @@ describe('Game class (game-main.js)', () => {
         isTutorialActive: false,
         map2Unlocked: true,
         selectedDifficulty: 'Easy',
-        gameCompleted: true,
         currentMap: 'Map2',
+        glacikalDefeated: false,
+        elyvorgDefeated: true,
+        ntharaxDefeated: false,
       };
       localStorage.setItem('gameState', JSON.stringify(seed));
 
@@ -325,7 +331,9 @@ describe('Game class (game-main.js)', () => {
       expect(g2.isTutorialActive).toBe(false);
       expect(g2.map2Unlocked).toBe(true);
       expect(g2.selectedDifficulty).toBe('Easy');
-      expect(g2.gameCompleted).toBe(true);
+      expect(g2.glacikalDefeated).toBe(false);
+      expect(g2.elyvorgDefeated).toBe(true);
+      expect(g2.ntharaxDefeated).toBe(false);
     });
 
     it('loadGameState() calls menu.setState / skins.setCurrentSkinById / levelDifficulty.setDifficulty', () => {
@@ -469,7 +477,9 @@ describe('Game class (game-main.js)', () => {
         bonusMap1Unlocked: false,
         bonusMap2Unlocked: false,
         bonusMap3Unlocked: false,
-        gameCompleted: false,
+        glacikalDefeated: false,
+        elyvorgDefeated: false,
+        ntharaxDefeated: false,
         audioSettingsState: { volumeLevels: [75, 10, 90, 90, 70, 60, null] },
         ingameAudioSettingsState: { volumeLevels: [30, 80, 60, 40, 80, 65, null] },
         currentSkin: 'defaultSkin',
@@ -484,7 +494,9 @@ describe('Game class (game-main.js)', () => {
       expect(game.map5Unlocked).toBe(false);
       expect(game.map6Unlocked).toBe(false);
       expect(game.map7Unlocked).toBe(false);
-      expect(game.gameCompleted).toBe(false);
+      expect(game.glacikalDefeated).toBe(false);
+      expect(game.elyvorgDefeated).toBe(false);
+      expect(game.ntharaxDefeated).toBe(false);
 
       expect(game.menu.forestMap.resetSelectedCircleIndex).toHaveBeenCalled();
       expect(game.menu.enemyLore.currentPage).toBe(0);

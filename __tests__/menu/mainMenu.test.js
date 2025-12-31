@@ -7,7 +7,6 @@ describe('MainMenu', () => {
     window.electronAPI = { quitApp: jest.fn() };
     document.body.innerHTML = `
       <img id="mainmenubackground" />
-      <img id="greenCompleted" />
     `;
   });
 

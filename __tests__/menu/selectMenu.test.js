@@ -6,7 +6,6 @@ describe('SelectMenu', () => {
   beforeAll(() => {
     document.body.innerHTML = `
       <img id="mainmenubackground" />
-      <img id="greenCompleted" />
     `;
   });
 
@@ -17,7 +16,6 @@ describe('SelectMenu', () => {
       canSelect: true,
       canSelectForestMap: true,
       isPlayerInGame: false,
-      gameCompleted: false,
       audioHandler: { menu: { playSound: jest.fn() } },
       menu: { pause: { isPaused: false } },
       input: { handleEscapeKey: jest.fn() },

@@ -699,23 +699,8 @@ export class ForestMapMenu extends BaseMenu {
             this.savingBookAnimation.draw(context);
         }
 
-        // game completed overlay
-        if (this.game.gameCompleted) {
-            context.globalAlpha = 0.75;
-
-            context.shadowColor = 'rgba(0, 0, 0, 1)';
-            context.shadowBlur = 4;
-            context.shadowOffsetX = 2;
-            context.shadowOffsetY = 2;
-
-            context.drawImage(this.greenCompletedImage, 10, 10);
-
-            context.shadowColor = 'transparent';
-            context.shadowBlur = 0;
-            context.shadowOffsetX = 0;
-            context.shadowOffsetY = 0;
-
-            context.globalAlpha = 1;
+        if (this.showStarsSticker && this.menuInGame === false) {
+            this.drawStarsSticker(context);
         }
     }
 }

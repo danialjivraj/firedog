@@ -11,7 +11,6 @@ describe('DeleteProgress', () => {
     beforeAll(() => {
         document.body.innerHTML = `
       <img id="mainmenubackground" />
-      <img id="greenCompleted" />
     `;
     });
 
@@ -70,7 +69,6 @@ describe('DeleteProgress2', () => {
     beforeAll(() => {
         document.body.innerHTML = `
       <img id="mainmenubackground" />
-      <img id="greenCompleted" />
     `;
     });
 

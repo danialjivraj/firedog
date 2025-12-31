@@ -5,7 +5,7 @@ export class HowToPlayMenu extends BaseMenu {
         const menuOptions = ['Next', 'Previous', 'Go Back'];
         super(game, menuOptions, '');
         this.backgroundImage = document.getElementById('mainmenubackgroundhowtoplay');
-
+        this.showStarsSticker = false;
         this.centerX = this.game.width - 90;
         this.positionOffset = -115;
 

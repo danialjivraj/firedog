@@ -12,7 +12,16 @@ export class BaseMenu {
         this.menuInGame = false;
         this.isPaused = false;
         this.backgroundImage = document.getElementById('mainmenubackground');
-        this.greenCompletedImage = document.getElementById('greenCompleted');
+
+        this.greenBandImage = document.getElementById('greenBand');
+        this.blankStarLeftImage = document.getElementById('blankStarLeft');
+        this.blankStarMiddleImage = document.getElementById('blankStarMiddle');
+        this.blankStarRightImage = document.getElementById('blankStarRight');
+        this.filledStarLeftImage = document.getElementById('filledStarLeft');
+        this.filledStarMiddleImage = document.getElementById('filledStarMiddle');
+        this.filledStarRightImage = document.getElementById('filledStarRight');
+        this.storyCompleteTextImage = document.getElementById('storyCompleteText');
+        this.showStarsSticker = true;
 
         this.optionWidth = 300;
         document.addEventListener('keydown', this.handleKeyDown.bind(this));
@@ -60,22 +69,8 @@ export class BaseMenu {
 
             context.restore();
 
-            if (this.game.gameCompleted && this.menuInGame === false) {
-                context.globalAlpha = 0.75;
-
-                context.shadowColor = 'rgba(0, 0, 0, 1)';
-                context.shadowBlur = 4;
-                context.shadowOffsetX = 2;
-                context.shadowOffsetY = 2;
-
-                context.drawImage(this.greenCompletedImage, 10, 10);
-
-                context.shadowColor = 'transparent';
-                context.shadowBlur = 0;
-                context.shadowOffsetX = 0;
-                context.shadowOffsetY = 0;
-
-                context.globalAlpha = 1;
+            if (this.showStarsSticker && this.menuInGame === false) {
+                this.drawStarsSticker(context);
             }
         }
     }
@@ -91,6 +86,60 @@ export class BaseMenu {
         } else {
             this.frameTimer += deltaTime;
         }
+    }
+
+    shouldShowStarsSticker() {
+        const g = this.game;
+        return !!(g.glacikalDefeated || g.elyvorgDefeated || g.ntharaxDefeated);
+    }
+
+    drawStarsSticker(
+        context,
+        {
+            x = 10,
+            y = 10,
+            alpha = 0.9,
+            shadowColor = 'rgba(0, 0, 0, 1)',
+            shadowBlur = 4,
+            shadowOffsetX = 2,
+            shadowOffsetY = 2,
+            requireAnyProgress = true,
+        } = {}
+    ) {
+        if (requireAnyProgress && !this.shouldShowStarsSticker()) return;
+        if (!this.greenBandImage) return;
+
+        context.save();
+
+        context.globalAlpha = alpha;
+        context.shadowColor = shadowColor;
+        context.shadowBlur = shadowBlur;
+        context.shadowOffsetX = shadowOffsetX;
+        context.shadowOffsetY = shadowOffsetY;
+
+        context.drawImage(this.greenBandImage, x, y);
+
+        const leftStar = this.game.glacikalDefeated
+            ? this.filledStarLeftImage
+            : this.blankStarLeftImage;
+
+        const middleStar = this.game.elyvorgDefeated
+            ? this.filledStarMiddleImage
+            : this.blankStarMiddleImage;
+
+        const rightStar = this.game.ntharaxDefeated
+            ? this.filledStarRightImage
+            : this.blankStarRightImage;
+
+        context.drawImage(middleStar, x, y);
+        context.drawImage(rightStar, x, y);
+        context.drawImage(leftStar, x, y);
+
+        if (this.game.elyvorgDefeated && this.storyCompleteTextImage) {
+            context.drawImage(this.storyCompleteTextImage, x, y);
+        }
+
+        context.restore();
     }
 
     activateMenu(selectedOption = 0) {
@@ -359,22 +408,8 @@ export class AudioMenu extends BaseMenu {
         }
         context.restore();
 
-        if (this.game.gameCompleted && this.menuInGame === false) {
-            context.globalAlpha = 0.75;
-
-            context.shadowColor = 'rgba(0, 0, 0, 1)';
-            context.shadowBlur = 4;
-            context.shadowOffsetX = 2;
-            context.shadowOffsetY = 2;
-
-            context.drawImage(this.greenCompletedImage, 10, 10);
-
-            context.shadowColor = 'transparent';
-            context.shadowBlur = 0;
-            context.shadowOffsetX = 0;
-            context.shadowOffsetY = 0;
-
-            context.globalAlpha = 1;
+        if (this.showStarsSticker && this.menuInGame === false) {
+            this.drawStarsSticker(context);
         }
     }
 

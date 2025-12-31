@@ -4952,7 +4952,7 @@ export class Map7EndCutscene extends StoryCutscene {
             ``,
             ``,
         );
-        this.game.gameCompleted = true;
+        this.game.elyvorgDefeated = true;
         this.game.saveGameState();
     }
 }
@@ -5000,6 +5000,7 @@ export class BonusMap1EndCutscene extends StoryCutscene {
             `${this.questionMark}`,
             `Space-time will be reshaped into whatever you want!`,
         );
+        this.game.glacikalDefeated = true;
         this.game.saveGameState();
     }
 }
@@ -5095,6 +5096,7 @@ export class BonusMap3EndCutscene extends StoryCutscene {
             `${this.questionMark}`,
             `Space-time will be reshaped into whatever you want!`,
         );
+        this.game.ntharaxDefeated = true;
         this.game.saveGameState();
     }
 }

@@ -11,9 +11,17 @@ describe('BaseMenu', () => {
 
   beforeAll(() => {
     document.body.innerHTML = `
-      <img id="mainmenubackground" />
-      <img id="greenCompleted" />
-    `;
+    <img id="mainmenubackground" />
+
+    <img id="greenBand" />
+    <img id="blankStarLeft" />
+    <img id="blankStarMiddle" />
+    <img id="blankStarRight" />
+    <img id="filledStarLeft" />
+    <img id="filledStarMiddle" />
+    <img id="filledStarRight" />
+    <img id="storyCompleteText" />
+  `;
   });
 
   beforeEach(() => {
@@ -24,7 +32,9 @@ describe('BaseMenu', () => {
       canSelect: true,
       canSelectForestMap: true,
       isPlayerInGame: false,
-      gameCompleted: false,
+      glacikalDefeated: false,
+      elyvorgDefeated: false,
+      ntharaxDefeated: false,
       audioHandler: { menu: { playSound: jest.fn() } },
       menu: {
         someOtherMenu: { menuActive: false },
@@ -126,20 +136,70 @@ describe('BaseMenu', () => {
       expect(ctx.fillRect).toHaveBeenCalledWith(0, 0, mockGame.width, mockGame.height);
     });
 
-    test('draw() renders greenCompleted badge when game is completed', () => {
+    test('draw() does NOT draw stars sticker when there is no progress', () => {
       menu.menuActive = true;
       menu.menuInGame = false;
-      mockGame.gameCompleted = true;
+      menu.showStarsSticker = true;
+
+      mockGame.glacikalDefeated = false;
+      mockGame.elyvorgDefeated = false;
+      mockGame.ntharaxDefeated = false;
+
       ctx.drawImage.mockClear();
 
       menu.draw(ctx);
 
-      const calls = ctx.drawImage.mock.calls;
-      const lastCall = calls[calls.length - 1];
+      const drawnImages = ctx.drawImage.mock.calls.map(call => call[0]);
 
-      expect(lastCall[0]).toBe(menu.greenCompletedImage);
-      expect(lastCall[1]).toBe(10);
-      expect(lastCall[2]).toBe(10);
+      expect(drawnImages).toContain(menu.backgroundImage);
+
+      expect(drawnImages).not.toContain(menu.greenBandImage);
+    });
+
+    test('draw() draws stars sticker when there is any boss progress', () => {
+      menu.menuActive = true;
+      menu.menuInGame = false;
+      menu.showStarsSticker = true;
+
+      mockGame.glacikalDefeated = true;
+
+      ctx.drawImage.mockClear();
+
+      menu.draw(ctx);
+
+      const drawnImages = ctx.drawImage.mock.calls.map(call => call[0]);
+
+      expect(drawnImages).toContain(menu.greenBandImage);
+
+      expect(
+        drawnImages.includes(menu.filledStarLeftImage) ||
+        drawnImages.includes(menu.blankStarLeftImage) ||
+        drawnImages.includes(menu.filledStarMiddleImage) ||
+        drawnImages.includes(menu.blankStarMiddleImage) ||
+        drawnImages.includes(menu.filledStarRightImage) ||
+        drawnImages.includes(menu.blankStarRightImage)
+      ).toBe(true);
+    });
+
+    test('drawStarsSticker draws storyCompleteText only when elyvorgDefeated is true', () => {
+      mockGame.glacikalDefeated = false;
+      mockGame.elyvorgDefeated = false;
+      mockGame.ntharaxDefeated = false;
+
+      ctx.drawImage.mockClear();
+
+      menu.drawStarsSticker(ctx, { requireAnyProgress: false });
+
+      let drawnImages = ctx.drawImage.mock.calls.map(call => call[0]);
+      expect(drawnImages).not.toContain(menu.storyCompleteTextImage);
+
+      ctx.drawImage.mockClear();
+      mockGame.elyvorgDefeated = true;
+
+      menu.drawStarsSticker(ctx, { requireAnyProgress: false });
+
+      drawnImages = ctx.drawImage.mock.calls.map(call => call[0]);
+      expect(drawnImages).toContain(menu.storyCompleteTextImage);
     });
   });
 

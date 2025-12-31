@@ -11,7 +11,14 @@ describe('AudioMenu', () => {
         beforeAll(() => {
             document.body.innerHTML = `
         <img id="mainmenubackground" />
-        <img id="greenCompleted" />
+        <img id="greenBand" />
+        <img id="blankStarLeft" />
+        <img id="blankStarMiddle" />
+        <img id="blankStarRight" />
+        <img id="filledStarLeft" />
+        <img id="filledStarMiddle" />
+        <img id="filledStarRight" />
+        <img id="storyCompleteText" />
       `;
         });
 
@@ -21,13 +28,13 @@ describe('AudioMenu', () => {
         });
 
         test('throws if initializeVolumeLevels is not implemented in subclass', () => {
-            class BadMenu extends AudioMenu {}
+            class BadMenu extends AudioMenu { }
             expect(() => new BadMenu(mockGame, [], 'Bad')).toThrow('initializeVolumeLevels');
         });
 
         test('throws if initializeAudioMap is not implemented in subclass', () => {
             class OnlyLevelsMenu extends AudioMenu {
-                initializeVolumeLevels() {}
+                initializeVolumeLevels() { }
             }
             expect(() => new OnlyLevelsMenu(mockGame, [], 'Bad')).toThrow('initializeAudioMap');
         });
@@ -55,7 +62,14 @@ describe('AudioMenu', () => {
         <audio id="musicAudio"></audio>
         <audio id="sfxAudio"></audio>
         <img id="mainmenubackground" />
-        <img id="greenCompleted" />
+        <img id="greenBand" />
+        <img id="blankStarLeft" />
+        <img id="blankStarMiddle" />
+        <img id="blankStarRight" />
+        <img id="filledStarLeft" />
+        <img id="filledStarMiddle" />
+        <img id="filledStarRight" />
+        <img id="storyCompleteText" />
       `;
         });
 
@@ -80,7 +94,9 @@ describe('AudioMenu', () => {
                 canSelect: true,
                 canSelectForestMap: true,
                 isPlayerInGame: true,
-                gameCompleted: false,
+                glacikalDefeated: false,
+                elyvorgDefeated: false,
+                ntharaxDefeated: false,
             };
 
             ctx = {
@@ -171,16 +187,27 @@ describe('AudioMenu', () => {
             expect(ctx.fillRect).toHaveBeenCalledWith(0, 0, mockGame.width, mockGame.height);
         });
 
-        test('draw() draws greenCompleted badge when gameCompleted and menu is not in-game', () => {
-            mockGame.gameCompleted = true;
-            menu.menuInGame = false;
-            ctx.drawImage.mockClear();
-            menu.draw(ctx);
-            const calls = ctx.drawImage.mock.calls;
-            const last = calls[calls.length - 1];
-            expect(last[0]).toBe(menu.greenCompletedImage);
-            expect(last[1]).toBe(10);
-            expect(last[2]).toBe(10);
+        test('draw() draws stars sticker when there is any boss progress and menu is not in-game', () => {
+        mockGame.elyvorgDefeated = true;
+        mockGame.glacikalDefeated = false;
+        mockGame.ntharaxDefeated = false;
+
+        menu.menuInGame = false;
+        menu.showStarsSticker = true;
+
+        ctx.drawImage.mockClear();
+        menu.draw(ctx);
+
+        const drawnImages = ctx.drawImage.mock.calls.map(call => call[0]);
+
+        expect(drawnImages).toContain(menu.greenBandImage);
+
+        expect(
+            drawnImages.includes(menu.filledStarMiddleImage) ||
+            drawnImages.includes(menu.blankStarMiddleImage)
+        ).toBe(true);
+
+        expect(drawnImages).toContain(menu.storyCompleteTextImage);
         });
 
         test('getState returns a deep copy and setState restores volume levels', () => {

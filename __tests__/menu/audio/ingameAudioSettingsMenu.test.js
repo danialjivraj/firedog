@@ -12,7 +12,6 @@ describe('IngameAudioSettingsMenu', () => {
     beforeAll(() => {
         document.body.innerHTML = `
       <img id="mainmenubackground" />
-      <img id="greenCompleted" />
     `;
     });
 
@@ -41,7 +40,6 @@ describe('IngameAudioSettingsMenu', () => {
             canSelect: true,
             canSelectForestMap: true,
             isPlayerInGame: true,
-            gameCompleted: false
         };
 
         menu = new IngameAudioSettingsMenu(mockGame);

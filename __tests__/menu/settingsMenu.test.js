@@ -12,7 +12,6 @@ describe('SettingsMenu', () => {
     canSelect: true,
     canSelectForestMap: true,
     isPlayerInGame: true,
-    gameCompleted: false,
     audioHandler: { menu: { playSound: jest.fn() } },
     saveGameState: jest.fn(),
     menu: {
@@ -50,7 +49,6 @@ describe('SettingsMenu', () => {
   beforeAll(() => {
     document.body.innerHTML = `
       <img id="mainmenubackground" />
-      <img id="greenCompleted" />
     `;
   });
 

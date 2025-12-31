@@ -166,7 +166,9 @@ export class Game {
         this.bonusMap1Unlocked = false;
         this.bonusMap2Unlocked = false;
         this.bonusMap3Unlocked = false;
-        this.gameCompleted = false;
+        this.glacikalDefeated = false;
+        this.elyvorgDefeated = false;
+        this.ntharaxDefeated = false;
         this.isPlayerInGame = false;
         // arrays
         this.enemies = [];
