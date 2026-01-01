@@ -23,7 +23,7 @@ export class ForestMapMenu extends BaseMenu {
 
             { x: 883, y: 97, radius: 18 },   // Bonus Map 1 (7)
             { x: 1670, y: 484, radius: 18 }, // Bonus Map 2 (8)
-            { x: 1570, y: 210, radius: 18 }, // Bonus Map 3 (9)
+            { x: 1570, y: 205, radius: 18 }, // Bonus Map 3 (9)
         ];
         super(game);
 
@@ -78,13 +78,34 @@ export class ForestMapMenu extends BaseMenu {
 
         this.fixedLeftRibbonWidth = null;
 
+        this.lockedNoticeText = '';
+        this.lockedNoticeTimer = 0;
+
         document.addEventListener('wheel', this.handleMouseWheel.bind(this));
     }
 
+    showLockedNotice(text = 'UNAVAILABLE!', durationMs = 1400) {
+        this.lockedNoticeText = text;
+        this.lockedNoticeTimer = durationMs;
+    }
+
+    canEnterBonusMap3() {
+        return !!this.game.glacikalDefeated && !!this.game.elyvorgDefeated;
+    }
+
+    isBonusMap3Sealed() {
+        return !!this.game.bonusMap3Unlocked && !this.canEnterBonusMap3();
+    }
+
     handleMenuSelection() {
-        const selectedCircle = this.circleOptions[this.selectedCircleIndex];
         super.handleMenuSelection();
-        const circleIndex = this.circleOptions.indexOf(selectedCircle);
+        const circleIndex = this.selectedCircleIndex;
+
+        if (circleIndex === 9 && !this.canEnterBonusMap3()) {
+            this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
+            this.showLockedNotice('UNAVAILABLE!');
+            return;
+        }
 
         this.game.player.isUnderwater = false;
         this.game.player.isDarkWhiteBorder = false;
@@ -92,13 +113,13 @@ export class ForestMapMenu extends BaseMenu {
         this.game.player.isSpace = false;
 
         const mapOptions = [
-            { index: 1, underwater: false, darkWhiteBorder: false, maxDistance: 200, winningCoins: 230, Cutscene: Map1Cutscene, Map: Map1 },
-            { index: 2, underwater: false, darkWhiteBorder: true, maxDistance: 240, winningCoins: 270, Cutscene: Map2Cutscene, Map: Map2 },
-            { index: 3, underwater: true, darkWhiteBorder: true, maxDistance: 270, winningCoins: 200, Cutscene: Map3Cutscene, Map: Map3 },
-            { index: 4, underwater: false, darkWhiteBorder: false, maxDistance: 240, winningCoins: 280, Cutscene: Map4Cutscene, Map: Map4 },
-            { index: 5, underwater: false, darkWhiteBorder: false, maxDistance: 250, winningCoins: 300, Cutscene: Map5Cutscene, Map: Map5 },
-            { index: 6, underwater: false, darkWhiteBorder: false, maxDistance: 100, winningCoins: 0, Cutscene: Map6Cutscene, Map: Map6 },
-            { index: 7, underwater: false, darkWhiteBorder: false, maxDistance: 9999999, winningCoins: 0, Cutscene: Map7Cutscene, Map: Map7 },
+            { underwater: false, darkWhiteBorder: false, maxDistance: 200, winningCoins: 230, Cutscene: Map1Cutscene, Map: Map1 },
+            { underwater: false, darkWhiteBorder: true, maxDistance: 240, winningCoins: 270, Cutscene: Map2Cutscene, Map: Map2 },
+            { underwater: true, darkWhiteBorder: true, maxDistance: 270, winningCoins: 200, Cutscene: Map3Cutscene, Map: Map3 },
+            { underwater: false, darkWhiteBorder: false, maxDistance: 240, winningCoins: 280, Cutscene: Map4Cutscene, Map: Map4 },
+            { underwater: false, darkWhiteBorder: false, maxDistance: 250, winningCoins: 300, Cutscene: Map5Cutscene, Map: Map5 },
+            { underwater: false, darkWhiteBorder: false, maxDistance: 100, winningCoins: 0, Cutscene: Map6Cutscene, Map: Map6 },
+            { underwater: false, darkWhiteBorder: false, maxDistance: 9999999, winningCoins: 0, Cutscene: Map7Cutscene, Map: Map7 },
 
             { underwater: false, darkWhiteBorder: false, isIce: true, maxDistance: 9999999, winningCoins: 0, Cutscene: BonusMap1Cutscene, Map: BonusMap1 },
             { underwater: false, darkWhiteBorder: false, maxDistance: 250, winningCoins: 0, Cutscene: BonusMap2Cutscene, Map: BonusMap2 },
@@ -245,7 +266,7 @@ export class ForestMapMenu extends BaseMenu {
         return { nameKey, mapIndexLabel, mapNameLabel, colorCfg };
     }
 
-    drawRibbonBackgroundsAndLines(context, ribbonY, ribbonHeight, mapFullText, loreText, isNight, showRightRibbon = true) {
+    drawRibbonBackgroundsAndLines(context, ribbonY, ribbonHeight, loreText, isNight, showRightRibbon = true) {
         const leftExtra = 120;
         const rightExtra = 120;
 
@@ -502,6 +523,14 @@ export class ForestMapMenu extends BaseMenu {
             this.savingAnimation.update(deltaTime);
             this.savingBookAnimation.update(deltaTime);
         }
+
+        if (this.lockedNoticeTimer > 0) {
+            this.lockedNoticeTimer -= deltaTime;
+            if (this.lockedNoticeTimer <= 0) {
+                this.lockedNoticeTimer = 0;
+                this.lockedNoticeText = '';
+            }
+        }
     }
 
     draw(context) {
@@ -528,15 +557,45 @@ export class ForestMapMenu extends BaseMenu {
             this.circleOptions.forEach((circle, index) => {
                 if (!this.isNodeUnlocked(index)) return;
 
+                const sealedBonus3 = (index === 9 && this.isBonusMap3Sealed());
+
                 context.save();
                 context.beginPath();
                 context.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
-                context.fillStyle = 'rgba(0, 0, 0, 0.6)';
-                context.shadowColor = isNight ? 'orange' : 'white';
-                context.shadowBlur = isNight ? 14 : 30;
+
+                context.fillStyle = sealedBonus3 ? 'rgba(20, 20, 20, 0.85)' : 'rgba(0, 0, 0, 0.6)';
+                context.shadowColor = sealedBonus3 ? 'rgba(255, 60, 60, 0.9)' : (isNight ? 'orange' : 'white');
+                context.shadowBlur = sealedBonus3 ? 20 : (isNight ? 14 : 30);
+
                 context.fill();
                 context.closePath();
 
+                // red ring + X overlay on sealed node
+                if (sealedBonus3) {
+                    context.save();
+                    context.strokeStyle = 'rgba(255, 60, 60, 0.95)';
+                    context.lineWidth = 3;
+                    context.beginPath();
+                    context.arc(circle.x, circle.y, circle.radius + 2, 0, Math.PI * 2);
+                    context.stroke();
+                    context.closePath();
+                    context.restore();
+
+                    context.save();
+                    context.strokeStyle = 'rgba(255, 60, 60, 0.95)';
+                    context.lineWidth = 3;
+                    const r = circle.radius - 4;
+                    context.beginPath();
+                    context.moveTo(circle.x - r, circle.y - r);
+                    context.lineTo(circle.x + r, circle.y + r);
+                    context.moveTo(circle.x + r, circle.y - r);
+                    context.lineTo(circle.x - r, circle.y + r);
+                    context.stroke();
+                    context.closePath();
+                    context.restore();
+                }
+
+                // main map connections
                 if (index >= 0 && index <= 5) {
                     const nextIndex = index + 1;
                     const nextCircle = this.circleOptions[nextIndex];
@@ -547,9 +606,10 @@ export class ForestMapMenu extends BaseMenu {
 
                 context.restore();
 
+                // selection ring + icon
                 if (index === this.selectedCircleIndex && this.selectedCircleIndex !== -1) {
                     context.save();
-                    context.strokeStyle = 'yellow';
+                    context.strokeStyle = sealedBonus3 ? '#ff3b3b' : 'yellow';
                     context.lineWidth = 3;
                     context.beginPath();
                     context.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
@@ -559,7 +619,8 @@ export class ForestMapMenu extends BaseMenu {
 
                     const icon = this.getCurrentMapIcon();
                     context.save();
-                    context.shadowColor = isNight ? 'orange' : 'white';
+                    context.globalAlpha = sealedBonus3 ? 0.45 : 1.0;
+                    context.shadowColor = sealedBonus3 ? 'rgba(255, 60, 60, 0.9)' : (isNight ? 'orange' : 'white');
                     context.shadowBlur = 10;
                     context.drawImage(
                         icon,
@@ -591,10 +652,22 @@ export class ForestMapMenu extends BaseMenu {
             }
 
             if (this.circleOptions[8] && this.circleOptions[9] && this.game.bonusMap3Unlocked) {
+                const sealedBonus3 = this.isBonusMap3Sealed();
+
                 context.save();
-                context.shadowColor = lineShadowColor;
-                context.shadowBlur = lineShadowBlur;
+
+                if (sealedBonus3) {
+                    context.setLineDash([10, 10]);
+                    context.shadowColor = 'rgba(255, 60, 60, 0.9)';
+                    context.shadowBlur = 18;
+                } else {
+                    context.shadowColor = lineShadowColor;
+                    context.shadowBlur = lineShadowBlur;
+                }
+
                 this.drawStraightConnection(context, this.circleOptions[8], this.circleOptions[9]);
+
+                context.setLineDash([]);
                 context.restore();
             }
 
@@ -602,10 +675,9 @@ export class ForestMapMenu extends BaseMenu {
             const idx = this.selectedCircleIndex;
             const { mapIndexLabel, mapNameLabel, colorCfg } = this.computeMapNameParts(idx);
 
-            const loreText = 'TAB FOR ENEMY LORE';
-            const mapFullText =
-                (mapIndexLabel ? mapIndexLabel + ' ' : '') +
-                (mapNameLabel || '');
+            const loreText = (this.lockedNoticeTimer > 0 && this.lockedNoticeText)
+                ? this.lockedNoticeText
+                : 'TAB FOR ENEMY LORE';
 
             const ribbonHeight = 60;
             const ribbonY = this.game.height - ribbonHeight;
@@ -617,7 +689,6 @@ export class ForestMapMenu extends BaseMenu {
                 context,
                 ribbonY,
                 ribbonHeight,
-                mapFullText,
                 loreText,
                 isNight,
                 !this.showSavingSprite
@@ -670,23 +741,38 @@ export class ForestMapMenu extends BaseMenu {
 
             // map name
             if (mapNameLabel) {
+                const sealedSelected = (idx === 9 && this.isBonusMap3Sealed());
+
+                context.save();
+
+                if (sealedSelected) {
+                    context.filter = 'blur(8px)';
+                } else {
+                    context.filter = 'none';
+                    context.globalAlpha = 1.0;
+                }
+
                 context.fillStyle = colorCfg.fill;
                 context.shadowColor = colorCfg.stroke;
                 context.shadowBlur = colorCfg.strokeBlur;
                 context.shadowOffsetX = 2;
                 context.shadowOffsetY = 2;
                 context.fillText(mapNameLabel, baseX, centerY);
+                context.restore();
             }
 
             // lore text
             if (!this.showSavingSprite) {
                 const loreTextX = this.game.width - 40;
                 context.textAlign = 'right';
-                context.fillStyle = 'white';
+
+                const showingLockNotice = (this.lockedNoticeTimer > 0 && this.lockedNoticeText);
+                context.fillStyle = showingLockNotice ? '#ff3b3b' : 'white';
                 context.shadowColor = 'black';
-                context.shadowBlur = 3;
+                context.shadowBlur = showingLockNotice ? 6 : 3;
                 context.shadowOffsetX = 2;
                 context.shadowOffsetY = 2;
+
                 context.fillText(loreText, loreTextX, centerY);
             }
 

@@ -3,7 +3,7 @@ import { SelectMenu } from './baseMenu.js';
 export class LevelDifficultyMenu extends SelectMenu {
     constructor(game) {
         const menuOptions = ['Easy', 'Normal', 'Hard', 'Extreme', 'Go Back'];
-        super(game, menuOptions, 'Level Difficulty Menu', { initialIndex: 1, goBackLabel: 'Go Back' });
+        super(game, menuOptions, 'Level Difficulty Settings', { initialIndex: 1, goBackLabel: 'Go Back' });
         this.setDifficulty('Normal');
     }
 

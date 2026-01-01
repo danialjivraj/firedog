@@ -44,7 +44,7 @@ describe('LevelDifficultyMenu', () => {
     describe('initialization', () => {
         it('extends BaseMenu and has the expected title and 5 options', () => {
             expect(menu).toBeInstanceOf(BaseMenu);
-            expect(menu.title).toBe('Level Difficulty Menu');
+            expect(menu.title).toBe('Level Difficulty Settings');
             expect(menu.menuOptions).toHaveLength(5);
 
             menu.setDifficulty('Easy');

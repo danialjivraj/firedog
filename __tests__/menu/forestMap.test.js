@@ -3,6 +3,7 @@ import { isLocalNight } from '../../game/config/timeOfDay.js';
 import {
     Map3Cutscene,
     BonusMap1Cutscene,
+    BonusMap3Cutscene,
 } from '../../game/cutscene/storyCutscenes.js';
 import {
     Map1,
@@ -182,6 +183,7 @@ describe('ForestMapMenu', () => {
             measureText: jest.fn().mockReturnValue({ width: 20 }),
             createLinearGradient: jest.fn(() => ({ addColorStop: jest.fn() })),
             fillRect: jest.fn(),
+            setLineDash: jest.fn(),
             shadowColor: '',
             shadowBlur: 0,
             shadowOffsetX: 0,
@@ -192,6 +194,7 @@ describe('ForestMapMenu', () => {
             globalAlpha: 1,
             font: '',
             textAlign: 'left',
+            filter: 'none',
         };
 
         menu = new ForestMapMenu(mockGame);
@@ -212,6 +215,250 @@ describe('ForestMapMenu', () => {
             menu.selectedCircleIndex = 3;
             menu.resetSelectedCircleIndex();
             expect(menu.selectedCircleIndex).toBe(0);
+        });
+    });
+
+    describe('bonus map 3 gating (glacikal / elyvorg)', () => {
+        describe('canEnterBonusMap3()', () => {
+            it('returns false when neither boss is defeated', () => {
+                mockGame.glacikalDefeated = false;
+                mockGame.elyvorgDefeated = false;
+
+                expect(menu.canEnterBonusMap3()).toBe(false);
+            });
+
+            it('returns false when only glacikal is defeated', () => {
+                mockGame.glacikalDefeated = true;
+                mockGame.elyvorgDefeated = false;
+
+                expect(menu.canEnterBonusMap3()).toBe(false);
+            });
+
+            it('returns false when only elyvorg is defeated', () => {
+                mockGame.glacikalDefeated = false;
+                mockGame.elyvorgDefeated = true;
+
+                expect(menu.canEnterBonusMap3()).toBe(false);
+            });
+
+            it('returns true when both glacikal and elyvorg are defeated', () => {
+                mockGame.glacikalDefeated = true;
+                mockGame.elyvorgDefeated = true;
+
+                expect(menu.canEnterBonusMap3()).toBe(true);
+            });
+
+            it('coerces truthy values to true (double-bang behavior)', () => {
+                mockGame.glacikalDefeated = 1;
+                mockGame.elyvorgDefeated = 'yes';
+
+                expect(menu.canEnterBonusMap3()).toBe(true);
+            });
+        });
+
+        describe('isBonusMap3Sealed()', () => {
+            it('returns false when bonusMap3 is NOT unlocked (regardless of boss flags)', () => {
+                mockGame.bonusMap3Unlocked = false;
+
+                mockGame.glacikalDefeated = false;
+                mockGame.elyvorgDefeated = false;
+                expect(menu.isBonusMap3Sealed()).toBe(false);
+
+                mockGame.glacikalDefeated = true;
+                mockGame.elyvorgDefeated = false;
+                expect(menu.isBonusMap3Sealed()).toBe(false);
+
+                mockGame.glacikalDefeated = false;
+                mockGame.elyvorgDefeated = true;
+                expect(menu.isBonusMap3Sealed()).toBe(false);
+
+                mockGame.glacikalDefeated = true;
+                mockGame.elyvorgDefeated = true;
+                expect(menu.isBonusMap3Sealed()).toBe(false);
+            });
+
+            it('returns true when bonusMap3 is unlocked but bosses are not both defeated', () => {
+                mockGame.bonusMap3Unlocked = true;
+
+                mockGame.glacikalDefeated = false;
+                mockGame.elyvorgDefeated = false;
+                expect(menu.isBonusMap3Sealed()).toBe(true);
+
+                mockGame.glacikalDefeated = true;
+                mockGame.elyvorgDefeated = false;
+                expect(menu.isBonusMap3Sealed()).toBe(true);
+
+                mockGame.glacikalDefeated = false;
+                mockGame.elyvorgDefeated = true;
+                expect(menu.isBonusMap3Sealed()).toBe(true);
+            });
+
+            it('returns false when bonusMap3 is unlocked and both bosses are defeated', () => {
+                mockGame.bonusMap3Unlocked = true;
+                mockGame.glacikalDefeated = true;
+                mockGame.elyvorgDefeated = true;
+
+                expect(menu.isBonusMap3Sealed()).toBe(false);
+            });
+        });
+
+        describe('handleMenuSelection() gating for bonus map 3', () => {
+            beforeEach(() => {
+                mockGame.canSelectForestMap = true;
+                menu.menuActive = true;
+                menu.selectedCircleIndex = 9;
+            });
+
+            it('blocks entry, plays hover sound, and shows UNAVAILABLE notice when bosses are not both defeated', () => {
+                mockGame.bonusMap3Unlocked = true;
+                mockGame.glacikalDefeated = true;
+                mockGame.elyvorgDefeated = false;
+
+                menu.handleMenuSelection();
+
+                expect(mockGame.audioHandler.menu.playSound)
+                    .toHaveBeenCalledWith('optionHoveredSound', false, true);
+
+                expect(menu.lockedNoticeText).toBe('UNAVAILABLE!');
+                expect(menu.lockedNoticeTimer).toBeGreaterThan(0);
+
+                expect(mockGame.startCutscene).not.toHaveBeenCalled();
+                expect(mockGame.menu.main.closeAllMenus).not.toHaveBeenCalled();
+                expect(mockGame.currentMap).toBeUndefined();
+            });
+
+            it('allows entry and sets up BonusMap3 when both bosses are defeated', () => {
+                mockGame.bonusMap3Unlocked = true;
+                mockGame.glacikalDefeated = true;
+                mockGame.elyvorgDefeated = true;
+
+                menu.handleMenuSelection();
+
+                expect(BonusMap3Cutscene).toHaveBeenCalledWith(mockGame);
+                const cutsceneInstance = BonusMap3Cutscene.mock.results[0].value;
+                expect(mockGame.startCutscene).toHaveBeenCalledWith(cutsceneInstance);
+                expect(cutsceneInstance.displayDialogue).toHaveBeenCalled();
+
+                expect(mockGame.background).toBeInstanceOf(BonusMap3);
+                expect(mockGame.currentMap).toBe('BonusMap3');
+
+                expect(mockGame.player.isSpace).toBe(true);
+                expect(mockGame.menu.main.closeAllMenus).toHaveBeenCalled();
+            });
+        });
+
+        describe('draw() sealed visuals + locked notice text', () => {
+            beforeEach(() => {
+                menu.menuActive = true;
+                mockGame.bonusMap3Unlocked = true;
+                menu.selectedCircleIndex = 9;
+            });
+
+            it('renders sealed visuals for BonusMap3 when unlocked but bosses not both defeated', () => {
+                mockGame.glacikalDefeated = true;
+                mockGame.elyvorgDefeated = false;
+
+                menu.draw(ctx);
+
+                const bonus3 = menu.circleOptions[9];
+                const arcsAtBonus3 = ctx.arc.mock.calls.filter(
+                    call => call[0] === bonus3.x && call[1] === bonus3.y
+                );
+
+                expect(arcsAtBonus3.length).toBeGreaterThanOrEqual(3);
+
+                const hasRedRing = arcsAtBonus3.some(call => call[2] === bonus3.radius + 2);
+                expect(hasRedRing).toBe(true);
+
+                expect(ctx.moveTo).toHaveBeenCalled();
+                expect(ctx.lineTo).toHaveBeenCalled();
+                expect(ctx.lineTo.mock.calls.length).toBeGreaterThanOrEqual(2);
+            });
+
+            it('does not render sealed visuals for BonusMap3 when bosses both defeated', () => {
+                mockGame.glacikalDefeated = true;
+                mockGame.elyvorgDefeated = true;
+
+                menu.draw(ctx);
+
+                const bonus3 = menu.circleOptions[9];
+                const arcsAtBonus3 = ctx.arc.mock.calls.filter(
+                    call => call[0] === bonus3.x && call[1] === bonus3.y
+                );
+
+                const hasRedRing = arcsAtBonus3.some(call => call[2] === bonus3.radius + 2);
+                expect(hasRedRing).toBe(false);
+            });
+
+            it('shows locked notice text in the bottom ribbon when selection attempt is blocked', () => {
+                mockGame.canSelectForestMap = true;
+                menu.menuActive = true;
+                menu.selectedCircleIndex = 9;
+
+                mockGame.glacikalDefeated = false;
+                mockGame.elyvorgDefeated = false;
+
+                menu.handleMenuSelection();
+                ctx.fillText.mockClear();
+
+                menu.draw(ctx);
+
+                const texts = ctx.fillText.mock.calls.map(args => args[0]);
+                expect(texts).toContain('UNAVAILABLE!');
+            });
+
+            it('locked notice expires via update() and ribbon returns to TAB FOR ENEMY LORE', () => {
+                mockGame.canSelectForestMap = true;
+                menu.menuActive = true;
+                menu.selectedCircleIndex = 9;
+
+                mockGame.glacikalDefeated = false;
+                mockGame.elyvorgDefeated = false;
+
+                menu.handleMenuSelection();
+                expect(menu.lockedNoticeTimer).toBeGreaterThan(0);
+
+                menu.update(2000);
+
+                expect(menu.lockedNoticeTimer).toBe(0);
+                expect(menu.lockedNoticeText).toBe('');
+
+                ctx.fillText.mockClear();
+                mockGame.map1Unlocked = true;
+                menu.selectedCircleIndex = 0;
+
+                menu.draw(ctx);
+
+                const texts = ctx.fillText.mock.calls.map(args => args[0]);
+                expect(texts).toContain('TAB FOR ENEMY LORE');
+                expect(texts).not.toContain('UNAVAILABLE!');
+            });
+
+            it('draws dashed bonus connection to BonusMap3 when sealed (unlocked but bosses missing)', () => {
+                mockGame.bonusMap2Unlocked = true;
+                mockGame.bonusMap3Unlocked = true;
+
+                mockGame.glacikalDefeated = false;
+                mockGame.elyvorgDefeated = true;
+
+                menu.draw(ctx);
+
+                expect(ctx.setLineDash).toHaveBeenCalledWith([10, 10]);
+                expect(ctx.setLineDash).toHaveBeenCalledWith([]);
+            });
+
+            it('does not set dashed connection when bonus3 is not sealed (bosses defeated)', () => {
+                mockGame.bonusMap2Unlocked = true;
+                mockGame.bonusMap3Unlocked = true;
+
+                mockGame.glacikalDefeated = true;
+                mockGame.elyvorgDefeated = true;
+
+                menu.draw(ctx);
+
+                const dashCalls = ctx.setLineDash.mock.calls.map(c => c[0]);
+                expect(dashCalls).not.toContainEqual([10, 10]);
+            });
         });
     });
 
