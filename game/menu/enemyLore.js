@@ -822,6 +822,8 @@ export class EnemyLore extends BaseMenu {
         if (category !== 'main' && category !== 'bonus') return;
         if (this.category === category) return;
 
+        if (category === 'bonus' && !this.game.bonusMap1Unlocked) return;
+
         if (this.category === 'main') {
             this.currentPageMain = this.currentPage;
         } else if (this.category === 'bonus') {
@@ -1146,8 +1148,17 @@ export class EnemyLore extends BaseMenu {
             context.shadowColor = 'transparent';
         };
 
+        if (!this.game.bonusMap1Unlocked && this.category === 'bonus') {
+            this.category = 'main';
+            this.pages = this.mainPages;
+            this.currentPage = Math.min(this.currentPageMain, Math.max(0, this.mainPages.length - 1));
+        }
+
         drawTab('MAIN STORY', mainTab, this.category === 'main');
-        drawTab('BONUS MAPS', bonusTab, this.category === 'bonus');
+
+        if (this.game.bonusMap1Unlocked) {
+            drawTab('BONUS MAPS', bonusTab, this.category === 'bonus');
+        }
 
         const bookBackgroundX = (this.game.width - this.enemyLoreBookBackground.width) / 2;
         const bookBackgroundY = (this.game.height - this.enemyLoreBookBackground.height) / 2 + 10;
@@ -1214,7 +1225,9 @@ export class EnemyLore extends BaseMenu {
         }
 
         if (event.key === 'ArrowDown') {
-            this.setCategory('bonus');
+            if (this.game.bonusMap1Unlocked) {
+                this.setCategory('bonus');
+            }
             return;
         }
 
@@ -1263,7 +1276,9 @@ export class EnemyLore extends BaseMenu {
             return;
         }
         if (inTab(bonusTab)) {
-            this.setCategory('bonus');
+            if (this.game.bonusMap1Unlocked) {
+                this.setCategory('bonus');
+            }
             return;
         }
 

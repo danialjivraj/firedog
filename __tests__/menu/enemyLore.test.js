@@ -26,7 +26,8 @@ describe('EnemyLore', () => {
       <img id="skulnapSleep" />
       <img id="skulnapAwake" />
       <img id="chiquita" />
-      <img id="cactus" />`;
+      <img id="cactus" />
+    `;
     });
 
     beforeEach(() => {
@@ -127,7 +128,6 @@ describe('EnemyLore', () => {
         });
 
         it('falls back to storyNight and clockNight when forestMap is not available', () => {
-            // story night: map2 unlocked, map3 locked
             mockGame.map2Unlocked = true;
             mockGame.map3Unlocked = false;
             isLocalNight.mockReturnValue(false);
@@ -202,29 +202,25 @@ describe('EnemyLore', () => {
         it('plays the flip sound when calling nextPage()', () => {
             menu.currentPage = 0;
             menu.nextPage();
-            expect(mockGame.audioHandler.menu.playSound)
-                .toHaveBeenCalledWith('bookFlip', false, true);
+            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlip', false, true);
         });
 
         it('plays the flip sound when calling clickNextPage()', () => {
             menu.currentPage = 0;
             menu.clickNextPage();
-            expect(mockGame.audioHandler.menu.playSound)
-                .toHaveBeenCalledWith('bookFlip', false, true);
+            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlip', false, true);
         });
 
         it('plays the flip sound when calling previousPage()', () => {
             menu.currentPage = 1;
             menu.previousPage();
-            expect(mockGame.audioHandler.menu.playSound)
-                .toHaveBeenCalledWith('bookFlip', false, true);
+            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlip', false, true);
         });
 
         it('plays the flip sound when calling clickPreviousPage()', () => {
             menu.currentPage = 2;
             menu.clickPreviousPage();
-            expect(mockGame.audioHandler.menu.playSound)
-                .toHaveBeenCalledWith('bookFlip', false, true);
+            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlip', false, true);
         });
     });
 
@@ -248,6 +244,8 @@ describe('EnemyLore', () => {
 
     describe('category switching (setCategory)', () => {
         it('switches between main and bonus pages and remembers index per category', () => {
+            mockGame.bonusMap1Unlocked = true;
+
             expect(menu.mainPages.length).toBeGreaterThan(0);
             expect(menu.bonusPages.length).toBeGreaterThan(0);
 
@@ -270,9 +268,10 @@ describe('EnemyLore', () => {
         });
 
         it('plays flip sound when changing category', () => {
+            mockGame.bonusMap1Unlocked = true;
             menu.setCategory('bonus');
-            expect(mockGame.audioHandler.menu.playSound)
-                .toHaveBeenCalledWith('bookFlip', false, true);
+
+            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlip', false, true);
         });
 
         it('ignores invalid categories and same-category calls', () => {
@@ -286,6 +285,19 @@ describe('EnemyLore', () => {
             menu.setCategory(origCategory);
             expect(menu.category).toBe(origCategory);
             expect(spy).not.toHaveBeenCalled();
+        });
+
+        it('setCategory(bonus) is ignored when bonusMap1Unlocked is false', () => {
+            mockGame.bonusMap1Unlocked = false;
+
+            menu.category = 'main';
+            menu.pages = menu.mainPages;
+
+            menu.setCategory('bonus');
+
+            expect(menu.category).toBe('main');
+            expect(menu.pages).toBe(menu.mainPages);
+            expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalled();
         });
     });
 
@@ -301,15 +313,27 @@ describe('EnemyLore', () => {
             expect(menu.previousPage).toHaveBeenCalled();
         });
 
-        it('handleKeyDown: ArrowUp/ArrowDown delegate to setCategory(main/bonus)', () => {
+        it('handleKeyDown: ArrowUp calls setCategory(main)', () => {
             jest.spyOn(menu, 'setCategory');
-
             menu.handleKeyDown({ key: 'ArrowUp' });
             expect(menu.setCategory).toHaveBeenCalledWith('main');
+        });
 
-            jest.clearAllMocks();
+        it('handleKeyDown: ArrowDown does NOT call setCategory(bonus) when bonusMap1 is locked', () => {
+            jest.spyOn(menu, 'setCategory');
 
+            mockGame.bonusMap1Unlocked = false;
             menu.handleKeyDown({ key: 'ArrowDown' });
+
+            expect(menu.setCategory).not.toHaveBeenCalledWith('bonus');
+        });
+
+        it('handleKeyDown: ArrowDown calls setCategory(bonus) when bonusMap1 is unlocked', () => {
+            jest.spyOn(menu, 'setCategory');
+
+            mockGame.bonusMap1Unlocked = true;
+            menu.handleKeyDown({ key: 'ArrowDown' });
+
             expect(menu.setCategory).toHaveBeenCalledWith('bonus');
         });
 
@@ -343,29 +367,59 @@ describe('EnemyLore', () => {
             expect(menu.clickNextPage).toHaveBeenCalled();
         });
 
-        it('clicking main/bonus tabs calls setCategory but does not flip pages', () => {
+        it('clicking main tab calls setCategory(main) and does not flip pages', () => {
             menu.menuActive = true;
             jest.spyOn(menu, 'setCategory');
             jest.spyOn(menu, 'clickNextPage');
             jest.spyOn(menu, 'clickPreviousPage');
 
             const mainTab = menu.getMainTabBounds();
-            const bonusTab = menu.getBonusTabBounds();
 
             menu.handleMouseClick({
                 clientX: mainTab.x + 5,
                 clientY: mainTab.y + 5,
             });
-            expect(menu.setCategory).toHaveBeenCalledWith('main');
 
-            jest.clearAllMocks();
+            expect(menu.setCategory).toHaveBeenCalledWith('main');
+            expect(menu.clickNextPage).not.toHaveBeenCalled();
+            expect(menu.clickPreviousPage).not.toHaveBeenCalled();
+        });
+
+        it('clicking bonus tab does NOT call setCategory(bonus) when bonusMap1 is locked', () => {
+            menu.menuActive = true;
+            mockGame.bonusMap1Unlocked = false;
+
+            jest.spyOn(menu, 'setCategory');
+            jest.spyOn(menu, 'clickNextPage');
+            jest.spyOn(menu, 'clickPreviousPage');
+
+            const bonusTab = menu.getBonusTabBounds();
+
+            menu.handleMouseClick({
+                clientX: bonusTab.x + 5,
+                clientY: bonusTab.y + 5,
+            });
+
+            expect(menu.setCategory).not.toHaveBeenCalledWith('bonus');
+            expect(menu.clickNextPage).not.toHaveBeenCalled();
+            expect(menu.clickPreviousPage).not.toHaveBeenCalled();
+        });
+
+        it('clicking bonus tab calls setCategory(bonus) when bonusMap1 is unlocked and does not flip pages', () => {
+            menu.menuActive = true;
+            mockGame.bonusMap1Unlocked = true;
+
+            jest.spyOn(menu, 'setCategory');
+            jest.spyOn(menu, 'clickNextPage');
+            jest.spyOn(menu, 'clickPreviousPage');
+
+            const bonusTab = menu.getBonusTabBounds();
 
             menu.handleMouseClick({
                 clientX: bonusTab.x + 5,
                 clientY: bonusTab.y + 5,
             });
             expect(menu.setCategory).toHaveBeenCalledWith('bonus');
-
             expect(menu.clickNextPage).not.toHaveBeenCalled();
             expect(menu.clickPreviousPage).not.toHaveBeenCalled();
         });
@@ -426,8 +480,7 @@ describe('EnemyLore', () => {
         it('stops the soundtrack when drawing', () => {
             menu.menuActive = true;
             menu.draw(ctx);
-            expect(mockGame.audioHandler.menu.stopSound)
-                .toHaveBeenCalledWith('soundtrack');
+            expect(mockGame.audioHandler.menu.stopSound).toHaveBeenCalledWith('soundtrack');
         });
 
         it('draws day background when storyNight and clockNight are both false', () => {
@@ -438,13 +491,7 @@ describe('EnemyLore', () => {
 
             menu.draw(ctx);
 
-            expect(ctx.drawImage).toHaveBeenCalledWith(
-                menu.backgroundImage,
-                0,
-                0,
-                W,
-                H
-            );
+            expect(ctx.drawImage).toHaveBeenCalledWith(menu.backgroundImage, 0, 0, W, H);
         });
 
         it('draws night background when map2Unlocked is true and map3Unlocked is false (story night)', () => {
@@ -455,13 +502,7 @@ describe('EnemyLore', () => {
 
             menu.draw(ctx);
 
-            expect(ctx.drawImage).toHaveBeenCalledWith(
-                menu.backgroundImageNight,
-                0,
-                0,
-                W,
-                H
-            );
+            expect(ctx.drawImage).toHaveBeenCalledWith(menu.backgroundImageNight, 0, 0, W, H);
         });
 
         it('draws day background when both map2Unlocked and map3Unlocked are true (story night off)', () => {
@@ -472,13 +513,7 @@ describe('EnemyLore', () => {
 
             menu.draw(ctx);
 
-            expect(ctx.drawImage).toHaveBeenCalledWith(
-                menu.backgroundImage,
-                0,
-                0,
-                W,
-                H
-            );
+            expect(ctx.drawImage).toHaveBeenCalledWith(menu.backgroundImage, 0, 0, W, H);
         });
 
         it('draws the book frame and both pages content', () => {
@@ -510,18 +545,39 @@ describe('EnemyLore', () => {
                 menu.pageHeight
             );
         });
+
+        it('does NOT draw the BONUS MAPS tab label when bonusMap1Unlocked is false', () => {
+            mockGame.bonusMap1Unlocked = false;
+            menu.menuActive = true;
+
+            const labels = [];
+            ctx.fillText = (text) => labels.push(String(text));
+
+            menu.draw(ctx);
+
+            expect(labels).toContain('MAIN STORY');
+            expect(labels).not.toContain('BONUS MAPS');
+        });
+
+        it('draws the BONUS MAPS tab label when bonusMap1Unlocked is true', () => {
+            mockGame.bonusMap1Unlocked = true;
+            menu.menuActive = true;
+
+            const labels = [];
+            ctx.fillText = (text) => labels.push(String(text));
+
+            menu.draw(ctx);
+
+            expect(labels).toContain('MAIN STORY');
+            expect(labels).toContain('BONUS MAPS');
+        });
     });
 
     describe('drawPageContent()', () => {
         it('renders locked placeholders when the page is locked', () => {
             menu.drawPageContent(ctx, 9, 0, 0);
             const texts = ctx.fillText.mock.calls.map(call => call[0]);
-            expect(texts).toEqual([
-                'NAME: ???',
-                'TYPE: ??? & ???',
-                'FOUND AT: ???',
-                'DESCRIPTION: ???',
-            ]);
+            expect(texts).toEqual(['NAME: ???', 'TYPE: ??? & ???', 'FOUND AT: ???', 'DESCRIPTION: ???']);
         });
 
         it('applies phraseColors styling on unlocked pages', () => {
@@ -611,16 +667,9 @@ describe('EnemyLore', () => {
 
     describe('createImage helper', () => {
         it('returns an object with correct properties', () => {
-            const imgObj = menu.createImage(
-                'goblin',
-                16,
-                32,
-                2,
-                100,
-                150,
-                1.5,
-                'stun'
-            );
+            document.body.insertAdjacentHTML('beforeend', `<img id="goblin" />`);
+
+            const imgObj = menu.createImage('goblin', 16, 32, 2, 100, 150, 1.5, 'stun');
             expect(imgObj.enemyImage).toBe(document.getElementById('goblin'));
             expect(imgObj.frameWidth).toBe(16);
             expect(imgObj.frameHeight).toBe(32);
@@ -674,8 +723,8 @@ describe('EnemyLore', () => {
     describe('phraseColors styling for bonus-map keywords', () => {
         const bonusCases = [
             ['ICEBOUND', 0, ['bonusMap1Unlocked'], '#1c4a7f', 10],
-            ['COSMIC', 1, ['bonusMap2Unlocked'], '#270033', 10],
-            ['CRIMSON', 2, ['bonusMap3Unlocked'], '#5a1408', 10],
+            ['COSMIC', 1, ['bonusMap1Unlocked', 'bonusMap2Unlocked'], '#270033', 10],
+            ['CRIMSON', 2, ['bonusMap1Unlocked', 'bonusMap3Unlocked'], '#5a1408', 10],
         ];
 
         test.each(bonusCases)(
@@ -684,6 +733,7 @@ describe('EnemyLore', () => {
                 flags.forEach(f => {
                     mockGame[f] = true;
                 });
+
                 menu.setCategory('bonus');
 
                 const rec = [];
@@ -757,6 +807,7 @@ describe('EnemyLore', () => {
 
     describe('standalone words vs full phrases', () => {
         it('does not style standalone COSMIC but styles COSMIC as part of COSMIC RIFT', () => {
+            mockGame.bonusMap1Unlocked = true;
             mockGame.bonusMap2Unlocked = true;
             menu.setCategory('bonus');
 
@@ -774,13 +825,9 @@ describe('EnemyLore', () => {
             const cosmicEntries = records.filter(r => r.text === 'COSMIC');
             expect(cosmicEntries.length).toBeGreaterThan(0);
 
-            expect(
-                cosmicEntries.some(e => e.shadowColor === 'transparent' || e.shadowBlur === 0)
-            ).toBe(true);
+            expect(cosmicEntries.some(e => e.shadowColor === 'transparent' || e.shadowBlur === 0)).toBe(true);
 
-            expect(
-                cosmicEntries.some(e => e.shadowColor === '#270033' && e.shadowBlur === 10)
-            ).toBe(true);
+            expect(cosmicEntries.some(e => e.shadowColor === '#270033' && e.shadowBlur === 10)).toBe(true);
         });
 
         it('does not style a phrase word when the full phrase is not present', () => {
