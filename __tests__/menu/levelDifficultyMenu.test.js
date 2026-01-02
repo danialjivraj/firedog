@@ -5,10 +5,11 @@ describe('LevelDifficultyMenu', () => {
     let menu, mockGame;
 
     const labels = (sel) => ([
-        sel === 0 ? 'Easy - Selected' : 'Easy',
-        sel === 1 ? 'Normal - Selected' : 'Normal',
-        sel === 2 ? 'Hard - Selected' : 'Hard',
-        sel === 3 ? 'Extreme - Selected' : 'Extreme',
+        sel === 0 ? 'Very Easy - Selected' : 'Very Easy',
+        sel === 1 ? 'Easy - Selected' : 'Easy',
+        sel === 2 ? 'Normal - Selected' : 'Normal',
+        sel === 3 ? 'Hard - Selected' : 'Hard',
+        sel === 4 ? 'Extreme - Selected' : 'Extreme',
         'Go Back'
     ]);
 
@@ -42,34 +43,35 @@ describe('LevelDifficultyMenu', () => {
     });
 
     describe('initialization', () => {
-        it('extends BaseMenu and has the expected title and 5 options', () => {
+        it('extends BaseMenu and has the expected title and 6 options', () => {
             expect(menu).toBeInstanceOf(BaseMenu);
             expect(menu.title).toBe('Level Difficulty Settings');
-            expect(menu.menuOptions).toHaveLength(5);
+            expect(menu.menuOptions).toHaveLength(6);
 
             menu.setDifficulty('Easy');
-            expect(menu.menuOptions).toHaveLength(5);
-            menu.selectedOption = 4;
+            expect(menu.menuOptions).toHaveLength(6);
+            menu.selectedOption = 5;
             menu.handleMenuSelection();
-            expect(menu.menuOptions).toHaveLength(5);
+            expect(menu.menuOptions).toHaveLength(6);
         });
 
         it('initializes with Normal difficulty selected', () => {
             expectState({
-                idx: 1,
+                idx: 2,
                 lives: 5,
                 selectedDifficulty: 'Normal',
-                expectedLabels: labels(1),
+                expectedLabels: labels(2),
             });
         });
     });
 
     describe('setDifficulty()', () => {
         it.each([
-            ['Easy', 0, 7],
-            ['Normal', 1, 5],
-            ['Hard', 2, 3],
-            ['Extreme', 3, 1],
+            ['Very Easy', 0, 10],
+            ['Easy', 1, 7],
+            ['Normal', 2, 5],
+            ['Hard', 3, 3],
+            ['Extreme', 4, 1],
         ])('setDifficulty("%s") updates index, lives and labels correctly', (name, idx, lives) => {
             menu.setDifficulty(name);
             expectState({
@@ -83,47 +85,48 @@ describe('LevelDifficultyMenu', () => {
         it('defaults unknown difficulty to Normal (but preserves the string on the game)', () => {
             menu.setDifficulty('Impossible');
             expectState({
-                idx: 1,
+                idx: 2,
                 lives: 5,
                 selectedDifficulty: 'Impossible',
-                expectedLabels: labels(1),
+                expectedLabels: labels(2),
             });
         });
 
         it('falls back to Normal if you pass null/undefined', () => {
             menu.setDifficulty(undefined);
             expectState({
-                idx: 1,
+                idx: 2,
                 lives: 5,
                 selectedDifficulty: undefined,
-                expectedLabels: labels(1),
+                expectedLabels: labels(2),
             });
 
             menu.setDifficulty(null);
             expectState({
-                idx: 1,
+                idx: 2,
                 lives: 5,
-                expectedLabels: labels(1),
+                expectedLabels: labels(2),
             });
         });
     });
 
     describe('handleMenuSelection()', () => {
         beforeEach(() => {
-            menu.menuOptions = ['Easy', 'Normal - Selected', 'Hard', 'Extreme', 'Go Back'];
+            menu.menuOptions = ['Very Easy', 'Easy', 'Normal - Selected', 'Hard', 'Extreme', 'Go Back'];
         });
 
         it('always delegates to BaseMenu.handleMenuSelection()', () => {
             BaseMenu.prototype.handleMenuSelection.mockClear();
-            menu.selectedOption = 1;
+            menu.selectedOption = 2;
             menu.handleMenuSelection();
             expect(BaseMenu.prototype.handleMenuSelection).toHaveBeenCalledTimes(1);
         });
 
         it.each([
-            [0, 0, 7, 'Easy'],
-            [2, 2, 3, 'Hard'],
-            [3, 3, 1, 'Extreme'],
+            [0, 0, 10, 'Very Easy'],
+            [1, 1, 7, 'Easy'],
+            [3, 3, 3, 'Hard'],
+            [4, 4, 1, 'Extreme'],
         ])('selects the correct difficulty when cursor index is %s', (cursor, idx, lives, label) => {
             menu.selectedOption = cursor;
             menu.handleMenuSelection();
@@ -136,25 +139,26 @@ describe('LevelDifficultyMenu', () => {
         });
 
         it('Go Back: activates main menu and never appends "- Selected"', () => {
-            menu.selectedOption = 4;
-            menu.menuOptions[4] = 'Go Back';
+            menu.selectedOption = 5;
+            menu.menuOptions[5] = 'Go Back';
             menu.handleMenuSelection();
             expect(mockGame.menu.settings.activateMenu).toHaveBeenCalledWith(2);
-            expect(menu.menuOptions[4]).toBe('Go Back');
+            expect(menu.menuOptions[5]).toBe('Go Back');
         });
     });
 
     describe('getSelectedOption()', () => {
         it('returns the current difficulty index', () => {
-            menu.setDifficulty('Hard'); expect(menu.getSelectedOption()).toBe(2);
-            menu.setDifficulty('Easy'); expect(menu.getSelectedOption()).toBe(0);
-            menu.setDifficulty('Extreme'); expect(menu.getSelectedOption()).toBe(3);
+            menu.setDifficulty('Hard'); expect(menu.getSelectedOption()).toBe(3);
+            menu.setDifficulty('Easy'); expect(menu.getSelectedOption()).toBe(1);
+            menu.setDifficulty('Extreme'); expect(menu.getSelectedOption()).toBe(4);
+            menu.setDifficulty('Very Easy'); expect(menu.getSelectedOption()).toBe(0);
         });
 
         it('returns the difficulty index, not the cursor index', () => {
-            menu.selectedOption = 4;
+            menu.selectedOption = 5;
             menu.setDifficulty('Easy');
-            expect(menu.getSelectedOption()).toBe(0);
+            expect(menu.getSelectedOption()).toBe(1);
         });
     });
 
@@ -186,15 +190,15 @@ describe('LevelDifficultyMenu', () => {
 
         it('does NOT save when confirming the already selected difficulty', () => {
             mockGame.saveGameState.mockClear();
-            menu.selectedOption = 1;
+            menu.selectedOption = 2;
             menu.handleMenuSelection();
-            expect(menu.selectedDifficultyIndex).toBe(1);
+            expect(menu.selectedDifficultyIndex).toBe(2);
             expect(mockGame.saveGameState).not.toHaveBeenCalled();
         });
 
         it('does NOT save when choosing Go Back', () => {
             mockGame.saveGameState.mockClear();
-            menu.selectedOption = 4;
+            menu.selectedOption = 5;
             menu.handleMenuSelection();
             expect(mockGame.menu.settings.activateMenu).toHaveBeenCalledWith(2);
             expect(mockGame.saveGameState).not.toHaveBeenCalled();
@@ -204,13 +208,13 @@ describe('LevelDifficultyMenu', () => {
             menu.activateMenu();
             mockGame.saveGameState.mockClear();
 
-            menu.selectedOption = 2;
+            menu.selectedOption = 3;
             menu.handleMouseClick({ clientX: 0, clientY: 0 });
-            expect(menu.selectedDifficultyIndex).toBe(2);
+            expect(menu.selectedDifficultyIndex).toBe(3);
             expect(mockGame.saveGameState).toHaveBeenCalledTimes(1);
 
             mockGame.saveGameState.mockClear();
-            menu.selectedOption = 2;
+            menu.selectedOption = 3;
             menu.handleMouseClick({ clientX: 0, clientY: 0 });
             expect(mockGame.saveGameState).not.toHaveBeenCalled();
         });

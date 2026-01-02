@@ -16,7 +16,7 @@ jest.mock('../game/background/background.js', () => ({
 }));
 
 jest.mock('../game/entities/player.js', () => ({
-    Player: jest.fn().mockImplementation(game => ({
+    Player: jest.fn().mockImplementation((game) => ({
         game,
         states: [{ enter: jest.fn() }],
         currentState: null,
@@ -38,7 +38,7 @@ describe('Reset', () => {
 
             // cutscenes
             currentCutscene: { removeEventListeners: jest.fn() },
-            cutscenes: [],
+            cutscenes: [1],
             isEndCutscene: true,
             endCutscene: jest.fn(),
 
@@ -49,7 +49,6 @@ describe('Reset', () => {
             shakeActive: true,
             shakeTimer: 5,
             shakeDuration: 10,
-
             stopShake: jest.fn(function () {
                 this.shakeActive = false;
                 this.shakeTimer = 0;
@@ -65,6 +64,12 @@ describe('Reset', () => {
             time: 10,
             invisibleColourOpacity: 1,
             gameOver: true,
+
+            // records
+            _fullClearRecorded: true,
+            bossTime: 123,
+            _bossFightWasActive: true,
+            _bossDefeatRecorded: true,
 
             // audio
             audioHandler: {
@@ -99,7 +104,6 @@ describe('Reset', () => {
             talkToPenguin: true,
             enterToTalkToPenguin: true,
             talkToPenguinOneTimeOnly: false,
-
             // boss
             bossManager: { resetState: jest.fn() },
 
@@ -108,7 +112,6 @@ describe('Reset', () => {
                 levelDifficulty: { setDifficulty: jest.fn() },
                 forestMap: { setMap: jest.fn() },
             },
-
             selectedDifficulty: 'hard',
             width: 800,
             height: 600,
@@ -186,9 +189,26 @@ describe('Reset', () => {
             expect(game.shakeDuration).toBe(0);
         });
 
-        it('resets tutorial state', () => {
-            game.tutorial = { elapsedTime: 999, currentStepIndex: 99, tutorialPause: true };
+        it('disables distortion and resets the distortion effect when available', () => {
             reset.reset();
+
+            expect(game.distortionActive).toBe(false);
+            expect(game.distortionEffect.reset).toHaveBeenCalledTimes(1);
+        });
+
+        it('does not throw if distortionEffect is missing or has no reset()', () => {
+            game.distortionEffect = null;
+            expect(() => reset.reset()).not.toThrow();
+
+            game.distortionEffect = {};
+            expect(() => reset.reset()).not.toThrow();
+        });
+
+        it('resets tutorial state', () => {
+            game.tutorial = { elapsedTime: 999, currentStepIndex: 99, tutorialPause: false };
+
+            reset.reset();
+
             expect(game.tutorial).toEqual({
                 elapsedTime: 0,
                 currentStepIndex: 0,
@@ -196,53 +216,82 @@ describe('Reset', () => {
             });
         });
 
-        it('resets core game flags', () => {
+        it('resets core game flags (including time by default)', () => {
             reset.reset();
+
             expect(game.speed).toBe(0);
             expect(game.time).toBe(0);
             expect(game.invisibleColourOpacity).toBe(0);
             expect(game.gameOver).toBe(false);
         });
 
-        it('resets coins and clears notEnoughCoins flag', () => {
+        it('preserves time when called with preserveTime: true', () => {
+            game.time = 777;
+
+            reset.reset({ preserveTime: true });
+
+            expect(game.time).toBe(777);
+            expect(game.speed).toBe(0);
+        });
+
+        it('resets coins via coinReset() and clears notEnoughCoins flag', () => {
             game.coins = 80;
             game.notEnoughCoins = true;
+
             reset.reset();
+
             expect(game.coins).toBe(8);
             expect(game.notEnoughCoins).toBe(false);
         });
 
+        it('clears record-related flags (e.g. _fullClearRecorded)', () => {
+            game._fullClearRecorded = true;
+
+            reset.reset();
+
+            expect(game._fullClearRecorded).toBe(false);
+        });
+
         it('ends any active end cutscene and clears isEndCutscene flag', () => {
             game.isEndCutscene = true;
+
             reset.reset();
+
             expect(game.endCutscene).toHaveBeenCalledTimes(1);
             expect(game.isEndCutscene).toBe(false);
+            expect(game.cutscenes).toEqual([]);
         });
 
         it('creates a new player instance on each reset', () => {
             Player.mockClear();
+
             reset.reset();
             const first = game.player;
+
             reset.reset();
+
             expect(game.player).not.toBe(first);
             expect(Player).toHaveBeenCalledTimes(2);
         });
 
         it('enters the initial player state', () => {
             reset.reset();
+
             expect(game.player.states[0].enter).toHaveBeenCalled();
             expect(game.player.currentState).toBe(game.player.states[0]);
         });
 
         it('stops all audio handlers', () => {
             reset.reset();
-            Object.values(game.audioHandler).forEach(h =>
-                expect(h.stopAllSounds).toHaveBeenCalled()
-            );
+
+            Object.values(game.audioHandler).forEach((h) => {
+                expect(h.stopAllSounds).toHaveBeenCalled();
+            });
         });
 
         it('clears all game object arrays', () => {
             reset.reset();
+
             [
                 'enemies',
                 'behindPlayerParticles',
@@ -254,7 +303,7 @@ describe('Reset', () => {
                 'cabins',
                 'penguins',
                 'cutscenes',
-            ].forEach(key => expect(game[key]).toEqual([]));
+            ].forEach((key) => expect(game[key]).toEqual([]));
         });
 
         it('clears input keys', () => {
@@ -264,6 +313,7 @@ describe('Reset', () => {
 
         it('resets cabin and penguin flags', () => {
             reset.reset();
+
             expect(game.cabinAppeared).toBe(false);
             expect(game.cabin.isFullyVisible).toBe(false);
             expect(game.cabin.x).toBe(game.width);
@@ -274,9 +324,17 @@ describe('Reset', () => {
             expect(game.talkToPenguinOneTimeOnly).toBe(true);
         });
 
-        it('delegates boss reset to bossManager.resetState()', () => {
+        it('delegates boss reset to bossManager.resetState() and clears boss-related flags', () => {
+            game.bossTime = 123;
+            game._bossFightWasActive = true;
+            game._bossDefeatRecorded = true;
+
             reset.reset();
+
             expect(game.bossManager.resetState).toHaveBeenCalledTimes(1);
+            expect(game.bossTime).toBe(0);
+            expect(game._bossFightWasActive).toBe(false);
+            expect(game._bossDefeatRecorded).toBe(false);
         });
 
         it('sets difficulty according to selectedDifficulty', () => {
@@ -287,92 +345,94 @@ describe('Reset', () => {
         describe('map selection', () => {
             it('loads Map1 and updates forest map', () => {
                 game.background = { constructor: Maps.Map1 };
+
                 reset.reset();
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(
-                    expect.any(Maps.Map1)
-                );
+
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map1));
             });
 
             it('loads Map2 and enables darkWhiteBorder', () => {
                 game.background = { constructor: Maps.Map2 };
+
                 reset.reset();
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(
-                    expect.any(Maps.Map2)
-                );
+
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map2));
                 expect(game.player.isDarkWhiteBorder).toBe(true);
             });
 
             it('loads Map3 and enables underwater mode', () => {
                 game.background = { constructor: Maps.Map3 };
+
                 reset.reset();
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(
-                    expect.any(Maps.Map3)
-                );
+
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map3));
                 expect(game.player.isUnderwater).toBe(true);
             });
 
             it('loads Map4 and updates forest map', () => {
                 game.background = { constructor: Maps.Map4 };
+
                 reset.reset();
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(
-                    expect.any(Maps.Map4)
-                );
+
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map4));
             });
 
             it('loads Map5 and updates forest map', () => {
                 game.background = { constructor: Maps.Map5 };
+
                 reset.reset();
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(
-                    expect.any(Maps.Map5)
-                );
+
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map5));
             });
 
             it('loads Map6 and updates forest map', () => {
                 game.background = { constructor: Maps.Map6 };
+
                 reset.reset();
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(
-                    expect.any(Maps.Map6)
-                );
+
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map6));
             });
 
             it('loads Map7, updates forest map, and sets maxDistance', () => {
                 game.background = { constructor: Maps.Map7 };
+
                 reset.reset();
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(
-                    expect.any(Maps.Map7)
-                );
+
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map7));
                 expect(game.maxDistance).toBe(9999999);
             });
 
             it('loads BonusMap1, updates forest map, sets maxDistance, and enables ice mode', () => {
                 game.background = { constructor: Maps.BonusMap1 };
+
                 reset.reset();
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(
-                    expect.any(Maps.BonusMap1)
-                );
+
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.BonusMap1));
                 expect(game.maxDistance).toBe(9999999);
                 expect(game.player.isIce).toBe(true);
             });
 
             it('loads BonusMap2 and updates forest map', () => {
                 game.background = { constructor: Maps.BonusMap2 };
+
                 reset.reset();
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(
-                    expect.any(Maps.BonusMap2)
-                );
+
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.BonusMap2));
             });
 
-            it('loads BonusMap3, updates forest map, and enables space mode', () => {
+            it('loads BonusMap3, updates forest map, sets maxDistance, and enables space mode', () => {
                 game.background = { constructor: Maps.BonusMap3 };
+
                 reset.reset();
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(
-                    expect.any(Maps.BonusMap3)
-                );
+
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.BonusMap3));
+                expect(game.maxDistance).toBe(9999999);
                 expect(game.player.isSpace).toBe(true);
             });
 
             it('handles unrecognized map constructors without throwing and passes undefined to setMap', () => {
                 game.background = { constructor: class Foo { } };
+
                 expect(() => reset.reset()).not.toThrow();
                 expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(undefined);
             });

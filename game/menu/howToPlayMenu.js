@@ -48,7 +48,7 @@ export class HowToPlayMenu extends BaseMenu {
         } else if (selectedOption === 'Go Back') {
             this.currentImageIndex = 0;
             super.handleMenuSelection();
-            this.game.menu.main.activateMenu(2);
+            this.game.menu.main.activateMenu(3);
         }
     }
 

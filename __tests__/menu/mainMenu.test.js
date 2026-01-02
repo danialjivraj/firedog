@@ -52,6 +52,7 @@ describe('MainMenu', () => {
       menu: {
         forestMap: makeMenu(),
         skins: makeMenu(),
+        records: makeMenu(),
         howToPlay: makeMenu(),
         settings: makeMenu(),
         deleteProgress2: { showSavingSprite: false },
@@ -88,8 +89,8 @@ describe('MainMenu', () => {
   describe('constructor and initial state', () => {
     it('initializes with the correct title, options and offsets', () => {
       expect(menu.title).toBe('Main Menu');
-      expect(menu.menuOptions).toEqual(['Play', 'Skins', 'How to Play', 'Settings', 'Exit']);
-      expect(menu.positionOffset).toBe(240);
+      expect(menu.menuOptions).toEqual(['Play', 'Skins', 'Records', 'How to Play', 'Settings', 'Exit']);
+      expect(menu.positionOffset).toBe(220);
       expect(menu.menuOptionsPositionOffset).toBe(50);
       expect(menu.showSavingSprite).toBe(false);
     });
@@ -121,20 +122,26 @@ describe('MainMenu', () => {
       expect(mockGame.menu.skins.activateMenu).toHaveBeenCalledWith();
     });
 
-    it('activates How to Play submenu when "How to Play" is selected', () => {
+    it('activates Records submenu when "Records" is selected', () => {
       selectOptionAndHandle(2);
+      expect(mockGame.currentMenu).toBe(mockGame.menu.records);
+      expect(mockGame.menu.records.activateMenu).toHaveBeenCalledWith();
+    });
+
+    it('activates How to Play submenu when "How to Play" is selected', () => {
+      selectOptionAndHandle(3);
       expect(mockGame.currentMenu).toBe(mockGame.menu.howToPlay);
       expect(mockGame.menu.howToPlay.activateMenu).toHaveBeenCalledWith();
     });
 
     it('activates Settings submenu when "Settings" is selected', () => {
-      selectOptionAndHandle(3);
+      selectOptionAndHandle(4);
       expect(mockGame.currentMenu).toBe(mockGame.menu.settings);
       expect(mockGame.menu.settings.activateMenu).toHaveBeenCalledWith();
     });
 
     it('calls quitApp when "Exit" is selected', () => {
-      selectOptionAndHandle(4);
+      selectOptionAndHandle(5);
       expect(window.electronAPI.quitApp).toHaveBeenCalled();
     });
 

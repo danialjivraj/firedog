@@ -171,6 +171,17 @@ describe('Game class (game-main.js)', () => {
     jest.spyOn(canvas, 'getContext').mockReturnValue(ctx);
   });
 
+  const makeUpdateSafeGame = () => {
+    const game = new Game(canvas, canvas.width, canvas.height);
+    game.menu.pause.isPaused = false;
+    game.tutorial.tutorialPause = false;
+    game.background = { update: jest.fn(), totalDistanceTraveled: 0, constructor: { name: 'Map1' } };
+    game.currentMap = 'Map1';
+    game.cabin = { isFullyVisible: false, x: 999999, width: 0 };
+    game.player = { update: jest.fn(), isUnderwater: false, x: 0, width: 0 };
+    return game;
+  };
+
   it('constructor sets up initial state', () => {
     const game = new Game(canvas, canvas.width, canvas.height);
     expect(game.width).toBe(1920);
@@ -191,6 +202,16 @@ describe('Game class (game-main.js)', () => {
 
     expect(game.distortionActive).toBe(false);
     expect(game.distortionEffect).toBeInstanceOf(DistortionEffect);
+  });
+
+  it('constructor initializes records storage and full-clear guard', () => {
+    const game = new Game(canvas, canvas.width, canvas.height);
+
+    expect(game.records).toBeDefined();
+    expect(game.records.Map1).toEqual({ clearMs: null, bossMs: null });
+    expect(game.records.BonusMap3).toEqual({ clearMs: null, bossMs: null });
+
+    expect(game._fullClearRecorded).toBe(false);
   });
 
   describe('shake lifecycle', () => {
@@ -441,6 +462,362 @@ describe('Game class (game-main.js)', () => {
       game.player.confusedKeyBindings = confusedBindings;
 
       expect(game.getEffectiveKeyBindings()).toBe(confusedBindings);
+    });
+  });
+
+  // ------------------------------------------------------------
+  // Records & timing
+  // ------------------------------------------------------------
+  describe('records logic', () => {
+    describe('hasMetWinningCoins()', () => {
+      it('returns true when coins >= winningCoins (number or numeric string)', () => {
+        const game = new Game(canvas, canvas.width, canvas.height);
+
+        game.winningCoins = 100;
+        game.coins = 100;
+        expect(game.hasMetWinningCoins()).toBe(true);
+
+        game.winningCoins = '150';
+        game.coins = 149;
+        expect(game.hasMetWinningCoins()).toBe(false);
+
+        game.coins = 150;
+        expect(game.hasMetWinningCoins()).toBe(true);
+      });
+
+      it('treats non-numeric winningCoins as 0 (current behavior)', () => {
+        const game = new Game(canvas, canvas.width, canvas.height);
+
+        game.winningCoins = 'not-a-number';
+        game.coins = 0;
+        expect(game.hasMetWinningCoins()).toBe(true);
+
+        game.coins = -1;
+        expect(game.hasMetWinningCoins()).toBe(false);
+      });
+    });
+
+    describe('resetBossTimer()', () => {
+      it('clears bossTime and boss-fight tracking flags', () => {
+        const game = new Game(canvas, canvas.width, canvas.height);
+
+        game.bossTime = 123.45;
+        game._bossFightWasActive = true;
+        game._bossDefeatRecorded = true;
+
+        game.resetBossTimer();
+
+        expect(game.bossTime).toBe(0);
+        expect(game._bossFightWasActive).toBe(false);
+        expect(game._bossDefeatRecorded).toBe(false);
+      });
+    });
+
+    describe('onBossDefeated()', () => {
+      it('records a new best bossMs when eligible and persists via saveGameState()', () => {
+        const game = new Game(canvas, canvas.width, canvas.height);
+        game.saveGameState = jest.fn();
+
+        game.winningCoins = 100;
+        game.coins = 100;
+
+        game.currentMap = 'Map1';
+        game.bossTime = 1234.9; // floors
+        game.records.Map1.bossMs = null;
+
+        game._bossDefeatRecorded = false;
+
+        game.onBossDefeated('any');
+
+        expect(game._bossDefeatRecorded).toBe(true);
+        expect(game.records.Map1.bossMs).toBe(1234);
+        expect(game.saveGameState).toHaveBeenCalledTimes(1);
+      });
+
+      it('does not overwrite an existing bossMs with a slower time', () => {
+        const game = new Game(canvas, canvas.width, canvas.height);
+        game.saveGameState = jest.fn();
+
+        game.winningCoins = 100;
+        game.coins = 100;
+
+        game.currentMap = 'Map1';
+        game.records.Map1.bossMs = 500;
+        game.bossTime = 999;
+
+        game._bossDefeatRecorded = false;
+
+        game.onBossDefeated('any');
+
+        expect(game.records.Map1.bossMs).toBe(500);
+        expect(game.saveGameState).not.toHaveBeenCalled();
+      });
+
+      it('guards against duplicate calls in the same fight via _bossDefeatRecorded', () => {
+        const game = new Game(canvas, canvas.width, canvas.height);
+        game.saveGameState = jest.fn();
+
+        game.winningCoins = 100;
+        game.coins = 100;
+        game.currentMap = 'Map1';
+        game.records.Map1.bossMs = null;
+        game.bossTime = 100;
+
+        game._bossDefeatRecorded = true; // already recorded
+
+        game.onBossDefeated('any');
+
+        expect(game.records.Map1.bossMs).toBeNull();
+        expect(game.saveGameState).not.toHaveBeenCalled();
+      });
+
+      it('does nothing when winning coins requirement is not met', () => {
+        const game = new Game(canvas, canvas.width, canvas.height);
+        game.saveGameState = jest.fn();
+
+        game.winningCoins = 100;
+        game.coins = 99;
+
+        game.currentMap = 'Map1';
+        game.records.Map1.bossMs = null;
+        game.bossTime = 100;
+
+        game._bossDefeatRecorded = false;
+
+        game.onBossDefeated('any');
+
+        expect(game._bossDefeatRecorded).toBe(true); // still set before eligibility checks
+        expect(game.records.Map1.bossMs).toBeNull();
+        expect(game.saveGameState).not.toHaveBeenCalled();
+      });
+
+      it('does nothing when currentMap/records entry is missing', () => {
+        const game = new Game(canvas, canvas.width, canvas.height);
+        game.saveGameState = jest.fn();
+
+        game.winningCoins = 0;
+        game.coins = 0;
+
+        game.currentMap = null;
+        game.bossTime = 100;
+
+        game._bossDefeatRecorded = false;
+        expect(() => game.onBossDefeated('any')).not.toThrow();
+        expect(game.saveGameState).not.toHaveBeenCalled();
+
+        game.currentMap = 'NotARealMap';
+        expect(() => game.onBossDefeated('any')).not.toThrow();
+        expect(game.saveGameState).not.toHaveBeenCalled();
+      });
+
+      it('clamps negative bossTime to 0', () => {
+        const game = new Game(canvas, canvas.width, canvas.height);
+        game.saveGameState = jest.fn();
+
+        game.winningCoins = 0;
+        game.coins = 0;
+
+        game.currentMap = 'Map1';
+        game.records.Map1.bossMs = null;
+        game.bossTime = -50;
+
+        game._bossDefeatRecorded = false;
+
+        game.onBossDefeated('any');
+
+        expect(game.records.Map1.bossMs).toBe(0);
+        expect(game.saveGameState).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('updateBestFullClearRecord()', () => {
+      it('records a new best clearMs when eligible and persists via saveGameState()', () => {
+        const game = new Game(canvas, canvas.width, canvas.height);
+        game.saveGameState = jest.fn();
+
+        game.winningCoins = 100;
+        game.coins = 100;
+
+        game.currentMap = 'Map2';
+        game.time = 5000.7;
+        game.records.Map2.clearMs = null;
+
+        game.updateBestFullClearRecord();
+
+        expect(game.records.Map2.clearMs).toBe(5000);
+        expect(game.saveGameState).toHaveBeenCalledTimes(1);
+      });
+
+      it('does not overwrite an existing clearMs with a slower time', () => {
+        const game = new Game(canvas, canvas.width, canvas.height);
+        game.saveGameState = jest.fn();
+
+        game.winningCoins = 100;
+        game.coins = 100;
+
+        game.currentMap = 'Map2';
+        game.records.Map2.clearMs = 1000;
+        game.time = 2000;
+
+        game.updateBestFullClearRecord();
+
+        expect(game.records.Map2.clearMs).toBe(1000);
+        expect(game.saveGameState).not.toHaveBeenCalled();
+      });
+
+      it('does nothing when winning coins requirement is not met', () => {
+        const game = new Game(canvas, canvas.width, canvas.height);
+        game.saveGameState = jest.fn();
+
+        game.winningCoins = 100;
+        game.coins = 0;
+
+        game.currentMap = 'Map2';
+        game.records.Map2.clearMs = null;
+        game.time = 999;
+
+        game.updateBestFullClearRecord();
+
+        expect(game.records.Map2.clearMs).toBeNull();
+        expect(game.saveGameState).not.toHaveBeenCalled();
+      });
+
+      it('does nothing when currentMap/records entry is missing', () => {
+        const game = new Game(canvas, canvas.width, canvas.height);
+        game.saveGameState = jest.fn();
+
+        game.winningCoins = 0;
+        game.coins = 0;
+
+        game.currentMap = null;
+        game.time = 100;
+        expect(() => game.updateBestFullClearRecord()).not.toThrow();
+        expect(game.saveGameState).not.toHaveBeenCalled();
+
+        game.currentMap = 'NotARealMap';
+        expect(() => game.updateBestFullClearRecord()).not.toThrow();
+        expect(game.saveGameState).not.toHaveBeenCalled();
+      });
+
+      it('clamps negative time to 0', () => {
+        const game = new Game(canvas, canvas.width, canvas.height);
+        game.saveGameState = jest.fn();
+
+        game.winningCoins = 0;
+        game.coins = 0;
+
+        game.currentMap = 'Map1';
+        game.records.Map1.clearMs = null;
+        game.time = -10;
+
+        game.updateBestFullClearRecord();
+
+        expect(game.records.Map1.clearMs).toBe(0);
+        expect(game.saveGameState).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('update() integration points', () => {
+      it('increments bossTime only while boss fight is active and game is not over', () => {
+        const game = new Game(canvas, canvas.width, canvas.height);
+
+        game.menu.pause.isPaused = false;
+        game.tutorial.tutorialPause = false;
+        game.cabin = { isFullyVisible: false };
+        game.background = { update: jest.fn(), totalDistanceTraveled: 0, constructor: { name: 'Map1' } };
+        game.player = { update: jest.fn(), isUnderwater: false, x: 0, width: 0 };
+
+        const fightSpy = jest.spyOn(game.bossManager, 'bossInFight', 'get').mockReturnValue(true);
+
+        game.gameOver = false;
+        game.bossTime = 0;
+
+        game.update(10);
+        expect(game.bossTime).toBe(10);
+
+        game.update(5);
+        expect(game.bossTime).toBe(15);
+
+        fightSpy.mockRestore();
+      });
+
+
+      it('resets bossTime and defeat guard when a boss fight begins (transition to active)', () => {
+        const game = makeUpdateSafeGame();
+
+        const fightSpy = jest
+          .spyOn(game.bossManager, 'bossInFight', 'get')
+          .mockReturnValue(true);
+
+        game.bossTime = 999;
+        game._bossDefeatRecorded = true;
+        game._bossFightWasActive = false;
+        game.gameOver = false;
+
+        game.update(1);
+
+        expect(game._bossFightWasActive).toBe(true);
+        expect(game._bossDefeatRecorded).toBe(false);
+
+        expect(game.bossTime).toBe(1);
+
+        fightSpy.mockRestore();
+      });
+
+      it('clears _bossFightWasActive when a boss fight ends', () => {
+        const game = makeUpdateSafeGame();
+
+        const fightSpy = jest
+          .spyOn(game.bossManager, 'bossInFight', 'get')
+          .mockReturnValue(false);
+
+        game._bossFightWasActive = true;
+
+        game.update(1);
+
+        expect(game._bossFightWasActive).toBe(false);
+
+        fightSpy.mockRestore();
+      });
+
+      it('records full-clear time once when cabin becomes fully visible and winning coins are met', () => {
+        const game = makeUpdateSafeGame();
+
+        game.cabin = { isFullyVisible: true, x: 999999, width: 0 };
+        game.winningCoins = 100;
+        game.coins = 100;
+
+        game._fullClearRecorded = false;
+
+        const spy = jest.spyOn(game, 'updateBestFullClearRecord').mockImplementation(() => { });
+
+        game.update(16);
+        expect(game._fullClearRecorded).toBe(true);
+        expect(spy).toHaveBeenCalledTimes(1);
+
+        // still visible, should not double-record
+        game.update(16);
+        expect(spy).toHaveBeenCalledTimes(1);
+
+        spy.mockRestore();
+      });
+
+      it('does not mark full-clear recorded when cabin is visible but winning coins are NOT met', () => {
+        const game = makeUpdateSafeGame();
+
+        game.cabin = { isFullyVisible: true, x: 999999, width: 0 };
+        game.winningCoins = 100;
+        game.coins = 0;
+
+        const spy = jest.spyOn(game, 'updateBestFullClearRecord').mockImplementation(() => { });
+
+        game.update(16);
+
+        expect(game._fullClearRecorded).toBe(false);
+        expect(spy).not.toHaveBeenCalled();
+
+        spy.mockRestore();
+      });
     });
   });
 
@@ -780,8 +1157,8 @@ describe('Game class (game-main.js)', () => {
     it('delegates to resetInstance.reset()', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
       game.resetInstance = { reset: jest.fn() };
-      game.reset();
-      expect(game.resetInstance.reset).toHaveBeenCalled();
+      game.reset({ preserveTime: true });
+      expect(game.resetInstance.reset).toHaveBeenCalledWith({ preserveTime: true });
     });
   });
 

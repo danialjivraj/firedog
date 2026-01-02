@@ -284,6 +284,10 @@ export class EnemyBoss extends Enemy {
         onBeforeClear = () => { },
         onAfterSetup = () => { },
     }) {
+        if (this.game && typeof this.game.onBossDefeated === "function") {
+            this.game.onBossDefeated(bossId);
+        }
+
         this.game.boss.inFight = false;
         this.lives = 100;
 

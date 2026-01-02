@@ -21,7 +21,7 @@ export class GameOverMenu extends BaseMenu {
             } else if (selectedOption === 'Retry Final Boss') {
                 const bossManager = this.game.bossManager;
                 const gate = bossManager.getGateForCurrentMap();
-                this.game.reset();
+                this.game.reset({ preserveTime: true });
                 if (gate) {
                     if (typeof gate.minCoins === 'number') {
                         this.game.coins = gate.minCoins;

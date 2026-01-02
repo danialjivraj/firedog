@@ -160,7 +160,7 @@ describe('SettingsMenu', () => {
         false,
         true
       );
-      expect(mockGame.menu.main.activateMenu).toHaveBeenCalledWith(3);
+      expect(mockGame.menu.main.activateMenu).toHaveBeenCalledWith(4);
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });
   });

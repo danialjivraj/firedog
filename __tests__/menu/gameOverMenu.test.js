@@ -127,7 +127,7 @@ describe('GameOverMenu', () => {
                 .toHaveBeenCalledWith('optionSelectedSound', false, true);
         });
 
-        it('retries final boss using gate data when active & selected', () => {
+        it('retries final boss using gate data and preserves time', () => {
             mockGame.hasActiveBoss = true;
             menu.draw(ctx);
             menu.selectedOption = 0;
@@ -135,7 +135,7 @@ describe('GameOverMenu', () => {
             menu.handleMenuSelection();
 
             expect(mockGame.bossManager.getGateForCurrentMap).toHaveBeenCalled();
-            expect(mockGame.reset).toHaveBeenCalled();
+            expect(mockGame.reset).toHaveBeenCalledWith({ preserveTime: true });
             expect(mockGame.coins).toBe(999);
             expect(mockGame.background.totalDistanceTraveled).toBe(1234);
             expect(mockGame.notEnoughCoins).toBe(false);

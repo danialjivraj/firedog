@@ -264,6 +264,7 @@ export class Tutorial {
                     this.game.player.invisibleTimer = this.game.player.invisibleCooldown;
                     this.game.menu.levelDifficulty.setDifficulty(this.game.selectedDifficulty);
                     this.game.coins = 0;
+                    this.game.time = 0;
                     this.game.player.energy = 100;
                 }
             },

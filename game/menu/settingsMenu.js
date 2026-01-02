@@ -24,7 +24,7 @@ export class SettingsMenu extends BaseMenu {
       this.game.currentMenu = this.game.menu.deleteProgress;
       this.game.menu.deleteProgress.activateMenu(1);
     } else if (selected === 'Go Back') {
-      this.game.menu.main.activateMenu(3);
+      this.game.menu.main.activateMenu(4);
     }
   }
 }

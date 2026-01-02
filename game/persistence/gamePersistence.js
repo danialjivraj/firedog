@@ -25,6 +25,8 @@ function buildGameState(game) {
         selectedDifficulty: game.selectedDifficulty,
 
         keyBindings: game.keyBindings,
+
+        records: game.records,
     };
 }
 
@@ -81,6 +83,10 @@ export function loadGameState(game) {
             const defaults = getDefaultKeyBindings();
             game.keyBindings = { ...defaults, ...gameState.keyBindings };
         }
+
+        if (gameState.records) {
+            game.records = { ...game.records, ...gameState.records };
+        }
     } catch (e) {
         console.warn('Failed to load game state, clearing corrupted data:', e);
         localStorage.removeItem('gameState');
@@ -121,6 +127,19 @@ export function clearSavedData(game) {
     });
 
     game.keyBindings = getDefaultKeyBindings();
+
+    game.records = {
+        Map1: { clearMs: null, bossMs: null },
+        Map2: { clearMs: null, bossMs: null },
+        Map3: { clearMs: null, bossMs: null },
+        Map4: { clearMs: null, bossMs: null },
+        Map5: { clearMs: null, bossMs: null },
+        Map6: { clearMs: null, bossMs: null },
+        Map7: { clearMs: null, bossMs: null },
+        BonusMap1: { clearMs: null, bossMs: null },
+        BonusMap2: { clearMs: null, bossMs: null },
+        BonusMap3: { clearMs: null, bossMs: null },
+    };
 
     saveGameState(game);
 }

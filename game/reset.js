@@ -12,7 +12,7 @@ export class Reset {
             this.game.coins = 0;
         }
     }
-    reset() {
+    reset({ preserveTime = false } = {}) {
         // if during a cutscene
         if (this.game.currentCutscene !== null) {
             this.game.currentCutscene.removeEventListeners();
@@ -30,11 +30,14 @@ export class Reset {
         this.game.tutorial.tutorialPause = true;
         // game variables
         this.game.speed = 0;
-        this.game.time = 0;
+        if (!preserveTime) {
+            this.game.time = 0;
+        }
         this.game.invisibleColourOpacity = 0;
         this.game.gameOver = false;
         this.coinReset();
         this.game.notEnoughCoins = false;
+        this.game._fullClearRecorded = false;
         // player
         this.game.player = new Player(this.game);
         this.game.player.currentState = this.game.player.states[0];
@@ -71,6 +74,9 @@ export class Reset {
         this.game.talkToPenguinOneTimeOnly = true;
         // boss
         this.game.bossManager.resetState();
+        this.game.bossTime = 0;
+        this.game._bossFightWasActive = false;
+        this.game._bossDefeatRecorded = false;
         // level difficulty
         this.game.menu.levelDifficulty.setDifficulty(this.game.selectedDifficulty);
         // selecting map

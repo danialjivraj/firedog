@@ -42,6 +42,7 @@ describe('Tutorial', () => {
             input: { keys: [] },
             selectedDifficulty: 'Hard',
             coins: 123,
+            time: 12435,
         };
 
         tutorial = new Tutorial(game);
@@ -204,6 +205,7 @@ describe('Tutorial', () => {
             expect(game.menu.levelDifficulty.setDifficulty)
                 .toHaveBeenCalledWith(game.selectedDifficulty);
             expect(game.coins).toBe(0);
+            expect(game.time).toBe(0);
             expect(game.player.energy).toBe(100);
             expect(tutorial.tutorialPause).toBe(true);
         });

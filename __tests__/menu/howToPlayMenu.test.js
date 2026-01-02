@@ -142,7 +142,7 @@ describe('HowToPlayMenu', () => {
             menu.handleMenuSelection();
             expect(menu.currentImageIndex).toBe(0);
             expect(BaseMenu.prototype.handleMenuSelection).toHaveBeenCalled();
-            expect(mockGame.menu.main.activateMenu).toHaveBeenCalledWith(2);
+            expect(mockGame.menu.main.activateMenu).toHaveBeenCalledWith(3);
         });
     });
 
