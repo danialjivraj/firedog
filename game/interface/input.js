@@ -60,10 +60,10 @@ export class InputHandler {
             if (e.key === 'Tab' && this.game.canSelectForestMap) {
                 if (this.game.currentMenu === this.game.menu.forestMap) {
                     this.game.menu.enemyLore.activateMenu();
-                    this.game.audioHandler.menu.playSound('bookFlip', false, true);
+                    this.game.audioHandler.menu.playSound('enemyLoreOpenBookSound', false, true);
                 } else if (this.game.currentMenu === this.game.menu.enemyLore) {
                     this.game.menu.forestMap.activateMenu();
-                    this.game.audioHandler.menu.playSound('bookFlip', false, true);
+                    this.game.audioHandler.menu.playSound('enemyLoreCloseBookSound', false, true);
                 }
             }
 
@@ -267,7 +267,7 @@ export class InputHandler {
                 this.game.menu.howToPlay.currentImageIndex = 0;
                 this.game.currentMenu = this.game.menu.main;
             } else {
-                this.game.audioHandler.menu.playSound('bookFlip', false, true);
+                this.game.audioHandler.menu.playSound('enemyLoreCloseBookSound', false, true);
                 this.game.menu.forestMap.activateMenu();
             }
         } else {

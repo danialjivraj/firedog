@@ -21,9 +21,10 @@ export class PauseMenu extends BaseMenu {
             this.togglePause();
             this.game.reset();
         } else if (selectedOption === 'Audio Settings') {
-            this.game.menu.ingameAudioSettings.activateMenu();
+            this.game.menu.audioSettings.activateMenu({ inGame: true });
         } else if (selectedOption === 'Back to Main Menu') {
             this.togglePause();
+            this.game.isPlayerInGame = false;
             this.game.reset();
             this.game.menu.main.activateMenu();
         }

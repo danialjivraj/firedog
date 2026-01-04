@@ -6678,78 +6678,74 @@ export class NTharax extends EnemyBoss {
         if (!isTalkingToBoss) {
             this.checkIfDefeated();
 
-            if (boss && boss.runAway && boss.current === this && boss.id === "ntharax") {
-                this.runningAway(deltaTime, "ntharax");
-            } else {
-                if (this.game.bossInFight && boss && boss.current === this && boss.id === "ntharax") {
-                    this.healingBarrierLogic(deltaTime);
+            if (this.game.bossInFight && boss && boss.current === this && boss.id === "ntharax") {
+                this.healingBarrierLogic(deltaTime);
 
-                    if (this.isTransforming || this.state === "transform") {
-                        this.y = this.originalY;
+                if (this.isTransforming || this.state === "transform") {
+                    this.y = this.originalY;
 
-                        this.shouldInvert =
-                            this.game.player.x + this.game.player.width / 2 >
-                            this.x + this.width / 2;
+                    this.shouldInvert =
+                        this.game.player.x + this.game.player.width / 2 >
+                        this.x + this.width / 2;
 
-                        this.updateTransformFX(deltaTime);
-                    } else {
-                        if (this.state === "idle") {
-                            if (this.mode2Pending && !this.mode2Triggered && !this.mode2) {
-                                const targetX = this.getMiddleTargetX();
-                                if (Math.abs(this.x - targetX) > 0.5) {
-                                    this.startMode2RunToMiddle();
-                                    return;
-                                }
-                                this.startMode2Transform();
+                    this.updateTransformFX(deltaTime);
+                } else {
+                    if (this.state === "idle") {
+                        if (this.mode2Pending && !this.mode2Triggered && !this.mode2) {
+                            const targetX = this.getMiddleTargetX();
+                            if (Math.abs(this.x - targetX) > 0.5) {
+                                this.startMode2RunToMiddle();
                                 return;
                             }
+                            this.startMode2Transform();
+                            return;
+                        }
+                        this.edgeConstraintLogic("ntharax");
+                        if (this.frameX === this.maxFrame) this.stateRandomiser();
+                    } else if (this.state === "run") {
+                        this.runAnimation.x = this.x;
+                        this.runAnimation.y = this.y;
+                        this.runAnimation.update(deltaTime);
+                        if (!this.mode2RunToMiddle) {
                             this.edgeConstraintLogic("ntharax");
-                            if (this.frameX === this.maxFrame) this.stateRandomiser();
-                        } else if (this.state === "run") {
-                            this.runAnimation.x = this.x;
-                            this.runAnimation.y = this.y;
-                            this.runAnimation.update(deltaTime);
-                            if (!this.mode2RunToMiddle) {
-                                this.edgeConstraintLogic("ntharax");
-                            }
-                            this.runLogic();
-                        } else if (this.state === "jump") {
-                            this.jumpLogic(deltaTime);
-                        } else if (this.state === "dive") {
-                            this.diveLogic();
-                        } else if (this.state === "ball") {
-                            this.ballLogic(deltaTime);
-                        } else if (this.state === "wing") {
-                            this.wingLogic(deltaTime);
-                        } else if (this.state === "purple") {
-                            this.purpleLogic(deltaTime);
-                        } else if (this.state === "yellow") {
-                            this.yellowLogic(deltaTime);
-                        } else if (this.state === "black") {
-                            this.blackLogic(deltaTime);
-                        } else if (this.state === "asteroid") {
-                            this.asteroidLogic(deltaTime);
-                        } else if (this.state === "slap") {
-                            this.slapLogic(deltaTime);
-                        } else if (this.state === "tentacle") {
-                            this.tentacleLogic(deltaTime);
-                        } else if (this.state === "healing") {
-                            this.healingLogic(deltaTime);
-                        } else if (this.state === "distortion") {
-                            this.distortionLogic(deltaTime);
-                        } else if (this.state === "kneel") {
-                            this.kneelLogic(deltaTime);
-                        } else if (this.state === "fly") {
-                            this.flyLogic(deltaTime);
-                        } else if (this.state === "laser") {
-                            this.laserLogic(deltaTime);
-                        } else if (this.state === "burrow") {
-                            this.burrowLogic(deltaTime);
                         }
+                        this.runLogic();
+                    } else if (this.state === "jump") {
+                        this.jumpLogic(deltaTime);
+                    } else if (this.state === "dive") {
+                        this.diveLogic();
+                    } else if (this.state === "ball") {
+                        this.ballLogic(deltaTime);
+                    } else if (this.state === "wing") {
+                        this.wingLogic(deltaTime);
+                    } else if (this.state === "purple") {
+                        this.purpleLogic(deltaTime);
+                    } else if (this.state === "yellow") {
+                        this.yellowLogic(deltaTime);
+                    } else if (this.state === "black") {
+                        this.blackLogic(deltaTime);
+                    } else if (this.state === "asteroid") {
+                        this.asteroidLogic(deltaTime);
+                    } else if (this.state === "slap") {
+                        this.slapLogic(deltaTime);
+                    } else if (this.state === "tentacle") {
+                        this.tentacleLogic(deltaTime);
+                    } else if (this.state === "healing") {
+                        this.healingLogic(deltaTime);
+                    } else if (this.state === "distortion") {
+                        this.distortionLogic(deltaTime);
+                    } else if (this.state === "kneel") {
+                        this.kneelLogic(deltaTime);
+                    } else if (this.state === "fly") {
+                        this.flyLogic(deltaTime);
+                    } else if (this.state === "laser") {
+                        this.laserLogic(deltaTime);
+                    } else if (this.state === "burrow") {
+                        this.burrowLogic(deltaTime);
+                    }
 
-                        if (this.x + this.width < 0 || this.x >= this.game.width) {
-                            if (boss.current === this && boss.id === "ntharax") boss.isVisible = false;
-                        }
+                    if (this.x + this.width < 0 || this.x >= this.game.width) {
+                        if (boss.current === this && boss.id === "ntharax") boss.isVisible = false;
                     }
                 }
             }

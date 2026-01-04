@@ -2408,6 +2408,136 @@ describe('Player', () => {
             expect(game.input.keys).toEqual([]);
         });
     });
+
+    describe('clearAllStatusEffects', () => {
+        test('resets all status flags/timers, restores base stats, clears movement + input keys', () => {
+            player.isFrozen = true;
+            player.frozenTimer = 999;
+            player.frozenPulseTimer = 123;
+            player.frozenOpacity = 0.5;
+
+            player.isPoisonedActive = true;
+            player.poisonTimer = 888;
+            player.energyReachedZero = true;
+
+            player.isSlowed = true;
+            player.slowedTimer = 777;
+
+            player.isConfused = true;
+            player.confuseTimer = 666;
+            player.confusedKeyBindings = { jump: 'x' };
+
+            player.isBluePotionActive = true;
+            player.blueFireTimer = 555;
+
+            player.isRedPotionActive = true;
+            player.redPotionTimer = 444;
+
+            player.isInvisible = true;
+            player.invisibleActiveCooldownTimer = 333;
+            player.invisibleTimer = 0;
+
+            player.isBlackHoleActive = true;
+
+            player.energy = 150; // clamp to 100
+            player.energyInterval = 999;
+            player.noEnergyLeftSound = true;
+
+            player.normalSpeed = 1;
+            player.maxSpeed = 2;
+            player.weight = 9;
+
+            player.speed = 12;
+            player.vx = 8;
+            player.vy = -7;
+
+            game.input.keys = ['a', 'd'];
+
+            player.clearAllStatusEffects();
+
+            // freeze
+            expect(player.isFrozen).toBe(false);
+            expect(player.frozenTimer).toBe(0);
+            expect(player.frozenPulseTimer).toBe(0);
+            expect(player.frozenOpacity).toBe(0);
+            // poison
+            expect(player.isPoisonedActive).toBe(false);
+            expect(player.poisonTimer).toBe(0);
+            expect(player.energyReachedZero).toBe(false);
+            // slow
+            expect(player.isSlowed).toBe(false);
+            expect(player.slowedTimer).toBe(0);
+            // confuse
+            expect(player.isConfused).toBe(false);
+            expect(player.confuseTimer).toBe(0);
+            expect(player.confusedKeyBindings).toBeNull();
+            // potions
+            expect(player.isBluePotionActive).toBe(false);
+            expect(player.blueFireTimer).toBe(0);
+            expect(player.isRedPotionActive).toBe(false);
+            expect(player.redPotionTimer).toBe(0);
+            // invisibility
+            expect(player.isInvisible).toBe(false);
+            expect(player.invisibleActiveCooldownTimer).toBe(0);
+            expect(player.invisibleTimer).toBe(player.invisibleCooldown);
+            // black hole
+            expect(player.isBlackHoleActive).toBe(false);
+            // energy + sound flags
+            expect(player.energy).toBe(100);
+            expect(player.energyInterval).toBe(100);
+            expect(player.noEnergyLeftSound).toBe(false);
+            // base stats restored
+            expect(player.normalSpeed).toBe(player.baseNormalSpeed);
+            expect(player.maxSpeed).toBe(player.baseMaxSpeed);
+            expect(player.weight).toBe(player.baseWeight);
+            // movement reset
+            expect(player.speed).toBe(0);
+            expect(player.vx).toBe(0);
+            expect(player.vy).toBe(0);
+            // input cleared
+            expect(game.input.keys).toEqual([]);
+        });
+
+        test('when currentState is stunned or hit, it forces Standing via setState(8, 0)', () => {
+            const spy = jest.spyOn(player, 'setState');
+            // stunned
+            player.currentState = player.states[6];
+            player.clearAllStatusEffects();
+            expect(spy).toHaveBeenCalledWith(8, 0);
+            spy.mockClear();
+            // hit
+            player.currentState = player.states[7];
+            player.clearAllStatusEffects();
+            expect(spy).toHaveBeenCalledWith(8, 0);
+        });
+
+        test('stops relevant SFX and removes TunnelVision + status particles', () => {
+            game.particles = [
+                { constructor: { name: 'PoisonBubbles' } },
+                { constructor: { name: 'IceCrystalBubbles' } },
+                { constructor: { name: 'SpinningChicks' } },
+                { constructor: { name: 'SomeOtherParticle' } },
+            ];
+
+            game.collisions = [
+                { constructor: { name: 'TunnelVision' } },
+                { constructor: { name: 'NotTunnelVision' } },
+            ];
+
+            player.clearAllStatusEffects();
+
+            expect(game.particles.map(p => p.constructor.name)).toEqual(['SomeOtherParticle']);
+
+            expect(game.collisions.map(c => c.constructor.name)).toEqual(['NotTunnelVision']);
+
+            const stop = game.audioHandler.firedogSFX.stopSound;
+            expect(stop).toHaveBeenCalledWith('bluePotionEnergyGoingUp');
+            expect(stop).toHaveBeenCalledWith('invisibleInSFX');
+            expect(stop).toHaveBeenCalledWith('rollingSFX');
+            expect(stop).toHaveBeenCalledWith('rollingUnderwaterSFX');
+            expect(stop).toHaveBeenCalledWith('frozenSound');
+        });
+    });
 });
 
 describe('emitStatusParticles (bubble status logic)', () => {

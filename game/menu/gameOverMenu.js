@@ -19,21 +19,18 @@ export class GameOverMenu extends BaseMenu {
                 this.game.reset();
                 this.game.menu.main.activateMenu();
             } else if (selectedOption === 'Retry Final Boss') {
-                const bossManager = this.game.bossManager;
-                const gate = bossManager.getGateForCurrentMap();
+                const gate = this.game.bossManager.getGateForCurrentMap();
+
                 this.game.reset({ preserveTime: true });
+
                 if (gate) {
-                    if (typeof gate.minCoins === 'number') {
-                        this.game.coins = gate.minCoins;
-                    }
-                    if (
-                        typeof gate.minDistance === 'number' &&
-                        this.game.background &&
-                        this.game.background.totalDistanceTraveled !== undefined
-                    ) {
+                    this.game.coins = gate.minCoins;
+
+                    if (this.game.background) {
                         this.game.background.totalDistanceTraveled = gate.minDistance;
                     }
                 }
+
                 this.game.notEnoughCoins = false;
             }
             this.menuActive = false;

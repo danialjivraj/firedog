@@ -1204,9 +1204,7 @@ export class Glacikal extends EnemyBoss {
             this.checkIfDefeated();
             this.icyStormLogicTimer(deltaTime);
 
-            if (boss && boss.runAway && boss.current === this && boss.id === "glacikal") {
-                this.runningAway(deltaTime, "glacikal");
-            } else if (this.game.bossInFight && boss && boss.current === this && boss.id === "glacikal") {
+            if (this.game.bossInFight && boss && boss.current === this && boss.id === "glacikal") {
                 if (this.state === "idle") {
                     this.edgeConstraintLogic("glacikal");
                     if (this.frameX === this.maxFrame) {

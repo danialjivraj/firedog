@@ -182,8 +182,9 @@ describe("elyvorg.js entities – behavior coverage", () => {
         };
 
         game.bossManager = {
-            requestScreenEffect: jest.fn(),
-            releaseScreenEffect: jest.fn(),
+        requestScreenEffect: jest.fn(),
+        releaseScreenEffect: jest.fn(),
+        getGateForCurrentMap: jest.fn(() => null),
         };
 
         return game;
@@ -1214,6 +1215,24 @@ describe("elyvorg.js entities – behavior coverage", () => {
             expect(boss.x).toBe(mockGame.width / 2);
 
             jest.useRealTimers();
+        });
+
+        it("checkIfDefeated enforces gate.minCoins when gate exists", () => {
+        boss.lives = 0;
+        mockGame.coins = 0;
+
+        mockGame.bossManager.getGateForCurrentMap = jest.fn(() => ({
+            minCoins: 500,
+        }));
+
+        jest.useFakeTimers();
+
+        boss.checkIfDefeated();
+
+        expect(mockGame.coins).toBe(500);
+
+        jest.runAllTimers();
+        jest.useRealTimers();
         });
 
         it("runningAway moves Elyvorg offscreen and clears boss state when runAway=true", () => {

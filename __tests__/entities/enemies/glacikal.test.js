@@ -935,20 +935,3 @@ describe('Glacikal stateRandomiser', () => {
         expect(boss.state).toBe('jump');
     });
 });
-
-describe('Glacikal runningAway', () => {
-    test('runningAway moves boss offscreen and clears boss state when runAway is set', () => {
-        const game = makeGame();
-        const boss = new Glacikal(game);
-        game.boss.current = boss;
-        game.boss.runAway = true;
-
-        boss.x = game.width + 5;
-        boss.runningAway(16, 'glacikal');
-
-        expect(boss.markedForDeletion).toBe(true);
-        expect(game.boss.current).toBe(null);
-        expect(game.boss.runAway).toBe(false);
-        expect(game.boss.isVisible).toBe(false);
-    });
-});

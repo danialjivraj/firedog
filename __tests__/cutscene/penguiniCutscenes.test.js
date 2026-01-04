@@ -33,7 +33,7 @@ describe('PenguiniCutscene & subclasses', () => {
             penguini: { x: 200, y: 100 },
             menu: {
                 pause: { isPaused: false },
-                ingameAudioSettings: Symbol('settings'),
+                audioSettings: Symbol('settings'),
                 gameOver: { name: 'gameOver' },
                 skins: {
                     defaultSkin: 'default',
@@ -287,7 +287,7 @@ describe('PenguiniCutscene & subclasses', () => {
         });
 
         it('blocks Enter when in audio settings', () => {
-            game.currentMenu = game.menu.ingameAudioSettings;
+            game.currentMenu = game.menu.audioSettings;
             const spy = jest.spyOn(cutscene, 'enterOrLeftClick');
             cutscene.handleKeyDown({ key: 'Enter' });
             expect(spy).not.toHaveBeenCalled();
@@ -301,7 +301,7 @@ describe('PenguiniCutscene & subclasses', () => {
         });
 
         it('blocks Click when in audio settings', () => {
-            game.currentMenu = game.menu.ingameAudioSettings;
+            game.currentMenu = game.menu.audioSettings;
             const spy = jest.spyOn(cutscene, 'enterOrLeftClick');
             cutscene.handleLeftClick({ button: 0 });
             expect(spy).not.toHaveBeenCalled();

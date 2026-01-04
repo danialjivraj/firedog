@@ -20,19 +20,14 @@ export class MainMenu extends BaseMenu {
             super.handleMenuSelection();
             if (selectedOption === 'Play') {
                 this.game.audioHandler.menu.playSound('mapOpening');
-                this.game.currentMenu = this.game.menu.forestMap;
                 this.game.menu.forestMap.activateMenu();
             } else if (selectedOption === 'Skins') {
-                this.game.currentMenu = this.game.menu.skins;
                 this.game.menu.skins.activateMenu();
             } else if (selectedOption === 'Records') {
-                this.game.currentMenu = this.game.menu.records;
                 this.game.menu.records.activateMenu();
             } else if (selectedOption === 'How to Play') {
-                this.game.currentMenu = this.game.menu.howToPlay;
                 this.game.menu.howToPlay.activateMenu();
             } else if (selectedOption === 'Settings') {
-                this.game.currentMenu = this.game.menu.settings;
                 this.game.menu.settings.activateMenu();
             } else if (selectedOption === 'Exit') {
                 window.electronAPI.quitApp();

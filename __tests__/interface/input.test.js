@@ -193,24 +193,24 @@ describe('InputHandler', () => {
         });
 
         describe('Tab key (forest map / enemy lore toggle)', () => {
-            test('toggles from forestMap to enemyLore and plays bookFlip when allowed', () => {
+            test('toggles from forestMap to enemyLore and plays enemyLoreOpenBookSound when allowed', () => {
                 game.canSelectForestMap = true;
                 game.currentMenu = game.menu.forestMap;
 
                 keyDown('Tab');
 
                 expect(game.menu.enemyLore.activateMenu).toHaveBeenCalled();
-                expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlip', false, true);
+                expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('enemyLoreOpenBookSound', false, true);
             });
 
-            test('toggles from enemyLore back to forestMap and plays bookFlip when allowed', () => {
+            test('toggles from enemyLore back to forestMap and plays enemyLoreCloseBookSound when allowed', () => {
                 game.canSelectForestMap = true;
                 game.currentMenu = game.menu.enemyLore;
 
                 keyDown('Tab');
 
                 expect(game.menu.forestMap.activateMenu).toHaveBeenCalled();
-                expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlip', false, true);
+                expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('enemyLoreCloseBookSound', false, true);
             });
 
             test('does nothing when forestMap selection is disabled', () => {
@@ -442,14 +442,14 @@ describe('InputHandler', () => {
             expect(game.currentMenu).toBe(game.menu.main);
         });
 
-        test('when current menu is enemyLore, flips back to forestMap with bookFlip sound', () => {
+        test('when current menu is enemyLore, flips back to forestMap with enemyLoreCloseBookSound sound', () => {
             game.currentMenu = game.menu.enemyLore;
             game.menu.enemyLore.menuInGame = false;
             game.menu.enemyLore.menuActive = true;
 
             ih.handleEscapeKey();
 
-            expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlip', false, true);
+            expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('enemyLoreCloseBookSound', false, true);
             expect(game.menu.forestMap.activateMenu).toHaveBeenCalled();
         });
 

@@ -274,6 +274,7 @@ export class EnemyBoss extends Enemy {
                 this.game.boss.current = null;
             }
             this.markedForDeletion = true;
+            this.stopRunSFX();
         }
     }
 
@@ -286,6 +287,12 @@ export class EnemyBoss extends Enemy {
     }) {
         if (this.game && typeof this.game.onBossDefeated === "function") {
             this.game.onBossDefeated(bossId);
+        }
+
+        const gate = this.game.bossManager.getGateForCurrentMap();
+        if (gate) {
+            const currentCoins = this.game.coins || 0;
+            this.game.coins = Math.max(currentCoins, gate.minCoins);
         }
 
         this.game.boss.inFight = false;

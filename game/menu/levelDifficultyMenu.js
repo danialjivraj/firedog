@@ -7,7 +7,18 @@ export class LevelDifficultyMenu extends SelectMenu {
         this.setDifficulty('Normal');
     }
 
-    setDifficulty(selectedDifficulty) {
+    getLivesForDifficulty(selectedDifficulty) {
+        switch (selectedDifficulty) {
+            case 'Very Easy': return 10;
+            case 'Easy': return 7;
+            case 'Normal': return 5;
+            case 'Hard': return 3;
+            case 'Extreme': return 1;
+            default: return 5;
+        }
+    }
+
+    setDifficulty(selectedDifficulty, triggerUISync = true) {
         switch (selectedDifficulty) {
             case 'Very Easy':
                 this.selectedDifficultyIndex = 0;
@@ -35,6 +46,7 @@ export class LevelDifficultyMenu extends SelectMenu {
                 break;
         }
         this.game.selectedDifficulty = selectedDifficulty;
+        if (triggerUISync) this.game.UI.syncLivesState();
         this.setSelectedIndex(this.selectedDifficultyIndex);
     }
 

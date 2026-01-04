@@ -155,11 +155,15 @@ export class MenuAudioHandler extends AudioHandler {
     super(game);
     this.soundsMapping = {
       soundtrack: 'soundtrack',
+      shinySkinRizzSound: 'shinySkinRizzSound',
       optionSelectedSound: 'optionSelectedSound',
       optionHoveredSound: 'optionHoveredSound',
       mapOpening: 'mapOpening',
-      bookFlip: 'bookFlip',
-      shinySkinRizzSound: 'shinySkinRizzSound',
+      enemyLoreOpenBookSound: 'enemyLoreOpenBookSound',
+      enemyLoreCloseBookSound: 'enemyLoreCloseBookSound',
+      bookFlipBackwardSound: 'bookFlipBackwardSound',
+      bookFlipForwardSound: 'bookFlipForwardSound',
+      enemyLoreSwitchTabSound: 'enemyLoreSwitchTabSound',
     };
     this.initializeSounds();
   }

@@ -316,7 +316,6 @@ describe('Game class (game-main.js)', () => {
       game.selectedDifficulty = 'Hard';
       game.menu.skins.currentSkin = { id: 'zabka' };
       game.menu.audioSettings.getState = () => ({ foo: 'bar' });
-      game.menu.ingameAudioSettings.getState = () => ({ baz: 'qux' });
     });
 
     it('saveGameState() writes the expected shape into localStorage', () => {
@@ -328,7 +327,6 @@ describe('Game class (game-main.js)', () => {
       expect(snapshot.currentSkin).toBe('zabka');
       expect(snapshot.selectedDifficulty).toBe('Hard');
       expect(snapshot.audioSettingsState).toEqual({ foo: 'bar' });
-      expect(snapshot.ingameAudioSettingsState).toEqual({ baz: 'qux' });
       expect(snapshot.glacikalDefeated).toBe(true);
       expect(snapshot.elyvorgDefeated).toBe(true);
       expect(snapshot.ntharaxDefeated).toBe(false);
@@ -360,19 +358,16 @@ describe('Game class (game-main.js)', () => {
     it('loadGameState() calls menu.setState / skins.setCurrentSkinById / levelDifficulty.setDifficulty', () => {
       const fake = {
         audioSettingsState: { a: 1 },
-        ingameAudioSettingsState: { b: 2 },
         currentSkin: 'zabka',
         selectedDifficulty: 'Hard'
       };
       localStorage.setItem('gameState', JSON.stringify(fake));
       const g3 = new Game(canvas, canvas.width, canvas.height);
       g3.menu.audioSettings.setState = jest.fn();
-      g3.menu.ingameAudioSettings.setState = jest.fn();
       g3.menu.skins.setCurrentSkinById = jest.fn();
       g3.menu.levelDifficulty.setDifficulty = jest.fn();
       g3.loadGameState();
       expect(g3.menu.audioSettings.setState).toHaveBeenCalledWith({ a: 1 });
-      expect(g3.menu.ingameAudioSettings.setState).toHaveBeenCalledWith({ b: 2 });
       expect(g3.menu.skins.setCurrentSkinById).toHaveBeenCalledWith('zabka');
       expect(g3.menu.levelDifficulty.setDifficulty).toHaveBeenCalledWith('Hard');
     });
@@ -397,7 +392,6 @@ describe('Game class (game-main.js)', () => {
 
       g1.menu.skins.currentSkin = { id: 'defaultSkin' };
       g1.menu.audioSettings.getState = () => ({});
-      g1.menu.ingameAudioSettings.getState = () => ({});
 
       const defaults = getDefaultKeyBindings();
       g1.keyBindings = { ...defaults, Dash: 'ShiftRight', Jump: 'KeyZ' };
@@ -831,7 +825,6 @@ describe('Game class (game-main.js)', () => {
       game.menu.levelDifficulty.setDifficulty = jest.fn();
       game.menu.skins.setCurrentSkinById = jest.fn();
       game.menu.audioSettings.setState = jest.fn();
-      game.menu.ingameAudioSettings.setState = jest.fn();
 
       localStorage.setItem('gameState', '{"foo":123}');
       game.clearSavedData();
@@ -857,8 +850,21 @@ describe('Game class (game-main.js)', () => {
         glacikalDefeated: false,
         elyvorgDefeated: false,
         ntharaxDefeated: false,
-        audioSettingsState: { volumeLevels: [75, 10, 90, 90, 70, 60, null] },
-        ingameAudioSettingsState: { volumeLevels: [30, 80, 60, 40, 80, 65, null] },
+
+        audioSettingsState: {
+          tabData: {
+            CUTSCENE: {
+              volumeLevels: [50, 50, 50, 50, null],
+            },
+            INGAME: {
+              volumeLevels: [50, 50, 50, 50, 50, 50, null],
+            },
+            MENU: {
+              volumeLevels: [50, 50, 50, 50, null],
+            },
+          },
+        },
+
         currentSkin: 'defaultSkin',
         selectedDifficulty: 'Normal',
       });
@@ -880,10 +886,20 @@ describe('Game class (game-main.js)', () => {
       expect(game.menu.levelDifficulty.setDifficulty).toHaveBeenCalledWith('Normal');
       expect(game.menu.skins.currentSkin).toBe(game.menu.skins.defaultSkin);
       expect(game.menu.skins.setCurrentSkinById).toHaveBeenCalledWith('defaultSkin');
-      expect(game.menu.audioSettings.setState)
-        .toHaveBeenCalledWith({ volumeLevels: [75, 10, 90, 90, 70, 60, null] });
-      expect(game.menu.ingameAudioSettings.setState)
-        .toHaveBeenCalledWith({ volumeLevels: [30, 80, 60, 40, 80, 65, null] });
+
+      expect(game.menu.audioSettings.setState).toHaveBeenCalledWith({
+        tabData: {
+          CUTSCENE: {
+            volumeLevels: [50, 50, 50, 50, null],
+          },
+          INGAME: {
+            volumeLevels: [50, 50, 50, 50, 50, 50, null],
+          },
+          MENU: {
+            volumeLevels: [50, 50, 50, 50, null],
+          },
+        },
+      });
 
       expect(game.keyBindings).toEqual(getDefaultKeyBindings());
     });
@@ -1216,7 +1232,7 @@ describe('Game class (game-main.js)', () => {
       Math.random.mockRestore();
     });
 
-    it('spawns all power-up types when random < thresholds and not Map7', () => {
+    it('spawns all power-up types when random < thresholds', () => {
       game.speed = 10;
       game.addPowerUp();
       expect(game.powerUps.some(p => p instanceof RedPotion)).toBe(true);
@@ -1224,13 +1240,6 @@ describe('Game class (game-main.js)', () => {
       expect(game.powerUps.some(p => p instanceof HealthLive)).toBe(true);
       expect(game.powerUps.some(p => p instanceof Coin)).toBe(true);
       expect(game.powerUps.some(p => p instanceof OxygenTank)).toBe(true);
-    });
-
-    it('spawns no power-ups on Map7', () => {
-      game.background = new Map7(game);
-      game.powerUps = [];
-      game.addPowerUp();
-      expect(game.powerUps).toHaveLength(0);
     });
 
     it('spawns no power-ups when speed is zero', () => {
@@ -1288,7 +1297,7 @@ describe('Game class (game-main.js)', () => {
       Math.random.mockRestore();
     });
 
-    it('spawns all power-down types when random < thresholds and not Map7', () => {
+    it('spawns all power-down types when random < thresholds', () => {
       game.addPowerDown();
       expect(game.powerDowns.some(p => p instanceof IceDrink)).toBe(true);
       expect(game.powerDowns.some(p => p instanceof IceCube)).toBe(true);
@@ -1299,12 +1308,6 @@ describe('Game class (game-main.js)', () => {
       expect(game.powerDowns.some(p => p instanceof CarbonDioxideTank)).toBe(true);
     });
 
-    it('spawns no power-downs on Map7', () => {
-      game.background = new Map7(game);
-      game.powerDowns = [];
-      game.addPowerDown();
-      expect(game.powerDowns).toHaveLength(0);
-    });
 
     it('spawns no power-downs when speed is zero', () => {
       game.speed = 0;
@@ -1338,6 +1341,74 @@ describe('Game class (game-main.js)', () => {
       game.powerDowns = [];
       game.addPowerDown();
       expect(game.powerDowns.some(p => p instanceof CarbonDioxideTank)).toBe(false);
+    });
+  });
+
+  describe('addPowerUp() boss gating', () => {
+    let game;
+
+    beforeEach(() => {
+      jest.spyOn(Math, 'random').mockReturnValue(0);
+      game = new Game(canvas, canvas.width, canvas.height);
+      game.speed = 10;
+      game.player.isUnderwater = true;
+      game.background = { constructor: { name: 'Map7' }, totalDistanceTraveled: 0 }; // boss map
+      game.currentMap = 'Map7';
+      game.powerUps = [];
+    });
+
+    afterEach(() => Math.random.mockRestore());
+
+    it('does not spawn powerUps when boss gate is reached', () => {
+      jest.spyOn(game.bossManager, 'hasBossConfiguredForCurrentMap').mockReturnValue(true);
+      jest.spyOn(game.bossManager, 'bossGateReached').mockReturnValue(true);
+      jest.spyOn(game.bossManager, 'bossIsEngaged').mockReturnValue(false);
+
+      game.addPowerUp();
+      expect(game.powerUps).toHaveLength(0);
+    });
+
+    it('does not spawn powerUps when boss is engaged', () => {
+      jest.spyOn(game.bossManager, 'hasBossConfiguredForCurrentMap').mockReturnValue(true);
+      jest.spyOn(game.bossManager, 'bossIsEngaged').mockReturnValue(true);
+      jest.spyOn(game.bossManager, 'bossGateReached').mockReturnValue(false);
+
+      game.addPowerUp();
+      expect(game.powerUps).toHaveLength(0);
+    });
+  });
+
+  describe('addPowerDown() boss gating', () => {
+    let game;
+
+    beforeEach(() => {
+      jest.spyOn(Math, 'random').mockReturnValue(0);
+      game = new Game(canvas, canvas.width, canvas.height);
+      game.speed = 10;
+      game.player.isUnderwater = true;
+      game.background = { constructor: { name: 'Map7' }, totalDistanceTraveled: 0 };
+      game.currentMap = 'Map7';
+      game.powerDowns = [];
+    });
+
+    afterEach(() => Math.random.mockRestore());
+
+    it('does not spawn powerDowns when boss gate is reached', () => {
+      jest.spyOn(game.bossManager, 'hasBossConfiguredForCurrentMap').mockReturnValue(true);
+      jest.spyOn(game.bossManager, 'bossGateReached').mockReturnValue(true);
+      jest.spyOn(game.bossManager, 'bossIsEngaged').mockReturnValue(false);
+
+      game.addPowerDown();
+      expect(game.powerDowns).toHaveLength(0);
+    });
+
+    it('does not spawn powerDowns when boss is engaged', () => {
+      jest.spyOn(game.bossManager, 'hasBossConfiguredForCurrentMap').mockReturnValue(true);
+      jest.spyOn(game.bossManager, 'bossIsEngaged').mockReturnValue(true);
+      jest.spyOn(game.bossManager, 'bossGateReached').mockReturnValue(false);
+
+      game.addPowerDown();
+      expect(game.powerDowns).toHaveLength(0);
     });
   });
 
@@ -1684,6 +1755,7 @@ describe('Game class (game-main.js)', () => {
 
       game.player = {
         update: () => { },
+        clearAllStatusEffects: jest.fn(),
         x: 0,
         width: 0,
         energy: 0,
@@ -1736,6 +1808,7 @@ describe('Game class (game-main.js)', () => {
 
       game.player = {
         update: () => { },
+        clearAllStatusEffects: jest.fn(),
         x: 0,
         width: 0,
         energy: 100,
@@ -1776,7 +1849,6 @@ describe('Game class (game-main.js)', () => {
       expect(game.boss.dialogueAfterOnce).toBe(false);
       expect(game.boss.dialogueAfterLeaving).toBe(true);
       expect(game.boss.postFight).toBe(true);
-      expect(game.boss.postFight).toBe(true);
     });
 
     it('triggers Glacikal pre-fight cutscene on BonusMap1 via bossManager state', () => {
@@ -1788,6 +1860,7 @@ describe('Game class (game-main.js)', () => {
 
       game.player = {
         update: () => { },
+        clearAllStatusEffects: jest.fn(),
         x: 0,
         width: 0,
         energy: 0,
@@ -1887,7 +1960,6 @@ describe('Game class (game-main.js)', () => {
       game.saveGameState = jest.fn();
       game.menu.skins.currentSkin = { id: 'defaultSkin' };
       game.menu.audioSettings.getState = () => ({});
-      game.menu.ingameAudioSettings.getState = () => ({});
 
       jest.spyOn(game.audioHandler.cutsceneSFX, 'playSound');
       game.background = new Map3(game);
@@ -1921,7 +1993,6 @@ describe('Game class (game-main.js)', () => {
         game.saveGameState = jest.fn();
         game.menu.skins.currentSkin = { id: 'defaultSkin' };
         game.menu.audioSettings.getState = () => ({});
-        game.menu.ingameAudioSettings.getState = () => ({});
         jest.spyOn(game, 'startCutscene');
         game.background = { constructor: { name }, update: () => { } };
         game.currentMap = name;
@@ -2022,7 +2093,6 @@ describe('Game class (game-main.js)', () => {
       game.saveGameState = jest.fn();
       game.menu.skins.currentSkin = { id: 'defaultSkin' };
       game.menu.audioSettings.getState = () => ({});
-      game.menu.ingameAudioSettings.getState = () => ({});
 
       jest.spyOn(game.audioHandler.cutsceneSFX, 'playSound');
 
@@ -2048,7 +2118,6 @@ describe('Game class (game-main.js)', () => {
       game.saveGameState = jest.fn();
       game.menu.skins.currentSkin = { id: 'defaultSkin' };
       game.menu.audioSettings.getState = () => ({});
-      game.menu.ingameAudioSettings.getState = () => ({});
 
       jest.spyOn(game.audioHandler.cutsceneSFX, 'playSound');
 

@@ -1,0 +1,742 @@
+jest.mock('../../game/menu/baseMenu.js', () => {
+  class BaseMenu {
+    constructor(game, menuOptions, title) {
+      this.game = game;
+      this.menuOptions = menuOptions;
+      this.title = title;
+
+      this.selectedOption = 0;
+      this.menuActive = false;
+      this.menuInGame = false;
+      this.showStarsSticker = true;
+
+      this.backgroundImage = null;
+
+      this.canPressNow = true;
+    }
+
+    activateMenu(selectedOption = 0) {
+      this.menuActive = true;
+      this.selectedOption = selectedOption;
+      this.game.currentMenu = this;
+    }
+
+    handleMenuSelection() {
+      this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
+    }
+
+    drawStarsSticker() { }
+  }
+
+  return { BaseMenu };
+});
+
+import { AudioSettingsMenu } from '../../game/menu/audioSettingsMenu.js';
+
+describe('AudioSettingsMenu', () => {
+  let menu;
+  let game;
+
+  const addAudioEl = (id) => {
+    const el = document.createElement('audio');
+    el.id = id;
+    el.volume = 1;
+    document.body.appendChild(el);
+    return el;
+  };
+
+  const clearAudios = () => {
+    document.querySelectorAll('audio').forEach((n) => n.remove());
+  };
+
+  const makeGame = () => {
+    const menuSoundsMapping = {
+      soundtrack: 'menu_track',
+      mapOpening: 'map_open',
+      enemyLoreOpenBookSound: 'lore_open',
+      enemyLoreCloseBookSound: 'lore_close',
+      bookFlipBackwardSound: 'flip_back',
+      bookFlipForwardSound: 'flip_fwd',
+      enemyLoreSwitchTabSound: 'lore_tab',
+      optionSelectedSound: 'opt_sel',
+      optionHoveredSound: 'opt_hov',
+    };
+
+    const cutsceneMusicMapping = { cm1: 'cut_music_1' };
+    const cutsceneSFXMapping = { cs1: 'cut_sfx_1' };
+    const cutsceneDialogueMapping = { cd1: 'cut_dia_1' };
+
+    const mapSoundtrackMapping = { igm1: 'ingame_music_1' };
+    const enemySFXMapping = { es1: 'enemy_sfx_1' };
+    const firedogSFXMapping = { fs1: 'firedog_sfx_1' };
+    const collisionSFXMapping = { col1: 'collision_sfx_1' };
+    const powerUpDownMapping = { pu1: 'power_sfx_1' };
+
+    const g = {
+      width: 1920,
+      height: 689,
+      canvas: {
+        width: 1920,
+        height: 689,
+        getBoundingClientRect: () => ({ left: 0, top: 0, width: 640, height: 480 }),
+      },
+
+      canSelect: true,
+      canSelectForestMap: true,
+
+      isPlayerInGame: true,
+      currentMenu: null,
+
+      menu: {
+        pause: {
+          isPaused: false,
+          activateMenu: jest.fn(),
+        },
+        settings: {
+          activateMenu: jest.fn(),
+        },
+      },
+
+      saveGameState: jest.fn(),
+
+      audioHandler: {
+        menu: {
+          soundsMapping: menuSoundsMapping,
+          getSoundsMapping: jest.fn(() => ({ ...menuSoundsMapping })),
+          playSound: jest.fn(),
+        },
+        cutsceneMusic: { getSoundsMapping: jest.fn(() => ({ ...cutsceneMusicMapping })) },
+        cutsceneSFX: { getSoundsMapping: jest.fn(() => ({ ...cutsceneSFXMapping })) },
+        cutsceneDialogue: { getSoundsMapping: jest.fn(() => ({ ...cutsceneDialogueMapping })) },
+
+        mapSoundtrack: { getSoundsMapping: jest.fn(() => ({ ...mapSoundtrackMapping })) },
+        enemySFX: { getSoundsMapping: jest.fn(() => ({ ...enemySFXMapping })) },
+        firedogSFX: { getSoundsMapping: jest.fn(() => ({ ...firedogSFXMapping })) },
+        collisionSFX: { getSoundsMapping: jest.fn(() => ({ ...collisionSFXMapping })) },
+        powerUpAndDownSFX: { getSoundsMapping: jest.fn(() => ({ ...powerUpDownMapping })) },
+      },
+    };
+
+    return g;
+  };
+
+  const addAllAudioEls = () => {
+    [
+      // menu
+      'menu_track',
+      'map_open',
+      'lore_open',
+      'lore_close',
+      'flip_back',
+      'flip_fwd',
+      'lore_tab',
+      'opt_sel',
+      'opt_hov',
+      // cutscene
+      'cut_music_1',
+      'cut_sfx_1',
+      'cut_dia_1',
+      // ingame
+      'ingame_music_1',
+      'enemy_sfx_1',
+      'firedog_sfx_1',
+      'collision_sfx_1',
+      'power_sfx_1',
+    ].forEach(addAudioEl);
+  };
+
+  const clientFromCanvas = (x, y) => {
+    const rect = game.canvas.getBoundingClientRect();
+    return {
+      clientX: rect.left + (x / game.canvas.width) * rect.width,
+      clientY: rect.top + (y / game.canvas.height) * rect.height,
+    };
+  };
+
+  const setInteractable = (enabled) => {
+    menu.menuActive = enabled;
+    game.canSelect = enabled;
+    game.canSelectForestMap = enabled;
+  };
+
+  beforeAll(() => {
+    document.body.innerHTML = `<img id="mainmenubackground" />`;
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    clearAudios();
+    addAllAudioEls();
+
+    game = makeGame();
+    menu = new AudioSettingsMenu(game);
+    menu.activateMenu();
+  });
+
+  describe('construction & defaults', () => {
+    test('initializes tabs, defaults to MENU tab, and header row is selected on activateMenu()', () => {
+      expect(menu.title).toBe('Audio Settings');
+
+      expect(menu.tabs).toEqual(['MENU', 'CUTSCENE', 'INGAME']);
+      expect(menu.activeTab).toBe('MENU');
+
+      expect(menu.menuOptions).toEqual([
+        'Menu Master Volume',
+        'Menu Music',
+        'Map SFX',
+        'Option Selected',
+        'Go Back',
+      ]);
+      expect(menu.volumeLevels).toEqual([50, 50, 50, 50, null]);
+
+      expect(menu.headerSelectionIndex).toBe(-1);
+      expect(menu.selectedOption).toBe(-1);
+      expect(menu.isHeaderSelected()).toBe(true);
+    });
+
+    test('setTab falls back to MENU for unknown tab keys', () => {
+      menu.setTab('NOT_A_REAL_TAB');
+      expect(menu.activeTab).toBe('MENU');
+    });
+
+    test('_displayTabLabel formats INGAME as IN-GAME and leaves others unchanged', () => {
+      expect(menu._displayTabLabel('MENU')).toBe('MENU');
+      expect(menu._displayTabLabel('CUTSCENE')).toBe('CUTSCENE');
+      expect(menu._displayTabLabel('INGAME')).toBe('IN-GAME');
+    });
+  });
+
+  // activateMenu() branching
+  describe('activateMenu() in-game detection and options', () => {
+    test('when game is paused in-game, activateMenu() chooses INGAME tab and hides stars sticker', () => {
+      game.menu.pause.isPaused = true;
+      game.isPlayerInGame = true;
+
+      menu.activateMenu();
+
+      expect(menu.menuInGame).toBe(true);
+      expect(menu.showStarsSticker).toBe(false);
+      expect(menu.activeTab).toBe('INGAME');
+      expect(menu.selectedOption).toBe(menu.headerSelectionIndex);
+    });
+
+    test('opts.inGame overrides pause detection', () => {
+      game.menu.pause.isPaused = true;
+      game.isPlayerInGame = true;
+
+      menu.activateMenu({ inGame: false });
+
+      expect(menu.menuInGame).toBe(false);
+      expect(menu.activeTab).toBe('MENU');
+    });
+
+    test('opts.selectedOption is accepted but selection is clamped into header range', () => {
+      menu.activateMenu({ selectedOption: 2 });
+      expect(menu.selectedOption).toBe(menu.headerSelectionIndex);
+    });
+  });
+
+  // tab swapping & selection rules
+  describe('tab swapping & selection rules', () => {
+    test('setTab swaps menuOptions and volumeLevels for CUTSCENE and INGAME', () => {
+      menu.setTab('CUTSCENE');
+      expect(menu.activeTab).toBe('CUTSCENE');
+      expect(menu.menuOptions).toEqual([
+        'Cutscene Master Volume',
+        'Cutscene Music',
+        'Cutscene SFX',
+        'Cutscene Dialogue',
+        'Go Back',
+      ]);
+      expect(menu.volumeLevels).toEqual([50, 50, 50, 50, null]);
+
+      menu.setTab('INGAME');
+      expect(menu.activeTab).toBe('INGAME');
+      expect(menu.menuOptions).toEqual([
+        'In-Game Master Volume',
+        'Map Music',
+        'Firedog SFX',
+        'Enemy SFX',
+        'Collision SFX',
+        'Power Up/Down SFX',
+        'Go Back',
+      ]);
+      expect(menu.volumeLevels).toEqual([50, 50, 50, 50, 50, 50, null]);
+    });
+
+    test('clampSelection clamps selectedOption into [headerSelectionIndex, lastIndex]', () => {
+      menu.setTab('MENU');
+      menu.selectedOption = 999;
+      menu.clampSelection();
+      expect(menu.selectedOption).toBe(menu.menuOptions.length - 1);
+
+      menu.selectedOption = -999;
+      menu.clampSelection();
+      expect(menu.selectedOption).toBe(menu.headerSelectionIndex);
+    });
+
+    test('navigateVertical moves between header and items with wrap rules', () => {
+      menu.setTab('MENU');
+
+      menu.selectedOption = -1;
+      menu.navigateVertical(1);
+      expect(menu.selectedOption).toBe(0);
+
+      menu.navigateVertical(-1);
+      expect(menu.selectedOption).toBe(-1);
+
+      menu.navigateVertical(-1);
+      expect(menu.selectedOption).toBe(menu.menuOptions.length - 1);
+
+      menu.navigateVertical(1);
+      expect(menu.selectedOption).toBe(-1);
+    });
+  });
+
+  // audio map build + volume propagation
+  describe('audio map building and volume updates', () => {
+    test('_buildAudioMaps creates expected MENU mappings', () => {
+      const map = menu.tabData.MENU.audioMap;
+
+      expect(map['Menu Master Volume']).toEqual({ ...game.audioHandler.menu.getSoundsMapping() });
+      expect(map['Menu Music']).toBe(game.audioHandler.menu.soundsMapping.soundtrack);
+
+      expect(map['Map SFX']).toEqual([
+        game.audioHandler.menu.soundsMapping.mapOpening,
+        game.audioHandler.menu.soundsMapping.enemyLoreOpenBookSound,
+        game.audioHandler.menu.soundsMapping.enemyLoreCloseBookSound,
+        game.audioHandler.menu.soundsMapping.bookFlipBackwardSound,
+        game.audioHandler.menu.soundsMapping.bookFlipForwardSound,
+        game.audioHandler.menu.soundsMapping.enemyLoreSwitchTabSound,
+      ]);
+
+      expect(map['Option Selected']).toEqual([
+        game.audioHandler.menu.soundsMapping.optionSelectedSound,
+        game.audioHandler.menu.soundsMapping.optionHoveredSound,
+      ]);
+    });
+
+    test('updateAudioVolume supports string id, array of ids, and object-map ids', () => {
+      menu.setTab('MENU');
+
+      menu.volumeLevels[0] = 50;
+      menu.volumeLevels[1] = 50;
+
+      menu.updateAudioVolume(menu.audioMap['Menu Music'], 1);
+      expect(document.getElementById('menu_track').volume).toBeCloseTo(0.25, 5);
+
+      menu.volumeLevels[2] = 80;
+      menu.updateAudioVolume(menu.audioMap['Map SFX'], 2);
+      expect(document.getElementById('map_open').volume).toBeCloseTo(0.4, 5);
+      expect(document.getElementById('lore_open').volume).toBeCloseTo(0.4, 5);
+
+      menu.volumeLevels[0] = 30;
+      menu.updateAudioVolume(menu.audioMap['Menu Master Volume'], 0);
+
+      expect(document.getElementById('menu_track').volume).toBeCloseTo(0.15, 5);
+    });
+
+    test('updateSingleAudioVolume logs an error if element is missing (no throw)', () => {
+      menu.setTab('MENU');
+      const spy = jest.spyOn(console, 'error').mockImplementation(() => { });
+      expect(() => menu.updateSingleAudioVolume('missing_audio_id', 1)).not.toThrow();
+      expect(spy).toHaveBeenCalled();
+      spy.mockRestore();
+    });
+  });
+
+  // geometry & hit-testing
+  describe('geometry and hit-testing', () => {
+    test('getSliderRect nudges Go Back row down (because volumeLevels[i] is null)', () => {
+      menu.setTab('MENU');
+      const goBackIdx = menu.menuOptions.indexOf('Go Back');
+
+      const prevIdx = goBackIdx - 1;
+
+      const a = menu.getSliderRect(prevIdx);
+      const b = menu.getSliderRect(goBackIdx);
+
+      expect(b.y).toBeGreaterThan(a.y);
+    });
+
+    test('hitTestOptionIndex returns the correct row index or null', () => {
+      menu.setTab('MENU');
+      setInteractable(true);
+
+      const r1 = menu.getOptionRowRect(1);
+      const hit = menu.hitTestOptionIndex(r1.x + r1.w / 2, r1.y + r1.h / 2);
+      expect(hit).toBe(1);
+
+      expect(menu.hitTestOptionIndex(-999, -999)).toBeNull();
+    });
+  });
+
+  // input gating (_canInteract)
+  describe('input gating via _canInteract()', () => {
+    test.each([
+      ['menu inactive', () => { menu.menuActive = false; }],
+      ['canSelect false', () => { game.canSelect = false; }],
+      ['canSelectForestMap false', () => { game.canSelectForestMap = false; }],
+    ])('ignores key/mouse actions when %s', (_label, tweak) => {
+      tweak();
+
+      const prevTab = menu.activeTab;
+      const prevSel = menu.selectedOption;
+
+      menu.handleKeyDown({ key: 'ArrowDown' });
+      menu.handleMouseMove({ clientX: 10, clientY: 10 });
+      menu.handleMouseClick({ clientX: 10, clientY: 10 });
+
+      expect(menu.activeTab).toBe(prevTab);
+      expect(menu.selectedOption).toBe(prevSel);
+      expect(game.audioHandler.menu.playSound).not.toHaveBeenCalled();
+    });
+  });
+
+  // keyboard
+  describe('keyboard input (handleKeyDown)', () => {
+    test('keys 1/2/3 switch tabs', () => {
+      menu.handleKeyDown({ key: '2' });
+      expect(menu.activeTab).toBe('CUTSCENE');
+
+      menu.handleKeyDown({ key: '3' });
+      expect(menu.activeTab).toBe('INGAME');
+
+      menu.handleKeyDown({ key: '1' });
+      expect(menu.activeTab).toBe('MENU');
+    });
+
+    test('ArrowLeft/ArrowRight on header cycles tabs and plays hover sound', () => {
+      expect(menu.isHeaderSelected()).toBe(true);
+
+      menu.handleKeyDown({ key: 'ArrowRight' });
+      expect(menu.activeTab).toBe('CUTSCENE');
+
+      menu.handleKeyDown({ key: 'ArrowRight' });
+      expect(menu.activeTab).toBe('INGAME');
+
+      menu.handleKeyDown({ key: 'ArrowLeft' });
+      expect(menu.activeTab).toBe('CUTSCENE');
+
+      expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
+    });
+
+    test('ArrowDown/ArrowUp moves selection using navigateVertical and plays hover sound', () => {
+      menu.setTab('MENU');
+
+      menu.selectedOption = -1;
+      menu.handleKeyDown({ key: 'ArrowDown' });
+      expect(menu.selectedOption).toBe(0);
+      expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
+
+      game.audioHandler.menu.playSound.mockClear();
+
+      menu.handleKeyDown({ key: 'ArrowUp' });
+      expect(menu.selectedOption).toBe(-1);
+      expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
+    });
+
+    test('ArrowLeft/ArrowRight on a slider adjusts volume, updates audio, and saves', () => {
+      menu.setTab('MENU');
+      menu.selectedOption = 1;
+      menu.volumeLevels[0] = 50;
+      menu.volumeLevels[1] = 50;
+
+      game.saveGameState.mockClear();
+
+      menu.handleKeyDown({ key: 'ArrowRight', repeat: false });
+      expect(menu.volumeLevels[1]).toBe(51);
+      expect(game.saveGameState).toHaveBeenCalled();
+
+      menu.handleKeyDown({ key: 'ArrowRight', repeat: true });
+      expect(menu.volumeLevels[1]).toBe(53);
+    });
+
+    test('Enter on header plays select sound but does not call BaseMenu selection', () => {
+      menu.selectedOption = menu.headerSelectionIndex;
+      game.audioHandler.menu.playSound.mockClear();
+
+      menu.handleKeyDown({ key: 'Enter' });
+
+      expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionSelectedSound', false, true);
+    });
+  });
+
+  // mouse
+  describe('mouse input', () => {
+    test('mousemove selects hovered option row and plays hover sound (ignores tabs)', () => {
+      menu.setTab('MENU');
+      setInteractable(true);
+
+      const r = menu.getOptionRowRect(2);
+      const evt = clientFromCanvas(r.x + r.w / 2, r.y + r.h / 2);
+
+      menu.selectedOption = 0;
+      game.audioHandler.menu.playSound.mockClear();
+
+      menu.handleMouseMove(evt);
+
+      expect(menu.selectedOption).toBe(2);
+      expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
+    });
+
+    test('mousemove over a tab does not change selectedOption', () => {
+      setInteractable(true);
+      menu.selectedOption = 2;
+
+      const centerY = game.height / 2;
+      const titleY = centerY - menu.positionOffset;
+      const tabY = titleY + menu.tabOffsetY;
+      const tabSpacing = 260;
+      const startX = game.width / 2 - tabSpacing;
+      const cutsceneX = startX + tabSpacing;
+
+      const evt = clientFromCanvas(cutsceneX, tabY - 10);
+      menu.handleMouseMove(evt);
+
+      expect(menu.selectedOption).toBe(2);
+    });
+
+    test('mouse click on a tab switches tab, selects header, and plays select sound', () => {
+      setInteractable(true);
+
+      const centerY = game.height / 2;
+      const titleY = centerY - menu.positionOffset;
+      const tabY = titleY + menu.tabOffsetY;
+      const tabSpacing = 260;
+      const startX = game.width / 2 - tabSpacing;
+      const cutsceneX = startX + tabSpacing;
+
+      const evt = clientFromCanvas(cutsceneX, tabY - 10);
+
+      menu.handleMouseClick(evt);
+
+      expect(menu.activeTab).toBe('CUTSCENE');
+      expect(menu.selectedOption).toBe(menu.headerSelectionIndex);
+      expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionSelectedSound', false, true);
+    });
+
+    test('mouse click on a slider track sets volume based on mouseX, updates audio, and saves', () => {
+      menu.setTab('MENU');
+      setInteractable(true);
+
+      menu.selectedOption = 1;
+      menu.volumeLevels[0] = 100;
+      menu.volumeLevels[1] = 0;
+
+      const { x, y, w, h } = menu.getSliderRect(1);
+
+      const clickX = x + w * 0.75;
+      const clickY = y + h / 2;
+
+      const evt = clientFromCanvas(clickX, clickY);
+
+      game.saveGameState.mockClear();
+
+      menu.handleMouseClick(evt);
+
+      expect(menu.volumeLevels[1]).toBe(75);
+      expect(game.saveGameState).toHaveBeenCalled();
+    });
+
+    test('mouse click is ignored while draggingSliderActive is true', () => {
+      menu.setTab('MENU');
+      setInteractable(true);
+
+      menu.draggingSliderActive = true;
+
+      const spy = jest.spyOn(menu, 'handleMenuSelection');
+      menu.handleMouseClick({ clientX: 10, clientY: 10 });
+
+      expect(spy).not.toHaveBeenCalled();
+      spy.mockRestore();
+    });
+
+    test('mouse wheel on header cycles tabs; mouse wheel on slider adjusts volume and saves', () => {
+      setInteractable(true);
+
+      menu.selectedOption = menu.headerSelectionIndex;
+      menu.handleMouseWheel({ deltaY: 100 });
+      expect(menu.activeTab).toBe('CUTSCENE');
+
+      menu.setTab('MENU');
+      menu.selectedOption = 1;
+      menu.volumeLevels[1] = 50;
+
+      game.saveGameState.mockClear();
+
+      menu.handleMouseWheel({ deltaY: 100, repeat: false });
+      expect(menu.volumeLevels[1]).toBe(49);
+      expect(game.saveGameState).toHaveBeenCalled();
+
+      menu.selectedOption = menu.menuOptions.length - 1;
+      const prev = [...menu.volumeLevels];
+      menu.handleMouseWheel({ deltaY: 100 });
+      expect(menu.volumeLevels).toEqual(prev);
+    });
+  });
+
+  // slider dragging
+  describe('slider drag flow', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    test('mousedown on slider handle begins dragging; mousemove updates value; mouseup ends drag', () => {
+      menu.setTab('MENU');
+      setInteractable(true);
+
+      menu.selectedOption = 1;
+      menu.volumeLevels[0] = 100;
+      menu.volumeLevels[1] = 50;
+
+      const { x: sx, y: sy, w: sw, h: sh } = menu.getSliderRect(1);
+      const handleR = sh / 2;
+      const handleX = sx + (sw - 2 * handleR) * (menu.volumeLevels[1] / 100);
+
+      const downEvt = clientFromCanvas(handleX + handleR, sy + sh / 2);
+      menu.handleMouseDown(downEvt);
+
+      expect(menu.draggingSlider).toBe(true);
+      expect(menu.draggingSliderIndex).toBe(1);
+
+      const dragX = sx + sw * 0.9;
+      const dragEvt = clientFromCanvas(dragX, sy + sh / 2);
+
+      game.saveGameState.mockClear();
+      menu.handleMouseDrag(dragEvt);
+
+      expect(menu.draggingSliderActive).toBe(true);
+      expect(menu.volumeLevels[1]).toBeGreaterThanOrEqual(85);
+      expect(game.saveGameState).toHaveBeenCalled();
+
+      menu.handleMouseUp();
+      expect(menu.draggingSlider).toBe(false);
+      expect(menu.draggingSliderIndex).toBe(-1);
+
+      expect(menu.draggingSliderActive).toBe(true);
+      jest.advanceTimersByTime(11);
+      expect(menu.draggingSliderActive).toBe(false);
+    });
+
+    test('mousedown does nothing when header is selected', () => {
+      menu.setTab('MENU');
+      setInteractable(true);
+
+      menu.selectedOption = menu.headerSelectionIndex;
+
+      const spy = jest.spyOn(menu, 'getSliderRect');
+      menu.handleMouseDown({ clientX: 10, clientY: 10 });
+
+      expect(menu.draggingSlider).toBe(false);
+      expect(spy).not.toHaveBeenCalled();
+
+      spy.mockRestore();
+    });
+  });
+
+  // go back
+  describe('handleMenuSelection: Go Back routing', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    test('out-of-game Go Back: activates settings(0) and sets canPressNow true', () => {
+      menu.menuInGame = false;
+      menu.setTab('MENU');
+
+      const idx = menu.menuOptions.indexOf('Go Back');
+      menu.selectedOption = idx;
+
+      menu.canPressNow = false;
+      menu.handleMenuSelection();
+
+      expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionSelectedSound', false, true);
+      expect(game.menu.settings.activateMenu).toHaveBeenCalledWith(0);
+      expect(menu.canPressNow).toBe(true);
+    });
+
+    test('in-game Go Back: activates pause(2), sets canPressNow false then true after delayedEnablePress()', () => {
+      menu.menuInGame = true;
+      menu.setTab('INGAME');
+
+      const idx = menu.menuOptions.indexOf('Go Back');
+      menu.selectedOption = idx;
+
+      menu.canPressNow = true;
+      menu.handleMenuSelection();
+
+      expect(game.menu.pause.activateMenu).toHaveBeenCalledWith(2);
+      expect(menu.canPressNow).toBe(false);
+
+      jest.advanceTimersByTime(11);
+      expect(menu.canPressNow).toBe(true);
+    });
+
+    test('non-Go Back selection still calls super.handleMenuSelection (plays select sound) and does not navigate', () => {
+      menu.setTab('MENU');
+      menu.selectedOption = 1;
+
+      game.menu.settings.activateMenu.mockClear();
+      game.menu.pause.activateMenu.mockClear();
+
+      menu.handleMenuSelection();
+
+      expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionSelectedSound', false, true);
+      expect(game.menu.settings.activateMenu).not.toHaveBeenCalled();
+      expect(game.menu.pause.activateMenu).not.toHaveBeenCalled();
+    });
+  });
+
+  // persistence (getState/setState)
+  describe('persistence (getState/setState)', () => {
+    test('getState returns per-tab volume arrays; setState applies them and reapplies audio volumes', () => {
+      menu.setTab('MENU');
+      menu.volumeLevels[0] = 20;
+      menu.volumeLevels[1] = 80;
+
+      menu.setTab('CUTSCENE');
+      menu.volumeLevels[0] = 40;
+      menu.volumeLevels[1] = 10;
+
+      menu.setTab('INGAME');
+      menu.volumeLevels[0] = 60;
+      menu.volumeLevels[1] = 50;
+
+      const state = menu.getState();
+
+      const menu2 = new AudioSettingsMenu(game);
+      menu2.activateMenu();
+      menu2.setState(state);
+
+      expect(menu2.tabData.MENU.volumeLevels[0]).toBe(20);
+      expect(menu2.tabData.MENU.volumeLevels[1]).toBe(80);
+
+      expect(menu2.tabData.CUTSCENE.volumeLevels[0]).toBe(40);
+      expect(menu2.tabData.CUTSCENE.volumeLevels[1]).toBe(10);
+
+      expect(menu2.tabData.INGAME.volumeLevels[0]).toBe(60);
+      expect(menu2.tabData.INGAME.volumeLevels[1]).toBe(50);
+
+      expect(menu2.activeTab).toBe('MENU');
+
+      expect(document.getElementById('menu_track').volume).toBeCloseTo(0.16, 5);
+    });
+
+    test('setState tolerates missing/partial tabData', () => {
+      const menu2 = new AudioSettingsMenu(game);
+      menu2.activateMenu();
+
+      expect(() => menu2.setState({ tabData: { MENU: { volumeLevels: [1, 2, 3, 4, null] } } })).not.toThrow();
+      expect(menu2.tabData.MENU.volumeLevels[0]).toBe(1);
+    });
+  });
+});

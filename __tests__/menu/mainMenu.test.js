@@ -58,7 +58,9 @@ describe('MainMenu', () => {
         deleteProgress2: { showSavingSprite: false },
         pause: { isPaused: false },
       },
+
       currentMenu: null,
+
       saveGameState: jest.fn(),
       canvas: {
         width: 1920,
@@ -81,13 +83,12 @@ describe('MainMenu', () => {
     };
 
     menu = new MainMenu(mockGame);
-    menu.activateMenu();
 
     jest.clearAllMocks();
   });
 
   describe('constructor and initial state', () => {
-    it('initializes with the correct title, options and offsets', () => {
+    test('initializes title, options, offsets, and saving flags', () => {
       expect(menu.title).toBe('Main Menu');
       expect(menu.menuOptions).toEqual(['Play', 'Skins', 'Records', 'How to Play', 'Settings', 'Exit']);
       expect(menu.positionOffset).toBe(220);
@@ -97,74 +98,64 @@ describe('MainMenu', () => {
   });
 
   describe('handleMenuSelection()', () => {
-    const selectOptionAndHandle = (index) => {
+    const selectAndRun = (index) => {
       menu.selectedOption = index;
       menu.handleMenuSelection();
     };
 
-    it('always plays optionSelectedSound first when canSelect=true', () => {
-      mockGame.audioHandler.menu.playSound.mockClear();
-      selectOptionAndHandle(0);
+    test('when canSelect=true, plays optionSelectedSound first', () => {
+      selectAndRun(0);
       expect(mockGame.audioHandler.menu.playSound.mock.calls[0])
         .toEqual(['optionSelectedSound', false, true]);
     });
 
-    it('navigates to ForestMap when "Play" is selected', () => {
-      selectOptionAndHandle(0);
+    test('"Play" plays mapOpening and activates forestMap', () => {
+      selectAndRun(0);
       expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('mapOpening');
-      expect(mockGame.currentMenu).toBe(mockGame.menu.forestMap);
       expect(mockGame.menu.forestMap.activateMenu).toHaveBeenCalled();
     });
 
-    it('activates Skins submenu when "Skins" is selected', () => {
-      selectOptionAndHandle(1);
-      expect(mockGame.currentMenu).toBe(mockGame.menu.skins);
-      expect(mockGame.menu.skins.activateMenu).toHaveBeenCalledWith();
+    test('"Skins" activates skins menu', () => {
+      selectAndRun(1);
+      expect(mockGame.menu.skins.activateMenu).toHaveBeenCalled();
     });
 
-    it('activates Records submenu when "Records" is selected', () => {
-      selectOptionAndHandle(2);
-      expect(mockGame.currentMenu).toBe(mockGame.menu.records);
-      expect(mockGame.menu.records.activateMenu).toHaveBeenCalledWith();
+    test('"Records" activates records menu', () => {
+      selectAndRun(2);
+      expect(mockGame.menu.records.activateMenu).toHaveBeenCalled();
     });
 
-    it('activates How to Play submenu when "How to Play" is selected', () => {
-      selectOptionAndHandle(3);
-      expect(mockGame.currentMenu).toBe(mockGame.menu.howToPlay);
-      expect(mockGame.menu.howToPlay.activateMenu).toHaveBeenCalledWith();
+    test('"How to Play" activates howToPlay menu', () => {
+      selectAndRun(3);
+      expect(mockGame.menu.howToPlay.activateMenu).toHaveBeenCalled();
     });
 
-    it('activates Settings submenu when "Settings" is selected', () => {
-      selectOptionAndHandle(4);
-      expect(mockGame.currentMenu).toBe(mockGame.menu.settings);
-      expect(mockGame.menu.settings.activateMenu).toHaveBeenCalledWith();
+    test('"Settings" activates settings menu', () => {
+      selectAndRun(4);
+      expect(mockGame.menu.settings.activateMenu).toHaveBeenCalled();
     });
 
-    it('calls quitApp when "Exit" is selected', () => {
-      selectOptionAndHandle(5);
+    test('"Exit" calls electron quitApp', () => {
+      selectAndRun(5);
       expect(window.electronAPI.quitApp).toHaveBeenCalled();
     });
 
-    it('does nothing when canSelect is false', () => {
+    test('when canSelect=false, does nothing (no sounds, no navigation, no quit)', () => {
       mockGame.canSelect = false;
-      mockGame.audioHandler.menu.playSound.mockClear();
-      mockGame.menu.forestMap.activateMenu.mockClear();
 
-      const beforeMenu = mockGame.currentMenu;
-
-      menu.selectedOption = 0;
-      menu.handleMenuSelection();
+      selectAndRun(0);
 
       expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalled();
-      expect(mockGame.currentMenu).toBe(beforeMenu);
       expect(mockGame.menu.forestMap.activateMenu).not.toHaveBeenCalled();
+      expect(window.electronAPI.quitApp).not.toHaveBeenCalled();
     });
   });
 
   describe('update()', () => {
-    it('prefers deleteProgress animations when both flags are true', () => {
+    test('prefers deleteProgress animations when both flags are true', () => {
       mockGame.menu.deleteProgress2.showSavingSprite = true;
       menu.showSavingSprite = true;
+
       menu.update(42);
 
       expect(menu.deleteProgressAnimation.update).toHaveBeenCalledWith(42);
@@ -173,40 +164,48 @@ describe('MainMenu', () => {
       expect(menu.savingBookAnimation.update).not.toHaveBeenCalled();
     });
 
-    it('runs deleteProgress animations when only deleteProgress2.showSavingSprite is true', () => {
+    test('runs deleteProgress animations when only deleteProgress2.showSavingSprite is true', () => {
       mockGame.menu.deleteProgress2.showSavingSprite = true;
       menu.showSavingSprite = false;
+
       menu.update(123);
 
       expect(menu.deleteProgressAnimation.update).toHaveBeenCalledWith(123);
       expect(menu.deleteProgressBookAnimation.update).toHaveBeenCalledWith(123);
       expect(menu.savingAnimation.update).not.toHaveBeenCalled();
+      expect(menu.savingBookAnimation.update).not.toHaveBeenCalled();
     });
 
-    it('runs saving animations when only showSavingSprite is true', () => {
-      menu.showSavingSprite = true;
+    test('runs saving animations when only showSavingSprite is true', () => {
       mockGame.menu.deleteProgress2.showSavingSprite = false;
+      menu.showSavingSprite = true;
+
       menu.update(456);
 
       expect(menu.savingAnimation.update).toHaveBeenCalledWith(456);
       expect(menu.savingBookAnimation.update).toHaveBeenCalledWith(456);
       expect(menu.deleteProgressAnimation.update).not.toHaveBeenCalled();
+      expect(menu.deleteProgressBookAnimation.update).not.toHaveBeenCalled();
     });
 
-    it('runs neither set of animations when both flags are false', () => {
-      menu.showSavingSprite = false;
+    test('runs no animations when both flags are false', () => {
       mockGame.menu.deleteProgress2.showSavingSprite = false;
+      menu.showSavingSprite = false;
+
       menu.update(789);
 
       expect(menu.savingAnimation.update).not.toHaveBeenCalled();
+      expect(menu.savingBookAnimation.update).not.toHaveBeenCalled();
       expect(menu.deleteProgressAnimation.update).not.toHaveBeenCalled();
+      expect(menu.deleteProgressBookAnimation.update).not.toHaveBeenCalled();
     });
   });
 
   describe('draw()', () => {
-    it('draws both deleteProgress and saving animations when both flags are true', () => {
+    test('draws both deleteProgress and saving animations when both flags are true', () => {
       mockGame.menu.deleteProgress2.showSavingSprite = true;
       menu.showSavingSprite = true;
+
       menu.draw(ctx);
 
       expect(menu.deleteProgressAnimation.draw).toHaveBeenCalledWith(ctx);
@@ -215,33 +214,40 @@ describe('MainMenu', () => {
       expect(menu.savingBookAnimation.draw).toHaveBeenCalledWith(ctx);
     });
 
-    it('draws deleteProgress animations when only deleteProgress2.showSavingSprite is true', () => {
+    test('draws deleteProgress animations when only deleteProgress2.showSavingSprite is true', () => {
       mockGame.menu.deleteProgress2.showSavingSprite = true;
       menu.showSavingSprite = false;
+
       menu.draw(ctx);
 
       expect(menu.deleteProgressAnimation.draw).toHaveBeenCalledWith(ctx);
       expect(menu.deleteProgressBookAnimation.draw).toHaveBeenCalledWith(ctx);
       expect(menu.savingAnimation.draw).not.toHaveBeenCalled();
+      expect(menu.savingBookAnimation.draw).not.toHaveBeenCalled();
     });
 
-    it('draws saving animations when only showSavingSprite is true', () => {
-      menu.showSavingSprite = true;
+    test('draws saving animations when only showSavingSprite is true', () => {
       mockGame.menu.deleteProgress2.showSavingSprite = false;
+      menu.showSavingSprite = true;
+
       menu.draw(ctx);
 
       expect(menu.savingAnimation.draw).toHaveBeenCalledWith(ctx);
       expect(menu.savingBookAnimation.draw).toHaveBeenCalledWith(ctx);
       expect(menu.deleteProgressAnimation.draw).not.toHaveBeenCalled();
+      expect(menu.deleteProgressBookAnimation.draw).not.toHaveBeenCalled();
     });
 
-    it('draws neither set of animations when both flags are false', () => {
-      menu.showSavingSprite = false;
+    test('draws no animations when both flags are false', () => {
       mockGame.menu.deleteProgress2.showSavingSprite = false;
+      menu.showSavingSprite = false;
+
       menu.draw(ctx);
 
       expect(menu.savingAnimation.draw).not.toHaveBeenCalled();
+      expect(menu.savingBookAnimation.draw).not.toHaveBeenCalled();
       expect(menu.deleteProgressAnimation.draw).not.toHaveBeenCalled();
+      expect(menu.deleteProgressBookAnimation.draw).not.toHaveBeenCalled();
     });
   });
 });

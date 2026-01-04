@@ -34,6 +34,11 @@ describe('LevelDifficultyMenu', () => {
         mockGame = {
             lives: null,
             selectedDifficulty: null,
+
+            UI: {
+                syncLivesState: jest.fn(),
+            },
+
             menu: {
                 main: { activateMenu: jest.fn() },
                 settings: { activateMenu: jest.fn() },
@@ -73,26 +78,38 @@ describe('LevelDifficultyMenu', () => {
             ['Hard', 3, 3],
             ['Extreme', 4, 1],
         ])('setDifficulty("%s") updates index, lives and labels correctly', (name, idx, lives) => {
+            mockGame.UI.syncLivesState.mockClear();
+
             menu.setDifficulty(name);
+
             expectState({
                 idx,
                 lives,
                 selectedDifficulty: name,
                 expectedLabels: labels(idx),
             });
+
+            expect(mockGame.UI.syncLivesState).toHaveBeenCalledTimes(1);
         });
 
         it('defaults unknown difficulty to Normal (but preserves the string on the game)', () => {
+            mockGame.UI.syncLivesState.mockClear();
+
             menu.setDifficulty('Impossible');
+
             expectState({
                 idx: 2,
                 lives: 5,
                 selectedDifficulty: 'Impossible',
                 expectedLabels: labels(2),
             });
+
+            expect(mockGame.UI.syncLivesState).toHaveBeenCalledTimes(1);
         });
 
         it('falls back to Normal if you pass null/undefined', () => {
+            mockGame.UI.syncLivesState.mockClear();
+
             menu.setDifficulty(undefined);
             expectState({
                 idx: 2,
@@ -107,6 +124,27 @@ describe('LevelDifficultyMenu', () => {
                 lives: 5,
                 expectedLabels: labels(2),
             });
+
+            expect(mockGame.UI.syncLivesState).toHaveBeenCalledTimes(2);
+        });
+
+        it('does not call UI.syncLivesState when triggerUISync=false', () => {
+            mockGame.UI.syncLivesState.mockClear();
+
+            menu.setDifficulty('Hard', false);
+
+            expect(menu.selectedDifficultyIndex).toBe(3);
+            expect(mockGame.lives).toBe(3);
+            expect(mockGame.selectedDifficulty).toBe('Hard');
+            expect(mockGame.UI.syncLivesState).not.toHaveBeenCalled();
+        });
+
+        it('calls UI.syncLivesState by default when setDifficulty is called', () => {
+            mockGame.UI.syncLivesState.mockClear();
+
+            menu.setDifficulty('Hard');
+
+            expect(mockGame.UI.syncLivesState).toHaveBeenCalledTimes(1);
         });
     });
 

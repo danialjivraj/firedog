@@ -23,9 +23,13 @@ export class UI {
         this.uiLastRealTime = null;
 
         this.prevLives = this.game.lives;
+
         this.lifeBlinkIndex = -1;
         this.lifeBlinkEndTime = 0;
         this.lifeBlinkDuration = 400;
+
+        this.lifeGainDuration = 400;
+        this.lifeGainEndTimes = new Map();
     }
 
     getUiTime() {
@@ -44,6 +48,16 @@ export class UI {
         }
 
         return this.uiTime;
+    }
+
+    syncLivesState() {
+        const now = this.getUiTime();
+
+        this.prevLives = this.game.lives;
+
+        this.lifeBlinkIndex = -1;
+        this.lifeBlinkEndTime = now;
+        if (this.lifeGainEndTimes) this.lifeGainEndTimes.clear();
     }
 
     draw(context) {
@@ -72,24 +86,60 @@ export class UI {
         // lives
         const now = this.getUiTime();
 
-        if (this.game.lives < this.prevLives) {
-            this.lifeBlinkIndex = Math.max(0, this.prevLives - 1);
+        const prev = this.prevLives;
+        const curr = this.game.lives;
+
+        if (curr < prev) {
+            this.lifeBlinkIndex = Math.max(0, prev - 1);
             this.lifeBlinkEndTime = now + this.lifeBlinkDuration;
+
+            for (const idx of this.lifeGainEndTimes.keys()) {
+                if (idx >= curr) this.lifeGainEndTimes.delete(idx);
+            }
         }
-        this.prevLives = this.game.lives;
+
+        if (curr > prev) {
+            for (let i = prev; i < curr; i++) {
+                this.lifeGainEndTimes.set(i, now + this.lifeGainDuration);
+            }
+        }
+
+        this.prevLives = curr;
+
+        for (const [idx, endTime] of this.lifeGainEndTimes.entries()) {
+            if (now >= endTime || idx >= curr) {
+                this.lifeGainEndTimes.delete(idx);
+            }
+        }
+
+        let gainMaxIndex = -1;
+        for (const idx of this.lifeGainEndTimes.keys()) {
+            if (idx > gainMaxIndex) gainMaxIndex = idx;
+        }
 
         const heartsToDraw = Math.min(
             this.game.maxLives,
-            Math.max(this.game.lives, this.lifeBlinkIndex + 1)
+            Math.max(
+                curr,
+                this.lifeBlinkIndex + 1,
+                gainMaxIndex + 1
+            )
         );
 
         for (let i = 0; i < heartsToDraw; i++) {
             const baseX = 25 * i + 20;
             const baseY = 145;
+
             const isBlinkingLostHeart =
                 i === this.lifeBlinkIndex &&
                 now < this.lifeBlinkEndTime &&
-                i >= this.game.lives;
+                i >= curr;
+
+            const gainEndTime = this.lifeGainEndTimes.get(i);
+            const isGainingHeart =
+                gainEndTime != null &&
+                now < gainEndTime &&
+                i < curr;
 
             context.save();
 
@@ -106,8 +156,25 @@ export class UI {
                 context.shadowOffsetY = 0;
 
                 context.drawImage(this.livesImage, -12.5, -12.5, 25, 25);
-            } else if (i < this.game.lives) {
-                context.drawImage(this.livesImage, baseX, baseY, 25, 25);
+            } else if (i < curr) {
+                if (isGainingHeart) {
+                    const t = 1 - (gainEndTime - now) / this.lifeGainDuration;
+
+                    const pop = 1.35 - 0.35 * t;
+                    const pulse = 1 + 0.08 * Math.sin(t * Math.PI * 6);
+
+                    context.translate(baseX + 12.5, baseY + 12.5);
+                    context.scale(pop * pulse, pop * pulse);
+
+                    context.shadowColor = 'lime';
+                    context.shadowBlur = 18;
+                    context.shadowOffsetX = 0;
+                    context.shadowOffsetY = 0;
+
+                    context.drawImage(this.livesImage, -12.5, -12.5, 25, 25);
+                } else {
+                    context.drawImage(this.livesImage, baseX, baseY, 25, 25);
+                }
             }
 
             context.restore();

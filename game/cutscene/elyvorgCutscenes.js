@@ -111,7 +111,7 @@ export class ElyvorgCutscene extends Cutscene {
         this.handleKeyDown = (event) => {
             const boss = this.game.boss;
 
-            if (!this.game.menu.pause.isPaused && this.game.currentMenu !== this.game.menu.ingameAudioSettings) {
+            if (!this.game.menu.pause.isPaused && this.game.currentMenu !== this.game.menu.audioSettings) {
                 if (event.key === 'Tab' && this.game.enterDuringBackgroundTransition) {
                     if (boss && boss.current && boss.id === 'elyvorg' && boss.preFight) {
                         this.removeEventListeners();
@@ -144,7 +144,7 @@ export class ElyvorgCutscene extends Cutscene {
             if (!this.isEnterPressed &&
                 this.game.enterDuringBackgroundTransition &&
                 !this.game.menu.pause.isPaused &&
-                this.game.currentMenu !== this.game.menu.ingameAudioSettings) {
+                this.game.currentMenu !== this.game.menu.audioSettings) {
                 this.enterOrLeftClick();
             }
         };

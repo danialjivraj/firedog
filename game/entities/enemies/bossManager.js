@@ -17,8 +17,8 @@ const BOSS_CONFIG = {
         type: NTharax,
         gate: {
             mode: "coinsAndDistance",
-            minDistance: 110,
-            minCoins: 110,
+            minDistance: 100,
+            minCoins: 100,
         },
     },
     Map7: {

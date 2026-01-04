@@ -169,6 +169,29 @@ describe('UI', () => {
         });
     });
 
+    describe('syncLivesState()', () => {
+        it('resets life blink/gain state and sets prevLives to current game.lives', () => {
+            ui.prevLives = 99;
+            ui.lifeBlinkIndex = 1;
+            ui.lifeBlinkEndTime = 9999;
+            ui.lifeGainEndTimes.set(0, 123);
+            ui.lifeGainEndTimes.set(1, 456);
+
+            game.lives = 2;
+
+            const getUiTimeSpy = jest.spyOn(ui, 'getUiTime').mockReturnValue(5000);
+
+            ui.syncLivesState();
+
+            expect(ui.prevLives).toBe(2);
+            expect(ui.lifeBlinkIndex).toBe(-1);
+            expect(ui.lifeBlinkEndTime).toBe(5000);
+            expect(ui.lifeGainEndTimes.size).toBe(0);
+
+            getUiTimeSpy.mockRestore();
+        });
+    });
+
     describe('draw()', () => {
         it('renders top-level UI sections (coins, bars, timer, energy, lives, abilities)', () => {
             const spyDist = jest.spyOn(ui, 'distanceBar');
@@ -282,6 +305,25 @@ describe('UI', () => {
             ui.distanceBar(ctx);
             expect(ctx.fillStyle).toBe('orange');
             expect(ctx.fillRect).toHaveBeenCalled();
+        });
+
+        it('uses gate.minDistance as the distance target when provided', () => {
+            const spy = jest.spyOn(ui, 'progressBar');
+
+            game.bossInFight = false;
+            game.background.totalDistanceTraveled = 200;
+            game.maxDistance = 999;
+            game.bossManager = {
+                getGateForCurrentMap: jest.fn(() => ({
+                    minDistance: 400,
+                    minCoins: 0,
+                })),
+            };
+
+            ui.distanceBar(ctx);
+
+            const [, percentage] = spy.mock.calls[0];
+            expect(percentage).toBeCloseTo(50);
         });
     });
 

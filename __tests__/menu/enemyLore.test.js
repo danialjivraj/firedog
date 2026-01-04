@@ -202,25 +202,25 @@ describe('EnemyLore', () => {
         it('plays the flip sound when calling nextPage()', () => {
             menu.currentPage = 0;
             menu.nextPage();
-            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlip', false, true);
+            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlipForwardSound', false, true);
         });
 
         it('plays the flip sound when calling clickNextPage()', () => {
             menu.currentPage = 0;
             menu.clickNextPage();
-            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlip', false, true);
+            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlipForwardSound', false, true);
         });
 
         it('plays the flip sound when calling previousPage()', () => {
             menu.currentPage = 1;
             menu.previousPage();
-            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlip', false, true);
+            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlipBackwardSound', false, true);
         });
 
         it('plays the flip sound when calling clickPreviousPage()', () => {
             menu.currentPage = 2;
             menu.clickPreviousPage();
-            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlip', false, true);
+            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlipBackwardSound', false, true);
         });
     });
 
@@ -271,7 +271,7 @@ describe('EnemyLore', () => {
             mockGame.bonusMap1Unlocked = true;
             menu.setCategory('bonus');
 
-            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlip', false, true);
+            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('enemyLoreSwitchTabSound', false, true);
         });
 
         it('ignores invalid categories and same-category calls', () => {

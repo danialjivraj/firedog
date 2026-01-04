@@ -1,6 +1,7 @@
 import { Player } from "./entities/player.js";
 import { preShake, postShake } from './animations/shake.js';
 import { DistortionEffect } from "./animations/distortion.js";
+import { SpinningChicks } from "./animations/particles.js";
 import {
     Goblin,
     Dotter, Vertibat, Ghobat, Ravengloom, MeatSoldier, Skulnap, Abyssaw, GlidoSpike,
@@ -40,8 +41,7 @@ import { SettingsMenu } from "./menu/settingsMenu.js";
 import { ControlsSettingsMenu } from "./menu/controlsSettingsMenu.js";
 import { getDefaultKeyBindings } from "./config/keyBindings.js";
 // audios
-import { AudioSettingsMenu } from "./menu/audio/audioSettingsMenu.js";
-import { IngameAudioSettingsMenu } from "./menu/audio/ingameAudioSettingsMenu.js";
+import { AudioSettingsMenu } from "./menu/audioSettingsMenu.js";
 import {
     MenuAudioHandler, FiredogAudioHandler, EnemySFXAudioHandler, CollisionSFXAudioHandler, MapSoundtrackAudioHandler,
     PowerUpAndDownSFXAudioHandler, CutsceneMusicAudioHandler, CutsceneDialogueAudioHandler, CutsceneSFXAudioHandler
@@ -107,7 +107,6 @@ export class Game {
         this.invisibleColourOpacity = 0;
         this.gameOver = false;
         this.debug = false;
-
         // player/audio handlers/menus/etc classes and vars...
         this.player = new Player(this);
         this.player.currentState = this.player.states[0];
@@ -147,7 +146,6 @@ export class Game {
             settings: new SettingsMenu(this),
             audioSettings: new AudioSettingsMenu(this),
             controlsSettings: new ControlsSettingsMenu(this),
-            ingameAudioSettings: new IngameAudioSettingsMenu(this),
             deleteProgress: new DeleteProgress(this),
             deleteProgress2: new DeleteProgress2(this),
             pause: new PauseMenu(this),
@@ -396,329 +394,336 @@ export class Game {
         return this.bossManager.bossInFight;
     }
 
-update(deltaTime) {
-    if (
-        this.background &&
-        this.background.constructor &&
-        this.currentMap !== this.background.constructor.name
-    ) {
-        this.currentMap = this.background.constructor.name;
-    }
-
-    const tutorialMapActive =
-        this.isTutorialActive && this.currentMap === "Map1";
-    if (tutorialMapActive) {
-        this.tutorial.update(deltaTime);
-        this.noDamageDuringTutorial = true;
-    } else {
-        this.tutorial.tutorialPause = false;
-        this.noDamageDuringTutorial = false;
-    }
-
-    if (!this.menu.pause.isPaused && this.tutorial.tutorialPause === false) {
-        const fightActive = this.bossManager && this.bossManager.bossInFight;
-
-        if (fightActive && !this._bossFightWasActive) {
-            this.bossTime = 0;
-            this._bossDefeatRecorded = false;
-            this._bossFightWasActive = true;
-        }
-
-        if (fightActive && !this.gameOver) {
-            this.bossTime += deltaTime;
-        }
-
-        if (!fightActive && this._bossFightWasActive) {
-            this._bossFightWasActive = false;
-        }
-
-        if (this.cabin && this.cabin.isFullyVisible) {
-            if (!this._fullClearRecorded && this.hasMetWinningCoins()) {
-                this._fullClearRecorded = true;
-                this.updateBestFullClearRecord();
-            }
-        } else if (!this.gameOver) {
-            this.time += deltaTime;
-            if (this.time > this.maxTime && this.player.isUnderwater) this.gameOver = true;
-        } else {
-            this.speed = 0;
-        }
-
-        if (this.background) this.background.update(deltaTime);
-
-        if (!this.cabin || !this.cabin.isFullyVisible) {
-            // enemy
-            if (this.enemyTimer > this.enemyInterval) {
-                if (!tutorialMapActive) {
-                    this.addEnemy();
-                }
-                this.enemyTimer = 0;
-            } else {
-                this.enemyTimer += deltaTime;
-            }
-            // other entities
-            if (this.nonEnemyTimer > this.nonEnemyInterval) {
-                if (!tutorialMapActive) {
-                    this.addPowerUp();
-                    this.addPowerDown();
-                }
-                this.addCabin();
-                this.addPenguin();
-                this.nonEnemyTimer = 0;
-            } else {
-                this.nonEnemyTimer += deltaTime;
-            }
-        }
-
-        this.hiddenTime += deltaTime; // hiddenTime doesn't stop when player dies
-
-        if (this.shakeActive && this.shakeDuration > 0) {
-            this.shakeTimer += deltaTime;
-            if (this.shakeTimer >= this.shakeDuration) {
-                this.stopShake();
-            }
-        }
-
-        this.player.update(this.input.keys, deltaTime);
-        this.coins = Math.max(0, this.coins);
-
-        // handles certain audios where the sound doesn't stop until that type of enemy is not in enemy list
-        const enemyAudioMapping = [
-            { enemyType: WindAttack, audio: "tornadoAudio" },
-            { enemyType: Skulnap, audio: "fuseSound" },
-            { enemyType: SpidoLazer, audio: "spidoLazerWalking" },
-            { enemyType: Goblin, audio: "goblinRunSound" },
-            { enemyType: Ben, audio: "verticalGhostSound" },
-            { enemyType: JetFish, audio: "rocketLauncherSound" },
-            { enemyType: SpearFish, audio: "stepWaterSound" },
-            { enemyType: Dolly, audio: "dollHumming" },
-            { enemyType: Aura, audio: "auraSoundEffect" },
-            { enemyType: InkBomb, audio: "elyvorg_ink_bomb_sound" },
-            { enemyType: MeteorAttack, audio: "elyvorg_meteor_falling_sound" },
-        ];
-        enemyAudioMapping.forEach(({ enemyType, audio }) => {
-            if (
-                enemyType === MeteorAttack &&
-                !this.enemies.some((enemy) => enemy instanceof enemyType)
-            ) {
-                if (this.audioHandler.enemySFX.isPlaying(audio)) {
-                    this.audioHandler.enemySFX.fadeOutAndStop(audio, 2000);
-                }
-            } else {
-                if (
-                    !this.enemies.some((enemy) => enemy instanceof enemyType)
-                ) {
-                    this.audioHandler.enemySFX.stopSound(audio);
-                }
-            }
-        });
-
-        // handle power up
-        this.powerUps.forEach((powerUp) => {
-            powerUp.update(deltaTime);
-        });
-        // handle power down
-        this.powerDowns.forEach((powerDown) => {
-            powerDown.update(deltaTime);
-        });
-        // handle enemies
-        this.enemies.forEach((enemy) => {
-            enemy.update(deltaTime);
-        });
-        // handle messages
-        this.floatingMessages.forEach((message) => {
-            message.update();
-        });
-        // handle cabin
-        this.cabins.forEach((cabin) => {
-            cabin.update(deltaTime);
-        });
-        // handle penguin
-        this.penguins.forEach((penguin) => {
-            penguin.update(deltaTime);
-        });
-        // handle particles behind the player
-        this.behindPlayerParticles.forEach((behindPlayerParticle) => {
-            behindPlayerParticle.update();
-        });
-        // handle particles
-        this.particles.forEach((particle) => {
-            particle.update(deltaTime);
-        });
-        if (this.particles.length > this.maxParticles) {
-            this.particles.length = this.maxParticles;
-        }
-        // handle collision sprites
-        this.collisions.forEach((collision) => {
-            collision.update(deltaTime);
-        });
-        // removes marked entities
-        this.enemies = this.enemies.filter(
-            (enemy) => !enemy.markedForDeletion
-        );
-        this.powerUps = this.powerUps.filter(
-            (powerUp) => !powerUp.markedForDeletion
-        );
-        this.powerDowns = this.powerDowns.filter(
-            (powerDown) => !powerDown.markedForDeletion
-        );
-        this.behindPlayerParticles = this.behindPlayerParticles.filter(
-            (behindPlayerParticle) => !behindPlayerParticle.markedForDeletion
-        );
-        this.particles = this.particles.filter(
-            (particle) => !particle.markedForDeletion
-        );
-        this.collisions = this.collisions.filter(
-            (collision) => !collision.markedForDeletion
-        );
-        this.floatingMessages = this.floatingMessages.filter(
-            (message) => !message.markedForDeletion
-        );
-
-        // penguin cutscenes
-        if (
-            this.talkToPenguin &&
-            this.talkToPenguinOneTimeOnly &&
-            this.enterToTalkToPenguin
-        ) {
-            this.enterToTalkToPenguin = false;
-            const mapCutsceneMapping = {
-                Map1: Map1PenguinIngameCutscene,
-                Map2: Map2PenguinIngameCutscene,
-                Map3: Map3PenguinIngameCutscene,
-                Map4: Map4PenguinIngameCutscene,
-                Map5: Map5PenguinIngameCutscene,
-                Map6: Map6PenguinIngameCutscene,
-                Map7: Map7PenguinIngameCutscene,
-                BonusMap1: BonusMap1PenguinIngameCutscene,
-                BonusMap2: BonusMap2PenguinIngameCutscene,
-                BonusMap3: BonusMap3PenguinIngameCutscene,
-            };
-            const mapConstructor = mapCutsceneMapping[this.currentMap];
-            if (mapConstructor) {
-                const cutscene = new mapConstructor(this);
-                this.startCutscene(cutscene);
-                cutscene.displayDialogue();
-                this.cutscenes.push(cutscene);
-            }
-        }
-
-        // boss in-game cutscenes (before/after fight)
+    update(deltaTime) {
         if (
             this.background &&
-            this.hasActiveBoss &&
-            this.isBossVisible &&
-            this.player.x <= 0
+            this.background.constructor &&
+            this.currentMap !== this.background.constructor.name
         ) {
-            const boss = this.boss;
-
-            const configs = [
-                {
-                    mapClass: BonusMap1,
-                    bossId: "glacikal",
-                    beforeCutscene: BonusMap1GlacikalIngameCutsceneBeforeFight,
-                    afterCutscene: BonusMap1GlacikalIngameCutsceneAfterFight,
-                },
-                {
-                    mapClass: BonusMap3,
-                    bossId: "ntharax",
-                    beforeCutscene: BonusMap3NTharaxIngameCutsceneBeforeFight,
-                    afterCutscene: BonusMap3NTharaxIngameCutsceneAfterFight,
-                },
-                {
-                    mapClass: Map7,
-                    bossId: "elyvorg",
-                    beforeCutscene: Map7ElyvorgIngameCutsceneBeforeFight,
-                    afterCutscene: Map7ElyvorgIngameCutsceneAfterFight,
-                },
-            ];
-
-            for (const cfg of configs) {
-                if (!(this.background instanceof cfg.mapClass)) continue;
-                if (boss.id !== cfg.bossId) continue;
-
-                if (boss.dialogueBeforeOnce) {
-                    boss.preFight = true;
-                    boss.postFight = false;
-                    boss.dialogueBeforeOnce = false;
-
-                    this.player.energy = 100;
-                    this.player.isInvisible = false;
-                    this.player.invisibleTimer = this.player.invisibleCooldown;
-                    this.player.invisibleActiveCooldownTimer = 5000;
-                    this.menu.levelDifficulty.setDifficulty(this.selectedDifficulty);
-
-                    const cutscene = new cfg.beforeCutscene(this);
-                    this.startCutscene(cutscene);
-                    cutscene.displayDialogue();
-                    this.cutscenes.push(cutscene);
-                    break;
-                }
-
-                if (boss.dialogueAfterOnce && boss.startAfterDialogueWhenAnimEnds) {
-                    boss.preFight = false;
-                    boss.postFight = true;
-                    boss.dialogueAfterOnce = false;
-                    boss.dialogueAfterLeaving = true;
-
-                    this.player.energy = 100;
-
-                    const cutscene = new cfg.afterCutscene(this);
-                    this.startCutscene(cutscene);
-                    cutscene.displayDialogue();
-                    this.cutscenes.push(cutscene);
-                    break;
-                }
-            }
+            this.currentMap = this.background.constructor.name;
         }
 
-        // end cutscenes after each map
-        if (this.background instanceof Map3) {
-            this.enterCabin = 500;
-            this.openDoor = "submarineDoorOpening";
-        } else if (this.background instanceof Map7) {
-            this.enterCabin = 570;
-            this.openDoor = "walkingCutsceneSound";
+        const tutorialMapActive =
+            this.isTutorialActive && this.currentMap === "Map1";
+        if (tutorialMapActive) {
+            this.tutorial.update(deltaTime);
+            this.noDamageDuringTutorial = true;
         } else {
-            this.enterCabin = 290;
-            this.openDoor = "doorOpening";
+            this.tutorial.tutorialPause = false;
+            this.noDamageDuringTutorial = false;
         }
-        if (
-            this.cabin &&
-            this.player.x + this.player.width >= this.cabin.x + this.enterCabin &&
-            this.player.x <= this.cabin.x + this.cabin.width &&
-            this.cabin.isFullyVisible
-        ) {
-            this.audioHandler.cutsceneSFX.playSound(this.openDoor);
-            this.audioHandler.firedogSFX.stopAllSounds();
 
-            const mapCutsceneMapping = {
-                Map1: Map1EndCutscene,
-                Map2: Map2EndCutscene,
-                Map3: Map3EndCutscene,
-                Map4: Map4EndCutscene,
-                Map5: Map5EndCutscene,
-                Map6: Map6EndCutscene,
-                Map7: Map7EndCutscene,
-                BonusMap1: BonusMap1EndCutscene,
-                BonusMap2: BonusMap2EndCutscene,
-                BonusMap3: BonusMap3EndCutscene,
-            };
+        if (!this.menu.pause.isPaused && this.tutorial.tutorialPause === false) {
+            const fightActive = this.bossManager && this.bossManager.bossInFight;
 
-            const mapConstructor = mapCutsceneMapping[this.currentMap];
-            if (mapConstructor) {
-                this.isEndCutscene = true;
-                this.isPlayerInGame = false;
-                const cutscene = new mapConstructor(this);
-                this.startCutscene(cutscene);
-                cutscene.displayDialogue();
+            if (fightActive && !this._bossFightWasActive) {
+                this.bossTime = 0;
+                this._bossDefeatRecorded = false;
+                this._bossFightWasActive = true;
             }
-        }
-        if (this.distortionActive || this.distortionEffect.amount > 0.01) {
-            this.distortionEffect.update(deltaTime);
+
+            if (fightActive && !this.gameOver) {
+                this.bossTime += deltaTime;
+            }
+
+            if (!fightActive && this._bossFightWasActive) {
+                this._bossFightWasActive = false;
+            }
+
+            if (this.cabin && this.cabin.isFullyVisible) {
+                if (!this._fullClearRecorded && this.hasMetWinningCoins()) {
+                    this._fullClearRecorded = true;
+                    this.updateBestFullClearRecord();
+                }
+            } else if (!this.gameOver) {
+                this.time += deltaTime;
+                if (this.time > this.maxTime && this.player.isUnderwater) this.gameOver = true;
+            } else {
+                this.speed = 0;
+            }
+
+            if (this.background) this.background.update(deltaTime);
+
+            if (!this.cabin || !this.cabin.isFullyVisible) {
+                // enemy
+                if (this.enemyTimer > this.enemyInterval) {
+                    if (!tutorialMapActive) {
+                        this.addEnemy();
+                    }
+                    this.enemyTimer = 0;
+                } else {
+                    this.enemyTimer += deltaTime;
+                }
+                // other entities
+                if (this.nonEnemyTimer > this.nonEnemyInterval) {
+                    if (!tutorialMapActive) {
+                        this.addPowerUp();
+                        this.addPowerDown();
+                    }
+                    this.addCabin();
+                    this.addPenguin();
+                    this.nonEnemyTimer = 0;
+                } else {
+                    this.nonEnemyTimer += deltaTime;
+                }
+            }
+
+            this.hiddenTime += deltaTime; // hiddenTime doesn't stop when player dies
+
+            if (this.shakeActive && this.shakeDuration > 0) {
+                this.shakeTimer += deltaTime;
+                if (this.shakeTimer >= this.shakeDuration) {
+                    this.stopShake();
+                }
+            }
+
+            this.player.update(this.input.keys, deltaTime);
+            this.coins = Math.max(0, this.coins);
+
+            // handles certain audios where the sound doesn't stop until that type of enemy is not in enemy list
+            const enemyAudioMapping = [
+                { enemyType: WindAttack, audio: "tornadoAudio" },
+                { enemyType: Skulnap, audio: "fuseSound" },
+                { enemyType: SpidoLazer, audio: "spidoLazerWalking" },
+                { enemyType: Goblin, audio: "goblinRunSound" },
+                { enemyType: Ben, audio: "verticalGhostSound" },
+                { enemyType: JetFish, audio: "rocketLauncherSound" },
+                { enemyType: SpearFish, audio: "stepWaterSound" },
+                { enemyType: Dolly, audio: "dollHumming" },
+                { enemyType: Aura, audio: "auraSoundEffect" },
+                { enemyType: InkBomb, audio: "elyvorg_ink_bomb_sound" },
+                { enemyType: MeteorAttack, audio: "elyvorg_meteor_falling_sound" },
+            ];
+            enemyAudioMapping.forEach(({ enemyType, audio }) => {
+                if (
+                    enemyType === MeteorAttack &&
+                    !this.enemies.some((enemy) => enemy instanceof enemyType)
+                ) {
+                    if (this.audioHandler.enemySFX.isPlaying(audio)) {
+                        this.audioHandler.enemySFX.fadeOutAndStop(audio, 2000);
+                    }
+                } else {
+                    if (
+                        !this.enemies.some((enemy) => enemy instanceof enemyType)
+                    ) {
+                        this.audioHandler.enemySFX.stopSound(audio);
+                    }
+                }
+            });
+
+            // handle power up
+            this.powerUps.forEach((powerUp) => {
+                powerUp.update(deltaTime);
+            });
+            // handle power down
+            this.powerDowns.forEach((powerDown) => {
+                powerDown.update(deltaTime);
+            });
+            // handle enemies
+            this.enemies.forEach((enemy) => {
+                enemy.update(deltaTime);
+            });
+            // handle messages
+            this.floatingMessages.forEach((message) => {
+                message.update();
+            });
+            // handle cabin
+            this.cabins.forEach((cabin) => {
+                cabin.update(deltaTime);
+            });
+            // handle penguin
+            this.penguins.forEach((penguin) => {
+                penguin.update(deltaTime);
+            });
+            // handle particles behind the player
+            this.behindPlayerParticles.forEach((behindPlayerParticle) => {
+                behindPlayerParticle.update();
+            });
+            // handle particles
+            this.particles.forEach((particle) => {
+                particle.update(deltaTime);
+            });
+            if (this.particles.length > this.maxParticles) {
+            const keep = [];
+            const evictable = [];
+            for (const p of this.particles) {
+                if (p instanceof SpinningChicks) keep.push(p);
+                else evictable.push(p);
+            }
+            const roomForEvictable = Math.max(0, this.maxParticles - keep.length);
+            this.particles = keep.concat(evictable.slice(0, roomForEvictable));
+            }
+            // handle collision sprites
+            this.collisions.forEach((collision) => {
+                collision.update(deltaTime);
+            });
+            // removes marked entities
+            this.enemies = this.enemies.filter(
+                (enemy) => !enemy.markedForDeletion
+            );
+            this.powerUps = this.powerUps.filter(
+                (powerUp) => !powerUp.markedForDeletion
+            );
+            this.powerDowns = this.powerDowns.filter(
+                (powerDown) => !powerDown.markedForDeletion
+            );
+            this.behindPlayerParticles = this.behindPlayerParticles.filter(
+                (behindPlayerParticle) => !behindPlayerParticle.markedForDeletion
+            );
+            this.particles = this.particles.filter(
+                (particle) => !particle.markedForDeletion
+            );
+            this.collisions = this.collisions.filter(
+                (collision) => !collision.markedForDeletion
+            );
+            this.floatingMessages = this.floatingMessages.filter(
+                (message) => !message.markedForDeletion
+            );
+
+            // penguin cutscenes
+            if (
+                this.talkToPenguin &&
+                this.talkToPenguinOneTimeOnly &&
+                this.enterToTalkToPenguin
+            ) {
+                this.enterToTalkToPenguin = false;
+                const mapCutsceneMapping = {
+                    Map1: Map1PenguinIngameCutscene,
+                    Map2: Map2PenguinIngameCutscene,
+                    Map3: Map3PenguinIngameCutscene,
+                    Map4: Map4PenguinIngameCutscene,
+                    Map5: Map5PenguinIngameCutscene,
+                    Map6: Map6PenguinIngameCutscene,
+                    Map7: Map7PenguinIngameCutscene,
+                    BonusMap1: BonusMap1PenguinIngameCutscene,
+                    BonusMap2: BonusMap2PenguinIngameCutscene,
+                    BonusMap3: BonusMap3PenguinIngameCutscene,
+                };
+                const mapConstructor = mapCutsceneMapping[this.currentMap];
+                if (mapConstructor) {
+                    const cutscene = new mapConstructor(this);
+                    this.startCutscene(cutscene);
+                    cutscene.displayDialogue();
+                    this.cutscenes.push(cutscene);
+                }
+            }
+
+            // boss in-game cutscenes (before/after fight)
+            if (
+                this.background &&
+                this.hasActiveBoss &&
+                this.isBossVisible &&
+                this.player.x <= 0
+            ) {
+                const boss = this.boss;
+
+                const configs = [
+                    {
+                        mapClass: BonusMap1,
+                        bossId: "glacikal",
+                        beforeCutscene: BonusMap1GlacikalIngameCutsceneBeforeFight,
+                        afterCutscene: BonusMap1GlacikalIngameCutsceneAfterFight,
+                    },
+                    {
+                        mapClass: BonusMap3,
+                        bossId: "ntharax",
+                        beforeCutscene: BonusMap3NTharaxIngameCutsceneBeforeFight,
+                        afterCutscene: BonusMap3NTharaxIngameCutsceneAfterFight,
+                    },
+                    {
+                        mapClass: Map7,
+                        bossId: "elyvorg",
+                        beforeCutscene: Map7ElyvorgIngameCutsceneBeforeFight,
+                        afterCutscene: Map7ElyvorgIngameCutsceneAfterFight,
+                    },
+                ];
+
+                for (const cfg of configs) {
+                    if (!(this.background instanceof cfg.mapClass)) continue;
+                    if (boss.id !== cfg.bossId) continue;
+
+                    if (boss.dialogueBeforeOnce) {
+                        boss.preFight = true;
+                        boss.postFight = false;
+                        boss.dialogueBeforeOnce = false;
+
+                        this.player.clearAllStatusEffects();
+                        this.player.energy = 100;
+                        if (this.lives < this.menu.levelDifficulty.getLivesForDifficulty(this.selectedDifficulty)) {
+                            this.menu.levelDifficulty.setDifficulty(this.selectedDifficulty, false);
+                        }
+
+                        const cutscene = new cfg.beforeCutscene(this);
+                        this.startCutscene(cutscene);
+                        cutscene.displayDialogue();
+                        this.cutscenes.push(cutscene);
+                        break;
+                    }
+
+                    if (boss.dialogueAfterOnce && boss.startAfterDialogueWhenAnimEnds) {
+                        boss.preFight = false;
+                        boss.postFight = true;
+                        boss.dialogueAfterOnce = false;
+                        boss.dialogueAfterLeaving = true;
+
+                        this.player.energy = 100;
+
+                        const cutscene = new cfg.afterCutscene(this);
+                        this.startCutscene(cutscene);
+                        cutscene.displayDialogue();
+                        this.cutscenes.push(cutscene);
+                        break;
+                    }
+                }
+            }
+
+            // end cutscenes after each map
+            if (this.background instanceof Map3) {
+                this.enterCabin = 500;
+                this.openDoor = "submarineDoorOpening";
+            } else if (this.background instanceof Map7) {
+                this.enterCabin = 570;
+                this.openDoor = "walkingCutsceneSound";
+            } else {
+                this.enterCabin = 290;
+                this.openDoor = "doorOpening";
+            }
+            if (
+                this.cabin &&
+                this.player.x + this.player.width >= this.cabin.x + this.enterCabin &&
+                this.player.x <= this.cabin.x + this.cabin.width &&
+                this.cabin.isFullyVisible
+            ) {
+                this.audioHandler.cutsceneSFX.playSound(this.openDoor);
+                this.audioHandler.firedogSFX.stopAllSounds();
+
+                const mapCutsceneMapping = {
+                    Map1: Map1EndCutscene,
+                    Map2: Map2EndCutscene,
+                    Map3: Map3EndCutscene,
+                    Map4: Map4EndCutscene,
+                    Map5: Map5EndCutscene,
+                    Map6: Map6EndCutscene,
+                    Map7: Map7EndCutscene,
+                    BonusMap1: BonusMap1EndCutscene,
+                    BonusMap2: BonusMap2EndCutscene,
+                    BonusMap3: BonusMap3EndCutscene,
+                };
+
+                const mapConstructor = mapCutsceneMapping[this.currentMap];
+                if (mapConstructor) {
+                    this.isEndCutscene = true;
+                    this.isPlayerInGame = false;
+                    const cutscene = new mapConstructor(this);
+                    this.startCutscene(cutscene);
+                    cutscene.displayDialogue();
+                }
+            }
+            if (this.distortionActive || this.distortionEffect.amount > 0.01) {
+                this.distortionEffect.update(deltaTime);
+            }
         }
     }
-}
 
     draw(context) {
         context.clearRect(0, 0, this.width, this.height);
@@ -818,7 +823,6 @@ update(deltaTime) {
         if (this.isTutorialActive && this.currentMap === "Map1") {
             this.tutorial.draw(context);
         }
-
     }
 
     addEnemy() {
@@ -919,8 +923,8 @@ update(deltaTime) {
                 { type: Silknoir, probability: 0.4, spawningDistance: 0 },
             ],
             BonusMap3: [
-                { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: Silknoir, probability: 0.4, spawningDistance: 0 },
+                { type: Goblin, probability: 1, spawningDistance: 0 },
+                { type: Silknoir, probability: 1, spawningDistance: 0 },
             ],
         };
 
@@ -961,68 +965,74 @@ update(deltaTime) {
     }
 
     addPowerUp() {
-        if (!(this.background instanceof Map7)) {
-            if (
-                this.speed > 0 &&
-                this.background &&
-                this.background.totalDistanceTraveled < this.maxDistance - 3
-            ) {
-                if (Math.random() < 0.0025) {
-                    this.powerUps.push(new RandomPower(this));
-                }
+        if (this.bossManager.hasBossConfiguredForCurrentMap()) {
+            if (this.bossManager.bossIsEngaged()) return;
+            if (this.bossManager.bossGateReached()) return;
+        }
+
+        if (
+            this.speed > 0 &&
+            this.background &&
+            this.background.totalDistanceTraveled < this.maxDistance - 3
+        ) {
+            if (Math.random() < 0.0025) {
+                this.powerUps.push(new RandomPower(this));
+            }
+            if (Math.random() < 0.005) {
+                this.powerUps.push(new RedPotion(this));
+            }
+            if (Math.random() < 0.005) {
+                this.powerUps.push(new BluePotion(this));
+            }
+            if (Math.random() < 0.005) {
+                this.powerUps.push(new HealthLive(this));
+            }
+            if (Math.random() < 0.005) {
+                this.powerUps.push(new Coin(this));
+            }
+            if (this.player.isUnderwater) {
                 if (Math.random() < 0.005) {
-                    this.powerUps.push(new RedPotion(this));
-                }
-                if (Math.random() < 0.005) {
-                    this.powerUps.push(new BluePotion(this));
-                }
-                if (Math.random() < 0.005) {
-                    this.powerUps.push(new HealthLive(this));
-                }
-                if (Math.random() < 0.005) {
-                    this.powerUps.push(new Coin(this));
-                }
-                if (this.player.isUnderwater) {
-                    if (Math.random() < 0.005) {
-                        this.powerUps.push(new OxygenTank(this));
-                    }
+                    this.powerUps.push(new OxygenTank(this));
                 }
             }
         }
     }
 
     addPowerDown() {
-        if (!(this.background instanceof Map7)) {
-            if (
-                this.speed > 0 &&
-                this.background &&
-                this.background.totalDistanceTraveled < this.maxDistance - 3
-            ) {
-                if (Math.random() < 0.0025) {
-                    this.powerDowns.push(new RandomPower(this));
-                }
+        if (this.bossManager.hasBossConfiguredForCurrentMap()) {
+            if (this.bossManager.bossIsEngaged()) return;
+            if (this.bossManager.bossGateReached()) return;
+        }
+
+        if (
+            this.speed > 0 &&
+            this.background &&
+            this.background.totalDistanceTraveled < this.maxDistance - 3
+        ) {
+            if (Math.random() < 0.0025) {
+                this.powerDowns.push(new RandomPower(this));
+            }
+            if (Math.random() < 0.005) {
+                this.powerDowns.push(new IceDrink(this));
+            }
+            if (Math.random() < 0.005) {
+                this.powerDowns.push(new IceCube(this));
+            }
+            if (Math.random() < 0.005) {
+                this.powerDowns.push(new Cauldron(this));
+            }
+            if (Math.random() < 0.005) {
+                this.powerDowns.push(new BlackHole(this));
+            }
+            if (Math.random() < 0.005) {
+                this.powerDowns.push(new Confuse(this));
+            }
+            if (Math.random() < 0.005) {
+                this.powerDowns.push(new DeadSkull(this));
+            }
+            if (this.player.isUnderwater) {
                 if (Math.random() < 0.005) {
-                    this.powerDowns.push(new IceDrink(this));
-                }
-                if (Math.random() < 0.005) {
-                    this.powerDowns.push(new IceCube(this));
-                }
-                if (Math.random() < 0.005) {
-                    this.powerDowns.push(new Cauldron(this));
-                }
-                if (Math.random() < 0.005) {
-                    this.powerDowns.push(new BlackHole(this));
-                }
-                if (Math.random() < 0.005) {
-                    this.powerDowns.push(new Confuse(this));
-                }
-                if (Math.random() < 0.005) {
-                    this.powerDowns.push(new DeadSkull(this));
-                }
-                if (this.player.isUnderwater) {
-                    if (Math.random() < 0.005) {
-                        this.powerDowns.push(new CarbonDioxideTank(this));
-                    }
+                    this.powerDowns.push(new CarbonDioxideTank(this));
                 }
             }
         }
@@ -1080,6 +1090,7 @@ window.addEventListener("load", function () {
     function animate(timeStamp) {
         const deltaTime = timeStamp - lastTime;
         lastTime = timeStamp;
+
         if (
             game.cutsceneActive &&
             !game.talkToPenguin &&

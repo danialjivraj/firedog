@@ -841,7 +841,7 @@ export class EnemyLore extends BaseMenu {
             this.currentPage = Math.min(this.currentPageBonus, maxIndex);
         }
 
-        this.game.audioHandler.menu.playSound('bookFlip', false, true);
+        this.game.audioHandler.menu.playSound('enemyLoreSwitchTabSound', false, true);
     }
 
     getMainTabBounds() {
@@ -1189,14 +1189,14 @@ export class EnemyLore extends BaseMenu {
         const maxValidIndex = this.getMaxValidIndex();
         if (this.currentPage < maxValidIndex) {
             this.currentPage++;
-            this.game.audioHandler.menu.playSound('bookFlip', false, true);
+            this.game.audioHandler.menu.playSound('bookFlipForwardSound', false, true);
         }
     }
 
     previousPage() {
         if (this.currentPage > 0) {
             this.currentPage--;
-            this.game.audioHandler.menu.playSound('bookFlip', false, true);
+            this.game.audioHandler.menu.playSound('bookFlipBackwardSound', false, true);
         }
     }
 
@@ -1204,14 +1204,14 @@ export class EnemyLore extends BaseMenu {
         const maxValidIndex = this.getMaxValidIndex();
         if (this.currentPage < maxValidIndex) {
             this.currentPage += 2;
-            this.game.audioHandler.menu.playSound('bookFlip', false, true);
+            this.game.audioHandler.menu.playSound('bookFlipForwardSound', false, true);
         }
     }
 
     clickPreviousPage() {
         if (this.currentPage > 0) {
             this.currentPage = Math.max(0, this.currentPage - 2);
-            this.game.audioHandler.menu.playSound('bookFlip', false, true);
+            this.game.audioHandler.menu.playSound('bookFlipBackwardSound', false, true);
         }
     }
 

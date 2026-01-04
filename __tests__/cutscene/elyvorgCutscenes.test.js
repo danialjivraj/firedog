@@ -17,7 +17,7 @@ const createBaseGame = () => {
         },
         menu: {
             pause: { isPaused: false },
-            ingameAudioSettings: Symbol('settings')
+            audioSettings: Symbol('settings')
         },
         currentMenu: null,
         enterDuringBackgroundTransition: true,
@@ -305,7 +305,7 @@ describe('ElyvorgCutscene', () => {
 
             // in settings menu
             game.menu.pause.isPaused = false;
-            game.currentMenu = game.menu.ingameAudioSettings;
+            game.currentMenu = game.menu.audioSettings;
             cut.handleKeyDown({ key: 'Enter' });
             cut.handleLeftClick({ button: 0 });
             expect(cut.enterOrLeftClick).toHaveBeenCalledTimes(1);

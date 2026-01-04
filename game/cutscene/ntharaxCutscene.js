@@ -160,7 +160,7 @@ export class NTharaxCutscene extends Cutscene {
 
             if (
                 this.game.menu.pause.isPaused ||
-                this.game.currentMenu === this.game.menu.ingameAudioSettings
+                this.game.currentMenu === this.game.menu.audioSettings
             ) {
                 return;
             }
@@ -185,7 +185,7 @@ export class NTharaxCutscene extends Cutscene {
                 !this.isEnterPressed &&
                 this.game.enterDuringBackgroundTransition &&
                 !this.game.menu.pause.isPaused &&
-                this.game.currentMenu !== this.game.menu.ingameAudioSettings
+                this.game.currentMenu !== this.game.menu.audioSettings
             ) {
                 this.enterOrLeftClick();
             }

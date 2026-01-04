@@ -175,6 +175,78 @@ export class Player {
     _jump(input) { return this.game.input.isActionActive('jump', input); }
     _sit(input) { return this.game.input.isActionActive('sit', input); }
 
+    clearAllStatusEffects() {
+        // freeze
+        this.isFrozen = false;
+        this.frozenTimer = 0;
+        this.frozenPulseTimer = 0;
+        this.frozenOpacity = 0;
+        this.game.input.keys = [];
+        // poison
+        this.isPoisonedActive = false;
+        this.poisonTimer = 0;
+        this.energyReachedZero = false;
+        // slow
+        this.isSlowed = false;
+        this.slowedTimer = 0;
+        // confuse
+        this.isConfused = false;
+        this.confuseTimer = 0;
+        this.confusedKeyBindings = null;
+        // blue potion
+        this.isBluePotionActive = false;
+        this.blueFireTimer = 0;
+        // red potion
+        this.isRedPotionActive = false;
+        this.redPotionTimer = 0;
+        // invisibility
+        this.isInvisible = false;
+        this.invisibleActiveCooldownTimer = 0;
+        this.invisibleTimer = this.invisibleCooldown;
+        // black hole
+        this.isBlackHoleActive = false;
+        // energy
+        this.energy = Math.min(100, Math.max(0, this.energy));
+        this.energyInterval = 100;
+        this.noEnergyLeftSound = false;
+        // state restore
+        this.normalSpeed = this.baseNormalSpeed;
+        this.maxSpeed = this.baseMaxSpeed;
+        this.weight = this.baseWeight;
+        // movement reset
+        this.speed = 0;
+        this.vx = 0;
+        this.vy = 0;
+        // state sanity
+        if (
+            this.currentState === this.states[6] || // stunned
+            this.currentState === this.states[7]    // hit
+        ) {
+            this.setState(8, 0); // standing
+        }
+        // audio cleanup
+        const sfx = this.game.audioHandler.firedogSFX;
+        sfx.stopSound('bluePotionEnergyGoingUp');
+        sfx.stopSound('invisibleInSFX');
+        sfx.stopSound('rollingSFX');
+        sfx.stopSound('rollingUnderwaterSFX');
+        sfx.stopSound('frozenSound');
+        // particles cleanup
+        this.game.particles = this.game.particles.filter(p =>
+            !(
+                p.constructor.name === 'PoisonBubbles' ||
+                p.constructor.name === 'IceCrystalBubbles' ||
+                p.constructor.name === 'SpinningChicks'
+            )
+        );
+        // collisions
+        this.game.collisions = this.game.collisions.filter(c =>
+            !(
+                c.constructor.name === 'TunnelVision'
+            )
+        );
+    }
+
     startFrozen(durationMs = this.frozenDuration) {
         if (this.game.gameOver) return;
         if (this.currentState.deathAnimation) return;
@@ -1802,6 +1874,16 @@ export class CollisionLogic {
 
         if (!this.enemyHitsRect(enemy, this.getPlayerRect())) return;
 
+        if (enemy instanceof EnemyBoss) {
+            const bossInvulnerable =
+            !this.game.bossInFight ||
+            this.game.cutsceneActive ||
+            (this.game.boss && this.game.boss.talkToBoss) ||
+            (this.game.boss && this.game.boss.preFight);
+
+            if (bossInvulnerable) return;
+        }
+
         if (this.isKamehameha(enemy)) {
             player.collisionCooldowns[enemy.id] = 220;
             if (!player.isInvisible) {
@@ -2472,8 +2554,6 @@ export class CollisionLogic {
                     player.hit(enemy);
                     this.specialCollisionAnimationOrNot(enemy);
                     player.startFrozen(2000);
-                } else {
-                    this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
                 }
                 break;
 

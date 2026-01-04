@@ -66,7 +66,7 @@ export class PenguiniCutscene extends Cutscene {
 
     displayDialogue() {
         this.handleKeyDown = (event) => {
-            if (!this.game.menu.pause.isPaused && this.game.currentMenu !== this.game.menu.ingameAudioSettings) {
+            if (!this.game.menu.pause.isPaused && this.game.currentMenu !== this.game.menu.audioSettings) {
                 this.coinCheckIndex = this.dialogue.findIndex(dialogue => dialogue.dialogue.includes("It seems you have"));
 
                 if (
@@ -108,7 +108,7 @@ export class PenguiniCutscene extends Cutscene {
                 !this.isEnterPressed &&
                 this.game.enterDuringBackgroundTransition &&
                 !this.game.menu.pause.isPaused &&
-                this.game.currentMenu !== this.game.menu.ingameAudioSettings
+                this.game.currentMenu !== this.game.menu.audioSettings
             ) {
                 this.enterOrLeftClick();
             }

@@ -20,7 +20,7 @@ function buildGameState(game) {
         ntharaxDefeated: game.ntharaxDefeated,
 
         audioSettingsState: game.menu.audioSettings.getState(),
-        ingameAudioSettingsState: game.menu.ingameAudioSettings.getState(),
+
         currentSkin: game.menu.skins.currentSkin.id,
         selectedDifficulty: game.selectedDifficulty,
 
@@ -34,15 +34,19 @@ export function saveGameState(game) {
     const gameState = buildGameState(game);
 
     try {
-        localStorage.setItem('gameState', JSON.stringify(gameState));
+        localStorage.setItem("gameState", JSON.stringify(gameState));
     } catch (e) {
-        console.warn('Failed to save game state:', e);
+        console.warn("Failed to save game state:", e);
     }
 }
 
 export function loadGameState(game) {
-    const savedGameState = localStorage.getItem('gameState');
-    if (!savedGameState) return;
+    const savedGameState = localStorage.getItem("gameState");
+
+    if (!savedGameState) {
+        clearSavedData(game);
+        return;
+    }
 
     try {
         const gameState = JSON.parse(savedGameState);
@@ -67,13 +71,11 @@ export function loadGameState(game) {
         if (gameState.audioSettingsState) {
             game.menu.audioSettings.setState(gameState.audioSettingsState);
         }
-        if (gameState.ingameAudioSettingsState) {
-            game.menu.ingameAudioSettings.setState(gameState.ingameAudioSettingsState);
-        }
+
         if (gameState.currentSkin) {
-            const skinId = gameState.currentSkin;
-            game.menu.skins.setCurrentSkinById(skinId);
+            game.menu.skins.setCurrentSkinById(gameState.currentSkin);
         }
+
         if (gameState.selectedDifficulty) {
             game.menu.levelDifficulty.setDifficulty(gameState.selectedDifficulty);
             game.selectedDifficulty = gameState.selectedDifficulty;
@@ -88,13 +90,15 @@ export function loadGameState(game) {
             game.records = { ...game.records, ...gameState.records };
         }
     } catch (e) {
-        console.warn('Failed to load game state, clearing corrupted data:', e);
-        localStorage.removeItem('gameState');
+        console.warn("Failed to load game state, clearing corrupted data:", e);
+        localStorage.removeItem("gameState");
+
+        clearSavedData(game);
     }
 }
 
 export function clearSavedData(game) {
-    localStorage.removeItem('gameState');
+    localStorage.removeItem("gameState");
     game.isTutorialActive = true;
 
     game.map1Unlocked = true;
@@ -113,17 +117,19 @@ export function clearSavedData(game) {
 
     game.menu.forestMap.resetSelectedCircleIndex();
     game.menu.enemyLore.currentPage = 0;
-    game.menu.levelDifficulty.setDifficulty('Normal');
-    game.selectedDifficulty = 'Normal';
+
+    game.menu.levelDifficulty.setDifficulty("Normal");
+    game.selectedDifficulty = "Normal";
 
     game.menu.skins.currentSkin = game.menu.skins.defaultSkin;
-    game.menu.skins.setCurrentSkinById('defaultSkin');
+    game.menu.skins.setCurrentSkinById("defaultSkin");
 
     game.menu.audioSettings.setState({
-        volumeLevels: [75, 10, 90, 90, 70, 60, null],
-    });
-    game.menu.ingameAudioSettings.setState({
-        volumeLevels: [30, 80, 60, 40, 80, 65, null],
+        tabData: {
+            MENU: { volumeLevels: [50, 50, 50, 50, null] },
+            CUTSCENE: { volumeLevels: [50, 50, 50, 50, null] },
+            INGAME: { volumeLevels: [50, 50, 50, 50, 50, 50, null] },
+        },
     });
 
     game.keyBindings = getDefaultKeyBindings();
