@@ -34,6 +34,7 @@ describe('Cutscene', () => {
             talkToPenguin: false,
             boss: { talkToBoss: false },
             canvas: document.createElement('canvas'),
+            ignoreCutsceneInputUntil: 0,
         };
 
         jest
@@ -307,20 +308,91 @@ describe('Cutscene', () => {
         });
     });
 
-    describe('addEventListeners and removeEventListeners', () => {
-        it('registers and deregisters the four expected listeners', () => {
+    describe('addEventListeners and removeEventListeners (wrapped gating)', () => {
+        it('registers and deregisters the four expected listeners and clears wrapped refs to null', () => {
             cutscene.handleKeyDown = jest.fn();
             cutscene.handleKeyUp = jest.fn();
             cutscene.handleLeftClick = jest.fn();
             cutscene.handleLeftClickUp = jest.fn();
-            const a = jest.spyOn(document, 'addEventListener');
-            const r = jest.spyOn(document, 'removeEventListener');
+
+            const addSpy = jest.spyOn(document, 'addEventListener');
+            const remSpy = jest.spyOn(document, 'removeEventListener');
+
             cutscene.addEventListeners();
-            expect(a).toHaveBeenCalledTimes(4);
+
+            expect(addSpy).toHaveBeenCalledTimes(4);
+
+            expect(typeof cutscene._wrappedKeyDown).toBe('function');
+            expect(cutscene._wrappedKeyUp).toBeTruthy();
+            expect(typeof cutscene._wrappedLeftClick).toBe('function');
+            expect(cutscene._wrappedLeftClickUp).toBeTruthy();
+
             cutscene.removeEventListeners();
-            expect(r).toHaveBeenCalledTimes(4);
-            a.mockRestore();
-            r.mockRestore();
+
+            expect(remSpy).toHaveBeenCalledTimes(4);
+
+            expect(cutscene._wrappedKeyDown).toBeNull();
+            expect(cutscene._wrappedKeyUp).toBeNull();
+            expect(cutscene._wrappedLeftClick).toBeNull();
+            expect(cutscene._wrappedLeftClickUp).toBeNull();
+
+            addSpy.mockRestore();
+            remSpy.mockRestore();
+        });
+
+        it('gates keydown + left click when performance.now() is before ignoreCutsceneInputUntil', () => {
+            const kd = jest.fn();
+            const lc = jest.fn();
+
+            cutscene.handleKeyDown = kd;
+            cutscene.handleLeftClick = lc;
+
+            const nowSpy = jest.spyOn(performance, 'now');
+
+            nowSpy.mockReturnValue(1000);
+            game.ignoreCutsceneInputUntil = 2000;
+
+            cutscene.addEventListeners();
+
+            cutscene._wrappedKeyDown({ key: 'Enter' });
+            cutscene._wrappedLeftClick({ type: 'click' });
+
+            expect(kd).not.toHaveBeenCalled();
+            expect(lc).not.toHaveBeenCalled();
+
+            cutscene.removeEventListeners();
+            nowSpy.mockRestore();
+        });
+
+        it('allows keydown + left click once performance.now() passes ignoreCutsceneInputUntil', () => {
+            const kd = jest.fn();
+            const lc = jest.fn();
+
+            cutscene.handleKeyDown = kd;
+            cutscene.handleLeftClick = lc;
+
+            const nowSpy = jest.spyOn(performance, 'now');
+
+            nowSpy.mockReturnValue(1000);
+            game.ignoreCutsceneInputUntil = 2000;
+
+            cutscene.addEventListeners();
+
+            cutscene._wrappedKeyDown({ key: 'Enter' });
+            cutscene._wrappedLeftClick({ type: 'click' });
+            expect(kd).not.toHaveBeenCalled();
+            expect(lc).not.toHaveBeenCalled();
+
+            nowSpy.mockReturnValue(2500);
+
+            cutscene._wrappedKeyDown({ key: 'Enter' });
+            cutscene._wrappedLeftClick({ type: 'click' });
+
+            expect(kd).toHaveBeenCalledTimes(1);
+            expect(lc).toHaveBeenCalledTimes(1);
+
+            cutscene.removeEventListeners();
+            nowSpy.mockRestore();
         });
     });
 

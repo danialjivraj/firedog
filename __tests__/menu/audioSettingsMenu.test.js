@@ -85,6 +85,9 @@ describe('AudioSettingsMenu', () => {
       canSelectForestMap: true,
 
       isPlayerInGame: true,
+      cutsceneActive: false,
+      currentCutscene: null,
+
       currentMenu: null,
 
       menu: {
@@ -208,9 +211,11 @@ describe('AudioSettingsMenu', () => {
 
   // activateMenu() branching
   describe('activateMenu() in-game detection and options', () => {
-    test('when game is paused in-game, activateMenu() chooses INGAME tab and hides stars sticker', () => {
+    test('when game is paused in-game gameplay, activateMenu() chooses INGAME tab and hides stars sticker', () => {
       game.menu.pause.isPaused = true;
       game.isPlayerInGame = true;
+      game.cutsceneActive = false;
+      game.currentCutscene = null;
 
       menu.activateMenu();
 
@@ -220,7 +225,34 @@ describe('AudioSettingsMenu', () => {
       expect(menu.selectedOption).toBe(menu.headerSelectionIndex);
     });
 
-    test('opts.inGame overrides pause detection', () => {
+    test('when paused + cutsceneActive + currentCutscene, activateMenu() chooses CUTSCENE tab and hides stars sticker', () => {
+      game.menu.pause.isPaused = true;
+      game.isPlayerInGame = false;
+      game.cutsceneActive = true;
+      game.currentCutscene = {};
+
+      menu.activateMenu();
+
+      expect(menu.menuInGame).toBe(true);
+      expect(menu.showStarsSticker).toBe(false);
+      expect(menu.activeTab).toBe('CUTSCENE');
+      expect(menu.selectedOption).toBe(menu.headerSelectionIndex);
+    });
+
+    test('paused cutsceneActive but missing currentCutscene does NOT infer cutscene overlay', () => {
+      game.menu.pause.isPaused = true;
+      game.isPlayerInGame = false;
+      game.cutsceneActive = true;
+      game.currentCutscene = null;
+
+      menu.activateMenu();
+
+      expect(menu.menuInGame).toBe(false);
+      expect(menu.showStarsSticker).toBe(true);
+      expect(menu.activeTab).toBe('MENU');
+    });
+
+    test('opts.inGame overrides inferred overlay (gameplay pause case)', () => {
       game.menu.pause.isPaused = true;
       game.isPlayerInGame = true;
 
@@ -228,6 +260,19 @@ describe('AudioSettingsMenu', () => {
 
       expect(menu.menuInGame).toBe(false);
       expect(menu.activeTab).toBe('MENU');
+    });
+
+    test('opts.inGame=false does NOT override CUTSCENE defaultTab when shouldBeCutscene is true', () => {
+      game.menu.pause.isPaused = true;
+      game.isPlayerInGame = false;
+      game.cutsceneActive = true;
+      game.currentCutscene = {};
+
+      menu.activateMenu({ inGame: false });
+
+      expect(menu.menuInGame).toBe(false);
+      expect(menu.activeTab).toBe('CUTSCENE');
+      expect(menu.showStarsSticker).toBe(true);
     });
 
     test('opts.selectedOption is accepted but selection is clamped into header range', () => {
@@ -641,44 +686,32 @@ describe('AudioSettingsMenu', () => {
 
   // go back
   describe('handleMenuSelection: Go Back routing', () => {
-    beforeEach(() => {
-      jest.useFakeTimers();
-    });
-
-    afterEach(() => {
-      jest.useRealTimers();
-    });
-
-    test('out-of-game Go Back: activates settings(0) and sets canPressNow true', () => {
+    test('out-of-game Go Back: activates settings(0)', () => {
       menu.menuInGame = false;
       menu.setTab('MENU');
 
       const idx = menu.menuOptions.indexOf('Go Back');
       menu.selectedOption = idx;
 
-      menu.canPressNow = false;
       menu.handleMenuSelection();
 
       expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionSelectedSound', false, true);
       expect(game.menu.settings.activateMenu).toHaveBeenCalledWith(0);
-      expect(menu.canPressNow).toBe(true);
+      expect(game.menu.pause.activateMenu).not.toHaveBeenCalled();
     });
 
-    test('in-game Go Back: activates pause(2), sets canPressNow false then true after delayedEnablePress()', () => {
+    test('in-game Go Back: activates settings({inGame:true, selectedOption:0})', () => {
       menu.menuInGame = true;
       menu.setTab('INGAME');
 
       const idx = menu.menuOptions.indexOf('Go Back');
       menu.selectedOption = idx;
 
-      menu.canPressNow = true;
       menu.handleMenuSelection();
 
-      expect(game.menu.pause.activateMenu).toHaveBeenCalledWith(2);
-      expect(menu.canPressNow).toBe(false);
-
-      jest.advanceTimersByTime(11);
-      expect(menu.canPressNow).toBe(true);
+      expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionSelectedSound', false, true);
+      expect(game.menu.settings.activateMenu).toHaveBeenCalledWith({ inGame: true, selectedOption: 0 });
+      expect(game.menu.pause.activateMenu).not.toHaveBeenCalled();
     });
 
     test('non-Go Back selection still calls super.handleMenuSelection (plays select sound) and does not navigate', () => {
@@ -735,7 +768,9 @@ describe('AudioSettingsMenu', () => {
       const menu2 = new AudioSettingsMenu(game);
       menu2.activateMenu();
 
-      expect(() => menu2.setState({ tabData: { MENU: { volumeLevels: [1, 2, 3, 4, null] } } })).not.toThrow();
+      expect(() =>
+        menu2.setState({ tabData: { MENU: { volumeLevels: [1, 2, 3, 4, null] } } })
+      ).not.toThrow();
       expect(menu2.tabData.MENU.volumeLevels[0]).toBe(1);
     });
   });

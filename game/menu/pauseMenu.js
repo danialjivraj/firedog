@@ -2,7 +2,7 @@ import { BaseMenu } from "./baseMenu.js";
 
 export class PauseMenu extends BaseMenu {
     constructor(game) {
-        super(game, ['Resume', 'Restart', 'Audio Settings', 'Back to Main Menu'], 'Paused');
+        super(game, ["Resume", "Restart", "Settings", "Back to Main Menu"], "Paused");
         this.game = game;
         this.positionOffset = 180;
         this.selectedOption = 0;
@@ -15,18 +15,32 @@ export class PauseMenu extends BaseMenu {
         const selectedOption = this.menuOptions[this.selectedOption];
         super.handleMenuSelection();
         this.menuActive = false;
-        if (selectedOption === 'Resume') {
+
+        if (selectedOption === "Resume") {
             this.togglePause();
-        } else if (selectedOption === 'Restart') {
+        } else if (selectedOption === "Restart") {
+            if (this.game.pauseContext === 'cutscene') {
+                this.game.restartActiveCutscene();
+                if (this.isPaused) this.togglePause();
+                return;
+            }
             this.togglePause();
             this.game.reset();
-        } else if (selectedOption === 'Audio Settings') {
-            this.game.menu.audioSettings.activateMenu({ inGame: true });
-        } else if (selectedOption === 'Back to Main Menu') {
-            this.togglePause();
+        } else if (selectedOption === "Settings") {
+            this.game.menu.settings.activateMenu({ inGame: true, selectedOption: 0 });
+        } else if (selectedOption === "Back to Main Menu") {
+            const leavingEndCutscene = (this.game.pauseContext === 'cutscene' && this.game.isEndCutscene);
+            if (this.game.pauseContext === 'cutscene') {
+                this.game.exitCutsceneToMainMenu();
+            }
+            if (this.isPaused) this.togglePause();
             this.game.isPlayerInGame = false;
             this.game.reset();
-            this.game.menu.main.activateMenu();
+            if (leavingEndCutscene) {
+                this.game.goToMainMenuWithSavingAnimation(4000);
+            } else {
+                this.game.menu.main.activateMenu();
+            }
         }
     }
 
@@ -41,7 +55,9 @@ export class PauseMenu extends BaseMenu {
             this.game.audioHandler.collisionSFX.pauseAllSounds();
             this.game.audioHandler.powerUpAndDownSFX.pauseAllSounds();
             this.game.audioHandler.cutsceneMusic.pauseAllSounds();
+            this.game.audioHandler.cutsceneSFX.pauseAllSounds();
         } else {
+            this.game.ignoreCutsceneInputUntil = performance.now() + 200;
             this.game.menu.pause.closeAllMenus();
             this.game.audioHandler.mapSoundtrack.resumeAllSounds();
             this.game.audioHandler.firedogSFX.resumeAllSounds();
@@ -49,6 +65,7 @@ export class PauseMenu extends BaseMenu {
             this.game.audioHandler.collisionSFX.resumeAllSounds();
             this.game.audioHandler.powerUpAndDownSFX.resumeAllSounds();
             this.game.audioHandler.cutsceneMusic.resumeAllSounds();
+            this.game.audioHandler.cutsceneSFX.resumeAllSounds();
         }
 
         this.canEscape = false;

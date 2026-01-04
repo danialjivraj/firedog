@@ -41,7 +41,7 @@ describe('ControlsSettingsMenu', () => {
         document.body.innerHTML = `
       <img id="mainmenubackground" />
     `;
-        jest.spyOn(BaseMenu.prototype, 'draw').mockImplementation(() => {});
+        jest.spyOn(BaseMenu.prototype, 'draw').mockImplementation(() => { });
     });
 
     afterAll(() => {
@@ -55,8 +55,18 @@ describe('ControlsSettingsMenu', () => {
             canSelect: true,
             canSelectForestMap: true,
             isPlayerInGame: true,
-            audioHandler: { menu: { playSound: jest.fn() } },
-            menu: { settings: { activateMenu: jest.fn() } },
+            audioHandler: {
+                menu: {
+                    playSound: jest.fn(),
+                    stopSound: jest.fn(),
+                },
+            },
+            menu: {
+                settings: { activateMenu: jest.fn() },
+                pause: { isPaused: false },
+            },
+            cutsceneActive: false,
+            currentCutscene: null,
             canvas: {
                 width: 1280,
                 height: 720,

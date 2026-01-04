@@ -155,16 +155,37 @@ export class Cutscene {
     }
 
     addEventListeners() {
-        document.addEventListener('keydown', this.handleKeyDown);
-        document.addEventListener('keyup', this.handleKeyUp);
-        document.addEventListener('click', this.handleLeftClick);
-        document.addEventListener('click', this.handleLeftClickUp);
+        const gate = (fn) => {
+            return (event) => {
+                if (this.game.menu.pause.isPaused) return;
+
+                const until = this.game.ignoreCutsceneInputUntil || 0;
+                if (performance.now() < until) return;
+                return fn && fn(event);
+            };
+        };
+
+        this._wrappedKeyDown = gate(this.handleKeyDown);
+        this._wrappedKeyUp = gate(this.handleKeyUp);
+        this._wrappedLeftClick = gate(this.handleLeftClick);
+        this._wrappedLeftClickUp = gate(this.handleLeftClickUp);
+
+        document.addEventListener('keydown', this._wrappedKeyDown);
+        document.addEventListener('keyup', this._wrappedKeyUp);
+        document.addEventListener('click', this._wrappedLeftClick);
+        document.addEventListener('click', this._wrappedLeftClickUp);
     }
+
     removeEventListeners() {
-        document.removeEventListener('keydown', this.handleKeyDown);
-        document.removeEventListener('keyup', this.handleKeyUp);
-        document.removeEventListener('click', this.handleLeftClick);
-        document.removeEventListener('click', this.handleLeftClickUp);
+        document.removeEventListener('keydown', this._wrappedKeyDown);
+        document.removeEventListener('keyup', this._wrappedKeyUp);
+        document.removeEventListener('click', this._wrappedLeftClick);
+        document.removeEventListener('click', this._wrappedLeftClickUp);
+
+        this._wrappedKeyDown = null;
+        this._wrappedKeyUp = null;
+        this._wrappedLeftClick = null;
+        this._wrappedLeftClickUp = null;
     }
 
     transitionWithBg(d1, d2, d3, bgId, afterDelay = this.halfASecond + 100, before = null, after = null) {

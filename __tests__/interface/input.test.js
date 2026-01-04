@@ -25,15 +25,22 @@ describe('InputHandler', () => {
             isBossVisible: false,
 
             enterDuringBackgroundTransition: true,
+
+            fadingIn: false,
+            waitForFadeInOpacity: false,
+            pauseContext: 'gameplay',
+
             isPlayerInGame: false,
             cutsceneActive: false,
             notEnoughCoins: false,
             gameOver: false,
             canSelectForestMap: false,
             currentMenu: null,
+
             player: { isUnderwater: false },
             tutorial: { tutorialPause: false },
             isTutorialActive: false,
+
             menu: {
                 pause: {
                     isPaused: false,
@@ -54,11 +61,13 @@ describe('InputHandler', () => {
                 },
                 main: {},
             },
+
             audioHandler: {
                 firedogSFX: { playSound: jest.fn() },
                 menu: { playSound: jest.fn() },
                 cutsceneSFX: { isPlaying: jest.fn(() => false) },
             },
+
             saveGameState: jest.fn(),
             debug: false,
         };
@@ -175,11 +184,11 @@ describe('InputHandler', () => {
 
         describe('"b" bark key', () => {
             test('plays barkSound when in-game and not paused/tutorial/over', () => {
-            game.isPlayerInGame = true;
+                game.isPlayerInGame = true;
 
-            keyDown('b', { ctrlKey: true });
+                keyDown('b', { ctrlKey: true });
 
-            expect(game.audioHandler.firedogSFX.playSound).toHaveBeenCalledWith('barkSound');
+                expect(game.audioHandler.firedogSFX.playSound).toHaveBeenCalledWith('barkSound');
             });
 
             test('does not play barkSound when tutorial is paused', () => {
@@ -200,7 +209,11 @@ describe('InputHandler', () => {
                 keyDown('Tab');
 
                 expect(game.menu.enemyLore.activateMenu).toHaveBeenCalled();
-                expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('enemyLoreOpenBookSound', false, true);
+                expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith(
+                    'enemyLoreOpenBookSound',
+                    false,
+                    true
+                );
             });
 
             test('toggles from enemyLore back to forestMap and plays enemyLoreCloseBookSound when allowed', () => {
@@ -210,7 +223,11 @@ describe('InputHandler', () => {
                 keyDown('Tab');
 
                 expect(game.menu.forestMap.activateMenu).toHaveBeenCalled();
-                expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('enemyLoreCloseBookSound', false, true);
+                expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith(
+                    'enemyLoreCloseBookSound',
+                    false,
+                    true
+                );
             });
 
             test('does nothing when forestMap selection is disabled', () => {
@@ -253,6 +270,66 @@ describe('InputHandler', () => {
         });
 
         describe('Escape key (pause / menu / cutscene handling)', () => {
+            test('when in story cutscene (not in-game, not penguin, not boss), Escape toggles pause and sets pauseContext=cutscene', () => {
+                game.cutsceneActive = true;
+                game.isPlayerInGame = false;
+                game.talkToPenguin = false;
+                game.boss.talkToBoss = false;
+
+                game.enterDuringBackgroundTransition = true;
+                game.fadingIn = false;
+                game.waitForFadeInOpacity = false;
+                game.pauseContext = 'gameplay';
+
+                keyDown('Escape');
+
+                expect(game.pauseContext).toBe('cutscene');
+                expect(game.menu.pause.togglePause).toHaveBeenCalledTimes(1);
+            });
+
+            test('when in story cutscene but transition is disabled, Escape does nothing', () => {
+                game.cutsceneActive = true;
+                game.isPlayerInGame = false;
+                game.talkToPenguin = false;
+                game.boss.talkToBoss = false;
+
+                game.enterDuringBackgroundTransition = false;
+
+                keyDown('Escape');
+
+                expect(game.menu.pause.togglePause).not.toHaveBeenCalled();
+            });
+
+            test('when in story cutscene but fadingIn is true, Escape does nothing', () => {
+                game.cutsceneActive = true;
+                game.isPlayerInGame = false;
+                game.talkToPenguin = false;
+                game.boss.talkToBoss = false;
+
+                game.enterDuringBackgroundTransition = true;
+                game.fadingIn = true;
+                game.waitForFadeInOpacity = false;
+
+                keyDown('Escape');
+
+                expect(game.menu.pause.togglePause).not.toHaveBeenCalled();
+            });
+
+            test('when in story cutscene but waitForFadeInOpacity is true, Escape does nothing', () => {
+                game.cutsceneActive = true;
+                game.isPlayerInGame = false;
+                game.talkToPenguin = false;
+                game.boss.talkToBoss = false;
+
+                game.enterDuringBackgroundTransition = true;
+                game.fadingIn = false;
+                game.waitForFadeInOpacity = true;
+
+                keyDown('Escape');
+
+                expect(game.menu.pause.togglePause).not.toHaveBeenCalled();
+            });
+
             test('when in-game with no menu and no blockers, toggles pause menu', () => {
                 game.isPlayerInGame = true;
                 game.audioHandler.cutsceneSFX.isPlaying.mockReturnValue(false);
@@ -449,7 +526,11 @@ describe('InputHandler', () => {
 
             ih.handleEscapeKey();
 
-            expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('enemyLoreCloseBookSound', false, true);
+            expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith(
+                'enemyLoreCloseBookSound',
+                false,
+                true
+            );
             expect(game.menu.forestMap.activateMenu).toHaveBeenCalled();
         });
 

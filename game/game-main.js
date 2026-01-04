@@ -202,6 +202,8 @@ export class Game {
         this.isEndCutscene = false;
         this.fadingIn = false;
         this.waitForFadeInOpacity = false;
+        this.ignoreCutsceneInputUntil = 0;
+        this.pauseContext = 'gameplay';
         // penguin
         this.talkToPenguin = false;
         this.enterToTalkToPenguin = false;
@@ -306,6 +308,61 @@ export class Game {
                 }, 4000);
             }
         }
+    }
+
+    restartActiveCutscene() {
+        const cs = this.currentCutscene;
+        if (!cs) return;
+
+        if (typeof cs.removeEventListeners === 'function') cs.removeEventListeners();
+        if (typeof cs.stopAllAudio === 'function') cs.stopAllAudio();
+
+        const CutsceneClass = cs.constructor;
+        const fresh = new CutsceneClass(this);
+
+        this.startCutscene(fresh);
+        fresh.displayDialogue();
+
+        this.ignoreCutsceneInputUntil = performance.now() + 250;
+    }
+
+    exitCutsceneToMainMenu() {
+        const cs = this.currentCutscene;
+        if (cs && typeof cs.removeEventListeners === 'function') cs.removeEventListeners();
+        if (cs && typeof cs.stopAllAudio === 'function') cs.stopAllAudio();
+
+        this.cutsceneActive = false;
+        this.currentCutscene = null;
+        this.fadingIn = false;
+        this.waitForFadeInOpacity = false;
+        this.enterDuringBackgroundTransition = true;
+        this.isEndCutscene = false;
+        this.isPlayerInGame = false;
+
+        this.menu.pause.isPaused = false;
+        this.pauseContext = 'gameplay';
+        this.currentMenu = this.menu.main;
+    }
+
+    goToMainMenuWithSavingAnimation(durationMs = 4000) {
+        this.input && (this.input.keys = []);
+
+        this.currentMenu = this.menu.main;
+        this.menu.main.showSavingSprite = true;
+
+        this.canSelect = false;
+        this.canSelectForestMap = false;
+
+        this.enterDuringBackgroundTransition = false;
+        fadeIn(this.canvas, 1300, () => {
+            this.enterDuringBackgroundTransition = true;
+        });
+
+        setTimeout(() => {
+            this.menu.main.showSavingSprite = false;
+            this.canSelect = true;
+            this.canSelectForestMap = true;
+        }, durationMs);
     }
 
     startShake(durationMs = 0, { ifNotActive = false } = {}) {
@@ -544,14 +601,14 @@ export class Game {
                 particle.update(deltaTime);
             });
             if (this.particles.length > this.maxParticles) {
-            const keep = [];
-            const evictable = [];
-            for (const p of this.particles) {
-                if (p instanceof SpinningChicks) keep.push(p);
-                else evictable.push(p);
-            }
-            const roomForEvictable = Math.max(0, this.maxParticles - keep.length);
-            this.particles = keep.concat(evictable.slice(0, roomForEvictable));
+                const keep = [];
+                const evictable = [];
+                for (const p of this.particles) {
+                    if (p instanceof SpinningChicks) keep.push(p);
+                    else evictable.push(p);
+                }
+                const roomForEvictable = Math.max(0, this.maxParticles - keep.length);
+                this.particles = keep.concat(evictable.slice(0, roomForEvictable));
             }
             // handle collision sprites
             this.collisions.forEach((collision) => {
@@ -1106,6 +1163,12 @@ window.addEventListener("load", function () {
                 }, 2200);
             } else {
                 game.currentCutscene.draw(ctx);
+
+                if (game.menu.pause.isPaused && game.currentMenu) {
+                    game.currentMenu.menuActive = true;
+                    game.currentMenu.draw(ctx);
+                    game.currentMenu.update(deltaTime);
+                }
             }
         } else if (game.currentMenu && game.currentMenu.menuInGame === false) {
             game.isPlayerInGame = false;

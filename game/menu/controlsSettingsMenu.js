@@ -81,6 +81,9 @@ export class ControlsSettingsMenu extends BaseMenu {
         context.save();
         if (!this.menuInGame) {
             context.drawImage(this.backgroundImage, 0, 0, this.game.width, this.game.height);
+        } else if (this.game.menu.pause.isPaused) {
+            context.fillStyle = "rgba(0, 0, 0, 0.7)";
+            context.fillRect(0, 0, this.game.width, this.game.height);
         }
 
         context.font = 'bold 46px Love Ya Like A Sister';
@@ -346,12 +349,33 @@ export class ControlsSettingsMenu extends BaseMenu {
         this.handleMenuSelection();
     }
 
+    activateMenu(arg = 0) {
+        let selectedOption = 0;
+        let inGame = false;
+
+        if (typeof arg === "number") {
+            selectedOption = arg;
+        } else if (arg && typeof arg === "object") {
+            if (typeof arg.selectedOption === "number") selectedOption = arg.selectedOption;
+            if (typeof arg.inGame === "boolean") inGame = arg.inGame;
+        }
+
+        this.menuInGame = inGame;
+        this.showStarsSticker = !this.menuInGame;
+
+        super.activateMenu(selectedOption);
+    }
+
     handleMenuSelection() {
         const option = this.menuOptions[this.selectedOption];
 
-        if (option === 'Go Back') {
+        if (option === "Go Back") {
             super.handleMenuSelection();
-            this.game.menu.settings.activateMenu(1);
+            if (this.menuInGame) {
+                this.game.menu.settings.activateMenu({ inGame: true, selectedOption: 1 }); // highlight Controls
+            } else {
+                this.game.menu.settings.activateMenu(1);
+            }
             return;
         }
         if (option === 'Reset to Defaults') {

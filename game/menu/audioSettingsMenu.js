@@ -116,16 +116,30 @@ export class AudioSettingsMenu extends BaseMenu {
             if (typeof arg.selectedOption === 'number') selectedOption = arg.selectedOption;
         }
 
-        const shouldBeInGame = !!(
-            this.game.isPlayerInGame &&
-            this.game.menu.pause &&
-            this.game.menu.pause.isPaused
+        const isPaused = !!(this.game.menu.pause && this.game.menu.pause.isPaused);
+
+        const shouldBeCutscene = !!(
+            isPaused &&
+            this.game.cutsceneActive &&
+            this.game.currentCutscene
         );
 
-        this.menuInGame = (opts && typeof opts.inGame === 'boolean') ? opts.inGame : shouldBeInGame;
+        const shouldBeInGameGameplay = !!(
+            isPaused &&
+            this.game.isPlayerInGame
+        );
+
+        const inferredOverlay = shouldBeCutscene || shouldBeInGameGameplay;
+        this.menuInGame = (opts && typeof opts.inGame === 'boolean') ? opts.inGame : inferredOverlay;
+
         this.showStarsSticker = !this.menuInGame;
 
-        this.setTab(this.menuInGame ? 'INGAME' : 'MENU');
+        const defaultTab =
+            shouldBeCutscene ? 'CUTSCENE'
+                : this.menuInGame ? 'INGAME'
+                    : 'MENU';
+
+        this.setTab(defaultTab);
 
         super.activateMenu(this.headerSelectionIndex);
         this.clampSelection();
@@ -671,16 +685,13 @@ export class AudioSettingsMenu extends BaseMenu {
     handleMenuSelection() {
         const selected = this.menuOptions[this.selectedOption];
 
-        if (selected === 'Go Back') {
+        if (selected === "Go Back") {
             super.handleMenuSelection();
 
             if (this.menuInGame) {
-                this.delayedEnablePress();
-                this.game.menu.pause.activateMenu(2);
-                this.canPressNow = false;
+                this.game.menu.settings.activateMenu({ inGame: true, selectedOption: 0 });
             } else {
                 this.game.menu.settings.activateMenu(0);
-                this.canPressNow = true;
             }
             return;
         }

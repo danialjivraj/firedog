@@ -75,8 +75,16 @@ export class BaseMenu {
         }
     }
     update(deltaTime) {
-        if (this.game.isPlayerInGame === false) {
+        const isRealMenuScreen =
+            this.menuInGame === false &&
+            !this.game.cutsceneActive &&
+            !this.game.menu.pause.isPaused &&
+            !this.game.isPlayerInGame;
+
+        if (isRealMenuScreen) {
             this.game.audioHandler.menu.playSound('soundtrack');
+        } else {
+            this.game.audioHandler.menu.stopSound('soundtrack');
         }
 
         if (this.frameTimer > this.frameInterval) {

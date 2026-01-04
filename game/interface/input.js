@@ -95,6 +95,22 @@ export class InputHandler {
                     e.stopPropagation();
                 }
 
+
+                const isStoryCutscene =
+                    this.game.cutsceneActive &&
+                    !this.game.isPlayerInGame &&
+                    !this.game.talkToPenguin &&
+                    !(this.game.boss && this.game.boss.talkToBoss);
+
+                if (isStoryCutscene) {
+                    if (!this.game.enterDuringBackgroundTransition) return;
+                    if (this.game.fadingIn || this.game.waitForFadeInOpacity) return;
+
+                    this.game.pauseContext = 'cutscene';
+                    this.game.menu.pause.togglePause();
+                    return;
+                }
+
                 if (this.game.isPlayerInGame) {
                     if (!this.game.enterDuringBackgroundTransition) {
                         return;

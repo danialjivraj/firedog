@@ -12,7 +12,8 @@ describe('SettingsMenu', () => {
     canSelect: true,
     canSelectForestMap: true,
     isPlayerInGame: true,
-    audioHandler: { menu: { playSound: jest.fn() } },
+    cutsceneActive: false,
+    audioHandler: { menu: { playSound: jest.fn(), stopSound: jest.fn() } },
     saveGameState: jest.fn(),
     menu: {
       main: { activateMenu: jest.fn() },
@@ -20,7 +21,7 @@ describe('SettingsMenu', () => {
       controlsSettings: { activateMenu: jest.fn() },
       levelDifficulty: { activateMenu: jest.fn(), selectedDifficultyIndex: 1 },
       deleteProgress: { activateMenu: jest.fn() },
-      pause: { isPaused: false },
+      pause: { isPaused: false, activateMenu: jest.fn() },
     },
     currentMenu: null,
     input: { handleEscapeKey: jest.fn() },
@@ -80,6 +81,8 @@ describe('SettingsMenu', () => {
         'Delete Progress',
         'Go Back',
       ]);
+
+      expect(menu.menuInGame).toBe(false);
     });
 
     test('draw() does not throw when menu is active', () => {
@@ -89,7 +92,85 @@ describe('SettingsMenu', () => {
     });
   });
 
-  describe('handleMenuSelection()', () => {
+  describe('activateMenu() arg parsing, menuOptions switching, and clamping', () => {
+    test('activateMenu(number): uses full options (out-of-game) and clamps selectedOption into range', () => {
+      menu.activateMenu(999);
+
+      expect(menu.menuInGame).toBe(false);
+      expect(menu.menuOptions).toEqual(menu.fullOptions);
+      expect(menu.selectedOption).toBe(menu.menuOptions.length - 1);
+      expect(mockGame.currentMenu).toBe(menu);
+    });
+
+    test('activateMenu({inGame:true}): uses inGameOptions and clamps selectedOption into range', () => {
+      menu.activateMenu({ inGame: true, selectedOption: 999 });
+
+      expect(menu.menuInGame).toBe(true);
+      expect(menu.menuOptions).toEqual(menu.inGameOptions);
+      expect(menu.menuOptions).toEqual(['Audio', 'Controls', 'Go Back']);
+      expect(menu.selectedOption).toBe(menu.menuOptions.length - 1);
+      expect(mockGame.currentMenu).toBe(menu);
+    });
+
+    test('activateMenu({selectedOption}) preserves explicit selectedOption when in range', () => {
+      menu.activateMenu({ inGame: false, selectedOption: 2 });
+
+      expect(menu.menuInGame).toBe(false);
+      expect(menu.menuOptions).toEqual(menu.fullOptions);
+      expect(menu.selectedOption).toBe(2);
+      expect(mockGame.currentMenu).toBe(menu);
+    });
+  });
+
+  describe('_applyInGameLayout() layout rules', () => {
+    test('out-of-game: _applyInGameLayout resets positionOffset/menuOptionsPositionOffset to base', () => {
+      const basePos = menu.positionOffset;
+      const baseMenuPos = menu.menuOptionsPositionOffset;
+
+      menu.positionOffset = 999;
+      menu.menuOptionsPositionOffset = 888;
+
+      menu.menuInGame = false;
+      menu._applyInGameLayout();
+
+      expect(menu.positionOffset).toBe(basePos);
+      expect(menu.menuOptionsPositionOffset).toBe(baseMenuPos);
+    });
+
+    test('in-game: _applyInGameLayout increases positionOffset based on number of options', () => {
+      const basePos = menu.positionOffset;
+      const baseMenuPos = menu.menuOptionsPositionOffset;
+
+      menu.menuInGame = true;
+      menu.menuOptions = menu.inGameOptions;
+      menu._applyInGameLayout();
+
+      const optionHeight = 60;
+      const expected = baseMenuPos + (menu.menuOptions.length * optionHeight) / 2;
+
+      expect(menu.positionOffset).toBe(expected);
+      expect(menu.positionOffset).not.toBe(basePos);
+    });
+
+    test('activateMenu({inGame:true}) applies in-game layout; activateMenu({inGame:false}) restores base layout', () => {
+      const basePos = menu.positionOffset;
+      const baseMenuPos = menu.menuOptionsPositionOffset;
+
+      menu.activateMenu({ inGame: true, selectedOption: 0 });
+      expect(menu.menuInGame).toBe(true);
+
+      const optionHeight = 60;
+      const expectedInGame = baseMenuPos + (menu.inGameOptions.length * optionHeight) / 2;
+      expect(menu.positionOffset).toBe(expectedInGame);
+
+      menu.activateMenu({ inGame: false, selectedOption: 0 });
+      expect(menu.menuInGame).toBe(false);
+      expect(menu.positionOffset).toBe(basePos);
+      expect(menu.menuOptionsPositionOffset).toBe(baseMenuPos);
+    });
+  });
+
+  describe('handleMenuSelection() out-of-game routing', () => {
     test('"Audio" plays select sound and opens Audio Settings at index 0', () => {
       selectAndRun(0);
 
@@ -98,7 +179,10 @@ describe('SettingsMenu', () => {
         false,
         true
       );
-      expect(mockGame.menu.audioSettings.activateMenu).toHaveBeenCalledWith(0);
+      expect(mockGame.menu.audioSettings.activateMenu).toHaveBeenCalledWith({
+        inGame: false,
+        selectedOption: 0,
+      });
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });
 
@@ -110,7 +194,10 @@ describe('SettingsMenu', () => {
         false,
         true
       );
-      expect(mockGame.menu.controlsSettings.activateMenu).toHaveBeenCalledWith(0);
+      expect(mockGame.menu.controlsSettings.activateMenu).toHaveBeenCalledWith({
+        inGame: false,
+        selectedOption: 0,
+      });
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });
 
@@ -153,6 +240,71 @@ describe('SettingsMenu', () => {
     });
   });
 
+  describe('handleMenuSelection() in-game routing', () => {
+    beforeEach(() => {
+      menu.activateMenu({ inGame: true, selectedOption: 0 });
+      mockGame.audioHandler.menu.playSound.mockClear();
+      mockGame.menu.audioSettings.activateMenu.mockClear();
+      mockGame.menu.controlsSettings.activateMenu.mockClear();
+      mockGame.menu.pause.activateMenu.mockClear();
+      mockGame.menu.main.activateMenu.mockClear();
+      mockGame.menu.levelDifficulty.activateMenu.mockClear();
+      mockGame.menu.deleteProgress.activateMenu.mockClear();
+    });
+
+    test('in-game "Audio" opens AudioSettings with inGame:true', () => {
+      menu.selectedOption = 0; // audio
+      menu.handleMenuSelection();
+
+      expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith(
+        'optionSelectedSound',
+        false,
+        true
+      );
+      expect(mockGame.menu.audioSettings.activateMenu).toHaveBeenCalledWith({
+        inGame: true,
+        selectedOption: 0,
+      });
+
+      expect(mockGame.menu.pause.activateMenu).not.toHaveBeenCalled();
+      expect(mockGame.menu.main.activateMenu).not.toHaveBeenCalled();
+    });
+
+    test('in-game "Controls" opens ControlsSettings with inGame:true', () => {
+      menu.selectedOption = 1; // controls
+      menu.handleMenuSelection();
+
+      expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith(
+        'optionSelectedSound',
+        false,
+        true
+      );
+      expect(mockGame.menu.controlsSettings.activateMenu).toHaveBeenCalledWith({
+        inGame: true,
+        selectedOption: 0,
+      });
+
+      expect(mockGame.menu.pause.activateMenu).not.toHaveBeenCalled();
+      expect(mockGame.menu.main.activateMenu).not.toHaveBeenCalled();
+    });
+
+    test('in-game "Go Back" routes to pause menu (activateMenu(2)) and NOT main menu', () => {
+      menu.selectedOption = 2;  // go back
+      menu.handleMenuSelection();
+
+      expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith(
+        'optionSelectedSound',
+        false,
+        true
+      );
+      expect(mockGame.menu.pause.activateMenu).toHaveBeenCalledWith(2);
+
+      expect(mockGame.menu.main.activateMenu).not.toHaveBeenCalled();
+      expect(mockGame.menu.levelDifficulty.activateMenu).not.toHaveBeenCalled();
+      expect(mockGame.menu.deleteProgress.activateMenu).not.toHaveBeenCalled();
+    });
+  });
+
   describe('input handling', () => {
     test('Enter triggers handleMenuSelection when menu is active', () => {
       const spy = jest.spyOn(menu, 'handleMenuSelection');
@@ -169,7 +321,10 @@ describe('SettingsMenu', () => {
 
       menu.handleMouseClick({ clientX: 0, clientY: 0 });
 
-      expect(mockGame.menu.audioSettings.activateMenu).toHaveBeenCalledWith(0);
+      expect(mockGame.menu.audioSettings.activateMenu).toHaveBeenCalledWith({
+        inGame: false,
+        selectedOption: 0,
+      });
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });
   });

@@ -31,11 +31,20 @@ describe('BaseMenu', () => {
       height: 689,
       canSelect: true,
       canSelectForestMap: true,
+
       isPlayerInGame: false,
+      cutsceneActive: false,
+
       glacikalDefeated: false,
       elyvorgDefeated: false,
       ntharaxDefeated: false,
-      audioHandler: { menu: { playSound: jest.fn() } },
+
+      audioHandler: {
+        menu: {
+          playSound: jest.fn(),
+          stopSound: jest.fn(),
+        },
+      },
       menu: {
         someOtherMenu: { menuActive: false },
         pause: { isPaused: false },
@@ -68,6 +77,12 @@ describe('BaseMenu', () => {
     };
 
     menu = new BaseMenu(mockGame, ['A', 'B', 'C'], 'TITLE');
+
+    menu.frameTimer = 0;
+    menu.frameInterval = 1000;
+    menu.frameX = 0;
+    menu.maxFrame = 1;
+
     menu.activateMenu();
   });
 
@@ -152,7 +167,6 @@ describe('BaseMenu', () => {
       const drawnImages = ctx.drawImage.mock.calls.map(call => call[0]);
 
       expect(drawnImages).toContain(menu.backgroundImage);
-
       expect(drawnImages).not.toContain(menu.greenBandImage);
     });
 
@@ -397,23 +411,38 @@ describe('BaseMenu', () => {
   });
 
   describe('update() soundtrack behavior', () => {
-    test('update() plays soundtrack when player is not in game', () => {
+    test('plays soundtrack only on a real menu screen (menuInGame=false, not cutscene, not paused, not in game)', () => {
+      menu.menuInGame = false;
+      mockGame.cutsceneActive = false;
+      mockGame.menu.pause.isPaused = false;
       mockGame.isPlayerInGame = false;
 
       menu.update(16);
 
-      expect(mockGame.audioHandler.menu.playSound)
-        .toHaveBeenCalledWith('soundtrack');
+      expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('soundtrack');
+      expect(mockGame.audioHandler.menu.stopSound).not.toHaveBeenCalledWith('soundtrack');
     });
 
-    test('update() does not play soundtrack when player is in game', () => {
+    test.each([
+      ['menuInGame=true', () => { menu.menuInGame = true; }],
+      ['cutsceneActive=true', () => { mockGame.cutsceneActive = true; }],
+      ['pause.isPaused=true', () => { mockGame.menu.pause.isPaused = true; }],
+      ['isPlayerInGame=true', () => { mockGame.isPlayerInGame = true; }],
+    ])('stops soundtrack when NOT a real menu screen because %s', (_label, tweak) => {
+      menu.menuInGame = false;
+      mockGame.cutsceneActive = false;
+      mockGame.menu.pause.isPaused = false;
+      mockGame.isPlayerInGame = false;
+
       mockGame.audioHandler.menu.playSound.mockClear();
-      mockGame.isPlayerInGame = true;
+      mockGame.audioHandler.menu.stopSound.mockClear();
+
+      tweak();
 
       menu.update(16);
 
-      expect(mockGame.audioHandler.menu.playSound)
-        .not.toHaveBeenCalledWith('soundtrack');
+      expect(mockGame.audioHandler.menu.stopSound).toHaveBeenCalledWith('soundtrack');
+      expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalledWith('soundtrack');
     });
   });
 

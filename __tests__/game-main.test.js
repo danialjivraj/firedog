@@ -1,4 +1,8 @@
-import { Game } from '../game/game-main.js';
+jest.mock('../game/animations/fading.js', () => ({
+  fadeIn: jest.fn((canvas, duration, cb) => {
+    if (typeof cb === 'function') cb();
+  }),
+}));
 import { getDefaultKeyBindings } from '../game/config/keyBindings.js';
 import { Map7, Map3, BonusMap1 } from '../game/background/background.js';
 import {
@@ -41,6 +45,11 @@ beforeAll(() => {
 
 describe('Game class (game-main.js)', () => {
   let canvas, ctx;
+  let Game;
+
+  beforeAll(async () => {
+    ({ Game } = await import('../game/game-main.js'));
+  });
 
   beforeAll(() => {
     document.body.innerHTML = `
@@ -1163,6 +1172,146 @@ describe('Game class (game-main.js)', () => {
 
       expect(forestMapMenu.selectedCircleIndex).toBe(3);
       expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
+    });
+  });
+
+  describe('new cutscene/menu helpers', () => {
+    describe('restartActiveCutscene()', () => {
+      it('re-instantiates the active cutscene, cleans up listeners/audio, starts it, and calls displayDialogue', () => {
+        const game = new Game(canvas, canvas.width, canvas.height);
+
+        const nowSpy = jest.spyOn(performance, 'now').mockReturnValue(1000);
+
+        class FakeCutscene {
+          constructor(g) {
+            this.game = g;
+            this.displayDialogue = jest.fn();
+            this.removeEventListeners = jest.fn();
+            this.stopAllAudio = jest.fn();
+          }
+        }
+
+        const existing = new FakeCutscene(game);
+        game.currentCutscene = existing;
+
+        const startSpy = jest.spyOn(game, 'startCutscene');
+
+        game.restartActiveCutscene();
+
+        expect(existing.removeEventListeners).toHaveBeenCalledTimes(1);
+        expect(existing.stopAllAudio).toHaveBeenCalledTimes(1);
+
+        expect(startSpy).toHaveBeenCalledTimes(1);
+        const fresh = startSpy.mock.calls[0][0];
+        expect(fresh).toBeInstanceOf(FakeCutscene);
+
+        expect(fresh.displayDialogue).toHaveBeenCalledTimes(1);
+
+        expect(game.ignoreCutsceneInputUntil).toBe(1250);
+
+        nowSpy.mockRestore();
+      });
+
+      it('does nothing if there is no currentCutscene', () => {
+        const game = new Game(canvas, canvas.width, canvas.height);
+        game.currentCutscene = null;
+
+        expect(() => game.restartActiveCutscene()).not.toThrow();
+      });
+    });
+
+    describe('exitCutsceneToMainMenu()', () => {
+      it('cleans up cutscene and resets flags, unpauses, and sends player to main menu', () => {
+        const game = new Game(canvas, canvas.width, canvas.height);
+
+        const cs = {
+          removeEventListeners: jest.fn(),
+          stopAllAudio: jest.fn(),
+        };
+
+        game.cutsceneActive = true;
+        game.currentCutscene = cs;
+        game.fadingIn = true;
+        game.waitForFadeInOpacity = true;
+        game.enterDuringBackgroundTransition = false;
+        game.isEndCutscene = true;
+        game.isPlayerInGame = true;
+        game.menu.pause.isPaused = true;
+        game.pauseContext = 'cutscene';
+        game.currentMenu = game.menu.pause;
+
+        game.exitCutsceneToMainMenu();
+
+        expect(cs.removeEventListeners).toHaveBeenCalledTimes(1);
+        expect(cs.stopAllAudio).toHaveBeenCalledTimes(1);
+
+        expect(game.cutsceneActive).toBe(false);
+        expect(game.currentCutscene).toBeNull();
+        expect(game.fadingIn).toBe(false);
+        expect(game.waitForFadeInOpacity).toBe(false);
+        expect(game.enterDuringBackgroundTransition).toBe(true);
+        expect(game.isEndCutscene).toBe(false);
+        expect(game.isPlayerInGame).toBe(false);
+
+        expect(game.menu.pause.isPaused).toBe(false);
+        expect(game.pauseContext).toBe('gameplay');
+        expect(game.currentMenu).toBe(game.menu.main);
+      });
+
+      it('handles missing currentCutscene safely', () => {
+        const game = new Game(canvas, canvas.width, canvas.height);
+        game.currentCutscene = null;
+
+        expect(() => game.exitCutsceneToMainMenu()).not.toThrow();
+        expect(game.currentMenu).toBe(game.menu.main);
+      });
+    });
+
+    describe('goToMainMenuWithSavingAnimation()', () => {
+      beforeEach(() => jest.useFakeTimers());
+      afterEach(() => jest.useRealTimers());
+
+      it('shows saving sprite, disables selection, calls fadeIn callback, and re-enables after duration', () => {
+        const game = new Game(canvas, canvas.width, canvas.height);
+
+        game.input = { keys: ['KeyA', 'KeyB'] };
+
+        game.menu.main.showSavingSprite = false;
+        game.canSelect = true;
+        game.canSelectForestMap = true;
+        game.enterDuringBackgroundTransition = true;
+
+        game.goToMainMenuWithSavingAnimation(4000);
+
+        expect(game.input.keys).toEqual([]);
+        expect(game.currentMenu).toBe(game.menu.main);
+        expect(game.menu.main.showSavingSprite).toBe(true);
+        expect(game.canSelect).toBe(false);
+        expect(game.canSelectForestMap).toBe(false);
+
+        expect(game.enterDuringBackgroundTransition).toBe(true);
+
+        jest.advanceTimersByTime(4000);
+        expect(game.menu.main.showSavingSprite).toBe(false);
+        expect(game.canSelect).toBe(true);
+        expect(game.canSelectForestMap).toBe(true);
+      });
+
+      it('uses default duration (4000ms) when not provided', () => {
+        const game = new Game(canvas, canvas.width, canvas.height);
+
+        game.goToMainMenuWithSavingAnimation();
+
+        expect(game.menu.main.showSavingSprite).toBe(true);
+
+        jest.advanceTimersByTime(3999);
+        expect(game.menu.main.showSavingSprite).toBe(true);
+
+        jest.advanceTimersByTime(1);
+        expect(game.menu.main.showSavingSprite).toBe(false);
+        expect(game.canSelect).toBe(true);
+        expect(game.canSelectForestMap).toBe(true);
+      });
     });
   });
 
