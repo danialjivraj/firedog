@@ -3671,7 +3671,8 @@ export class NTharax extends EnemyBoss {
         this.ntharaxDistortionAnimation.setFps(this._base.fps.distortion);
 
         this.distortionEffectTimer = 0;
-        this.distortionDuration = 15000;
+        this.distortionNormalDuration = 10000;
+        this.distortionMode2Duration = 15000;
 
         // slap
         this.slapAnimation = new EnemyBoss(game, 204.1428571428571, 230, 6, "ntharaxSlap");
@@ -5898,7 +5899,12 @@ export class NTharax extends EnemyBoss {
     updateDistortionEffect(deltaTime) {
         if (this.game.distortionActive) {
             this.distortionEffectTimer += deltaTime;
-            if (this.distortionEffectTimer >= this.distortionDuration) {
+
+            const duration = this.mode2Active
+                ? this.distortionMode2Duration
+                : this.distortionNormalDuration;
+
+            if (this.distortionEffectTimer >= duration) {
                 this.game.distortionActive = false;
                 this.game.audioHandler.enemySFX.playSound("distortionEndSound", false, true);
             }

@@ -81,7 +81,7 @@ jest.mock("../../../game/entities/enemies/enemies.js", () => {
         else this.frameX = (this.frameX ?? 0) + 1;
       }
     }
-    draw() {}
+    draw() { }
     backToIdleSetUp() {
       this.state = "idle";
     }
@@ -89,12 +89,12 @@ jest.mock("../../../game/entities/enemies/enemies.js", () => {
       this._defeatCommonArgs = opts;
       if (opts?.onBeforeClear) opts.onBeforeClear();
     }
-    edgeConstraintLogic() {}
-    checksBossIsFullyVisible() {}
-    runningAway() {}
+    edgeConstraintLogic() { }
+    checksBossIsFullyVisible() { }
+    runningAway() { }
   }
 
-  class EnemyBoss extends Enemy {}
+  class EnemyBoss extends Enemy { }
   class Projectile extends Enemy {
     constructor(game, x = 0, y = 0, width = 0, height = 0, maxFrame = 0, imageId = "", fps = 0) {
       super(game, width, height, maxFrame, imageId);
@@ -117,7 +117,7 @@ jest.mock("../../../game/entities/enemies/enemies.js", () => {
       this.setFps?.(fps);
     }
   }
-  class BurrowingGroundEnemy extends Enemy {}
+  class BurrowingGroundEnemy extends Enemy { }
 
   return { Enemy, EnemyBoss, BurrowingGroundEnemy, Barrier, Projectile, FallingEnemy };
 });
@@ -130,8 +130,8 @@ jest.mock("../../../game/animations/collisionAnimation.js", () => {
       this.opts = opts;
       this.markedForDeletion = false;
     }
-    update() {}
-    draw() {}
+    update() { }
+    draw() { }
   }
 
   class HealingStarBurstCollision {
@@ -145,12 +145,12 @@ jest.mock("../../../game/animations/collisionAnimation.js", () => {
     start() {
       this._started = true;
     }
-    update() {}
-    draw() {}
+    update() { }
+    draw() { }
   }
 
   class AsteroidExplosionCollision {
-    constructor() {}
+    constructor() { }
   }
 
   return { DisintegrateCollision, HealingStarBurstCollision, AsteroidExplosionCollision };
@@ -607,16 +607,36 @@ describe("NTharax", () => {
   });
 
   describe("distortion effect lifecycle", () => {
-    test("updateDistortionEffect turns off distortion after duration and plays end SFX", () => {
+    test("updateDistortionEffect turns off distortion after 10s duration and plays end SFX", () => {
       const { game, boss } = createBoss();
 
       game.distortionActive = true;
-      boss.distortionDuration = 10;
+
+      boss.distortionNormalDuration = 10;
       boss.distortionEffectTimer = 9;
 
       boss.updateDistortionEffect(2);
 
       expect(game.distortionActive).toBe(false);
+      expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith(
+        "distortionEndSound",
+        false,
+        true
+      );
+    });
+
+    test("updateDistortionEffect turns off distortion after 15s duration and plays end SFX", () => {
+      const { game, boss } = createBoss();
+
+      game.distortionActive = true;
+      boss.mode2 = true;
+      boss.distortionMode2Duration = 15;
+      boss.distortionEffectTimer = 14;
+
+      boss.updateDistortionEffect(2);
+
+      expect(game.distortionActive).toBe(false);
+
       expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith(
         "distortionEndSound",
         false,
