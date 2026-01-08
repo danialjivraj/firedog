@@ -28,6 +28,7 @@ export class AudioSettingsMenu extends BaseMenu {
                     'Go Back',
                 ],
                 volumeLevels: [50, 50, 50, 50, null],
+                muted: [false, false, false, false, null],
                 audioMap: null,
             },
             CUTSCENE: {
@@ -39,6 +40,7 @@ export class AudioSettingsMenu extends BaseMenu {
                     'Go Back',
                 ],
                 volumeLevels: [50, 50, 50, 50, null],
+                muted: [false, false, false, false, null],
                 audioMap: null,
             },
             INGAME: {
@@ -52,11 +54,13 @@ export class AudioSettingsMenu extends BaseMenu {
                     'Go Back',
                 ],
                 volumeLevels: [50, 50, 50, 50, 50, 50, null],
+                muted: [false, false, false, false, false, false, null],
                 audioMap: null,
             },
         };
 
         this.volumeLevels = [];
+        this.muted = [];
         this.audioMap = {};
 
         this._buildAudioMaps();
@@ -118,16 +122,8 @@ export class AudioSettingsMenu extends BaseMenu {
 
         const isPaused = !!(this.game.menu.pause && this.game.menu.pause.isPaused);
 
-        const shouldBeCutscene = !!(
-            isPaused &&
-            this.game.cutsceneActive &&
-            this.game.currentCutscene
-        );
-
-        const shouldBeInGameGameplay = !!(
-            isPaused &&
-            this.game.isPlayerInGame
-        );
+        const shouldBeCutscene = !!(isPaused && this.game.cutsceneActive && this.game.currentCutscene);
+        const shouldBeInGameGameplay = !!(isPaused && this.game.isPlayerInGame);
 
         const inferredOverlay = shouldBeCutscene || shouldBeInGameGameplay;
         this.menuInGame = (opts && typeof opts.inGame === 'boolean') ? opts.inGame : inferredOverlay;
@@ -152,6 +148,7 @@ export class AudioSettingsMenu extends BaseMenu {
         const data = this._getActiveTabData();
         this.menuOptions = data.options;
         this.volumeLevels = data.volumeLevels;
+        this.muted = data.muted;
         this.audioMap = data.audioMap;
 
         this.clampSelection();
@@ -237,6 +234,26 @@ export class AudioSettingsMenu extends BaseMenu {
         return { x, y, w, h };
     }
 
+    getMuteIconRect(i) {
+        const { x: sliderX, y: sliderY, w: sliderW, h: sliderH } = this.getSliderRect(i);
+        const size = 34;
+        const x = sliderX + sliderW + 38;
+        const y = sliderY + sliderH / 2 - size / 2;
+        return { x, y, w: size, h: size };
+    }
+
+    getLabelRect(i) {
+        const { y: rowY } = this.getSliderRect(i);
+
+        const labelRightX = this.game.width / 2 - 50;
+        const labelW = 320;
+        const labelH = 46;
+
+        const x = labelRightX - labelW;
+        const y = rowY - 10;
+
+        return { x, y, w: labelW, h: labelH };
+    }
 
     getOptionRowRect(i) {
         const centerX = this.game.width / 2;
@@ -282,6 +299,123 @@ export class AudioSettingsMenu extends BaseMenu {
             }
         }
         return null;
+    }
+
+    _isMutedIndex(i) {
+        return !!this.muted[i];
+    }
+
+    _setMutedIndex(i, v) {
+        this.muted[i] = !!v;
+    }
+
+    _hitTestMuteIcon(i, mouseX, mouseY) {
+        if (this.volumeLevels[i] === null) return false;
+        const r = this.getMuteIconRect(i);
+        return (mouseX >= r.x && mouseX <= r.x + r.w && mouseY >= r.y && mouseY <= r.y + r.h);
+    }
+
+    _hitTestLabel(i, mouseX, mouseY) {
+        if (this.volumeLevels[i] === null) return false;
+        if (this.menuOptions[i] === 'Go Back') return false;
+        const r = this.getLabelRect(i);
+        return (mouseX >= r.x && mouseX <= r.x + r.w && mouseY >= r.y && mouseY <= r.y + r.h);
+    }
+
+    _toggleMute(i) {
+        if (this.volumeLevels[i] === null) return;
+
+        const next = !this._isMutedIndex(i);
+        this._setMutedIndex(i, next);
+
+        const label = this.menuOptions[i];
+        this.updateAudioVolume(this.audioMap[label], i);
+
+        if (i === 0) {
+            for (let k = 1; k < this.volumeLevels.length; k++) {
+                if (this.volumeLevels[k] !== null) {
+                    const otherLabel = this.menuOptions[k];
+                    this.updateAudioVolume(this.audioMap[otherLabel], k);
+                }
+            }
+        }
+
+        this.game.saveGameState();
+    }
+
+    // button + icon
+    drawMuteButton(ctx, rect, muted, isSelectedRow) {
+        ctx.save();
+
+        ctx.shadowColor = 'rgba(0,0,0,0.6)';
+        ctx.shadowBlur = 6;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+
+        ctx.fillStyle = muted ? '#1f2a2a' : '#0d3f3d';
+        ctx.strokeStyle = isSelectedRow ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.45)';
+        ctx.lineWidth = 2;
+
+        this.roundRect(ctx, rect.x, rect.y, rect.w, rect.h, 6, true, true);
+
+        const pad = 8;
+        this.drawSpeakerIcon(ctx, rect.x + pad, rect.y + pad, rect.w - pad * 2, muted);
+
+        ctx.restore();
+    }
+
+    drawSpeakerIcon(ctx, x, y, size, muted) {
+        ctx.save();
+
+        const cy = y + size / 2;
+
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(255,255,255,0.95)';
+        ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+        ctx.lineJoin = 'miter';
+        ctx.lineCap = 'butt';
+
+        // base rectangle
+        const baseW = size * 0.18;
+        const baseH = size * 0.36;
+        const baseX = x + size * 0.18;
+        const baseY = cy - baseH / 2;
+
+        ctx.beginPath();
+        ctx.rect(baseX, baseY, baseW, baseH);
+        ctx.fill();
+
+        const gap = size * 0.10;
+
+        // trapezoid cone
+        const coneLeftX = baseX + baseW + gap;
+        const coneRightX = x + size * 0.82;
+
+        const coneTopLeftY = baseY;
+        const coneBotLeftY = baseY + baseH;
+        const coneTopRightY = cy - baseH;
+        const coneBotRightY = cy + baseH;
+
+        ctx.beginPath();
+        ctx.moveTo(coneLeftX, coneTopLeftY);
+        ctx.lineTo(coneRightX, coneTopRightY);
+        ctx.lineTo(coneRightX, coneBotRightY);
+        ctx.lineTo(coneLeftX, coneBotLeftY);
+        ctx.closePath();
+        ctx.fill();
+
+        // mute slash
+        if (muted) {
+            ctx.lineWidth = 3;
+            const pad = size * 0.15;
+
+            ctx.beginPath();
+            ctx.moveTo(x + pad, y + size - pad);
+            ctx.lineTo(x + size - pad, y + pad);
+            ctx.stroke();
+        }
+
+        ctx.restore();
     }
 
     // draw
@@ -349,7 +483,7 @@ export class AudioSettingsMenu extends BaseMenu {
 
             if (isGoBack) {
                 context.textAlign = 'center';
-                context.fillText(this.menuOptions[i], this.game.width / 2, labelY + 5); // small extra nudge
+                context.fillText(this.menuOptions[i], this.game.width / 2, labelY + 5);
                 continue;
             } else {
                 context.textAlign = 'right';
@@ -359,20 +493,25 @@ export class AudioSettingsMenu extends BaseMenu {
             const vol = this.volumeLevels[i];
             if (vol === null) continue;
 
+            const muted = this._isMutedIndex(0) || this._isMutedIndex(i);
+
             const { x: sliderX, y: sliderY, w: sliderW, h: sliderH } = this.getSliderRect(i);
 
+            // slider track
             context.fillStyle = '#ccc';
             this.roundRect(context, sliderX, sliderY, sliderW, sliderH, 14, true, false);
 
+            // handle
             const handleR = sliderH / 2;
             const handleX = sliderX + (sliderW - 2 * handleR) * (vol / 100);
 
             context.shadowOffsetX = 0;
             context.shadowOffsetY = 0;
             context.shadowBlur = 0;
-            context.shadowColor = '#4CAF50';
 
-            context.fillStyle = '#4CAF50';
+            context.shadowColor = muted ? '#888' : '#4CAF50';
+            context.fillStyle = muted ? '#888' : '#4CAF50';
+
             context.beginPath();
             context.arc(handleX + handleR, sliderY + sliderH / 2, handleR, 0, 2 * Math.PI);
             context.fill();
@@ -387,6 +526,9 @@ export class AudioSettingsMenu extends BaseMenu {
             context.font = '20px Arial';
             context.fillText(`${vol}%`, sliderX + sliderW, sliderY + sliderH / 2 - 20);
             context.restore();
+
+            const iconRect = this.getMuteIconRect(i);
+            this.drawMuteButton(context, iconRect, muted, i === this.selectedOption);
         }
 
         context.restore();
@@ -408,6 +550,14 @@ export class AudioSettingsMenu extends BaseMenu {
 
         const masterVolume = this.volumeLevels[0] / 100;
         const currentVolume = this.volumeLevels[index];
+
+        const masterMuted = this._isMutedIndex(0);
+        const currentMuted = this._isMutedIndex(index);
+
+        if (masterMuted || currentMuted) {
+            audioElement.volume = 0;
+            return;
+        }
 
         if (index === 0) {
             audioElement.volume = masterVolume;
@@ -535,6 +685,15 @@ export class AudioSettingsMenu extends BaseMenu {
                 this._playSelect();
                 return;
             }
+
+            const i = this.selectedOption;
+            const isGoBack = this.menuOptions[i] === 'Go Back' || this.volumeLevels[i] === null;
+            if (!isGoBack) {
+                this._playSelect();
+                this._toggleMute(i);
+                return;
+            }
+
             this.handleMenuSelection();
         }
     }
@@ -568,6 +727,26 @@ export class AudioSettingsMenu extends BaseMenu {
             return;
         }
 
+        for (let i = 0; i < this.menuOptions.length; i++) {
+            if (this.volumeLevels[i] === null) continue;
+            if (this._hitTestLabel(i, mouseX, mouseY)) {
+                this.selectedOption = i;
+                this._playSelect();
+                this._toggleMute(i);
+                return;
+            }
+        }
+
+        for (let i = 0; i < this.menuOptions.length; i++) {
+            if (this.volumeLevels[i] === null) continue;
+            if (this._hitTestMuteIcon(i, mouseX, mouseY)) {
+                this.selectedOption = i;
+                this._playSelect();
+                this._toggleMute(i);
+                return;
+            }
+        }
+
         if (!this.isHeaderSelected()) {
             const i = this.selectedOption;
             const current = this.volumeLevels[i];
@@ -596,6 +775,12 @@ export class AudioSettingsMenu extends BaseMenu {
         const { x: mouseX, y: mouseY } = this._getMouse(event);
 
         for (let i = 0; i < this.menuOptions.length; i++) {
+            if (this.volumeLevels[i] === null) continue;
+            if (this._hitTestMuteIcon(i, mouseX, mouseY)) return;
+            if (this._hitTestLabel(i, mouseX, mouseY)) return;
+        }
+
+        for (let i = 0; i < this.menuOptions.length; i++) {
             const vol = this.volumeLevels[i];
             if (vol === null) continue;
 
@@ -612,6 +797,7 @@ export class AudioSettingsMenu extends BaseMenu {
                 this.draggingSlider = true;
                 this.draggingSliderIndex = i;
                 this.dragOffsetX = mouseX - handleX;
+                this.selectedOption = i;
                 break;
             }
         }
@@ -685,7 +871,7 @@ export class AudioSettingsMenu extends BaseMenu {
     handleMenuSelection() {
         const selected = this.menuOptions[this.selectedOption];
 
-        if (selected === "Go Back") {
+        if (selected === 'Go Back') {
             super.handleMenuSelection();
 
             if (this.menuInGame) {
@@ -703,21 +889,28 @@ export class AudioSettingsMenu extends BaseMenu {
     getState() {
         return {
             tabData: {
-                MENU: { volumeLevels: [...this.tabData.MENU.volumeLevels] },
-                CUTSCENE: { volumeLevels: [...this.tabData.CUTSCENE.volumeLevels] },
-                INGAME: { volumeLevels: [...this.tabData.INGAME.volumeLevels] },
+                MENU: {
+                    volumeLevels: [...this.tabData.MENU.volumeLevels],
+                    muted: [...this.tabData.MENU.muted],
+                },
+                CUTSCENE: {
+                    volumeLevels: [...this.tabData.CUTSCENE.volumeLevels],
+                    muted: [...this.tabData.CUTSCENE.muted],
+                },
+                INGAME: {
+                    volumeLevels: [...this.tabData.INGAME.volumeLevels],
+                    muted: [...this.tabData.INGAME.muted],
+                },
             },
         };
     }
 
     setState(state) {
-        if (state && state.tabData) {
-            for (const t of this.tabs) {
-                const s = state.tabData[t];
-                if (s && Array.isArray(s.volumeLevels) && this.tabData[t]) {
-                    this.tabData[t].volumeLevels = [...s.volumeLevels];
-                }
-            }
+        for (const t of this.tabs) {
+            const s = state.tabData[t];
+
+            this.tabData[t].volumeLevels = [...s.volumeLevels];
+            this.tabData[t].muted = [...s.muted];
         }
 
         for (const t of this.tabs) {

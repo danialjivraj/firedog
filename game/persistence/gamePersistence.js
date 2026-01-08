@@ -126,9 +126,18 @@ export function clearSavedData(game) {
 
     game.menu.audioSettings.setState({
         tabData: {
-            MENU: { volumeLevels: [50, 50, 50, 50, null] },
-            CUTSCENE: { volumeLevels: [50, 50, 50, 50, null] },
-            INGAME: { volumeLevels: [50, 50, 50, 50, 50, 50, null] },
+            MENU: {
+                volumeLevels: [50, 50, 50, 50, null],
+                muted: [false, false, false, false, null],
+            },
+            CUTSCENE: {
+                volumeLevels: [50, 50, 50, 50, null],
+                muted: [false, false, false, false, null],
+            },
+            INGAME: {
+                volumeLevels: [50, 50, 50, 50, 50, 50, null],
+                muted: [false, false, false, false, false, false, null],
+            },
         },
     });
 

@@ -47,6 +47,23 @@ describe('Game class (game-main.js)', () => {
   let canvas, ctx;
   let Game;
 
+  const VALID_AUDIO_STATE = {
+    tabData: {
+      MENU: {
+        volumeLevels: [50, 50, 50, 50, null],
+        muted: [false, false, false, false, null],
+      },
+      CUTSCENE: {
+        volumeLevels: [50, 50, 50, 50, null],
+        muted: [false, false, false, false, null],
+      },
+      INGAME: {
+        volumeLevels: [50, 50, 50, 50, 50, 50, null],
+        muted: [false, false, false, false, false, false, null],
+      },
+    },
+  };
+
   beforeAll(async () => {
     ({ Game } = await import('../game/game-main.js'));
   });
@@ -324,7 +341,8 @@ describe('Game class (game-main.js)', () => {
       game.ntharaxDefeated = false;
       game.selectedDifficulty = 'Hard';
       game.menu.skins.currentSkin = { id: 'zabka' };
-      game.menu.audioSettings.getState = () => ({ foo: 'bar' });
+
+      game.menu.audioSettings.getState = () => VALID_AUDIO_STATE;
     });
 
     it('saveGameState() writes the expected shape into localStorage', () => {
@@ -332,10 +350,13 @@ describe('Game class (game-main.js)', () => {
       const item = localStorage.getItem('gameState');
       expect(item).not.toBeNull();
       const snapshot = JSON.parse(item);
+
       expect(snapshot.map3Unlocked).toBe(true);
       expect(snapshot.currentSkin).toBe('zabka');
       expect(snapshot.selectedDifficulty).toBe('Hard');
-      expect(snapshot.audioSettingsState).toEqual({ foo: 'bar' });
+
+      expect(snapshot.audioSettingsState).toEqual(VALID_AUDIO_STATE);
+
       expect(snapshot.glacikalDefeated).toBe(true);
       expect(snapshot.elyvorgDefeated).toBe(true);
       expect(snapshot.ntharaxDefeated).toBe(false);
@@ -366,17 +387,20 @@ describe('Game class (game-main.js)', () => {
 
     it('loadGameState() calls menu.setState / skins.setCurrentSkinById / levelDifficulty.setDifficulty', () => {
       const fake = {
-        audioSettingsState: { a: 1 },
+        audioSettingsState: VALID_AUDIO_STATE,
         currentSkin: 'zabka',
-        selectedDifficulty: 'Hard'
+        selectedDifficulty: 'Hard',
       };
+
       localStorage.setItem('gameState', JSON.stringify(fake));
+
       const g3 = new Game(canvas, canvas.width, canvas.height);
       g3.menu.audioSettings.setState = jest.fn();
       g3.menu.skins.setCurrentSkinById = jest.fn();
       g3.menu.levelDifficulty.setDifficulty = jest.fn();
       g3.loadGameState();
-      expect(g3.menu.audioSettings.setState).toHaveBeenCalledWith({ a: 1 });
+
+      expect(g3.menu.audioSettings.setState).toHaveBeenCalledWith(VALID_AUDIO_STATE);
       expect(g3.menu.skins.setCurrentSkinById).toHaveBeenCalledWith('zabka');
       expect(g3.menu.levelDifficulty.setDifficulty).toHaveBeenCalledWith('Hard');
     });
@@ -400,14 +424,18 @@ describe('Game class (game-main.js)', () => {
       const g1 = new Game(canvas, canvas.width, canvas.height);
 
       g1.menu.skins.currentSkin = { id: 'defaultSkin' };
-      g1.menu.audioSettings.getState = () => ({});
+
+      g1.menu.audioSettings.getState = () => VALID_AUDIO_STATE;
 
       const defaults = getDefaultKeyBindings();
-      g1.keyBindings = { ...defaults, Dash: 'ShiftRight', Jump: 'KeyZ' };
+
+      g1.keyBindings = { ...defaults, dashAttack: 'ShiftRight', jump: 'KeyZ' };
+
       g1.saveGameState();
 
       const g2 = new Game(canvas, canvas.width, canvas.height);
-      expect(g2.keyBindings).toMatchObject({ ...defaults, Dash: 'ShiftRight', Jump: 'KeyZ' });
+
+      expect(g2.keyBindings).toEqual({ ...defaults, dashAttack: 'ShiftRight', jump: 'KeyZ' });
     });
 
     it('clearSavedData() resets keyBindings back to defaults', () => {
@@ -898,15 +926,19 @@ describe('Game class (game-main.js)', () => {
 
       expect(game.menu.audioSettings.setState).toHaveBeenCalledWith({
         tabData: {
+          MENU: {
+            volumeLevels: [50, 50, 50, 50, null],
+            muted: [false, false, false, false, null],
+          },
           CUTSCENE: {
             volumeLevels: [50, 50, 50, 50, null],
+            muted: [false, false, false, false, null],
           },
           INGAME: {
             volumeLevels: [50, 50, 50, 50, 50, 50, null],
+            muted: [false, false, false, false, false, false, null],
           },
-          MENU: {
-            volumeLevels: [50, 50, 50, 50, null],
-          },
+
         },
       });
 
