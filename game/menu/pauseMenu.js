@@ -19,23 +19,28 @@ export class PauseMenu extends BaseMenu {
         if (selectedOption === "Resume") {
             this.togglePause();
         } else if (selectedOption === "Restart") {
-            if (this.game.pauseContext === 'cutscene') {
+            if (this.game.pauseContext === 'storyCutscene') {
                 this.game.restartActiveCutscene();
                 if (this.isPaused) this.togglePause();
                 return;
             }
+
             this.togglePause();
             this.game.reset();
         } else if (selectedOption === "Settings") {
             this.game.menu.settings.activateMenu({ inGame: true, selectedOption: 0 });
         } else if (selectedOption === "Back to Main Menu") {
-            const leavingEndCutscene = (this.game.pauseContext === 'cutscene' && this.game.isEndCutscene);
-            if (this.game.pauseContext === 'cutscene') {
+            const isStoryCutscene = (this.game.pauseContext === 'storyCutscene');
+            const leavingEndCutscene = (isStoryCutscene && this.game.isEndCutscene);
+
+            if (isStoryCutscene) {
                 this.game.exitCutsceneToMainMenu();
             }
+
             if (this.isPaused) this.togglePause();
             this.game.isPlayerInGame = false;
             this.game.reset();
+
             if (leavingEndCutscene) {
                 this.game.goToMainMenuWithSavingAnimation(4000);
             } else {
@@ -47,7 +52,16 @@ export class PauseMenu extends BaseMenu {
     togglePause() {
         this.isPaused = !this.isPaused;
         this.selectedOption = 0;
+
         if (this.isPaused === true) {
+            if (this.game.cutsceneActive && this.game.currentCutscene) {
+                this.game.pauseContext = this.game.isPlayerInGame
+                    ? 'inGameCutscene'
+                    : 'storyCutscene';
+            } else {
+                this.game.pauseContext = 'gameplay';
+            }
+
             this.game.menu.pause.activateMenu();
             this.game.audioHandler.mapSoundtrack.pauseAllSounds();
             this.game.audioHandler.firedogSFX.pauseAllSounds();

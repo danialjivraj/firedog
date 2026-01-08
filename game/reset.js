@@ -14,8 +14,9 @@ export class Reset {
     }
     reset({ preserveTime = false } = {}) {
         // if during a cutscene
-        if (this.game.currentCutscene !== null) {
-            this.game.currentCutscene.removeEventListeners();
+        const cs = this.game.currentCutscene;
+        if (cs && typeof cs.removeEventListeners === "function") {
+            cs.removeEventListeners();
         }
         // shake
         this.game.stopShake();
@@ -59,9 +60,11 @@ export class Reset {
         this.game.powerDowns = [];
         this.game.cabins = [];
         this.game.penguins = [];
-        this.game.endCutscene();
-        this.game.cutscenes = [];
+        this.game.cutsceneActive = false;
+        this.game.currentCutscene = null;
         this.game.isEndCutscene = false;
+        this.game.pauseContext = 'gameplay';
+        this.game.cutscenes = [];
         this.game.input.keys = [];
         // cabin
         this.game.cabinAppeared = false;

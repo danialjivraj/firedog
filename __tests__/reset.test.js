@@ -39,6 +39,7 @@ describe('Reset', () => {
             // cutscenes
             currentCutscene: { removeEventListeners: jest.fn() },
             cutscenes: [1],
+            cutsceneActive: true,
             isEndCutscene: true,
             endCutscene: jest.fn(),
 
@@ -163,8 +164,9 @@ describe('Reset', () => {
             });
 
             it('removes cutscene listeners when a cutscene is active', () => {
-                reset.reset();
-                expect(game.currentCutscene.removeEventListeners).toHaveBeenCalled();
+            const cs = game.currentCutscene;
+            reset.reset();
+            expect(cs.removeEventListeners).toHaveBeenCalled();
             });
 
             it('does not remove listeners on a previous cutscene when currentCutscene is null', () => {
@@ -252,14 +254,16 @@ describe('Reset', () => {
             expect(game._fullClearRecorded).toBe(false);
         });
 
-        it('ends any active end cutscene and clears isEndCutscene flag', () => {
-            game.isEndCutscene = true;
+        it('clears any cutscene state and clears isEndCutscene flag without calling endCutscene()', () => {
+        game.isEndCutscene = true;
 
-            reset.reset();
+        reset.reset();
 
-            expect(game.endCutscene).toHaveBeenCalledTimes(1);
-            expect(game.isEndCutscene).toBe(false);
-            expect(game.cutscenes).toEqual([]);
+        expect(game.endCutscene).not.toHaveBeenCalled();
+        expect(game.isEndCutscene).toBe(false);
+        expect(game.cutsceneActive).toBe(false);
+        expect(game.currentCutscene).toBe(null);
+        expect(game.cutscenes).toEqual([]);
         });
 
         it('creates a new player instance on each reset', () => {

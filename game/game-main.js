@@ -238,6 +238,7 @@ export class Game {
     endCutscene() {
         this.cutsceneActive = false;
         this.currentCutscene = null;
+        this.pauseContext = 'gameplay';
         this.currentMenu = null;
         if (this.input) {
             this.input.keys = [];

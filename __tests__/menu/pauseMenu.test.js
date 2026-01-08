@@ -17,12 +17,17 @@ describe('PauseMenu', () => {
             reset: jest.fn(),
             isPlayerInGame: true,
 
+            cutsceneActive: false,
+            currentCutscene: null,
+
             pauseContext: 'gameplay',
             isEndCutscene: false,
 
             restartActiveCutscene: jest.fn(),
             exitCutsceneToMainMenu: jest.fn(),
             goToMainMenuWithSavingAnimation: jest.fn(),
+
+            ignoreCutsceneInputUntil: 0,
 
             audioHandler: {
                 mapSoundtrack: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
@@ -115,6 +120,36 @@ describe('PauseMenu', () => {
             jest.advanceTimersByTime(1);
             expect(menu.canEscape).toBe(true);
         });
+
+        test('when pausing during story cutscene (not in game), sets pauseContext = storyCutscene', () => {
+            game.cutsceneActive = true;
+            game.currentCutscene = {};
+            game.isPlayerInGame = false;
+
+            menu.togglePause();
+
+            expect(game.pauseContext).toBe('storyCutscene');
+        });
+
+        test('when pausing during in-game cutscene, sets pauseContext = inGameCutscene', () => {
+            game.cutsceneActive = true;
+            game.currentCutscene = {};
+            game.isPlayerInGame = true;
+
+            menu.togglePause();
+
+            expect(game.pauseContext).toBe('inGameCutscene');
+        });
+
+        test('when pausing during normal gameplay, sets pauseContext = gameplay', () => {
+            game.cutsceneActive = false;
+            game.currentCutscene = null;
+            game.isPlayerInGame = true;
+
+            menu.togglePause();
+
+            expect(game.pauseContext).toBe('gameplay');
+        });
     });
 
     describe('handleMenuSelection()', () => {
@@ -153,10 +188,10 @@ describe('PauseMenu', () => {
             toggleSpy.mockRestore();
         });
 
-        test('Restart: when pauseContext is cutscene, restarts active cutscene and does NOT reset game', () => {
+        test('Restart: when pauseContext is storyCutscene, restarts active cutscene and does NOT reset game', () => {
             const toggleSpy = jest.spyOn(menu, 'togglePause');
 
-            game.pauseContext = 'cutscene';
+            game.pauseContext = 'storyCutscene';
             menu.isPaused = true;
 
             menu.selectedOption = 1;
@@ -164,10 +199,25 @@ describe('PauseMenu', () => {
 
             expect(baseSelectSpy).toHaveBeenCalled();
             expect(game.restartActiveCutscene).toHaveBeenCalled();
-
             expect(toggleSpy).toHaveBeenCalled();
-
             expect(game.reset).not.toHaveBeenCalled();
+
+            toggleSpy.mockRestore();
+        });
+
+        test('Restart: when pauseContext is inGameCutscene, uses in-game restart (reset) and does NOT restart cutscene', () => {
+            const toggleSpy = jest.spyOn(menu, 'togglePause');
+
+            game.pauseContext = 'inGameCutscene';
+            menu.isPaused = true;
+
+            menu.selectedOption = 1;
+            menu.handleMenuSelection();
+
+            expect(baseSelectSpy).toHaveBeenCalled();
+            expect(toggleSpy).toHaveBeenCalled();
+            expect(game.reset).toHaveBeenCalled();
+            expect(game.restartActiveCutscene).not.toHaveBeenCalled();
 
             toggleSpy.mockRestore();
         });
@@ -203,10 +253,10 @@ describe('PauseMenu', () => {
             toggleSpy.mockRestore();
         });
 
-        test('Back to Main Menu (cutscene, not end cutscene): exits cutscene, then activates main menu (no saving animation)', () => {
+        test('Back to Main Menu (story cutscene, not end cutscene): exits cutscene, then activates main menu (no saving animation)', () => {
             const toggleSpy = jest.spyOn(menu, 'togglePause');
 
-            game.pauseContext = 'cutscene';
+            game.pauseContext = 'storyCutscene';
             game.isEndCutscene = false;
 
             menu.isPaused = true;
@@ -227,9 +277,9 @@ describe('PauseMenu', () => {
             toggleSpy.mockRestore();
         });
 
-        test('Back to Main Menu from end cutscene triggers saving animation instead of direct activateMenu', () => {
+        test('Back to Main Menu from end story cutscene triggers saving animation instead of direct activateMenu', () => {
             menu.isPaused = true;
-            game.pauseContext = 'cutscene';
+            game.pauseContext = 'storyCutscene';
             game.isEndCutscene = true;
 
             menu.selectedOption = 3;
