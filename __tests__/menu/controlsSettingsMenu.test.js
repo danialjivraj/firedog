@@ -3,15 +3,17 @@ import { BaseMenu } from '../../game/menu/baseMenu.js';
 
 jest.mock('../../game/config/keyBindings.js', () => {
     const defaults = {
-        jump: 'Space',
-        moveBackward: 'A',
-        sit: 'S',
-        moveForward: 'D',
-        rollAttack: 'K',
-        diveAttack: 'L',
-        fireballAttack: 'F',
-        invisibleDefense: 'I',
+        jump: 'w',
+        moveBackward: 'a',
+        sit: 's',
+        moveForward: 'd',
+        rollAttack: 'Enter',
+        diveAttack: 's',
+        fireballAttack: 'q',
+        invisibleDefense: 'e',
+        dashAttack: 'Shift',
     };
+
     return {
         getDefaultKeyBindings: jest.fn(() => ({ ...defaults })),
         normalizeKey: jest.fn((k) => k),
@@ -33,6 +35,7 @@ describe('ControlsSettingsMenu', () => {
         'diveAttack',
         'fireballAttack',
         'invisibleDefense',
+        'dashAttack',
         'Reset to Defaults',
         'Go Back',
     ];
@@ -132,7 +135,7 @@ describe('ControlsSettingsMenu', () => {
         });
 
         test('"Reset to Defaults" restores defaults, saves, and plays selection sound', () => {
-            mockGame.keyBindings.jump = 'Q';
+            mockGame.keyBindings.jump = 'z';
             mockGame.keyBindings.sit = null;
 
             menu.selectedOption = menu.menuOptions.indexOf('Reset to Defaults');
@@ -171,16 +174,16 @@ describe('ControlsSettingsMenu', () => {
         });
 
         test('rebind of sit assigns key, mirrors to diveAttack, clears duplicates, and saves', () => {
-            mockGame.keyBindings.moveForward = 'Q';
+            mockGame.keyBindings.moveForward = 'x';
 
             menu.selectedOption = menu.menuOptions.indexOf('sit');
             menu.handleMenuSelection();
 
-            const e = new KeyboardEvent('keydown', { key: 'Q' });
+            const e = new KeyboardEvent('keydown', { key: 'x' });
             menu.onGlobalKeyDown(e);
 
-            expect(mockGame.keyBindings.sit).toBe('Q');
-            expect(mockGame.keyBindings.diveAttack).toBe('Q');
+            expect(mockGame.keyBindings.sit).toBe('x');
+            expect(mockGame.keyBindings.diveAttack).toBe('x');
             expect(mockGame.keyBindings.moveForward).toBeNull();
 
             expect(menu.waitingForKey).toBe(false);
@@ -189,19 +192,21 @@ describe('ControlsSettingsMenu', () => {
         });
 
         test('rebind of non sit/dive action clears duplicates but does not mirror', () => {
-            mockGame.keyBindings.jump = 'Q';
-            mockGame.keyBindings.rollAttack = 'Q';
+            mockGame.keyBindings.jump = 'x';
+            mockGame.keyBindings.rollAttack = 'x';
 
             menu.selectedOption = menu.menuOptions.indexOf('jump');
             menu.handleMenuSelection();
 
-            const e = new KeyboardEvent('keydown', { key: 'Q' });
+            const e = new KeyboardEvent('keydown', { key: 'x' });
             menu.onGlobalKeyDown(e);
 
-            expect(mockGame.keyBindings.jump).toBe('Q');
+            expect(mockGame.keyBindings.jump).toBe('x');
             expect(mockGame.keyBindings.rollAttack).toBeNull();
-            expect(mockGame.keyBindings.diveAttack).toBe('L');
-            expect(mockGame.keyBindings.sit).toBe('S');
+
+            expect(mockGame.keyBindings.sit).toBe('s');
+            expect(mockGame.keyBindings.diveAttack).toBe('s');
+
             expect(mockGame.saveGameState).toHaveBeenCalledTimes(1);
         });
 

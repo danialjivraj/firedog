@@ -345,15 +345,22 @@ export class PurpleFireball extends Projectile {
 }
 
 export class Arrow extends Projectile {
-    constructor(game, x, y, speedX, speedY, direction, imageId) {
+    constructor(game, x, y, speedX, speedY, direction, imageId, shadowColor = null) {
         super(game, x, y, 103.5, 40, 1, imageId, speedX, speedY);
+
         this.initialSize = 10;
         this.size = this.initialSize;
+
         this.x = x;
         this.y = y;
+
         this.speedX = speedX;
         this.speedY = speedY;
+
         this.direction = direction;
+
+        this.shadowColor = shadowColor;
+
         this.setFps(7);
 
         this.collisionDrawInfo = {
@@ -367,17 +374,8 @@ export class Arrow extends Projectile {
 
         context.save();
 
-        if (this.image.id === 'yellowArrow') {
-            context.shadowColor = 'yellow';
-            context.shadowBlur = 10;
-        } else if (this.image.id === 'blueArrow') {
-            context.shadowColor = 'blue';
-            context.shadowBlur = 10;
-        } else if (this.image.id === 'greenArrow') {
-            context.shadowColor = 'lime';
-            context.shadowBlur = 10;
-        } else if (this.image.id === 'cyanArrow') {
-            context.shadowColor = 'cyan';
+        if (this.shadowColor) {
+            context.shadowColor = this.shadowColor;
             context.shadowBlur = 10;
         }
 
@@ -410,6 +408,30 @@ export class Arrow extends Projectile {
         );
 
         context.restore();
+    }
+}
+
+export class BlueArrow extends Arrow {
+    constructor(game, x, y, speedX, speedY, direction) {
+        super(game, x, y, speedX, speedY, direction, "blueArrow", "blue");
+    }
+}
+
+export class YellowArrow extends Arrow {
+    constructor(game, x, y, speedX, speedY, direction) {
+        super(game, x, y, speedX, speedY, direction, "yellowArrow", "yellow");
+    }
+}
+
+export class GreenArrow extends Arrow {
+    constructor(game, x, y, speedX, speedY, direction) {
+        super(game, x, y, speedX, speedY, direction, "greenArrow", "lime");
+    }
+}
+
+export class CyanArrow extends Arrow {
+    constructor(game, x, y, speedX, speedY, direction) {
+        super(game, x, y, speedX, speedY, direction, "cyanArrow", "cyan");
     }
 }
 
@@ -536,7 +558,7 @@ export class PurpleSlashChargeIndicator {
 export class PurpleSlash extends Projectile {
     constructor(game, x, y, direction) {
         super(game, x, y, 222, 267, 9, "purpleSlash", 0, 11);
-        this.lives = 3;
+        this.lives = 50;
         this.direction = direction;
     }
     update(deltaTime) {
@@ -972,7 +994,10 @@ export class Elyvorg extends EnemyBoss {
     }
 
     throwArrowAttack() {
-        const playerIsOnLeft = this.game.player.x + this.game.player.width / 2 < this.x + this.width / 2;
+        const playerIsOnLeft =
+            this.game.player.x + this.game.player.width / 2 <
+            this.x + this.width / 2;
+
         const horizontalSpeed = playerIsOnLeft ? 18 : -18;
 
         const playerCenterY = this.game.player.y + this.game.player.height / 2;
@@ -980,31 +1005,26 @@ export class Elyvorg extends EnemyBoss {
         const deltaY = playerCenterY - elyvorgCenterY;
 
         const angle = Math.atan2(deltaY, Math.abs(this.game.player.x - this.x));
-
         const verticalSpeed = Math.sin(angle) * 21;
 
         const r = Math.random();
-        let image;
-        if (r < 1 / 4) {
-            image = "blueArrow";
-        } else if (r < 2 / 4) {
-            image = "yellowArrow";
-        } else if (r < 3 / 4) {
-            image = "greenArrow";
-        } else {
-            image = "cyanArrow";
-        }
+        let ArrowClass;
+        if (r < 1 / 4) ArrowClass = BlueArrow;
+        else if (r < 2 / 4) ArrowClass = YellowArrow;
+        else if (r < 3 / 4) ArrowClass = GreenArrow;
+        else ArrowClass = CyanArrow;
 
         const arrowX = playerIsOnLeft ? this.x + 10 : this.x + 110;
-        const arrow = new Arrow(
+
+        const arrow = new ArrowClass(
             this.game,
             arrowX,
             this.y - 35 + this.height / 2 - 57 / 2,
             horizontalSpeed,
             verticalSpeed,
-            playerIsOnLeft,
-            image,
+            playerIsOnLeft
         );
+
         this.game.enemies.push(arrow);
     }
 

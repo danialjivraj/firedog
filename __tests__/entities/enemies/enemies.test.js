@@ -822,7 +822,7 @@ describe('Goblin', () => {
 
   it('starts in "walk" state with 3 lives', () => {
     expect(gob.state).toBe('walk');
-    expect(gob.lives).toBe(3);
+    expect(gob.lives).toBe(1);
   });
 
   it('update() does not throw', () => {

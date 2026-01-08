@@ -8,6 +8,7 @@ export function getDefaultKeyBindings() {
     diveAttack: 's',
     fireballAttack: 'q',
     invisibleDefense: 'e',
+    dashAttack: 'Shift',
   };
 }
 

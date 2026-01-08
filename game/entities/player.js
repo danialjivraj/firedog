@@ -1,6 +1,6 @@
 import { getDefaultKeyBindings } from '../config/keyBindings.js';
 import { getSkinElement } from '../config/skins.js';
-import { Sitting, Running, Jumping, Falling, Rolling, Diving, Stunned, Hit, Standing, Dying } from '../animations/playerStates.js';
+import { Sitting, Running, Jumping, Falling, Rolling, Diving, Stunned, Hit, Standing, Dying, Dashing } from '../animations/playerStates.js';
 import {
     CollisionAnimation, ExplosionCollisionAnimation, PoisonSpitSplash, InkSplashCollision, Blood,
     ElectricityCollision, InkBombCollision, PoisonDropCollision,
@@ -19,7 +19,7 @@ import { InkSplash } from '../animations/ink.js';
 import { DamageIndicator } from '../animations/damageIndicator.js';
 import { TunnelVision } from '../animations/tunnelVision.js';
 import {
-    Elyvorg, GhostElyvorg, Arrow, PurpleBarrier, ElectricWheel, GravitationalAura,
+    Elyvorg, GhostElyvorg, BlueArrow, YellowArrow, GreenArrow, CyanArrow, PurpleBarrier, ElectricWheel, GravitationalAura,
     InkBomb, PurpleFireball, PoisonDrop, MeteorAttack, PurpleSlash, PurpleThunder, PurpleLaserBeam
 } from './enemies/elyvorg.js';
 import { IceTrail, IcyStormBall, IceSlash, SpinningIceBalls, PointyIcicleShard, Glacikal, UndergroundIcicle } from './enemies/glacikal.js';
@@ -117,6 +117,7 @@ export class Player {
             new Hit(this.game),       // 7
             new Standing(this.game),  // 8
             new Dying(this.game),     // 9
+            new Dashing(this.game),   // 10
         ];
         this.previousState = null;
         this.currentState = null;
@@ -155,12 +156,35 @@ export class Player {
         this.fireballCooldown = 1000;
         // diving cooldowns
         this.divingTimer = 500;
-        this.divingCooldown = 500;
+        this.divingCooldown = 300;
         // invisible cooldowns
         this.isInvisible = false;
-        this.invisibleTimer = 40000;
-        this.invisibleCooldown = 40000;
+        this.invisibleCooldown = 35000;
+        this.invisibleTimer = this.invisibleCooldown;
         this.invisibleActiveCooldownTimer = 0;
+        this.invisibleDuration = 5000;
+        // dash
+        this.isDashing = false;
+        this.dashDuration = 180;
+        this.dashTimeLeft = 0;
+        this.dashVelocity = 0;
+        this.dashSpeedMultiplier = 3.0;
+        this.dashGhostTimer = 0;
+        this.dashGhostInterval = 18;
+        this.dashBetweenCooldown = 500;
+        this.dashBetweenTimer = this.dashBetweenCooldown;
+        this.dashCooldown = 60000;
+        this.dashTimer = this.dashCooldown;
+        this.dashMaxCharges = 2;
+        this.dashCharges = this.dashMaxCharges;
+        this.dashSecondWindowMs = 5000;
+        this.dashSecondWindowTimer = 0;
+        this.secondDashDistanceMultiplier = 1.75;
+        this.dashAwaitingSecond = false;
+        this.dashEnergyCost = 10;
+        this.dashInstanceId = 0;
+        this.postDashGraceMs = 200;
+        this.postDashGraceTimer = 0;
         // firedog vars when interacting with boss
         this.setToRunOnce = true;
         this.setToStandingOnce = true;
@@ -174,6 +198,78 @@ export class Player {
     _moveRight(input) { return this.game.input.isActionActive('moveForward', input); }
     _jump(input) { return this.game.input.isActionActive('jump', input); }
     _sit(input) { return this.game.input.isActionActive('sit', input); }
+
+    tryStartDash(input) {
+        if (!this.game.input.isDashAttack(input)) return false;
+
+        if (this.game.gameOver) return false;
+        if (this.isFrozen) return false;
+        if (this.isDashing) return false;
+
+        if (this.energyReachedZero) return false;
+
+        const s = this.currentState;
+        const allowed =
+            s === this.states[0] || // sitting
+            s === this.states[1] || // running
+            s === this.states[2] || // jumping
+            s === this.states[3] || // falling
+            s === this.states[4] || // rolling
+            s === this.states[8];   // standing
+        if (!allowed) return false;
+
+        if (this.dashTimer < this.dashCooldown) return false;
+        if (this.dashCharges <= 0) return false;
+        if (this.dashBetweenTimer < this.dashBetweenCooldown) return false;
+
+        const pressingBack = !!this._moveLeft(input ?? []);
+        const pressingForward = !!this._moveRight(input ?? []);
+        const facingDir = this.facingRight ? 1 : -1;
+
+        let inputDir = 0;
+        if (pressingForward && !pressingBack) inputDir = 1;
+        else if (pressingBack && !pressingForward) inputDir = -1;
+
+        const dir = inputDir !== 0 ? inputDir : facingDir;
+
+        const isSecondDash = (this.dashCharges !== this.dashMaxCharges);
+
+        if (!isSecondDash) {
+            // first dash
+            this.game.audioHandler.firedogSFX.playSound('dash1');
+
+            this.dashCharges = 1;
+            this.dashAwaitingSecond = true;
+            this.dashSecondWindowTimer = this.dashSecondWindowMs;
+        } else {
+            // second dash
+            this.game.audioHandler.firedogSFX.playSound('dash2');
+
+            this.dashCharges = 0;
+            this.dashAwaitingSecond = false;
+            this.dashSecondWindowTimer = 0;
+            this.dashTimer = 0;
+        }
+
+        this.dashBetweenTimer = 0;
+
+        const cost = this.dashEnergyCost ?? 10;
+        this.energy = Math.max(0, this.energy - cost);
+        if (this.energy <= 0) this.energyReachedZero = true;
+
+        this.isDashing = true;
+        this.dashTimeLeft = this.dashDuration;
+
+        const baseDash = this.maxSpeed * this.dashSpeedMultiplier;
+        const mult = isSecondDash ? (this.secondDashDistanceMultiplier ?? 1.35) : 1.0;
+        this.dashVelocity = dir * baseDash * mult;
+
+        this.setState(10, 3);
+
+        this.dashInstanceId++;
+
+        return true;
+    }
 
     clearAllStatusEffects() {
         // freeze
@@ -203,6 +299,17 @@ export class Player {
         this.isInvisible = false;
         this.invisibleActiveCooldownTimer = 0;
         this.invisibleTimer = this.invisibleCooldown;
+        // dash 
+        this.isDashing = false;
+        this.dashTimeLeft = 0;
+        this.dashVelocity = 0;
+        this.dashGhostTimer = 0;
+        this.dashCharges = this.dashMaxCharges;
+        this.dashTimer = this.dashCooldown;
+        this.dashBetweenTimer = this.dashBetweenCooldown;
+        this.dashAwaitingSecond = false;
+        this.dashSecondWindowTimer = 0;
+        this.postDashGraceTimer = 0;
         // black hole
         this.isBlackHoleActive = false;
         // energy
@@ -326,6 +433,7 @@ export class Player {
         this.firedogLivesLimit();
         this.energyLogic(deltaTime);
         this.updateBluePotionTimer(deltaTime);
+        this.dashImmunityTimer(deltaTime);
         this.checkIfFiredogIsSlowed(deltaTime);
         this.updateConfuse(deltaTime);
         this.emitStatusParticles(deltaTime);
@@ -333,9 +441,9 @@ export class Player {
         this.divingAbility(deltaTime);
         this.fireballAbility(input, deltaTime);
         this.invisibleAbility(input, deltaTime);
+        this.dashAbility(deltaTime);
         this.bossCollisionTimers(deltaTime);
         this.updateFrozen(deltaTime);
-
         if (!this.currentState.deathAnimation) {
             this.playerSFXAudios();
             this.currentState.handleInput(input);
@@ -582,24 +690,6 @@ export class Player {
         }
     }
 
-    isPoisonActiveChecker() {
-        if (this.energyReachedZero || this.isBluePotionActive) {
-            this.isPoisonedActive = false;
-        } else {
-            this.isPoisonedActive = true;
-        }
-        return this.isPoisonedActive;
-    }
-
-    isPoisonTimerChecker(x) {
-        if (this.energyReachedZero || this.isBluePotionActive) {
-            this.poisonTimer = 0;
-        } else {
-            this.poisonTimer = x;
-        }
-        return this.poisonTimer;
-    }
-
     drainEnergy() {
         if (this.isBluePotionActive) return;
 
@@ -630,8 +720,16 @@ export class Player {
         }
     }
 
+    dashImmunityTimer(deltaTime) {
+        if (this.postDashGraceTimer > 0) {
+            this.postDashGraceTimer = Math.max(0, this.postDashGraceTimer - deltaTime);
+        }
+    }
+
     // abilities
     divingAbility(deltaTime) {
+        if (this.currentState === this.states[5]) return;
+
         this.divingTimer += deltaTime;
         this.divingTimer = Math.min(this.divingTimer, this.divingCooldown);
     }
@@ -697,34 +795,80 @@ export class Player {
     }
 
     invisibleAbility(input, deltaTime) {
+        if (this.isInvisible) {
+            this.invisibleActiveCooldownTimer -= deltaTime;
+
+            if (this.invisibleActiveCooldownTimer <= 0) {
+                this.invisibleActiveCooldownTimer = 0;
+
+                this.game.audioHandler.firedogSFX.playSound('invisibleOutSFX');
+                this.isInvisible = false;
+
+                this.invisibleTimer = 0;
+            }
+
+            return;
+        }
+
         this.invisibleTimer += deltaTime;
         this.invisibleTimer = Math.min(this.invisibleTimer, this.invisibleCooldown);
 
-        if (this.game.input.isInvisibleDefense(input) && !this.isInvisible && !this.game.gameOver) {
-            if (this.invisibleTimer === this.invisibleCooldown) {
+        if (this.game.input.isInvisibleDefense(input) && !this.game.gameOver) {
+            if (this.invisibleTimer >= this.invisibleCooldown) {
                 this.isInvisible = true;
+                this.invisibleActiveCooldownTimer = this.invisibleDuration;
+
+                this.invisibleTimer = this.invisibleCooldown;
+
                 this.game.audioHandler.firedogSFX.playSound('invisibleInSFX');
             }
         }
+    }
 
-        if (this.invisibleTimer >= this.invisibleCooldown && this.isInvisible) {
-            this.invisibleTimer = 0;
-            this.invisibleActiveCooldownTimer = 5000;
+    dashAbility(deltaTime) {
+        if (this.dashAwaitingSecond) {
+            this.dashSecondWindowTimer -= deltaTime;
+
+            if (this.dashSecondWindowTimer <= 0) {
+                this.dashAwaitingSecond = false;
+                this.dashSecondWindowTimer = 0;
+                this.dashCharges = 0;
+                this.dashTimer = 0;
+            }
         }
 
-        if (this.isInvisible) {
-            this.invisibleActiveCooldownTimer -= deltaTime;
-            if (this.invisibleActiveCooldownTimer <= 0) {
-                this.game.audioHandler.firedogSFX.playSound('invisibleOutSFX');
-                this.isInvisible = false;
+        if (this.dashTimer < this.dashCooldown) {
+            this.dashTimer += deltaTime;
+            this.dashTimer = Math.min(this.dashTimer, this.dashCooldown);
+
+            if (this.dashTimer >= this.dashCooldown) {
+                this.dashCharges = this.dashMaxCharges;
+                this.dashAwaitingSecond = false;
+                this.dashSecondWindowTimer = 0;
             }
+        }
+
+        if (this.dashBetweenTimer < this.dashBetweenCooldown) {
+            this.dashBetweenTimer += deltaTime;
+            this.dashBetweenTimer = Math.min(this.dashBetweenTimer, this.dashBetweenCooldown);
+        }
+
+        if (!this.isDashing) return;
+
+        this.dashTimeLeft -= deltaTime;
+        if (this.dashTimeLeft <= 0) {
+            this.dashTimeLeft = 0;
+            this.isDashing = false;
+            this.dashVelocity = 0;
+            this.dashGhostTimer = 0;
+            this.postDashGraceTimer = this.postDashGraceMs;
         }
     }
 
     // audios
     playerSFXAudios() {
         // rolling
-        if (this.rollingOrDiving()) {
+        if (this.collisionLogic.isRollingOrDiving(this)) {
             const rollingSoundName = this.isUnderwater ? 'rollingUnderwaterSFX' : 'rollingSFX';
             if (!this.isRolling) {
                 this.isRolling = true;
@@ -787,98 +931,6 @@ export class Player {
         this.currentState.enter();
     }
 
-    rollingOrDiving() {
-        return this.currentState === this.states[4] || this.currentState === this.states[5];
-    }
-
-    // taking damage
-    hit(enemy) {
-        if (this.isInvisible) return;
-
-        if (this.isFrozen) {
-            if (enemy.dealsDirectHitDamage) {
-                this.game.coins -= 1;
-                this.game.lives -= 1;
-            }
-            return;
-        }
-
-        if (this.currentState === this.states[0]) {
-            this.setState(7, 0);
-        } else {
-            this.setState(7, 1);
-        }
-
-        if (enemy.dealsDirectHitDamage) {
-            this.game.coins -= 1;
-            this.game.lives -= 1;
-        }
-    }
-
-    stunned(enemy) {
-        if (this.isInvisible) return;
-
-        if (this.isFrozen) {
-            this.game.audioHandler.firedogSFX.playSound('stunnedSound', false, true);
-            this.game.coins -= 1;
-            this.game.lives -= 1;
-            return;
-        }
-
-        this.game.audioHandler.firedogSFX.playSound('stunnedSound', false, true);
-        this.setState(6, 0);
-
-        this.collisionLogic.specialCollisionAnimationOrNot(enemy);
-
-        this.game.coins -= 1;
-        this.game.lives -= 1;
-    }
-
-    bloodOrPoof(enemy) {
-        // boss enemies
-        if (enemy instanceof EnemyBoss) {
-            this.game.collisions.push(
-                new Blood(
-                    this.game,
-                    enemy.x + enemy.width * 0.5,
-                    enemy.y + enemy.height * 0.5,
-                    enemy
-                )
-            );
-            this.game.audioHandler.collisionSFX.playSound('bloodSound', false, true);
-            return;
-        }
-
-        if (enemy instanceof Barrier) return;
-
-        // normal enemies
-        if (enemy.lives >= 1) {
-            this.game.collisions.push(
-                new Blood(
-                    this.game,
-                    enemy.x + enemy.width * 0.5,
-                    enemy.y + enemy.height * 0.5,
-                    enemy
-                )
-            );
-            this.game.audioHandler.collisionSFX.playSound('bloodSound', false, true);
-        } else {
-            this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
-            this.game.collisions.push(
-                new CollisionAnimation(
-                    this.game,
-                    enemy.x + enemy.width * 0.5,
-                    enemy.y + enemy.height * 0.5,
-                    this.isBluePotionActive
-                )
-            );
-
-            if (enemy instanceof Goblin) {
-                this.game.audioHandler.enemySFX.playSound('goblinDie', false, true);
-            }
-        }
-    }
-
     // screen indicators
     triggerDamageIndicator() {
         const ONE_MINUTE = 60000;
@@ -929,14 +981,6 @@ export class Player {
                 this.loopDamageIndicator = false;
             }
         }
-    }
-
-    triggerInkSplash() {
-        if (this.isInvisible) return;
-
-        const inkSplash = new InkSplash(this.game);
-        inkSplash.x = this.x - inkSplash.getWidth() / 2;
-        this.game.collisions.push(inkSplash);
     }
 
     triggerTunnelVision(options = null) {
@@ -1012,6 +1056,19 @@ export class Player {
 
     playerHorizontalMovement(input, deltaTime) {
         if (this.isFrozen) return;
+
+        if (this.isDashing) {
+            this.x += this.dashVelocity;
+
+            if (this.x < 0) this.x = 0;
+            if (this.x > this.game.width - this.width) {
+                this.x = this.game.width - this.width;
+            }
+
+            this.speed = this.dashVelocity;
+            this.vx = this.dashVelocity;
+            return;
+        }
 
         const talkingToBoss = this.game.boss && this.game.boss.talkToBoss;
         if (this.isIce && !talkingToBoss) {
@@ -1334,16 +1391,6 @@ export class Player {
     collisionWithPowers() {
         this.collisionLogic.handlePowerCollisions();
     }
-
-    handleFloatingMessages(enemy) {
-        if (enemy.lives <= 0 && this.game.lives === this.previousLives) {
-            this.game.coins += 1;
-            this.game.player.energy += 2;
-            this.game.floatingMessages.push(
-                new FloatingMessage('+1', enemy.x, enemy.y, 150, 50, 30)
-            );
-        }
-    }
 }
 
 // ======================================================================
@@ -1355,6 +1402,139 @@ export class CollisionLogic {
         this._fireballHandlers = null;
     }
 
+    // ------------------------------------------------------------------
+    // Player helpers that are collision-only
+    // ------------------------------------------------------------------
+    isRollingOrDiving(player = this.game.player) {
+        return player.currentState === player.states[4] || player.currentState === player.states[5];
+    }
+
+    hit(enemy, player = this.game.player) {
+        if (player.isInvisible) return;
+        if (player.isDashing) return;
+
+        if (player.isFrozen) {
+            if (enemy.dealsDirectHitDamage) {
+                this.game.coins -= 1;
+                this.game.lives -= 1;
+            }
+            return;
+        }
+
+        if (player.currentState === player.states[0]) {
+            player.setState(7, 0);
+        } else {
+            player.setState(7, 1);
+        }
+
+        if (enemy.dealsDirectHitDamage) {
+            this.game.coins -= 1;
+            this.game.lives -= 1;
+        }
+    }
+
+    stunned(player = this.game.player) {
+        if (player.isInvisible) return;
+        if (player.isDashing) return;
+
+        if (player.isFrozen) {
+            this.game.audioHandler.firedogSFX.playSound('stunnedSound', false, true);
+            this.game.coins -= 1;
+            this.game.lives -= 1;
+            return;
+        }
+
+        this.game.audioHandler.firedogSFX.playSound('stunnedSound', false, true);
+        player.setState(6, 0);
+
+        this.game.coins -= 1;
+        this.game.lives -= 1;
+    }
+
+    bloodOrPoof(enemy, player = this.game.player) {
+        // boss enemies
+        if (enemy instanceof EnemyBoss) {
+            this.game.collisions.push(
+                new Blood(
+                    this.game,
+                    enemy.x + enemy.width * 0.5,
+                    enemy.y + enemy.height * 0.5,
+                    enemy
+                )
+            );
+            this.game.audioHandler.collisionSFX.playSound('bloodSound', false, true);
+            return;
+        }
+
+        if (enemy instanceof Barrier) return;
+
+        // normal enemies
+        if (enemy.lives >= 1) {
+            this.game.collisions.push(
+                new Blood(
+                    this.game,
+                    enemy.x + enemy.width * 0.5,
+                    enemy.y + enemy.height * 0.5,
+                    enemy
+                )
+            );
+            this.game.audioHandler.collisionSFX.playSound('bloodSound', false, true);
+        } else {
+            this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
+            this.game.collisions.push(
+                new CollisionAnimation(
+                    this.game,
+                    enemy.x + enemy.width * 0.5,
+                    enemy.y + enemy.height * 0.5,
+                    player.isBluePotionActive
+                )
+            );
+
+            if (enemy instanceof Goblin) {
+                this.game.audioHandler.enemySFX.playSound('goblinDie', false, true);
+            }
+        }
+    }
+
+    handleFloatingMessages(enemy, player = this.game.player) {
+        if (enemy.lives <= 0 && this.game.lives === player.previousLives) {
+            this.game.coins += 1;
+            player.energy += 2;
+            this.game.floatingMessages.push(
+                new FloatingMessage('+1', enemy.x, enemy.y, 150, 50, 30)
+            );
+        }
+    }
+
+    triggerInkSplash(player = this.game.player) {
+        if (player.isInvisible) return;
+
+        const inkSplash = new InkSplash(this.game);
+        inkSplash.x = player.x - inkSplash.getWidth() / 2;
+        this.game.collisions.push(inkSplash);
+    }
+
+    isPoisonActiveChecker(player = this.game.player) {
+        if (player.energyReachedZero || player.isBluePotionActive) {
+            player.isPoisonedActive = false;
+        } else {
+            player.isPoisonedActive = true;
+        }
+        return player.isPoisonedActive;
+    }
+
+    isPoisonTimerChecker(x, player = this.game.player) {
+        if (player.energyReachedZero || player.isBluePotionActive) {
+            player.poisonTimer = 0;
+        } else {
+            player.poisonTimer = x;
+        }
+        return player.poisonTimer;
+    }
+
+    // ------------------------------------------------------------------
+    // Geometry helpers
+    // ------------------------------------------------------------------
     getPlayerRect() {
         const p = this.game.player;
         return { x: p.x, y: p.y, width: p.width, height: p.height };
@@ -1453,10 +1633,6 @@ export class CollisionLogic {
         );
     }
 
-    beamHitsPlayer(beam, player) {
-        return this.beamHitsRect(beam, player);
-    }
-
     enemyHitsRect(enemy, targetRect) {
         if (this.isKamehameha(enemy)) return this.beamHitsRect(enemy, targetRect);
         return this.overlapsAABB(
@@ -1465,152 +1641,157 @@ export class CollisionLogic {
         );
     }
 
-    shouldSkipElyvorgTeleportCollision(enemy, player) {
-        const boss = this.game.boss && this.game.boss.current;
-        if (!(boss instanceof Elyvorg)) return false;
-
-        const isTeleporting = boss.state === 'teleport';
-        const inPostTeleportSafeWindow =
-            boss.postTeleportSafeTimer && boss.postTeleportSafeTimer > 0;
-        const safePhase = isTeleporting || inPostTeleportSafeWindow;
-
-        if (!safePhase) return false;
-
-        if ((enemy instanceof Elyvorg || enemy instanceof PurpleBarrier) &&
-            !player.rollingOrDiving()) {
-            return true;
-        }
-
-        return false;
+    // ------------------------------------------------------------------
+    // Collision FX
+    // ------------------------------------------------------------------
+    _enemyCenter(enemy) {
+        return { x: enemy.x + enemy.width * 0.5, y: enemy.y + enemy.height * 0.5 };
     }
 
-    handleHealingBarrierCollision(barrier) {
-        if (barrier.lives <= 0) {
-            this.game.collisions.push(
-                new DisintegrateCollision(this.game, barrier, { followTarget: this.game.boss.current })
-            );
-        }
-
-        const boss = this.game.boss?.current;
-        if (boss && boss.isBarrierActive) {
-            const burst = new HealingStarBurstCollision(this.game, boss, {
-                followTarget: boss,
-                soundId: "healingStarSound",
-                playSound: true,
-            });
-            burst.start();
-
-            boss.healingStarBursts ??= [];
-            boss.healingStarBursts.push(burst);
-
-            const overhealCap = boss.maxLives * (1 + (boss.overhealPercent ?? 0));
-            boss.lives = Math.min(boss.lives + 2, overhealCap);
-        }
+    _playerCenter(player = this.game.player) {
+        return { x: player.x + player.width * 0.5, y: player.y + player.height * 0.5 };
     }
 
-    // fireball collision
-    get fireballCollisionHandlers() {
-        if (this._fireballHandlers) return this._fireballHandlers;
+    _fireballCenter(fireball) {
+        const size = typeof fireball?.size === "number" ? fireball.size : 0;
+        return {
+            x: (typeof fireball?.x === "number" ? fireball.x : 0) + size * 0.5,
+            y: (typeof fireball?.y === "number" ? fireball.y : 0) + size * 0.5,
+        };
+    }
 
+    playCollisionFx(enemy, ctx = null) {
         const player = this.game.player;
+        const fireball = ctx?.fireball || null;
+        const fallbackToDefault = !!ctx?.fallbackToDefault;
 
-        const spawnAtEnemy = (AnimClass) => (enemy) => {
-            this.game.collisions.push(
-                new AnimClass(
-                    this.game,
-                    enemy.x + enemy.width * 0.5,
-                    enemy.y + enemy.height * 0.5
-                )
-            );
-        };
+        const { x: ex, y: ey } = this._enemyCenter(enemy);
+        const { y: py } = this._playerCenter(player);
+        const { y: fy } = fireball ? this._fireballCenter(fireball) : { y: py };
 
-        const spawnAtEnemyXFireballY = (spawnFn, soundKey) => (enemy, fireball) => {
-            const x = enemy.x + enemy.width * 0.5;
+        const attackerY = fireball ? fy : py;
 
-            let y;
-            if (fireball && typeof fireball.y === "number") {
-                const size = typeof fireball.size === "number" ? fireball.size : 0;
-                y = fireball.y + size * 0.5;
-            } else {
-                y = player.y + player.height * 0.5;
+        switch (true) {
+            // ink
+            case enemy instanceof Sluggie || enemy instanceof InkBomb || enemy instanceof Garry || enemy instanceof InkBeam: {
+                this.game.audioHandler.collisionSFX.playSound('slugExplosion', false, true);
+
+                if (enemy instanceof Sluggie || enemy instanceof Garry || enemy instanceof InkBeam) {
+                    this.game.collisions.push(new InkSplashCollision(this.game, ex, ey));
+                } else {
+                    this.game.collisions.push(new InkBombCollision(this.game, ex, ey));
+                }
+                return true;
             }
 
-            spawnFn(enemy, x, y, fireball);
-
-            if (soundKey) {
-                this.game.audioHandler.collisionSFX.playSound(soundKey, false, true);
-            }
-        };
-
-        const slugSplash = (enemy) => {
-            spawnAtEnemy(InkSplashCollision)(enemy);
-            this.game.audioHandler.collisionSFX.playSound('slugExplosion', false, true);
-        };
-
-        this._fireballHandlers = {
-            PurpleFireball: (enemy) => {
-                spawnAtEnemy(RedFireballCollision)(enemy);
-                this.game.audioHandler.collisionSFX.playSound('fireballExplosionSound', false, true);
-
-                this.game.floatingMessages.push(
-                    new FloatingMessage('+20', enemy.x, enemy.y, 160, 120, 30, 'orange')
-                );
-
-                player.energy += 20;
-
-                const msg = Math.random() < 0.5 ? 'NICE!' : 'EPIC!';
-                this.game.floatingMessages.push(
-                    new FloatingMessage(msg, enemy.x, enemy.y, this.game.width / 2, 80, 50)
-                );
-            },
-
-            MeteorAttack: (enemy) => {
-                spawnAtEnemy(MeteorExplosionCollision)(enemy);
-                this.game.audioHandler.enemySFX.playSound(
-                    'elyvorg_meteor_in_contact_sound',
-                    false,
-                    true
-                );
-            },
-
-            PurpleAsteroid: (enemy) => {
+            case enemy instanceof Skulnap: {
+                this.game.audioHandler.collisionSFX.playSound('explosionCollision', false, true);
                 this.game.collisions.push(
-                    new AsteroidExplosionCollision(
-                        this.game,
-                        enemy.x + enemy.width * 0.5,
-                        enemy.y + enemy.height * 0.5 - 70
-                    )
+                    new ExplosionCollisionAnimation(this.game, ex, ey, enemy.id)
                 );
-                this.game.audioHandler.collisionSFX.playSound('elyvorg_meteor_in_contact_sound', false, true);
-            },
+                return true;
+            }
 
-            BlueAsteroid: (enemy) => {
+            case enemy instanceof ElectricWheel: {
+                this.game.audioHandler.collisionSFX.playSound('elyvorg_electricity_wheel_collision_sound', false, true);
+                this.game.collisions.push(new ElectricityCollision(this.game, ex, ey));
+                return true;
+            }
+
+            case enemy instanceof GravitationalAura: {
+                this.game.audioHandler.collisionSFX.playSound('darkExplosionCollisionSound', false, true);
+                this.game.collisions.push(new DarkExplosionCollision(this.game, ex, ey));
+                return true;
+            }
+
+            case enemy instanceof PoisonSpit: {
+                this.game.audioHandler.enemySFX.playSound('acidSoundEffect', false, true);
+                this.game.collisions.push(new PoisonSpitSplash(this.game, ex, ey));
+                return true;
+            }
+
+            case enemy instanceof PoisonDrop: {
+                this.game.collisions.push(new PoisonDropCollision(this.game, ex, ey));
+                this.game.audioHandler.collisionSFX.playSound('poisonDropCollisionSound', false, true);
+                if (!player.isInvisible) {
+                    this.game.audioHandler.enemySFX.playSound('acidSoundEffect', false, true);
+                }
+                return true;
+            }
+
+            case enemy instanceof PurpleFireball: {
+                this.game.audioHandler.collisionSFX.playSound('fireballExplosionSound', false, true);
+                this.game.collisions.push(new PurpleFireballCollision(this.game, ex, ey));
+                return true;
+            }
+
+            // special Y = attacker center Y
+            case enemy instanceof PurpleThunder: {
+                this.game.audioHandler.collisionSFX.playSound('elyvorg_electricity_wheel_collision_sound', false, true);
+                this.game.collisions.push(new PurpleThunderCollision(this.game, ex, attackerY));
+                return true;
+            }
+
+            case enemy instanceof PurpleLaserBeam: {
+                this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
+                this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
+                return true;
+            }
+
+            case enemy instanceof MeteorAttack: {
+                this.game.collisions.push(new MeteorExplosionCollision(this.game, ex, ey));
+                this.game.audioHandler.collisionSFX.playSound('elyvorg_meteor_in_contact_sound', false, true);
+                return true;
+            }
+
+            case enemy instanceof BlueArrow:
+            case enemy instanceof YellowArrow:
+            case enemy instanceof GreenArrow:
+            case enemy instanceof CyanArrow: {
+                this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
+                this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
+                return true;
+            }
+
+            case enemy instanceof PurpleAsteroid: {
+                this.game.collisions.push(new AsteroidExplosionCollision(this.game, ex, ey - 70));
+                this.game.audioHandler.collisionSFX.playSound('elyvorg_meteor_in_contact_sound', false, true);
+                return true;
+            }
+
+            case enemy instanceof BlueAsteroid: {
                 this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
                 this.game.audioHandler.collisionSFX.playSound('elyvorg_meteor_in_contact_sound', false, true);
-            },
+                return true;
+            }
 
-            PurpleBallOrb: (enemy) => {
-                // no collision animation
-            },
+            case enemy instanceof GalacticSpike: {
+                const groundBottom = enemy.groundBottom;
+                const clipRect = { x: 0, y: 0, w: this.game.width, h: groundBottom };
 
-            LaserBall: (enemy) => {
-                const mode2 =
-                    !!enemy.mode2Active ||
-                    !!enemy.mode2;
+                this.game.collisions.push(
+                    new GalacticSpikeCollision(this.game, ex, ey, enemy.heightScale, 1, clipRect)
+                );
 
-                spawnAtEnemy(mode2 ? RedFireballCollision : PurpleFireballCollision)(enemy);
+                this.game.audioHandler.collisionSFX.playSound('galacticSpikeCollisionSound', false, true);
+                return true;
+            }
+
+            case enemy instanceof LaserBall: {
+                const mode2 = !!enemy.mode2Active || !!enemy.mode2;
+                const AnimClass = mode2 ? RedFireballCollision : PurpleFireballCollision;
+                this.game.collisions.push(new AnimClass(this.game, ex, ey));
                 this.game.audioHandler.collisionSFX.playSound('fireballExplosionSound', false, true);
-            },
+                return true;
+            }
 
-            Kamehameha: (enemy, fireball) => {
-                const size = typeof fireball?.size === "number" ? fireball.size : 0;
-                const fcx = (typeof fireball?.x === "number" ? fireball.x : 0) + size * 0.5;
-                const fcy = (typeof fireball?.y === "number" ? fireball.y : 0) + size * 0.5;
-
-                const mx = enemy.mouthX, my = enemy.mouthY;
-                const ex = enemy.endX, ey = enemy.endY;
-
-                const hit = this.closestPointOnSegment(fcx, fcy, mx, my, ex, ey);
+            case enemy instanceof Kamehameha: {
+                const pc = fireball ? this._fireballCenter(fireball) : this._playerCenter(player);
+                const hit = this.closestPointOnSegment(
+                    pc.x, pc.y,
+                    enemy.mouthX, enemy.mouthY,
+                    enemy.endX, enemy.endY
+                );
 
                 this.game.collisions.push(
                     new BallParticleBurstCollision(this.game, hit.x, hit.y, {
@@ -1626,23 +1807,19 @@ export class CollisionLogic {
                     })
                 );
 
-                this.game.audioHandler.collisionSFX.playSound(
-                    "ntharaxKamehamehaCollisionSound",
-                    false,
-                    true
-                );
-            },
+                this.game.audioHandler.collisionSFX.playSound("ntharaxKamehamehaCollisionSound", false, true);
+                return true;
+            }
 
-            AntennaeTentacle: spawnAtEnemyXFireballY((enemy, x, y) => {
-                const mode2 =
-                    !!enemy.mode2Active ||
-                    !!enemy.mode2
+            // special Y = attacker center Y
+            case enemy instanceof AntennaeTentacle: {
+                const mode2 = !!enemy.mode2Active || !!enemy.mode2;
 
                 this.game.collisions.push(
                     new BallParticleBurstCollision(
                         this.game,
-                        x,
-                        y,
+                        ex,
+                        attackerY,
                         mode2
                             ? {
                                 color: "#fa0b7aff",
@@ -1668,124 +1845,170 @@ export class CollisionLogic {
                             }
                     )
                 );
-                this.game.audioHandler.collisionSFX.playSound(
-                    'ntharaxTentacleCollisionSound',
-                    false,
-                    true
+
+                this.game.audioHandler.collisionSFX.playSound('ntharaxTentacleCollisionSound', false, true);
+                return true;
+            }
+
+            case enemy instanceof IceSlash: {
+                const shouldInvert = enemy.speedX > 0;
+                this.game.collisions.push(new IceSlashCollision(this.game, ex, ey, shouldInvert));
+                return true;
+            }
+
+            case enemy instanceof SpinningIceBalls: {
+                this.game.collisions.push(new SpinningIceBallsCollision(this.game, ex, ey, enemy.id));
+                this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
+                return true;
+            }
+
+            case enemy instanceof PointyIcicleShard: {
+                this.game.collisions.push(new PointyIcicleShardCollision(this.game, ex, ey, enemy.id));
+                this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
+                return true;
+            }
+
+            // special Y = attacker center Y
+            case enemy instanceof UndergroundIcicle: {
+                this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
+                this.game.collisions.push(new UndergroundIcicleCollision(this.game, ex, attackerY, enemy.id));
+                return true;
+            }
+
+            case enemy instanceof IceTrail: {
+                this.game.collisions.push(new IceTrailCollision(this.game, ex, ey, enemy.id));
+                this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
+                return true;
+            }
+
+            case enemy instanceof IcyStormBall: {
+                this.game.collisions.push(new IcyStormBallCollision(this.game, ex, ey, enemy.id));
+                this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
+                return true;
+            }
+
+            case enemy instanceof GhostElyvorg: {
+                this.game.collisions.push(new GhostFadeOut(this.game, enemy));
+                this.game.audioHandler.collisionSFX.playSound('elyvorg_ghost_hit_sound_effect', false, true);
+                return true;
+            }
+
+            case enemy instanceof PurpleBeamOrb:
+            case enemy instanceof YellowBeamOrb:
+            case enemy instanceof BlackBeamOrb: {
+                this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
+                this.game.audioHandler.collisionSFX.playSound('ntharaxSplitBeamCollisionSound', false, true);
+                return true;
+            }
+
+            // Explicit "handled but no FX"
+            case enemy instanceof GroundShockwaveRing:
+            case enemy instanceof PurpleBallOrb:
+                return true;
+
+            default: {
+                if (fallbackToDefault) {
+                    this.bloodOrPoof(enemy, player);
+                    return true;
+                }
+                return false;
+            }
+        }
+    }
+
+    shouldSkipElyvorgTeleportCollision(enemy, player) {
+        const boss = this.game.boss && this.game.boss.current;
+        if (!(boss instanceof Elyvorg)) return false;
+
+        const isTeleporting = boss.state === 'teleport';
+        const inPostTeleportSafeWindow =
+            boss.postTeleportSafeTimer && boss.postTeleportSafeTimer > 0;
+        const safePhase = isTeleporting || inPostTeleportSafeWindow;
+
+        if (!safePhase) return false;
+
+        const isElyvorgFamily = (enemy instanceof Elyvorg || enemy instanceof PurpleBarrier);
+        const playerCanHitDuringSafePhase = this.isRollingOrDiving(player) || player.isDashing;
+
+        if (isElyvorgFamily && !playerCanHitDuringSafePhase) {
+            return true;
+        }
+
+        return false;
+    }
+
+    handleHealingBarrierCollision(barrier, healAmount = 2) {
+        if (barrier.lives <= 0) {
+            this.game.collisions.push(
+                new DisintegrateCollision(this.game, barrier, { followTarget: this.game.boss.current })
+            );
+        }
+
+        const boss = this.game.boss?.current;
+        if (boss && boss.isBarrierActive) {
+            const burst = new HealingStarBurstCollision(this.game, boss, {
+                followTarget: boss,
+                soundId: "healingStarSound",
+                playSound: true,
+            });
+            burst.start();
+
+            boss.healingStarBursts ??= [];
+            boss.healingStarBursts.push(burst);
+
+            const overhealCap = boss.maxLives * (1 + (boss.overhealPercent ?? 0));
+            boss.lives = Math.min(boss.lives + healAmount, overhealCap);
+        }
+    }
+
+    // Fireball collision handlers
+    get fireballCollisionHandlers() {
+        if (this._fireballHandlers) return this._fireballHandlers;
+
+        const player = this.game.player;
+
+        this._fireballHandlers = {
+            PurpleFireball: (enemy, fireball) => {
+                this.playCollisionFx(enemy, { fireball });
+
+                this.game.floatingMessages.push(
+                    new FloatingMessage('+20', enemy.x, enemy.y, 160, 120, 30, 'orange')
                 );
-            }),
 
-            GravitationalAura: (enemy) => {
-                spawnAtEnemy(DarkExplosionCollision)(enemy);
-                this.game.audioHandler.collisionSFX.playSound('darkExplosionCollisionSound', false, true);
+                player.energy += 20;
+
+                const msg = Math.random() < 0.5 ? 'NICE!' : 'EPIC!';
+                this.game.floatingMessages.push(
+                    new FloatingMessage(msg, enemy.x, enemy.y, this.game.width / 2, 80, 50)
+                );
             },
 
-            PoisonDrop: (enemy) => {
-                spawnAtEnemy(PoisonDropCollision)(enemy);
-                this.game.audioHandler.collisionSFX.playSound('poisonDropCollisionSound', false, true);
-            },
+            // no FX
+            PurpleBallOrb: () => { },
+            GroundShockwaveRing: () => { },
 
-            ElectricWheel: (enemy) => {
-                spawnAtEnemy(ElectricityCollision)(enemy);
-                this.game.audioHandler.collisionSFX.playSound('elyvorg_electricity_wheel_collision_sound', false, true);
-            },
-
-            PurpleThunder: spawnAtEnemyXFireballY(
-                (enemy, x, y) => {
-                    this.game.collisions.push(
-                        new PurpleThunderCollision(this.game, x, y)
-                    );
-                },
-                'elyvorg_electricity_wheel_collision_sound'
-            ),
-
-            Arrow: (enemy) => {
-                this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
-                this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
-            },
-
-            PurpleLaserBeam: (enemy) => {
-                this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
-                this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
-            },
-
+            // special cases that do extra logic besides FX
             Goblin: (enemy) => {
-                spawnAtEnemy(CollisionAnimation)(enemy);
                 this.game.audioHandler.enemySFX.playSound('goblinDie', false, true);
                 this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
-                enemy.lives = 0;
-            },
-
-            Skulnap: (enemy) => {
                 this.game.collisions.push(
-                    new ExplosionCollisionAnimation(
+                    new CollisionAnimation(
                         this.game,
                         enemy.x + enemy.width * 0.5,
                         enemy.y + enemy.height * 0.5,
-                        enemy.id
+                        player.isBluePotionActive
                     )
                 );
-                this.game.audioHandler.collisionSFX.playSound('explosionCollision', false, true);
-            },
-
-            Sluggie: slugSplash,
-            Garry: slugSplash,
-            InkBeam: slugSplash,
-
-            InkBomb: (enemy) => {
-                spawnAtEnemy(InkBombCollision)(enemy);
-                this.game.audioHandler.collisionSFX.playSound('slugExplosion', false, true);
-            },
-
-            PoisonSpit: (enemy) => {
-                spawnAtEnemy(PoisonSpitSplash)(enemy);
-                this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
+                enemy.lives = 0;
             },
 
             Glacikal: (enemy) => {
                 enemy.lives--;
-                player.bloodOrPoof(enemy);
+                this.bloodOrPoof(enemy, player);
             },
 
-            IcyStormBall: (enemy) => {
-                spawnAtEnemy(IcyStormBallCollision)(enemy);
-                this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
-            },
-
-            SpinningIceBalls: (enemy) => {
-                spawnAtEnemy(SpinningIceBallsCollision)(enemy);
-                this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
-            },
-
-            PointyIcicleShard: (enemy) => {
-                spawnAtEnemy(PointyIcicleShardCollision)(enemy);
-                this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
-            },
-
-            UndergroundIcicle: spawnAtEnemyXFireballY(
-                (enemy, x, y) => {
-                    this.game.collisions.push(
-                        new UndergroundIcicleCollision(this.game, x, y)
-                    );
-                },
-                'breakingIceNoDamageSound'
-            ),
-
-            IceSlash: (enemy) => {
-                const shouldInvert = enemy.speedX > 0;
-                this.game.collisions.push(
-                    new IceSlashCollision(
-                        this.game,
-                        enemy.x + enemy.width * 0.5,
-                        enemy.y + enemy.height * 0.5,
-                        shouldInvert
-                    )
-                );
-                this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
-            },
-
-            IceTrail: (enemy) => {
-                spawnAtEnemy(IceTrailCollision)(enemy);
+            IceSlash: (enemy, fireball) => {
+                this.playCollisionFx(enemy, { fireball });
                 this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
             },
 
@@ -1793,7 +2016,7 @@ export class CollisionLogic {
                 if (enemy.isTransforming || enemy.state === "transform") return;
                 if (!enemy.isBarrierActive) {
                     enemy.lives--;
-                    player.bloodOrPoof(enemy);
+                    this.bloodOrPoof(enemy, player);
                 }
             },
 
@@ -1801,48 +2024,10 @@ export class CollisionLogic {
                 this.handleHealingBarrierCollision(barrier);
             },
 
-            PurpleBeamOrb: (enemy) => {
-                this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
-                this.game.audioHandler.collisionSFX.playSound('ntharaxSplitBeamCollisionSound', false, true);
-            },
-
-            YellowBeamOrb: (enemy) => {
-                this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
-                this.game.audioHandler.collisionSFX.playSound('ntharaxSplitBeamCollisionSound', false, true);
-            },
-
-            BlackBeamOrb: (enemy) => {
-                this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
-                this.game.audioHandler.collisionSFX.playSound('ntharaxSplitBeamCollisionSound', false, true);
-            },
-
-            GalacticSpike: (enemy) => {
-                const x = enemy.x + enemy.width * 0.5;
-                const y = enemy.y + enemy.height * 0.5;
-
-                const groundBottom = enemy.groundBottom;
-                const clipRect = {
-                    x: 0,
-                    y: 0,
-                    w: this.game.width,
-                    h: groundBottom,
-                };
-
-                this.game.collisions.push(
-                    new GalacticSpikeCollision(this.game, x, y, enemy.heightScale, 1, clipRect)
-                );
-
-                this.game.audioHandler.collisionSFX.playSound(
-                    "galacticSpikeCollisionSound",
-                    false,
-                    true
-                );
-            },
-
             Elyvorg: (enemy) => {
                 if (!enemy.isBarrierActive) {
                     enemy.lives--;
-                    player.bloodOrPoof(enemy);
+                    this.bloodOrPoof(enemy, player);
                 }
             },
 
@@ -1854,66 +2039,111 @@ export class CollisionLogic {
                 }
             },
 
-            GhostElyvorg: (enemy) => {
-                this.game.collisions.push(new GhostFadeOut(this.game, enemy));
-                this.game.audioHandler.collisionSFX.playSound('elyvorg_ghost_hit_sound_effect', false, true);
-            },
-
-            default: (enemy) => {
-                player.bloodOrPoof(enemy);
+            default: (enemy, fireball) => {
+                this.playCollisionFx(enemy, { fireball, fallbackToDefault: true });
             }
         };
 
         return this._fireballHandlers;
     }
 
-    // enemies collision
+    // ------------------------------------------------------------------
+    // Enemies collision (player vs enemy)
+    // ------------------------------------------------------------------
     handleFiredogCollisionWithEnemy(enemy) {
         const player = this.game.player;
-        if (this.game.gameOver || player.collisionCooldowns[enemy.id] > 0) return;
+        if (this.game.gameOver) return;
 
+        if (!player.isDashing && player.collisionCooldowns[enemy.id] > 0) return;
         if (!this.enemyHitsRect(enemy, this.getPlayerRect())) return;
+
+        if (!player.isDashing && player.postDashGraceTimer > 0) {
+            player.collisionCooldowns[enemy.id] = Math.max(
+                player.collisionCooldowns[enemy.id] || 0,
+                player.postDashGraceTimer
+            );
+            return;
+        }
 
         if (enemy instanceof EnemyBoss) {
             const bossInvulnerable =
-            !this.game.bossInFight ||
-            this.game.cutsceneActive ||
-            (this.game.boss && this.game.boss.talkToBoss) ||
-            (this.game.boss && this.game.boss.preFight);
+                !this.game.bossInFight ||
+                this.game.cutsceneActive ||
+                (this.game.boss && this.game.boss.talkToBoss) ||
+                (this.game.boss && this.game.boss.preFight);
 
             if (bossInvulnerable) return;
         }
 
         if (this.isKamehameha(enemy)) {
+        if (!player.isDashing) {
             player.collisionCooldowns[enemy.id] = 220;
-            if (!player.isInvisible) {
-                player.hit(enemy);
-            }
-            if (!player.isInvisible || player.rollingOrDiving()) {
-                this.collisionAnimationBasedOnEnemy(enemy);
-            }
-            return;
+        }
+
+        this.hit(enemy, player);
+
+        if (player.isDashing) {
+            const dashId = player.dashInstanceId;
+
+            if (enemy._lastDashKameFxId === dashId) return;
+            enemy._lastDashKameFxId = dashId;
+        }
+
+        if (!player.isInvisible || this.isRollingOrDiving(player) || player.isDashing) {
+            this.playCollisionFx(enemy);
+        }
+        return;
         }
 
         if (this.shouldSkipElyvorgTeleportCollision(enemy, player)) return;
 
-        if (!player.isInvisible || (player.isInvisible && player.rollingOrDiving())) {
+        if (!player.isDashing && (!player.isInvisible || (player.isInvisible && this.isRollingOrDiving(player)))) {
             player.collisionCooldowns[enemy.id] = 500;
-            if (!(enemy instanceof EnemyBoss)) enemy.lives -= 1;
+
+            if (!(enemy instanceof EnemyBoss) && !(enemy instanceof Goblin)) {
+                enemy.lives -= 1;
+            }
         }
 
-        if (player.rollingOrDiving()) {
+        if (this.isRollingOrDiving(player)) {
             if (player.isBluePotionActive) {
                 enemy.lives -= 3;
-                player.handleFloatingMessages(enemy);
-                player.bloodOrPoof(enemy);
+                this.handleFloatingMessages(enemy, player);
+                this.bloodOrPoof(enemy, player);
                 return;
             }
+
             this.handleRollingOrDivingCollision(enemy);
-            player.handleFloatingMessages(enemy);
-        } else {
-            this.handleNormalCollision(enemy);
+            this.handleFloatingMessages(enemy, player);
+            return;
         }
+
+        if (player.isDashing) {
+            const dashId = player.dashInstanceId;
+
+            if (enemy instanceof Elyvorg && enemy.isBarrierActive) {
+                return;
+            }
+
+            if (enemy instanceof NTharax && enemy.isBarrierActive) {
+                return;
+            }
+
+            if (enemy._lastDashHitId !== dashId) {
+                enemy._lastDashHitId = dashId;
+                enemy.lives -= 3;
+                this.handleFloatingMessages(enemy, player);
+            }
+
+            if (enemy._lastDashEffectId !== dashId) {
+                enemy._lastDashEffectId = dashId;
+                this.handleNormalCollision(enemy, { treatAsDash: true });
+            }
+            return;
+        }
+
+
+        this.handleNormalCollision(enemy);
     }
 
     // fireball vs enemy
@@ -1922,7 +2152,6 @@ export class CollisionLogic {
             if (!(fireball instanceof Fireball)) return;
 
             const fireballRect = this.getFireballRect(fireball);
-
             if (!this.enemyHitsRect(enemy, fireballRect)) return;
 
             this.handleSpecificFireballCollisions(fireball, enemy, enemiesHit);
@@ -1960,7 +2189,7 @@ export class CollisionLogic {
         const type = enemy.constructor.name;
         (handlers[type] || handlers.default)(enemy, fireball);
 
-        player.handleFloatingMessages(enemy);
+        this.handleFloatingMessages(enemy, player);
     }
 
     // follow collision animations
@@ -1992,7 +2221,568 @@ export class CollisionLogic {
         });
     }
 
-    // power collisions
+    // ------------------------------------------------------------------
+    // Normal collision
+    // ------------------------------------------------------------------
+    handleNormalCollision(enemy, opts = null) {
+        const player = this.game.player;
+        const treatAsDash = !!opts?.treatAsDash;
+
+        const canReceiveStatus = !player.isInvisible;
+        const canPlayCollisionFx = (!player.isInvisible) || treatAsDash || player.isDashing;
+
+        switch (true) {
+            default:
+                this.hit(enemy, player);
+                if (canPlayCollisionFx) this.bloodOrPoof(enemy, player);
+                break;
+
+            // normal enemies with special collision animation
+            case enemy instanceof GhostElyvorg:
+            case enemy instanceof PurpleFireball:
+            case enemy instanceof MeteorAttack:
+            case enemy instanceof UndergroundIcicle:
+            case enemy instanceof GravitationalAura:
+            case enemy instanceof PurpleLaserBeam:
+            case enemy instanceof PurpleBallOrb:
+            case enemy instanceof AntennaeTentacle:
+            case enemy instanceof PurpleBeamOrb:
+            case enemy instanceof PurpleAsteroid:
+            case enemy instanceof GroundShockwaveRing:
+            case enemy instanceof LaserBall:
+                if (canPlayCollisionFx) {
+                    this.playCollisionFx(enemy);
+                }
+                if (canReceiveStatus) {
+                    this.hit(enemy, player);
+                }
+                break;
+
+            // goblin
+            case enemy instanceof Goblin: {
+                if (treatAsDash || player.isDashing) {
+                    enemy.lives = 0;
+                    if (canPlayCollisionFx) this.bloodOrPoof(enemy, player);
+                    return;
+                }
+
+                this.hit(enemy, player);
+
+                if (canPlayCollisionFx) {
+                    const maxCoinsToSteal = Math.min(20, this.game.coins);
+                    const minCoinsToSteal = Math.min(10, maxCoinsToSteal);
+                    const coinsToSteal =
+                        Math.floor(Math.random() * (maxCoinsToSteal - minCoinsToSteal + 1)) +
+                        minCoinsToSteal;
+
+                    for (let i = 0; i < coinsToSteal; i++) {
+                        this.game.particles.unshift(
+                            new CoinLoss(this.game, player.x + player.width * -0.1, player.y)
+                        );
+                    }
+
+                    if (coinsToSteal > 0) {
+                        this.game.audioHandler.enemySFX.playSound('goblinStealing', false, true);
+                        this.game.coins -= coinsToSteal;
+                        this.game.floatingMessages.push(
+                            new FloatingMessage('-' + coinsToSteal, player.x, player.y, 150, 50, 30, 'red')
+                        );
+                    }
+                }
+                break;
+            }
+
+            // ink
+            case enemy instanceof Sluggie:
+            case enemy instanceof InkBomb:
+            case enemy instanceof Garry:
+            case enemy instanceof InkBeam:
+                this.hit(enemy, player);
+
+                if (canReceiveStatus) {
+                    this.triggerInkSplash(player);
+                }
+
+                if (canPlayCollisionFx) {
+                    this.playCollisionFx(enemy);
+                }
+                break;
+
+            // stun
+            case enemy instanceof Bee:
+            case enemy instanceof AngryBee:
+            case enemy instanceof VolcanoWasp:
+            case enemy instanceof LilHornet:
+            case enemy instanceof Voltzeel:
+            case enemy instanceof Aura:
+            case enemy instanceof Cactus:
+            case enemy instanceof RockProjectile:
+            // special stun collision
+            case enemy instanceof Skulnap:
+            case enemy instanceof YellowArrow:
+            case enemy instanceof PurpleThunder:
+            case enemy instanceof YellowBeamOrb:
+            case enemy instanceof GalacticSpike: {
+                if (canPlayCollisionFx) {
+                    this.playCollisionFx(enemy, { fallbackToDefault: true });
+                }
+
+                if (canReceiveStatus && !player.isDashing && !treatAsDash) {
+                    this.stunned(player);
+                }
+
+                break;
+            }
+
+            case enemy instanceof ElectricWheel: {
+                if (canPlayCollisionFx) {
+                    this.playCollisionFx(enemy);
+                }
+
+                if (canReceiveStatus && !player.isDashing && !treatAsDash) {
+                    this.stunned(player);
+                }
+
+                if (canPlayCollisionFx) {
+                    enemy.lives = 0;
+                    player.bossCollisionTimer = 0;
+                    player.resetElectricWheelCounters = true;
+                }
+
+                break;
+            }
+
+            // poison
+            case enemy instanceof PoisonSpit:
+            case enemy instanceof PoisonDrop:
+            case enemy instanceof GreenArrow:
+                if (canPlayCollisionFx) {
+                    this.playCollisionFx(enemy);
+                }
+
+                if (canReceiveStatus) {
+                    this.isPoisonActiveChecker(player);
+                    this.hit(enemy, player);
+                    this.isPoisonTimerChecker(enemy instanceof PoisonSpit ? 1500 : 2500, player);
+                }
+                break;
+
+            // red
+            case enemy instanceof Gloomlet:
+            case enemy instanceof KarateCroco:
+            case enemy instanceof Tauro:
+            case enemy instanceof SpearFish:
+            case enemy instanceof TheRock:
+            case enemy instanceof Volcanurtle:
+                this.hit(enemy, player);
+                if (canPlayCollisionFx) {
+                    this.bloodOrPoof(enemy, player);
+                }
+                break;
+
+            // slow
+            case enemy instanceof IceBall:
+            case enemy instanceof IceTrail:
+            case enemy instanceof IcyStormBall:
+            case enemy instanceof SpinningIceBalls:
+            case enemy instanceof PointyIcicleShard:
+            case enemy instanceof BlueArrow: {
+                if (canPlayCollisionFx) {
+                    this.playCollisionFx(enemy, { fallbackToDefault: true });
+
+                    if (player.isInvisible) {
+                        this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
+                    } else {
+                        this.game.audioHandler.enemySFX.playSound('iceSlowedSound', false, true);
+                    }
+                }
+
+                if (canReceiveStatus) {
+                    this.hit(enemy, player);
+                    player.isSlowed = true;
+                    player.slowedTimer = 5000;
+                }
+
+                break;
+            }
+
+            // frozen
+            case enemy instanceof IceSlash:
+            case enemy instanceof BlueAsteroid:
+            case enemy instanceof CyanArrow: {
+                if (canPlayCollisionFx) {
+                    this.playCollisionFx(enemy, { fallbackToDefault: true });
+
+                    const statusBlocked = player.isInvisible || player.isDashing || treatAsDash;
+                    if (statusBlocked) {
+                        this.game.audioHandler.collisionSFX.playSound(
+                            'breakingIceNoDamageSound',
+                            false,
+                            true
+                        );
+                    }
+                }
+
+                if (canReceiveStatus && !player.isDashing && !treatAsDash) {
+                    this.hit(enemy, player);
+                    player.startFrozen(2000);
+                }
+
+                break;
+            }
+
+            // tunnel vision
+            case enemy instanceof BlackBeamOrb:
+                if (canReceiveStatus) {
+                    this.hit(enemy, player);
+
+                    if (canPlayCollisionFx) {
+                        this.playCollisionFx(enemy);
+                    }
+
+                    player.triggerTunnelVision({
+                        fadeInMs: 1200,
+                        holdMs: 2000,
+                        expandMs: 0,
+                        expandAmount: 0,
+                        fadeOutMs: 1200,
+                        fadeCircleAlphaWithFadeOut: true,
+                    });
+                    this.game.audioHandler.powerUpAndDownSFX.playSound('darkHoleLaughSound', false, true);
+                } else {
+                    if (canPlayCollisionFx) {
+                        this.playCollisionFx(enemy);
+                    }
+                }
+                break;
+
+            // boss enemies
+            case enemy instanceof Glacikal:
+            case enemy instanceof Elyvorg: {
+                const isElyvorg = enemy instanceof Elyvorg;
+
+                if (treatAsDash || player.isDashing) {
+                    if (!isElyvorg || !enemy.isBarrierActive) {
+                        if (canPlayCollisionFx) this.bloodOrPoof(enemy, player);
+                    }
+                    break;
+                }
+
+                if (
+                    player.bossCollisionTimer >= player.bossCollisionCooldown &&
+                    (!isElyvorg || !enemy.isBarrierActive)
+                ) {
+                    this.hit(enemy, player);
+                    if (canPlayCollisionFx) this.bloodOrPoof(enemy, player);
+                }
+                break;
+            }
+
+            case enemy instanceof NTharax: {
+                if (enemy.isTransforming || enemy.state === "transform") break;
+
+                if (enemy.state === 'dive') {
+                    if (canReceiveStatus) this.hit(enemy, player);
+                    break;
+                }
+
+                if (player.bossCollisionTimer >= player.bossCollisionCooldown) {
+                    if (canReceiveStatus) {
+                        this.hit(enemy, player);
+                        if (canPlayCollisionFx && !enemy.isBarrierActive) {
+                            this.bloodOrPoof(enemy, player);
+                        }
+                    } else {
+                        if (canPlayCollisionFx && !enemy.isBarrierActive) {
+                            this.bloodOrPoof(enemy, player);
+                        }
+                    }
+                }
+                break;
+            }
+
+            // barriers
+            case enemy instanceof HealingBarrier: {
+                player.bossCollisionTimer = 0;
+
+                const canHurtPlayer =
+                    canReceiveStatus && (
+                        player.isFrozen ||
+                        player.currentState === player.states[0] ||
+                        player.currentState === player.states[1] ||
+                        player.currentState === player.states[2] ||
+                        player.currentState === player.states[3] ||
+                        player.currentState === player.states[8]
+                    );
+
+                if (canHurtPlayer) {
+                    this.hit(enemy, player);
+                }
+
+                if (canPlayCollisionFx) {
+                    const healAmount = (treatAsDash || player.isDashing) ? (3 * 2) : 2;
+                    this.handleHealingBarrierCollision(enemy, healAmount);
+                }
+                break;
+            }
+
+            case enemy instanceof PurpleBarrier:
+                player.bossCollisionTimer = 0;
+
+                if (
+                    canReceiveStatus &&
+                    (
+                        player.isFrozen ||
+                        player.currentState === player.states[0] ||
+                        player.currentState === player.states[1] ||
+                        player.currentState === player.states[2] ||
+                        player.currentState === player.states[3] ||
+                        player.currentState === player.states[8]
+                    )
+                ) {
+                    this.hit(enemy, player);
+                }
+
+                if (enemy.lives <= 0) {
+                    this.game.collisions.push(
+                        new DisintegrateCollision(this.game, enemy, { followTarget: this.game.boss.current })
+                    );
+                }
+                break;
+
+            // purple slash
+            case enemy instanceof PurpleSlash:
+                player.bossCollisionTimer = 0;
+                if (canReceiveStatus) this.hit(enemy, player);
+                break;
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Rolling/Diving collision
+    // ------------------------------------------------------------------
+    handleRollingOrDivingCollision(enemy) {
+        const player = this.game.player;
+
+        switch (true) {
+            default:
+                this.bloodOrPoof(enemy, player);
+                break;
+
+            // normal enemies with special collision
+            case enemy instanceof GhostElyvorg:
+            case enemy instanceof MeteorAttack:
+            case enemy instanceof PurpleLaserBeam:
+            case enemy instanceof GravitationalAura:
+            case enemy instanceof PurpleBeamOrb:
+            case enemy instanceof PurpleAsteroid:
+                this.playCollisionFx(enemy);
+                break;
+
+            // normal enemies with special collision but damage through rolling or diving
+            case enemy instanceof PurpleFireball:
+            case enemy instanceof UndergroundIcicle:
+            case enemy instanceof PurpleBallOrb:
+            case enemy instanceof AntennaeTentacle:
+            case enemy instanceof GroundShockwaveRing:
+            case enemy instanceof LaserBall:
+                this.hit(enemy, player);
+                this.playCollisionFx(enemy);
+                break;
+
+            // goblin
+            case enemy instanceof Goblin:
+                enemy.lives = 0;
+                this.bloodOrPoof(enemy, player);
+                break;
+
+            // ink
+            case enemy instanceof Sluggie:
+            case enemy instanceof InkBomb:
+            case enemy instanceof Garry:
+            case enemy instanceof InkBeam:
+                this.triggerInkSplash(player);
+                this.playCollisionFx(enemy);
+                break;
+
+            // stun
+            case enemy instanceof Bee:
+            case enemy instanceof AngryBee:
+            case enemy instanceof VolcanoWasp:
+            case enemy instanceof Voltzeel:
+            case enemy instanceof Aura:
+            case enemy instanceof LilHornet:
+            case enemy instanceof Cactus:
+            case enemy instanceof RockProjectile:
+            case enemy instanceof GalacticSpike:
+            // special collision
+            case enemy instanceof Skulnap:
+            case enemy instanceof PurpleThunder:
+            case enemy instanceof YellowArrow:
+            case enemy instanceof YellowBeamOrb: {
+                this.playCollisionFx(enemy, { fallbackToDefault: true });
+
+                if (!player.isInvisible) {
+                    this.stunned(player);
+                }
+
+                break;
+            }
+
+            case enemy instanceof ElectricWheel: {
+                enemy.lives = 0;
+
+                this.playCollisionFx(enemy);
+
+                if (!player.isInvisible) {
+                    this.stunned(player);
+                }
+
+                player.resetElectricWheelCounters = true;
+                player.bossCollisionTimer = 0;
+
+                break;
+            }
+
+            // poison
+            case enemy instanceof PoisonSpit:
+            case enemy instanceof PoisonDrop:
+            case enemy instanceof GreenArrow:
+                if (!player.isInvisible) {
+                    this.isPoisonActiveChecker(player);
+                    this.hit(enemy, player);
+                    this.isPoisonTimerChecker(enemy instanceof PoisonSpit ? 1500 : 2500, player);
+                }
+                this.playCollisionFx(enemy);
+                break;
+
+            // red
+            case enemy instanceof Gloomlet:
+            case enemy instanceof Tauro:
+            case enemy instanceof KarateCroco:
+            case enemy instanceof SpearFish:
+            case enemy instanceof TheRock:
+            case enemy instanceof Volcanurtle:
+                if (player.currentState === player.states[4]) this.hit(enemy, player);
+                this.bloodOrPoof(enemy, player);
+                break;
+
+            // slow
+            case enemy instanceof IceBall:
+            case enemy instanceof IceTrail:
+            case enemy instanceof IcyStormBall:
+            case enemy instanceof SpinningIceBalls:
+            case enemy instanceof PointyIcicleShard:
+            case enemy instanceof BlueArrow:
+                if (!player.isInvisible) {
+                    player.isSlowed = true;
+                    player.slowedTimer = 5000;
+                }
+                this.playCollisionFx(enemy, { fallbackToDefault: true });
+                if (player.isInvisible) {
+                    this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
+                } else {
+                    this.game.audioHandler.enemySFX.playSound('iceSlowedSound', false, true);
+                }
+                break;
+
+            // frozen
+            case enemy instanceof IceSlash:
+            case enemy instanceof BlueAsteroid:
+            case enemy instanceof CyanArrow:
+                if (!player.isInvisible) {
+                    this.hit(enemy, player);
+                    player.startFrozen(2000);
+                } else {
+                    this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
+                }
+                this.playCollisionFx(enemy, { fallbackToDefault: true });
+                break;
+
+            // tunnel vision
+            case enemy instanceof BlackBeamOrb:
+                if (!player.isInvisible) {
+                    player.triggerTunnelVision({
+                        fadeInMs: 1200,
+                        holdMs: 2000,
+                        expandMs: 0,
+                        expandAmount: 0,
+                        fadeOutMs: 1200,
+                        fadeCircleAlphaWithFadeOut: true,
+                    });
+                    this.game.audioHandler.powerUpAndDownSFX.playSound('darkHoleLaughSound', false, true);
+                }
+                this.playCollisionFx(enemy);
+                break;
+
+            // boss enemies
+            case enemy instanceof Glacikal:
+            case enemy instanceof Elyvorg: {
+                const isElyvorg = enemy instanceof Elyvorg;
+
+                if (
+                    player.bossCollisionTimer >= player.bossCollisionCooldown &&
+                    (!isElyvorg || !enemy.isBarrierActive)
+                ) {
+                    enemy.lives -= 1;
+                    this.bloodOrPoof(enemy, player);
+                }
+
+                break;
+            }
+
+            case enemy instanceof NTharax: {
+                if (enemy.isTransforming || enemy.state === "transform") break;
+
+                if (enemy.state === 'dive') {
+                    if (!player.isInvisible) {
+                        this.hit(enemy, player);
+                    } else {
+                        if (player.bossCollisionTimer >= player.bossCollisionCooldown && !enemy.isBarrierActive) {
+                            enemy.lives -= 1;
+                            this.bloodOrPoof(enemy, player);
+                        }
+                    }
+                    break;
+                }
+
+                if (player.bossCollisionTimer >= player.bossCollisionCooldown) {
+                    if (!enemy.isBarrierActive) {
+                        enemy.lives -= 1;
+                        this.bloodOrPoof(enemy, player);
+                    }
+                }
+                break;
+            }
+
+            // barriers
+            case enemy instanceof HealingBarrier: {
+                this.handleHealingBarrierCollision(enemy);
+                break;
+            }
+
+            case enemy instanceof PurpleBarrier:
+                player.bossCollisionTimer = 0;
+                if (enemy.lives <= 0) {
+                    this.game.collisions.push(
+                        new DisintegrateCollision(this.game, enemy, { followTarget: this.game.boss.current })
+                    );
+                }
+                break;
+
+            // purple slash
+            case enemy instanceof PurpleSlash:
+                if (!player.isInvisible) {
+                    player.bossCollisionTimer = 0;
+                    this.hit(enemy, player);
+                }
+                break;
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Power collisions
+    // ------------------------------------------------------------------
     handlePowerCollisions() {
         const game = this.game;
         const player = game.player;
@@ -2066,8 +2856,8 @@ export class CollisionLogic {
             },
             Cauldron() {
                 game.audioHandler.powerUpAndDownSFX.playSound('cauldronSoundEffect', false, true);
-                player.isPoisonActiveChecker();
-                player.isPoisonTimerChecker(3500);
+                this.isPoisonActiveChecker(player);
+                this.isPoisonTimerChecker(3500, player);
             },
             BlackHole() {
                 player.isBlackHoleActive = true;
@@ -2098,7 +2888,7 @@ export class CollisionLogic {
                 });
 
                 const pickName = candidates[Math.floor(Math.random() * candidates.length)];
-                downHandlers[pickName](item);
+                downHandlers[pickName].call(this, item);
             }
         };
 
@@ -2112,809 +2902,11 @@ export class CollisionLogic {
                 if (!handler) continue;
 
                 item.markedForDeletion = true;
-                handler(item);
+                handler.call(this, item);
             }
         };
 
         processList(game.powerUps, upHandlers, false);
         processList(game.powerDowns, downHandlers, true);
-    }
-
-    // collision animations
-    collisionAnimationBasedOnEnemy(enemy) {
-        const player = this.game.player;
-
-        switch (true) {
-            case enemy instanceof Sluggie || enemy instanceof InkBomb || enemy instanceof Garry || enemy instanceof InkBeam:
-                this.game.audioHandler.collisionSFX.playSound('slugExplosion', false, true);
-                if (enemy instanceof Sluggie || enemy instanceof Garry || enemy instanceof InkBeam) {
-                    this.game.collisions.push(
-                        new InkSplashCollision(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5)
-                    );
-                } else {
-                    this.game.collisions.push(
-                        new InkBombCollision(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5)
-                    );
-                }
-                return true;
-
-            case enemy instanceof Skulnap:
-                this.game.audioHandler.collisionSFX.playSound('explosionCollision', false, true);
-                this.game.collisions.push(
-                    new ExplosionCollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5, enemy.id)
-                );
-                return true;
-
-            case enemy instanceof ElectricWheel:
-                this.game.audioHandler.collisionSFX.playSound('elyvorg_electricity_wheel_collision_sound', false, true);
-                this.game.collisions.push(
-                    new ElectricityCollision(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5)
-                );
-                return true;
-
-            case enemy instanceof GravitationalAura:
-                this.game.audioHandler.collisionSFX.playSound('darkExplosionCollisionSound', false, true);
-                this.game.collisions.push(
-                    new DarkExplosionCollision(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5)
-                );
-                return true;
-
-            case enemy instanceof PoisonSpit:
-                this.game.audioHandler.enemySFX.playSound('acidSoundEffect', false, true);
-                this.game.collisions.push(
-                    new PoisonSpitSplash(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5)
-                );
-                return true;
-
-            case enemy instanceof PoisonDrop:
-                this.game.collisions.push(
-                    new PoisonDropCollision(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5)
-                );
-                this.game.audioHandler.collisionSFX.playSound('poisonDropCollisionSound', false, true);
-                if (!player.isInvisible) {
-                    this.game.audioHandler.enemySFX.playSound('acidSoundEffect', false, true);
-                }
-                return true;
-
-            case enemy instanceof PurpleFireball:
-                this.game.audioHandler.collisionSFX.playSound('fireballExplosionSound', false, true);
-                this.game.collisions.push(
-                    new PurpleFireballCollision(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5)
-                );
-                return true;
-
-            case enemy instanceof PurpleThunder: {
-                const x = enemy.x + enemy.width * 0.5;
-                const y = player.y + player.height * 0.5;
-                this.game.audioHandler.collisionSFX.playSound('elyvorg_electricity_wheel_collision_sound', false, true);
-                this.game.collisions.push(new PurpleThunderCollision(this.game, x, y));
-                return true;
-            }
-
-            case enemy instanceof PurpleLaserBeam: {
-                this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
-                this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
-                return true;
-            }
-
-            case enemy instanceof MeteorAttack:
-                this.game.collisions.push(
-                    new MeteorExplosionCollision(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5)
-                );
-                this.game.audioHandler.collisionSFX.playSound('elyvorg_meteor_in_contact_sound', false, true);
-                return true;
-
-            case enemy instanceof Arrow: {
-                this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
-                this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
-                return true;
-            }
-
-            case enemy instanceof PurpleAsteroid:
-                this.game.collisions.push(
-                    new AsteroidExplosionCollision(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5 - 70)
-                );
-                this.game.audioHandler.collisionSFX.playSound('elyvorg_meteor_in_contact_sound', false, true);
-                return true;
-
-            case enemy instanceof BlueAsteroid:
-                this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
-                this.game.audioHandler.collisionSFX.playSound('elyvorg_meteor_in_contact_sound', false, true);
-                return true;
-
-            case enemy instanceof GalacticSpike: {
-                const x = enemy.x + enemy.width * 0.5;
-                const y = enemy.y + enemy.height * 0.5;
-
-                const groundBottom = enemy.groundBottom;
-                const clipRect = {
-                    x: 0,
-                    y: 0,
-                    w: this.game.width,
-                    h: groundBottom
-                };
-
-                this.game.collisions.push(
-                    new GalacticSpikeCollision(this.game, x, y, enemy.heightScale, 1, clipRect)
-                );
-
-                this.game.audioHandler.collisionSFX.playSound(
-                    'galacticSpikeCollisionSound',
-                    false,
-                    true
-                );
-                return true;
-            }
-
-            case enemy instanceof LaserBall: {
-                const mode2 =
-                    !!enemy.mode2Active ||
-                    !!enemy.mode2;
-
-                const AnimClass = mode2 ? RedFireballCollision : PurpleFireballCollision;
-
-                this.game.collisions.push(
-                    new AnimClass(
-                        this.game,
-                        enemy.x + enemy.width * 0.5,
-                        enemy.y + enemy.height * 0.5
-                    )
-                );
-                this.game.audioHandler.collisionSFX.playSound('fireballExplosionSound', false, true);
-                return true;
-            }
-
-            case enemy instanceof Kamehameha: {
-                const pcx = player.x + player.width * 0.5;
-                const pcy = player.y + player.height * 0.5;
-
-                const mx = enemy.mouthX, my = enemy.mouthY;
-                const ex = enemy.endX, ey = enemy.endY;
-
-                const hit = this.closestPointOnSegment(pcx, pcy, mx, my, ex, ey);
-
-                this.game.collisions.push(
-                    new BallParticleBurstCollision(this.game, hit.x, hit.y, {
-                        color: "#098cf7ff",
-                        count: 48,
-                        minRadius: 2,
-                        maxRadius: 6,
-                        minSpeed: 3,
-                        maxSpeed: 9,
-                        gravity: 0.45,
-                        spread: Math.PI * 1.1,
-                        duration: 600,
-                    })
-                );
-
-                this.game.audioHandler.collisionSFX.playSound(
-                    "ntharaxKamehamehaCollisionSound",
-                    false,
-                    true
-                );
-                return true;
-            }
-
-            case enemy instanceof AntennaeTentacle: {
-                const x = enemy.x + enemy.width * 0.5;
-                const y = player.y + player.height * 0.5;
-
-                const mode2 =
-                    !!enemy.mode2Active ||
-                    !!enemy.mode2
-
-                this.game.collisions.push(
-                    new BallParticleBurstCollision(this.game, x, y, mode2
-                        ? {
-                            color: "#fa0b7aff",
-                            count: 44,
-                            minRadius: 2,
-                            maxRadius: 7,
-                            minSpeed: 4,
-                            maxSpeed: 11,
-                            gravity: 0.52,
-                            spread: Math.PI * 1.2,
-                            duration: 720,
-                        }
-                        : {
-                            color: "#cf0fe9ff",
-                            count: 28,
-                            minRadius: 2,
-                            maxRadius: 6,
-                            minSpeed: 3,
-                            maxSpeed: 9,
-                            gravity: 0.45,
-                            spread: Math.PI * 1.1,
-                            duration: 600,
-                        }
-                    )
-                );
-
-                this.game.audioHandler.collisionSFX.playSound(
-                    'ntharaxTentacleCollisionSound',
-                    false,
-                    true
-                );
-
-                return true;
-            }
-
-            case enemy instanceof IceSlash: {
-                const shouldInvert = enemy.speedX > 0;
-                this.game.collisions.push(
-                    new IceSlashCollision(
-                        this.game,
-                        enemy.x + enemy.width * 0.5,
-                        enemy.y + enemy.height * 0.5,
-                        shouldInvert
-                    )
-                );
-                return true;
-            }
-
-            case enemy instanceof SpinningIceBalls:
-                this.game.collisions.push(
-                    new SpinningIceBallsCollision(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5, enemy.id)
-                );
-                return true;
-
-            case enemy instanceof PointyIcicleShard:
-                this.game.collisions.push(
-                    new PointyIcicleShardCollision(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5, enemy.id)
-                );
-                return true;
-
-            case enemy instanceof UndergroundIcicle: {
-                const x = enemy.x + enemy.width * 0.5;
-                const y = player.y + player.height * 0.5;
-
-                this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
-                this.game.collisions.push(new UndergroundIcicleCollision(this.game, x, y, enemy.id));
-                return true;
-            }
-
-            case enemy instanceof IceTrail:
-                this.game.collisions.push(
-                    new IceTrailCollision(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5, enemy.id)
-                );
-                return true;
-
-            case enemy instanceof IcyStormBall:
-                this.game.collisions.push(
-                    new IcyStormBallCollision(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5, enemy.id)
-                );
-                return true;
-
-            case enemy instanceof GhostElyvorg:
-                this.game.collisions.push(new GhostFadeOut(this.game, enemy));
-                this.game.audioHandler.collisionSFX.playSound('elyvorg_ghost_hit_sound_effect', false, true);
-                return true;
-
-            case enemy instanceof PurpleBeamOrb:
-            case enemy instanceof YellowBeamOrb:
-            case enemy instanceof BlackBeamOrb:
-                this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
-                this.game.audioHandler.collisionSFX.playSound('ntharaxSplitBeamCollisionSound', false, true);
-                return true;
-
-            case enemy instanceof GroundShockwaveRing:
-            case enemy instanceof PurpleBallOrb:
-                // no collision animation
-                return true;
-
-            default:
-                return false;
-        }
-    }
-
-    specialCollisionAnimationOrNot(enemy) {
-        const player = this.game.player;
-        if (!this.collisionAnimationBasedOnEnemy(enemy)) {
-            player.bloodOrPoof(enemy);
-        }
-    }
-
-    // normal collision
-    handleNormalCollision(enemy) {
-        const player = this.game.player;
-
-        switch (true) {
-            default:
-                if (!player.isInvisible) {
-                    player.hit(enemy);
-                    player.bloodOrPoof(enemy);
-                }
-                break;
-
-            case enemy instanceof Goblin:
-                if (!player.isInvisible) {
-                    enemy.lives += 1;
-                    player.hit(enemy);
-
-                    const maxCoinsToSteal = Math.min(20, this.game.coins);
-                    const minCoinsToSteal = Math.min(10, maxCoinsToSteal);
-                    const coinsToSteal =
-                        Math.floor(Math.random() * (maxCoinsToSteal - minCoinsToSteal + 1)) +
-                        minCoinsToSteal;
-
-                    for (let i = 0; i < coinsToSteal; i++) {
-                        this.game.particles.unshift(
-                            new CoinLoss(this.game, player.x + player.width * -0.1, player.y)
-                        );
-                    }
-
-                    if (coinsToSteal > 0) {
-                        this.game.audioHandler.enemySFX.playSound('goblinStealing', false, true);
-                        this.game.coins -= coinsToSteal;
-                        this.game.floatingMessages.push(
-                            new FloatingMessage('-' + coinsToSteal, player.x, player.y, 150, 50, 30, 'red')
-                        );
-                    }
-                }
-                break;
-
-            // ink
-            case enemy instanceof Sluggie:
-            case enemy instanceof InkBomb:
-            case enemy instanceof Garry:
-            case enemy instanceof InkBeam:
-                player.hit(enemy);
-                player.triggerInkSplash();
-                if (!player.isInvisible) {
-                    this.collisionAnimationBasedOnEnemy(enemy);
-                }
-                break;
-
-            // tunnel vision
-            case enemy instanceof BlackBeamOrb:
-                if (!player.isInvisible) {
-                    player.hit(enemy);
-                    this.collisionAnimationBasedOnEnemy(enemy);
-                    player.triggerTunnelVision({
-                        fadeInMs: 1200,
-                        holdMs: 2000,
-                        expandMs: 0,
-                        expandAmount: 0,
-                        fadeOutMs: 1200,
-                        fadeCircleAlphaWithFadeOut: true,
-                    });
-                    this.game.audioHandler.powerUpAndDownSFX.playSound('darkHoleLaughSound', false, true);
-                }
-                break;
-
-            // stun
-            case enemy instanceof Bee:
-            case enemy instanceof AngryBee:
-            case enemy instanceof VolcanoWasp:
-            case enemy instanceof LilHornet:
-            case enemy instanceof Voltzeel:
-            case enemy instanceof Aura:
-            case enemy instanceof Cactus:
-            case enemy instanceof RockProjectile:
-            // special collision
-            case enemy instanceof Skulnap:
-            case enemy instanceof PurpleThunder:
-            case enemy instanceof YellowBeamOrb:
-            case enemy instanceof GalacticSpike:
-                player.stunned(enemy);
-                break;
-
-            case enemy instanceof ElectricWheel:
-                player.stunned(enemy);
-                if (!player.isInvisible) {
-                    enemy.lives = 0;
-                    player.bossCollisionTimer = 0;
-                    player.resetElectricWheelCounters = true;
-                }
-                break;
-
-            // poison
-            case enemy instanceof PoisonSpit:
-            case enemy instanceof PoisonDrop:
-                if (!player.isInvisible) {
-                    player.isPoisonActiveChecker();
-                    player.hit(enemy);
-                    this.collisionAnimationBasedOnEnemy(enemy);
-                    player.isPoisonTimerChecker(enemy instanceof PoisonSpit ? 1500 : 2500);
-                }
-                break;
-
-            // red
-            case enemy instanceof Gloomlet:
-            case enemy instanceof KarateCroco:
-            case enemy instanceof Tauro:
-            case enemy instanceof SpearFish:
-            case enemy instanceof TheRock:
-            case enemy instanceof Volcanurtle:
-                player.hit(enemy);
-                if (!player.isInvisible) {
-                    player.bloodOrPoof(enemy);
-                }
-                break;
-
-            // slow
-            case enemy instanceof IceBall:
-            case enemy instanceof IceTrail:
-            case enemy instanceof IcyStormBall:
-            case enemy instanceof SpinningIceBalls:
-            case enemy instanceof PointyIcicleShard:
-                if (!player.isInvisible) {
-                    this.game.audioHandler.enemySFX.playSound('iceSlowedSound', false, true);
-                    player.hit(enemy);
-                    this.specialCollisionAnimationOrNot(enemy);
-                    player.isSlowed = true;
-                    player.slowedTimer = 5000;
-                }
-                break;
-
-            // frozen
-            case enemy instanceof IceSlash:
-            case enemy instanceof BlueAsteroid:
-                if (!player.isInvisible) {
-                    player.hit(enemy);
-                    this.specialCollisionAnimationOrNot(enemy);
-                    player.startFrozen(2000);
-                }
-                break;
-
-            case enemy instanceof NTharax: {
-                if (enemy.isTransforming || enemy.state === "transform") break;
-
-                if (enemy.state === 'dive') {
-                    if (!player.isInvisible) player.hit(enemy);
-                    break;
-                }
-
-                if (player.bossCollisionTimer >= player.bossCollisionCooldown) {
-                    if (!player.isInvisible) {
-                        player.hit(enemy);
-                        if (!enemy.isBarrierActive) {
-                            player.bloodOrPoof(enemy);
-                        }
-                    }
-                }
-                break;
-            }
-
-            case enemy instanceof HealingBarrier: {
-                player.bossCollisionTimer = 0;
-
-                const canHurtPlayer =
-                    !player.isInvisible &&
-                    (
-                        player.isFrozen ||
-                        player.currentState === player.states[0] ||
-                        player.currentState === player.states[1] ||
-                        player.currentState === player.states[2] ||
-                        player.currentState === player.states[3] ||
-                        player.currentState === player.states[8]
-                    );
-
-                if (canHurtPlayer) {
-                    player.hit(enemy);
-                }
-
-                if (!player.isInvisible) {
-                    this.handleHealingBarrierCollision(enemy);
-                }
-                break;
-            }
-
-            case enemy instanceof Elyvorg:
-                if (player.bossCollisionTimer >= player.bossCollisionCooldown && !enemy.isBarrierActive) {
-                    player.hit(enemy);
-                    if (!player.isInvisible) {
-                        player.bloodOrPoof(enemy);
-                    }
-                }
-                break;
-
-            case enemy instanceof PurpleBarrier:
-                player.bossCollisionTimer = 0;
-                if (
-                    !player.isInvisible &&
-                    (
-                        player.isFrozen ||
-                        player.currentState === player.states[0] ||
-                        player.currentState === player.states[1] ||
-                        player.currentState === player.states[2] ||
-                        player.currentState === player.states[3] ||
-                        player.currentState === player.states[8]
-                    )
-                ) {
-                    player.hit(enemy);
-                }
-                if (enemy.lives <= 0) {
-                    this.game.collisions.push(new DisintegrateCollision(this.game, enemy, { followTarget: this.game.boss.current }));
-                }
-                break;
-
-            case enemy instanceof GhostElyvorg:
-                if (!player.isInvisible) {
-                    player.hit(enemy);
-                    this.collisionAnimationBasedOnEnemy(enemy);
-                    this.game.audioHandler.collisionSFX.playSound('elyvorg_ghost_hit_sound_effect', false, true);
-                }
-                break;
-
-            case enemy instanceof PurpleSlash:
-                player.bossCollisionTimer = 0;
-                if (!player.isInvisible) player.hit(enemy);
-                break;
-
-            case enemy instanceof PurpleFireball:
-            case enemy instanceof MeteorAttack:
-            case enemy instanceof UndergroundIcicle:
-            case enemy instanceof GravitationalAura:
-            case enemy instanceof PurpleLaserBeam:
-            case enemy instanceof PurpleBallOrb:
-            case enemy instanceof AntennaeTentacle:
-            case enemy instanceof PurpleBeamOrb:
-            case enemy instanceof PurpleAsteroid:
-            case enemy instanceof GroundShockwaveRing:
-            case enemy instanceof LaserBall:
-                if (!player.isInvisible) {
-                    player.hit(enemy);
-                    this.collisionAnimationBasedOnEnemy(enemy);
-                }
-                break;
-
-            case enemy instanceof Arrow:
-                if (!player.isInvisible) {
-                    const id = enemy.image.id;
-                    if (id === 'blueArrow') {
-                        player.hit(enemy);
-                        this.game.audioHandler.enemySFX.playSound('iceSlowedSound', false, true);
-                        player.isSlowed = true;
-                        player.slowedTimer = 5000;
-                        this.collisionAnimationBasedOnEnemy(enemy);
-                    } else if (id === 'yellowArrow') {
-                        player.stunned(enemy);
-                    } else if (id === 'greenArrow') {
-                        player.hit(enemy);
-                        player.isPoisonActiveChecker();
-                        player.isPoisonTimerChecker(2500);
-                        this.game.audioHandler.enemySFX.playSound('acidSoundEffect', false, true);
-                        this.collisionAnimationBasedOnEnemy(enemy);
-                    } else if (id === 'cyanArrow') {
-                        player.hit(enemy);
-                        player.startFrozen(2000);
-                        this.collisionAnimationBasedOnEnemy(enemy);
-                    }
-                }
-                break;
-        }
-    }
-
-    // rolling/diving collision
-    handleRollingOrDivingCollision(enemy) {
-        const player = this.game.player;
-
-        switch (true) {
-            default:
-                player.bloodOrPoof(enemy);
-                break;
-
-            case enemy instanceof Goblin:
-                enemy.lives = 0;
-                player.bloodOrPoof(enemy);
-                break;
-
-            // ink
-            case enemy instanceof Sluggie:
-            case enemy instanceof InkBomb:
-            case enemy instanceof Garry:
-            case enemy instanceof InkBeam:
-                player.triggerInkSplash();
-                this.collisionAnimationBasedOnEnemy(enemy);
-                break;
-
-            // tunnel vision
-            case enemy instanceof BlackBeamOrb:
-                if (!player.isInvisible) {
-                    player.triggerTunnelVision({
-                        fadeInMs: 1200,
-                        holdMs: 2000,
-                        expandMs: 0,
-                        expandAmount: 0,
-                        fadeOutMs: 1200,
-                        fadeCircleAlphaWithFadeOut: true,
-                    });
-                    this.game.audioHandler.powerUpAndDownSFX.playSound('darkHoleLaughSound', false, true);
-                }
-                this.collisionAnimationBasedOnEnemy(enemy);
-                break;
-
-            // stun
-            case enemy instanceof Bee:
-            case enemy instanceof AngryBee:
-            case enemy instanceof VolcanoWasp:
-            case enemy instanceof Voltzeel:
-            case enemy instanceof Aura:
-            case enemy instanceof LilHornet:
-            case enemy instanceof Cactus:
-            case enemy instanceof RockProjectile:
-            case enemy instanceof GalacticSpike:
-            // special collision
-            case enemy instanceof Skulnap:
-            case enemy instanceof PurpleThunder:
-            case enemy instanceof YellowBeamOrb:
-                player.stunned(enemy);
-                if (player.isInvisible) this.specialCollisionAnimationOrNot(enemy);
-                break;
-
-            case enemy instanceof ElectricWheel:
-                enemy.lives = 0;
-                player.stunned(enemy);
-                if (player.isInvisible) this.specialCollisionAnimationOrNot(enemy);
-                player.resetElectricWheelCounters = true;
-                player.bossCollisionTimer = 0;
-                break;
-
-            // poison
-            case enemy instanceof PoisonSpit:
-            case enemy instanceof PoisonDrop:
-                if (!player.isInvisible) {
-                    player.isPoisonActiveChecker();
-                    player.hit(enemy);
-                    player.isPoisonTimerChecker(enemy instanceof PoisonSpit ? 1500 : 2500);
-                }
-                this.collisionAnimationBasedOnEnemy(enemy);
-                break;
-
-            // red
-            case enemy instanceof Gloomlet:
-            case enemy instanceof Tauro:
-            case enemy instanceof KarateCroco:
-            case enemy instanceof SpearFish:
-            case enemy instanceof TheRock:
-            case enemy instanceof Volcanurtle:
-                if (player.currentState === player.states[4]) player.hit(enemy);
-                player.bloodOrPoof(enemy);
-                break;
-
-            // slow
-            case enemy instanceof IceBall:
-            case enemy instanceof IceTrail:
-            case enemy instanceof IcyStormBall:
-            case enemy instanceof SpinningIceBalls:
-            case enemy instanceof PointyIcicleShard:
-                if (!player.isInvisible) {
-                    player.isSlowed = true;
-                    player.slowedTimer = 5000;
-                }
-                this.specialCollisionAnimationOrNot(enemy);
-                if (player.isInvisible) {
-                    this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
-                } else {
-                    this.game.audioHandler.enemySFX.playSound('iceSlowedSound', false, true);
-                }
-                break;
-
-            // frozen
-            case enemy instanceof IceSlash:
-            case enemy instanceof BlueAsteroid:
-                if (!player.isInvisible) {
-                    player.hit(enemy);
-                    player.startFrozen(2000);
-                } else {
-                    this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
-                }
-                this.specialCollisionAnimationOrNot(enemy);
-                break;
-
-            case enemy instanceof Glacikal:
-                if (player.bossCollisionTimer >= player.bossCollisionCooldown) {
-                    enemy.lives -= 1;
-                    player.bloodOrPoof(enemy);
-                }
-                break;
-
-            case enemy instanceof NTharax: {
-                if (enemy.isTransforming || enemy.state === "transform") break;
-
-                if (enemy.state === 'dive') {
-                    if (!player.isInvisible) {
-                        player.hit(enemy);
-                    } else {
-                        if (player.bossCollisionTimer >= player.bossCollisionCooldown && !enemy.isBarrierActive) {
-                            enemy.lives -= 1;
-                            player.bloodOrPoof(enemy);
-                        }
-                    }
-                    break;
-                }
-
-                if (player.bossCollisionTimer >= player.bossCollisionCooldown) {
-                    if (!enemy.isBarrierActive) {
-                        enemy.lives -= 1;
-                        player.bloodOrPoof(enemy);
-                    }
-                }
-                break;
-            }
-
-            case enemy instanceof HealingBarrier: {
-                this.handleHealingBarrierCollision(enemy);
-                break;
-            }
-
-            case enemy instanceof Elyvorg:
-                if (player.bossCollisionTimer >= player.bossCollisionCooldown && !enemy.isBarrierActive) {
-                    enemy.lives -= 1;
-                    player.bloodOrPoof(enemy);
-                }
-                break;
-
-            case enemy instanceof PurpleBarrier:
-                player.bossCollisionTimer = 0;
-                if (enemy.lives <= 0) {
-                    this.game.collisions.push(new DisintegrateCollision(this.game, enemy, { followTarget: this.game.boss.current }));
-                }
-                break;
-
-            case enemy instanceof GhostElyvorg:
-                this.collisionAnimationBasedOnEnemy(enemy);
-                this.game.audioHandler.collisionSFX.playSound('elyvorg_ghost_hit_sound_effect', false, true);
-                break;
-
-            case enemy instanceof PurpleSlash:
-                if (!player.isInvisible) {
-                    player.bossCollisionTimer = 0;
-                    player.hit(enemy);
-                }
-                break;
-
-            case enemy instanceof PurpleFireball:
-            case enemy instanceof UndergroundIcicle:
-            case enemy instanceof PurpleBallOrb:
-            case enemy instanceof AntennaeTentacle:
-            case enemy instanceof GroundShockwaveRing:
-            case enemy instanceof LaserBall:
-                player.hit(enemy);
-                this.collisionAnimationBasedOnEnemy(enemy);
-                break;
-
-            case enemy instanceof MeteorAttack:
-            case enemy instanceof PurpleLaserBeam:
-            case enemy instanceof GravitationalAura:
-            case enemy instanceof PurpleBeamOrb:
-            case enemy instanceof PurpleAsteroid:
-                this.collisionAnimationBasedOnEnemy(enemy);
-                break;
-
-            case enemy instanceof Arrow: {
-                const id = enemy.image.id;
-                if (id === 'blueArrow') {
-                    if (!player.isInvisible) {
-                        this.game.audioHandler.enemySFX.playSound('iceSlowedSound', false, true);
-                        player.isSlowed = true;
-                        player.slowedTimer = 5000;
-                    }
-                    this.collisionAnimationBasedOnEnemy(enemy);
-                } else if (id === 'yellowArrow') {
-                    if (player.isInvisible) {
-                        enemy.lives -= 1;
-                        this.collisionAnimationBasedOnEnemy(enemy);
-                    } else {
-                        player.stunned(enemy);
-                    }
-                } else if (id === 'greenArrow') {
-                    if (!player.isInvisible) {
-                        player.isPoisonActiveChecker();
-                        player.isPoisonTimerChecker(2500);
-                        this.game.audioHandler.enemySFX.playSound('acidSoundEffect', false, true);
-                    }
-                    this.collisionAnimationBasedOnEnemy(enemy);
-                } else if (id === 'cyanArrow') {
-                    if (!player.isInvisible) {
-                        player.hit(enemy);
-                        player.startFrozen(2000);
-                    }
-                    this.collisionAnimationBasedOnEnemy(enemy);
-                }
-                break;
-            }
-        }
     }
 }

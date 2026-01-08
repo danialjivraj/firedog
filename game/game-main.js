@@ -938,7 +938,6 @@ export class Game {
                 { type: Sluggie, probability: 0.3, spawningDistance: 0 },
                 { type: LilHornet, probability: 0.05, spawningDistance: 0 },
                 { type: KarateCroco, probability: 0.05, spawningDistance: 0 },
-                { type: Zabkous, probability: 0.01, spawningDistance: 80 },
                 { type: SpidoLazer, probability: 0.01, spawningDistance: 100 },
                 { type: Jerry, probability: 0.05, spawningDistance: 100 },
             ],
@@ -957,7 +956,7 @@ export class Game {
             ],
             Map6: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: IceSilknoir, probability: 1, spawningDistance: 0 },
+                { type: Zabkous, probability: 1, spawningDistance: 0 },
             ],
             Map7: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },

@@ -531,3 +531,179 @@ export class SpinningChicks extends Particle {
         }
     }
 }
+
+
+export class DashGhost extends Particle {
+    constructor(game, snapshot) {
+        super(game);
+
+        this.img = snapshot.img;
+
+        this.sx = snapshot.sx;
+        this.sy = snapshot.sy;
+        this.sw = snapshot.sw;
+        this.sh = snapshot.sh;
+
+        this.x = snapshot.x;
+        this.y = snapshot.y;
+
+        this.dw = snapshot.dw;
+        this.dh = snapshot.dh;
+
+        this.facingRight = snapshot.facingRight;
+
+        this.speedX = 0;
+        this.speedY = 0;
+
+        this.life = 1.0;
+        this.fadeSpeed = 0.06;
+        this.scale = 1.0;
+        this.shrink = 0.992;
+        this.alpha = 0.55;
+    }
+
+    update() {
+        if (this.game.cabin.isFullyVisible || this.game.isBossVisible) {
+            this.x -= this.speedX;
+        } else {
+            this.x -= this.speedX + this.game.speed;
+        }
+        this.y -= this.speedY;
+
+        this.life -= this.fadeSpeed;
+        this.scale *= this.shrink;
+
+        if (this.life <= 0.02) this.markedForDeletion = true;
+    }
+
+    draw(ctx) {
+        if (!this.img) return;
+
+        const cx = this.x + this.dw / 2;
+        const cy = this.y + this.dh / 2;
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(this.facingRight ? 1 : -1, 1);
+
+        ctx.globalAlpha = Math.max(0, this.life) * this.alpha;
+
+        const dw = this.dw * this.scale;
+        const dh = this.dh * this.scale;
+
+        ctx.drawImage(
+            this.img,
+            this.sx, this.sy, this.sw, this.sh,
+            -dw / 2, -dh / 2,
+            dw, dh
+        );
+
+        ctx.restore();
+        ctx.globalAlpha = 1;
+    }
+}
+
+export class DashFireArc extends Particle {
+    constructor(game, x, y, facingRight = true) {
+        super(game);
+
+        this.imageId = resolveFireSplashImageId(this.game.player);
+
+        const dir = facingRight ? 1 : -1;
+
+        this.x = x + dir * (18 + Math.random() * 50);
+        this.y = y + (Math.random() * 16 - 8);
+
+        this.size = Math.random() * 40 + 45;
+
+        const trail = 1.6 + Math.random() * 2.2;
+
+        const spread = (Math.random() * 24 - 12) * (Math.PI / 180);
+        const baseSpeedX = dir * (Math.cos(spread) * trail);
+
+        this.curveSign = Math.random() < 0.5 ? 1 : -1;
+        this.speedY = (1.4 + Math.random() * 2.4) * this.curveSign;
+
+        this.age = 0;
+        this.boostMs = 160 + Math.random() * 120;
+        this.boost = 0.045 + Math.random() * 0.055;
+        this.damp = 0.985 + Math.random() * 0.01;
+
+        this.drag = 0.985 + Math.random() * 0.01;
+
+        this.angle = Math.random() * Math.PI * 2;
+        this.va = Math.random() * 0.14 - 0.07;
+        this.wobbleAmp = 0.4 + Math.random() * 0.7;
+
+        this.baseSpeedX = baseSpeedX;
+        this.startSpeedX = baseSpeedX * (0.08 + Math.random() * 0.16);
+        this.speedX = this.startSpeedX;
+
+        this.followMs = 130 + Math.random() * 90
+        this.rampMs = 90 + Math.random() * 70;
+        this.followFactor = 0.95;
+    }
+
+    update() {
+        super.update();
+
+        if (this.game.menu.pause.isPaused) return;
+
+        const dt = this.game.deltaTime ?? 16;
+        this.age += dt;
+
+        if (this.age < this.followMs) {
+            const p = this.game.player;
+            if (p && p.isDashing) {
+                const step = (dt / 16) * p.dashVelocity * this.followFactor;
+                this.x += step;
+            }
+        }
+
+        if (this.age < this.rampMs) {
+            const t = Math.min(1, this.age / this.rampMs);
+            this.speedX = this.startSpeedX + (this.baseSpeedX - this.startSpeedX) * t;
+        } else {
+            this.speedX = this.baseSpeedX;
+        }
+
+        if (this.age < this.boostMs) {
+            const t = this.age / this.boostMs;
+            const easeOut = 1 - t;
+            const step = (dt / 16) * this.boost * easeOut;
+
+            this.speedY += this.curveSign * step;
+            this.speedX *= (1 - 0.0025 * (dt / 16));
+        }
+
+        this.speedX *= this.drag;
+        this.speedY *= this.damp;
+
+        if (this.game.player.isUnderwater) {
+            this.y -= 0.35;
+        }
+
+        this.angle += this.va;
+        this.x += Math.sin(this.angle * 4) * this.wobbleAmp;
+    }
+
+    draw(ctx) {
+        const img = document.getElementById(this.imageId);
+        if (!img) return;
+
+        ctx.save();
+
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+
+        ctx.drawImage(
+            img,
+            -this.size * 0.5,
+            -this.size * 0.5,
+            this.size,
+            this.size
+        );
+
+        ctx.restore();
+    }
+}

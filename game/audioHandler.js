@@ -272,6 +272,8 @@ export class FiredogAudioHandler extends AudioHandler {
       dreamSoundInGame: 'dreamSoundInGame',
       invisibleInSFX: 'invisibleInSFX',
       invisibleOutSFX: 'invisibleOutSFX',
+      dash1: 'dash1',
+      dash2: 'dash2',
       barkSound: 'barkSound',
       frozenSound: 'frozenSound',
     };

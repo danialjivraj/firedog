@@ -95,7 +95,6 @@ export class InputHandler {
                     e.stopPropagation();
                 }
 
-
                 const isStoryCutscene =
                     this.game.cutsceneActive &&
                     !this.game.isPlayerInGame &&
@@ -174,6 +173,15 @@ export class InputHandler {
                 if (this.keys.indexOf('rightClick') === -1) this.keys.push('rightClick');
             } else if (event.button === 1) {
                 if (this.keys.indexOf('scrollClick') === -1) this.keys.push('scrollClick');
+            } else if (event.button === 4) {
+                event.preventDefault();
+                if (this.keys.indexOf('sideClick1') === -1) this.keys.push('sideClick1');
+            }
+        });
+
+        document.addEventListener('auxclick', (event) => {
+            if (event.button === 4 || event.button === 4) {
+                event.preventDefault();
             }
         });
 
@@ -184,9 +192,13 @@ export class InputHandler {
                 return;
             }
 
-            if (event.button === 0 || event.button === 2 || event.button === 1) {
+            if (event.button === 0 || event.button === 2 || event.button === 1 || event.button === 4) {
                 const mouseClickType =
-                    event.button === 0 ? 'leftClick' : event.button === 2 ? 'rightClick' : 'scrollClick';
+                    event.button === 0 ? 'leftClick'
+                        : event.button === 2 ? 'rightClick'
+                            : event.button === 1 ? 'scrollClick'
+                                : 'sideClick1';
+
                 const index = this.keys.indexOf(mouseClickType);
                 if (index !== -1) this.keys.splice(index, 1);
 
@@ -241,6 +253,7 @@ export class InputHandler {
             'diveAttack',
             'fireballAttack',
             'invisibleDefense',
+            'dashAttack',
         ];
         return ACTIONS.some((a) => this.isKeyForAction(key, a));
     }
@@ -256,6 +269,8 @@ export class InputHandler {
             active = kbPressed || input.includes('leftClick');
         } else if (action === 'invisibleDefense') {
             active = kbPressed || input.includes('scrollClick');
+        } else if (action === 'dashAttack') {
+            active = kbPressed || input.includes('sideClick1');
         }
         return active ? true : undefined;
     }
@@ -263,6 +278,7 @@ export class InputHandler {
     isRollAttack(input) { return this.isActionActive('rollAttack', input); }
     isInvisibleDefense(input) { return this.isActionActive('invisibleDefense', input); }
     isFireballAttack(input) { return this.isActionActive('fireballAttack', input); }
+    isDashAttack(input) { return this.isActionActive('dashAttack', input); }
 
     handleEscapeKey() {
         if (this.game.currentMenu && this.game.currentMenu.waitingForKey) {

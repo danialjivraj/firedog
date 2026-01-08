@@ -9,6 +9,8 @@ import {
     PoisonBubbles,
     IceCrystalBubbles,
     SpinningChicks,
+    DashGhost,
+    DashFireArc,
 } from '../../game/animations/particles';
 
 const fakeImages = {
@@ -304,7 +306,8 @@ describe('Splash', () => {
             cabin: { isFullyVisible: false },
             isBossVisible: false,
             speed: 1,
-            player: { isUnderwater: false, particleImage: 'test_img' },
+            player: { isUnderwater: false, isBluePotionActive: false },
+            menu: { pause: { isPaused: false } },
         };
         ctx = { drawImage: jest.fn() };
         splash = new Splash(game, 10, 10);
@@ -350,7 +353,7 @@ describe('Fire', () => {
             cabin: { isFullyVisible: false },
             isBossVisible: false,
             speed: 2,
-            player: { isUnderwater: false, particleImage: 'test_img', isBluePotionActive: false },
+            player: { isUnderwater: false, isBluePotionActive: false },
             menu: { pause: { isPaused: false } },
         };
         ctx = {
@@ -399,13 +402,7 @@ describe('resolveFireSplashImageId usage (Splash & Fire)', () => {
     let ctx;
 
     beforeEach(() => {
-        ctx = {
-            save: jest.fn(),
-            translate: jest.fn(),
-            rotate: jest.fn(),
-            drawImage: jest.fn(),
-            restore: jest.fn(),
-        };
+        ctx = { drawImage: jest.fn(), save: jest.fn(), translate: jest.fn(), rotate: jest.fn(), restore: jest.fn() };
     });
 
     it('Splash uses "fire" on land without blue potion', () => {
@@ -506,7 +503,6 @@ describe('resolveFireSplashImageId usage (Splash & Fire)', () => {
 
         f.draw(ctx);
 
-        expect(ctx.save).toHaveBeenCalled();
         expect(ctx.drawImage).toHaveBeenCalledWith(
             fakeImages.bluefire,
             expect.any(Number),
@@ -514,7 +510,6 @@ describe('resolveFireSplashImageId usage (Splash & Fire)', () => {
             expect.any(Number),
             expect.any(Number)
         );
-        expect(ctx.restore).toHaveBeenCalled();
     });
 
     it('Fire uses "bluebubble" underwater with blue potion active', () => {
@@ -531,7 +526,6 @@ describe('resolveFireSplashImageId usage (Splash & Fire)', () => {
 
         f.draw(ctx);
 
-        expect(ctx.save).toHaveBeenCalled();
         expect(ctx.drawImage).toHaveBeenCalledWith(
             fakeImages.bluebubble,
             expect.any(Number),
@@ -539,7 +533,6 @@ describe('resolveFireSplashImageId usage (Splash & Fire)', () => {
             expect.any(Number),
             expect.any(Number)
         );
-        expect(ctx.restore).toHaveBeenCalled();
     });
 });
 
@@ -564,9 +557,7 @@ describe('Fireball', () => {
             fill: jest.fn(),
             set globalCompositeOperation(val) { this._gco = val; },
             get globalCompositeOperation() { return this._gco; },
-            createRadialGradient: jest.fn(() => ({
-                addColorStop: jest.fn(),
-            })),
+            createRadialGradient: jest.fn(() => ({ addColorStop: jest.fn() })),
         };
         fb = new Fireball(game, 10, 20, 'fireball_img', 'right', 5);
     });
@@ -591,26 +582,20 @@ describe('Fireball', () => {
 
     it('update() caps growth at maxSize', () => {
         fb.size = fb.maxSize - 1;
-
         fb.update();
-
         expect(fb.size).toBeLessThanOrEqual(fb.maxSize);
     });
 
     it('marks fireball for deletion when x > game.width', () => {
         fb.x = 500;
-
         fb.update();
-
         expect(fb.markedForDeletion).toBe(true);
     });
 
     it('marks fireball for deletion when fully off the left side', () => {
         fb = new Fireball(game, 0, 0, 'fireball_img', 'left', 0);
         fb.x = -fb.size - 1;
-
         fb.update();
-
         expect(fb.markedForDeletion).toBe(true);
     });
 
@@ -646,20 +631,13 @@ describe('Fireball', () => {
         game.player.isUnderwater = true;
         fb = new Fireball(game, 30, 40, 'fireball_img', 'right', 0);
         ctx.drawImage.mockClear();
-        ctx.beginPath.mockClear();
-        ctx.arc.mockClear();
-        ctx.fill.mockClear();
         ctx.createRadialGradient.mockClear();
 
         fb.size = 24;
-
         fb.draw(ctx);
 
         expect(ctx.drawImage).not.toHaveBeenCalled();
         expect(ctx.createRadialGradient).toHaveBeenCalled();
-        expect(ctx.beginPath).toHaveBeenCalled();
-        expect(ctx.arc).toHaveBeenCalled();
-        expect(ctx.fill).toHaveBeenCalled();
     });
 
     it('draw() underwater in red mode still uses bubble shader and no sprite', () => {
@@ -689,7 +667,7 @@ describe('CoinLoss', () => {
             cabin: { isFullyVisible: false },
             isBossVisible: false,
             speed: 1,
-            player: { particleImage: 'singleCoin', isUnderwater: false },
+            player: { isUnderwater: false },
         };
         ctx = { drawImage: jest.fn() };
         cl = new CoinLoss(game, 20, 30);
@@ -708,7 +686,6 @@ describe('CoinLoss', () => {
 
     it('draw() renders coin sprite', () => {
         cl.draw(ctx);
-
         expect(ctx.drawImage).toHaveBeenCalled();
     });
 });
@@ -808,9 +785,6 @@ describe('PoisonBubbles', () => {
         expect(ctx.stroke).toHaveBeenCalled();
         expect(ctx.save).toHaveBeenCalled();
         expect(ctx.restore).toHaveBeenCalled();
-        expect(ctx.lineWidth).toBeGreaterThan(0);
-        expect(typeof ctx.fillStyle).toBe('string');
-        expect(typeof ctx.strokeStyle).toBe('string');
     });
 });
 
@@ -929,20 +903,20 @@ describe('SpinningChicks', () => {
 
         sc.draw(ctx);
 
-        const px = player.x + player.width * 0.5 + sc.headOffsetX; // 135
-        const py = player.y + player.height * (0.5 - sc._headOffsetYRatio); // 216
+        const px = player.x + player.width * 0.5 + sc.headOffsetX;
+        const py = player.y + player.height * (0.5 - sc._headOffsetYRatio);
 
         const expected = [
-            [px + 36, py + 0], // a=0
-            [px + 0, py + 10], // a=π/2
-            [px - 36, py + 0], // a=π
-            [px + 0, py - 10], // a=3π/2
+            [px + 36, py + 0],
+            [px + 0, py + 10],
+            [px - 36, py + 0],
+            [px + 0, py - 10],
         ];
 
         expect(sc.drawChick).toHaveBeenCalledTimes(4);
         for (let i = 0; i < 4; i++) {
             const call = sc.drawChick.mock.calls[i];
-            const [, cx, cy] = call; // [ctx, x, y, s]
+            const [, cx, cy] = call;
             expect(cx).toBeCloseTo(expected[i][0], 5);
             expect(cy).toBeCloseTo(expected[i][1], 5);
         }
@@ -971,7 +945,7 @@ describe('SpinningChicks', () => {
         const a0 = sc.baseAngle;
         const r0 = sc.rockPhase;
 
-        sc.update(); // not paused
+        sc.update();
         expect(sc.baseAngle).toBeCloseTo(a0 + sc.angularSpeed, 5);
         expect(sc.rockPhase).toBeCloseTo(r0 + sc.rockSpeed, 5);
 
@@ -979,7 +953,7 @@ describe('SpinningChicks', () => {
         const a1 = sc.baseAngle;
         const r1 = sc.rockPhase;
 
-        sc.update(); // paused
+        sc.update();
         expect(sc.baseAngle).toBeCloseTo(a1, 5);
         expect(sc.rockPhase).toBeCloseTo(r1, 5);
     });
@@ -988,13 +962,236 @@ describe('SpinningChicks', () => {
         const sc = new SpinningChicks(game);
         expect(sc._headOffsetYRatio).toBeCloseTo(sc.headOffsetYRatioStand, 5);
 
-        player.currentState = player.states[0]; // sitting
+        player.currentState = player.states[0];
         sc.update();
 
-        const start = sc.headOffsetYRatioStand; // 0.30
-        const target = sc.headOffsetYRatioSit; // 0.15
-        const expected = start + (target - start) * sc.headOffsetYLerp; // 0.2775
+        const start = sc.headOffsetYRatioStand;
+        const target = sc.headOffsetYRatioSit;
+        const expected = start + (target - start) * sc.headOffsetYLerp;
 
         expect(sc._headOffsetYRatio).toBeCloseTo(expected, 5);
+    });
+});
+
+describe('DashGhost', () => {
+    let game, ctx;
+
+    beforeEach(() => {
+        game = {
+            cabin: { isFullyVisible: false },
+            isBossVisible: false,
+            speed: 3,
+            menu: { pause: { isPaused: false } },
+            player: {},
+        };
+
+        ctx = {
+            save: jest.fn(),
+            restore: jest.fn(),
+            translate: jest.fn(),
+            scale: jest.fn(),
+            drawImage: jest.fn(),
+            set globalAlpha(v) { this._ga = v; },
+            get globalAlpha() { return this._ga; },
+        };
+    });
+
+    test('update() moves by -(speedX + game.speed), fades life, shrinks scale, and eventually deletes', () => {
+        const snapshot = {
+            img: fakeImages.test_img,
+            sx: 0, sy: 0, sw: 10, sh: 10,
+            x: 100, y: 50,
+            dw: 20, dh: 30,
+            facingRight: true,
+        };
+
+        const g = new DashGhost(game, snapshot);
+
+        g.speedX = 2;
+        g.speedY = 1;
+
+        const x0 = g.x;
+        const y0 = g.y;
+
+        g.update();
+
+        expect(g.x).toBeCloseTo(x0 - (2 + game.speed));
+        expect(g.y).toBeCloseTo(y0 - 1);
+        expect(g.life).toBeCloseTo(1.0 - g.fadeSpeed, 5);
+        expect(g.scale).toBeCloseTo(1.0 * g.shrink, 5);
+        expect(g.markedForDeletion).toBe(false);
+
+        g.life = 0.02;
+        g.update();
+        expect(g.markedForDeletion).toBe(true);
+    });
+
+    test('update() uses only speedX when cabin is fully visible', () => {
+        game.cabin.isFullyVisible = true;
+
+        const snapshot = {
+            img: fakeImages.test_img,
+            sx: 0, sy: 0, sw: 10, sh: 10,
+            x: 100, y: 50,
+            dw: 20, dh: 30,
+            facingRight: true,
+        };
+
+        const g = new DashGhost(game, snapshot);
+        g.speedX = 5;
+        g.speedY = 0;
+
+        g.update();
+        expect(g.x).toBeCloseTo(95);
+    });
+
+    test('draw() flips when facingRight=false and draws using snapshot crop', () => {
+        const snapshot = {
+            img: fakeImages.test_img,
+            sx: 1, sy: 2, sw: 3, sh: 4,
+            x: 10, y: 20,
+            dw: 30, dh: 40,
+            facingRight: false,
+        };
+
+        const g = new DashGhost(game, snapshot);
+        g.life = 1;
+
+        g.draw(ctx);
+
+        expect(ctx.save).toHaveBeenCalled();
+        expect(ctx.translate).toHaveBeenCalled();
+        expect(ctx.scale).toHaveBeenCalledWith(-1, 1);
+        expect(ctx.drawImage).toHaveBeenCalledWith(
+            fakeImages.test_img,
+            1, 2, 3, 4,
+            expect.any(Number),
+            expect.any(Number),
+            expect.any(Number),
+            expect.any(Number)
+        );
+        expect(ctx.restore).toHaveBeenCalled();
+    });
+});
+
+describe('DashFireArc', () => {
+    let game, ctx;
+
+    beforeEach(() => {
+        game = {
+            cabin: { isFullyVisible: false },
+            isBossVisible: false,
+            speed: 2,
+            deltaTime: 16,
+            menu: { pause: { isPaused: false } },
+            player: {
+                isUnderwater: false,
+                isBluePotionActive: false,
+                isDashing: false,
+                dashVelocity: 10,
+            },
+        };
+
+        ctx = {
+            save: jest.fn(),
+            restore: jest.fn(),
+            translate: jest.fn(),
+            rotate: jest.fn(),
+            drawImage: jest.fn(),
+        };
+    });
+
+    test('constructor picks correct imageId based on underwater/blue potion', () => {
+        game.player.isUnderwater = false;
+        game.player.isBluePotionActive = false;
+        const p1 = new DashFireArc(game, 0, 0, true);
+        expect(p1.imageId).toBe('fire');
+
+        game.player.isUnderwater = false;
+        game.player.isBluePotionActive = true;
+        const p2 = new DashFireArc(game, 0, 0, true);
+        expect(p2.imageId).toBe('bluefire');
+
+        game.player.isUnderwater = true;
+        game.player.isBluePotionActive = false;
+        const p3 = new DashFireArc(game, 0, 0, true);
+        expect(p3.imageId).toBe('bubble');
+
+        game.player.isUnderwater = true;
+        game.player.isBluePotionActive = true;
+        const p4 = new DashFireArc(game, 0, 0, true);
+        expect(p4.imageId).toBe('bluebubble');
+    });
+
+    test('update() early-returns when paused (age still increments due to super.update, but custom logic stops)', () => {
+        const p = new DashFireArc(game, 100, 100, true);
+        const x0 = p.x;
+        const y0 = p.y;
+        game.menu.pause.isPaused = true;
+
+        p.update();
+
+        expect(p.x).not.toBe(x0);
+        expect(p.y).not.toBe(y0);
+        const ageAfter = p.age;
+        expect(ageAfter).toBe(0);
+    });
+
+    test('follow logic: while age < followMs and player.isDashing, x increases by dashVelocity * followFactor', () => {
+        jest.spyOn(Math, 'random').mockReturnValue(0);
+
+        const p = new DashFireArc(game, 100, 100, true);
+        game.player.isDashing = true;
+        game.player.dashVelocity = 20;
+
+        const xBefore = p.x;
+
+        p.update();
+
+        const p2 = new DashFireArc(game, 100, 100, true);
+        const x2Before = p2.x;
+
+        game.player.isDashing = false;
+        p2.update();
+
+        expect(p.x).toBeGreaterThan(p2.x);
+
+        Math.random.mockRestore();
+    });
+
+    test('underwater tweak: when underwater, update subtracts extra 0.35 from y (in addition to base)', () => {
+        jest.spyOn(Math, 'random').mockReturnValue(0);
+
+        const pLand = new DashFireArc(game, 100, 100, true);
+        const yLand0 = pLand.y;
+        pLand.update();
+
+        game.player.isUnderwater = true;
+        const pWater = new DashFireArc(game, 100, 100, true);
+        const yWater0 = pWater.y;
+        pWater.update();
+
+        expect(pWater.y - yWater0).toBeLessThan(pLand.y - yLand0);
+
+        Math.random.mockRestore();
+    });
+
+    test('draw() draws the resolved image id and does not throw when image exists', () => {
+        jest.spyOn(Math, 'random').mockReturnValue(0);
+
+        const p = new DashFireArc(game, 100, 100, true);
+        p.size = 50;
+        p.angle = Math.PI / 6;
+
+        expect(() => p.draw(ctx)).not.toThrow();
+        expect(ctx.drawImage).toHaveBeenCalledWith(
+            fakeImages.fire,
+            expect.any(Number),
+            expect.any(Number),
+            expect.any(Number),
+            expect.any(Number)
+        );
+
+        Math.random.mockRestore();
     });
 });

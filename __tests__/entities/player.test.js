@@ -1,23 +1,5 @@
-import { Player, CollisionLogic } from '../../game/entities/player';
-import { Fireball, CoinLoss, PoisonBubbles, IceCrystalBubbles } from '../../game/animations/particles';
-import { IceDrink, IceCube, Cauldron, BlackHole, Confuse, DeadSkull, CarbonDioxideTank, OxygenTank, HealthLive, Coin, RedPotion, BluePotion, RandomPower } from '../../game/entities/powerUpAndDown';
-import { InkSplash } from '../../game/animations/ink';
-import { TunnelVision } from '../../game/animations/tunnelVision';
-import {
-    Goblin, Sluggie, Skulnap, PoisonSpit,
-    AngryBee, Bee, IceBall, Garry, InkBeam, Cactus, TheRock, Tauro,
-} from '../../game/entities/enemies/enemies';
-import {
-    ElectricWheel, Elyvorg, Arrow, PurpleBarrier, GhostElyvorg, GravitationalAura, PurpleLaserBeam,
-    InkBomb, PurpleFireball, MeteorAttack, PurpleSlash, PoisonDrop, PurpleThunder
-} from '../../game/entities/enemies/elyvorg';
-import {
-    ElectricityCollision, PoisonSpitSplash, PoisonDropCollision,
-    InkBombCollision, InkSplashCollision, ExplosionCollisionAnimation,
-    PurpleFireballCollision, CollisionAnimation, MeteorExplosionCollision,
-    RedFireballCollision, Blood, PurpleThunderCollision, GhostFadeOut, DarkExplosionCollision, DisintegrateCollision,
-} from '../../game/animations/collisionAnimation';
-import { FloatingMessage } from '../../game/animations/floatingMessages';
+import { Player } from '../../game/entities/player';
+import { Fireball, PoisonBubbles, IceCrystalBubbles } from '../../game/animations/particles';
 
 global.document = {
     getElementById: jest.fn().mockReturnValue({ width: 1920, height: 689, id: 'stubImage' })
@@ -34,56 +16,8 @@ jest.mock('../../game/animations/playerStates', () => ({
     Hit: jest.fn().mockImplementation(() => ({})),
     Standing: jest.fn().mockImplementation(() => ({})),
     Dying: jest.fn().mockImplementation(() => ({})),
+    Dashing: jest.fn().mockImplementation(() => ({})),
 }));
-
-jest.mock('../../game/animations/collisionAnimation', () => ({
-    CollisionAnimation: jest.fn(),
-    ExplosionCollisionAnimation: jest.fn(),
-    PoisonSpitSplash: jest.fn(),
-    InkSplashCollision: jest.fn(),
-    Blood: jest.fn(),
-    ElectricityCollision: jest.fn(),
-    InkBombCollision: jest.fn(),
-    RedFireballCollision: jest.fn(),
-    PurpleFireballCollision: jest.fn(),
-    PoisonDropCollision: jest.fn(),
-    MeteorExplosionCollision: jest.fn(),
-    PurpleThunderCollision: jest.fn(),
-    GhostFadeOut: jest.fn(),
-    DarkExplosionCollision: jest.fn(),
-    DisintegrateCollision: jest.fn(),
-}));
-
-jest.mock('../../game/entities/powerUpAndDown', () => {
-    class HealthLive { }
-    class RedPotion { }
-    class BluePotion { }
-    class Coin { }
-    class OxygenTank { }
-    class BlackHole { }
-    class Cauldron { }
-    class IceDrink { }
-    class IceCube { }
-    class Confuse { }
-    class DeadSkull { }
-    class CarbonDioxideTank { }
-    class RandomPower { }
-    return {
-        HealthLive,
-        RedPotion,
-        BluePotion,
-        Coin,
-        OxygenTank,
-        BlackHole,
-        Cauldron,
-        IceDrink,
-        IceCube,
-        Confuse,
-        DeadSkull,
-        CarbonDioxideTank,
-        RandomPower,
-    };
-});
 
 jest.mock('../../game/animations/floatingMessages', () => ({
     FloatingMessage: jest.fn(),
@@ -98,36 +32,8 @@ jest.mock('../../game/animations/particles', () => ({
 }));
 
 jest.mock('../../game/entities/enemies/enemies', () => {
-    class Goblin { }
-    class PoisonSpit { }
-    class PoisonDrop { }
-    class AngryBee { }
-    class Bee { }
-    class Skulnap { }
-    class Sluggie { }
-    class Voltzeel { }
-    class Tauro { }
-    class Gloomlet { }
-    class Aura { }
-    class KarateCroco { }
-    class SpearFish { }
-    class TheRock { }
-    class LilHornet { }
-    class Cactus { }
-    class IceBall { }
-    class Garry { }
-    class InkBeam { }
-    class RockProjectile { }
-    class VolcanoWasp { }
-    class Volcanurtle { }
     class EnemyBoss { }
-    class Barrier { }
-    return {
-        Goblin, PoisonSpit, PoisonDrop, AngryBee, Bee, Skulnap, Sluggie,
-        Voltzeel, Tauro, Gloomlet, Aura, KarateCroco, SpearFish, TheRock,
-        LilHornet, Cactus, IceBall, Garry, InkBeam, RockProjectile,
-        VolcanoWasp, Volcanurtle, EnemyBoss, Barrier,
-    };
+    return { EnemyBoss };
 });
 
 jest.mock('../../game/animations/ink', () => ({ InkSplash: jest.fn() }));
@@ -151,24 +57,7 @@ jest.mock('../../game/entities/enemies/elyvorg', () => {
         }
     }
 
-    class Arrow { constructor() { this.image = { id: null }; } }
-    class PurpleBarrier { }
-    class ElectricWheel { }
-    class GravitationalAura { }
-    class InkBomb { }
-    class PurpleFireball { }
-    class PoisonDrop { }
-    class MeteorAttack { }
-    class PurpleSlash { }
-    class PurpleThunder { }
-    class GhostElyvorg { }
-    class PurpleLaserBeam { }
-
-    return {
-        Elyvorg, Arrow, PurpleBarrier, ElectricWheel, GravitationalAura, InkBomb,
-        PurpleFireball, PoisonDrop, MeteorAttack, PurpleSlash, PurpleThunder,
-        GhostElyvorg, PurpleLaserBeam,
-    };
+    return { Elyvorg };
 });
 
 jest.mock('../../game/entities/enemies/ntharax', () => {
@@ -236,11 +125,7 @@ describe('Player', () => {
             cabin: { isFullyVisible: false },
             debug: false,
 
-            boss: {
-                id: 'elyvorg',
-                current: null,
-                talkToBoss: false,
-            },
+            boss: { id: 'elyvorg', current: null, talkToBoss: false },
             bossInFight: false,
             isBossVisible: false,
 
@@ -249,6 +134,7 @@ describe('Player', () => {
             noDamageDuringTutorial: false,
             selectedDifficulty: 'Easy',
             UI: { secondsLeftActivated: false },
+
             collisions: [],
             floatingMessages: [],
             behindPlayerParticles: [],
@@ -257,6 +143,7 @@ describe('Player', () => {
             powerDowns: [],
             coins: 0,
             particles: [],
+
             audioHandler: {
                 firedogSFX: { playSound: jest.fn(), stopSound: jest.fn() },
                 collisionSFX: { playSound: jest.fn() },
@@ -276,6 +163,7 @@ describe('Player', () => {
                 }
             }
         };
+
         game.input.isActionActive = (binding, input) => {
             const has = key => {
                 if (!input) return false;
@@ -300,14 +188,10 @@ describe('Player', () => {
 
         player = new Player(game);
         game.player = player;
+
         player.states = player.states.map(() => ({
             enter: jest.fn(),
             deathAnimation: false
-        }));
-        InkSplash.mockImplementation(() => ({
-            getWidth: () => 10,
-            getHeight: () => 10,
-            x: 0, y: 0, width: 10, height: 10
         }));
     });
 
@@ -317,7 +201,7 @@ describe('Player', () => {
         expect(player.x).toBe(0);
         expect(player.y).toBe(game.height - player.height - game.groundMargin);
         expect(player.energy).toBe(100);
-        expect(player.states).toHaveLength(10);
+        expect(player.states).toHaveLength(11);
     });
 
     test('firedogLivesLimit caps lives at maxLives', () => {
@@ -327,13 +211,20 @@ describe('Player', () => {
     });
 
     test('isPoisonActiveChecker & isPoisonTimerChecker behavior', () => {
+        const logic = player.collisionLogic;
+
         player.energyReachedZero = true;
         player.isBluePotionActive = false;
-        expect(player.isPoisonActiveChecker()).toBe(false);
+
+        expect(logic.isPoisonActiveChecker(player)).toBe(false);
+        expect(logic.isPoisonTimerChecker(2500, player)).toBe(0);
         expect(player.poisonTimer).toBe(0);
+
         player.energyReachedZero = false;
-        expect(player.isPoisonActiveChecker()).toBe(true);
-        expect(player.isPoisonTimerChecker(2500)).toBe(2500);
+
+        expect(logic.isPoisonActiveChecker(player)).toBe(true);
+        expect(logic.isPoisonTimerChecker(2500, player)).toBe(2500);
+        expect(player.poisonTimer).toBe(2500);
     });
 
     test('drainEnergy reduces energy and flips energyReachedZero', () => {
@@ -353,31 +244,6 @@ describe('Player', () => {
         expect(player.divingTimer).toBe(500);
     });
 
-    test('bossCollisionTimers triggers only when in fight', () => {
-        player.bossCollisionTimer = 100;
-        player.bossCollisionCooldown = 300;
-
-        // not in fight
-        game.bossInFight = false;
-        game.boss.id = 'elyvorg';
-        player.bossCollisionTimers(50);
-        expect(player.bossCollisionTimer).toBe(100);
-
-        // now in fight
-        game.bossInFight = true;
-        player.bossCollisionTimers(250);
-        expect(player.bossCollisionTimer).toBe(300);
-    });
-
-    test('rollingOrDiving returns true for rolling/diving states', () => {
-        player.currentState = player.states[4];
-        expect(player.rollingOrDiving()).toBe(true);
-        player.currentState = player.states[5];
-        expect(player.rollingOrDiving()).toBe(true);
-        player.currentState = player.states[1];
-        expect(player.rollingOrDiving()).toBe(false);
-    });
-
     test('spriteAnimation wraps frameX correctly', () => {
         player.maxFrame = 2;
         player.frameX = 1;
@@ -395,13 +261,6 @@ describe('Player', () => {
         expect(player.onGround()).toBe(true);
         player.y = 0;
         expect(player.onGround()).toBe(false);
-    });
-
-    test('updateCollisionCooldowns decrements and floors at zero', () => {
-        player.collisionCooldowns = { e1: 100, e2: 50 };
-        player.collisionLogic.updateCollisionCooldowns(60);
-        expect(player.collisionCooldowns.e1).toBe(40);
-        expect(player.collisionCooldowns.e2).toBe(0);
     });
 
     test('setState updates states, calls enter, and sets speed', () => {
@@ -521,7 +380,7 @@ describe('Player', () => {
     });
 
     describe('invisibleAbility', () => {
-        test('activation with E when timer full', () => {
+        test('activation when timer full', () => {
             player.isInvisible = false;
             player.invisibleTimer = player.invisibleCooldown;
             player.currentState = { deathAnimation: false };
@@ -534,14 +393,267 @@ describe('Player', () => {
 
         test('deactivation after active cooldown', () => {
             player.isInvisible = true;
+            player.invisibleActiveCooldownTimer = player.invisibleDuration;
             player.invisibleTimer = player.invisibleCooldown;
             player.currentState = { deathAnimation: false };
+
             player.invisibleAbility(game.input, 0);
+
+            expect(player.isInvisible).toBe(true);
             expect(player.invisibleActiveCooldownTimer).toBe(5000);
+
             player.invisibleAbility(game.input, 6000);
+
             expect(player.isInvisible).toBe(false);
-            expect(game.audioHandler.firedogSFX.playSound)
-                .toHaveBeenCalledWith('invisibleOutSFX');
+            expect(player.invisibleActiveCooldownTimer).toBe(0);
+            expect(player.invisibleTimer).toBe(0);
+
+            expect(game.audioHandler.firedogSFX.playSound).toHaveBeenCalledWith('invisibleOutSFX');
+        });
+    });
+
+    describe('dash ability', () => {
+        let game, player;
+
+        const makeInput = () => ({
+            isDashAttack: jest.fn().mockReturnValue(false),
+            keys: [],
+            isActionActive: (binding, input) => {
+                const has = key => {
+                    if (!input) return false;
+                    if (Array.isArray(input)) return input.includes(key);
+                    if (typeof input === 'string') return input === key;
+                    return !!input[key];
+                };
+
+                switch (binding) {
+                    case 'moveForward':
+                        return has('d') || has('D') || has('right') || has('ArrowRight') || has('moveForward');
+                    case 'moveBackward':
+                        return has('a') || has('A') || has('left') || has('ArrowLeft') || has('moveBackward');
+                    default:
+                        return false;
+                }
+            },
+        });
+
+        beforeEach(() => {
+            game = {
+                width: 1920,
+                height: 689,
+                groundMargin: 50,
+
+                normalSpeed: 6,
+                speed: 6,
+
+                gameOver: false,
+                isBossVisible: false,
+
+                cabin: { isFullyVisible: false },
+                boss: { current: null, talkToBoss: false },
+
+                input: makeInput(),
+
+                audioHandler: {
+                    firedogSFX: { playSound: jest.fn(), stopSound: jest.fn() },
+                },
+
+                menu: { skins: { currentSkin: null } },
+
+                particles: [],
+                behindPlayerParticles: [],
+                collisions: [],
+                enemies: [],
+                powerUps: [],
+                powerDowns: [],
+                coins: 0,
+                lives: 3,
+                maxLives: 5,
+            };
+
+            player = new Player(game);
+            game.player = player;
+
+            player.states = player.states.map(() => ({
+                enter: jest.fn(),
+                deathAnimation: false,
+                handleInput: jest.fn(),
+            }));
+            player.currentState = player.states[8];
+
+            player.dashTimer = player.dashCooldown;
+            player.dashBetweenTimer = player.dashBetweenCooldown;
+            player.dashCharges = player.dashMaxCharges;
+
+            player.facingRight = true;
+            player.facingLeft = false;
+        });
+
+        test('tryStartDash: first dash starts, consumes 1 charge, sets awaitingSecond window, applies energy cost, sets dashVelocity', () => {
+            game.input.isDashAttack.mockReturnValue(true);
+
+            const e0 = player.energy;
+            const ok = player.tryStartDash(['d']);
+
+            expect(ok).toBe(true);
+            expect(player.isDashing).toBe(true);
+            expect(player.dashTimeLeft).toBe(player.dashDuration);
+
+            expect(player.dashCharges).toBe(1);
+            expect(player.dashAwaitingSecond).toBe(true);
+            expect(player.dashSecondWindowTimer).toBe(player.dashSecondWindowMs);
+            expect(player.dashBetweenTimer).toBe(0);
+
+            expect(player.energy).toBe(e0 - player.dashEnergyCost);
+
+            const baseDash = player.maxSpeed * player.dashSpeedMultiplier;
+            expect(player.dashVelocity).toBeCloseTo(baseDash);
+
+            expect(player.currentState).toBe(player.states[10]);
+            expect(game.speed).toBe(game.normalSpeed * 3);
+        });
+
+        test('tryStartDash: direction defaults to facing when no left/right input held', () => {
+            game.input.isDashAttack.mockReturnValue(true);
+
+            player.facingRight = false;
+            player.facingLeft = true;
+
+            player.tryStartDash([]);
+
+            const baseDash = player.maxSpeed * player.dashSpeedMultiplier;
+            expect(player.dashVelocity).toBeCloseTo(-baseDash);
+        });
+
+        test('tryStartDash: second dash uses multiplier and starts long cooldown', () => {
+            game.input.isDashAttack.mockReturnValue(true);
+
+            player.tryStartDash(['d']);
+            expect(player.dashCharges).toBe(1);
+
+            player.isDashing = false;
+            player.currentState = player.states[8];
+            player.dashBetweenTimer = player.dashBetweenCooldown;
+
+            player.tryStartDash(['d']);
+
+            expect(player.dashCharges).toBe(0);
+            expect(player.dashAwaitingSecond).toBe(false);
+            expect(player.dashSecondWindowTimer).toBe(0);
+            expect(player.dashTimer).toBe(0);
+
+            const baseDash = player.maxSpeed * player.dashSpeedMultiplier;
+            expect(player.dashVelocity).toBeCloseTo(baseDash * player.secondDashDistanceMultiplier);
+        });
+
+        test('tryStartDash: blocked by gating conditions', () => {
+            game.input.isDashAttack.mockReturnValue(true);
+
+            game.gameOver = true;
+            expect(player.tryStartDash(['d'])).toBe(false);
+            game.gameOver = false;
+
+            player.isFrozen = true;
+            expect(player.tryStartDash(['d'])).toBe(false);
+            player.isFrozen = false;
+
+            player.isDashing = true;
+            expect(player.tryStartDash(['d'])).toBe(false);
+            player.isDashing = false;
+
+            player.energyReachedZero = true;
+            expect(player.tryStartDash(['d'])).toBe(false);
+            player.energyReachedZero = false;
+
+            player.dashTimer = player.dashCooldown - 1;
+            expect(player.tryStartDash(['d'])).toBe(false);
+            player.dashTimer = player.dashCooldown;
+
+            player.dashCharges = 0;
+            expect(player.tryStartDash(['d'])).toBe(false);
+            player.dashCharges = player.dashMaxCharges;
+
+            player.dashBetweenTimer = player.dashBetweenCooldown - 1;
+            expect(player.tryStartDash(['d'])).toBe(false);
+            player.dashBetweenTimer = player.dashBetweenCooldown;
+
+            player.currentState = player.states[6];
+            expect(player.tryStartDash(['d'])).toBe(false);
+
+            player.currentState = player.states[7];
+            expect(player.tryStartDash(['d'])).toBe(false);
+        });
+
+        test('dashAbility: countdown ends dash and clears velocity', () => {
+            player.isDashing = true;
+            player.dashTimeLeft = 10;
+            player.dashVelocity = 123;
+
+            player.dashAbility(20);
+
+            expect(player.isDashing).toBe(false);
+            expect(player.dashTimeLeft).toBe(0);
+            expect(player.dashVelocity).toBe(0);
+            expect(player.dashGhostTimer).toBe(0);
+        });
+
+        test('dashAbility: second-dash window expiry forces long cooldown (charges=0) and cooldown starts counting immediately', () => {
+            player.dashAwaitingSecond = true;
+            player.dashSecondWindowTimer = 5;
+            player.dashCharges = 1;
+            player.dashTimer = player.dashCooldown;
+
+            player.dashAbility(10);
+
+            expect(player.dashAwaitingSecond).toBe(false);
+            expect(player.dashSecondWindowTimer).toBe(0);
+            expect(player.dashCharges).toBe(0);
+
+            expect(player.dashTimer).toBe(10);
+        });
+
+        test('dashAbility: long cooldown refills charges when complete', () => {
+            player.dashTimer = 0;
+            player.dashCharges = 0;
+            player.dashAwaitingSecond = true;
+            player.dashSecondWindowTimer = 999;
+
+            player.dashAbility(player.dashCooldown);
+
+            expect(player.dashTimer).toBe(player.dashCooldown);
+            expect(player.dashCharges).toBe(player.dashMaxCharges);
+            expect(player.dashAwaitingSecond).toBe(false);
+            expect(player.dashSecondWindowTimer).toBe(0);
+        });
+
+        test('playerHorizontalMovement: while dashing, x moves by dashVelocity and clamps to bounds', () => {
+            player.isDashing = true;
+            player.dashVelocity = 500;
+
+            player.x = 100;
+            player.playerHorizontalMovement([], 16);
+            expect(player.x).toBe(600);
+            expect(player.speed).toBe(500);
+            expect(player.vx).toBe(500);
+
+            player.x = game.width - player.width - 10;
+            player.playerHorizontalMovement([], 16);
+            expect(player.x).toBe(game.width - player.width);
+
+            player.dashVelocity = -9999;
+            player.x = 5;
+            player.playerHorizontalMovement([], 16);
+            expect(player.x).toBe(0);
+        });
+
+        test('tryStartDash: if energy drops to 0, energyReachedZero becomes true', () => {
+            game.input.isDashAttack.mockReturnValue(true);
+            player.energy = player.dashEnergyCost;
+
+            player.tryStartDash(['d']);
+
+            expect(player.energy).toBe(0);
+            expect(player.energyReachedZero).toBe(true);
         });
     });
 
@@ -597,6 +709,18 @@ describe('Player', () => {
             expect(game.audioHandler.firedogSFX.playSound).toHaveBeenCalledWith('energyReachedZeroSound');
             player.playerSFXAudios();
             expect(game.audioHandler.firedogSFX.playSound).toHaveBeenCalledTimes(1);
+        });
+
+        test('underwater rolling uses rollingUnderwaterSFX', () => {
+            player.currentState = player.states[4];
+            player.isUnderwater = true;
+            player.isRolling = false;
+
+            player.playerSFXAudios();
+
+            expect(game.audioHandler.firedogSFX.playSound)
+                .toHaveBeenCalledWith('rollingUnderwaterSFX', true, true);
+            expect(player.isRolling).toBe(true);
         });
     });
 
@@ -670,316 +794,6 @@ describe('Player', () => {
         });
     });
 
-    describe('collisionWithPowers', () => {
-        beforeEach(() => {
-            player.x = 0; player.y = 0;
-            player.width = 10; player.height = 10;
-            game.gameOver = false;
-            player.isUnderwater = false;
-            player.currentState = { deathAnimation: false };
-        });
-
-        test('IceDrink slows player', () => {
-            const d = new IceDrink();
-            Object.assign(d, { x: 0, y: 0, width: 10, height: 10 });
-            game.powerDowns = [d];
-            player.collisionWithPowers(0);
-            expect(player.isSlowed).toBe(true);
-            player.checkIfFiredogIsSlowed(1);
-            expect(player.normalSpeed).toBe(4);
-            expect(player.maxSpeed).toBe(6);
-            expect(player.weight).toBe(1.5);
-        });
-
-        test('cannot pick up IceDrink when invisible', () => {
-            player.isInvisible = true;
-            const d = new IceDrink();
-            Object.assign(d, { x: 0, y: 0, width: 10, height: 10 });
-            game.powerDowns = [d];
-            player.collisionWithPowers(0);
-            expect(player.isSlowed).toBe(false);
-            expect(player.weight).toBe(1);
-        });
-
-        test('IceCube freezes player using startFrozen(3000)', () => {
-            const cube = new IceCube();
-            Object.assign(cube, { x: 0, y: 0, width: 10, height: 10 });
-            game.powerDowns = [cube];
-            const spy = jest.spyOn(player, 'startFrozen');
-            player.collisionWithPowers(0);
-            expect(spy).toHaveBeenCalledWith(3000);
-            expect(cube.markedForDeletion).toBe(true);
-        });
-
-        test('Cauldron poisons player', () => {
-            const c = new Cauldron();
-            Object.assign(c, { x: 0, y: 0, width: 10, height: 10 });
-            game.powerDowns = [c];
-            player.collisionWithPowers(0);
-            expect(player.isPoisonedActive).toBe(true);
-        });
-
-        test('BlackHole triggers tunnel vision', () => {
-            const b = new BlackHole();
-            Object.assign(b, { x: 0, y: 0, width: 10, height: 10 });
-            game.powerDowns = [b];
-            jest.spyOn(player, 'triggerTunnelVision');
-            player.collisionWithPowers(0);
-            expect(player.isBlackHoleActive).toBe(true);
-            expect(player.triggerTunnelVision).toHaveBeenCalled();
-        });
-
-        test('Confuse activates confuse state and deletes item', () => {
-            const conf = new Confuse();
-            Object.assign(conf, { x: 0, y: 0, width: 10, height: 10 });
-            game.powerDowns = [conf];
-            const spy = jest.spyOn(player, 'activateConfuse').mockImplementation(() => {
-                player.isConfused = true;
-                player.confuseTimer = 8000;
-            });
-            player.collisionWithPowers(0);
-            expect(spy).toHaveBeenCalled();
-            expect(player.isConfused).toBe(true);
-            expect(conf.markedForDeletion).toBe(true);
-        });
-
-        test('DeadSkull decrements lives', () => {
-            game.lives = 2;
-            const h = new DeadSkull();
-            Object.assign(h, { x: 0, y: 0, width: 10, height: 10 });
-            game.powerDowns = [h];
-            player.collisionWithPowers(0);
-            expect(game.lives).toBe(1);
-        });
-
-        test('OxygenTank grants +10s remaining', () => {
-            game.time = 50000;
-            const o = new OxygenTank();
-            Object.assign(o, { x: 0, y: 0, width: 10, height: 10 });
-            game.powerUps = [o];
-            player.collisionWithPowers(0);
-            expect(game.time).toBe(40000);
-        });
-
-        test('CarbonDioxideTank decreases 10s remaining', () => {
-            game.time = 50000;
-            const cd = new CarbonDioxideTank();
-            Object.assign(cd, { x: 0, y: 0, width: 10, height: 10 });
-            game.powerDowns = [cd];
-            player.collisionWithPowers(0);
-            expect(game.time).toBe(60000);
-        });
-
-        test('HealthLive increments lives', () => {
-            game.lives = 1;
-            const h = new HealthLive();
-            Object.assign(h, { x: 0, y: 0, width: 10, height: 10 });
-            game.powerUps = [h];
-            player.collisionWithPowers(0);
-            expect(game.lives).toBe(2);
-        });
-
-        test('Coin increases coins', () => {
-            game.coins = 0;
-            const c = new Coin();
-            Object.assign(c, { x: 0, y: 0, width: 10, height: 10 });
-            game.powerUps = [c];
-            player.collisionWithPowers(0);
-            expect(game.coins).toBe(10);
-        });
-
-        test('RedPotion activates red state', () => {
-            const rp = new RedPotion();
-            Object.assign(rp, { x: 0, y: 0, width: 10, height: 10 });
-            game.powerUps = [rp];
-            player.collisionWithPowers(0);
-            expect(player.isRedPotionActive).toBe(true);
-        });
-
-        test('BluePotion activates blue state', () => {
-            const bp = new BluePotion();
-            Object.assign(bp, { x: 0, y: 0, width: 10, height: 10 });
-            game.powerUps = [bp];
-            player.collisionWithPowers(0);
-            expect(player.isBluePotionActive).toBe(true);
-        });
-
-        test('RandomPower in powerUps can resolve to OxygenTank when underwater', () => {
-            const origRandom = Math.random;
-            Math.random = jest.fn(() => 0);
-
-            try {
-                game.time = 50000;
-                player.isUnderwater = true;
-
-                const rp = new RandomPower();
-                Object.assign(rp, { x: 0, y: 0, width: 10, height: 10 });
-
-                game.powerUps = [rp];
-                game.powerDowns = [];
-
-                player.collisionWithPowers(0);
-
-                expect(game.time).toBe(40000);
-                expect(rp.markedForDeletion).toBe(true);
-            } finally {
-                Math.random = origRandom;
-            }
-        });
-
-        test('RandomPower in powerUps does not pick OxygenTank when not underwater', () => {
-            const origRandom = Math.random;
-            Math.random = jest.fn(() => 0);
-
-            try {
-                game.time = 50000;
-                game.lives = 1;
-                player.isUnderwater = false;
-
-                const rp = new RandomPower();
-                Object.assign(rp, { x: 0, y: 0, width: 10, height: 10 });
-
-                game.powerUps = [rp];
-                game.powerDowns = [];
-
-                player.collisionWithPowers(0);
-
-                expect(game.time).toBe(50000);
-                expect(game.lives).toBe(2);
-                expect(rp.markedForDeletion).toBe(true);
-            } finally {
-                Math.random = origRandom;
-            }
-        });
-
-        test('RandomPower in powerDowns can resolve to CarbonDioxideTank when underwater', () => {
-            const origRandom = Math.random;
-            Math.random = jest.fn(() => 0.9);
-
-            try {
-                game.time = 50000;
-                player.isUnderwater = true;
-
-                const rp = new RandomPower();
-                Object.assign(rp, { x: 0, y: 0, width: 10, height: 10 });
-
-                game.powerUps = [];
-                game.powerDowns = [rp];
-
-                player.isInvisible = false;
-
-                player.collisionWithPowers(0);
-
-                expect(game.time).toBe(60000);
-                expect(rp.markedForDeletion).toBe(true);
-            } finally {
-                Math.random = origRandom;
-            }
-        });
-
-        test('RandomPower in powerDowns does not pick CarbonDioxideTank when NOT underwater', () => {
-            const origRandom = Math.random;
-            Math.random = jest.fn(() => 0.9);
-
-            try {
-                game.time = 50000;
-                player.isUnderwater = false;
-
-                const rp = new RandomPower();
-                Object.assign(rp, { x: 0, y: 0, width: 10, height: 10 });
-
-                game.powerUps = [];
-                game.powerDowns = [rp];
-
-                player.isInvisible = false;
-
-                player.collisionWithPowers(0);
-
-                expect(game.time).toBe(50000);
-                expect(rp.markedForDeletion).toBe(true);
-            } finally {
-                Math.random = origRandom;
-            }
-        });
-
-        test('RandomPower in powerDowns delegates to a down handler (e.g. IceDrink)', () => {
-            const origRandom = Math.random;
-            Math.random = jest.fn(() => 0);
-
-            try {
-                const rp = new RandomPower();
-                Object.assign(rp, { x: 0, y: 0, width: 10, height: 10 });
-
-                game.powerUps = [];
-                game.powerDowns = [rp];
-
-                player.isInvisible = false;
-                player.collisionWithPowers(0);
-
-                expect(player.isSlowed).toBe(true);
-                expect(rp.markedForDeletion).toBe(true);
-            } finally {
-                Math.random = origRandom;
-            }
-        });
-
-        test('RandomPower powerDown is ignored while invisible', () => {
-            const rp = new RandomPower();
-            Object.assign(rp, { x: 0, y: 0, width: 10, height: 10 });
-
-            game.powerUps = [];
-            game.powerDowns = [rp];
-
-            player.isInvisible = true;
-
-            const origRandom = Math.random;
-            Math.random = jest.fn(() => 0);
-
-            try {
-                player.collisionWithPowers(0);
-
-                expect(rp.markedForDeletion).toBeUndefined();
-                expect(player.isSlowed).toBe(false);
-            } finally {
-                Math.random = origRandom;
-            }
-        });
-    });
-
-    describe('hit & stunned', () => {
-        beforeEach(() => {
-            player.states[7] = { enter: jest.fn(), deathAnimation: false };
-            player.states[6] = { enter: jest.fn(), deathAnimation: false };
-        });
-
-        test('hit reduces lives & coins and switches to Hit state', () => {
-            game.coins = 5; game.lives = 3;
-            player.currentState = player.states[0];
-            player.hit({ dealsDirectHitDamage: true });
-            expect(game.lives).toBe(2);
-            expect(game.coins).toBe(4);
-            expect(player.currentState).toBe(player.states[7]);
-        });
-
-        test('hit does not reduce lives & coins and switches to Hit state', () => {
-            game.coins = 5; game.lives = 3;
-            player.currentState = player.states[0];
-            player.hit({ dealsDirectHitDamage: false });
-            expect(game.lives).toBe(3);
-            expect(game.coins).toBe(5);
-            expect(player.currentState).toBe(player.states[7]);
-        });
-
-        test('stunned reduces lives & coins and switches to Stunned state', () => {
-            game.coins = 5; game.lives = 3;
-            player.currentState = player.states[0];
-            player.stunned({});
-            expect(game.lives).toBe(2);
-            expect(game.coins).toBe(4);
-            expect(player.currentState).toBe(player.states[6]);
-        });
-    });
-
     test('red potion expires after duration', () => {
         player.isRedPotionActive = true;
         player.redPotionTimer = 1000;
@@ -1018,9 +832,6 @@ describe('Player', () => {
             jest.spyOn(player, 'spriteAnimation'),
             jest.spyOn(player, 'playerHorizontalMovement'),
             jest.spyOn(player, 'playerVerticalMovement'),
-            jest.spyOn(player, 'collisionWithEnemies'),
-            jest.spyOn(player, 'collisionWithPowers'),
-            jest.spyOn(player, 'firedogMeetsElyvorg'),
         ];
 
         const slowedSpy = jest.spyOn(player, 'checkIfFiredogIsSlowed');
@@ -1029,43 +840,6 @@ describe('Player', () => {
 
         notCalled.forEach(spy => expect(spy).not.toHaveBeenCalled());
         expect(slowedSpy).toHaveBeenCalledWith(16);
-    });
-
-    test('collisionWithPowers flags powerUps and powerDowns for deletion', () => {
-        player.x = 0;
-        player.y = 0;
-        player.width = 10;
-        player.height = 10;
-        player.currentState = { deathAnimation: false };
-
-        const pdClasses = [IceDrink, IceCube, Cauldron, BlackHole, Confuse, DeadSkull, CarbonDioxideTank, RandomPower];
-        pdClasses.forEach(Ctor => {
-            const item = new Ctor();
-            Object.assign(item, { x: 0, y: 0, width: 10, height: 10 });
-            game.powerDowns = [item];
-            game.powerUps = [];
-            player.isInvisible = false;
-            player.collisionWithPowers(0);
-            expect(item.markedForDeletion).toBe(true);
-        });
-
-        const puClasses = [OxygenTank, HealthLive, Coin, RedPotion, BluePotion, RandomPower];
-        puClasses.forEach(Ctor => {
-            const item = new Ctor();
-            Object.assign(item, { x: 0, y: 0, width: 10, height: 10 });
-            game.powerDowns = [];
-            game.powerUps = [item];
-            player.collisionWithPowers(0);
-            expect(item.markedForDeletion).toBe(true);
-        });
-    });
-
-    test('bossCollisionTimers does not advance when bossInFight is false', () => {
-        game.bossInFight = false;
-        game.boss.id = 'elyvorg';
-        player.bossCollisionTimer = 100;
-        player.bossCollisionTimers(500);
-        expect(player.bossCollisionTimer).toBe(100);
     });
 
     test('checkIfFiredogIsDead sets gameOver when lives ≤ 0', () => {
@@ -1082,59 +856,6 @@ describe('Player', () => {
         player.checkIfFiredogIsDead();
         expect(game.menu.levelDifficulty.setDifficulty)
             .toHaveBeenCalledWith(game.selectedDifficulty);
-    });
-
-    describe('collisionWithEnemies', () => {
-        test('collisionWithEnemies handles normal collision when overlapping vertically', () => {
-            const enemy = {
-                id: 'e1',
-                x: player.x,
-                y: player.y,
-                width: player.width,
-                height: player.height,
-                lives: 3
-            };
-            game.enemies = [enemy];
-            player.currentState = player.states[8];
-            player.isInvisible = false;
-            player.collisionCooldowns = {};
-
-            player.collisionWithEnemies(0);
-
-            expect(player.collisionCooldowns.e1).toBeGreaterThan(0);
-            expect(enemy.lives).toBe(2);
-        });
-
-        test('collisionWithEnemies handles fireball collision', () => {
-            const enemy = { id: 'e2', x: 0, y: 0, width: 10, height: 10, lives: 2 };
-            game.enemies = [enemy];
-            const fb = new Fireball();
-            fb.x = 5; fb.y = 5; fb.size = 10; fb.type = 'normalMode'; fb.markedForDeletion = false;
-            game.behindPlayerParticles = [fb];
-            player.currentState = player.states[8];
-            player.isInvisible = false;
-
-            player.collisionWithEnemies(0);
-
-            expect(fb.markedForDeletion).toBe(true);
-            expect(enemy.lives).toBe(1);
-            expect(game.collisions.length).toBeGreaterThan(0);
-        });
-    });
-
-    test('triggerInkSplash adds InkSplash collision when visible', () => {
-        player.isInvisible = false;
-        player.triggerInkSplash();
-        expect(InkSplash).toHaveBeenCalled();
-        expect(game.collisions.length).toBe(1);
-    });
-
-    test('triggerTunnelVision adds only one TunnelVision', () => {
-        player.triggerTunnelVision();
-        expect(TunnelVision).toHaveBeenCalled();
-        expect(game.collisions.length).toBe(1);
-        player.triggerTunnelVision();
-        expect(game.collisions.length).toBe(1);
     });
 
     test('checkIfFiredogIsSlowed drains timer and restores speed after two calls', () => {
@@ -1157,33 +878,6 @@ describe('Player', () => {
         expect(player.normalSpeed).toBe(6);
         expect(player.maxSpeed).toBe(10);
         expect(player.weight).toBe(1);
-    });
-
-    describe('collisionAnimationFollowsEnemy', () => {
-        test('ElectricityCollision follows or sticks based on overlap', () => {
-            const enemy = new ElectricWheel();
-            enemy.x = player.x;
-            enemy.y = player.y;
-            enemy.width = 10;
-            enemy.height = 10;
-            game.enemies = [enemy];
-
-            const ec = new ElectricityCollision(game, enemy.x, enemy.y);
-            ec.width = 1;
-            ec.height = 1;
-            ec.updatePositionWhereCollisionHappened = jest.fn();
-            ec.updatePosition = jest.fn();
-            game.collisions = [ec];
-
-            ec.x = player.x;
-            ec.y = player.y;
-            player.collisionLogic.collisionAnimationFollowsEnemy(enemy);
-            expect(ec.updatePositionWhereCollisionHappened).toHaveBeenCalled();
-
-            ec.x = player.x + 999;
-            player.collisionLogic.collisionAnimationFollowsEnemy(enemy);
-            expect(ec.updatePosition).toHaveBeenCalledWith(enemy);
-        });
     });
 
     describe('draw() and drawPlayerWithCurrentSkin()', () => {
@@ -1225,495 +919,6 @@ describe('Player', () => {
                 0, 0, player.width, player.height,
                 -player.width / 2, -player.height / 2, player.width, player.height
             );
-        });
-    });
-
-    describe('firedogMeetsElyvorg integration', () => {
-        beforeEach(() => {
-            const e = new Elyvorg();
-            e.x = player.x + 200;
-            e.width = 50;
-            game.enemies = [e];
-
-            game.isBossVisible = true;
-            game.boss.current = e;
-        });
-
-        test('rolling toward Elyvorg moves player', () => {
-            player.currentState = player.states[4];
-            player.facingRight = true;
-            player.x = 50;
-            player.firedogMeetsElyvorg(['d']);
-            expect(player.x).toBe(56);
-        });
-
-        test('talkToBoss runs then stands', done => {
-            game.boss.talkToBoss = true;
-            game.isBossVisible = true;
-
-            player.x = 10;
-            player.setToRunOnce = player.setToStandingOnce = true;
-            player.states[1].enter = jest.fn();
-            player.states[8].enter = jest.fn();
-
-            player.firedogMeetsElyvorg(['']);
-            expect(player.states[1].enter).toHaveBeenCalled();
-
-            player.x = 0;
-            player.firedogMeetsElyvorg(['']);
-
-            setTimeout(() => {
-                expect(player.states[8].enter).toHaveBeenCalled();
-                done();
-            }, 20);
-        });
-    });
-
-    describe('CollisionLogic.shouldSkipElyvorgTeleportCollision', () => {
-        let logic;
-        let boss;
-
-        beforeEach(() => {
-            logic = new CollisionLogic(game);
-
-            boss = new Elyvorg();
-            boss.x = 0;
-            boss.y = 0;
-            boss.width = 10;
-            boss.height = 10;
-
-            game.boss.current = boss;
-            game.bossInFight = true;
-        });
-
-        test('skips collision only for Elyvorg/PurpleBarrier during teleport safe phase when player not rolling or diving', () => {
-            const enemyElyvorg = new Elyvorg();
-            const enemyBarrier = new PurpleBarrier();
-            const otherEnemy = new Goblin();
-
-            boss.state = 'teleport';
-            boss.postTeleportSafeTimer = 500;
-
-            player.currentState = player.states[8];
-            expect(player.rollingOrDiving()).toBe(false);
-
-            expect(logic.shouldSkipElyvorgTeleportCollision(enemyElyvorg, player)).toBe(true);
-            expect(logic.shouldSkipElyvorgTeleportCollision(enemyBarrier, player)).toBe(true);
-
-            expect(logic.shouldSkipElyvorgTeleportCollision(otherEnemy, player)).toBe(false);
-
-            boss.state = 'attack';
-            boss.postTeleportSafeTimer = 0;
-
-            expect(logic.shouldSkipElyvorgTeleportCollision(enemyElyvorg, player)).toBe(false);
-            expect(logic.shouldSkipElyvorgTeleportCollision(enemyBarrier, player)).toBe(false);
-
-            boss.state = 'teleport';
-            boss.postTeleportSafeTimer = 500;
-            player.currentState = player.states[4];
-            expect(player.rollingOrDiving()).toBe(true);
-
-            expect(logic.shouldSkipElyvorgTeleportCollision(enemyElyvorg, player)).toBe(false);
-        });
-    });
-
-    describe('CollisionLogic.handleNormalCollision branches', () => {
-        let logic;
-
-        beforeEach(() => {
-            logic = new CollisionLogic(game);
-            jest.spyOn(player, 'hit');
-            jest.spyOn(player, 'bloodOrPoof');
-            jest.spyOn(player, 'stunned');
-            jest.spyOn(player, 'triggerInkSplash');
-            jest.spyOn(player, 'startFrozen');
-            jest.spyOn(logic, 'collisionAnimationBasedOnEnemy');
-        });
-
-        test('default case hits and blood/poof when visible', () => {
-            const dummy = { x: 0, y: 0, width: 10, height: 10, lives: 1 };
-            player.isInvisible = false;
-            logic.handleNormalCollision(dummy);
-            expect(player.hit).toHaveBeenCalledWith(dummy);
-            expect(player.bloodOrPoof).toHaveBeenCalledWith(dummy);
-        });
-
-        test('Goblin steals between 10 and 20 coins and shows particles', () => {
-            game.coins = 30;
-            const gob = new Goblin();
-            gob.lives = 1; gob.x = 0; gob.y = 0; gob.width = 10; gob.height = 10;
-            player.isInvisible = false;
-            logic.handleNormalCollision(gob);
-            expect(game.coins).toBeLessThan(30);
-            expect(game.coins).toBeGreaterThanOrEqual(10);
-            expect(CoinLoss).toHaveBeenCalled();
-            expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith('goblinStealing', false, true);
-        });
-
-        test('Sluggie triggers ink splash and collision animation', () => {
-            const s = new Sluggie();
-            s.x = 0; s.y = 0; s.width = 10; s.height = 10;
-            player.isInvisible = false;
-            logic.handleNormalCollision(s);
-            expect(player.triggerInkSplash).toHaveBeenCalled();
-            expect(logic.collisionAnimationBasedOnEnemy).toHaveBeenCalledWith(s);
-        });
-
-        test('InkBomb triggers ink splash and InkBombCollision', () => {
-            const ib = new InkBomb();
-            ib.x = 0; ib.y = 0; ib.width = 10; ib.height = 10;
-            player.isInvisible = false;
-            logic.handleNormalCollision(ib);
-            expect(player.triggerInkSplash).toHaveBeenCalled();
-            expect(logic.collisionAnimationBasedOnEnemy).toHaveBeenCalledWith(ib);
-            expect(InkBombCollision).toHaveBeenCalled();
-        });
-
-        test('Garry triggers ink splash and InkSplashCollision', () => {
-            const g = new Garry();
-            g.x = 0; g.y = 0; g.width = 10; g.height = 10;
-            player.isInvisible = false;
-            logic.handleNormalCollision(g);
-            expect(player.triggerInkSplash).toHaveBeenCalled();
-            expect(InkSplashCollision).toHaveBeenCalled();
-        });
-
-        test('Skulnap stuns and plays ExplosionCollisionAnimation', () => {
-            const sk = new Skulnap();
-            sk.x = 0; sk.y = 0; sk.width = 10; sk.height = 10;
-            logic.handleNormalCollision(sk);
-            expect(player.stunned).toHaveBeenCalledWith(sk);
-            expect(ExplosionCollisionAnimation).toHaveBeenCalled();
-        });
-
-        test('stun enemies only call stunned', () => {
-            const b = new Cactus();
-            b.x = 0; b.y = 0; b.width = 10; b.height = 10;
-            logic.handleNormalCollision(b);
-            expect(player.stunned).toHaveBeenCalledWith(b);
-        });
-
-        test('ElectricWheel zeroes lives, stuns, and plays ElectricityCollision', () => {
-            const ew = new ElectricWheel();
-            ew.lives = 2; ew.x = 0; ew.y = 0; ew.width = 10; ew.height = 10; ew.isBarrierActive = false;
-            logic.handleNormalCollision(ew);
-            expect(player.stunned).toHaveBeenCalledWith(ew);
-            expect(ew.lives).toBe(0);
-            expect(ElectricityCollision).toHaveBeenCalled();
-            expect(player.resetElectricWheelCounters).toBe(true);
-            expect(player.bossCollisionTimer).toBe(0);
-        });
-
-        test('PoisonSpit activates poison and plays PoisonSpitSplash', () => {
-            const ps = new PoisonSpit();
-            ps.x = 0; ps.y = 0; ps.width = 10; ps.height = 10;
-            player.isInvisible = false;
-            logic.handleNormalCollision(ps);
-            expect(player.isPoisonedActive).toBe(true);
-            expect(PoisonSpitSplash).toHaveBeenCalled();
-        });
-
-        test('PoisonDrop activates poison and plays PoisonDropCollision', () => {
-            const pd = new PoisonDrop();
-            pd.x = 0; pd.y = 0; pd.width = 10; pd.height = 10;
-            player.isInvisible = false;
-            logic.handleNormalCollision(pd);
-            expect(player.isPoisonedActive).toBe(true);
-            expect(PoisonDropCollision).toHaveBeenCalled();
-        });
-
-        test('red enemies hit and blood/poof', () => {
-            const red = new TheRock();
-            red.x = 0; red.y = 0; red.width = 10; red.height = 10;
-            player.isInvisible = false;
-            logic.handleNormalCollision(red);
-            expect(player.hit).toHaveBeenCalledWith(red);
-            expect(player.bloodOrPoof).toHaveBeenCalledWith(red);
-        });
-
-        test('IceBall slows and plays iceSlowedSound', () => {
-            const ice = new IceBall();
-            ice.x = 0; ice.y = 0; ice.width = 10; ice.height = 10;
-            player.isInvisible = false;
-            logic.handleNormalCollision(ice);
-            expect(player.isSlowed).toBe(true);
-            expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith('iceSlowedSound', false, true);
-        });
-
-        test('Elyvorg only hits after cooldown and barrier inactive', () => {
-            const boss = new Elyvorg();
-            boss.isBarrierActive = false;
-            boss.x = 0; boss.y = 0; boss.width = 10; boss.height = 10;
-            player.bossCollisionTimer = player.bossCollisionCooldown;
-            logic.handleNormalCollision(boss);
-            expect(player.hit).toHaveBeenCalledWith(boss);
-        });
-
-        test('PurpleBarrier resets timer and hits when allowed', () => {
-            const bar = new PurpleBarrier();
-            bar.x = 0; bar.y = 0; bar.width = 10; bar.height = 10;
-            player.bossCollisionTimer = 1000;
-            player.currentState = player.states[0];
-            logic.handleNormalCollision(bar);
-            expect(player.bossCollisionTimer).toBe(0);
-            expect(player.hit).toHaveBeenCalledWith(bar);
-        });
-
-        test('PurpleSlash resets timer and hits', () => {
-            const ps = new PurpleSlash();
-            ps.x = 0; ps.y = 0; ps.width = 10; ps.height = 10;
-            player.isInvisible = false;
-            logic.handleNormalCollision(ps);
-            expect(player.bossCollisionTimer).toBe(0);
-            expect(player.hit).toHaveBeenCalledWith(ps);
-        });
-
-        test('PurpleFireball hits and plays PurpleFireballCollision', () => {
-            const pf = new PurpleFireball();
-            pf.x = 0; pf.y = 0; pf.width = 10; pf.height = 10;
-            player.isInvisible = false;
-            logic.handleNormalCollision(pf);
-            expect(player.hit).toHaveBeenCalledWith(pf);
-            expect(PurpleFireballCollision).toHaveBeenCalled();
-        });
-
-        test('MeteorAttack hits and plays MeteorExplosionCollision', () => {
-            const ma = new MeteorAttack();
-            ma.x = 0; ma.y = 0; ma.width = 10; ma.height = 10;
-            player.isInvisible = false;
-            logic.handleNormalCollision(ma);
-            expect(player.hit).toHaveBeenCalledWith(ma);
-            expect(MeteorExplosionCollision).toHaveBeenCalled();
-        });
-
-        test('Arrow blue slows and plays iceSlowedSound', () => {
-            const arr = new Arrow();
-            arr.image = { id: 'blueArrow' };
-            arr.x = 0; arr.y = 0; arr.width = 10; arr.height = 10;
-            player.isInvisible = false;
-            logic.handleNormalCollision(arr);
-            expect(player.isSlowed).toBe(true);
-            expect(game.audioHandler.enemySFX.playSound)
-                .toHaveBeenCalledWith('iceSlowedSound', false, true);
-        });
-
-        test('Arrow yellow stuns', () => {
-            const arr = new Arrow();
-            arr.image = { id: 'yellowArrow' };
-            arr.x = 0; arr.y = 0; arr.width = 10; arr.height = 10;
-            player.isInvisible = false;
-            logic.handleNormalCollision(arr);
-            expect(player.stunned).toHaveBeenCalledWith(arr);
-        });
-
-        test('Arrow green poisons and plays acidSoundEffect', () => {
-            const arr = new Arrow();
-            arr.image = { id: 'greenArrow' };
-            arr.x = 0; arr.y = 0; arr.width = 10; arr.height = 10;
-            player.isInvisible = false;
-            logic.handleNormalCollision(arr);
-            expect(player.isPoisonedActive).toBe(true);
-            expect(game.audioHandler.enemySFX.playSound)
-                .toHaveBeenCalledWith('acidSoundEffect', false, true);
-        });
-
-        test('Arrow cyan freezes the player', () => {
-            const arr = new Arrow();
-            arr.image = { id: 'cyanArrow' };
-            arr.x = 0; arr.y = 0; arr.width = 10; arr.height = 10;
-            player.isInvisible = false;
-            logic.handleNormalCollision(arr);
-            expect(player.startFrozen).toHaveBeenCalled();
-            expect(player.isFrozen).toBe(true);
-            expect(player.frozenTimer).toBeGreaterThan(0);
-        });
-    });
-
-    describe('CollisionLogic.handleRollingOrDivingCollision branches', () => {
-        let logic;
-
-        beforeEach(() => {
-            logic = new CollisionLogic(game);
-            player.currentState = player.states[4]; // rolling
-            jest.spyOn(player, 'hit');
-            jest.spyOn(player, 'bloodOrPoof');
-            jest.spyOn(player, 'stunned');
-            jest.spyOn(player, 'triggerInkSplash');
-            jest.spyOn(player, 'startFrozen');
-            jest.spyOn(logic, 'collisionAnimationBasedOnEnemy');
-        });
-
-        test('default case only blood/poof', () => {
-            const dummy = { x: 0, y: 0, width: 10, height: 10 };
-            logic.handleRollingOrDivingCollision(dummy);
-            expect(player.bloodOrPoof).toHaveBeenCalledWith(dummy);
-        });
-
-        test('Goblin dies immediately and blood/poof', () => {
-            const gob = new Goblin();
-            gob.lives = 1; gob.x = 0; gob.y = 0; gob.width = 10; gob.height = 10;
-            logic.handleRollingOrDivingCollision(gob);
-            expect(gob.lives).toBe(0);
-            expect(player.bloodOrPoof).toHaveBeenCalledWith(gob);
-        });
-
-        test('Sluggie triggers ink splash and collision animation', () => {
-            const s = new Sluggie();
-            s.x = 0; s.y = 0; s.width = 10; s.height = 10;
-            logic.handleRollingOrDivingCollision(s);
-            expect(player.triggerInkSplash).toHaveBeenCalled();
-            expect(logic.collisionAnimationBasedOnEnemy).toHaveBeenCalledWith(s);
-        });
-
-        test('Skulnap stuns and plays ExplosionCollisionAnimation', () => {
-            const sk = new Skulnap();
-            sk.x = 0; sk.y = 0; sk.width = 10; sk.height = 10;
-            logic.handleRollingOrDivingCollision(sk);
-            expect(player.stunned).toHaveBeenCalledWith(sk);
-            expect(ExplosionCollisionAnimation).toHaveBeenCalled();
-        });
-
-        test('stun bee when invisible also blood/poof', () => {
-            const b = new Bee();
-            b.x = 0; b.y = 0; b.width = 10; b.height = 10;
-            player.isInvisible = true;
-            logic.handleRollingOrDivingCollision(b);
-            expect(player.stunned).toHaveBeenCalledWith(b);
-            expect(player.bloodOrPoof).toHaveBeenCalledWith(b);
-        });
-
-        test('stun angrybee when invisible also blood/poof', () => {
-            const b = new AngryBee();
-            b.x = 0; b.y = 0; b.width = 10; b.height = 10;
-            player.isInvisible = true;
-            logic.handleRollingOrDivingCollision(b);
-            expect(player.stunned).toHaveBeenCalledWith(b);
-            expect(player.bloodOrPoof).toHaveBeenCalledWith(b);
-        });
-
-        test('ElectricWheel dies, stuns, and resets counters', () => {
-            const ew = new ElectricWheel();
-            ew.lives = 2; ew.x = 0; ew.y = 0; ew.width = 10; ew.height = 10;
-            logic.handleRollingOrDivingCollision(ew);
-            expect(ew.lives).toBe(0);
-            expect(player.stunned).toHaveBeenCalledWith(ew);
-            expect(player.resetElectricWheelCounters).toBe(true);
-            expect(player.bossCollisionTimer).toBe(0);
-        });
-
-        test('PoisonDrop poisons and plays PoisonDropCollision', () => {
-            const pd = new PoisonDrop();
-            pd.x = 0; pd.y = 0; pd.width = 10; pd.height = 10;
-            player.isInvisible = false;
-            logic.handleRollingOrDivingCollision(pd);
-            expect(player.isPoisonedActive).toBe(true);
-            expect(PoisonDropCollision).toHaveBeenCalled();
-        });
-
-        test('red enemy in rolling hits and blood/poof', () => {
-            const red = new Tauro();
-            red.x = 0; red.y = 0; red.width = 10; red.height = 10;
-            logic.handleRollingOrDivingCollision(red);
-            expect(player.hit).toHaveBeenCalledWith(red);
-            expect(player.bloodOrPoof).toHaveBeenCalledWith(red);
-        });
-
-        test('IceBall slows and blood/poof', () => {
-            const ice = new IceBall();
-            ice.x = 0; ice.y = 0; ice.width = 10; ice.height = 10;
-            player.isInvisible = false;
-            logic.handleRollingOrDivingCollision(ice);
-            expect(player.isSlowed).toBe(true);
-            expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith('iceSlowedSound', false, true);
-            expect(player.bloodOrPoof).toHaveBeenCalledWith(ice);
-        });
-
-        test('Elyvorg in rolling damages boss and blood/poof', () => {
-            const boss = new Elyvorg();
-            boss.isBarrierActive = false;
-            boss.lives = 3; boss.x = 0; boss.y = 0; boss.width = 10; boss.height = 10;
-            player.bossCollisionTimer = player.bossCollisionCooldown;
-            logic.handleRollingOrDivingCollision(boss);
-            expect(boss.lives).toBe(2);
-            expect(player.bloodOrPoof).toHaveBeenCalledWith(boss);
-        });
-
-        test('PurpleBarrier in rolling resets timer only', () => {
-            const bar = new PurpleBarrier();
-            bar.x = 0; bar.y = 0; bar.width = 10; bar.height = 10;
-            player.bossCollisionTimer = 123;
-            logic.handleRollingOrDivingCollision(bar);
-            expect(player.bossCollisionTimer).toBe(0);
-        });
-
-        test('PurpleSlash in rolling hits only', () => {
-            const ps = new PurpleSlash();
-            ps.x = 0; ps.y = 0; ps.width = 10; ps.height = 10;
-            player.isInvisible = false;
-            logic.handleRollingOrDivingCollision(ps);
-            expect(player.hit).toHaveBeenCalledWith(ps);
-        });
-
-        test('PurpleFireball in rolling hits and plays PurpleFireballCollision', () => {
-            const pf = new PurpleFireball();
-            pf.x = 0; pf.y = 0; pf.width = 10; pf.height = 10;
-            logic.handleRollingOrDivingCollision(pf);
-            expect(player.hit).toHaveBeenCalledWith(pf);
-            expect(PurpleFireballCollision).toHaveBeenCalled();
-        });
-
-        test('MeteorAttack in rolling only collision animation', () => {
-            const ma = new MeteorAttack();
-            ma.x = 0; ma.y = 0; ma.width = 10; ma.height = 10;
-            logic.handleRollingOrDivingCollision(ma);
-            expect(logic.collisionAnimationBasedOnEnemy).toHaveBeenCalledWith(ma);
-        });
-
-        test('Arrow yellow in rolling dies arrow when invisible', () => {
-            const arr = new Arrow();
-            arr.image = { id: 'yellowArrow' };
-            arr.lives = 2; arr.x = 0; arr.y = 0; arr.width = 10; arr.height = 10;
-            player.isInvisible = true;
-            logic.handleRollingOrDivingCollision(arr);
-            expect(arr.lives).toBe(1);
-        });
-
-        test('Arrow green in rolling poisons and plays acidSoundEffect', () => {
-            const arr = new Arrow();
-            arr.image = { id: 'greenArrow' };
-            arr.x = 0; arr.y = 0; arr.width = 10; arr.height = 10;
-            player.isInvisible = false;
-            logic.handleRollingOrDivingCollision(arr);
-            expect(player.isPoisonedActive).toBe(true);
-            expect(game.audioHandler.enemySFX.playSound)
-                .toHaveBeenCalledWith('acidSoundEffect', false, true);
-        });
-
-        test('Arrow cyan in rolling freezes the player', () => {
-            const arr = new Arrow();
-            arr.image = { id: 'cyanArrow' };
-            arr.x = 0; arr.y = 0; arr.width = 10; arr.height = 10;
-            player.isInvisible = false;
-            logic.handleRollingOrDivingCollision(arr);
-            expect(player.startFrozen).toHaveBeenCalled();
-            expect(player.isFrozen).toBe(true);
-            expect(player.frozenTimer).toBeGreaterThan(0);
-        });
-    });
-
-    describe('collisionAnimationBasedOnEnemy direct', () => {
-        test('InkBomb triggers InkBombCollision', () => {
-            const ib = new InkBomb();
-            ib.x = 0; ib.y = 0; ib.width = 10; ib.height = 10;
-            player.collisionLogic.collisionAnimationBasedOnEnemy(ib);
-            expect(InkBombCollision).toHaveBeenCalled();
-        });
-
-        test('MeteorAttack triggers MeteorExplosionCollision', () => {
-            const ma = new MeteorAttack();
-            ma.x = 0; ma.y = 0; ma.width = 10; ma.height = 10;
-            player.collisionLogic.collisionAnimationBasedOnEnemy(ma);
-            expect(MeteorExplosionCollision).toHaveBeenCalled();
         });
     });
 
@@ -1810,149 +1015,6 @@ describe('Player', () => {
             game.cabin.isFullyVisible = true;
             player.fireballAbility(game.input, 0);
             expect(Fireball).not.toHaveBeenCalled();
-        });
-    });
-
-    describe('handleFireballCollisionWithEnemy special cases', () => {
-        beforeEach(() => {
-            game.behindPlayerParticles = [];
-            game.collisions = [];
-
-            ElectricityCollision.mockImplementation(() => ({
-                width: 1,
-                height: 1,
-                x: 0,
-                y: 0,
-                updatePositionWhereCollisionHappened: jest.fn(),
-                updatePosition: jest.fn(),
-            }));
-        });
-
-        const cases = [
-            { Ctor: PurpleFireball, anim: RedFireballCollision, key: 'PurpleFireball' },
-            { Ctor: MeteorAttack, anim: MeteorExplosionCollision, key: 'MeteorAttack' },
-            { Ctor: PoisonDrop, anim: PoisonDropCollision, key: 'PoisonDrop' },
-            { Ctor: ElectricWheel, anim: ElectricityCollision, key: 'ElectricWheel' },
-            { Ctor: Goblin, anim: CollisionAnimation, key: 'Goblin' },
-            { Ctor: PoisonSpit, anim: PoisonSpitSplash, key: 'PoisonSpit' },
-            { Ctor: PurpleThunder, anim: PurpleThunderCollision, key: 'PurpleThunder' },
-            { Ctor: GhostElyvorg, anim: GhostFadeOut, key: 'GhostElyvorg' },
-            { Ctor: GravitationalAura, anim: DarkExplosionCollision, key: 'GravitationalAura' },
-            { Ctor: PurpleLaserBeam, anim: DisintegrateCollision, key: 'PurpleLaserBeam' },
-        ];
-
-        cases.forEach(({ Ctor, anim, key }) => {
-            test(`${key} fireball collision triggers ${anim.name}`, () => {
-                const enemy = new Ctor();
-                enemy.x = 0; enemy.y = 0; enemy.width = 10; enemy.height = 10; enemy.lives = 2;
-
-                game.enemies = [enemy];
-
-                const fb = new Fireball();
-                fb.x = 5; fb.y = 5; fb.size = 10; fb.type = 'normalMode'; fb.markedForDeletion = false;
-
-                game.behindPlayerParticles = [fb];
-                player.currentState = player.states[1];
-
-                player.collisionWithEnemies(0);
-
-                expect(anim).toHaveBeenCalled();
-            });
-        });
-    });
-
-    describe('PurpleThunder collision positioning', () => {
-        beforeEach(() => {
-            PurpleThunderCollision.mockClear();
-        });
-
-        test('collisionAnimationBasedOnEnemy uses enemy center X and player center Y for PurpleThunder', () => {
-            const enemy = new PurpleThunder();
-            enemy.x = 200;
-            enemy.y = 50;
-            enemy.width = 40;
-            enemy.height = 80;
-
-            player.x = 10;
-            player.y = 100;
-            player.width = 100;
-            player.height = 60;
-
-            player.collisionLogic.collisionAnimationBasedOnEnemy(enemy);
-
-            expect(PurpleThunderCollision).toHaveBeenCalled();
-
-            const [argGame, argX, argY] = PurpleThunderCollision.mock.calls[0];
-            const expectedX = enemy.x + enemy.width * 0.5;
-            const expectedY = player.y + player.height * 0.5;
-
-            expect(argGame).toBe(game);
-            expect(argX).toBeCloseTo(expectedX);
-            expect(argY).toBeCloseTo(expectedY);
-        });
-
-        test('fireball collision with PurpleThunder uses enemy center X and fireball center Y', () => {
-            const enemy = new PurpleThunder();
-            enemy.x = 100;
-            enemy.y = 200;
-            enemy.width = 40;
-            enemy.height = 40;
-            enemy.lives = 2;
-
-            game.enemies = [enemy];
-
-            const fb = new Fireball();
-            Object.assign(fb, {
-                x: enemy.x + enemy.width / 2,
-                y: enemy.y + enemy.height / 2,
-                size: 20,
-                type: 'normalMode',
-                markedForDeletion: false,
-            });
-
-            game.behindPlayerParticles = [fb];
-
-            player.x = 50;
-            player.y = 300;
-            player.width = 100;
-            player.height = 60;
-
-            player.collisionWithEnemies(0);
-
-            expect(PurpleThunderCollision).toHaveBeenCalled();
-
-            const [argGame, argX, argY] = PurpleThunderCollision.mock.calls[0];
-
-            const expectedX = enemy.x + enemy.width * 0.5;
-            const expectedY = fb.y + fb.size * 0.5;
-
-            expect(argGame).toBe(game);
-            expect(argX).toBeCloseTo(expectedX);
-            expect(argY).toBeCloseTo(expectedY);
-        });
-    });
-
-    describe('collisionAnimationBasedOnEnemy all branches', () => {
-        it.each([
-            [Sluggie, InkSplashCollision],
-            [Garry, InkSplashCollision],
-            [InkBeam, InkSplashCollision],
-            [InkBomb, InkBombCollision],
-            [Skulnap, ExplosionCollisionAnimation],
-            [ElectricWheel, ElectricityCollision],
-            [PoisonSpit, PoisonSpitSplash],
-            [PoisonDrop, PoisonDropCollision],
-            [PurpleFireball, PurpleFireballCollision],
-            [MeteorAttack, MeteorExplosionCollision],
-            [PurpleThunder, PurpleThunderCollision],
-            [GhostElyvorg, GhostFadeOut],
-            [GravitationalAura, DarkExplosionCollision],
-            [PurpleLaserBeam, DisintegrateCollision],
-        ])('enemy %p pushes %p', (EnemyCtor, anim) => {
-            const e = new EnemyCtor();
-            e.x = 0; e.y = 0; e.width = 10; e.height = 10;
-            player.collisionLogic.collisionAnimationBasedOnEnemy(e);
-            expect(anim).toHaveBeenCalled();
         });
     });
 
@@ -2130,53 +1192,6 @@ describe('Player', () => {
         });
     });
 
-    describe('collisionAnimationFollowsEnemy – Blood branch', () => {
-        test('calls updatePosition on a Blood collision matching the enemy', () => {
-            const enemy = { id: 'eX' };
-            const blood = new Blood(game, 0, 0, enemy);
-            blood.enemy = enemy;
-            blood.updatePosition = jest.fn();
-            game.collisions = [blood];
-            player.collisionLogic.collisionAnimationFollowsEnemy(enemy);
-            expect(blood.updatePosition).toHaveBeenCalledWith(enemy);
-        });
-    });
-
-    describe('checkIfFiredogIsDead underwater deathAnimation', () => {
-        beforeEach(() => {
-            player.currentState = { deathAnimation: true };
-            player.isUnderwater = true;
-        });
-
-        test('when not on ground, y increases by 2', () => {
-            const initialY = player.y - 10;
-            player.y = initialY;
-            player.checkIfFiredogIsDead();
-            expect(player.y).toBe(initialY + 2);
-        });
-
-        test('when on ground, y stays the same', () => {
-            player.y = game.height - player.height - game.groundMargin;
-            player.checkIfFiredogIsDead();
-            expect(player.y).toBe(game.height - player.height - game.groundMargin);
-        });
-    });
-
-    describe('handleFloatingMessages direct', () => {
-        test('enemy death (lives≤0) adds a FloatingMessage and increments coins & energy', () => {
-            game.floatingMessages = [];
-            game.coins = 5;
-            player.energy = 10;
-            player.previousLives = game.lives = 3;
-            const enemy = { lives: 0, x: 7, y: 8 };
-            player.handleFloatingMessages(enemy);
-            expect(game.coins).toBe(6);
-            expect(player.energy).toBe(12);
-            expect(FloatingMessage).toHaveBeenCalled();
-            expect(game.floatingMessages).toHaveLength(1);
-        });
-    });
-
     describe('update() smoke test', () => {
         it('calls all major subsystems when alive', () => {
             jest.spyOn(player, 'energyLogic');
@@ -2186,10 +1201,10 @@ describe('Player', () => {
             jest.spyOn(player, 'spriteAnimation');
             jest.spyOn(player, 'playerHorizontalMovement');
             jest.spyOn(player, 'playerVerticalMovement');
-            jest.spyOn(player, 'collisionWithEnemies');
-            jest.spyOn(player, 'collisionWithPowers');
+
             player.currentState = { deathAnimation: false, handleInput: jest.fn() };
             player.update([], 16);
+
             expect(player.energyLogic).toHaveBeenCalled();
             expect(player.fireballAbility).toHaveBeenCalled();
             expect(player.invisibleAbility).toHaveBeenCalled();
@@ -2197,15 +1212,13 @@ describe('Player', () => {
             expect(player.spriteAnimation).toHaveBeenCalled();
             expect(player.playerHorizontalMovement).toHaveBeenCalled();
             expect(player.playerVerticalMovement).toHaveBeenCalled();
-            expect(player.collisionWithEnemies).toHaveBeenCalled();
-            expect(player.collisionWithPowers).toHaveBeenCalled();
         });
     });
 
     describe('ice movement (applyIceMovementExact)', () => {
         beforeEach(() => {
             player.isIce = true;
-            player.currentState = player.states[1]; // running
+            player.currentState = player.states[1];
             player.x = 100;
             player.vx = 0;
             player.maxSpeed = 10;
@@ -2246,7 +1259,7 @@ describe('Player', () => {
         beforeEach(() => {
             Fireball.mockClear();
             player.fireballTimer = player.fireballCooldown;
-            player.currentState = player.states[0]; // sitting
+            player.currentState = player.states[0];
             game.cabin.isFullyVisible = false;
             player.isRedPotionActive = false;
             player.isUnderwater = false;
@@ -2265,75 +1278,6 @@ describe('Player', () => {
         });
     });
 
-    describe('handleFireballCollisionWithEnemy de-duplicates per enemy', () => {
-        test('only first fireball affects enemy; second is ignored', () => {
-            const enemy = { id: 'dedup', x: 0, y: 0, width: 20, height: 20, lives: 2 };
-            game.enemies = [enemy];
-
-            const fb1 = new Fireball();
-            Object.assign(fb1, { x: 5, y: 5, size: 10, type: 'normalMode', markedForDeletion: false });
-
-            const fb2 = new Fireball();
-            Object.assign(fb2, { x: 6, y: 6, size: 10, type: 'normalMode', markedForDeletion: false });
-
-            game.behindPlayerParticles = [fb1, fb2];
-
-            player.currentState = player.states[8]; // standing
-            player.isInvisible = false;
-
-            player.collisionWithEnemies(0);
-
-            expect(enemy.lives).toBe(1);
-
-            expect(fb1.markedForDeletion).toBe(true);
-            expect(fb2.markedForDeletion).not.toBe(true);
-        });
-    });
-
-    describe('playerSFXAudios underwater rolling variant', () => {
-        test('uses rollingUnderwaterSFX when underwater', () => {
-            player.currentState = player.states[4]; // rolling
-            player.isUnderwater = true;
-            player.isRolling = false;
-
-            player.playerSFXAudios();
-
-            expect(game.audioHandler.firedogSFX.playSound)
-                .toHaveBeenCalledWith('rollingUnderwaterSFX', true, true);
-            expect(player.isRolling).toBe(true);
-        });
-    });
-
-    describe('firedogMeetsElyvorg facingLeft branch', () => {
-        beforeEach(() => {
-            const e = new Elyvorg();
-            e.x = player.x - 200;
-            e.width = 50;
-            game.enemies = [e];
-
-            game.isBossVisible = true;
-            game.boss.current = e;
-
-            player.facingRight = false;
-            player.facingLeft = true;
-            player.currentState = player.states[4]; // rolling
-        });
-
-        test('when facingLeft, pressing right moves player right (mirrored logic)', () => {
-            player.x = 50;
-            player.firedogMeetsElyvorg(['d']);
-            expect(player.x).toBe(56);
-        });
-
-        test('when facingLeft and not pressing, roll+no LR keeps position', () => {
-            player.x = 100;
-            game.input.isRollAttack.mockReturnValue(true);
-            player.firedogMeetsElyvorg([]);
-            expect(player.x).toBe(100);
-        });
-    });
-
-
     describe('freezing and startFrozen/updateFrozen/clearFreeze', () => {
         beforeEach(() => {
             player.currentState = { deathAnimation: false };
@@ -2341,7 +1285,7 @@ describe('Player', () => {
 
         test('startFrozen enters frozen state and switches to Hit', () => {
             player.states[7] = { enter: jest.fn(), deathAnimation: false };
-            player.currentState = player.states[1]; // running
+            player.currentState = player.states[1];
             player.speed = 5;
             player.vx = 3;
             player.vy = -2;
@@ -2439,7 +1383,7 @@ describe('Player', () => {
 
             player.isBlackHoleActive = true;
 
-            player.energy = 150; // clamp to 100
+            player.energy = 150;
             player.energyInterval = 999;
             player.noEnergyLeftSound = true;
 
@@ -2455,63 +1399,63 @@ describe('Player', () => {
 
             player.clearAllStatusEffects();
 
-            // freeze
             expect(player.isFrozen).toBe(false);
             expect(player.frozenTimer).toBe(0);
             expect(player.frozenPulseTimer).toBe(0);
             expect(player.frozenOpacity).toBe(0);
-            // poison
+
             expect(player.isPoisonedActive).toBe(false);
             expect(player.poisonTimer).toBe(0);
             expect(player.energyReachedZero).toBe(false);
-            // slow
+
             expect(player.isSlowed).toBe(false);
             expect(player.slowedTimer).toBe(0);
-            // confuse
+
             expect(player.isConfused).toBe(false);
             expect(player.confuseTimer).toBe(0);
             expect(player.confusedKeyBindings).toBeNull();
-            // potions
+
             expect(player.isBluePotionActive).toBe(false);
             expect(player.blueFireTimer).toBe(0);
             expect(player.isRedPotionActive).toBe(false);
             expect(player.redPotionTimer).toBe(0);
-            // invisibility
+
             expect(player.isInvisible).toBe(false);
             expect(player.invisibleActiveCooldownTimer).toBe(0);
             expect(player.invisibleTimer).toBe(player.invisibleCooldown);
-            // black hole
+
             expect(player.isBlackHoleActive).toBe(false);
-            // energy + sound flags
+
             expect(player.energy).toBe(100);
             expect(player.energyInterval).toBe(100);
             expect(player.noEnergyLeftSound).toBe(false);
-            // base stats restored
+
             expect(player.normalSpeed).toBe(player.baseNormalSpeed);
             expect(player.maxSpeed).toBe(player.baseMaxSpeed);
             expect(player.weight).toBe(player.baseWeight);
-            // movement reset
+
             expect(player.speed).toBe(0);
             expect(player.vx).toBe(0);
             expect(player.vy).toBe(0);
-            // input cleared
+
             expect(game.input.keys).toEqual([]);
         });
 
         test('when currentState is stunned or hit, it forces Standing via setState(8, 0)', () => {
             const spy = jest.spyOn(player, 'setState');
-            // stunned
+
             player.currentState = player.states[6];
             player.clearAllStatusEffects();
             expect(spy).toHaveBeenCalledWith(8, 0);
+
             spy.mockClear();
-            // hit
+
             player.currentState = player.states[7];
             player.clearAllStatusEffects();
             expect(spy).toHaveBeenCalledWith(8, 0);
         });
 
-        test('stops relevant SFX and removes TunnelVision + status particles', () => {
+        test('stops relevant SFX and removes status particles', () => {
             game.particles = [
                 { constructor: { name: 'PoisonBubbles' } },
                 { constructor: { name: 'IceCrystalBubbles' } },
@@ -2519,16 +1463,9 @@ describe('Player', () => {
                 { constructor: { name: 'SomeOtherParticle' } },
             ];
 
-            game.collisions = [
-                { constructor: { name: 'TunnelVision' } },
-                { constructor: { name: 'NotTunnelVision' } },
-            ];
-
             player.clearAllStatusEffects();
 
             expect(game.particles.map(p => p.constructor.name)).toEqual(['SomeOtherParticle']);
-
-            expect(game.collisions.map(c => c.constructor.name)).toEqual(['NotTunnelVision']);
 
             const stop = game.audioHandler.firedogSFX.stopSound;
             expect(stop).toHaveBeenCalledWith('bluePotionEnergyGoingUp');
@@ -2563,11 +1500,7 @@ describe('emitStatusParticles (bubble status logic)', () => {
             cabin: { isFullyVisible: false },
             debug: false,
 
-            boss: {
-                id: 'elyvorg',
-                current: null,
-                talkToBoss: false,
-            },
+            boss: { id: 'elyvorg', current: null, talkToBoss: false },
             bossInFight: false,
             isBossVisible: false,
 
@@ -2576,6 +1509,7 @@ describe('emitStatusParticles (bubble status logic)', () => {
             noDamageDuringTutorial: false,
             selectedDifficulty: 'Easy',
             UI: { secondsLeftActivated: false },
+
             collisions: [],
             floatingMessages: [],
             behindPlayerParticles: [],

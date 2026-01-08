@@ -14,6 +14,10 @@ import {
     InkBomb,
     PurpleFireball,
     Arrow,
+    BlueArrow,
+    YellowArrow,
+    GreenArrow,
+    CyanArrow,
     PurpleSlash,
     PurpleThunder,
     PurpleLaserBeam,
@@ -182,9 +186,9 @@ describe("elyvorg.js entities – behavior coverage", () => {
         };
 
         game.bossManager = {
-        requestScreenEffect: jest.fn(),
-        releaseScreenEffect: jest.fn(),
-        getGateForCurrentMap: jest.fn(() => null),
+            requestScreenEffect: jest.fn(),
+            releaseScreenEffect: jest.fn(),
+            getGateForCurrentMap: jest.fn(() => null),
         };
 
         return game;
@@ -512,20 +516,28 @@ describe("elyvorg.js entities – behavior coverage", () => {
 
     describe("Arrow", () => {
         it.each([
-            ["blueArrow", "blue"],
-            ["yellowArrow", "yellow"],
-            ["greenArrow", "lime"],
-            ["cyanArrow", "cyan"],
-        ])("draw applies correct glow for %s", (imageId, expectedShadowColor) => {
-            const arr = new Arrow(mockGame, 0, 0, 5, 5, false, imageId);
+            [BlueArrow, "blue"],
+            [YellowArrow, "yellow"],
+            [GreenArrow, "lime"],
+            [CyanArrow, "cyan"],
+        ])("draw applies correct glow for %p", (ArrowCtor, expectedShadowColor) => {
+            const arr = new ArrowCtor(mockGame, 0, 0, 5, 5, false);
             arr.draw(ctx);
 
             expect(ctx.shadowColor).toBe(expectedShadowColor);
             expect(ctx.shadowBlur).toBe(10);
         });
 
+        it("base Arrow has no glow by default (shadowColor not provided)", () => {
+            const arr = new Arrow(mockGame, 0, 0, 5, 5, false, "blueArrow");
+            arr.draw(ctx);
+
+            expect(ctx.shadowColor).toBe(null);
+            expect(ctx.shadowBlur).toBe(null);
+        });
+
         it("draw flips correctly when direction=true", () => {
-            const arr = new Arrow(mockGame, 0, 0, 5, 0, true, "greenArrow");
+            const arr = new GreenArrow(mockGame, 0, 0, 5, 0, true);
             arr.draw(ctx);
 
             expect(ctx.scale).toHaveBeenCalledWith(-1, -1);
@@ -1218,21 +1230,21 @@ describe("elyvorg.js entities – behavior coverage", () => {
         });
 
         it("checkIfDefeated enforces gate.minCoins when gate exists", () => {
-        boss.lives = 0;
-        mockGame.coins = 0;
+            boss.lives = 0;
+            mockGame.coins = 0;
 
-        mockGame.bossManager.getGateForCurrentMap = jest.fn(() => ({
-            minCoins: 500,
-        }));
+            mockGame.bossManager.getGateForCurrentMap = jest.fn(() => ({
+                minCoins: 500,
+            }));
 
-        jest.useFakeTimers();
+            jest.useFakeTimers();
 
-        boss.checkIfDefeated();
+            boss.checkIfDefeated();
 
-        expect(mockGame.coins).toBe(500);
+            expect(mockGame.coins).toBe(500);
 
-        jest.runAllTimers();
-        jest.useRealTimers();
+            jest.runAllTimers();
+            jest.useRealTimers();
         });
 
         it("runningAway moves Elyvorg offscreen and clears boss state when runAway=true", () => {

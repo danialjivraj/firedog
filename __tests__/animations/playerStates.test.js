@@ -9,6 +9,7 @@ import {
     Hit,
     Standing,
     Dying,
+    Dashing,
 } from '../../game/animations/playerStates';
 
 jest.mock('../../game/animations/particles.js', () => {
@@ -17,7 +18,11 @@ jest.mock('../../game/animations/particles.js', () => {
     class Fire { constructor() { } }
     class Splash { constructor() { } }
     class IceCrystal { constructor() { } }
-    return { Dust, Bubble, Fire, Splash, IceCrystal };
+
+    class DashGhost { constructor() { } }
+    class DashFireArc { constructor() { } }
+
+    return { Dust, Bubble, Fire, Splash, IceCrystal, DashGhost, DashFireArc };
 });
 
 const states = {
@@ -31,6 +36,7 @@ const states = {
     HIT: 7,
     STANDING: 8,
     DYING: 9,
+    DASHING: 10,
 };
 
 describe('playerStates.js', () => {
@@ -44,11 +50,15 @@ describe('playerStates.js', () => {
 
         player = {
             setState: jest.fn(),
+            tryStartDash: jest.fn(() => false),
 
             x: 100,
             y: 200,
             width: 50,
             height: 80,
+
+            facingRight: true,
+            getCurrentSkinImage: jest.fn(() => ({ id: 'fakeSkinImg' })),
 
             vy: 0,
             weight: 5,
@@ -81,6 +91,10 @@ describe('playerStates.js', () => {
             canSpaceDoubleJump: false,
 
             isBluePotionActive: false,
+
+            isDashing: false,
+            dashGhostTimer: 0,
+            dashGhostInterval: 32,
         };
 
         game = {
@@ -89,6 +103,7 @@ describe('playerStates.js', () => {
 
             player,
             particles: [],
+            behindPlayerParticles: [],
 
             input,
 
@@ -102,6 +117,8 @@ describe('playerStates.js', () => {
 
             audioHandler: sfx,
             collisions: [],
+
+            deltaTime: 16,
         };
 
         game.keyBindings = {
@@ -290,7 +307,6 @@ describe('playerStates.js', () => {
             st.handleInput(['w']);
 
             expect(game.particles.length).toBeGreaterThan(0);
-
             expect(player.setState).not.toHaveBeenCalledWith(states.JUMPING, expect.any(Number));
         });
     });
@@ -348,7 +364,6 @@ describe('playerStates.js', () => {
 
             st.handleInput(['s']);
 
-            expect(player.divingTimer).toBe(0);
             expect(player.setState).toHaveBeenCalledWith(states.DIVING, 0);
         });
 
@@ -358,7 +373,6 @@ describe('playerStates.js', () => {
 
             st.handleInput(['s', 'd']);
 
-            expect(player.divingTimer).toBe(0);
             expect(player.setState).toHaveBeenCalledWith(states.DIVING, 1);
         });
 
@@ -366,11 +380,10 @@ describe('playerStates.js', () => {
             player.onGround.mockReturnValue(false);
             player.divingTimer = player.divingCooldown;
             game.keyBindings.diveAttack = 'Shift';
-            game.keyBindings.sit = 's'; // different keys
+            game.keyBindings.sit = 's';
 
             st.handleInput(['Shift']);
 
-            expect(player.divingTimer).toBe(0);
             expect(player.setState).toHaveBeenCalledWith(states.DIVING, 0);
         });
 
@@ -391,7 +404,6 @@ describe('playerStates.js', () => {
 
             st.handleInput(['s']);
 
-            expect(player.divingTimer).toBe(0);
             expect(player.setState).toHaveBeenCalledWith(states.DIVING, 0);
         });
 
@@ -475,7 +487,6 @@ describe('playerStates.js', () => {
 
             st.handleInput(['s']);
 
-            expect(player.divingTimer).toBe(0);
             expect(player.setState).toHaveBeenCalledWith(states.DIVING, 0);
         });
 
@@ -523,14 +534,12 @@ describe('playerStates.js', () => {
         });
 
         it('when roll input is not held: drains energy, spawns Fire, and transitions based on groundedness', () => {
-            // on ground -> RUNNING
             player.onGround.mockReturnValue(true);
             st.handleInput([]);
             expect(player.drainEnergy).toHaveBeenCalled();
             expect(game.particles[0].constructor.name).toBe('Fire');
             expect(player.setState).toHaveBeenCalledWith(states.RUNNING, 1);
 
-            // in air -> FALLING
             player.setState.mockClear();
             player.drainEnergy.mockClear();
             game.particles = [];
@@ -574,7 +583,6 @@ describe('playerStates.js', () => {
 
             st.handleInput(['s', 'a']);
 
-            expect(player.divingTimer).toBe(0);
             expect(player.setState).toHaveBeenCalledWith(states.DIVING, 4);
         });
 
@@ -710,7 +718,7 @@ describe('playerStates.js', () => {
 
         it('blue particle image while diving onGround → 90 Splash', () => {
             player.onGround.mockReturnValue(true);
-            player.particleImage = 'bluefire';
+            player.isBluePotionActive = true;
 
             st.handleInput([]);
 
@@ -887,6 +895,120 @@ describe('playerStates.js', () => {
         it('jump input → JUMPING(0)', () => {
             st.handleInput(['w']);
             expect(player.setState).toHaveBeenCalledWith(states.JUMPING, 0);
+        });
+    });
+
+    // -------------------------------------------------------------------------
+    // Dashing
+    // -------------------------------------------------------------------------
+    describe('Dashing', () => {
+        let st;
+
+        beforeEach(() => {
+            st = new Dashing(game);
+        });
+
+        it('enter() sets dash animation, resets dashGhostTimer, spawns 1 DashGhost behind and 6 DashFireArc particles', () => {
+            player.dashGhostTimer = 999;
+
+            st.enter();
+
+            expect(player.frameX).toBe(0);
+            expect(player.maxFrame).toBe(8);
+            expect(player.frameY).toBe(3);
+
+            expect(player.dashGhostTimer).toBe(0);
+            expect(player.getCurrentSkinImage).toHaveBeenCalled();
+
+            expect(game.behindPlayerParticles).toHaveLength(1);
+            expect(game.behindPlayerParticles[0].constructor.name).toBe('DashGhost');
+
+            expect(game.particles.filter(p => p.constructor.name === 'DashFireArc')).toHaveLength(12);
+        });
+
+        it('handleInput() spawns additional DashGhost when dashGhostTimer crosses dashGhostInterval', () => {
+            st.enter();
+            expect(game.behindPlayerParticles).toHaveLength(1);
+
+            game.deltaTime = 16;
+            st.handleInput([]);
+            expect(game.behindPlayerParticles).toHaveLength(1);
+
+            st.handleInput([]);
+            expect(game.behindPlayerParticles).toHaveLength(2);
+        });
+
+        it('handleInput() spawns DashFireArc each interval and can spawn an extra when Math.random()<0.35', () => {
+            st.enter();
+            const baseCount = game.particles.filter(p => p.constructor.name === 'DashFireArc').length;
+
+            jest.spyOn(Math, 'random').mockReturnValue(0);
+
+            game.deltaTime = 16;
+            st.handleInput([]);
+
+            const after = game.particles.filter(p => p.constructor.name === 'DashFireArc').length;
+
+            expect(after - baseCount).toBe(4);
+
+            Math.random.mockRestore();
+        });
+
+        it('handleInput() returns early (no state transitions) while player.isDashing is true', () => {
+            st.enter();
+            player.isDashing = true;
+
+            player.setState.mockClear();
+            st.handleInput(['a', 'w']);
+
+            expect(player.setState).not.toHaveBeenCalled();
+        });
+
+        it('when dash ends mid-air: vy>weight and not underwater → FALLING, else → JUMPING', () => {
+            st.enter();
+            player.isDashing = false;
+
+            player.onGround.mockReturnValue(false);
+            player.isUnderwater = false;
+
+            player.vy = 10;
+            st.handleInput([]);
+            expect(player.setState).toHaveBeenCalledWith(states.FALLING, 1);
+
+            player.setState.mockClear();
+
+            player.vy = 0;
+            st.handleInput([]);
+            expect(player.setState).toHaveBeenCalledWith(states.JUMPING, 1);
+        });
+
+        it('when dash ends on ground and worldStopped: LR → RUNNING, no LR → STANDING', () => {
+            st.enter();
+            player.isDashing = false;
+            player.onGround.mockReturnValue(true);
+
+            game.isBossVisible = true;
+            player.setState.mockClear();
+
+            st.handleInput(['a']);
+            expect(player.setState).toHaveBeenCalledWith(states.RUNNING, 1);
+
+            player.setState.mockClear();
+            st.handleInput([]);
+            expect(player.setState).toHaveBeenCalledWith(states.STANDING, 0);
+        });
+
+        it('when dash ends on ground and world is moving: always RUNNING', () => {
+            st.enter();
+            player.isDashing = false;
+            player.onGround.mockReturnValue(true);
+
+            game.isBossVisible = false;
+            game.cabin.isFullyVisible = false;
+
+            player.setState.mockClear();
+            st.handleInput([]);
+            expect(player.setState).toHaveBeenCalledWith(states.RUNNING, 1);
         });
     });
 

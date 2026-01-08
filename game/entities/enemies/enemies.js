@@ -1241,7 +1241,7 @@ export class RockProjectile extends Projectile {
 export class Goblin extends MovingGroundEnemy {
     constructor(game) {
         super(game, 60.083, 80, 11, 'goblinRun');
-        this.lives = 3;
+        this.lives = 1;
         this.dealsDirectHitDamage = false;
 
         this.walkFps = 60;

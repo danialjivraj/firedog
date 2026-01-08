@@ -12,6 +12,7 @@ export class ControlsSettingsMenu extends BaseMenu {
             'diveAttack',
             'fireballAttack',
             'invisibleDefense',
+            'dashAttack',
             'Reset to Defaults',
             'Go Back',
         ];
@@ -31,6 +32,7 @@ export class ControlsSettingsMenu extends BaseMenu {
             diveAttack: 'Dive Attack',
             fireballAttack: 'Fireball Attack',
             invisibleDefense: 'Invisible Defense',
+            dashAttack: 'Dash Attack',
         };
 
         if (!this.game.keyBindings) {

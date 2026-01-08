@@ -1,5 +1,3 @@
-import { Elyvorg } from "../entities/enemies/elyvorg.js";
-
 export class UI {
     constructor(game) {
         this.game = game;
@@ -8,13 +6,12 @@ export class UI {
         this.barWidth = 500;
 
         this.livesImage = document.getElementById('firedogHead');
+
         this.fireballUI = document.getElementById('fireballUI');
-        this.fireballUIWhiteBorder = document.getElementById('fireballUIWhiteBorder');
         this.fireballRedPotionUI = document.getElementById('fireballRedPotionUI');
         this.divingUI = document.getElementById('divingUI');
-        this.divingUIWhiteBorder = document.getElementById('divingUIWhiteBorder');
         this.invisibleUI = document.getElementById('invisibleUI');
-        this.invisibleUIWhiteBorder = document.getElementById('invisibleUIWhiteBorder');
+        this.dashingUI = document.getElementById('dashingUI');
 
         this.secondsLeft = 60000;
         this.secondsLeftActivated = false;
@@ -84,6 +81,15 @@ export class UI {
         this.energy(context);
 
         // lives
+        this.drawLives(context);
+
+        context.restore();
+
+        // abilities
+        this.firedogAbilityUI(context);
+    }
+
+    drawLives(context) {
         const now = this.getUiTime();
 
         const prev = this.prevLives;
@@ -183,11 +189,6 @@ export class UI {
         if (now >= this.lifeBlinkEndTime) {
             this.lifeBlinkIndex = -1;
         }
-
-        context.restore();
-
-        // abilities
-        this.firedogAbilityUI(context);
     }
 
     progressBar(
@@ -296,13 +297,10 @@ export class UI {
 
         if (gate) {
             const gateMinDistance = gate.minDistance ?? 0;
-            if (gateMinDistance > 0) {
-                distanceTarget = gateMinDistance;
-            }
+            if (gateMinDistance > 0) distanceTarget = gateMinDistance;
             minCoins = gate.minCoins ?? 0;
         }
 
-        // distance
         const clampedDistanceTarget = Math.max(1, distanceTarget);
         const traveled = Math.min(totalDist, clampedDistanceTarget);
         const distanceProgress = traveled / clampedDistanceTarget;
@@ -310,15 +308,8 @@ export class UI {
         const pct = Math.min(Math.max(distanceProgress * 100, 0), 100);
         const filledDistance = distanceProgress * this.barWidth;
 
-        this.progressBar(
-            context,
-            pct,
-            filledDistance,
-            this.barWidth,
-            '#2ecc71'
-        );
+        this.progressBar(context, pct, filledDistance, this.barWidth, '#2ecc71');
 
-        // coins
         if (gate && minCoins > 0) {
             const coinsProgress = Math.min(this.game.coins / minCoins, 1);
             if (coinsProgress <= 0) return;
@@ -360,18 +351,8 @@ export class UI {
                 context.beginPath();
                 context.moveTo(barX, stripeY);
                 context.lineTo(rightX - radius, stripeY);
-                context.quadraticCurveTo(
-                    rightX,
-                    stripeY,
-                    rightX,
-                    stripeY + stripeHeight / 2
-                );
-                context.quadraticCurveTo(
-                    rightX,
-                    stripeY + stripeHeight,
-                    rightX - radius,
-                    stripeY + stripeHeight
-                );
+                context.quadraticCurveTo(rightX, stripeY, rightX, stripeY + stripeHeight / 2);
+                context.quadraticCurveTo(rightX, stripeY + stripeHeight, rightX - radius, stripeY + stripeHeight);
                 context.lineTo(barX, stripeY + stripeHeight);
                 context.closePath();
                 context.fill();
@@ -564,6 +545,222 @@ export class UI {
         }
     }
 
+    roundedRectPath(ctx, x, y, w, h, r) {
+        const radius = Math.max(0, Math.min(r, w / 2, h / 2));
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + w - radius, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+        ctx.lineTo(x + w, y + h - radius);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+        ctx.lineTo(x + radius, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+    }
+
+    drawAbilityFrame(ctx, x, y, size, {
+        fill = 'rgba(18, 0, 20, 0.95)',
+        strokeWidth = Math.max(1.5, size * 0.045),
+        radius = size * 0.14,
+        shadowColor = 'rgba(0,0,0,0.65)',
+        shadowBlur = size * 0.14,
+        shadowOffsetX = 0,
+        shadowOffsetY = 0,
+    } = {}) {
+        ctx.save();
+        ctx.shadowColor = shadowColor;
+        ctx.shadowBlur = shadowBlur;
+        ctx.shadowOffsetX = shadowOffsetX;
+        ctx.shadowOffsetY = shadowOffsetY;
+
+        this.roundedRectPath(ctx, x, y, size, size, radius);
+        ctx.fillStyle = fill;
+        ctx.fill();
+        ctx.restore();
+
+        return { strokeWidth, radius };
+    }
+
+    getSpinnerPhase(nowMs, speed = 1.0) {
+        return ((nowMs / 1000) * speed) % 1;
+    }
+
+    strokeRoundedRectSpinner(ctx, x, y, size, radius, color, lineWidth, nowMs, {
+        segments = 120,
+        speed = 0.45,
+        headWidth = 0.18,
+        minAlpha = 0.15,
+        maxAlpha = 1.0,
+        phaseOverride = null,
+    } = {}) {
+        const r = Math.max(0, Math.min(radius, size / 2));
+        const w = size;
+        const h = size;
+
+        const straight = Math.max(0, (w - 2 * r));
+        const cornerArc = Math.PI / 2;
+        const arcLen = r * cornerArc;
+
+        const perim = 2 * straight + 2 * (h - 2 * r) + 4 * arcLen;
+
+        const t = (phaseOverride != null)
+            ? phaseOverride
+            : (((nowMs / 1000) * speed) % 1);
+
+        const pointAt = (s) => {
+            if (s < straight) return { x: x + r + s, y: y };
+            s -= straight;
+
+            if (s < arcLen) {
+                const u = s / arcLen;
+                const ang = (-Math.PI / 2) + u * (Math.PI / 2);
+                return { x: x + w - r + Math.cos(ang) * r, y: y + r + Math.sin(ang) * r };
+            }
+            s -= arcLen;
+
+            const vLen = Math.max(0, h - 2 * r);
+            if (s < vLen) return { x: x + w, y: y + r + s };
+            s -= vLen;
+
+            if (s < arcLen) {
+                const u = s / arcLen;
+                const ang = 0 + u * (Math.PI / 2);
+                return { x: x + w - r + Math.cos(ang) * r, y: y + h - r + Math.sin(ang) * r };
+            }
+            s -= arcLen;
+
+            if (s < straight) return { x: x + w - r - s, y: y + h };
+            s -= straight;
+
+            if (s < arcLen) {
+                const u = s / arcLen;
+                const ang = (Math.PI / 2) + u * (Math.PI / 2);
+                return { x: x + r + Math.cos(ang) * r, y: y + h - r + Math.sin(ang) * r };
+            }
+            s -= arcLen;
+
+            if (s < vLen) return { x: x, y: y + h - r - s };
+            s -= vLen;
+
+            const u = arcLen > 0 ? (s / arcLen) : 0;
+            const ang = Math.PI + u * (Math.PI / 2);
+            return { x: x + r + Math.cos(ang) * r, y: y + r + Math.sin(ang) * r };
+        };
+
+        ctx.save();
+        ctx.lineWidth = lineWidth;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+
+        for (let i = 0; i < segments; i++) {
+            const p0 = (i / segments) * perim;
+            const p1 = ((i + 1) / segments) * perim;
+
+            const u = i / segments;
+            let d = u - t;
+            d = ((d % 1) + 1) % 1;
+
+            let a;
+            if (d <= headWidth) {
+                const k = 1 - (d / headWidth);
+                a = minAlpha + (maxAlpha - minAlpha) * (k * k);
+            } else {
+                a = minAlpha;
+            }
+
+            ctx.strokeStyle = color;
+            ctx.globalAlpha = a;
+
+            const A = pointAt(p0);
+            const B = pointAt(p1);
+
+            ctx.beginPath();
+            ctx.moveTo(A.x, A.y);
+            ctx.lineTo(B.x, B.y);
+            ctx.stroke();
+        }
+
+        ctx.restore();
+    }
+
+    drawAbilityIcon(ctx, img, x, y, size, {
+        borderColor = 'black',
+        fill = 'rgba(18, 0, 20, 0.95)',
+        contentScale = 0.9,
+        radius = size * 0.14,
+        strokeWidth = Math.max(1.5, size * 0.045),
+        insetUnderBorder = 0,
+
+        animatedBorder = false,
+        animatedColor = 'red',
+        animatedNowMs = 0,
+        animatedSettings = null,
+
+        contentFilter = null,
+    } = {}) {
+        const frame = this.drawAbilityFrame(ctx, x, y, size, { fill, radius, strokeWidth });
+
+        const half = frame.strokeWidth / 2;
+        const clipX = x + half;
+        const clipY = y + half;
+        const clipSize = size - half * 2;
+
+        ctx.save();
+        this.roundedRectPath(ctx, clipX, clipY, clipSize, clipSize, Math.max(0, frame.radius - half));
+        ctx.clip();
+
+        const inner = size * contentScale;
+        const pad = (size - inner) / 2 + insetUnderBorder;
+
+        const prevFilter = ctx.filter;
+        if (contentFilter) ctx.filter = contentFilter;
+
+        ctx.drawImage(
+            img,
+            x + pad,
+            y + pad,
+            inner - insetUnderBorder * 2,
+            inner - insetUnderBorder * 2
+        );
+
+        ctx.filter = prevFilter;
+        ctx.restore();
+
+        if (animatedBorder) {
+            this.strokeRoundedRectSpinner(
+                ctx,
+                x,
+                y,
+                size,
+                frame.radius,
+                animatedColor,
+                frame.strokeWidth,
+                animatedNowMs,
+                animatedSettings || {
+                    segments: 140,
+                    speed: 0.55,
+                    headWidth: 0.22,
+                    minAlpha: 0.12,
+                    maxAlpha: 1.0,
+                }
+            );
+        } else {
+            ctx.save();
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = 1;
+            ctx.lineWidth = frame.strokeWidth;
+            ctx.strokeStyle = borderColor;
+            this.roundedRectPath(ctx, x, y, size, size, frame.radius);
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+
     firedogAbilityUI(context) {
         const maxTextWidth = 50;
         const firedogBorderSize = 50;
@@ -572,49 +769,95 @@ export class UI {
 
         const player = this.game.player;
         const frozen = !!player.isFrozen;
+        const hitOrStunned =
+            player.currentState === player.states[6] || // stunned
+            player.currentState === player.states[7];   // hit
 
-        const fireballImage = player.isDarkWhiteBorder ? this.fireballUIWhiteBorder : this.fireballUI;
-        const divingImage = player.isDarkWhiteBorder ? this.divingUIWhiteBorder : this.divingUI;
-        const invisibleImage = player.isDarkWhiteBorder ? this.invisibleUIWhiteBorder : this.invisibleUI;
+
+        const borderColor = player.isDarkWhiteBorder ? 'white' : 'black';
+
+        const fireballImage = this.fireballUI;
+        const divingImage = this.divingUI;
+        const invisibleImage = this.invisibleUI;
+        const dashImage = this.dashingUI;
+
+        const nowMs = this.getUiTime();
+        const sharedPhase = this.getSpinnerPhase(nowMs, 0.9);
+
+        const lockContentFilter = 'grayscale(100%)';
 
         // diving ability
         const divingX = 25;
-        const divingLocked = frozen || player.divingTimer < player.divingCooldown;
+        const divingLocked = frozen || hitOrStunned || player.divingTimer < player.divingCooldown;
+        const divingActive = !frozen && player.currentState === player.states[5];
 
-        if (divingLocked) {
-            context.save();
-            context.filter = 'grayscale(100%)';
+        if (divingActive) {
+            this.drawAbilityIcon(context, divingImage, divingX, yPosition, firedogBorderSize, {
+                borderColor,
+                contentFilter: divingLocked ? lockContentFilter : null,
+                animatedBorder: true,
+                animatedColor: 'deepskyblue',
+                animatedNowMs: nowMs,
+                animatedSettings: {
+                    segments: 140,
+                    speed: 0.9,
+                    headWidth: 0.18,
+                    minAlpha: 0.10,
+                    maxAlpha: 1.0,
+                    phaseOverride: sharedPhase,
+                }
+            });
+        } else {
+            this.drawAbilityIcon(context, divingImage, divingX, yPosition, firedogBorderSize, {
+                borderColor,
+                contentFilter: divingLocked ? lockContentFilter : null,
+            });
         }
-        context.drawImage(divingImage, divingX, yPosition, firedogBorderSize, firedogBorderSize);
 
-        if (divingLocked) {
+        if (player.divingTimer < player.divingCooldown) {
+            const divingCooldown = Math.max(0, player.divingCooldown - player.divingTimer) / 1000;
+            const countdownText = divingCooldown.toFixed(1);
+
+            context.save();
+            context.fillStyle = 'white';
+            context.shadowColor = 'black';
+            context.shadowBlur = 4;
+            context.font = 'bold 20px Arial';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+
+            const cx = divingX + firedogBorderSize / 2;
+            const cy = yPosition + firedogBorderSize / 2;
+
+            context.fillText(countdownText, cx, cy);
             context.restore();
-
-            if (!frozen && player.divingTimer < player.divingCooldown) {
-                const divingCooldown = Math.max(0, player.divingCooldown - player.divingTimer) / 1000;
-                const countdownText = divingCooldown.toFixed(1);
-                const textX = divingX + (firedogBorderSize - maxTextWidth) / 2 + 10;
-                const textY = yPosition + (50 - 16) / 2 + 16;
-                context.fillStyle = 'white';
-                context.font = 'bold 20px Arial';
-                context.fillText(countdownText, textX, textY);
-            }
         }
 
         // fireball ability
         const fireballX = divingX + firedogBorderSize + spaceBetweenAbilities;
         const fireballLocked =
             frozen ||
+            hitOrStunned ||
             player.fireballTimer < player.fireballCooldown ||
             player.energyReachedZero;
 
-        if (fireballLocked) {
-            context.save();
-            context.filter = 'grayscale(100%)';
-        }
-
         if (player.isRedPotionActive) {
-            context.drawImage(this.fireballRedPotionUI, fireballX, yPosition, firedogBorderSize, firedogBorderSize);
+            this.drawAbilityIcon(context, this.fireballRedPotionUI, fireballX, yPosition, firedogBorderSize, {
+                borderColor: 'red',
+                contentFilter: fireballLocked ? lockContentFilter : null,
+                animatedBorder: true,
+                animatedColor: 'red',
+                animatedNowMs: nowMs,
+                animatedSettings: {
+                    segments: 140,
+                    speed: 0.55,
+                    headWidth: 0.22,
+                    minAlpha: 0.12,
+                    maxAlpha: 1.0,
+                    phaseOverride: sharedPhase,
+                }
+            });
+
             context.save();
             const redPotionTimerX = fireballX + firedogBorderSize / 2;
             const redPotionTimerY = yPosition + 70;
@@ -627,57 +870,178 @@ export class UI {
             context.fillText(redPotionCountdownText, redPotionTimerX, redPotionTimerY);
             context.restore();
         } else {
-            context.drawImage(fireballImage, fireballX, yPosition, firedogBorderSize, firedogBorderSize);
+            this.drawAbilityIcon(context, fireballImage, fireballX, yPosition, firedogBorderSize, {
+                borderColor,
+                contentFilter: fireballLocked ? lockContentFilter : null,
+            });
         }
 
-        if (fireballLocked) {
-            context.restore();
-
-            if (!frozen && player.fireballTimer < player.fireballCooldown) {
-                const fireballCooldown =
-                    Math.max(0, player.fireballCooldown - player.fireballTimer) / 1000;
-                const countdownText = fireballCooldown.toFixed(1);
-                const textX = fireballX + (firedogBorderSize - maxTextWidth) / 2 + 10;
-                const textY = yPosition + (50 - 16) / 2 + 16;
-                context.fillStyle = 'white';
-                context.font = 'bold 20px Arial';
-                context.fillText(countdownText, textX, textY);
-            }
+        if (player.fireballTimer < player.fireballCooldown) {
+            const fireballCooldown = Math.max(0, player.fireballCooldown - player.fireballTimer) / 1000;
+            const countdownText = fireballCooldown.toFixed(1);
+            const textX = fireballX + (firedogBorderSize - maxTextWidth) / 2 + 10;
+            const textY = yPosition + (50 - 16) / 2 + 16;
+            context.fillStyle = 'white';
+            context.font = 'bold 20px Arial';
+            context.fillText(countdownText, textX, textY);
         }
 
         // invisible ability
         const invisibleX = fireballX + firedogBorderSize + spaceBetweenAbilities;
-        if (player.invisibleTimer < player.invisibleCooldown) {
-            context.save();
-            context.filter = 'grayscale(100%)';
+        const invisibleLocked = !player.isInvisible && (player.invisibleTimer < player.invisibleCooldown);
+
+        const invisibleActive = !!player.isInvisible && (player.invisibleActiveCooldownTimer > 0);
+
+        if (invisibleActive) {
+            this.drawAbilityIcon(context, invisibleImage, invisibleX, yPosition, firedogBorderSize, {
+                borderColor,
+                contentFilter: invisibleLocked ? lockContentFilter : null,
+                animatedBorder: true,
+                animatedColor: 'deepskyblue',
+                animatedNowMs: nowMs,
+                animatedSettings: {
+                    segments: 140,
+                    speed: 0.9,
+                    headWidth: 0.18,
+                    minAlpha: 0.10,
+                    maxAlpha: 1.0,
+                    phaseOverride: sharedPhase,
+                }
+            });
+        } else {
+            this.drawAbilityIcon(context, invisibleImage, invisibleX, yPosition, firedogBorderSize, {
+                borderColor,
+                contentFilter: invisibleLocked ? lockContentFilter : null,
+            });
         }
-        context.drawImage(invisibleImage, invisibleX, yPosition, firedogBorderSize, firedogBorderSize);
+
         const invisibleTimerX = invisibleX + firedogBorderSize / 2;
         const invisibleTimerY = yPosition + 70;
-        const invisibleCooldown = Math.max(0, player.invisibleActiveCooldownTimer) / 1000;
-        const invisibleCountdownText = invisibleCooldown.toFixed(1);
+        const invisibleCooldownSec = Math.max(0, player.invisibleActiveCooldownTimer) / 1000;
+        const invisibleCountdownText = invisibleCooldownSec.toFixed(1);
+
         if (player.isInvisible) {
+            context.save();
             context.fillStyle = 'white';
             context.shadowColor = 'black';
             context.font = 'bold 21px Arial';
             context.textAlign = 'center';
             context.fillText(invisibleCountdownText, invisibleTimerX, invisibleTimerY);
-        }
-        if (player.invisibleTimer < player.invisibleCooldown) {
             context.restore();
+        }
+
+        if (invisibleLocked) {
             const invisibleCooldownRemaining =
                 Math.max(0, player.invisibleCooldown - player.invisibleTimer) / 1000;
+
             const countdownText = invisibleCooldownRemaining.toFixed(1);
-            let textXActive;
-            if (player.invisibleTimer <= 30050) {
-                textXActive = 150.537109375;
-            } else {
-                textXActive = 156.0986328125;
-            }
-            const textY = yPosition + (firedogBorderSize - 16) / 2 + 16;
+
+            context.save();
             context.fillStyle = 'white';
+            context.shadowColor = 'black';
+            context.shadowBlur = 4;
             context.font = 'bold 20px Arial';
-            context.fillText(countdownText, textXActive, textY);
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+
+            const cx = invisibleX + firedogBorderSize / 2;
+            const cy = yPosition + firedogBorderSize / 2;
+
+            context.fillText(countdownText, cx, cy);
+            context.restore();
+        }
+
+        // dash ability
+        const dashX = invisibleX + firedogBorderSize + spaceBetweenAbilities;
+
+        const dashShortOnCooldown =
+            (player.dashBetweenTimer ?? (player.dashBetweenCooldown ?? 0)) <
+            (player.dashBetweenCooldown ?? 0);
+
+        const dashOnCooldown = player.dashTimer < player.dashCooldown;
+        const dashNoCharges = (player.dashCharges ?? 0) <= 0;
+        const dashNoEnergy = !!player.energyReachedZero;
+
+        const dashLocked = frozen || hitOrStunned || dashNoEnergy || dashShortOnCooldown || dashOnCooldown || dashNoCharges;
+
+        const dashWindowActive = player.dashAwaitingSecond && !dashOnCooldown;
+
+        if (dashWindowActive) {
+            this.drawAbilityIcon(context, dashImage, dashX, yPosition, firedogBorderSize, {
+                borderColor,
+                contentFilter: dashLocked ? lockContentFilter : null,
+                animatedBorder: true,
+                animatedColor: 'deepskyblue',
+                animatedNowMs: nowMs,
+                animatedSettings: {
+                    segments: 140,
+                    speed: 0.9,
+                    headWidth: 0.18,
+                    minAlpha: 0.10,
+                    maxAlpha: 1.0,
+                    phaseOverride: sharedPhase,
+                }
+            });
+        } else {
+            this.drawAbilityIcon(context, dashImage, dashX, yPosition, firedogBorderSize, {
+                borderColor,
+                contentFilter: dashLocked ? lockContentFilter : null,
+            });
+        }
+
+        if (dashLocked) {
+            let remainingSec = null;
+
+            if (dashOnCooldown) {
+                remainingSec = Math.max(0, player.dashCooldown - player.dashTimer) / 1000;
+            } else if (dashShortOnCooldown) {
+                remainingSec = Math.max(
+                    0,
+                    (player.dashBetweenCooldown ?? 0) - (player.dashBetweenTimer ?? 0)
+                ) / 1000;
+            }
+
+            if (remainingSec != null) {
+                const countdownText = remainingSec.toFixed(1);
+
+                context.save();
+                context.fillStyle = 'white';
+                context.font = 'bold 20px Arial';
+                context.shadowColor = 'black';
+                context.shadowBlur = 4;
+                context.textAlign = 'center';
+                context.textBaseline = 'middle';
+
+                const cx = dashX + firedogBorderSize / 2;
+                const cy = yPosition + firedogBorderSize / 2;
+
+                context.fillText(countdownText, cx, cy);
+                context.restore();
+            }
+        }
+
+        if (player.dashAwaitingSecond && !dashOnCooldown) {
+            const windowLeft = Math.max(0, (player.dashSecondWindowTimer ?? 0)) / 1000;
+            const windowText = windowLeft.toFixed(1);
+
+            context.save();
+            context.fillStyle = 'white';
+            context.shadowColor = 'black';
+            context.font = 'bold 21px Arial';
+            context.textAlign = 'center';
+            context.fillText(windowText, dashX + firedogBorderSize / 2, yPosition + 70);
+            context.restore();
+        }
+
+        if (!dashOnCooldown) {
+            const charges = player.dashCharges ?? 0;
+            context.save();
+            context.fillStyle = 'white';
+            context.shadowColor = 'black';
+            context.font = 'bold 16px Arial';
+            context.textAlign = 'right';
+            context.fillText(String(charges), dashX + firedogBorderSize - 4, yPosition + 16);
+            context.restore();
         }
     }
 }
