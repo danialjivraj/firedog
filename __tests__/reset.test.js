@@ -43,6 +43,21 @@ describe('Reset', () => {
             isEndCutscene: true,
             endCutscene: jest.fn(),
 
+            clearCutsceneState: jest.fn(function () {
+                this.cutsceneActive = false;
+                this.currentCutscene = null;
+                this.isEndCutscene = false;
+                this.pauseContext = 'gameplay';
+                this.currentMenu = null;
+                this.cutscenes = [];
+
+                if (this.input) {
+                    this.input.keys = [];
+                    this.input.arrowUpPressed = false;
+                    this.input.arrowDownPressed = false;
+                }
+            }),
+
             // tutorial
             tutorial: { elapsedTime: 10, currentStepIndex: 2, tutorialPause: false },
 
@@ -80,6 +95,8 @@ describe('Reset', () => {
                 collisionSFX: { stopAllSounds: jest.fn() },
                 powerUpAndDownSFX: { stopAllSounds: jest.fn() },
                 cutsceneMusic: { stopAllSounds: jest.fn() },
+                cutsceneSFX: { stopAllSounds: jest.fn() },
+                cutsceneDialogue: { stopAllSounds: jest.fn() },
             },
 
             // collections

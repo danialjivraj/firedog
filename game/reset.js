@@ -50,6 +50,8 @@ export class Reset {
         this.game.audioHandler.collisionSFX.stopAllSounds();
         this.game.audioHandler.powerUpAndDownSFX.stopAllSounds();
         this.game.audioHandler.cutsceneMusic.stopAllSounds();
+        this.game.audioHandler.cutsceneSFX.stopAllSounds();
+        this.game.audioHandler.cutsceneDialogue.stopAllSounds();
         // arrays
         this.game.enemies = [];
         this.game.behindPlayerParticles = [];
@@ -60,12 +62,8 @@ export class Reset {
         this.game.powerDowns = [];
         this.game.cabins = [];
         this.game.penguins = [];
-        this.game.cutsceneActive = false;
-        this.game.currentCutscene = null;
-        this.game.isEndCutscene = false;
-        this.game.pauseContext = 'gameplay';
-        this.game.cutscenes = [];
-        this.game.input.keys = [];
+        // cutscene
+        this.game.clearCutsceneState();
         // cabin
         this.game.cabinAppeared = false;
         this.game.cabin.isFullyVisible = false;

@@ -311,6 +311,21 @@ export class Game {
         }
     }
 
+    clearCutsceneState() {
+    this.cutsceneActive = false;
+    this.currentCutscene = null;
+    this.isEndCutscene = false;
+    this.pauseContext = 'gameplay';
+    this.currentMenu = null;
+    this.cutscenes = [];
+
+    if (this.input) {
+        this.input.keys = [];
+        this.input.arrowUpPressed = false;
+        this.input.arrowDownPressed = false;
+    }
+    }
+
     restartActiveCutscene() {
         const cs = this.currentCutscene;
         if (!cs) return;
