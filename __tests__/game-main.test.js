@@ -153,11 +153,11 @@ describe('Game class (game-main.js)', () => {
       <!-- BonusMap1 -->
       <img id="bonusMap1Background">
       <img id="bonusMap1IceRings">
-      <img id="bonusMap2BigIceCrystal">
+      <img id="bonusMap1BigIceCrystal">
       <img id="bonusMap1IceRocks1">
       <img id="bonusMap1IceRocks2">
-      <img id="bonusMap2TopIcicles">
-      <img id="bonusMap2IceSpikes">
+      <img id="bonusMap1TopIcicles">
+      <img id="bonusMap1IceSpikes">
       <img id="bonusMap1Ground">
 
       <!-- BonusMap2 -->

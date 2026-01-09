@@ -23,6 +23,11 @@ const createBaseGame = () => {
         enterDuringBackgroundTransition: true,
         canvas: {},
 
+        background: {
+            resetLayersByImageIds: jest.fn(),
+            totalDistanceTraveled: 100,
+        },
+
         audioHandler: {
             cutsceneSFX: { playSound: noop, stopAllSounds: noop },
             cutsceneDialogue: { playSound: noop, stopAllSounds: noop },
@@ -39,7 +44,6 @@ const createBaseGame = () => {
         },
 
         input: { keys: ['a'] },
-        background: { totalDistanceTraveled: 100 },
         maxDistance: 0,
 
         endCutscene: jest.fn(),

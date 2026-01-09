@@ -44,6 +44,21 @@ export class GlacikalCutscene extends Cutscene {
         };
     }
 
+    _beginGlacikalBattle(boss) {
+        this.game.background.resetLayersByImageIds([
+            "bonusMap1IceRings",
+            "bonusMap1BigIceCrystal",
+        ]);
+
+        this.game.endCutscene();
+        boss.talkToBoss = false;
+        boss.preFight = false;
+        boss.inFight = true;
+        boss.progressComplete = true;
+        this.game.cutscenes = [];
+        this.game.audioHandler.mapSoundtrack.playSound("elyvorgBattleTheme", true);
+    }
+
     enterOrLeftClick() {
         const boss = this.game.boss;
 
@@ -62,10 +77,9 @@ export class GlacikalCutscene extends Cutscene {
             this.pause = false;
             this.textIndex++;
             this.continueDialogue = false;
-
         } else if (this.textIndex < dlg.length) {
             const dotIndices = this.getDotIndices(dlg);
-            const nextDotIndex = dotIndices.find(idx => idx > this.textIndex);
+            const nextDotIndex = dotIndices.find((idx) => idx > this.textIndex);
 
             if (nextDotIndex !== undefined) {
                 this.textIndex = this.ellipsisFollowedOnlyByTerminalPunct(dlg, nextDotIndex)
@@ -74,7 +88,6 @@ export class GlacikalCutscene extends Cutscene {
             } else {
                 this.textIndex = dlg.length;
             }
-
         } else if (this.dialogueIndex < this.dialogue.length - 1) {
             this.dialogueIndex++;
             this.textIndex = 0;
@@ -84,7 +97,6 @@ export class GlacikalCutscene extends Cutscene {
             const words = this.splitDialogueIntoWords(currentDialogue.dialogue);
             this.fullWordsColor = [];
             this.fullWordsColor = words;
-
         } else {
             if (boss && boss.current && boss.id === "glacikal") {
                 if (boss.preFight) {
@@ -109,13 +121,7 @@ export class GlacikalCutscene extends Cutscene {
         this.game.audioHandler.cutsceneSFX.playSound("battleStarting");
 
         setTimeout(() => {
-            this.game.endCutscene();
-            boss.talkToBoss = false;
-            boss.preFight = false;
-            boss.inFight = true;
-            boss.progressComplete = true;
-            this.game.cutscenes = [];
-            this.game.audioHandler.mapSoundtrack.playSound("elyvorgBattleTheme", true);
+            this._beginGlacikalBattle(boss);
         }, 3000);
     }
 
@@ -166,6 +172,7 @@ export class GlacikalCutscene extends Cutscene {
             }
 
             if (event.key === "Tab" && this.game.enterDuringBackgroundTransition) {
+                event.preventDefault?.();
                 if (boss && boss.current && boss.id === "glacikal" && boss.preFight) {
                     this.skipPreFightAndStartBattle(boss);
                 }
@@ -205,13 +212,7 @@ export class GlacikalCutscene extends Cutscene {
 
         setTimeout(() => {
             this.dialogueIndex = this.dialogue.length - 1;
-            this.game.endCutscene();
-            boss.talkToBoss = false;
-            boss.preFight = false;
-            boss.inFight = true;
-            boss.progressComplete = true;
-            this.game.cutscenes = [];
-            this.game.audioHandler.mapSoundtrack.playSound("elyvorgBattleTheme", true);
+            this._beginGlacikalBattle(boss);
         }, 3000);
     }
 
@@ -219,10 +220,7 @@ export class GlacikalCutscene extends Cutscene {
         const boss = this.game.boss;
         const isGlacikal = boss && boss.current && boss.id === "glacikal";
 
-        const mode = isGlacikal && boss.preFight
-            ? "pre"
-            : (isGlacikal && boss.postFight ? "post" : null);
-
+        const mode = isGlacikal && boss.preFight ? "pre" : isGlacikal && boss.postFight ? "post" : null;
         if (!mode) return undefined;
 
         const table = this.actions[mode];

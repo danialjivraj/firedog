@@ -1,5 +1,5 @@
 export class Layer {
-    constructor(game, bgSpeed, imageOrImages) {
+    constructor(game, bgSpeed, imageOrImages, meta = {}) {
         this.game = game;
         this.bgSpeed = bgSpeed;
 
@@ -10,6 +10,27 @@ export class Layer {
         this.y = 0;
         this.groundSpeed = 0;
         this.isRaining = false;
+
+        this.imageIds = Array.isArray(meta.imageIds)
+            ? meta.imageIds
+            : (meta.imageIds ? [meta.imageIds] : []);
+
+        this.defaultX = this.x;
+        this.defaultY = this.y;
+        this.defaultSequenceIndex = this.sequenceIndex;
+    }
+
+    captureDefaults() {
+        this.defaultX = this.x;
+        this.defaultY = this.y;
+        this.defaultSequenceIndex = this.sequenceIndex;
+    }
+
+    resetToDefaults() {
+        this.x = this.defaultX ?? 0;
+        this.y = this.defaultY ?? 0;
+        this.sequenceIndex = this.defaultSequenceIndex ?? 0;
+        this.groundSpeed = 0;
     }
 
     _nextIndex() {
@@ -154,8 +175,22 @@ export class Background {
                 );
             }
 
-            return new Layer(this.game, item.bgSpeed, images);
+            return new Layer(this.game, item.bgSpeed, images, { imageIds: ids });
         });
+    }
+
+    resetLayersByImageIds(imageIds) {
+        if (!Array.isArray(imageIds)) imageIds = [imageIds];
+        const target = new Set(imageIds);
+
+        for (const layer of this.backgroundLayers) {
+            if (!layer || !Array.isArray(layer.imageIds) || layer.imageIds.length === 0) continue;
+
+            const matches = layer.imageIds.some((id) => target.has(id));
+            if (matches && typeof layer.resetToDefaults === "function") {
+                layer.resetToDefaults();
+            }
+        }
     }
 
     update(deltaTime) {
@@ -471,12 +506,12 @@ export class BonusMap1 extends Background {
             snowBack,
             { imageId: 'bonusMap1Background', bgSpeed: 0 },
             { imageId: 'bonusMap1IceRings', bgSpeed: 0.1 },
-            { imageId: 'bonusMap2BigIceCrystal', bgSpeed: 0.2 },
+            { imageId: 'bonusMap1BigIceCrystal', bgSpeed: 0.2 },
             snowMid,
             { imageId: 'bonusMap1IceRocks1', bgSpeed: 0.3 },
             { imageId: 'bonusMap1IceRocks2', bgSpeed: 0.4 },
-            { imageId: 'bonusMap2TopIcicles', bgSpeed: 0.95 },
-            { imageId: 'bonusMap2IceSpikes', bgSpeed: 1 },
+            { imageId: 'bonusMap1TopIcicles', bgSpeed: 0.95 },
+            { imageId: 'bonusMap1IceSpikes', bgSpeed: 1 },
             { imageId: 'bonusMap1Ground', bgSpeed: 1 },
             snowFront,
         );

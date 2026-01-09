@@ -44,6 +44,20 @@ export class NTharaxCutscene extends Cutscene {
         };
     }
 
+    _beginNTharaxBattle(boss) {
+        this.game.background.resetLayersByImageIds([
+            "bonusMap3Planets",
+        ]);
+
+        this.game.endCutscene();
+        boss.talkToBoss = false;
+        boss.preFight = false;
+        boss.inFight = true;
+        boss.progressComplete = true;
+        this.game.cutscenes = [];
+        this.game.audioHandler.mapSoundtrack.playSound("ntharaxBattleTheme", true);
+    }
+
     enterOrLeftClick() {
         const boss = this.game.boss;
 
@@ -65,7 +79,7 @@ export class NTharaxCutscene extends Cutscene {
 
         } else if (this.textIndex < dlg.length) {
             const dotIndices = this.getDotIndices(dlg);
-            const nextDotIndex = dotIndices.find(idx => idx > this.textIndex);
+            const nextDotIndex = dotIndices.find((idx) => idx > this.textIndex);
 
             if (nextDotIndex !== undefined) {
                 this.textIndex = this.ellipsisFollowedOnlyByTerminalPunct(dlg, nextDotIndex)
@@ -82,7 +96,6 @@ export class NTharaxCutscene extends Cutscene {
 
             const currentDialogue = this.dialogue[this.dialogueIndex];
             const words = this.splitDialogueIntoWords(currentDialogue.dialogue);
-            this.fullWordsColor = [];
             this.fullWordsColor = words;
 
         } else {
@@ -109,13 +122,7 @@ export class NTharaxCutscene extends Cutscene {
         this.game.audioHandler.cutsceneSFX.playSound("battleStarting");
 
         setTimeout(() => {
-            this.game.endCutscene();
-            boss.talkToBoss = false;
-            boss.preFight = false;
-            boss.inFight = true;
-            boss.progressComplete = true;
-            this.game.cutscenes = [];
-            this.game.audioHandler.mapSoundtrack.playSound("ntharaxBattleTheme", true);
+            this._beginNTharaxBattle(boss);
         }, 3000);
     }
 
@@ -166,6 +173,8 @@ export class NTharaxCutscene extends Cutscene {
             }
 
             if (event.key === "Tab" && this.game.enterDuringBackgroundTransition) {
+                event.preventDefault?.();
+
                 if (boss && boss.current && boss.id === "ntharax" && boss.preFight) {
                     this.skipPreFightAndStartBattle(boss);
                 }
@@ -205,23 +214,17 @@ export class NTharaxCutscene extends Cutscene {
 
         setTimeout(() => {
             this.dialogueIndex = this.dialogue.length - 1;
-            this.game.endCutscene();
-            boss.talkToBoss = false;
-            boss.preFight = false;
-            boss.inFight = true;
-            boss.progressComplete = true;
-            this.game.cutscenes = [];
-            this.game.audioHandler.mapSoundtrack.playSound("ntharaxBattleTheme", true);
+            this._beginNTharaxBattle(boss);
         }, 3000);
     }
 
     resolveCutsceneAction() {
         const boss = this.game.boss;
-        const isGlacikal = boss && boss.current && boss.id === "ntharax";
+        const isNTharax = boss && boss.current && boss.id === "ntharax";
 
-        const mode = isGlacikal && boss.preFight
+        const mode = isNTharax && boss.preFight
             ? "pre"
-            : (isGlacikal && boss.postFight ? "post" : null);
+            : (isNTharax && boss.postFight ? "post" : null);
 
         if (!mode) return undefined;
 
@@ -265,14 +268,14 @@ export class BonusMap3NTharaxIngameCutsceneAfterFight extends NTharaxCutscene {
             `${this.ntharax}`,
             `You're strong.`,
             this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-            this.addImage("ntharaxBorder", 1, 1100, 400, 200, 200),
+            this.addImage('ntharaxBorder', 1, 1100, 400, 200, 200),
         );
 
         this.addDialogue(
             `${this.firedog}`,
             `How do you know my fireball ability? How is this possible?`,
             this.addImage(this.setfiredogNormalBorder(), 1, 100, 400, 200, 200),
-            this.addImage("ntharaxBorder", 0.7, 1100, 400, 200, 200),
+            this.addImage('ntharaxBorder', 0.7, 1100, 400, 200, 200),
         );
     }
 }

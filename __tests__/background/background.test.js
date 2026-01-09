@@ -124,11 +124,11 @@ beforeAll(() => {
         'bonusMap1Background',
         'bonusMap1Ground',
         'bonusMap1IceRings',
-        'bonusMap2BigIceCrystal',
+        'bonusMap1BigIceCrystal',
         'bonusMap1IceRocks1',
         'bonusMap1IceRocks2',
-        'bonusMap2TopIcicles',
-        'bonusMap2IceSpikes',
+        'bonusMap1TopIcicles',
+        'bonusMap1IceSpikes',
         // BonusMap2
         'bonusMap2Background',
         'bonusMap2RedMist',
@@ -487,6 +487,53 @@ describe('Background', () => {
             /Background: no valid images found/
         );
     });
+
+    test('resetLayersByImageIds resets only matching layers (single id string)', () => {
+        const bg = new Background(mockGame, { imageId: 'A', bgSpeed: 1 }, { imageId: 'B', bgSpeed: 0.5 });
+
+        const layerA = bg.backgroundLayers.find(l => Array.isArray(l.imageIds) && l.imageIds.includes('A'));
+        const layerB = bg.backgroundLayers.find(l => Array.isArray(l.imageIds) && l.imageIds.includes('B'));
+
+        layerA.defaultX = 10; layerA.defaultY = 20; layerA.defaultSequenceIndex = 1;
+        layerA.x = 999; layerA.y = 888; layerA.sequenceIndex = 0; layerA.groundSpeed = 123;
+
+        layerB.defaultX = 1; layerB.defaultY = 2; layerB.defaultSequenceIndex = 0;
+        layerB.x = 777; layerB.y = 666; layerB.sequenceIndex = 0; layerB.groundSpeed = 321;
+
+        bg.resetLayersByImageIds('A');
+
+        expect(layerA.x).toBe(10);
+        expect(layerA.y).toBe(20);
+        expect(layerA.sequenceIndex).toBe(1);
+        expect(layerA.groundSpeed).toBe(0);
+
+        expect(layerB.x).toBe(777);
+        expect(layerB.y).toBe(666);
+        expect(layerB.groundSpeed).toBe(321);
+    });
+
+    test('resetLayersByImageIds accepts an array and resets multiple layers', () => {
+        const bg = new Background(mockGame, { imageId: 'A', bgSpeed: 1 }, { imageId: 'B', bgSpeed: 0.5 });
+
+        const layerA = bg.backgroundLayers.find(l => l.imageIds?.includes('A'));
+        const layerB = bg.backgroundLayers.find(l => l.imageIds?.includes('B'));
+
+        layerA.x = 100; layerB.x = 200;
+
+        bg.resetLayersByImageIds(['A', 'B']);
+
+        expect(layerA.x).toBe(0);
+        expect(layerB.x).toBe(0);
+    });
+
+    test('resetLayersByImageIds ignores layers with no imageIds and does not throw', () => {
+        const bg = new Background(mockGame, { imageId: 'A', bgSpeed: 1 });
+
+        bg.backgroundLayers.push({ foo: 'bar' });
+
+        expect(() => bg.resetLayersByImageIds('A')).not.toThrow();
+    });
+
 });
 
 // -----------------------------------------------------------------------------

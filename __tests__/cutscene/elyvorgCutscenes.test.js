@@ -21,6 +21,11 @@ const createBaseGame = () => {
         },
         currentMenu: null,
         enterDuringBackgroundTransition: true,
+
+        background: {
+            resetLayersByImageIds: jest.fn(),
+        },
+
         audioHandler: {
             cutsceneSFX: { playSound: noop, stopAllSounds: noop },
             cutsceneDialogue: { playSound: noop, stopAllSounds: noop },
