@@ -1514,6 +1514,24 @@ export class CollisionLogic {
         this.game.collisions.push(inkSplash);
     }
 
+    // slow methods
+    canBeSlowed(player = this.game.player) {
+        return !player.isInvisible;
+    }
+
+    setSlow(durationMs, player = this.game.player) {
+        if (!this.canBeSlowed(player)) return false;
+
+        player.isSlowed = true;
+        player.slowedTimer = durationMs;
+        return true;
+    }
+
+    tryApplySlow(player = this.game.player, durationMs = 5000) {
+        return this.setSlow(durationMs, player);
+    }
+
+    // poison methods
     canBePoisoned(player = this.game.player) {
         return !player.energyReachedZero && !player.isBluePotionActive;
     }
@@ -1538,7 +1556,6 @@ export class CollisionLogic {
         }
         return this.setPoison(durationMs, player);
     }
-
 
     // ------------------------------------------------------------------
     // Geometry helpers
@@ -1712,6 +1729,36 @@ export class CollisionLogic {
                 return true;
             }
 
+            // slow
+            case enemy instanceof IceBall:
+            case enemy instanceof SpinningIceBalls:
+            case enemy instanceof PointyIcicleShard:
+            case enemy instanceof UndergroundIcicle:
+            case enemy instanceof IceTrail:
+            case enemy instanceof IcyStormBall:
+            case enemy instanceof BlueArrow: {
+                if (enemy instanceof UndergroundIcicle) {
+                    this.game.collisions.push(new UndergroundIcicleCollision(this.game, ex, attackerY, enemy.id));
+                } else if (enemy instanceof SpinningIceBalls) {
+                    this.game.collisions.push(new SpinningIceBallsCollision(this.game, ex, ey, enemy.id));
+                } else if (enemy instanceof PointyIcicleShard) {
+                    this.game.collisions.push(new PointyIcicleShardCollision(this.game, ex, ey, enemy.id));
+                } else if (enemy instanceof IceTrail) {
+                    this.game.collisions.push(new IceTrailCollision(this.game, ex, ey, enemy.id));
+                } else if (enemy instanceof BlueArrow) {
+                    this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
+                } else if (enemy instanceof IcyStormBall) {
+                    this.game.collisions.push(new IcyStormBallCollision(this.game, ex, ey, enemy.id));
+                } else {
+                    if (fallbackToDefault) { // for IceBall
+                        this.bloodOrPoof(enemy, player);
+                    }
+                }
+                this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
+                return true;
+            }
+
+            // poison
             case enemy instanceof PoisonSpit:
             case enemy instanceof PoisonDrop:
             case enemy instanceof GreenArrow: {
@@ -1753,7 +1800,6 @@ export class CollisionLogic {
                 return true;
             }
 
-            case enemy instanceof BlueArrow:
             case enemy instanceof YellowArrow:
             case enemy instanceof CyanArrow: {
                 this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
@@ -1861,37 +1907,6 @@ export class CollisionLogic {
             case enemy instanceof IceSlash: {
                 const shouldInvert = enemy.speedX > 0;
                 this.game.collisions.push(new IceSlashCollision(this.game, ex, ey, shouldInvert));
-                return true;
-            }
-
-            case enemy instanceof SpinningIceBalls: {
-                this.game.collisions.push(new SpinningIceBallsCollision(this.game, ex, ey, enemy.id));
-                this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
-                return true;
-            }
-
-            case enemy instanceof PointyIcicleShard: {
-                this.game.collisions.push(new PointyIcicleShardCollision(this.game, ex, ey, enemy.id));
-                this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
-                return true;
-            }
-
-            // special Y = attacker center Y
-            case enemy instanceof UndergroundIcicle: {
-                this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
-                this.game.collisions.push(new UndergroundIcicleCollision(this.game, ex, attackerY, enemy.id));
-                return true;
-            }
-
-            case enemy instanceof IceTrail: {
-                this.game.collisions.push(new IceTrailCollision(this.game, ex, ey, enemy.id));
-                this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
-                return true;
-            }
-
-            case enemy instanceof IcyStormBall: {
-                this.game.collisions.push(new IcyStormBallCollision(this.game, ex, ey, enemy.id));
-                this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
                 return true;
             }
 
@@ -2150,7 +2165,6 @@ export class CollisionLogic {
             return;
         }
 
-
         this.handleNormalCollision(enemy);
     }
 
@@ -2378,6 +2392,7 @@ export class CollisionLogic {
                 }
                 break;
             }
+
             // red
             case enemy instanceof Gloomlet:
             case enemy instanceof KarateCroco:
@@ -2400,20 +2415,16 @@ export class CollisionLogic {
             case enemy instanceof BlueArrow: {
                 if (canPlayCollisionFx) {
                     this.playCollisionFx(enemy, { fallbackToDefault: true });
-
-                    if (player.isInvisible) {
-                        this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
-                    } else {
-                        this.game.audioHandler.enemySFX.playSound('iceSlowedSound', false, true);
-                    }
                 }
 
                 if (canReceiveStatus) {
+                    const applied = this.tryApplySlow(player, 5000);
                     this.hit(enemy, player);
-                    player.isSlowed = true;
-                    player.slowedTimer = 5000;
-                }
 
+                    if (applied) {
+                        this.game.audioHandler.enemySFX.playSound('iceSlowedSound', false, true);
+                    }
+                }
                 break;
             }
 
@@ -2690,18 +2701,14 @@ export class CollisionLogic {
             case enemy instanceof IcyStormBall:
             case enemy instanceof SpinningIceBalls:
             case enemy instanceof PointyIcicleShard:
-            case enemy instanceof BlueArrow:
-                if (!player.isInvisible) {
-                    player.isSlowed = true;
-                    player.slowedTimer = 5000;
-                }
-                this.playCollisionFx(enemy, { fallbackToDefault: true });
-                if (player.isInvisible) {
-                    this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
-                } else {
+            case enemy instanceof BlueArrow: {
+                const applied = this.tryApplySlow(player, 5000);
+                if (applied) {
                     this.game.audioHandler.enemySFX.playSound('iceSlowedSound', false, true);
                 }
+                this.playCollisionFx(enemy, { fallbackToDefault: true });
                 break;
+            }
 
             // frozen
             case enemy instanceof IceSlash:
