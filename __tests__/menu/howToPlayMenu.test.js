@@ -19,7 +19,6 @@ describe('HowToPlayMenu', () => {
             width: W,
             height: H,
             menu: { main: { activateMenu: jest.fn() } },
-            isTutorialActive: false,
         };
         ctx = {
             drawImage: jest.fn(),
@@ -155,27 +154,6 @@ describe('HowToPlayMenu', () => {
             expect(ctx.drawImage).toHaveBeenCalledWith(
                 menu.howToPlayImages[0], 0, 0, W, H
             );
-        });
-
-        it('renders the tutorial toggle overlay with correct text when off', () => {
-            mockGame.isTutorialActive = false;
-            menu.draw(ctx);
-            const centerX = W - 80;
-            const centerY = 15;
-            expect(ctx.fillRect).toHaveBeenCalledWith(
-                centerX - 100, centerY - 20, 200, 40
-            );
-            expect(ctx.fillText)
-                .toHaveBeenCalledWith('Tutorial: Off', centerX, centerY + 10);
-        });
-
-        it('renders the tutorial toggle overlay with correct text when on', () => {
-            mockGame.isTutorialActive = true;
-            menu.draw(ctx);
-            const centerX = W - 80;
-            const centerY = 15;
-            expect(ctx.fillText)
-                .toHaveBeenCalledWith('Tutorial: On', centerX, centerY + 10);
         });
     });
 });

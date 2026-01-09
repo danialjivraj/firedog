@@ -267,35 +267,6 @@ describe('InputHandler', () => {
       });
     });
 
-    describe('"t" tutorial toggle key', () => {
-      test('on howToPlay menu: toggles tutorial state, pauses, plays audio, and saves', () => {
-        game.currentMenu = game.menu.howToPlay;
-
-        keyDown('t');
-        expect(game.isTutorialActive).toBe(true);
-        expect(game.tutorial.tutorialPause).toBe(true);
-        expect(game.saveGameState).toHaveBeenCalled();
-        expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith(
-          'optionSelectedSound',
-          false,
-          true
-        );
-
-        keyDown('t');
-        expect(game.isTutorialActive).toBe(false);
-        expect(game.tutorial.tutorialPause).toBe(false);
-      });
-
-      test('when not on howToPlay menu: does not toggle tutorial or save', () => {
-        game.currentMenu = game.menu.main;
-
-        keyDown('t');
-
-        expect(game.saveGameState).not.toHaveBeenCalled();
-        expect(game.isTutorialActive).toBe(false);
-      });
-    });
-
     describe('Escape key (pause / menu / cutscene handling)', () => {
       test('when in story cutscene (not in-game, not penguin, not boss), Escape toggles pause and sets pauseContext=cutscene', () => {
         game.cutsceneActive = true;

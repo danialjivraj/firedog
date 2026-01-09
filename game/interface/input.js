@@ -71,13 +71,6 @@ export class InputHandler {
                 //this.game.debug = !this.game.debug;
             }
 
-            if (lowercaseKey === 't' && this.game.currentMenu === this.game.menu.howToPlay) {
-                this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
-                this.game.isTutorialActive = !this.game.isTutorialActive;
-                this.game.tutorial.tutorialPause = this.game.isTutorialActive === true;
-                this.game.saveGameState();
-            }
-
             if (
                 lowercaseKey === jumpNorm &&
                 this.game.player.isUnderwater &&

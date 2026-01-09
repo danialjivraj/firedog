@@ -13,6 +13,10 @@ describe('SettingsMenu', () => {
     canSelectForestMap: true,
     isPlayerInGame: true,
     cutsceneActive: false,
+
+    isTutorialActive: false,
+    tutorial: { tutorialPause: true },
+
     audioHandler: { menu: { playSound: jest.fn(), stopSound: jest.fn() } },
     saveGameState: jest.fn(),
     menu: {
@@ -74,10 +78,12 @@ describe('SettingsMenu', () => {
     test('extends BaseMenu and initializes title + options', () => {
       expect(menu).toBeInstanceOf(BaseMenu);
       expect(menu.title).toBe('Settings');
+
       expect(menu.menuOptions).toEqual([
         'Audio',
         'Controls',
         'Level Difficulty',
+        'Tutorial Activation',
         'Delete Progress',
         'Go Back',
       ]);
@@ -97,7 +103,16 @@ describe('SettingsMenu', () => {
       menu.activateMenu(999);
 
       expect(menu.menuInGame).toBe(false);
-      expect(menu.menuOptions).toEqual(menu.fullOptions);
+
+      expect(menu.menuOptions).toEqual([
+        'Audio',
+        'Controls',
+        'Level Difficulty',
+        'Tutorial Activation: OFF',
+        'Delete Progress',
+        'Go Back',
+      ]);
+
       expect(menu.selectedOption).toBe(menu.menuOptions.length - 1);
       expect(mockGame.currentMenu).toBe(menu);
     });
@@ -116,7 +131,14 @@ describe('SettingsMenu', () => {
       menu.activateMenu({ inGame: false, selectedOption: 2 });
 
       expect(menu.menuInGame).toBe(false);
-      expect(menu.menuOptions).toEqual(menu.fullOptions);
+      expect(menu.menuOptions).toEqual([
+        'Audio',
+        'Controls',
+        'Level Difficulty',
+        'Tutorial Activation: OFF',
+        'Delete Progress',
+        'Go Back',
+      ]);
       expect(menu.selectedOption).toBe(2);
       expect(mockGame.currentMenu).toBe(menu);
     });
@@ -252,6 +274,34 @@ describe('SettingsMenu', () => {
   });
 
   describe('handleMenuSelection() out-of-game routing', () => {
+    beforeEach(() => {
+      menu.activateMenu({ inGame: false, selectedOption: 0 });
+      mockGame.audioHandler.menu.playSound.mockClear();
+      mockGame.saveGameState.mockClear();
+    });
+
+    test('"Tutorial Activation" toggles isTutorialActive, updates label, and saves', () => {
+      expect(mockGame.isTutorialActive).toBe(false);
+      expect(menu.menuOptions[3]).toBe('Tutorial Activation: OFF');
+
+      selectAndRun(3);
+
+      expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith(
+        'optionSelectedSound',
+        false,
+        true
+      );
+      expect(mockGame.isTutorialActive).toBe(true);
+      expect(mockGame.tutorial.tutorialPause).toBe(true);
+      expect(mockGame.saveGameState).toHaveBeenCalled();
+      expect(menu.menuOptions[3]).toBe('Tutorial Activation: ON');
+
+      selectAndRun(3);
+      expect(mockGame.isTutorialActive).toBe(false);
+      expect(mockGame.saveGameState).toHaveBeenCalled();
+      expect(menu.menuOptions[3]).toBe('Tutorial Activation: OFF');
+    });
+
     test('"Audio" plays select sound and opens Audio Settings at index 0', () => {
       selectAndRun(0);
 
@@ -297,7 +347,7 @@ describe('SettingsMenu', () => {
     });
 
     test('"Delete Progress" plays select sound and opens Delete Progress at index 1', () => {
-      selectAndRun(3);
+      selectAndRun(4);
 
       expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith(
         'optionSelectedSound',
@@ -309,7 +359,7 @@ describe('SettingsMenu', () => {
     });
 
     test('"Go Back" plays select sound and returns to Main Menu at index 4', () => {
-      selectAndRun(4);
+      selectAndRun(5);
 
       expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith(
         'optionSelectedSound',
@@ -331,6 +381,7 @@ describe('SettingsMenu', () => {
       mockGame.menu.main.activateMenu.mockClear();
       mockGame.menu.levelDifficulty.activateMenu.mockClear();
       mockGame.menu.deleteProgress.activateMenu.mockClear();
+      mockGame.saveGameState.mockClear();
     });
 
     test('in-game "Audio" opens AudioSettings with inGame:true', () => {
@@ -349,6 +400,7 @@ describe('SettingsMenu', () => {
 
       expect(mockGame.menu.pause.activateMenu).not.toHaveBeenCalled();
       expect(mockGame.menu.main.activateMenu).not.toHaveBeenCalled();
+      expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });
 
     test('in-game "Controls" opens ControlsSettings with inGame:true', () => {
@@ -367,10 +419,11 @@ describe('SettingsMenu', () => {
 
       expect(mockGame.menu.pause.activateMenu).not.toHaveBeenCalled();
       expect(mockGame.menu.main.activateMenu).not.toHaveBeenCalled();
+      expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });
 
     test('in-game "Go Back" routes to pause menu (activateMenu(2)) and NOT main menu', () => {
-      menu.selectedOption = 2;  // go back
+      menu.selectedOption = 2; // go back
       menu.handleMenuSelection();
 
       expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith(
@@ -383,6 +436,7 @@ describe('SettingsMenu', () => {
       expect(mockGame.menu.main.activateMenu).not.toHaveBeenCalled();
       expect(mockGame.menu.levelDifficulty.activateMenu).not.toHaveBeenCalled();
       expect(mockGame.menu.deleteProgress.activateMenu).not.toHaveBeenCalled();
+      expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });
   });
 
@@ -397,6 +451,8 @@ describe('SettingsMenu', () => {
     });
 
     test('mouse click triggers selection flow and does not save', () => {
+      menu.activateMenu({ inGame: false, selectedOption: 0 });
+
       menu.selectedOption = 0;
       mockGame.saveGameState.mockClear();
 

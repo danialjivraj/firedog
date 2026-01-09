@@ -2,10 +2,10 @@ import { BaseMenu } from "./baseMenu.js";
 
 export class SettingsMenu extends BaseMenu {
   constructor(game) {
-    const fullOptions = ["Audio", "Controls", "Level Difficulty", "Delete Progress", "Go Back"];
-    super(game, fullOptions, "Settings");
+    const baseFullOptions = ["Audio", "Controls", "Level Difficulty", "Tutorial Activation", "Delete Progress", "Go Back"];
+    super(game, baseFullOptions, "Settings");
 
-    this.fullOptions = fullOptions;
+    this._baseFullOptions = baseFullOptions;
     this.inGameOptions = ["Audio", "Controls", "Go Back"];
 
     this.menuInGame = false;
@@ -15,6 +15,31 @@ export class SettingsMenu extends BaseMenu {
 
     this.returnMenu = "pause";
     this.returnSelectedOption = 2;
+  }
+
+  _tutorialLabel() {
+    const on = this.game.isTutorialActive === true;
+    return `Tutorial Activation: ${on ? "ON" : "OFF"}`;
+  }
+
+  _isTutorialOption(optionText) {
+    return typeof optionText === "string" && optionText.startsWith("Tutorial Activation");
+  }
+
+  _buildFullMenuOptions() {
+    return this._baseFullOptions.map((opt) => {
+      if (opt === "Tutorial Activation") return this._tutorialLabel();
+      return opt;
+    });
+  }
+
+  _refreshMenuOptionsInPlace() {
+    if (this.menuInGame) return;
+
+    const idx = this.menuOptions.findIndex((opt) => this._isTutorialOption(opt));
+    if (idx !== -1) {
+      this.menuOptions[idx] = this._tutorialLabel();
+    }
   }
 
   activateMenu(arg = 0) {
@@ -32,7 +57,8 @@ export class SettingsMenu extends BaseMenu {
     }
 
     this.menuInGame = inGame;
-    this.menuOptions = this.menuInGame ? this.inGameOptions : this.fullOptions;
+
+    this.menuOptions = this.menuInGame ? this.inGameOptions : this._buildFullMenuOptions();
 
     this._applyInGameLayout();
 
@@ -55,6 +81,21 @@ export class SettingsMenu extends BaseMenu {
   handleMenuSelection() {
     const selected = this.menuOptions[this.selectedOption];
     this.game.audioHandler.menu.playSound("optionSelectedSound", false, true);
+
+    if (!this.menuInGame && this._isTutorialOption(selected)) {
+      this.game.isTutorialActive = !this.game.isTutorialActive;
+
+      if (this.game.tutorial) {
+        this.game.tutorial.tutorialPause = this.game.isTutorialActive === true;
+      }
+
+      if (typeof this.game.saveGameState === "function") {
+        this.game.saveGameState();
+      }
+
+      this._refreshMenuOptionsInPlace();
+      return;
+    }
 
     if (selected === "Audio") {
       this.game.menu.audioSettings.activateMenu({ inGame: this.menuInGame, selectedOption: 0 });

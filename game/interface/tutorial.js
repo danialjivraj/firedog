@@ -342,6 +342,8 @@ export class Tutorial {
                 }
             } else {
                 this.game.isTutorialActive = false;
+                this.tutorialPause = true;
+                this.game.saveGameState();
             }
         }
     }

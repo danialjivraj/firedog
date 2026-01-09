@@ -8,6 +8,9 @@ describe('Tutorial', () => {
         game = {
             width: 1920,
             height: 689,
+
+            saveGameState: jest.fn(),
+
             player: {
                 x: 100,
                 y: 0,
@@ -43,6 +46,8 @@ describe('Tutorial', () => {
             selectedDifficulty: 'Hard',
             coins: 123,
             time: 12435,
+
+            isTutorialActive: true,
         };
 
         tutorial = new Tutorial(game);
@@ -196,14 +201,13 @@ describe('Tutorial', () => {
             expect(tutorial.currentStepIndex).toBe(2);
         });
 
-        test('invokes resetGameValues and applies side‑effects on last step', () => {
+        test('invokes resetGameValues and applies side-effects on last step', () => {
             const last = tutorial.steps.length - 1;
             tutorial.currentStepIndex = last - 1;
             tutorial.tutorialPause = false;
             tutorial.update(6000);
             expect(game.player.invisibleTimer).toBe(game.player.invisibleCooldown);
-            expect(game.menu.levelDifficulty.setDifficulty)
-                .toHaveBeenCalledWith(game.selectedDifficulty);
+            expect(game.menu.levelDifficulty.setDifficulty).toHaveBeenCalledWith(game.selectedDifficulty);
             expect(game.coins).toBe(0);
             expect(game.time).toBe(0);
             expect(game.player.energy).toBe(100);
@@ -214,8 +218,15 @@ describe('Tutorial', () => {
             const last = tutorial.steps.length - 1;
             tutorial.currentStepIndex = last;
             tutorial.tutorialPause = false;
+
+            game.saveGameState.mockClear();
+
             tutorial.update(0);
+
             expect(game.isTutorialActive).toBe(false);
+            expect(tutorial.tutorialPause).toBe(true);
+
+            expect(game.saveGameState).toHaveBeenCalled();
         });
     });
 
@@ -226,13 +237,15 @@ describe('Tutorial', () => {
 
         test('returns true when within distance and on-screen', () => {
             const enemy = { x: 150, width: 50 };
-            game.player.x = 100; game.width = 300;
+            game.player.x = 100;
+            game.width = 300;
             expect(tutorial.isPlayerNearEnemy(enemy, 100)).toBe(true);
         });
 
         test('returns false when too far or off-screen', () => {
             const enemy = { x: 500, width: 10 };
-            game.player.x = 100; game.width = 400;
+            game.player.x = 100;
+            game.width = 400;
             expect(tutorial.isPlayerNearEnemy(enemy, 100)).toBe(false);
             const off = { x: 350, width: 100 };
             expect(tutorial.isPlayerNearEnemy(off, 100)).toBe(false);
@@ -246,13 +259,15 @@ describe('Tutorial', () => {
 
         test('returns true when within [distance-gap, distance+gap] and on-screen', () => {
             const enemy = { x: 200, width: 10 };
-            game.player.x = 100; game.width = 400;
+            game.player.x = 100;
+            game.width = 400;
             expect(tutorial.isPlayerAtApproximateDistanceFromEnemy(enemy, 100)).toBe(true);
         });
 
         test('returns false when outside approximate range or off-screen', () => {
             const enemy = { x: 300, width: 10 };
-            game.player.x = 100; game.width = 400;
+            game.player.x = 100;
+            game.width = 400;
             expect(tutorial.isPlayerAtApproximateDistanceFromEnemy(enemy, 100)).toBe(false);
             const off = { x: 150, width: 300 };
             expect(tutorial.isPlayerAtApproximateDistanceFromEnemy(off, 50)).toBe(false);
@@ -260,7 +275,8 @@ describe('Tutorial', () => {
 
         test('returns true with custom gap', () => {
             const enemy = { x: 900, width: 10 };
-            game.player.x = 100; game.width = 2000;
+            game.player.x = 100;
+            game.width = 2000;
             expect(tutorial.isPlayerAtApproximateDistanceFromEnemy(enemy, 800, 20)).toBe(true);
         });
     });
@@ -269,15 +285,19 @@ describe('Tutorial', () => {
         let ctx, fills, strokes;
 
         beforeEach(() => {
-            fills = []; strokes = [];
+            fills = [];
+            strokes = [];
             ctx = {
                 save: jest.fn(),
                 restore: jest.fn(),
                 measureText: jest.fn(() => ({ width: 10 })),
                 fillText: (text, x, y) => fills.push({ text, style: ctx.fillStyle }),
                 strokeText: (text, x, y) => strokes.push({ text, style: ctx.strokeStyle }),
-                fillStyle: '', strokeStyle: '',
-                font: '', textAlign: '', textBaseline: '',
+                fillStyle: '',
+                strokeStyle: '',
+                font: '',
+                textAlign: '',
+                textBaseline: '',
                 lineWidth: 0,
             };
         });
@@ -288,9 +308,9 @@ describe('Tutorial', () => {
             tutorial.draw(ctx);
             expect(ctx.save).toHaveBeenCalled();
             expect(ctx.restore).toHaveBeenCalled();
-            const tkn = fills.find(c => c.text === 'Tutorial');
+            const tkn = fills.find((c) => c.text === 'Tutorial');
             expect(tkn.style).toBe(tutorial.phraseColors['Tutorial'].fill);
-            const en = fills.find(c => c.text === 'Enter');
+            const en = fills.find((c) => c.text === 'Enter');
             expect(en.style).toBe(tutorial.phraseColors['Enter'].fill);
         });
 

@@ -57,22 +57,6 @@ export class HowToPlayMenu extends BaseMenu {
         const currentImage = this.howToPlayImages[this.currentImageIndex];
         if (currentImage) {
             context.drawImage(currentImage, 0, 0, this.game.width, this.game.height);
-
-            context.save();
-            const centerX = this.game.width - 80;
-            const centerY = 15;
-            const optionWidth = 200;
-            const optionHeight = 40;
-
-            context.fillStyle = 'rgba(0, 0, 0, 0.5)';
-            context.fillRect(centerX - optionWidth / 2, centerY - optionHeight / 2, optionWidth, optionHeight);
-
-            context.font = 'bold 20px Arial';
-            context.fillStyle = 'white';
-            context.textAlign = 'center';
-            context.fillText(this.game.isTutorialActive ? 'Tutorial: On' : 'Tutorial: Off', centerX, centerY + 10);
-            context.restore();
         }
     }
-
 }
