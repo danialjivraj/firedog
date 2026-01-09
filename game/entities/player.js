@@ -1514,23 +1514,31 @@ export class CollisionLogic {
         this.game.collisions.push(inkSplash);
     }
 
-    isPoisonActiveChecker(player = this.game.player) {
-        if (player.energyReachedZero || player.isBluePotionActive) {
-            player.isPoisonedActive = false;
-        } else {
-            player.isPoisonedActive = true;
-        }
-        return player.isPoisonedActive;
+    canBePoisoned(player = this.game.player) {
+        return !player.energyReachedZero && !player.isBluePotionActive;
     }
 
-    isPoisonTimerChecker(x, player = this.game.player) {
-        if (player.energyReachedZero || player.isBluePotionActive) {
+    setPoison(durationMs, player = this.game.player) {
+        if (!this.canBePoisoned(player)) {
+            player.isPoisonedActive = false;
             player.poisonTimer = 0;
-        } else {
-            player.poisonTimer = x;
+            return false;
         }
-        return player.poisonTimer;
+
+        player.isPoisonedActive = true;
+        player.poisonTimer = durationMs;
+        return true;
     }
+
+    tryApplyPoison(player = this.game.player, durationMs = 2500) {
+        if (player.isInvisible) {
+            player.isPoisonedActive = false;
+            player.poisonTimer = 0;
+            return false;
+        }
+        return this.setPoison(durationMs, player);
+    }
+
 
     // ------------------------------------------------------------------
     // Geometry helpers
@@ -1704,18 +1712,19 @@ export class CollisionLogic {
                 return true;
             }
 
-            case enemy instanceof PoisonSpit: {
-                this.game.audioHandler.enemySFX.playSound('acidSoundEffect', false, true);
-                this.game.collisions.push(new PoisonSpitSplash(this.game, ex, ey));
-                return true;
-            }
-
-            case enemy instanceof PoisonDrop: {
-                this.game.collisions.push(new PoisonDropCollision(this.game, ex, ey));
+            case enemy instanceof PoisonSpit:
+            case enemy instanceof PoisonDrop:
+            case enemy instanceof GreenArrow: {
                 this.game.audioHandler.collisionSFX.playSound('poisonDropCollisionSound', false, true);
-                if (!player.isInvisible) {
-                    this.game.audioHandler.enemySFX.playSound('acidSoundEffect', false, true);
+
+                if (enemy instanceof PoisonSpit) {
+                    this.game.collisions.push(new PoisonSpitSplash(this.game, ex, ey));
+                } else if (enemy instanceof PoisonDrop) {
+                    this.game.collisions.push(new PoisonDropCollision(this.game, ex, ey));
+                } else {
+                    this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
                 }
+
                 return true;
             }
 
@@ -1746,7 +1755,6 @@ export class CollisionLogic {
 
             case enemy instanceof BlueArrow:
             case enemy instanceof YellowArrow:
-            case enemy instanceof GreenArrow:
             case enemy instanceof CyanArrow: {
                 this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
                 this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
@@ -2076,23 +2084,23 @@ export class CollisionLogic {
         }
 
         if (this.isKamehameha(enemy)) {
-        if (!player.isDashing) {
-            player.collisionCooldowns[enemy.id] = 220;
-        }
+            if (!player.isDashing) {
+                player.collisionCooldowns[enemy.id] = 220;
+            }
 
-        this.hit(enemy, player);
+            this.hit(enemy, player);
 
-        if (player.isDashing) {
-            const dashId = player.dashInstanceId;
+            if (player.isDashing) {
+                const dashId = player.dashInstanceId;
 
-            if (enemy._lastDashKameFxId === dashId) return;
-            enemy._lastDashKameFxId = dashId;
-        }
+                if (enemy._lastDashKameFxId === dashId) return;
+                enemy._lastDashKameFxId = dashId;
+            }
 
-        if (!player.isInvisible || this.isRollingOrDiving(player) || player.isDashing) {
-            this.playCollisionFx(enemy);
-        }
-        return;
+            if (!player.isInvisible || this.isRollingOrDiving(player) || player.isDashing) {
+                this.playCollisionFx(enemy);
+            }
+            return;
         }
 
         if (this.shouldSkipElyvorgTeleportCollision(enemy, player)) return;
@@ -2355,18 +2363,21 @@ export class CollisionLogic {
             // poison
             case enemy instanceof PoisonSpit:
             case enemy instanceof PoisonDrop:
-            case enemy instanceof GreenArrow:
+            case enemy instanceof GreenArrow: {
                 if (canPlayCollisionFx) {
                     this.playCollisionFx(enemy);
                 }
 
                 if (canReceiveStatus) {
-                    this.isPoisonActiveChecker(player);
+                    const applied = this.tryApplyPoison(player, 2500);
                     this.hit(enemy, player);
-                    this.isPoisonTimerChecker(enemy instanceof PoisonSpit ? 1500 : 2500, player);
+
+                    if (applied) {
+                        this.game.audioHandler.enemySFX.playSound('acidSoundEffect', false, true);
+                    }
                 }
                 break;
-
+            }
             // red
             case enemy instanceof Gloomlet:
             case enemy instanceof KarateCroco:
@@ -2647,14 +2658,20 @@ export class CollisionLogic {
             // poison
             case enemy instanceof PoisonSpit:
             case enemy instanceof PoisonDrop:
-            case enemy instanceof GreenArrow:
+            case enemy instanceof GreenArrow: {
+                const applied = this.tryApplyPoison(player, 2500);
+
                 if (!player.isInvisible) {
-                    this.isPoisonActiveChecker(player);
                     this.hit(enemy, player);
-                    this.isPoisonTimerChecker(enemy instanceof PoisonSpit ? 1500 : 2500, player);
+                    if (applied) {
+                        this.game.audioHandler.enemySFX.playSound('acidSoundEffect', false, true);
+                    }
                 }
+
                 this.playCollisionFx(enemy);
+
                 break;
+            }
 
             // red
             case enemy instanceof Gloomlet:
@@ -2856,8 +2873,7 @@ export class CollisionLogic {
             },
             Cauldron() {
                 game.audioHandler.powerUpAndDownSFX.playSound('cauldronSoundEffect', false, true);
-                this.isPoisonActiveChecker(player);
-                this.isPoisonTimerChecker(3500, player);
+                this.setPoison(3500, player);
             },
             BlackHole() {
                 player.isBlackHoleActive = true;

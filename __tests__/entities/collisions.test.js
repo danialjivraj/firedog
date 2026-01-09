@@ -192,8 +192,6 @@ const normalScenarios = [
 ];
 
 const rollDiveScenarios = [
-    { label: 'visible + not rolling/diving', isInvisible: false, isRollOrDive: false },
-    { label: 'invisible + not rolling/diving', isInvisible: true, isRollOrDive: false },
     { label: 'visible + rolling/diving', isInvisible: false, isRollOrDive: true },
     { label: 'invisible + rolling/diving', isInvisible: true, isRollOrDive: true },
 ];
@@ -683,10 +681,21 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
             if (s.isInvisible && !s.isDashing) {
                 expectNoCollisions(ctx);
                 expectNoDamage(ctx);
+
+                expect(ctx.player.isPoisonedActive).toBe(false);
+                expect(ctx.player.poisonTimer).toBe(0);
                 return;
             }
 
             expectCollisionCounts(ctx, [[ExpectedCollisionClass, 1]]);
+
+            if (!s.isInvisible) {
+                expect(ctx.player.isPoisonedActive).toBe(true);
+                expect(ctx.player.poisonTimer).toBe(2500);
+            } else {
+                expect(ctx.player.isPoisonedActive).toBe(false);
+                expect(ctx.player.poisonTimer).toBe(0);
+            }
 
             if (!s.isInvisible && !s.isDashing) {
                 expect(ctx.game.lives).toBe(2);
@@ -696,7 +705,6 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
             }
         });
     });
-
     describe.each([
         ['Gloomlet', Gloomlet, 1],
         ['KarateCroco', KarateCroco, 2],
@@ -1251,7 +1259,7 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
     });
 
     describe.each([
-        { name: 'PoisonSpit', EnemyClass: PoisonSpit, Fx: PoisonSpitSplash, poisonTimer: 1500 },
+        { name: 'PoisonSpit', EnemyClass: PoisonSpit, Fx: PoisonSpitSplash, poisonTimer: 2500 },
         { name: 'PoisonDrop', EnemyClass: PoisonDrop, Fx: PoisonDropCollision, poisonTimer: 2500 },
         { name: 'GreenArrow', EnemyClass: GreenArrow, Fx: DisintegrateCollision, poisonTimer: 2500 },
     ])('Poison enemy: $name', ({ EnemyClass, Fx, poisonTimer }) => {

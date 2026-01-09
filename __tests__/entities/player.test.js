@@ -210,21 +210,44 @@ describe('Player', () => {
         expect(game.lives).toBe(game.maxLives);
     });
 
-    test('isPoisonActiveChecker & isPoisonTimerChecker behavior', () => {
-        const logic = player.collisionLogic;
+    test('setPoison / tryApplyPoison behavior (replaces isPoisonActiveChecker + isPoisonTimerChecker)', () => {
+    const logic = player.collisionLogic;
 
-        player.energyReachedZero = true;
-        player.isBluePotionActive = false;
+    player.energyReachedZero = true;
+    player.isBluePotionActive = false;
 
-        expect(logic.isPoisonActiveChecker(player)).toBe(false);
-        expect(logic.isPoisonTimerChecker(2500, player)).toBe(0);
-        expect(player.poisonTimer).toBe(0);
+    expect(logic.setPoison(2500, player)).toBe(false);
+    expect(player.isPoisonedActive).toBe(false);
+    expect(player.poisonTimer).toBe(0);
 
-        player.energyReachedZero = false;
+    player.energyReachedZero = false;
 
-        expect(logic.isPoisonActiveChecker(player)).toBe(true);
-        expect(logic.isPoisonTimerChecker(2500, player)).toBe(2500);
-        expect(player.poisonTimer).toBe(2500);
+    expect(logic.setPoison(2500, player)).toBe(true);
+    expect(player.isPoisonedActive).toBe(true);
+    expect(player.poisonTimer).toBe(2500);
+
+    player.isBluePotionActive = true;
+
+    expect(logic.setPoison(2500, player)).toBe(false);
+    expect(player.isPoisonedActive).toBe(false);
+    expect(player.poisonTimer).toBe(0);
+
+    player.isBluePotionActive = false;
+    player.energyReachedZero = false;
+
+    player.isInvisible = true;
+    player.isPoisonedActive = true;
+    player.poisonTimer = 123;
+
+    expect(logic.tryApplyPoison(player, 2500)).toBe(false);
+    expect(player.isPoisonedActive).toBe(false);
+    expect(player.poisonTimer).toBe(0);
+
+    player.isInvisible = false;
+
+    expect(logic.tryApplyPoison(player, 2500)).toBe(true);
+    expect(player.isPoisonedActive).toBe(true);
+    expect(player.poisonTimer).toBe(2500);
     });
 
     test('drainEnergy reduces energy and flips energyReachedZero', () => {
