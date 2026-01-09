@@ -22,6 +22,7 @@ import {
     PurpleThunder,
     PurpleLaserBeam,
     Elyvorg,
+    ChargeIndicatorBalls,
 } from "../../../game/entities/enemies/elyvorg.js";
 
 import {
@@ -1514,6 +1515,63 @@ describe("elyvorg.js entities – behavior coverage", () => {
             expect(
                 boss.teleportTargetX < forbiddenMin || boss.teleportTargetX > forbiddenMax
             ).toBe(true);
+        });
+    });
+
+    // -----------------------------------------------------------------------
+    // Elyvorg – Charge Indicator Balls
+    // -----------------------------------------------------------------------
+    describe("ChargeIndicatorBalls", () => {
+        const mockMathRandom = (value) => jest.spyOn(Math, "random").mockReturnValue(value);
+
+        it("spawns particles shifted LEFT when Elyvorg is facing left (default sprite)", () => {
+            const boss = new Elyvorg(mockGame);
+
+            boss.shouldInvert = false;
+
+            const indicator = new ChargeIndicatorBalls(mockGame, boss, {
+                facingOffsetX: 22,
+                anchorOffsetX: 0,
+            });
+
+            const rand = mockMathRandom(0.5);
+
+            indicator.spawnParticle();
+
+            expect(indicator.particles.length).toBe(1);
+
+            const p = indicator.particles[0];
+
+            const baseCx = boss.x + boss.width * 0.5;
+            const expectedCx = baseCx - 22;
+            expect(p.x).toBeCloseTo(expectedCx);
+
+            rand.mockRestore();
+        });
+
+        it("spawns particles shifted RIGHT when Elyvorg is facing right (flipped)", () => {
+            const boss = new Elyvorg(mockGame);
+
+            boss.shouldInvert = true;
+
+            const indicator = new ChargeIndicatorBalls(mockGame, boss, {
+                facingOffsetX: 22,
+                anchorOffsetX: 0,
+            });
+
+            const rand = mockMathRandom(0.5);
+
+            indicator.spawnParticle();
+
+            expect(indicator.particles.length).toBe(1);
+
+            const p = indicator.particles[0];
+
+            const baseCx = boss.x + boss.width * 0.5;
+            const expectedCx = baseCx + 22;
+            expect(p.x).toBeCloseTo(expectedCx);
+
+            rand.mockRestore();
         });
     });
 });

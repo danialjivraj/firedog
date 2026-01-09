@@ -435,8 +435,8 @@ export class CyanArrow extends Arrow {
     }
 }
 
-export class PurpleSlashChargeIndicator {
-    constructor(game, boss) {
+export class ChargeIndicatorBalls {
+    constructor(game, boss, options = {}) {
         this.game = game;
         this.boss = boss;
 
@@ -449,12 +449,33 @@ export class PurpleSlashChargeIndicator {
         this.maxParticles = 40;
 
         this.stopping = false;
+
+        const defaultPalette = {
+            shadowColor: "rgba(190, 80, 255, 1)",
+            innerColor: "rgba(235, 210, 255, 1)",
+            outerColor: "rgba(160, 40, 255, 1)",
+            shadowBlur: 18,
+        };
+
+        this.palette = options.palette ?? defaultPalette;
+
+        this.stopWhen =
+            options.stopWhen ??
+            (() => !!(this.boss && this.boss.isSlashActive));
+
+        this.anchorOffsetX = options.anchorOffsetX ?? 0;
+        this.facingOffsetX = options.facingOffsetX ?? 22;
     }
 
     spawnParticle() {
         if (!this.boss) return;
 
-        const cx = this.boss.x + this.boss.width * 0.5;
+        const facingLeft = !this.boss.shouldInvert;
+        const dir = facingLeft ? -1 : 1;
+
+        const cx = this.boss.x + this.boss.width * 0.5
+        + this.anchorOffsetX
+        + dir * this.facingOffsetX;
         const cy = this.boss.y + this.boss.height * 0.35;
 
         const p = {
@@ -464,7 +485,7 @@ export class PurpleSlashChargeIndicator {
             vy: -(1.2 + Math.random() * 1.4),
             r: 3 + Math.random() * 4.5,
             a: 0.9,
-            life: 420 + Math.random() * 260, // ms
+            life: 420 + Math.random() * 260,
             age: 0,
             wobble: Math.random() * Math.PI * 2,
             wobbleSpeed: 0.02 + Math.random() * 0.03,
@@ -482,12 +503,17 @@ export class PurpleSlashChargeIndicator {
             this.spawnRate = 0;
         }
 
-        if (!this.stopping && this.boss && this.boss.isSlashActive) {
+        if (!this.stopping && this.stopWhen()) {
             this.stopping = true;
             this.spawnRate = 0;
         }
 
-        const bossCx = this.boss ? (this.boss.x + this.boss.width * 0.5) : 0;
+        const facingLeft = this.boss ? !this.boss.shouldInvert : false;
+        const dir = facingLeft ? -1 : 1;
+
+        const bossCx = this.boss
+        ? (this.boss.x + this.boss.width * 0.5 + this.anchorOffsetX + dir * this.facingOffsetX)
+        : 0;
         const bossCy = this.boss ? (this.boss.y + this.boss.height * 0.35) : 0;
 
         if (!this.stopping && this.spawnRate > 0) {
@@ -531,21 +557,23 @@ export class PurpleSlashChargeIndicator {
     draw(context) {
         if (!this.boss) return;
 
+        const { shadowColor, innerColor, outerColor, shadowBlur } = this.palette;
+
         context.save();
 
-        context.shadowColor = "rgba(190, 80, 255, 1)";
-        context.shadowBlur = 18;
+        context.shadowColor = shadowColor;
+        context.shadowBlur = shadowBlur;
 
         for (const p of this.particles) {
             context.globalAlpha = p.a;
 
-            context.fillStyle = "rgba(235, 210, 255, 1)";
+            context.fillStyle = innerColor;
             context.beginPath();
             context.arc(p.x, p.y, p.r * 0.55, 0, Math.PI * 2);
             context.fill();
 
             context.globalAlpha = p.a * 0.65;
-            context.fillStyle = "rgba(160, 40, 255, 1)";
+            context.fillStyle = outerColor;
             context.beginPath();
             context.arc(p.x, p.y, p.r, 0, Math.PI * 2);
             context.fill();
@@ -1764,6 +1792,15 @@ export class Elyvorg extends EnemyBoss {
             if (this.playElectricWarningSoundOnce) {
                 this.game.audioHandler.enemySFX.playSound('elyvorg_electricity_wheel_warning_sound');
                 this.game.collisions.push(new PurpleWarningIndicator(this.game));
+                this.game.collisions.push(new ChargeIndicatorBalls(this.game, this, {
+                    palette: {
+                        shadowColor: "rgba(120, 170, 255, 1)",
+                        innerColor: "rgba(220, 240, 255, 1)",
+                        outerColor: "rgba(140, 120, 255, 1)",
+                        shadowBlur: 18,
+                    },
+                    stopWhen: () => !!(this.isElectricWheelActive),
+                }));
                 this.playElectricWarningSoundOnce = false;
             }
         }
@@ -1905,7 +1942,7 @@ export class Elyvorg extends EnemyBoss {
             this.electricWheelStateCounterDeltaTime++;
         }
         if (this.slashAttackStateCounter === this.slashAttackStateCounterLimit - 1 && !this.slashChargeWarned) {
-            this.game.collisions.push(new PurpleSlashChargeIndicator(this.game, this));
+            this.game.collisions.push(new ChargeIndicatorBalls(this.game, this));
             this.slashChargeWarned = true;
             this.game.audioHandler.enemySFX.playSound('elyvorg_slash_warning_sound');
         }
