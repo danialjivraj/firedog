@@ -122,6 +122,87 @@ describe('SettingsMenu', () => {
     });
   });
 
+  describe('returnMenu / returnSelectedOption routing (in-game Go Back)', () => {
+    beforeEach(() => {
+      menu.activateMenu({ inGame: true, selectedOption: 0 });
+      mockGame.audioHandler.menu.playSound.mockClear();
+      mockGame.menu.pause.activateMenu.mockClear();
+    });
+
+    test('activateMenu({returnMenu, returnSelectedOption}) stores routing metadata', () => {
+      menu.activateMenu({
+        inGame: true,
+        selectedOption: 0,
+        returnMenu: 'gameOver',
+        returnSelectedOption: 1,
+      });
+
+      expect(menu.returnMenu).toBe('gameOver');
+      expect(menu.returnSelectedOption).toBe(1);
+    });
+
+    test('in-game Go Back routes to configured return menu if it exists', () => {
+      mockGame.menu.gameOver = { activateMenu: jest.fn() };
+
+      menu.activateMenu({
+        inGame: true,
+        selectedOption: 2, // go back
+        returnMenu: 'gameOver',
+        returnSelectedOption: 1,
+      });
+
+      menu.handleMenuSelection();
+
+      expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith(
+        'optionSelectedSound',
+        false,
+        true
+      );
+
+      expect(mockGame.menu.gameOver.activateMenu).toHaveBeenCalledWith(1);
+      expect(mockGame.menu.pause.activateMenu).not.toHaveBeenCalled();
+      expect(mockGame.menu.main.activateMenu).not.toHaveBeenCalled();
+    });
+
+    test('in-game Go Back falls back to pause.activateMenu(2) if return menu missing', () => {
+      menu.activateMenu({
+        inGame: true,
+        selectedOption: 2, // go back
+        returnMenu: 'doesNotExist',
+        returnSelectedOption: 123,
+      });
+
+      menu.handleMenuSelection();
+
+      expect(mockGame.menu.pause.activateMenu).toHaveBeenCalledWith(2);
+    });
+
+    test('in-game Go Back falls back to pause.activateMenu(2) if return menu has no activateMenu', () => {
+      mockGame.menu.gameOver = {};
+
+      menu.activateMenu({
+        inGame: true,
+        selectedOption: 2, // go back
+        returnMenu: 'gameOver',
+        returnSelectedOption: 1,
+      });
+
+      menu.handleMenuSelection();
+
+      expect(mockGame.menu.pause.activateMenu).toHaveBeenCalledWith(2);
+    });
+
+    test('return routing persists across activateMenu calls when not overridden', () => {
+      mockGame.menu.gameOver = { activateMenu: jest.fn() };
+
+      menu.activateMenu({ inGame: true, returnMenu: 'gameOver', returnSelectedOption: 1, selectedOption: 0 });
+      menu.activateMenu({ inGame: true, selectedOption: 2 });
+
+      menu.handleMenuSelection();
+      expect(mockGame.menu.gameOver.activateMenu).toHaveBeenCalledWith(1);
+    });
+  });
+
   describe('_applyInGameLayout() layout rules', () => {
     test('out-of-game: _applyInGameLayout resets positionOffset/menuOptionsPositionOffset to base', () => {
       const basePos = menu.positionOffset;

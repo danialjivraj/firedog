@@ -227,8 +227,12 @@ describe('PauseMenu', () => {
             menu.handleMenuSelection();
 
             expect(baseSelectSpy).toHaveBeenCalled();
-            expect(game.menu.settings.activateMenu)
-                .toHaveBeenCalledWith({ inGame: true, selectedOption: 0 });
+            expect(game.menu.settings.activateMenu).toHaveBeenCalledWith({
+                inGame: true,
+                selectedOption: 0,
+                returnMenu: "pause",
+                returnSelectedOption: 2,
+            });
             expect(menu.menuActive).toBe(false);
         });
 

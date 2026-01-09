@@ -24,7 +24,7 @@ export class AudioSettingsMenu extends BaseMenu {
                     'Menu Master Volume',
                     'Menu Music',
                     'Map SFX',
-                    'Option Selected',
+                    'Menu Navigation SFX',
                     'Go Back',
                 ],
                 volumeLevels: [50, 50, 50, 50, null],
@@ -35,8 +35,8 @@ export class AudioSettingsMenu extends BaseMenu {
                 options: [
                     'Cutscene Master Volume',
                     'Cutscene Music',
-                    'Cutscene SFX',
-                    'Cutscene Dialogue',
+                    'Cutscene Dialogue SFX',
+                    'Cutscene Action SFX',
                     'Go Back',
                 ],
                 volumeLevels: [50, 50, 50, 50, null],
@@ -322,8 +322,14 @@ export class AudioSettingsMenu extends BaseMenu {
         return (mouseX >= r.x && mouseX <= r.x + r.w && mouseY >= r.y && mouseY <= r.y + r.h);
     }
 
+    _isMasterMuted() {
+        return this._isMutedIndex(0);
+    }
+
     _toggleMute(i) {
-        if (this.volumeLevels[i] === null) return;
+        if (this.volumeLevels[i] === null) return false;
+
+        if (i !== 0 && this._isMasterMuted()) return false;
 
         const next = !this._isMutedIndex(i);
         this._setMutedIndex(i, next);
@@ -341,6 +347,7 @@ export class AudioSettingsMenu extends BaseMenu {
         }
 
         this.game.saveGameState();
+        return true;
     }
 
     // button + icon
@@ -426,9 +433,18 @@ export class AudioSettingsMenu extends BaseMenu {
 
         if (!this.menuInGame) {
             context.drawImage(this.backgroundImage, 0, 0, this.game.width, this.game.height);
-        } else if (this.game.menu.pause.isPaused) {
-            context.fillStyle = 'rgba(0, 0, 0, 0.7)';
-            context.fillRect(0, 0, this.game.width, this.game.height);
+        } else {
+            const isPause = !!this.game.menu.pause.isPaused;
+            const isGameOver =
+                !!this.game.gameOver ||
+                !!this.game.notEnoughCoins ||
+                !!this.game.menu.gameOver.menuActive;
+
+            if (isPause || isGameOver) {
+                const alpha = isPause ? 0.7 : (this.game.notEnoughCoins ? 0.5 : 0.2);
+                context.fillStyle = `rgba(0, 0, 0, ${alpha})`;
+                context.fillRect(0, 0, this.game.width, this.game.height);
+            }
         }
 
         const centerY = this.game.height / 2;
@@ -605,7 +621,7 @@ export class AudioSettingsMenu extends BaseMenu {
                 this.game.audioHandler.menu.soundsMapping.bookFlipForwardSound,
                 this.game.audioHandler.menu.soundsMapping.enemyLoreSwitchTabSound,
             ],
-            'Option Selected': [
+            'Menu Navigation SFX': [
                 this.game.audioHandler.menu.soundsMapping.optionSelectedSound,
                 this.game.audioHandler.menu.soundsMapping.optionHoveredSound,
             ],
@@ -618,8 +634,8 @@ export class AudioSettingsMenu extends BaseMenu {
                 ...this.game.audioHandler.cutsceneDialogue.getSoundsMapping(),
             },
             'Cutscene Music': { ...this.game.audioHandler.cutsceneMusic.getSoundsMapping() },
-            'Cutscene SFX': { ...this.game.audioHandler.cutsceneSFX.getSoundsMapping() },
-            'Cutscene Dialogue': { ...this.game.audioHandler.cutsceneDialogue.getSoundsMapping() },
+            'Cutscene Dialogue SFX': { ...this.game.audioHandler.cutsceneDialogue.getSoundsMapping() },
+            'Cutscene Action SFX': { ...this.game.audioHandler.cutsceneSFX.getSoundsMapping() },
         };
 
         this.tabData.INGAME.audioMap = {
@@ -688,9 +704,10 @@ export class AudioSettingsMenu extends BaseMenu {
 
             const i = this.selectedOption;
             const isGoBack = this.menuOptions[i] === 'Go Back' || this.volumeLevels[i] === null;
+
             if (!isGoBack) {
-                this._playSelect();
-                this._toggleMute(i);
+                const didToggle = this._toggleMute(i);
+                if (didToggle) this._playSelect();
                 return;
             }
 
@@ -731,8 +748,8 @@ export class AudioSettingsMenu extends BaseMenu {
             if (this.volumeLevels[i] === null) continue;
             if (this._hitTestLabel(i, mouseX, mouseY)) {
                 this.selectedOption = i;
-                this._playSelect();
-                this._toggleMute(i);
+                const didToggle = this._toggleMute(i);
+                if (didToggle) this._playSelect();
                 return;
             }
         }
@@ -741,8 +758,8 @@ export class AudioSettingsMenu extends BaseMenu {
             if (this.volumeLevels[i] === null) continue;
             if (this._hitTestMuteIcon(i, mouseX, mouseY)) {
                 this.selectedOption = i;
-                this._playSelect();
-                this._toggleMute(i);
+                const didToggle = this._toggleMute(i);
+                if (didToggle) this._playSelect();
                 return;
             }
         }

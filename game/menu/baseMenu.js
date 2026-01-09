@@ -35,12 +35,16 @@ export class BaseMenu {
             context.save();
             if (this.menuInGame === false) {
                 context.drawImage(this.backgroundImage, 0, 0, this.game.width, this.game.height);
-            } else {
-                if (this.game.menu.pause.isPaused) {
-                    context.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                    context.fillRect(0, 0, this.game.width, this.game.height);
-                }
+        } else {
+            const isPause = !!this.game.menu.pause?.isPaused;
+            const isGameOver = !!this.game.gameOver || !!this.game.menu.gameOver?.menuActive || !!this.game.notEnoughCoins;
+
+            if (isPause || isGameOver) {
+                const alpha = isPause ? 0.7 : (this.game.notEnoughCoins ? 0.5 : 0.2);
+                context.fillStyle = `rgba(0, 0, 0, ${alpha})`;
+                context.fillRect(0, 0, this.game.width, this.game.height);
             }
+        }
 
             context.font = 'bold 46px Love Ya Like A Sister';
             context.fillStyle = 'white';

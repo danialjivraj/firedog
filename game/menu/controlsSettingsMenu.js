@@ -83,9 +83,18 @@ export class ControlsSettingsMenu extends BaseMenu {
         context.save();
         if (!this.menuInGame) {
             context.drawImage(this.backgroundImage, 0, 0, this.game.width, this.game.height);
-        } else if (this.game.menu.pause.isPaused) {
-            context.fillStyle = "rgba(0, 0, 0, 0.7)";
-            context.fillRect(0, 0, this.game.width, this.game.height);
+        } else {
+            const isPause = !!this.game.menu.pause?.isPaused;
+            const isGameOver =
+                !!this.game.gameOver ||
+                !!this.game.notEnoughCoins ||
+                !!this.game.menu.gameOver?.menuActive;
+
+            if (isPause || isGameOver) {
+                const alpha = isPause ? 0.7 : (this.game.notEnoughCoins ? 0.5 : 0.2);
+                context.fillStyle = `rgba(0, 0, 0, ${alpha})`;
+                context.fillRect(0, 0, this.game.width, this.game.height);
+            }
         }
 
         context.font = 'bold 46px Love Ya Like A Sister';
@@ -365,7 +374,13 @@ export class ControlsSettingsMenu extends BaseMenu {
         this.menuInGame = inGame;
         this.showStarsSticker = !this.menuInGame;
 
-        super.activateMenu(selectedOption);
+        this.selectedOption = 0;
+        this.scrollY = 0;
+        this.targetScrollY = 0;
+
+        super.activateMenu(0);
+
+        this.scrollSelectedIntoView();
     }
 
     handleMenuSelection() {

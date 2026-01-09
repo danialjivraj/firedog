@@ -8,27 +8,36 @@ describe('GameOverMenu', () => {
         mockGame = {
             width: 1920,
             height: 689,
-            player: { currentState: { deathAnimation: false } },
+
+            gameOver: false,
             notEnoughCoins: false,
             hasActiveBoss: false,
+
             coins: 0,
+            player: { currentState: { deathAnimation: false } },
+
             background: { totalDistanceTraveled: 0 },
+
             audioHandler: {
                 menu: {
                     playSound: jest.fn(),
                     stopSound: jest.fn(),
-                }
+                },
             },
+
             menu: {
                 main: { activateMenu: jest.fn() },
-                pause: { canEscape: true }
+                pause: { canEscape: true },
+                settings: { activateMenu: jest.fn() },
             },
+
             bossManager: {
                 getGateForCurrentMap: jest.fn().mockReturnValue({
                     minCoins: 999,
                     minDistance: 1234,
                 }),
             },
+
             reset: jest.fn(),
         };
 
@@ -62,22 +71,25 @@ describe('GameOverMenu', () => {
             mockGame.notEnoughCoins = false;
             mockGame.hasActiveBoss = false;
 
+            mockGame.gameOver = true;
+
             menu.draw(ctx);
 
             expect(ctx.fillRect).toHaveBeenCalledWith(0, 0, 1920, 689);
             expect(menu.title).toBe('Game Over!');
             expect(mockGame.menu.pause.canEscape).toBe(false);
-            expect(menu.menuOptions).toEqual(['Retry', 'Back to Main Menu']);
+            expect(menu.menuOptions).toEqual(['Retry', 'Settings', 'Back to Main Menu']);
         });
 
         it('draws the “not enough coins” overlay when flagged', () => {
             mockGame.notEnoughCoins = true;
+            mockGame.hasActiveBoss = false;
 
             menu.draw(ctx);
 
             expect(ctx.fillRect).toHaveBeenCalledWith(0, 0, 1920, 689);
             expect(menu.title).toBe("You don't have enough coins!");
-            expect(menu.menuOptions).toEqual(['Retry', 'Back to Main Menu']);
+            expect(menu.menuOptions).toEqual(['Retry', 'Settings', 'Back to Main Menu']);
         });
 
         it('inserts the “Retry Final Boss” option when a boss is active', () => {
@@ -88,7 +100,8 @@ describe('GameOverMenu', () => {
             expect(menu.menuOptions).toEqual([
                 'Retry Final Boss',
                 'Retry',
-                'Back to Main Menu'
+                'Settings',
+                'Back to Main Menu',
             ]);
         });
 
@@ -111,26 +124,33 @@ describe('GameOverMenu', () => {
 
             expect(mockGame.reset).toHaveBeenCalled();
             expect(menu.menuActive).toBe(false);
-            expect(mockGame.audioHandler.menu.playSound)
-                .toHaveBeenCalledWith('optionSelectedSound', false, true);
+            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith(
+                'optionSelectedSound',
+                false,
+                true
+            );
             expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledTimes(1);
         });
 
         it('goes back to main when “Back to Main Menu” is selected', () => {
-            menu.selectedOption = 1; // Back to Main Menu
+            menu.selectedOption = 2; // Back to Main Menu
             menu.handleMenuSelection();
 
             expect(mockGame.reset).toHaveBeenCalled();
             expect(mockGame.menu.main.activateMenu).toHaveBeenCalled();
             expect(menu.menuActive).toBe(false);
-            expect(mockGame.audioHandler.menu.playSound)
-                .toHaveBeenCalledWith('optionSelectedSound', false, true);
+            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith(
+                'optionSelectedSound',
+                false,
+                true
+            );
         });
 
         it('retries final boss using gate data and preserves time', () => {
             mockGame.hasActiveBoss = true;
+
             menu.draw(ctx);
-            menu.selectedOption = 0;
+            menu.selectedOption = 0; // Retry Final Boss
 
             menu.handleMenuSelection();
 
@@ -140,8 +160,11 @@ describe('GameOverMenu', () => {
             expect(mockGame.background.totalDistanceTraveled).toBe(1234);
             expect(mockGame.notEnoughCoins).toBe(false);
             expect(menu.menuActive).toBe(false);
-            expect(mockGame.audioHandler.menu.playSound)
-                .toHaveBeenCalledWith('optionSelectedSound', false, true);
+            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith(
+                'optionSelectedSound',
+                false,
+                true
+            );
         });
 
         it('does nothing if neither deathAnimation nor notEnoughCoins is true', () => {
@@ -161,8 +184,11 @@ describe('GameOverMenu', () => {
 
             menu.handleMenuSelection();
             expect(mockGame.reset).toHaveBeenCalled();
-            expect(mockGame.audioHandler.menu.playSound)
-                .toHaveBeenCalledWith('optionSelectedSound', false, true);
+            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith(
+                'optionSelectedSound',
+                false,
+                true
+            );
         });
     });
 });

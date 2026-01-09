@@ -187,7 +187,7 @@ describe('AudioSettingsMenu', () => {
         'Menu Master Volume',
         'Menu Music',
         'Map SFX',
-        'Option Selected',
+        'Menu Navigation SFX',
         'Go Back',
       ]);
       expect(menu.volumeLevels).toEqual([50, 50, 50, 50, null]);
@@ -289,8 +289,8 @@ describe('AudioSettingsMenu', () => {
       expect(menu.menuOptions).toEqual([
         'Cutscene Master Volume',
         'Cutscene Music',
-        'Cutscene SFX',
-        'Cutscene Dialogue',
+        'Cutscene Dialogue SFX',
+        'Cutscene Action SFX',
         'Go Back',
       ]);
       expect(menu.volumeLevels).toEqual([50, 50, 50, 50, null]);
@@ -356,7 +356,7 @@ describe('AudioSettingsMenu', () => {
         game.audioHandler.menu.soundsMapping.enemyLoreSwitchTabSound,
       ]);
 
-      expect(map['Option Selected']).toEqual([
+      expect(map['Menu Navigation SFX']).toEqual([
         game.audioHandler.menu.soundsMapping.optionSelectedSound,
         game.audioHandler.menu.soundsMapping.optionHoveredSound,
       ]);
@@ -971,6 +971,91 @@ describe('AudioSettingsMenu', () => {
 
       expect(menu.muted[0]).toBe(true);
       expect(document.getElementById('menu_track').volume).toBe(0);
+    });
+  });
+
+  describe('master mute blocks per-channel mute toggles (new behavior)', () => {
+    test('when master muted: Enter on non-master row does not toggle, does not save, and does not play select sound', () => {
+      menu.setTab('MENU');
+      setInteractable(true);
+
+      menu.volumeLevels[0] = 100;
+      menu.volumeLevels[1] = 100;
+      menu.muted[0] = true;
+      menu.muted[1] = false;
+
+      menu.updateAudioVolume(menu.audioMap['Menu Music'], 1);
+      expect(document.getElementById('menu_track').volume).toBe(0);
+
+      menu.selectedOption = 1;
+
+      game.saveGameState.mockClear();
+      game.audioHandler.menu.playSound.mockClear();
+
+      menu.handleKeyDown({ key: 'Enter' });
+
+      expect(menu.muted[1]).toBe(false);
+      expect(game.saveGameState).not.toHaveBeenCalled();
+      expect(game.audioHandler.menu.playSound).not.toHaveBeenCalled();
+    });
+
+    test('when master muted: clicking mute icon on non-master row does not toggle, does not save, and does not play select sound', () => {
+      menu.setTab('MENU');
+      setInteractable(true);
+
+      menu.muted[0] = true;
+      menu.muted[2] = false;
+
+      const r = menu.getMuteIconRect(2);
+      const evt = clientFromCanvas(r.x + r.w / 2, r.y + r.h / 2);
+
+      game.saveGameState.mockClear();
+      game.audioHandler.menu.playSound.mockClear();
+
+      menu.handleMouseClick(evt);
+
+      expect(menu.selectedOption).toBe(2);
+      expect(menu.muted[2]).toBe(false);
+      expect(game.saveGameState).not.toHaveBeenCalled();
+      expect(game.audioHandler.menu.playSound).not.toHaveBeenCalled();
+    });
+
+    test('when master muted: clicking label on non-master row does not toggle, does not save, and does not play select sound', () => {
+      menu.setTab('MENU');
+      setInteractable(true);
+
+      menu.muted[0] = true;
+      menu.muted[1] = false;
+
+      const r = menu.getLabelRect(1);
+      const evt = clientFromCanvas(r.x + r.w * 0.75, r.y + r.h / 2);
+
+      game.saveGameState.mockClear();
+      game.audioHandler.menu.playSound.mockClear();
+
+      menu.handleMouseClick(evt);
+
+      expect(menu.selectedOption).toBe(1);
+      expect(menu.muted[1]).toBe(false);
+      expect(game.saveGameState).not.toHaveBeenCalled();
+      expect(game.audioHandler.menu.playSound).not.toHaveBeenCalled();
+    });
+
+    test('master row is still toggleable while muted/unmuted (Enter toggles and plays select sound)', () => {
+      menu.setTab('MENU');
+      setInteractable(true);
+
+      menu.muted[0] = false;
+
+      menu.selectedOption = 0;
+      game.saveGameState.mockClear();
+      game.audioHandler.menu.playSound.mockClear();
+
+      menu.handleKeyDown({ key: 'Enter' });
+
+      expect(menu.muted[0]).toBe(true);
+      expect(game.saveGameState).toHaveBeenCalled();
+      expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionSelectedSound', false, true);
     });
   });
 });

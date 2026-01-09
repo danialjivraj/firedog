@@ -6,13 +6,15 @@ export class SettingsMenu extends BaseMenu {
     super(game, fullOptions, "Settings");
 
     this.fullOptions = fullOptions;
-
     this.inGameOptions = ["Audio", "Controls", "Go Back"];
 
     this.menuInGame = false;
 
     this._basePositionOffset = this.positionOffset;
     this._baseMenuOptionsPositionOffset = this.menuOptionsPositionOffset;
+
+    this.returnMenu = "pause";
+    this.returnSelectedOption = 2;
   }
 
   activateMenu(arg = 0) {
@@ -24,6 +26,9 @@ export class SettingsMenu extends BaseMenu {
     } else if (arg && typeof arg === "object") {
       if (typeof arg.selectedOption === "number") selectedOption = arg.selectedOption;
       if (typeof arg.inGame === "boolean") inGame = arg.inGame;
+
+      if (typeof arg.returnMenu === "string") this.returnMenu = arg.returnMenu;
+      if (typeof arg.returnSelectedOption === "number") this.returnSelectedOption = arg.returnSelectedOption;
     }
 
     this.menuInGame = inGame;
@@ -62,7 +67,12 @@ export class SettingsMenu extends BaseMenu {
     }
 
     if (this.menuInGame && selected === "Go Back") {
-      this.game.menu.pause.activateMenu(2);
+      const target = this.game.menu?.[this.returnMenu];
+      if (target && typeof target.activateMenu === "function") {
+        target.activateMenu(this.returnSelectedOption);
+      } else {
+        this.game.menu.pause.activateMenu(2);
+      }
       return;
     }
 
