@@ -201,7 +201,7 @@ export class Player {
 
     tryStartDash(input) {
         if (!this.game.input.isDashAttack(input)) return false;
-
+        if (this.game.cabin.isFullyVisible) return false;
         if (this.game.gameOver) return false;
         if (this.isFrozen) return false;
         if (this.isDashing) return false;

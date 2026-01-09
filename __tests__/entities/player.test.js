@@ -553,6 +553,10 @@ describe('Player', () => {
             expect(player.tryStartDash(['d'])).toBe(false);
             game.gameOver = false;
 
+            game.cabin.isFullyVisible = true;
+            expect(player.tryStartDash(['d'])).toBe(false);
+            game.cabin.isFullyVisible = false;
+
             player.isFrozen = true;
             expect(player.tryStartDash(['d'])).toBe(false);
             player.isFrozen = false;
