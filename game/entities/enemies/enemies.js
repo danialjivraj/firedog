@@ -1278,7 +1278,7 @@ export class Goblin extends MovingGroundEnemy {
         if (
             !this.hasJumped && !this.isJumping &&
             ((player.currentState === player.states[2]) ||
-                (player.currentState === player.states[4] && !player.onGround())) &&
+                ((player.currentState === player.states[4] || player.currentState === player.states[3]) && !player.onGround())) &&
             playerDistance < 300 &&
             player.x < this.x
         ) {
