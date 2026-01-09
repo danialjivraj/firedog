@@ -288,6 +288,7 @@ function makeGameAndLogic() {
     jest.spyOn(game.collisions, 'push');
     jest.spyOn(game.particles, 'unshift');
     jest.spyOn(game.floatingMessages, 'push');
+    jest.spyOn(logic, 'startFrozen').mockImplementation(() => {});
 
     return { game, player, logic };
 }
@@ -803,7 +804,7 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
             expectCollisionCounts(ctx, [[ExpectedCollisionClass, 1]]);
 
             if (!s.isInvisible && !s.isDashing) {
-                expect(ctx.player.startFrozen).toHaveBeenCalledWith(2000);
+                expect(ctx.logic.startFrozen).toHaveBeenCalledWith(ctx.player, 2000);
                 expect(ctx.game.lives).toBe(2);
                 expect(ctx.game.coins).toBe(49);
             } else {
@@ -1359,7 +1360,7 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
             if (!s.isInvisible) {
                 expect(ctx.game.lives).toBe(2);
                 expect(ctx.game.coins).toBe(49);
-                expect(ctx.player.startFrozen).toHaveBeenCalledWith(2000);
+                expect(ctx.logic.startFrozen).toHaveBeenCalledWith(ctx.player, 2000);
             } else {
                 expectNoDamage(ctx);
                 expect(ctx.player.startFrozen).not.toHaveBeenCalled();
@@ -2089,7 +2090,7 @@ describe('CollisionLogic.handlePowerCollisions — powerUps + powerDowns', () =>
         runPowerCollision(ctx);
 
         expect(item.markedForDeletion).toBe(true);
-        expect(ctx.player.startFrozen).toHaveBeenCalledWith(3000);
+        expect(ctx.logic.startFrozen).toHaveBeenCalledWith(ctx.player, 3000);
     });
 
     test('Cauldron (powerDown): poison active + timer 3500 and sound', () => {

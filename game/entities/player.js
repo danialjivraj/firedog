@@ -354,37 +354,6 @@ export class Player {
         );
     }
 
-    startFrozen(durationMs = this.frozenDuration) {
-        if (this.game.gameOver) return;
-        if (this.currentState.deathAnimation) return;
-
-        this.isFrozen = true;
-        this.frozenTimer = Math.max(this.frozenTimer, durationMs);
-
-        if (this.currentState !== this.states[7]) {
-            this.setState(7, 1);
-        }
-        this.frameX = 0;
-        this.frameTimer = 0;
-
-        this.frozenFrameX = 0;
-        this.frozenFrameY = this.frameY;
-        this.frozenFrameTimer = 0;
-        this.frozenMaxFrame = this.maxFrame;
-        this.frozenFacingRight = this.facingRight;
-
-        this.speed = 0;
-        this.vx = 0;
-        this.vy = 0;
-
-        this.frozenPulseTimer = 0;
-        this.frozenOpacity = 0.5;
-
-        this.game.input.keys = [];
-
-        this.game.audioHandler.firedogSFX.playSound('frozenSound', false, true);
-    }
-
     updateFrozen(deltaTime) {
         if (!this.isFrozen) return;
 
@@ -1531,6 +1500,52 @@ export class CollisionLogic {
         return this.setSlow(durationMs, player);
     }
 
+    // frozen methods
+    canBeFrozen(player = this.game.player) {
+        return !player.isInvisible;
+    }
+
+    startFrozen(player = this.game.player, durationMs = 2000) {
+        if (!this.canBeFrozen(player)) return false;
+        if (this.game.gameOver) return false;
+        if (player.currentState?.deathAnimation) return false;
+
+        const wasFrozen = !!player.isFrozen;
+
+        player.isFrozen = true;
+        player.frozenTimer = Math.max(player.frozenTimer, durationMs);
+
+        if (player.currentState !== player.states[7]) {
+            player.setState(7, 1);
+        }
+
+        player.frameX = 0;
+        player.frameTimer = 0;
+
+        player.frozenFrameX = 0;
+        player.frozenFrameY = player.frameY;
+        player.frozenFrameTimer = 0;
+        player.frozenMaxFrame = player.maxFrame;
+        player.frozenFacingRight = player.facingRight;
+
+        player.speed = 0;
+        player.vx = 0;
+        player.vy = 0;
+
+        player.frozenPulseTimer = 0;
+        player.frozenOpacity = 0.5;
+
+        player.game.input.keys = [];
+
+        if (!wasFrozen) {
+            this.game.audioHandler.firedogSFX.playSound('startFrozen', false, true);
+        }
+
+        this.game.audioHandler.firedogSFX.playSound('frozenSound', false, true);
+
+        return true;
+    }
+
     // poison methods
     canBePoisoned(player = this.game.player) {
         return !player.energyReachedZero && !player.isBluePotionActive;
@@ -1758,6 +1773,21 @@ export class CollisionLogic {
                 return true;
             }
 
+            // frozen
+            case enemy instanceof IceSlash:
+            case enemy instanceof BlueAsteroid:
+            case enemy instanceof CyanArrow: {
+                if (enemy instanceof IceSlash) {
+                    const shouldInvert = enemy.speedX > 0;
+                    this.game.collisions.push(new IceSlashCollision(this.game, ex, ey, shouldInvert));
+                } else {
+                    this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
+                }
+
+                this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
+                return true;
+            }
+
             // poison
             case enemy instanceof PoisonSpit:
             case enemy instanceof PoisonDrop:
@@ -1800,8 +1830,7 @@ export class CollisionLogic {
                 return true;
             }
 
-            case enemy instanceof YellowArrow:
-            case enemy instanceof CyanArrow: {
+            case enemy instanceof YellowArrow: {
                 this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
                 this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
                 return true;
@@ -1809,12 +1838,6 @@ export class CollisionLogic {
 
             case enemy instanceof PurpleAsteroid: {
                 this.game.collisions.push(new AsteroidExplosionCollision(this.game, ex, ey - 70));
-                this.game.audioHandler.collisionSFX.playSound('elyvorg_meteor_in_contact_sound', false, true);
-                return true;
-            }
-
-            case enemy instanceof BlueAsteroid: {
-                this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
                 this.game.audioHandler.collisionSFX.playSound('elyvorg_meteor_in_contact_sound', false, true);
                 return true;
             }
@@ -1904,11 +1927,6 @@ export class CollisionLogic {
                 return true;
             }
 
-            case enemy instanceof IceSlash: {
-                const shouldInvert = enemy.speedX > 0;
-                this.game.collisions.push(new IceSlashCollision(this.game, ex, ey, shouldInvert));
-                return true;
-            }
 
             case enemy instanceof GhostElyvorg: {
                 this.game.collisions.push(new GhostFadeOut(this.game, enemy));
@@ -2025,14 +2043,17 @@ export class CollisionLogic {
                 enemy.lives = 0;
             },
 
+            // bosses
             Glacikal: (enemy) => {
                 enemy.lives--;
                 this.bloodOrPoof(enemy, player);
             },
 
-            IceSlash: (enemy, fireball) => {
-                this.playCollisionFx(enemy, { fireball });
-                this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
+            Elyvorg: (enemy) => {
+                if (!enemy.isBarrierActive) {
+                    enemy.lives--;
+                    this.bloodOrPoof(enemy, player);
+                }
             },
 
             NTharax: (enemy) => {
@@ -2043,15 +2064,9 @@ export class CollisionLogic {
                 }
             },
 
+            // barriers
             HealingBarrier: (barrier) => {
                 this.handleHealingBarrierCollision(barrier);
-            },
-
-            Elyvorg: (enemy) => {
-                if (!enemy.isBarrierActive) {
-                    enemy.lives--;
-                    this.bloodOrPoof(enemy, player);
-                }
             },
 
             PurpleBarrier: (enemy) => {
@@ -2434,20 +2449,11 @@ export class CollisionLogic {
             case enemy instanceof CyanArrow: {
                 if (canPlayCollisionFx) {
                     this.playCollisionFx(enemy, { fallbackToDefault: true });
-
-                    const statusBlocked = player.isInvisible || player.isDashing || treatAsDash;
-                    if (statusBlocked) {
-                        this.game.audioHandler.collisionSFX.playSound(
-                            'breakingIceNoDamageSound',
-                            false,
-                            true
-                        );
-                    }
                 }
 
                 if (canReceiveStatus && !player.isDashing && !treatAsDash) {
                     this.hit(enemy, player);
-                    player.startFrozen(2000);
+                    this.startFrozen(player, 2000);
                 }
 
                 break;
@@ -2713,15 +2719,16 @@ export class CollisionLogic {
             // frozen
             case enemy instanceof IceSlash:
             case enemy instanceof BlueAsteroid:
-            case enemy instanceof CyanArrow:
+            case enemy instanceof CyanArrow: {
+                this.playCollisionFx(enemy, { fallbackToDefault: true });
+
                 if (!player.isInvisible) {
                     this.hit(enemy, player);
-                    player.startFrozen(2000);
-                } else {
-                    this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
+                    this.startFrozen(player, 2000);
                 }
-                this.playCollisionFx(enemy, { fallbackToDefault: true });
+
                 break;
+            }
 
             // tunnel vision
             case enemy instanceof BlackBeamOrb:
@@ -2876,7 +2883,7 @@ export class CollisionLogic {
                 game.audioHandler.powerUpAndDownSFX.playSound('drinkSoundEffect', false, true);
             },
             IceCube() {
-                player.startFrozen(3000);
+                this.startFrozen(player, 3000);
             },
             Cauldron() {
                 game.audioHandler.powerUpAndDownSFX.playSound('cauldronSoundEffect', false, true);

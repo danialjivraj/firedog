@@ -1,5 +1,6 @@
 import { Player } from '../../game/entities/player';
 import { Fireball, PoisonBubbles, IceCrystalBubbles } from '../../game/animations/particles';
+import { CollisionLogic } from '../../game/entities/player.js';
 
 global.document = {
     getElementById: jest.fn().mockReturnValue({ width: 1920, height: 689, id: 'stubImage' })
@@ -211,43 +212,43 @@ describe('Player', () => {
     });
 
     test('setPoison / tryApplyPoison behavior (replaces isPoisonActiveChecker + isPoisonTimerChecker)', () => {
-    const logic = player.collisionLogic;
+        const logic = player.collisionLogic;
 
-    player.energyReachedZero = true;
-    player.isBluePotionActive = false;
+        player.energyReachedZero = true;
+        player.isBluePotionActive = false;
 
-    expect(logic.setPoison(2500, player)).toBe(false);
-    expect(player.isPoisonedActive).toBe(false);
-    expect(player.poisonTimer).toBe(0);
+        expect(logic.setPoison(2500, player)).toBe(false);
+        expect(player.isPoisonedActive).toBe(false);
+        expect(player.poisonTimer).toBe(0);
 
-    player.energyReachedZero = false;
+        player.energyReachedZero = false;
 
-    expect(logic.setPoison(2500, player)).toBe(true);
-    expect(player.isPoisonedActive).toBe(true);
-    expect(player.poisonTimer).toBe(2500);
+        expect(logic.setPoison(2500, player)).toBe(true);
+        expect(player.isPoisonedActive).toBe(true);
+        expect(player.poisonTimer).toBe(2500);
 
-    player.isBluePotionActive = true;
+        player.isBluePotionActive = true;
 
-    expect(logic.setPoison(2500, player)).toBe(false);
-    expect(player.isPoisonedActive).toBe(false);
-    expect(player.poisonTimer).toBe(0);
+        expect(logic.setPoison(2500, player)).toBe(false);
+        expect(player.isPoisonedActive).toBe(false);
+        expect(player.poisonTimer).toBe(0);
 
-    player.isBluePotionActive = false;
-    player.energyReachedZero = false;
+        player.isBluePotionActive = false;
+        player.energyReachedZero = false;
 
-    player.isInvisible = true;
-    player.isPoisonedActive = true;
-    player.poisonTimer = 123;
+        player.isInvisible = true;
+        player.isPoisonedActive = true;
+        player.poisonTimer = 123;
 
-    expect(logic.tryApplyPoison(player, 2500)).toBe(false);
-    expect(player.isPoisonedActive).toBe(false);
-    expect(player.poisonTimer).toBe(0);
+        expect(logic.tryApplyPoison(player, 2500)).toBe(false);
+        expect(player.isPoisonedActive).toBe(false);
+        expect(player.poisonTimer).toBe(0);
 
-    player.isInvisible = false;
+        player.isInvisible = false;
 
-    expect(logic.tryApplyPoison(player, 2500)).toBe(true);
-    expect(player.isPoisonedActive).toBe(true);
-    expect(player.poisonTimer).toBe(2500);
+        expect(logic.tryApplyPoison(player, 2500)).toBe(true);
+        expect(player.isPoisonedActive).toBe(true);
+        expect(player.poisonTimer).toBe(2500);
     });
 
     test('drainEnergy reduces energy and flips energyReachedZero', () => {
@@ -1311,6 +1312,8 @@ describe('Player', () => {
         });
 
         test('startFrozen enters frozen state and switches to Hit', () => {
+            const logic = new CollisionLogic(game);
+
             player.states[7] = { enter: jest.fn(), deathAnimation: false };
             player.currentState = player.states[1];
             player.speed = 5;
@@ -1318,7 +1321,7 @@ describe('Player', () => {
             player.vy = -2;
             game.input.keys = ['a', 'd'];
 
-            player.startFrozen(3000);
+            logic.startFrozen(player, 3000);
 
             expect(player.isFrozen).toBe(true);
             expect(player.frozenTimer).toBe(3000);
@@ -1328,7 +1331,6 @@ describe('Player', () => {
             expect(player.vy).toBe(0);
             expect(game.input.keys).toEqual([]);
         });
-
         test('updateFrozen keeps game speed at 0 and counts down while frozen', () => {
             player.isFrozen = true;
             player.frozenTimer = 1000;
