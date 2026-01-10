@@ -277,7 +277,7 @@ export class StoryCutscene extends Cutscene {
                     43: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, 'map6stone2', this.halfASecond * 2 + 100),
                     44: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, 'map6stone3', this.halfASecond * 2 + 100, null, () => {
                         this.playMusic('groundShakingSound', true);
-                        this.groundShaking = true;
+                        this.game.startShake(0);
                     }),
                     48: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, 'map6elyvorgTokenPlaceActive', this.halfASecond * 2 + 100),
                     51: () => this.transitionWithBg(this.halfASecond, this.halfASecond * 2, this.halfASecond, 'map1KingsBedroom', this.halfASecond * 2 + 100, () => {
@@ -296,13 +296,13 @@ export class StoryCutscene extends Cutscene {
                         this.cutsceneBackgroundChange(this.halfASecond * 4, this.halfASecond * 2, this.halfASecond * 7);
                         setTimeout(() => {
                             this.playMusic('gta4Theme', true);
-                            this.groundShaking = false;
+                            this.game.stopShake();
                             this.backgroundImage = document.getElementById('toBeContinued');
                         }, this.halfASecond * 4 + 100);
                         setTimeout(() => { this.addEventListeners(); }, this.halfASecond * 13);
                     },
                     68: () => this.transitionWithBg(this.halfASecond * 4, this.halfASecond * 2, this.halfASecond * 7, 'madeByDanial', this.halfASecond * 4 + 100, null, () => {
-                        this.groundShaking = false;
+                        this.game.stopShake();
                     }),
                 }
             },

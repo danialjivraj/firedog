@@ -312,18 +312,18 @@ export class Game {
     }
 
     clearCutsceneState() {
-    this.cutsceneActive = false;
-    this.currentCutscene = null;
-    this.isEndCutscene = false;
-    this.pauseContext = 'gameplay';
-    this.currentMenu = null;
-    this.cutscenes = [];
+        this.cutsceneActive = false;
+        this.currentCutscene = null;
+        this.isEndCutscene = false;
+        this.pauseContext = 'gameplay';
+        this.currentMenu = null;
+        this.cutscenes = [];
 
-    if (this.input) {
-        this.input.keys = [];
-        this.input.arrowUpPressed = false;
-        this.input.arrowDownPressed = false;
-    }
+        if (this.input) {
+            this.input.keys = [];
+            this.input.arrowUpPressed = false;
+            this.input.arrowDownPressed = false;
+        }
     }
 
     restartActiveCutscene() {
@@ -1177,7 +1177,16 @@ window.addEventListener("load", function () {
                     game.waitForFadeInOpacity = false;
                 }, 2200);
             } else {
+                const canShake =
+                    game.shakeActive &&
+                    !game.menu.pause.isPaused &&
+                    game.tutorial.tutorialPause === false;
+
+                if (canShake) preShake(ctx);
+
                 game.currentCutscene.draw(ctx);
+
+                if (canShake) postShake(ctx);
 
                 if (game.menu.pause.isPaused && game.currentMenu) {
                     game.currentMenu.menuActive = true;

@@ -11,6 +11,9 @@ describe('Cutscene', () => {
             height: 689,
             coins: 42,
             winningCoins: 100,
+
+            shakeActive: false,
+
             menu: {
                 pause: { isPaused: false },
                 skins: {
@@ -463,6 +466,9 @@ describe('Cutscene', () => {
             cutscene.fullWords = ['Hi'];
             cutscene.fullWordsColor = ['Hi'];
             cutscene.reminderImageStartTime = performance.now() - 1000;
+
+            game.shakeActive = false;
+            game.menu.pause.isPaused = false;
         });
 
         it('passes wrapped lines into characterColorLogic based on characterLimit', () => {
@@ -513,12 +519,14 @@ describe('Cutscene', () => {
             );
         });
 
-        it('draws background, shakes when groundShaking, then restores filter', () => {
+        it('draws background, shakes when game.shakeActive and not paused, then restores filter', () => {
             cutscene.backgroundImage = bgImg;
-            cutscene.groundShaking = true;
+            game.shakeActive = true;
             cutscene.isBackgroundBlackAndWhite = true;
+
             const pre = jest.spyOn(shake, 'preShake');
             const post = jest.spyOn(shake, 'postShake');
+
             jest.spyOn(performance, 'now').mockReturnValue(cutscene.reminderImageStartTime + 500);
 
             cutscene.draw(context);
@@ -535,10 +543,24 @@ describe('Cutscene', () => {
             expect(context._filter).toBe('none');
         });
 
+        it('does not shake background when paused even if game.shakeActive is true', () => {
+            cutscene.backgroundImage = bgImg;
+            game.shakeActive = true;
+            game.menu.pause.isPaused = true;
+
+            const pre = jest.spyOn(shake, 'preShake');
+            const post = jest.spyOn(shake, 'postShake');
+
+            cutscene.draw(context);
+
+            expect(pre).not.toHaveBeenCalled();
+            expect(post).not.toHaveBeenCalled();
+        });
+
         it('renders character image, textBox, reminder image, and final sounds', () => {
             cutscene.backgroundImage = null;
             cutscene.dontShowTextBoxAndSound = false;
-            cutscene.groundShaking = false;
+
             jest.spyOn(performance, 'now').mockReturnValue(
                 cutscene.reminderImageStartTime + 2000
             );

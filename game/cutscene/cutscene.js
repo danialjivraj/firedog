@@ -23,7 +23,6 @@ export class Cutscene {
         this.fullWords = [];
         this.fullWordsColor = [];
         this.halfASecond = 500;
-        this.groundShaking = false;
         this.playerCoins = this.game.coins;
         this.textBoxWidth = 870;
         // coins
@@ -291,9 +290,15 @@ export class Cutscene {
     draw(context) {
         if (this.backgroundImage) {
             if (this.isBackgroundBlackAndWhite) context.filter = 'grayscale(100%)';
-            if (this.groundShaking) preShake(context);
+
+            const canShake =
+            this.game.shakeActive &&
+            !this.game.menu.pause.isPaused;
+
+            if (canShake) preShake(context);
             context.drawImage(this.backgroundImage, 0, 0, this.game.width, this.game.height);
-            if (this.groundShaking) postShake(context);
+            if (canShake) postShake(context);
+
             context.filter = 'none';
         }
 
