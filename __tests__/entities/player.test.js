@@ -214,14 +214,14 @@ describe('Player', () => {
     test('setPoison / tryApplyPoison behavior (replaces isPoisonActiveChecker + isPoisonTimerChecker)', () => {
         const logic = player.collisionLogic;
 
-        player.energyReachedZero = true;
+        player.isEnergyExhausted = true;
         player.isBluePotionActive = false;
 
         expect(logic.setPoison(2500, player)).toBe(false);
         expect(player.isPoisonedActive).toBe(false);
         expect(player.poisonTimer).toBe(0);
 
-        player.energyReachedZero = false;
+        player.isEnergyExhausted = false;
 
         expect(logic.setPoison(2500, player)).toBe(true);
         expect(player.isPoisonedActive).toBe(true);
@@ -234,7 +234,7 @@ describe('Player', () => {
         expect(player.poisonTimer).toBe(0);
 
         player.isBluePotionActive = false;
-        player.energyReachedZero = false;
+        player.isEnergyExhausted = false;
 
         player.isInvisible = true;
         player.isPoisonedActive = true;
@@ -251,14 +251,14 @@ describe('Player', () => {
         expect(player.poisonTimer).toBe(2500);
     });
 
-    test('drainEnergy reduces energy and flips energyReachedZero', () => {
+    test('drainEnergy reduces energy and flips isEnergyExhausted', () => {
         player.energy = 5;
         player.drainEnergy();
         expect(player.energy).toBeCloseTo(4.6);
         player.energy = 0.2;
         player.drainEnergy();
         expect(player.energy).toBe(0);
-        expect(player.energyReachedZero).toBe(true);
+        expect(player.isEnergyExhausted).toBe(true);
     });
 
     test('divingAbility increments and clamps divingTimer', () => {
@@ -329,7 +329,7 @@ describe('Player', () => {
     test('energyLogic poison drains and disables', () => {
         player.isPoisonedActive = true;
         player.poisonTimer = 100;
-        player.energyReachedZero = false;
+        player.isEnergyExhausted = false;
         player.energy = 50;
         player.energyInterval = 1000;
         player.energyTimer = 0;
@@ -589,9 +589,9 @@ describe('Player', () => {
             expect(player.tryStartDash(['d'])).toBe(false);
             player.isDashing = false;
 
-            player.energyReachedZero = true;
+            player.isEnergyExhausted = true;
             expect(player.tryStartDash(['d'])).toBe(false);
-            player.energyReachedZero = false;
+            player.isEnergyExhausted = false;
 
             player.dashTimer = player.dashCooldown - 1;
             expect(player.tryStartDash(['d'])).toBe(false);
@@ -674,14 +674,14 @@ describe('Player', () => {
             expect(player.x).toBe(0);
         });
 
-        test('tryStartDash: if energy drops to 0, energyReachedZero becomes true', () => {
+        test('tryStartDash: if energy drops to 0, isEnergyExhausted becomes true', () => {
             game.input.isDashAttack.mockReturnValue(true);
             player.energy = player.dashEnergyCost;
 
             player.tryStartDash(['d']);
 
             expect(player.energy).toBe(0);
-            expect(player.energyReachedZero).toBe(true);
+            expect(player.isEnergyExhausted).toBe(true);
         });
     });
 
@@ -730,11 +730,11 @@ describe('Player', () => {
             expect(game.audioHandler.firedogSFX.playSound).toHaveBeenCalledWith('gettingHit', false, true);
         });
 
-        test('plays energyReachedZeroSound only once', () => {
-            player.energyReachedZero = true;
+        test('plays energyExhaustedSound only once', () => {
+            player.isEnergyExhausted = true;
             player.noEnergyLeftSound = false;
             player.playerSFXAudios();
-            expect(game.audioHandler.firedogSFX.playSound).toHaveBeenCalledWith('energyReachedZeroSound');
+            expect(game.audioHandler.firedogSFX.playSound).toHaveBeenCalledWith('energyExhaustedSound');
             player.playerSFXAudios();
             expect(game.audioHandler.firedogSFX.playSound).toHaveBeenCalledTimes(1);
         });
@@ -830,13 +830,13 @@ describe('Player', () => {
         expect(player.isRedPotionActive).toBe(false);
     });
 
-    test('energyLogic flips energyReachedZero off once energy ≥ 20', () => {
-        player.energyReachedZero = true;
+    test('energyLogic flips isEnergyExhausted off once energy ≥ 20', () => {
+        player.isEnergyExhausted = true;
         player.noEnergyLeftSound = true;
         player.energy = 20;
         player.energyTimer = player.energyInterval;
         player.energyLogic(0);
-        expect(player.energyReachedZero).toBe(false);
+        expect(player.isEnergyExhausted).toBe(false);
         expect(player.noEnergyLeftSound).toBe(false);
     });
 
@@ -1046,10 +1046,10 @@ describe('Player', () => {
         });
     });
 
-    describe('fireballAbility energyReachedZero blocks spawn', () => {
+    describe('fireballAbility isEnergyExhausted blocks spawn', () => {
         beforeEach(() => Fireball.mockClear());
-        test('does not fire when energyReachedZero', () => {
-            player.energyReachedZero = true;
+        test('does not fire when isEnergyExhausted', () => {
+            player.isEnergyExhausted = true;
             player.fireballTimer = player.fireballCooldown;
             game.input.isFireballAttack.mockReturnValue(true);
             player.currentState = player.states[1];
@@ -1391,7 +1391,7 @@ describe('Player', () => {
 
             player.isPoisonedActive = true;
             player.poisonTimer = 888;
-            player.energyReachedZero = true;
+            player.isEnergyExhausted = true;
 
             player.isSlowed = true;
             player.slowedTimer = 777;
@@ -1435,7 +1435,7 @@ describe('Player', () => {
 
             expect(player.isPoisonedActive).toBe(false);
             expect(player.poisonTimer).toBe(0);
-            expect(player.energyReachedZero).toBe(false);
+            expect(player.isEnergyExhausted).toBe(false);
 
             expect(player.isSlowed).toBe(false);
             expect(player.slowedTimer).toBe(0);

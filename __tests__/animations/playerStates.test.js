@@ -67,7 +67,7 @@ describe('playerStates.js', () => {
             onGround: jest.fn(() => true),
 
             energy: 10,
-            energyReachedZero: false,
+            isEnergyExhausted: false,
 
             divingTimer: 0,
             divingCooldown: 100,
@@ -201,7 +201,7 @@ describe('playerStates.js', () => {
 
         it('roll click when boss is visible but energy depleted → no transition', () => {
             game.isBossVisible = true;
-            player.energyReachedZero = true;
+            player.isEnergyExhausted = true;
             input.isRollAttack.mockReturnValue(true);
 
             st.handleInput([]);
@@ -292,7 +292,7 @@ describe('playerStates.js', () => {
 
         it('boss visible with energy depleted: roll click does not trigger ROLLING; falls back to STANDING', () => {
             game.isBossVisible = true;
-            player.energyReachedZero = true;
+            player.isEnergyExhausted = true;
             input.isRollAttack.mockReturnValue(true);
 
             st.handleInput([]);
@@ -399,7 +399,7 @@ describe('playerStates.js', () => {
         it('roll requested but energy depleted + sit + dive ready → DIVING(0) instead of ROLLING', () => {
             player.onGround.mockReturnValue(false);
             player.divingTimer = player.divingCooldown;
-            player.energyReachedZero = true;
+            player.isEnergyExhausted = true;
             input.isRollAttack.mockReturnValue(true);
 
             st.handleInput(['s']);
@@ -586,8 +586,8 @@ describe('playerStates.js', () => {
             expect(player.setState).toHaveBeenCalledWith(states.DIVING, 4);
         });
 
-        it('when energyReachedZero and onGround → transitions to RUNNING fallback', () => {
-            player.energyReachedZero = true;
+        it('when isEnergyExhausted and onGround → transitions to RUNNING fallback', () => {
+            player.isEnergyExhausted = true;
             player.energy = 0;
 
             st.handleInput([]);
@@ -595,8 +595,8 @@ describe('playerStates.js', () => {
             expect(player.setState).toHaveBeenCalledWith(states.RUNNING, 1);
         });
 
-        it('when energyReachedZero mid-air: vy<=0 → JUMPING, vy>0 → FALLING', () => {
-            player.energyReachedZero = true;
+        it('when isEnergyExhausted mid-air: vy<=0 → JUMPING, vy>0 → FALLING', () => {
+            player.isEnergyExhausted = true;
             player.onGround.mockReturnValue(false);
 
             player.vy = 0;
@@ -609,8 +609,8 @@ describe('playerStates.js', () => {
             expect(player.setState).toHaveBeenCalledWith(states.FALLING, 1);
         });
 
-        it('when energyReachedZero while underwater → FALLING', () => {
-            player.energyReachedZero = true;
+        it('when isEnergyExhausted while underwater → FALLING', () => {
+            player.isEnergyExhausted = true;
             player.isUnderwater = true;
 
             st.handleInput([]);
@@ -874,7 +874,7 @@ describe('playerStates.js', () => {
 
         it('boss visible + roll click with energy depleted → no ROLLING transition', () => {
             game.isBossVisible = true;
-            player.energyReachedZero = true;
+            player.isEnergyExhausted = true;
             input.isRollAttack.mockReturnValue(true);
 
             st.handleInput([]);

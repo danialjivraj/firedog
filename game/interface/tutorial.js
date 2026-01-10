@@ -74,7 +74,7 @@ export class Tutorial {
                 key: 'Enter',
                 condition: () => {
                     const meatSoldier = this.game.enemies.find(enemy => enemy instanceof MeatSoldier);
-                    return this.isPlayerNearEnemy(meatSoldier, 1200) && this.game.player.energyReachedZero === false;
+                    return this.isPlayerNearEnemy(meatSoldier, 1200) && this.game.player.isEnergyExhausted === false;
                 },
                 timerDuration: 2000,
                 spawnEnemy: (deltaTime) => {
@@ -86,7 +86,7 @@ export class Tutorial {
                 key: 'w',
                 condition: () => {
                     const dotter = this.game.enemies.find(enemy => enemy instanceof Dotter);
-                    return this.isPlayerNearEnemy(dotter, 1200) && this.game.player.energyReachedZero === false;
+                    return this.isPlayerNearEnemy(dotter, 1200) && this.game.player.isEnergyExhausted === false;
                 },
                 timerDuration: 2000,
                 spawnEnemy: (deltaTime) => {
@@ -172,13 +172,13 @@ export class Tutorial {
             {
                 message: "You can jump or Dive Attack while using Roll Attack.\nHold Enter and press W, and once you're in the air press S!",
                 key: 'Enter',
-                condition: () => this.game.player.energyReachedZero === false,
+                condition: () => this.game.player.isEnergyExhausted === false,
                 timerDuration: 4000,
             },
             {
                 message: "Press Q to release your Fireball Attack!\nIt uses 8.0 of your Energy!",
                 key: 'q',
-                condition: () => this.game.player.fireballTimer >= this.game.player.fireballCooldown && this.game.player.energyReachedZero === false,
+                condition: () => this.game.player.fireballTimer >= this.game.player.fireballCooldown && this.game.player.isEnergyExhausted === false,
                 timerDuration: 3000
             },
             {
@@ -186,7 +186,7 @@ export class Tutorial {
                 key: 'q',
                 condition: () => {
                     const skulnap = this.game.enemies.find(enemy => enemy instanceof Skulnap);
-                    return this.isPlayerNearEnemy(skulnap, 1200) && this.game.player.fireballTimer >= this.game.player.fireballCooldown && this.game.player.energyReachedZero === false && this.game.player.onGround();
+                    return this.isPlayerNearEnemy(skulnap, 1200) && this.game.player.fireballTimer >= this.game.player.fireballCooldown && this.game.player.isEnergyExhausted === false && this.game.player.onGround();
                 },
                 timerDuration: 2000,
                 spawnEnemy: (deltaTime) => {
@@ -198,7 +198,7 @@ export class Tutorial {
                 key: 'Enter',
                 condition: () => {
                     const skulnap = this.game.enemies.find(enemy => enemy instanceof Skulnap);
-                    return this.isPlayerNearEnemy(skulnap, this.game.width) && this.game.player.energyReachedZero === false;
+                    return this.isPlayerNearEnemy(skulnap, this.game.width) && this.game.player.isEnergyExhausted === false;
                 },
                 timerDuration: 2000,
                 spawnEnemy: (deltaTime) => {
@@ -222,7 +222,7 @@ export class Tutorial {
                 key: 'Enter',
                 condition: () => {
                     const spearFish = this.game.enemies.find(enemy => enemy instanceof SpearFish);
-                    return this.isPlayerNearEnemy(spearFish, 1200) && this.game.player.fireballTimer >= this.game.player.fireballCooldown && this.game.player.energyReachedZero === false;
+                    return this.isPlayerNearEnemy(spearFish, 1200) && this.game.player.fireballTimer >= this.game.player.fireballCooldown && this.game.player.isEnergyExhausted === false;
                 },
                 timerDuration: 4000,
                 spawnEnemy: (deltaTime) => {
@@ -234,7 +234,7 @@ export class Tutorial {
                 key: 'q',
                 condition: () => {
                     const piper = this.game.enemies.find(enemy => enemy instanceof Piper);
-                    return this.isPlayerNearEnemy(piper, 1200) && this.game.player.fireballTimer >= this.game.player.fireballCooldown && this.game.player.energyReachedZero === false;
+                    return this.isPlayerNearEnemy(piper, 1200) && this.game.player.fireballTimer >= this.game.player.fireballCooldown && this.game.player.isEnergyExhausted === false;
                 },
                 timerDuration: 4000,
                 spawnEnemy: (deltaTime) => {

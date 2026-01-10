@@ -259,7 +259,7 @@ function makeGameAndLogic() {
         isSlowed: false,
         slowedTimer: 0,
 
-        energyReachedZero: false,
+        isEnergyExhausted: false,
         isBluePotionActive: false,
         isPoisonedActive: false,
         poisonTimer: 0,
@@ -2002,7 +2002,7 @@ describe('CollisionLogic.handlePowerCollisions — powerUps + powerDowns', () =>
         const ctx = makeGameAndLogic();
         const item = makeItem(BluePotion);
 
-        ctx.player.energyReachedZero = true;
+        ctx.player.isEnergyExhausted = true;
         ctx.player.isBluePotionActive = false;
         ctx.player.currentState = ctx.player.states[1];
 
@@ -2014,7 +2014,7 @@ describe('CollisionLogic.handlePowerCollisions — powerUps + powerDowns', () =>
         expect(ctx.game.audioHandler.powerUpAndDownSFX.playSound).toHaveBeenCalledWith('bluePotionSound2', false, true);
         expect(ctx.game.audioHandler.firedogSFX.playSound).toHaveBeenCalledWith('bluePotionEnergyGoingUp');
 
-        expect(ctx.player.energyReachedZero).toBe(false);
+        expect(ctx.player.isEnergyExhausted).toBe(false);
         expect(ctx.player.blueFireTimer).toBe(5000);
         expect(ctx.player.isBluePotionActive).toBe(true);
         expect(ctx.game.speed).toBe(1);
@@ -2098,7 +2098,7 @@ describe('CollisionLogic.handlePowerCollisions — powerUps + powerDowns', () =>
         const item = makeItem(Cauldron);
 
         ctx.player.isInvisible = false;
-        ctx.player.energyReachedZero = false;
+        ctx.player.isEnergyExhausted = false;
         ctx.player.isBluePotionActive = false;
 
         ctx.game.powerDowns.push(item);
@@ -2178,7 +2178,7 @@ describe('CollisionLogic.handlePowerCollisions — powerUps + powerDowns', () =>
         ctx.player.isInvisible = false;
         ctx.player.isUnderwater = false;
 
-        ctx.player.energyReachedZero = false;
+        ctx.player.isEnergyExhausted = false;
         ctx.player.isBluePotionActive = false;
 
         const randSpy = jest.spyOn(Math, 'random').mockReturnValue(0);
@@ -2198,7 +2198,7 @@ describe('CollisionLogic.handlePowerCollisions — powerUps + powerDowns', () =>
         ctx.player.isInvisible = false;
         ctx.player.isUnderwater = false;
 
-        ctx.player.energyReachedZero = false;
+        ctx.player.isEnergyExhausted = false;
         ctx.player.isBluePotionActive = false;
 
         const randSpy = jest.spyOn(Math, 'random').mockReturnValue(0.34);

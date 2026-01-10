@@ -15,7 +15,7 @@ describe('Tutorial', () => {
                 x: 100,
                 y: 0,
                 vy: 0,
-                energyReachedZero: false,
+                isEnergyExhausted: false,
                 fireballTimer: 0,
                 fireballCooldown: 0,
                 invisibleTimer: 0,

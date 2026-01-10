@@ -601,7 +601,7 @@ export class UI {
 
         ctx.save();
         ctx.lineWidth = 2;
-        ctx.strokeStyle = 'rgba(0,0,0,0.9)';
+        ctx.strokeStyle = showExhaustedMarker ? 'rgba(255, 40, 40, 0.95)' : 'rgba(0,0,0,0.9)';
         this.roundedRectPath(ctx, x, y, w, h, r);
         ctx.stroke();
         ctx.restore();
@@ -622,7 +622,7 @@ export class UI {
         const energy = this.clamp(player.energy ?? 0, 0, maxEnergy);
         const ratio = maxEnergy > 0 ? (energy / maxEnergy) : 0;
 
-        const exhausted = player.energyReachedZero === true;
+        const exhausted = player.isEnergyExhausted === true;
         const thresholdRatio = this.clamp(20 / maxEnergy, 0, 1);
 
         const paused = !!this.game.menu.pause.isPaused;
@@ -1069,7 +1069,7 @@ export class UI {
             frozen ||
             hitOrStunned ||
             player.fireballTimer < player.fireballCooldown ||
-            player.energyReachedZero;
+            player.isEnergyExhausted;
 
         if (player.isRedPotionActive) {
             this.drawAbilityIcon(context, this.fireballRedPotionUI, fireballX, yPosition, firedogBorderSize, {
@@ -1189,7 +1189,7 @@ export class UI {
 
         const dashOnCooldown = player.dashTimer < player.dashCooldown;
         const dashNoCharges = (player.dashCharges ?? 0) <= 0;
-        const dashNoEnergy = !!player.energyReachedZero;
+        const dashNoEnergy = !!player.isEnergyExhausted;
 
         const dashLocked =
             frozen || hitOrStunned || dashNoEnergy || dashShortOnCooldown || dashOnCooldown || dashNoCharges;

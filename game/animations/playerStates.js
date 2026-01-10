@@ -132,7 +132,7 @@ export class Sitting extends State {
             player.setState(states.JUMPING, 1);
         } else if (rollRequested(this.game, input) && !this.game.cabin.isFullyVisible) {
             if (this.game.isBossVisible) {
-                if (!player.energyReachedZero) {
+                if (!player.isEnergyExhausted) {
                     player.setState(states.ROLLING, 0);
                 }
             } else {
@@ -188,7 +188,7 @@ export class Running extends State {
             rollRequested(this.game, input) &&
             (this.game.isBossVisible === true || !this.game.cabin.isFullyVisible)
         ) {
-            if (!player.energyReachedZero) {
+            if (!player.isEnergyExhausted) {
                 player.setState(states.ROLLING, 2);
             }
 
@@ -263,10 +263,10 @@ export class Jumping extends State {
                 player.setState(states.DIVING, 0);
             }
         } else if (rollRequested(this.game, input) && !this.game.cabin.isFullyVisible) {
-            if (!player.energyReachedZero) {
+            if (!player.isEnergyExhausted) {
                 player.setState(states.ROLLING, 2);
             } else if (
-                player.energyReachedZero === true &&
+                player.isEnergyExhausted === true &&
                 sit(this.game, input) &&
                 player.divingTimer >= player.divingCooldown
             ) {
@@ -342,7 +342,7 @@ export class Falling extends State {
             player.setState(states.STANDING, 0);
         } else if (rollRequested(this.game, input) && !this.game.cabin.isFullyVisible) {
             if (player.energy > 0) {
-                if (!player.energyReachedZero) {
+                if (!player.isEnergyExhausted) {
                     player.setState(states.ROLLING, 2);
                 }
             }
@@ -367,7 +367,7 @@ export class Rolling extends State {
 
         if (player.tryStartDash(input)) return;
 
-        if (!player.energyReachedZero) {
+        if (!player.isEnergyExhausted) {
             player.drainEnergy();
 
             if (
@@ -600,7 +600,7 @@ export class Standing extends State {
         }
 
         if (this.game.isBossVisible) {
-            if (rollRequested(this.game, input) && player.energyReachedZero === false) {
+            if (rollRequested(this.game, input) && player.isEnergyExhausted === false) {
                 player.setState(states.ROLLING, 0);
             }
         }

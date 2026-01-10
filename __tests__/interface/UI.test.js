@@ -113,7 +113,7 @@ describe('UI', () => {
                 maxEnergy: 100,
                 isBluePotionActive: false,
                 isPoisonedActive: false,
-                energyReachedZero: false,
+                isEnergyExhausted: false,
 
                 divingTimer: 0,
                 divingCooldown: 1000,
@@ -521,7 +521,7 @@ describe('UI', () => {
             game.player.maxEnergy = 100;
             game.player.isBluePotionActive = false;
             game.player.isPoisonedActive = false;
-            game.player.energyReachedZero = false;
+            game.player.isEnergyExhausted = false;
 
             ui.energy(ctx);
 
@@ -567,7 +567,7 @@ describe('UI', () => {
             game.menu.pause.isPaused = true;
 
             game.player.energy = 0;
-            game.player.energyReachedZero = true;
+            game.player.isEnergyExhausted = true;
 
             ui.energy(ctx);
 
@@ -686,8 +686,8 @@ describe('UI', () => {
             expect(divingCall[5]).toMatchObject({ animatedBorder: true });
         });
 
-        it('fireball: locks (grayscale) if energyReachedZero is true', () => {
-            game.player.energyReachedZero = true;
+        it('fireball: locks (grayscale) if isEnergyExhausted is true', () => {
+            game.player.isEnergyExhausted = true;
             game.player.fireballTimer = 1000;
             game.player.fireballCooldown = 1000;
 
@@ -733,7 +733,7 @@ describe('UI', () => {
             game.player.dashTimer = game.player.dashCooldown;
             game.player.dashBetweenTimer = game.player.dashBetweenCooldown;
             game.player.dashCharges = 2;
-            game.player.energyReachedZero = false;
+            game.player.isEnergyExhausted = false;
 
             ui.firedogAbilityUI(ctx);
 
@@ -783,7 +783,7 @@ describe('UI', () => {
             game.player.isFrozen = false;
             game.player.currentState = game.player.states[idx];
 
-            game.player.energyReachedZero = false;
+            game.player.isEnergyExhausted = false;
             game.player.fireballTimer = game.player.fireballCooldown; // ready
 
             ui.firedogAbilityUI(ctx);
@@ -798,7 +798,7 @@ describe('UI', () => {
             game.player.isFrozen = false;
             game.player.currentState = game.player.states[idx];
 
-            game.player.energyReachedZero = false;
+            game.player.isEnergyExhausted = false;
             game.player.dashBetweenTimer = game.player.dashBetweenCooldown;
             game.player.dashTimer = game.player.dashCooldown;
             game.player.dashCharges = 2;

@@ -125,7 +125,7 @@ export class Player {
         this.energy = 100;
         this.energyTimer = 0;
         this.energyInterval = 100;
-        this.energyReachedZero = false;
+        this.isEnergyExhausted = false;
         this.noEnergyLeftSound = false;
         // blue potion
         this.blueFireTimer = 0;
@@ -206,7 +206,7 @@ export class Player {
         if (this.isFrozen) return false;
         if (this.isDashing) return false;
 
-        if (this.energyReachedZero) return false;
+        if (this.isEnergyExhausted) return false;
 
         const s = this.currentState;
         const allowed =
@@ -255,7 +255,7 @@ export class Player {
 
         const cost = this.dashEnergyCost ?? 10;
         this.energy = Math.max(0, this.energy - cost);
-        if (!this.isBluePotionActive && this.energy <= 0) this.energyReachedZero = true;
+        if (!this.isBluePotionActive && this.energy <= 0) this.isEnergyExhausted = true;
 
         this.isDashing = true;
         this.dashTimeLeft = this.dashDuration;
@@ -281,7 +281,7 @@ export class Player {
         // poison
         this.isPoisonedActive = false;
         this.poisonTimer = 0;
-        this.energyReachedZero = false;
+        this.isEnergyExhausted = false;
         // slow
         this.isSlowed = false;
         this.slowedTimer = 0;
@@ -612,7 +612,7 @@ export class Player {
 
         // blue potion
         if (this.isBluePotionActive) {
-            this.energyReachedZero = false;
+            this.isEnergyExhausted = false;
             this.noEnergyLeftSound = false;
 
             this.isPoisonedActive = false;
@@ -627,8 +627,8 @@ export class Player {
             this.energyInterval = 70;
         }
 
-        if (this.energyReachedZero === true && this.energy >= 20) {
-            this.energyReachedZero = false;
+        if (this.isEnergyExhausted === true && this.energy >= 20) {
+            this.isEnergyExhausted = false;
             this.noEnergyLeftSound = false;
         }
 
@@ -641,7 +641,7 @@ export class Player {
                 this.isPoisonedActive = false;
             }
 
-            if (!this.energyReachedZero) {
+            if (!this.isEnergyExhausted) {
                 this.energy = Math.max(0, this.energy - 0.1);
                 if (this.poisonTimer <= 0) {
                     this.isPoisonedActive = false;
@@ -651,13 +651,13 @@ export class Player {
                 }
                 if (this.energy <= 0) {
                     this.isPoisonedActive = false;
-                    this.energyReachedZero = true;
+                    this.isEnergyExhausted = true;
                     this.energyInterval = 100;
                 }
             }
         }
 
-        if (this.energyReachedZero && this.poisonTimer > 0) {
+        if (this.isEnergyExhausted && this.poisonTimer > 0) {
             this.isPoisonedActive = false;
             this.poisonTimer -= deltaTime;
         } else if (this.poisonTimer <= 0) {
@@ -671,7 +671,7 @@ export class Player {
         const energyDrainAmount = 0.4;
         this.energy = Math.max(0, this.energy - energyDrainAmount);
         if (this.energy <= 0) {
-            this.energyReachedZero = true;
+            this.isEnergyExhausted = true;
         }
     }
 
@@ -722,7 +722,7 @@ export class Player {
 
         if (
             inFireballState &&
-            !this.energyReachedZero &&
+            !this.isEnergyExhausted &&
             this.fireballTimer >= this.fireballCooldown &&
             this.game.input.isFireballAttack(input) &&
             !this.game.cabin.isFullyVisible
@@ -755,7 +755,7 @@ export class Player {
 
             this.energy = Math.max(0, this.energy - 8);
             if (!this.isBluePotionActive && this.energy <= 0) {
-                this.energyReachedZero = true;
+                this.isEnergyExhausted = true;
             }
 
             this.fireballTimer = 0;
@@ -880,8 +880,8 @@ export class Player {
         this.previousLives = this.game.lives;
 
         // no energy
-        if (this.energyReachedZero && !this.noEnergyLeftSound) {
-            this.game.audioHandler.firedogSFX.playSound('energyReachedZeroSound');
+        if (this.isEnergyExhausted && !this.noEnergyLeftSound) {
+            this.game.audioHandler.firedogSFX.playSound('energyExhaustedSound');
             this.noEnergyLeftSound = true;
         }
     }
@@ -1554,7 +1554,7 @@ export class CollisionLogic {
 
     // poison methods
     canBePoisoned(player = this.game.player) {
-        return !player.energyReachedZero && !player.isBluePotionActive;
+        return !player.isEnergyExhausted && !player.isBluePotionActive;
     }
 
     setPoison(durationMs, player = this.game.player) {
@@ -2860,7 +2860,7 @@ export class CollisionLogic {
                 }
 
                 game.audioHandler.firedogSFX.playSound('bluePotionEnergyGoingUp');
-                player.energyReachedZero = false;
+                player.isEnergyExhausted = false;
 
                 if (player.currentState === player.states[4]) {
                     game.speed = player.bluePotionSpeed;

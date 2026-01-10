@@ -268,7 +268,7 @@ export class FiredogAudioHandler extends AudioHandler {
       deathFall: 'deathFall',
       gettingHit: 'gettingHit',
       stunnedSound: 'stunnedSound',
-      energyReachedZeroSound: 'energyReachedZeroSound',
+      energyExhaustedSound: 'energyExhaustedSound',
       dreamSoundInGame: 'dreamSoundInGame',
       invisibleInSFX: 'invisibleInSFX',
       invisibleOutSFX: 'invisibleOutSFX',
