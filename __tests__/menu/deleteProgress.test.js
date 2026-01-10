@@ -54,7 +54,7 @@ describe('DeleteProgress', () => {
         expect(mockGame.menu.settings.activateMenu).not.toHaveBeenCalled();
     });
 
-    it('“No” branch: returns to settings menu at index 3', () => {
+    it('“No” branch: returns to settings menu at index 4', () => {
         menu.selectedOption = 1; // No
         menu.handleMenuSelection();
 
@@ -62,7 +62,7 @@ describe('DeleteProgress', () => {
             .toHaveBeenCalledWith('optionSelectedSound', false, true);
 
         expect(menu.menuActive).toBe(false);
-        expect(mockGame.menu.settings.activateMenu).toHaveBeenCalledWith(3);
+        expect(mockGame.menu.settings.activateMenu).toHaveBeenCalledWith(4);
 
         expect(mockGame.menu.main.activateMenu).not.toHaveBeenCalled();
     });
@@ -142,7 +142,7 @@ describe('DeleteProgress2', () => {
         expect(mockGame.menu.settings.activateMenu).not.toHaveBeenCalled();
     });
 
-    it('“No” branch: returns to settings[3] without clearing or restarting soundtrack', () => {
+    it('“No” branch: returns to settings[4] without clearing or restarting soundtrack', () => {
         menu2.selectedOption = 1; // No
         menu2.handleMenuSelection();
 
@@ -151,7 +151,7 @@ describe('DeleteProgress2', () => {
 
         expect(mockGame.clearSavedData).not.toHaveBeenCalled();
 
-        expect(mockGame.menu.settings.activateMenu).toHaveBeenCalledWith(3);
+        expect(mockGame.menu.settings.activateMenu).toHaveBeenCalledWith(4);
 
         expect(mockGame.menu.main.activateMenu).not.toHaveBeenCalled();
 
