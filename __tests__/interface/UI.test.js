@@ -580,6 +580,38 @@ describe('UI', () => {
         });
     });
 
+    describe('drawEnergyBar() outline stroke color', () => {
+        const getLastStrokeStyle = () => {
+            const list = ctx.__assignments.strokeStyle;
+            return list[list.length - 1];
+        };
+
+        it('uses red outline when exhausted marker is shown', () => {
+            ui.drawEnergyBar(ctx, 0, 0, 240, 32, 0.10, 'normal', true, 0.2);
+            expect(getLastStrokeStyle()).toBe('rgba(255, 40, 40, 0.95)');
+        });
+
+        it('uses yellow outline when below 20 and NOT exhausted and NOT status active', () => {
+            ui.drawEnergyBar(ctx, 0, 0, 240, 32, 0.10, 'normal', false, 0.2);
+            expect(getLastStrokeStyle()).toBe('rgba(255, 220, 70, 0.95)');
+        });
+
+        it('uses blue outline when blue potion status is active (even if low)', () => {
+            ui.drawEnergyBar(ctx, 0, 0, 240, 32, 0.10, 'blue', false, 0.2);
+            expect(getLastStrokeStyle()).toBe('rgba(80, 180, 255, 0.95)');
+        });
+
+        it('uses green outline when poison status is active (even if low)', () => {
+            ui.drawEnergyBar(ctx, 0, 0, 240, 32, 0.10, 'poison', false, 0.2);
+            expect(getLastStrokeStyle()).toBe('rgba(19, 216, 19, 0.95)');
+        });
+
+        it('uses default dark outline when not exhausted, not low, and no status', () => {
+            ui.drawEnergyBar(ctx, 0, 0, 240, 32, 0.50, 'normal', false, 0.2);
+            expect(getLastStrokeStyle()).toBe('rgba(0, 0, 0, 0.90)');
+        });
+    });
+
     describe('timer()', () => {
         it('non-underwater: renders elapsed time and stops ticking sound', () => {
             game.player.isUnderwater = false;

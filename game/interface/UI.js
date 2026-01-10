@@ -601,7 +601,20 @@ export class UI {
 
         ctx.save();
         ctx.lineWidth = 2;
-        ctx.strokeStyle = showExhaustedMarker ? 'rgba(255, 40, 40, 0.95)' : 'rgba(0,0,0,0.9)';
+
+        const strokeColor =
+            showExhaustedMarker
+                ? 'rgba(255, 40, 40, 0.95)'
+                : (ratio01 <= (this.energyBar.pulseLowThreshold / 100) && !statusActive)
+                    ? 'rgba(255, 220, 70, 0.95)'
+                    : (status === 'blue')
+                        ? 'rgba(80, 180, 255, 0.95)'
+                        : (status === 'poison')
+                            ? 'rgba(19, 216, 19, 0.95)'
+                            : 'rgba(0, 0, 0, 0.90)';
+
+        ctx.strokeStyle = strokeColor;
+
         this.roundedRectPath(ctx, x, y, w, h, r);
         ctx.stroke();
         ctx.restore();
