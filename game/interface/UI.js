@@ -428,8 +428,8 @@ export class UI {
 
     getBluePotionGradient(ctx, x, w) {
         const g = ctx.createLinearGradient(x, 0, x + w, 0);
-        g.addColorStop(0.0, 'rgb(40, 120, 255)');
-        g.addColorStop(1.0, 'rgb(140, 220, 255)');
+        g.addColorStop(0.0, 'rgb(140, 220, 255)');
+        g.addColorStop(1.0, 'rgba(15, 103, 255, 1)');
         return g;
     }
 
