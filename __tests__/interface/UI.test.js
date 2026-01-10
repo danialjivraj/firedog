@@ -110,6 +110,7 @@ describe('UI', () => {
                 isFrozen: false,
 
                 energy: 10.5,
+                maxEnergy: 100,
                 isBluePotionActive: false,
                 isPoisonedActive: false,
                 energyReachedZero: false,
@@ -152,6 +153,7 @@ describe('UI', () => {
                 currentState: null,
 
                 blueFireTimer: 0,
+                isDarkWhiteBorder: false,
             },
 
             time: 125000,
@@ -270,7 +272,7 @@ describe('UI', () => {
 
             ui.draw(ctx);
 
-            expect(ctx.fillText).toHaveBeenCalledWith('Coins: 5', 20, 50);
+            expect(ctx.fillText).toHaveBeenCalledWith('Coins: 5', 20, 38);
             expect(spyDist).toHaveBeenCalledWith(ctx);
             expect(spyBossBar).toHaveBeenCalledWith(ctx);
             expect(spyTimer).toHaveBeenCalledWith(ctx);
@@ -511,48 +513,70 @@ describe('UI', () => {
     });
 
     describe('energy()', () => {
-        it('uses black text with white shadow when energy is not low/critical', () => {
+        it('calls drawEnergyBar with normal status and renders the numeric value', () => {
+            const spy = jest.spyOn(ui, 'drawEnergyBar');
+            game.menu.pause.isPaused = true;
+
             game.player.energy = 50;
-
-            ui.energy(ctx);
-
-            expect(ctx.__assignments.fillStyle).toContain('black');
-            expect(ctx.__assignments.shadowColor).toContain('white');
-            expect(ctx.fillText).toHaveBeenCalled();
-        });
-
-        it('uses darkgreen text with black shadow when poisoned', () => {
-            game.player.isPoisonedActive = true;
-
-            ui.energy(ctx);
-
-            expect(ctx.__assignments.fillStyle).toContain('darkgreen');
-            expect(ctx.__assignments.shadowColor).toContain('black');
-        });
-
-        it('uses gold shadow when energy is low but not zero', () => {
-            game.player.energy = 10;
+            game.player.maxEnergy = 100;
+            game.player.isBluePotionActive = false;
+            game.player.isPoisonedActive = false;
             game.player.energyReachedZero = false;
 
             ui.energy(ctx);
 
-            expect(ctx.__assignments.shadowColor).toContain('gold');
+            expect(spy).toHaveBeenCalled();
+            const call = spy.mock.calls[0];
+            const status = call[6];
+            const exhausted = call[7];
+
+            expect(status).toBe('normal');
+            expect(exhausted).toBe(false);
+
+            expect(ctx.fillText.mock.calls.some(c => c[0] === '50.0')).toBe(true);
         });
 
-        it('uses red text when energyReachedZero is true', () => {
+        it('uses poison status when poisoned', () => {
+            const spy = jest.spyOn(ui, 'drawEnergyBar');
+            game.menu.pause.isPaused = true;
+
+            game.player.isPoisonedActive = true;
+            game.player.isBluePotionActive = false;
+
+            ui.energy(ctx);
+
+            const call = spy.mock.calls[0];
+            expect(call[6]).toBe('poison');
+        });
+
+        it('uses blue status when blue potion is active', () => {
+            const spy = jest.spyOn(ui, 'drawEnergyBar');
+            game.menu.pause.isPaused = true;
+
+            game.player.isBluePotionActive = true;
+            game.player.isPoisonedActive = false;
+
+            ui.energy(ctx);
+
+            const call = spy.mock.calls[0];
+            expect(call[6]).toBe('blue');
+        });
+
+        it('when exhausted, shows exhausted marker and draws EXHAUSTED label', () => {
+            const spy = jest.spyOn(ui, 'drawEnergyBar');
+            game.menu.pause.isPaused = true;
+
+            game.player.energy = 0;
             game.player.energyReachedZero = true;
 
             ui.energy(ctx);
 
-            expect(ctx.__assignments.fillStyle).toContain('red');
-        });
+            const call = spy.mock.calls[0];
+            const showExhaustedMarker = call[7];
+            expect(showExhaustedMarker).toBe(true);
 
-        it('still renders energy text when blue potion is active (shake path)', () => {
-            game.player.isBluePotionActive = true;
-
-            ui.energy(ctx);
-
-            expect(ctx.fillText).toHaveBeenCalled();
+            expect(ctx.fillText.mock.calls.some(c => c[0] === '0.0')).toBe(true);
+            expect(ctx.fillText.mock.calls.some(c => c[0] === 'EXHAUSTED')).toBe(true);
         });
     });
 
@@ -563,7 +587,7 @@ describe('UI', () => {
 
             ui.timer(ctx);
 
-            expect(ctx.fillText).toHaveBeenCalledWith('Time: 2:05', 20, 90);
+            expect(ctx.fillText).toHaveBeenCalledWith('Time: 2:05', 20, 78);
             expect(game.audioHandler.mapSoundtrack.stopSound).toHaveBeenCalledWith('timeTickingSound');
             expect(game.audioHandler.mapSoundtrack.resumeSound).toHaveBeenCalledWith('timeTickingSound');
         });

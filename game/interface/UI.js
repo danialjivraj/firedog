@@ -5,6 +5,8 @@ export class UI {
         this.fontFamily = 'Love Ya Like A Sister';
         this.barWidth = 500;
 
+        this.topLeftYShift = 0;
+
         this.livesImage = document.getElementById('firedogHead');
 
         this.fireballUI = document.getElementById('fireballUI');
@@ -27,6 +29,18 @@ export class UI {
 
         this.lifeGainDuration = 400;
         this.lifeGainEndTimes = new Map();
+
+        this.energyBar = {
+            x: 20,
+            y: 92 + this.topLeftYShift,
+            w: 240,
+            h: 32,
+            radius: 10,
+
+            shineHeightRatio: 0.45,
+            pulseLowThreshold: 20,
+            pulseSpeed: 0.012,
+        };
     }
 
     getUiTime() {
@@ -68,7 +82,7 @@ export class UI {
         context.fillStyle = this.game.fontColor;
 
         // coins score
-        context.fillText('Coins: ' + this.game.coins, 20, 50);
+        context.fillText('Coins: ' + this.game.coins, 20, 38 + this.topLeftYShift);
 
         // bars
         this.distanceBar(context);
@@ -125,16 +139,12 @@ export class UI {
 
         const heartsToDraw = Math.min(
             this.game.maxLives,
-            Math.max(
-                curr,
-                this.lifeBlinkIndex + 1,
-                gainMaxIndex + 1
-            )
+            Math.max(curr, this.lifeBlinkIndex + 1, gainMaxIndex + 1)
         );
 
         for (let i = 0; i < heartsToDraw; i++) {
             const baseX = 25 * i + 20;
-            const baseY = 145;
+            const baseY = 131 + this.topLeftYShift;
 
             const isBlinkingLostHeart =
                 i === this.lifeBlinkIndex &&
@@ -142,10 +152,7 @@ export class UI {
                 i >= curr;
 
             const gainEndTime = this.lifeGainEndTimes.get(i);
-            const isGainingHeart =
-                gainEndTime != null &&
-                now < gainEndTime &&
-                i < curr;
+            const isGainingHeart = gainEndTime != null && now < gainEndTime && i < curr;
 
             context.save();
 
@@ -288,9 +295,7 @@ export class UI {
         const totalDist = this.game.background.totalDistanceTraveled || 0;
         const fallbackMaxDist = Math.max(1, this.game.maxDistance || 1);
 
-        const gate = this.game.bossManager
-            ? this.game.bossManager.getGateForCurrentMap()
-            : null;
+        const gate = this.game.bossManager ? this.game.bossManager.getGateForCurrentMap() : null;
 
         let distanceTarget = fallbackMaxDist;
         let minCoins = 0;
@@ -383,9 +388,7 @@ export class UI {
         const isAlive = currentLives > 0;
 
         const baseFillRatio = Math.min(currentLives / baseMaxLives, 1);
-        const filledWidth = isAlive
-            ? Math.max(baseFillRatio * this.barWidth, 0.01 * this.barWidth)
-            : 0;
+        const filledWidth = isAlive ? Math.max(baseFillRatio * this.barWidth, 0.01 * this.barWidth) : 0;
 
         const overhealLives = Math.max(0, currentLives - baseMaxLives);
         const overhealMaxLives = Math.max(1, overhealCapLives - baseMaxLives);
@@ -407,43 +410,271 @@ export class UI {
         );
     }
 
-    energy(context) {
-        let textColor = 'black';
-        let shadowColor = 'white';
+    clamp(n, a, b) {
+        return Math.max(a, Math.min(b, n));
+    }
 
-        if (this.game.player.isBluePotionActive === true) {
-            textColor = 'blue';
-            shadowColor = 'black';
-        } else if (this.game.player.isPoisonedActive === true) {
-            textColor = 'darkgreen';
-            shadowColor = 'black';
-        } else if (this.game.player.energyReachedZero === false && this.game.player.energy < 20.00) {
-            textColor = 'black';
-            shadowColor = 'gold';
-        } else if (this.game.player.energyReachedZero === true) {
-            textColor = 'red';
-            shadowColor = 'black';
+    lerp(a, b, t) {
+        return a + (b - a) * t;
+    }
+
+    getRedToGreenGradient(ctx, x, w) {
+        const g = ctx.createLinearGradient(x, 0, x + w, 0);
+        g.addColorStop(0.0, 'rgb(255, 45, 45)');
+        g.addColorStop(0.5, 'rgb(255, 220, 70)');
+        g.addColorStop(1.0, 'rgb(60, 230, 120)');
+        return g;
+    }
+
+    getBluePotionGradient(ctx, x, w) {
+        const g = ctx.createLinearGradient(x, 0, x + w, 0);
+        g.addColorStop(0.0, 'rgb(40, 120, 255)');
+        g.addColorStop(1.0, 'rgb(140, 220, 255)');
+        return g;
+    }
+
+    getPoisonGradient(ctx, x, w) {
+        const g = ctx.createLinearGradient(x, 0, x + w, 0);
+        g.addColorStop(0.0, 'rgb(10, 120, 50)');
+        g.addColorStop(1.0, 'rgb(140, 255, 160)');
+        return g;
+    }
+
+    drawEnergyBar(ctx, x, y, w, h, ratio01, status, showExhaustedMarker, thresholdRatio01) {
+        const r = this.energyBar.radius;
+        const nowRaw = this.getUiTime();
+        const paused = !!this.game.menu.pause.isPaused;
+
+        const now = paused ? 0 : (nowRaw % 60000);
+
+        const low = ratio01 <= (this.energyBar.pulseLowThreshold / 100);
+        const pulseT = paused ? 0 : (Math.sin(now * this.energyBar.pulseSpeed) * 0.5 + 0.5);
+        const pulse = low ? this.lerp(0.35, 1.0, pulseT) : 0;
+
+        const statusActive = (status === 'blue' || status === 'poison');
+        const statusSpeed =
+            status === 'blue' ? (this.energyBar.pulseSpeed ?? 0.012) :
+                status === 'poison' ? ((this.energyBar.pulseSpeed ?? 0.012) * 0.85) :
+                    0;
+
+        const statusPulseT = paused ? 0 : (Math.sin(now * statusSpeed) * 0.5 + 0.5);
+        const statusPulse = statusActive ? this.lerp(0.35, 1.0, statusPulseT) : 0;
+
+        const statusColor =
+            status === 'blue' ? 'rgba(80, 180, 255, 1)' :
+                status === 'poison' ? 'rgba(19, 216, 19, 1)' :
+                    null;
+
+        const showLowWarning = low && !statusActive;
+
+        ctx.save();
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+
+        this.roundedRectPath(ctx, x, y, w, h, r);
+        ctx.fillStyle = 'rgba(18, 0, 20, 0.78)';
+        ctx.fill();
+
+        const inset = 2;
+        const ix = x + inset;
+        const iy = y + inset;
+        const iw = w - inset * 2;
+        const ih = h - inset * 2;
+        const ir = Math.max(0, r - inset);
+
+        this.roundedRectPath(ctx, ix, iy, iw, ih, ir);
+        ctx.fillStyle = 'rgba(255,255,255,0.10)';
+        ctx.fill();
+
+        ctx.save();
+        this.roundedRectPath(ctx, ix, iy, iw, ih, ir);
+        ctx.clip();
+
+        let fillGradient;
+        if (status === 'blue') fillGradient = this.getBluePotionGradient(ctx, ix, iw);
+        else if (status === 'poison') fillGradient = this.getPoisonGradient(ctx, ix, iw);
+        else fillGradient = this.getRedToGreenGradient(ctx, ix, iw);
+
+        const fillW = Math.max(0, Math.min(iw, iw * ratio01));
+        if (fillW > 0.5) {
+            ctx.fillStyle = fillGradient;
+            ctx.fillRect(ix, iy, fillW, ih);
+
+            const shineH = ih * this.energyBar.shineHeightRatio;
+            const shine = ctx.createLinearGradient(0, iy, 0, iy + shineH);
+            shine.addColorStop(0, 'rgba(255,255,255,0.35)');
+            shine.addColorStop(1, 'rgba(255,255,255,0.00)');
+            ctx.fillStyle = shine;
+            ctx.fillRect(ix, iy, fillW, shineH);
         }
 
-        context.save();
-        const shakeAmount = this.game.player.isBluePotionActive ? 3 : 0;
-        const shakeFrequency = 0.1;
-        const shakeDirectionX = Math.random() > 0.5 ? 1 : -1;
-        const shakeDirectionY = Math.random() > 0.5 ? 1 : -1;
+        if (showExhaustedMarker && typeof thresholdRatio01 === 'number' && thresholdRatio01 > 0 && thresholdRatio01 < 1) {
+            const mx = ix + iw * thresholdRatio01;
+
+            ctx.save();
+            ctx.strokeStyle = 'rgba(255, 40, 40, 0.9)';
+            ctx.lineWidth = 2;
+
+            ctx.beginPath();
+            ctx.moveTo(mx, iy);
+            ctx.lineTo(mx, iy + ih);
+            ctx.stroke();
+
+            ctx.fillStyle = 'rgba(255, 40, 40, 0.9)';
+            ctx.beginPath();
+            ctx.moveTo(mx, iy);
+            ctx.lineTo(mx - 6, iy);
+            ctx.lineTo(mx, iy + 7);
+            ctx.lineTo(mx + 6, iy);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        // status blink
+        if (statusActive && !paused && statusColor) {
+            ctx.save();
+            this.roundedRectPath(ctx, x, y, w, h, r);
+
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = statusColor;
+
+            ctx.globalAlpha = 0.30 + 0.45 * statusPulse;
+            ctx.shadowColor = statusColor;
+            ctx.shadowBlur = 14 + 16 * statusPulse;
+
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // <20 warning
+        if (showLowWarning && !paused) {
+            ctx.save();
+            this.roundedRectPath(ctx, x, y, w, h, r);
+
+            const warningColor = showExhaustedMarker ? 'rgba(255, 40, 40, 1)' : 'rgba(255, 200, 40, 1)';
+
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = warningColor;
+
+            ctx.globalAlpha = 0.30 + 0.45 * pulse;
+            ctx.shadowColor = warningColor;
+            ctx.shadowBlur = 14 + 16 * pulse;
+
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        ctx.restore();
+
+        // status low-energy glow
+        if (statusActive && !paused && statusColor) {
+            ctx.save();
+            this.roundedRectPath(ctx, x, y, w, h, r);
+
+            ctx.strokeStyle = statusColor;
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.12 + 0.22 * statusPulse;
+            ctx.shadowColor = statusColor;
+            ctx.shadowBlur = 8 + 8 * statusPulse;
+
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // low-energy glow
+        if (showLowWarning && !paused) {
+            ctx.save();
+            this.roundedRectPath(ctx, x, y, w, h, r);
+
+            const glow = 'rgba(255,45,45,1)';
+            ctx.strokeStyle = glow;
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.12 + 0.22 * pulse;
+            ctx.shadowColor = glow;
+            ctx.shadowBlur = 8 + 8 * pulse;
+
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        ctx.save();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(0,0,0,0.9)';
+        this.roundedRectPath(ctx, x, y, w, h, r);
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.restore();
+    }
+
+    energy(context) {
+        const player = this.game.player;
+
+        let status = 'normal';
+        if (player.isBluePotionActive === true) status = 'blue';
+        else if (player.isPoisonedActive === true) status = 'poison';
+
+        const maxEnergy =
+            (typeof player.maxEnergy === 'number' && player.maxEnergy > 0) ? player.maxEnergy : 100;
+
+        const energy = this.clamp(player.energy ?? 0, 0, maxEnergy);
+        const ratio = maxEnergy > 0 ? (energy / maxEnergy) : 0;
+
+        const exhausted = player.energyReachedZero === true;
+        const thresholdRatio = this.clamp(20 / maxEnergy, 0, 1);
+
+        const paused = !!this.game.menu.pause.isPaused;
+
+        const shakeAmount = player.isBluePotionActive ? 3.2 : 0;
+        const shakeFrequency = 0.10;
 
         let offsetX = 0;
         let offsetY = 0;
 
-        if (!this.game.menu.pause.isPaused) {
-            offsetX = shakeAmount * shakeDirectionX * Math.sin(Date.now() * shakeFrequency);
-            offsetY = shakeAmount * shakeDirectionY * Math.cos(Date.now() * shakeFrequency);
+        if (!paused && shakeAmount > 0) {
+            const sx = Math.random() > 0.5 ? 1 : -1;
+            const sy = Math.random() > 0.5 ? 1 : -1;
+            offsetX = shakeAmount * sx * Math.sin(Date.now() * shakeFrequency);
+            offsetY = shakeAmount * sy * Math.cos(Date.now() * shakeFrequency);
         }
 
-        context.font = this.fontSize * 1.2 + 'px ' + this.fontFamily;
-        context.fillStyle = textColor;
-        context.shadowColor = shadowColor;
+        const { x, y, w, h } = this.energyBar;
+        const barX = x + offsetX;
+        const barY = y + offsetY;
 
-        context.fillText('Energy: ' + this.game.player.energy.toFixed(1), 20 + offsetX, 130 + offsetY);
+        this.drawEnergyBar(
+            context,
+            barX,
+            barY,
+            w,
+            h,
+            ratio,
+            status,
+            exhausted,
+            thresholdRatio
+        );
+
+        const valueText = (player.energy ?? 0).toFixed(1);
+
+        context.save();
+        context.shadowColor = 'black';
+        context.shadowBlur = 4;
+        context.fillStyle = 'white';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+
+        if (exhausted) {
+            context.font = 'bold 13px Arial';
+            context.fillText(valueText, barX + w / 2, barY + h * 0.38);
+
+            context.font = 'bold 10px Arial';
+            context.fillText('EXHAUSTED', barX + w / 2, barY + h * 0.72);
+        } else {
+            context.font = 'bold 13px Arial';
+            context.fillText(valueText, barX + w / 2, barY + h / 2);
+        }
 
         context.restore();
     }
@@ -490,7 +721,7 @@ export class UI {
         }
         formattedTime = `${minutes}:${(seconds < 10 ? '0' : '') + seconds}`;
 
-        context.fillText('Time: ' + formattedTime, 20, 90);
+        context.fillText('Time: ' + formattedTime, 20, 78 + this.topLeftYShift);
 
         if (this.game.player.isUnderwater && time <= this.secondsLeft && time > this.secondsLeft - 60000) {
             this.secondsLeftActivated = true;
@@ -765,14 +996,13 @@ export class UI {
         const maxTextWidth = 50;
         const firedogBorderSize = 50;
         const spaceBetweenAbilities = 10;
-        const yPosition = 180;
+        const yPosition = 168 + this.topLeftYShift;
 
         const player = this.game.player;
         const frozen = !!player.isFrozen;
         const hitOrStunned =
             player.currentState === player.states[6] || // stunned
             player.currentState === player.states[7];   // hit
-
 
         const borderColor = player.isDarkWhiteBorder ? 'white' : 'black';
 
@@ -889,7 +1119,6 @@ export class UI {
         // invisible ability
         const invisibleX = fireballX + firedogBorderSize + spaceBetweenAbilities;
         const invisibleLocked = !player.isInvisible && (player.invisibleTimer < player.invisibleCooldown);
-
         const invisibleActive = !!player.isInvisible && (player.invisibleActiveCooldownTimer > 0);
 
         if (invisibleActive) {
@@ -962,7 +1191,8 @@ export class UI {
         const dashNoCharges = (player.dashCharges ?? 0) <= 0;
         const dashNoEnergy = !!player.energyReachedZero;
 
-        const dashLocked = frozen || hitOrStunned || dashNoEnergy || dashShortOnCooldown || dashOnCooldown || dashNoCharges;
+        const dashLocked =
+            frozen || hitOrStunned || dashNoEnergy || dashShortOnCooldown || dashOnCooldown || dashNoCharges;
 
         const dashWindowActive = player.dashAwaitingSecond && !dashOnCooldown;
 

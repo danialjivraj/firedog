@@ -255,7 +255,7 @@ export class Player {
 
         const cost = this.dashEnergyCost ?? 10;
         this.energy = Math.max(0, this.energy - cost);
-        if (this.energy <= 0) this.energyReachedZero = true;
+        if (!this.isBluePotionActive && this.energy <= 0) this.energyReachedZero = true;
 
         this.isDashing = true;
         this.dashTimeLeft = this.dashDuration;
@@ -611,10 +611,16 @@ export class Player {
         }
 
         // blue potion
-        if (this.isBluePotionActive && this.currentState === this.states[4]) {
-            this.game.enemyInterval = 100;
+        if (this.isBluePotionActive) {
+            this.energyReachedZero = false;
             this.noEnergyLeftSound = false;
+
             this.isPoisonedActive = false;
+            this.poisonTimer = 0;
+
+            this.game.enemyInterval = 100;
+
+            this.energyInterval = 70;
             this.energy = Math.min(100, this.energy + 0.1);
         } else {
             this.game.enemyInterval = 1000;
@@ -748,7 +754,7 @@ export class Player {
             }
 
             this.energy = Math.max(0, this.energy - 8);
-            if (this.energy <= 0) {
+            if (!this.isBluePotionActive && this.energy <= 0) {
                 this.energyReachedZero = true;
             }
 
