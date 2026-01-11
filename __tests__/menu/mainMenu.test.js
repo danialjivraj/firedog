@@ -92,7 +92,7 @@ describe('MainMenu', () => {
       expect(menu.title).toBe('Main Menu');
       expect(menu.menuOptions).toEqual(['Play', 'Skins', 'Records', 'How to Play', 'Settings', 'Exit']);
       expect(menu.positionOffset).toBe(220);
-      expect(menu.menuOptionsPositionOffset).toBe(50);
+      expect(menu.menuOptionsPositionOffset).toBe(65);
       expect(menu.showSavingSprite).toBe(false);
     });
   });

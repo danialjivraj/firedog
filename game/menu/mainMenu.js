@@ -5,8 +5,6 @@ export class MainMenu extends BaseMenu {
     constructor(game) {
         const menuOptions = ['Play', 'Skins', 'Records', 'How to Play', 'Settings', 'Exit'];
         super(game, menuOptions, 'Main Menu');
-        this.menuOptionsPositionOffset = 50;
-        this.positionOffset = 220;
         this.showSavingSprite = false;
         this.savingAnimation = new SavingAnimation(this.game);
         this.savingBookAnimation = new SavingBookAnimation(this.game);
