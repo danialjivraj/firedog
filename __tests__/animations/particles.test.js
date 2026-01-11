@@ -1083,11 +1083,17 @@ describe('DashFireArc', () => {
             isBossVisible: false,
             speed: 2,
             deltaTime: 16,
+            normalSpeed: 6,
             menu: { pause: { isPaused: false } },
             player: {
+                x: 100,
+
                 isUnderwater: false,
                 isBluePotionActive: false,
+
                 isDashing: false,
+                dashInstanceId: 1,
+
                 dashVelocity: 10,
             },
         };
@@ -1127,31 +1133,36 @@ describe('DashFireArc', () => {
         const p = new DashFireArc(game, 100, 100, true);
         const x0 = p.x;
         const y0 = p.y;
+
         game.menu.pause.isPaused = true;
 
         p.update();
 
         expect(p.x).not.toBe(x0);
         expect(p.y).not.toBe(y0);
-        const ageAfter = p.age;
-        expect(ageAfter).toBe(0);
+
+        expect(p.age).toBe(0);
     });
 
-    test('follow logic: while age < followMs and player.isDashing, x increases by dashVelocity * followFactor', () => {
+    test('follow logic: while age < followMs and same dash, x is additionally pushed by player.x delta * followFactor', () => {
         jest.spyOn(Math, 'random').mockReturnValue(0);
 
-        const p = new DashFireArc(game, 100, 100, true);
         game.player.isDashing = true;
-        game.player.dashVelocity = 20;
+        game.player.dashInstanceId = 7;
 
-        const xBefore = p.x;
+        const p = new DashFireArc(game, 100, 100, true);
 
+        game.player.x += 20;
         p.update();
 
-        const p2 = new DashFireArc(game, 100, 100, true);
-        const x2Before = p2.x;
+        game.player.isDashing = true;
+        game.player.dashInstanceId = 999;
 
-        game.player.isDashing = false;
+        const p2 = new DashFireArc(game, 100, 100, true);
+
+        game.player.dashInstanceId = 1000;
+
+        game.player.x += 20;
         p2.update();
 
         expect(p.x).toBeGreaterThan(p2.x);

@@ -908,7 +908,7 @@ describe('playerStates.js', () => {
             st = new Dashing(game);
         });
 
-        it('enter() sets dash animation, resets dashGhostTimer, spawns 1 DashGhost behind and 6 DashFireArc particles', () => {
+        it('enter() sets dash animation, resets dashGhostTimer, spawns 1 DashGhost behind; DashFireArc spawn begins on handleInput ticks', () => {
             player.dashGhostTimer = 999;
 
             st.enter();
@@ -923,7 +923,15 @@ describe('playerStates.js', () => {
             expect(game.behindPlayerParticles).toHaveLength(1);
             expect(game.behindPlayerParticles[0].constructor.name).toBe('DashGhost');
 
-            expect(game.particles.filter(p => p.constructor.name === 'DashFireArc')).toHaveLength(12);
+            expect(game.particles.filter(p => p.constructor.name === 'DashFireArc')).toHaveLength(0);
+
+            jest.spyOn(Math, 'random').mockReturnValue(0.99);
+
+            st.handleInput([]);
+
+            expect(game.particles.filter(p => p.constructor.name === 'DashFireArc')).toHaveLength(2);
+
+            Math.random.mockRestore();
         });
 
         it('handleInput() spawns additional DashGhost when dashGhostTimer crosses dashGhostInterval', () => {

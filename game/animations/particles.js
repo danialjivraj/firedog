@@ -604,22 +604,42 @@ export class DashGhost extends Particle {
 }
 
 export class DashFireArc extends Particle {
-    constructor(game, x, y, facingRight = true) {
+    constructor(game, x, y, facingRight = true, worldStopped = false) {
         super(game);
 
-        this.imageId = resolveFireSplashImageId(this.game.player);
+        const p = this.game.player;
 
-        const dir = facingRight ? 1 : -1;
+        this.imageId = resolveFireSplashImageId(p);
 
-        this.x = x + dir * (18 + Math.random() * 50);
-        this.y = y + (Math.random() * 16 - 8);
+        this.worldStopped = worldStopped;
+
+        this.spawnDashInstanceId = p ? p.dashInstanceId : 0;
+
+        this.facingRight = !!facingRight;
+        this.dir = this.facingRight ? 1 : -1;
+
+        const baseX = x;
+        const baseY = y;
+
+        const forward = 18 + Math.random() * 50;
+        let spawnX = baseX + this.dir * forward;
+
+        if (spawnX < 0 || spawnX > this.game.width) {
+            const safeForward = 8 + Math.random() * 24;
+            spawnX = baseX - this.dir * safeForward;
+        }
+
+        this.x = spawnX;
+        this.y = baseY + (Math.random() * 16 - 8);
 
         this.size = Math.random() * 40 + 45;
 
         const trail = 1.6 + Math.random() * 2.2;
-
         const spread = (Math.random() * 24 - 12) * (Math.PI / 180);
-        const baseSpeedX = dir * (Math.cos(spread) * trail);
+
+        this.baseSpeedX = this.dir * (Math.cos(spread) * trail);
+        this.startSpeedX = this.baseSpeedX * (0.08 + Math.random() * 0.16);
+        this.speedX = this.startSpeedX;
 
         this.curveSign = Math.random() < 0.5 ? 1 : -1;
         this.speedY = (1.4 + Math.random() * 2.4) * this.curveSign;
@@ -627,21 +647,21 @@ export class DashFireArc extends Particle {
         this.age = 0;
         this.boostMs = 160 + Math.random() * 120;
         this.boost = 0.045 + Math.random() * 0.055;
-        this.damp = 0.985 + Math.random() * 0.01;
 
+        this.damp = 0.985 + Math.random() * 0.01;
         this.drag = 0.985 + Math.random() * 0.01;
 
         this.angle = Math.random() * Math.PI * 2;
         this.va = Math.random() * 0.14 - 0.07;
         this.wobbleAmp = 0.4 + Math.random() * 0.7;
 
-        this.baseSpeedX = baseSpeedX;
-        this.startSpeedX = baseSpeedX * (0.08 + Math.random() * 0.16);
-        this.speedX = this.startSpeedX;
-
-        this.followMs = 130 + Math.random() * 90
-        this.rampMs = 90 + Math.random() * 70;
+        this.followMs = 130 + Math.random() * 90;
         this.followFactor = 0.95;
+        this._lastPlayerX = p ? p.x : 0;
+
+        this.rampMs = 90 + Math.random() * 70;
+
+        this._dashScrollSpeed = (this.game.normalSpeed ?? 6) * 3;
     }
 
     update() {
@@ -650,14 +670,21 @@ export class DashFireArc extends Particle {
         if (this.game.menu.pause.isPaused) return;
 
         const dt = this.game.deltaTime ?? 16;
+        const dtScale = dt / 16;
         this.age += dt;
 
-        if (this.age < this.followMs) {
-            const p = this.game.player;
-            if (p && p.isDashing) {
-                const step = (dt / 16) * p.dashVelocity * this.followFactor;
-                this.x += step;
-            }
+        const p = this.game.player;
+
+        const sameDash = p.isDashing && p.dashInstanceId === this.spawnDashInstanceId;
+
+        if (this.worldStopped && sameDash) {
+            this.x -= (this._dashScrollSpeed * dtScale) * this.dir;
+        }
+
+        if (sameDash && this.age < this.followMs) {
+            const dx = p.x - this._lastPlayerX;
+            this.x += dx * this.followFactor;
+            this._lastPlayerX = p.x;
         }
 
         if (this.age < this.rampMs) {
@@ -670,16 +697,16 @@ export class DashFireArc extends Particle {
         if (this.age < this.boostMs) {
             const t = this.age / this.boostMs;
             const easeOut = 1 - t;
-            const step = (dt / 16) * this.boost * easeOut;
+            const step = dtScale * this.boost * easeOut;
 
             this.speedY += this.curveSign * step;
-            this.speedX *= (1 - 0.0025 * (dt / 16));
+            this.speedX *= (1 - 0.0025 * dtScale);
         }
 
         this.speedX *= this.drag;
         this.speedY *= this.damp;
 
-        if (this.game.player.isUnderwater) {
+        if (p.isUnderwater) {
             this.y -= 0.35;
         }
 
@@ -692,18 +719,9 @@ export class DashFireArc extends Particle {
         if (!img) return;
 
         ctx.save();
-
         ctx.translate(this.x, this.y);
         ctx.rotate(this.angle);
-
-        ctx.drawImage(
-            img,
-            -this.size * 0.5,
-            -this.size * 0.5,
-            this.size,
-            this.size
-        );
-
+        ctx.drawImage(img, -this.size * 0.5, -this.size * 0.5, this.size, this.size);
         ctx.restore();
     }
 }

@@ -71,7 +71,7 @@ const spawnDashFireArc = (game, player, count = 1) => {
     const y = player.y + player.height * 0.52;
 
     for (let i = 0; i < count; i++) {
-        game.particles.unshift(new DashFireArc(game, x, y, facingRight));
+        game.particles.unshift(new DashFireArc(game, x, y, facingRight, game.cabin.isFullyVisible || game.isBossVisible));
     }
 };
 
@@ -658,10 +658,7 @@ export class Dashing extends State {
         player.dashGhostTimer = 0;
         spawnDashGhost(this.game, player);
 
-        const numberOfParticles = player.isBluePotionActive ? 24 : 12;
-
         this.dashFireTimer = 0;
-        spawnDashFireArc(this.game, player, numberOfParticles);
     }
 
     handleInput(input) {
@@ -676,7 +673,7 @@ export class Dashing extends State {
             spawnDashGhost(this.game, player);
         }
 
-        const numberOfParticles = player.isBluePotionActive ?   4 : 2;
+        const numberOfParticles = player.isBluePotionActive ? 4 : 2;
 
         this.dashFireTimer += dt;
         while (this.dashFireTimer >= this.dashFireInterval) {
