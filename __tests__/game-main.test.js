@@ -190,7 +190,17 @@ describe('Game class (game-main.js)', () => {
     ctx = {
       clearRect: jest.fn(),
       fillRect: jest.fn(),
+
+      save: jest.fn(),
+      restore: jest.fn(),
+      setTransform: jest.fn(),
+      translate: jest.fn(),
+      rotate: jest.fn(),
+      scale: jest.fn(),
+
       fillStyle: '',
+      globalAlpha: 1,
+
       getContext: () => ctx,
     };
 

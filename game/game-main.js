@@ -800,6 +800,7 @@ export class Game {
 
     draw(context) {
         context.clearRect(0, 0, this.width, this.height);
+
         if (this.background) this.background.draw(context);
 
         this.cabins.forEach((cabin) => {
@@ -817,7 +818,9 @@ export class Game {
         this.behindPlayerParticles.forEach((behindPlayerParticle) => {
             behindPlayerParticle.draw(context);
         });
+
         this.player.draw(context); // player
+
         this.enemies.forEach((enemy) => {
             enemy.draw(context);
         });
@@ -831,9 +834,16 @@ export class Game {
             message.draw(context);
         });
 
+        const fillScreen = (ctx, style) => {
+            ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.fillStyle = style;
+            ctx.fillRect(0, 0, this.width, this.height);
+            ctx.restore();
+        };
+
         if (this.player.isUnderwater === true) {
-            context.fillStyle = "rgba(0, 0, 50, 0.6)";
-            context.fillRect(0, 0, this.width, this.height);
+            fillScreen(context, "rgba(0, 0, 50, 0.6)");
         }
 
         const effect = this.boss.screenEffect;
@@ -870,8 +880,7 @@ export class Game {
 
             if (effect.opacity > 0) {
                 const [r, g, b] = effect.rgb ?? [0, 0, 0];
-                context.fillStyle = `rgba(${r}, ${g}, ${b}, ${effect.opacity})`;
-                context.fillRect(0, 0, this.width, this.height);
+                fillScreen(context, `rgba(${r}, ${g}, ${b}, ${effect.opacity})`);
             }
         }
 
@@ -885,8 +894,7 @@ export class Game {
                 this.invisibleColourOpacity
             );
         }
-        context.fillStyle = `rgba(0, 0, 50, ${this.invisibleColourOpacity})`;
-        context.fillRect(0, 0, this.width, this.height);
+        fillScreen(context, `rgba(0, 0, 50, ${this.invisibleColourOpacity})`);
 
         this.cutscenes.forEach((cutscene) => {
             cutscene.draw(context);
