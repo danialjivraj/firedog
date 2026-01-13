@@ -2447,12 +2447,11 @@ export class HowToPlayMenu extends BaseMenu {
     }
 
     _resetDemosOnPageChange() {
-        const reset = (s) => { s.active = false; s.timer = 0; };
-        reset(this._demoEnergy);
-        reset(this._demoDiving);
-        reset(this._demoFireball);
-        reset(this._demoInvisible);
-        reset(this._demoDash);
+        this._demoEnergy = this._createEnergyDemoState();
+        this._demoDiving = this._createDivingDemoState();
+        this._demoFireball = this._createFireballDemoState();
+        this._demoInvisible = this._createInvisibleDemoState();
+        this._demoDash = this._createDashDemoState();
 
         this._demoInvisibleColourOpacity = 0;
 
@@ -2496,6 +2495,13 @@ export class HowToPlayMenu extends BaseMenu {
         if (cfg?.invisibleDemo?.enabled === true) {
             applyDemo(true, this._updateInvisibleDemo, cfg?.invisibleDemo);
         } else {
+            if (this._demoInvisible) {
+                this._demoInvisible.active = false;
+                this._demoInvisible.phase = 'wait';
+                this._demoInvisible.timer = 0;
+                this._demoInvisible.activeRemainingMs = 0;
+                this._demoInvisible.cooldownElapsedMs = 0;
+            }
             this._drawInvisibleTintInternal(false);
         }
 
