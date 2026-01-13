@@ -177,7 +177,7 @@ export class Player {
         this.dashTimer = this.dashCooldown;
         this.dashMaxCharges = 2;
         this.dashCharges = this.dashMaxCharges;
-        this.dashSecondWindowMs = 5000;
+        this.dashSecondWindowMs = 7000;
         this.dashSecondWindowTimer = 0;
         this.secondDashDistanceMultiplier = 1.75;
         this.dashAwaitingSecond = false;

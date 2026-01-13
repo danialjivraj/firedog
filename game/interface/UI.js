@@ -685,8 +685,21 @@ export class UI {
             context.font = 'bold 10px Arial';
             context.fillText('EXHAUSTED', barX + w / 2, barY + h * 0.72);
         } else {
-            context.font = 'bold 13px Arial';
-            context.fillText(valueText, barX + w / 2, barY + h / 2);
+            const label =
+                status === 'poison' ? 'POISONED' :
+                    status === 'blue' ? 'BOOSTED' :
+                        null;
+
+            if (label) {
+                context.font = 'bold 13px Arial';
+                context.fillText(valueText, barX + w / 2, barY + h * 0.38);
+
+                context.font = 'bold 10px Arial';
+                context.fillText(label, barX + w / 2, barY + h * 0.72);
+            } else {
+                context.font = 'bold 13px Arial';
+                context.fillText(valueText, barX + w / 2, barY + h / 2);
+            }
         }
 
         context.restore();
@@ -1286,5 +1299,113 @@ export class UI {
             context.fillText(String(charges), dashX + firedogBorderSize - 4, yPosition + 16);
             context.restore();
         }
+    }
+
+    // for how to play menu
+    drawTopLeftOnly(context) {
+        context.save();
+        context.shadowOffsetX = 2;
+        context.shadowOffsetY = 2;
+        context.shadowColor = 'white';
+        context.shadowBlur = 0;
+        context.font = this.fontSize + 'px ' + this.fontFamily;
+        context.textAlign = 'left';
+        context.fillStyle = this.game.fontColor;
+
+        context.fillText('Coins: ' + 17, 20, 38 + this.topLeftYShift);
+
+        const time = 157000;
+        let minutes = Math.floor(time / 60000);
+        let seconds = Math.floor((time % 60000) / 1000);
+        if (seconds === 60) {
+            seconds = 0;
+            minutes += 1;
+        }
+        const formattedTime = `${minutes}:${(seconds < 10 ? '0' : '') + seconds}`;
+        context.fillText('Time: ' + formattedTime, 20, 78 + this.topLeftYShift);
+
+        if (this.game.player) this.energy(context);
+
+        const headsToDraw = 5;
+        for (let i = 0; i < headsToDraw; i++) {
+            const x = 25 * i + 20;
+            const y = 131 + this.topLeftYShift;
+            context.drawImage(this.livesImage, x, y, 25, 25);
+        }
+
+        context.restore();
+
+        if (this.game.player) this.firedogAbilityUI(context);
+    }
+
+    drawTutorialProgressBar(context, percentage = 75, colour = '#2ecc71') {
+        const pct = Math.max(0, Math.min(100, Number(percentage) || 0));
+        const barX = (this.game.width / 2) - (this.barWidth / 2);
+        const barY = 10;
+        const barHeight = 10;
+
+        const filledWidth = (pct / 100) * this.barWidth;
+        const barOrFilledWidth = this.barWidth;
+
+        context.save();
+
+        context.font = '18px ' + this.fontFamily;
+        context.fillStyle = this.game.fontColor;
+        context.textAlign = 'left';
+
+        context.shadowOffsetX = 2;
+        context.shadowOffsetY = 2;
+        context.shadowColor = 'white';
+        context.shadowBlur = 0;
+
+        context.fillText(Math.floor(pct) + '%', barX + this.barWidth + 5, barY + barHeight);
+
+        context.shadowColor = 'rgba(0, 0, 0, 0)';
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+        context.shadowBlur = 0;
+
+        context.fillStyle = 'rgba(255, 255, 255, 0.25)';
+        context.beginPath();
+        context.moveTo(barX + 5, barY);
+        context.lineTo(barX + this.barWidth - 5, barY);
+        context.arcTo(barX + this.barWidth, barY, barX + this.barWidth, barY + 5, 5);
+        context.lineTo(barX + this.barWidth, barY + barHeight - 5);
+        context.arcTo(barX + this.barWidth, barY + barHeight, barX + this.barWidth - 5, barY + barHeight, 5);
+        context.lineTo(barX + 5, barY + barHeight);
+        context.arcTo(barX, barY + barHeight, barX, barY + barHeight - 5, 5);
+        context.lineTo(barX, barY + 5);
+        context.arcTo(barX, barY, barX + 5, barY, 5);
+        context.closePath();
+        context.fill();
+
+        context.beginPath();
+        context.moveTo(barX + 5, barY);
+        context.lineTo(barX + barOrFilledWidth - 5, barY);
+        context.arcTo(barX + barOrFilledWidth, barY, barX + barOrFilledWidth, barY + 5, 5);
+        context.lineTo(barX + barOrFilledWidth, barY + barHeight - 5);
+        context.arcTo(barX + barOrFilledWidth, barY + barHeight, barX + barOrFilledWidth - 5, barY + barHeight, 5);
+        context.lineTo(barX + 5, barY + barHeight);
+        context.arcTo(barX, barY + barHeight, barX, barY + barHeight - 5, 5);
+        context.lineTo(barX, barY + 5);
+        context.arcTo(barX, barY, barX + 5, barY, 5);
+        context.closePath();
+        context.clip();
+
+        context.fillStyle = colour;
+        context.beginPath();
+        context.moveTo(barX + 10, barY);
+        context.lineTo(barX + filledWidth - 5, barY);
+        context.arcTo(barX + filledWidth, barY, barX + filledWidth, barY + 5, 5);
+        context.lineTo(barX + filledWidth, barY + barHeight - 5);
+        context.arcTo(barX + filledWidth, barY + barHeight, barX + filledWidth - 5, barY + barHeight, 5);
+        context.lineTo(barX + 5, barY + barHeight);
+        context.arcTo(barX, barY + barHeight, barX, barY + barHeight - 5, 5);
+        context.lineTo(barX, barY + 5);
+        context.arcTo(barX, barY, barX + 10, barY, 5);
+        context.closePath();
+        context.fill();
+
+        context.restore();
     }
 }

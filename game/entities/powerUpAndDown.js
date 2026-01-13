@@ -10,7 +10,8 @@ class Power {
     }
 
     update(deltaTime) {
-        if (!this.game.cabin.isFullyVisible) {
+        const cabinVisible = this.game.cabin?.isFullyVisible === true;
+        if (!cabinVisible) {
             this.x -= this.game.speed;
         }
         if (this.frameTimer > this.frameInterval) {

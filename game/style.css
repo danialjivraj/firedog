@@ -32,7 +32,8 @@ body {
     /* saving images */ 
     #savingAnimation, #savingBookAnimation, #deleteProgressAnimation, #deleteProgressBookAnimation,  
 /* how to play */ 
-#howToPlay1, #howToPlay2, #howToPlay3, #howToPlay4, #howToPlay5, #howToPlay6, #howToPlay7, #howToPlay8, #howToPlay9, #howToPlay10, 
+#keycap, #enterKeycap, #shiftKeycap, #leftClick, #rightClick, #scrollWheelClick, #mouseButton4Click, 
+#firedogSitting,  #firedogRolling, #firedogStanding, #firedogDiving, #firedogRunning, #firedogJumping, #firedogDashing1, #firedogStunned, #firedogHit, #firedogFrozen,
 /* ability UI */
 #fireballUI, #fireballRedPotionUI, #divingUI, #dashingUI, #invisibleUI,
 /* entities */

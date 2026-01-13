@@ -562,21 +562,53 @@ describe('UI', () => {
             expect(call[6]).toBe('blue');
         });
 
-        it('when exhausted, shows exhausted marker and draws EXHAUSTED label', () => {
-            const spy = jest.spyOn(ui, 'drawEnergyBar');
+        it('when poisoned (not exhausted), draws POISONED label', () => {
             game.menu.pause.isPaused = true;
 
-            game.player.energy = 0;
-            game.player.isEnergyExhausted = true;
+            game.player.energy = 12.3;
+            game.player.maxEnergy = 100;
+            game.player.isPoisonedActive = true;
+            game.player.isBluePotionActive = false;
+            game.player.isEnergyExhausted = false;
 
             ui.energy(ctx);
 
-            const call = spy.mock.calls[0];
-            const showExhaustedMarker = call[7];
-            expect(showExhaustedMarker).toBe(true);
+            expect(ctx.fillText.mock.calls.some(c => c[0] === 'POISONED')).toBe(true);
+            expect(ctx.fillText.mock.calls.some(c => c[0] === 'BOOSTED')).toBe(false);
+            expect(ctx.fillText.mock.calls.some(c => c[0] === 'EXHAUSTED')).toBe(false);
+        });
 
-            expect(ctx.fillText.mock.calls.some(c => c[0] === '0.0')).toBe(true);
+        it('when blue potion active (not exhausted), draws BOOSTED label', () => {
+            game.menu.pause.isPaused = true;
+
+            game.player.energy = 44.4;
+            game.player.maxEnergy = 100;
+            game.player.isBluePotionActive = true;
+            game.player.isPoisonedActive = false;
+            game.player.isEnergyExhausted = false;
+
+            ui.energy(ctx);
+
+            expect(ctx.fillText.mock.calls.some(c => c[0] === 'BOOSTED')).toBe(true);
+            expect(ctx.fillText.mock.calls.some(c => c[0] === 'POISONED')).toBe(false);
+            expect(ctx.fillText.mock.calls.some(c => c[0] === 'EXHAUSTED')).toBe(false);
+        });
+
+        it('when exhausted, EXHAUSTED label overrides poison/blue labels', () => {
+            game.menu.pause.isPaused = true;
+
+            game.player.energy = 0;
+            game.player.maxEnergy = 100;
+
+            game.player.isEnergyExhausted = true;
+            game.player.isBluePotionActive = true;
+            game.player.isPoisonedActive = true;
+
+            ui.energy(ctx);
+
             expect(ctx.fillText.mock.calls.some(c => c[0] === 'EXHAUSTED')).toBe(true);
+            expect(ctx.fillText.mock.calls.some(c => c[0] === 'POISONED')).toBe(false);
+            expect(ctx.fillText.mock.calls.some(c => c[0] === 'BOOSTED')).toBe(false);
         });
     });
 

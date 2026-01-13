@@ -4,7 +4,9 @@ class Particle {
         this.markedForDeletion = false;
     }
     update() {
-        if (this.game.cabin.isFullyVisible || this.game.isBossVisible) {
+        const cabinFullyVisible = !!this.game.cabin?.isFullyVisible;
+        const bossVisible = !!this.game.isBossVisible;
+        if (cabinFullyVisible || bossVisible) {
             this.x -= this.speedX;
         } else {
             this.x -= this.speedX + this.game.speed;
@@ -348,7 +350,9 @@ class FloatingBubbleEffect extends Particle {
     }
 
     update() {
-        if (this.game.cabin.isFullyVisible || this.game.isBossVisible) {
+        const cabinFullyVisible = !!this.game.cabin?.isFullyVisible;
+        const bossVisible = !!this.game.isBossVisible;
+        if (cabinFullyVisible || bossVisible) {
             this.x -= this.game.speed * (this.parallax ?? 0.0);
         } else {
             this.x -= this.game.speed * (this.parallax ?? 0.2);
