@@ -22,6 +22,7 @@ describe('Tutorial', () => {
                 invisibleCooldown: 5,
                 energy: 50,
                 onGround: jest.fn(() => true),
+                clearAllStatusEffects: jest.fn(),
             },
             enemies: [],
             menu: {
@@ -206,7 +207,7 @@ describe('Tutorial', () => {
             tutorial.currentStepIndex = last - 1;
             tutorial.tutorialPause = false;
             tutorial.update(6000);
-            expect(game.player.invisibleTimer).toBe(game.player.invisibleCooldown);
+            expect(game.player.clearAllStatusEffects).toHaveBeenCalled();
             expect(game.menu.levelDifficulty.setDifficulty).toHaveBeenCalledWith(game.selectedDifficulty);
             expect(game.coins).toBe(0);
             expect(game.time).toBe(0);
