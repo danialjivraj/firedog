@@ -77,7 +77,7 @@ Below, only soundtracks will be credited.
 - **Map 4:** [Tribal Jungle Music - Amazon Princess](https://www.youtube.com/watch?v=Uj5H4vJoCOw)
 - **Map 5:** [Relaxing Celtic Music - Spring Charm by Adrian von Ziegler](https://www.youtube.com/watch?v=YGkuJlEZy04&t)
 - **Map 6:** [Preparing Ingredients by Sergey Eybog](https://www.youtube.com/watch?v=BaTGuz3JdRQ)
-- **Map 7:** [Fire Volcano - Pokémon Snap](https://www.youtube.com/watch?v=fNo-c6p7pBw&t)
+- **Map 7:** [Atmospheric Video Game Music (Volcano) - Last Sanctum](https://www.youtube.com/watch?v=18x7qaVb7Bc)
     - **Elyvorg Themes:** 
         - [Super Meat Boy: The Battle of Lil' Slugger](https://www.youtube.com/watch?v=WL-8rU8ltA4)
         - [Unbound Purpose by Greg Dombrowski](https://www.youtube.com/watch?v=Kw1-B9FGYTA)

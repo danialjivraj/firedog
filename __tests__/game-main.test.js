@@ -143,6 +143,13 @@ describe('Game class (game-main.js)', () => {
 
       <!-- Map7 -->
       <img id="map7Background">
+      <img id="map7VolcanoLayer1">
+      <img id="map7VolcanoLayer2">
+      <img id="map7VolcanoLayer3">
+      <img id="map7VolcanoLayer4">
+      <img id="map7VolcanoLayer5">
+      <img id="map7rocks4">
+      <img id="map7rocks3">
       <img id="map7rocks2">
       <img id="map7rocks1">
       <img id="map7cactus">

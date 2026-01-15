@@ -32,6 +32,8 @@ export class ElyvorgCutscene extends Cutscene {
         this.game.background.resetLayersByImageIds([
             "map7spikeStones",
             "map7cactus",
+            "map7rocks1",
+            "map7rocks3",
         ]);
 
         this.game.endCutscene();

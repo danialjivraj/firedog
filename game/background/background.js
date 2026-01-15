@@ -474,11 +474,38 @@ export class Map6 extends Background {
 
 export class Map7 extends Background {
     constructor(game) {
+        const redMist = new MovingLayer(game, 0, 'bonusMap2RedMist', 0.9, 'up', 'y');
+        const orangeBubbles1 = new BubbleAnimation(game, 15, 0.65, { min: 0.0, max: 0.33 }, {
+            base: '#ff3c00ff',
+            highlight: '#fd8d0cff',
+            shadow: '#bf1a1aff',
+        });
+
+        const orangeBubbles2 = new BubbleAnimation(game, 15, 0.85, { min: 0.33, max: 0.66 }, {
+            base: '#ff3c00ff',
+            highlight: '#fd8d0cff',
+            shadow: '#bf1a1aff',
+        });
+
+        const orangeBubbles3 = new BubbleAnimation(game, 10, 1.0, { min: 0.66, max: 1.0, spawnBelowGround: true }, {
+            base: '#ff3c00ff',
+            highlight: '#fd8d0cff',
+            shadow: '#bf1a1aff',
+        });
         super(
             game,
             { imageId: 'map7Background', bgSpeed: 0 },
-            { imageId: 'map7rocks2', bgSpeed: 0.3 },
-            { imageId: 'map7rocks1', bgSpeed: 0.5 },
+            orangeBubbles1,
+            { imageId: 'map7VolcanoLayer1', bgSpeed: 0 },
+            { imageId: 'map7VolcanoLayer2', bgSpeed: 0 },
+            { imageId: 'map7VolcanoLayer3', bgSpeed: 0 },
+            orangeBubbles2,
+            { imageId: 'map7VolcanoLayer4', bgSpeed: 0 },
+            { imageId: 'map7VolcanoLayer5', bgSpeed: 0 },
+            orangeBubbles3,
+            redMist,
+            { imageId: ['map7rocks3', 'map7rocks4'], bgSpeed: 0.3 },
+            { imageId: ['map7rocks1', 'map7rocks2'], bgSpeed: 0.5 },
             { imageId: 'map7cactus', bgSpeed: 0.6 },
             { imageId: 'map7spikeStones', bgSpeed: 0.7 },
             { imageId: 'map7Ground', bgSpeed: 1 },
