@@ -91,8 +91,8 @@ export class MovingLayer extends Layer {
         this.groundSpeed = this.game.speed * this.bgSpeed;
 
         const axisSpeed = this.axis === 'x'
-                ? this.baseScrollSpeed + this.groundSpeed
-                : this.baseScrollSpeed;
+            ? this.baseScrollSpeed + this.groundSpeed
+            : this.baseScrollSpeed;
 
         if (this.direction === 'left') {
             this.x -= axisSpeed;
@@ -370,11 +370,11 @@ export class Map4 extends Background {
 export class Map5 extends Background {
     constructor(game) {
         const fireflyLayer = new Firefly(game, 5);
-        const fireflyLayer2 = new Firefly(game, 7);
+        const fireflyLayer2 = new Firefly(game, 5);
         const fireflyLayer3 = new Firefly(game, 5);
-        const fireflyLayer4 = new Firefly(game, 4);
+        const fireflyLayer4 = new Firefly(game, 5);
         const fireflyLayer5 = new Firefly(game, 5);
-        const fireflyLayer6 = new Firefly(game, 10);
+        const fireflyLayer6 = new Firefly(game, 5);
 
         const raindropAnimationLayer = new RaindropAnimation(game, 100);
 
@@ -382,20 +382,18 @@ export class Map5 extends Background {
             game,
             { imageId: 'map5Background', bgSpeed: 0 },
             fireflyLayer,
-            { imageId: 'map5Trees5', bgSpeed: 0.3 },
-            { imageId: 'map5Trees2', bgSpeed: 0.32 },
+            { imageId: 'map5TallGrass', bgSpeed: 0.1 },
             fireflyLayer2,
-            { imageId: 'map5Trees4', bgSpeed: 0.34 },
-            { imageId: 'map5Trees3', bgSpeed: 0.4 },
+            { imageId: 'map5BigSunflowers', bgSpeed: 0.15 },
+            { imageId: ['map5Bush1', 'map5Bush2'], bgSpeed: 0.3 },
             fireflyLayer3,
-            { imageId: 'map5Trees1', bgSpeed: 0.44 },
+            { imageId: ['map5Trees1', 'map5Trees2'], bgSpeed: 0.4 },
             fireflyLayer4,
-            { imageId: 'map5Bush2', bgSpeed: 0.5 },
+            { imageId: ['map5Trees3', 'map5Trees4'], bgSpeed: 0.5 },
             fireflyLayer5,
-            { imageId: 'map5Bush1', bgSpeed: 0.54 },
-            { imageId: 'map5Flowers2', bgSpeed: 0.6 },
-            { imageId: 'map5Flowers1', bgSpeed: 0.7 },
+            { imageId: 'map5Cattails', bgSpeed: 0.8 },
             fireflyLayer6,
+            { imageId: ['map5Flowers1', 'map5Flowers2'], bgSpeed: 0.87 },
             { imageId: 'map5Ground', bgSpeed: 1 },
             raindropAnimationLayer,
         );
@@ -945,7 +943,7 @@ export class RaindropAnimation {
                     raindrop.y = 0;
                     raindrop.x = Math.random() * this.game.width;
 
-                    if (Math.random() <= 0.025) {
+                    if (Math.random() <= 0.065) {
                         const splashAnimation = new RaindropSplashAnimation(this.game, raindrop.x);
                         this.splashes.push(splashAnimation);
                     }

@@ -88,7 +88,8 @@ beforeAll(() => {
         'map4Ground',
         // Map5
         'map5Background',
-        'map5Trees5',
+        'map5TallGrass',
+        'map5BigSunflowers',
         'map5Trees2',
         'map5Trees4',
         'map5Trees3',
@@ -97,6 +98,7 @@ beforeAll(() => {
         'map5Bush1',
         'map5Flowers2',
         'map5Flowers1',
+        'map5Cattails',
         'map5Ground',
         // Map6
         'map6Background',
@@ -545,7 +547,7 @@ describe('Map constructors', () => {
         { Cls: Map2, id: 'map2Soundtrack', expectedLen: 8 },
         { Cls: Map3, id: 'map3Soundtrack', expectedLen: 16 },
         { Cls: Map4, id: 'map4Soundtrack', expectedLen: 11 },
-        { Cls: Map5, id: 'map5Soundtrack', expectedLen: 18 },
+        { Cls: Map5, id: 'map5Soundtrack', expectedLen: 16 },
         { Cls: Map6, id: 'map6Soundtrack', expectedLen: 11 },
         { Cls: Map7, id: 'map7Soundtrack', expectedLen: 6 },
         { Cls: BonusMap1, id: 'map3Soundtrack', expectedLen: 11 },

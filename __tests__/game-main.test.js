@@ -121,7 +121,6 @@ describe('Game class (game-main.js)', () => {
 
       <!-- Map5 -->
       <img id="map5Background">
-      <img id="map5Trees5">
       <img id="map5Trees2">
       <img id="map5Trees4">
       <img id="map5Trees3">
