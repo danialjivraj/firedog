@@ -181,7 +181,7 @@ export class Player {
         this.dashSecondWindowTimer = 0;
         this.secondDashDistanceMultiplier = 1.75;
         this.dashAwaitingSecond = false;
-        this.dashEnergyCost = 10;
+        this.dashEnergyCost = 15;
         this.dashInstanceId = 0;
         this.postDashGraceMs = 200;
         this.postDashGraceTimer = 0;
@@ -253,7 +253,7 @@ export class Player {
 
         this.dashBetweenTimer = 0;
 
-        const cost = this.dashEnergyCost ?? 10;
+        const cost = this.dashEnergyCost;
         this.energy = Math.max(0, this.energy - cost);
         if (!this.isBluePotionActive && this.energy <= 0) this.isEnergyExhausted = true;
 
