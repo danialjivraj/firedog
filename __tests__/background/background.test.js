@@ -62,10 +62,15 @@ beforeAll(() => {
         'map1Ground',
         // Map2
         'map2Background',
-        'map2CityLights2',
         'map2CityLights1',
-        'map2Trees1',
+        'map2CityLights2',
+        'map2CityLights3',
+        'map2CityLights4',
+        'map2Tombstone2',
+        'map2Tombstone3',
+        'map2Trees',
         'map2Ground',
+        'map2RedEyes',
         // Map3
         'map3Background',
         'map3BackgroundRocks',
@@ -552,7 +557,7 @@ describe('Background', () => {
 describe('Map constructors', () => {
     const specs = [
         { Cls: Map1, id: 'map1Soundtrack', expectedLen: 16 },
-        { Cls: Map2, id: 'map2Soundtrack', expectedLen: 8 },
+        { Cls: Map2, id: 'map2Soundtrack', expectedLen: 10 },
         { Cls: Map3, id: 'map3Soundtrack', expectedLen: 16 },
         { Cls: Map4, id: 'map4Soundtrack', expectedLen: 11 },
         { Cls: Map5, id: 'map5Soundtrack', expectedLen: 16 },
