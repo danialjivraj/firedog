@@ -684,14 +684,13 @@ describe('EnemyLore', () => {
     describe('phraseColors styling for every keyword (main maps)', () => {
         const cases = [
             ['EVERYWHERE', 0, [], 'white', 5],
-            ['LUNAR', 1, [], 'green', 5],
-            ['NIGHTFALL', 9, ['map2Unlocked'], 'black', 5],
+            ['LUNAR', 1, [], '#06580dff', 7],
+            ['NIGHTFALL', 9, ['map2Unlocked'], 'black', 10],
             ['CORAL', 15, ['map2Unlocked', 'map3Unlocked'], 'darkblue', 5],
             ['VERDANT', 22, ['map2Unlocked', 'map3Unlocked', 'map4Unlocked'], 'black', 15],
             ['SPRINGLY', 30, ['map2Unlocked', 'map3Unlocked', 'map4Unlocked', 'map5Unlocked'], 'orange', 5],
             ['VENOMVEIL', 41, ['map2Unlocked', 'map3Unlocked', 'map4Unlocked', 'map5Unlocked', 'map6Unlocked'], '#003b00', 10],
             ['INFERNAL', 42, ['map2Unlocked', 'map3Unlocked', 'map4Unlocked', 'map5Unlocked', 'map6Unlocked', 'map7Unlocked'], 'black', 10],
-
             ['RED', 17, ['map2Unlocked', 'map3Unlocked'], 'black', 1],
             ['STUN', 6, [], 'black', 1],
         ];
@@ -723,8 +722,8 @@ describe('EnemyLore', () => {
     describe('phraseColors styling for bonus-map keywords', () => {
         const bonusCases = [
             ['ICEBOUND', 0, ['bonusMap1Unlocked'], '#1c4a7f', 10],
-            ['COSMIC', 1, ['bonusMap1Unlocked', 'bonusMap2Unlocked'], '#270033', 10],
-            ['CRIMSON', 2, ['bonusMap1Unlocked', 'bonusMap3Unlocked'], '#5a1408', 10],
+            ['CRIMSON', 1, ['bonusMap1Unlocked', 'bonusMap2Unlocked'], '#000000ff', 10],
+            ['COSMIC', 2, ['bonusMap1Unlocked', 'bonusMap3Unlocked'], '#270033', 10],
         ];
 
         test.each(bonusCases)(
@@ -808,7 +807,7 @@ describe('EnemyLore', () => {
     describe('standalone words vs full phrases', () => {
         it('does not style standalone COSMIC but styles COSMIC as part of COSMIC RIFT', () => {
             mockGame.bonusMap1Unlocked = true;
-            mockGame.bonusMap2Unlocked = true;
+            mockGame.bonusMap3Unlocked = true;
             menu.setCategory('bonus');
 
             const records = [];
@@ -820,13 +819,12 @@ describe('EnemyLore', () => {
                 });
             };
 
-            menu.drawPageContent(ctx, 1, 0, 0);
+            menu.drawPageContent(ctx, 2, 0, 0);
 
             const cosmicEntries = records.filter(r => r.text === 'COSMIC');
             expect(cosmicEntries.length).toBeGreaterThan(0);
 
             expect(cosmicEntries.some(e => e.shadowColor === 'transparent' || e.shadowBlur === 0)).toBe(true);
-
             expect(cosmicEntries.some(e => e.shadowColor === '#270033' && e.shadowBlur === 10)).toBe(true);
         });
 
