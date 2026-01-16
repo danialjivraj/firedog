@@ -1476,7 +1476,7 @@ export class CollisionLogic {
             this.game.coins += 1;
             player.energy += 2;
             this.game.floatingMessages.push(
-                new FloatingMessage('+1', enemy.x, enemy.y, 150, 50, 30)
+                new FloatingMessage('+1', enemy.x, enemy.y, 120, 20, 30)
             );
         }
     }
@@ -2019,7 +2019,7 @@ export class CollisionLogic {
                 this.playCollisionFx(enemy, { fireball });
 
                 this.game.floatingMessages.push(
-                    new FloatingMessage('+20', enemy.x, enemy.y, 160, 120, 30, 'orange')
+                    new FloatingMessage('+20', enemy.x, enemy.y, 250, 110, 30, 'cyan')
                 );
 
                 player.energy += 20;
@@ -2328,7 +2328,7 @@ export class CollisionLogic {
                         this.game.audioHandler.enemySFX.playSound('goblinStealing', false, true);
                         this.game.coins -= coinsToSteal;
                         this.game.floatingMessages.push(
-                            new FloatingMessage('-' + coinsToSteal, player.x, player.y, 150, 50, 30, 'red')
+                            new FloatingMessage('-' + coinsToSteal, player.x, player.y, 120, 30, 30, 'red')
                         );
                     }
                 }
@@ -2833,7 +2833,7 @@ export class CollisionLogic {
                 game.time -= 10000;
                 game.audioHandler.powerUpAndDownSFX.playSound('oxygenTankSound', false, true);
                 game.floatingMessages.push(
-                    new FloatingMessage('+10s', item.x, item.y, 115, 90, 30, 'white', 'black', true)
+                    new FloatingMessage('+10s', item.x, item.y, 115, 70, 30, 'white', 'black', true)
                 );
             },
             HealthLive() {
@@ -2843,7 +2843,7 @@ export class CollisionLogic {
             Coin(item) {
                 game.coins += 10;
                 game.floatingMessages.push(
-                    new FloatingMessage('+10', item.x, item.y, 150, 50, 30, 'yellow')
+                    new FloatingMessage('+10', item.x, item.y, 120, 30, 30, 'yellow')
                 );
                 game.audioHandler.powerUpAndDownSFX.playSound('coinSound', false, true);
             },
@@ -2913,7 +2913,7 @@ export class CollisionLogic {
                 game.time += 10000;
                 game.audioHandler.powerUpAndDownSFX.playSound('carbonDioxideTankSound', false, true);
                 game.floatingMessages.push(
-                    new FloatingMessage('-10s', item.x, item.y, 115, 90, 30, 'red', 'black', true)
+                    new FloatingMessage('-10s', item.x, item.y, 115, 70, 30, 'red', 'black', true)
                 );
             },
             RandomPower(item) {

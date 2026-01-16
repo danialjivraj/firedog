@@ -465,6 +465,7 @@ export class Map6 extends Background {
             { imageId: ['map6DeadBranches1', 'map6DeadBranches2'], bgSpeed: 0.5 },
             { imageId: ['map6SmallMushrooms1', 'map6SmallMushrooms2'], bgSpeed: 0.7 },
             greenMist,
+            { imageId: 'map6Grass', bgSpeed: 1 },
             { imageId: 'map6Ground', bgSpeed: 1 },
         );
 
