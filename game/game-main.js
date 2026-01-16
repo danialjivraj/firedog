@@ -16,7 +16,7 @@ import {
 } from "./entities/enemies/enemies.js";
 import { InkBomb, MeteorAttack } from "./entities/enemies/elyvorg.js";
 import {
-    RedPotion, BluePotion, HealthLive, Coin, OxygenTank,
+    RedPotion, BluePotion, Hourglass, HealthLive, Coin, OxygenTank,
     BlackHole, Cauldron, IceDrink, IceCube, Confuse, DeadSkull, CarbonDioxideTank,
     RandomPower
 } from "./entities/powerUpAndDown.js";
@@ -1063,6 +1063,9 @@ export class Game {
             }
             if (Math.random() < 0.005) {
                 this.powerUps.push(new BluePotion(this));
+            }
+            if (Math.random() < 0.005) {
+                this.powerUps.push(new Hourglass(this));
             }
             if (Math.random() < 0.005) {
                 this.powerUps.push(new HealthLive(this));

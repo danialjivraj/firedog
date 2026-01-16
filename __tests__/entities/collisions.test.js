@@ -4,6 +4,7 @@ jest.mock('../../game/entities/powerUpAndDown.js', () => {
     class Coin { }
     class RedPotion { }
     class BluePotion { }
+    class Hourglass { }
     class RandomPower { }
 
     class IceDrink { }
@@ -20,6 +21,7 @@ jest.mock('../../game/entities/powerUpAndDown.js', () => {
         Coin,
         RedPotion,
         BluePotion,
+        Hourglass,
         RandomPower,
 
         IceDrink,
@@ -119,6 +121,7 @@ import {
     Coin,
     RedPotion,
     BluePotion,
+    Hourglass,
     RandomPower,
 
     IceDrink,
@@ -243,6 +246,16 @@ function makeGameAndLogic() {
 
         bluePotionSpeed: 3,
         blueFireTimer: 0,
+
+        isHourglassActive: false,
+        hourglassTimer: 0,
+        hourglassDuration: 25000,
+        cooldownRates: { fireball: 1, invisible: 1, dash: 1 },
+        activateHourglass: jest.fn(function () {
+            this.isHourglassActive = true;
+            this.hourglassTimer = this.hourglassDuration;
+            this.cooldownRates = { fireball: 2, invisible: 3, dash: 3 };
+        }),
 
         isBlackHoleActive: false,
 
@@ -2035,6 +2048,54 @@ describe('CollisionLogic.handlePowerCollisions — powerUps + powerDowns', () =>
         expect(ctx.game.audioHandler.powerUpAndDownSFX.playSound).toHaveBeenCalledWith('bluePotionSound', false, true);
         expect(ctx.game.speed).toBe(9);
         expect(ctx.player.isBluePotionActive).toBe(true);
+    });
+
+    test('Hourglass: activates hourglass mode + sets timer/rates + plays sound', () => {
+        const ctx = makeGameAndLogic();
+        const item = makeItem(Hourglass);
+
+        ctx.player.isHourglassActive = false;
+        ctx.player.hourglassTimer = 0;
+        ctx.player.hourglassDuration = 25000;
+        ctx.player.cooldownRates = { fireball: 1, invisible: 1, dash: 1 };
+
+        ctx.game.powerUps.push(item);
+        runPowerCollision(ctx);
+
+        expect(item.markedForDeletion).toBe(true);
+
+        expect(ctx.game.audioHandler.powerUpAndDownSFX.playSound).toHaveBeenCalledWith(
+            'hourglassSound',
+            false,
+            true
+        );
+
+        expect(ctx.player.activateHourglass).toHaveBeenCalledTimes(1);
+
+        expect(ctx.player.isHourglassActive).toBe(true);
+        expect(ctx.player.hourglassTimer).toBe(25000);
+        expect(ctx.player.cooldownRates).toEqual({ fireball: 2, invisible: 3, dash: 3 });
+    });
+
+    test('Hourglass: picking up again refreshes timer back to full duration', () => {
+        const ctx = makeGameAndLogic();
+
+        ctx.player.isHourglassActive = true;
+        ctx.player.hourglassDuration = 25000;
+        ctx.player.hourglassTimer = 1234;
+        ctx.player.cooldownRates = { fireball: 2, invisible: 3, dash: 3 };
+
+        const item = makeItem(Hourglass);
+
+        ctx.game.powerUps.push(item);
+        runPowerCollision(ctx);
+
+        expect(item.markedForDeletion).toBe(true);
+        expect(ctx.player.activateHourglass).toHaveBeenCalledTimes(1);
+
+        expect(ctx.player.isHourglassActive).toBe(true);
+        expect(ctx.player.hourglassTimer).toBe(25000);
+        expect(ctx.player.cooldownRates).toEqual({ fireball: 2, invisible: 3, dash: 3 });
     });
 
     test('RandomPower (powerUp): excludes OxygenTank when NOT underwater, picks a deterministic candidate', () => {

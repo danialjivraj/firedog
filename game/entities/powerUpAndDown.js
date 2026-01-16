@@ -142,6 +142,23 @@ export class BluePotion extends PowerUp {
     draw(context) { super.draw(context, 10); }
 }
 
+export class Hourglass extends PowerUp {
+    constructor(game) {
+        super(game);
+        this.width = 43.8;
+        this.height = 75;
+        this.image = document.getElementById('hourglass');
+        this.maxFrame = 4;
+        this.frameWidth = 43.8;
+        this.frameHeight = 75;
+        this.x = this.game.width + Math.random() * this.game.width * 0.5;
+        const minY = this.game.height - this.height - this.game.groundMargin;
+        const maxY = 130;
+        this.y = minY + Math.random() * (maxY - minY);
+    }
+    draw(context) { super.draw(context, 10); }
+}
+
 export class HealthLive extends PowerUp {
     constructor(game) {
         super(game);

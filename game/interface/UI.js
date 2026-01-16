@@ -1042,6 +1042,16 @@ export class UI {
 
         const lockContentFilter = 'grayscale(100%)';
 
+        const hourglassYellowAnimOn = !!player.isHourglassActive;
+        const yellowCooldownSpin = {
+            segments: 140,
+            speed: 0.75,
+            headWidth: 0.22,
+            minAlpha: 0.12,
+            maxAlpha: 1.0,
+            phaseOverride: sharedPhase,
+        };
+
         // diving ability
         const divingX = 25;
         const divingLocked = frozen || hitOrStunned || player.divingTimer < player.divingCooldown;
@@ -1091,28 +1101,43 @@ export class UI {
 
         // fireball ability
         const fireballX = divingX + firedogBorderSize + spaceBetweenAbilities;
+
+        const fireballOnCooldown = player.fireballTimer < player.fireballCooldown;
         const fireballLocked =
             frozen ||
             hitOrStunned ||
-            player.fireballTimer < player.fireballCooldown ||
+            fireballOnCooldown ||
             player.isEnergyExhausted;
 
+        const fireballShowYellowCooldownAnim = hourglassYellowAnimOn && fireballOnCooldown;
+
         if (player.isRedPotionActive) {
-            this.drawAbilityIcon(context, this.fireballRedPotionUI, fireballX, yPosition, firedogBorderSize, {
-                borderColor: 'red',
-                contentFilter: fireballLocked ? lockContentFilter : null,
-                animatedBorder: true,
-                animatedColor: 'red',
-                animatedNowMs: nowMs,
-                animatedSettings: {
-                    segments: 140,
-                    speed: 0.55,
-                    headWidth: 0.22,
-                    minAlpha: 0.12,
-                    maxAlpha: 1.0,
-                    phaseOverride: sharedPhase,
-                }
-            });
+            if (fireballShowYellowCooldownAnim) {
+                this.drawAbilityIcon(context, this.fireballRedPotionUI, fireballX, yPosition, firedogBorderSize, {
+                    borderColor,
+                    contentFilter: fireballLocked ? lockContentFilter : null,
+                    animatedBorder: true,
+                    animatedColor: 'yellow',
+                    animatedNowMs: nowMs,
+                    animatedSettings: yellowCooldownSpin,
+                });
+            } else {
+                this.drawAbilityIcon(context, this.fireballRedPotionUI, fireballX, yPosition, firedogBorderSize, {
+                    borderColor: 'red',
+                    contentFilter: fireballLocked ? lockContentFilter : null,
+                    animatedBorder: true,
+                    animatedColor: 'red',
+                    animatedNowMs: nowMs,
+                    animatedSettings: {
+                        segments: 140,
+                        speed: 0.55,
+                        headWidth: 0.22,
+                        minAlpha: 0.12,
+                        maxAlpha: 1.0,
+                        phaseOverride: sharedPhase,
+                    }
+                });
+            }
 
             context.save();
             const redPotionTimerX = fireballX + firedogBorderSize / 2;
@@ -1126,13 +1151,24 @@ export class UI {
             context.fillText(redPotionCountdownText, redPotionTimerX, redPotionTimerY);
             context.restore();
         } else {
-            this.drawAbilityIcon(context, fireballImage, fireballX, yPosition, firedogBorderSize, {
-                borderColor,
-                contentFilter: fireballLocked ? lockContentFilter : null,
-            });
+            if (fireballShowYellowCooldownAnim) {
+                this.drawAbilityIcon(context, fireballImage, fireballX, yPosition, firedogBorderSize, {
+                    borderColor,
+                    contentFilter: fireballLocked ? lockContentFilter : null,
+                    animatedBorder: true,
+                    animatedColor: 'yellow',
+                    animatedNowMs: nowMs,
+                    animatedSettings: yellowCooldownSpin,
+                });
+            } else {
+                this.drawAbilityIcon(context, fireballImage, fireballX, yPosition, firedogBorderSize, {
+                    borderColor,
+                    contentFilter: fireballLocked ? lockContentFilter : null,
+                });
+            }
         }
 
-        if (player.fireballTimer < player.fireballCooldown) {
+        if (fireballOnCooldown) {
             const fireballCooldown = Math.max(0, player.fireballCooldown - player.fireballTimer) / 1000;
             const countdownText = fireballCooldown.toFixed(1);
             const textX = fireballX + (firedogBorderSize - maxTextWidth) / 2 + 10;
@@ -1144,8 +1180,12 @@ export class UI {
 
         // invisible ability
         const invisibleX = fireballX + firedogBorderSize + spaceBetweenAbilities;
-        const invisibleLocked = !player.isInvisible && (player.invisibleTimer < player.invisibleCooldown);
+
+        const invisibleOnCooldown = !player.isInvisible && (player.invisibleTimer < player.invisibleCooldown);
+        const invisibleLocked = invisibleOnCooldown;
         const invisibleActive = !!player.isInvisible && (player.invisibleActiveCooldownTimer > 0);
+
+        const invisibleShowYellowCooldownAnim = hourglassYellowAnimOn && invisibleOnCooldown;
 
         if (invisibleActive) {
             this.drawAbilityIcon(context, invisibleImage, invisibleX, yPosition, firedogBorderSize, {
@@ -1162,6 +1202,15 @@ export class UI {
                     maxAlpha: 1.0,
                     phaseOverride: sharedPhase,
                 }
+            });
+        } else if (invisibleShowYellowCooldownAnim) {
+            this.drawAbilityIcon(context, invisibleImage, invisibleX, yPosition, firedogBorderSize, {
+                borderColor,
+                contentFilter: invisibleLocked ? lockContentFilter : null,
+                animatedBorder: true,
+                animatedColor: 'yellow',
+                animatedNowMs: nowMs,
+                animatedSettings: yellowCooldownSpin,
             });
         } else {
             this.drawAbilityIcon(context, invisibleImage, invisibleX, yPosition, firedogBorderSize, {
@@ -1222,6 +1271,8 @@ export class UI {
 
         const dashWindowActive = player.dashAwaitingSecond && !dashOnCooldown;
 
+        const dashShowYellowCooldownAnim = hourglassYellowAnimOn && dashOnCooldown;
+
         if (dashWindowActive) {
             this.drawAbilityIcon(context, dashImage, dashX, yPosition, firedogBorderSize, {
                 borderColor,
@@ -1237,6 +1288,15 @@ export class UI {
                     maxAlpha: 1.0,
                     phaseOverride: sharedPhase,
                 }
+            });
+        } else if (dashShowYellowCooldownAnim) {
+            this.drawAbilityIcon(context, dashImage, dashX, yPosition, firedogBorderSize, {
+                borderColor,
+                contentFilter: dashLocked ? lockContentFilter : null,
+                animatedBorder: true,
+                animatedColor: 'yellow',
+                animatedNowMs: nowMs,
+                animatedSettings: yellowCooldownSpin,
             });
         } else {
             this.drawAbilityIcon(context, dashImage, dashX, yPosition, firedogBorderSize, {
@@ -1297,6 +1357,69 @@ export class UI {
             context.font = 'bold 16px Arial';
             context.textAlign = 'right';
             context.fillText(String(charges), dashX + firedogBorderSize - 4, yPosition + 16);
+            context.restore();
+        }
+
+        let hourglassBorderBottomY = null;
+
+        if (player.isHourglassActive) {
+            const groupLeft = fireballX;
+            const groupRight = dashX + firedogBorderSize;
+
+            const padX = 6;
+            const padY = 6;
+
+            const showsBelowTimer =
+                !!player.isRedPotionActive ||
+                !!player.isInvisible ||
+                (player.dashAwaitingSecond && !dashOnCooldown);
+
+            const extraDown = showsBelowTimer ? 25 : 0;
+
+            const x = groupLeft - padX;
+            const y = yPosition - padY;
+            const w = (groupRight - groupLeft) + padX * 2;
+            const h = firedogBorderSize + padY * 2 + extraDown;
+
+            const r = (firedogBorderSize * 0.16) + padX;
+
+            const t = (Math.sin(nowMs * 0.010) * 0.5 + 0.5); // 0..1
+            const a = 0.15 + 0.55 * t;
+
+            context.save();
+            context.shadowColor = 'rgba(255, 215, 0, 1)';
+            context.shadowBlur = 10 + 18 * t;
+
+            context.lineWidth = 2;
+            context.strokeStyle = 'rgba(255, 215, 0, 1)';
+            context.globalAlpha = a;
+
+            this.roundedRectPath(context, x, y, w, h, r);
+            context.stroke();
+            context.restore();
+
+            hourglassBorderBottomY = y + h;
+        }
+
+        if (player.isHourglassActive && hourglassBorderBottomY != null) {
+            const msLeft = player.hourglassTimer ?? 0;
+            const secsLeft = Math.max(0, msLeft) / 1000;
+            const text = `${secsLeft.toFixed(1)}`;
+
+            const groupLeft = fireballX;
+            const groupRight = dashX + firedogBorderSize;
+            const cx = (groupLeft + groupRight) / 2;
+
+            const cy = hourglassBorderBottomY + 16;
+
+            context.save();
+            context.font = 'bold 21px Arial';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillStyle = 'white';
+            context.shadowColor = 'black';
+            context.shadowBlur = 4;
+            context.fillText(text, cx, cy);
             context.restore();
         }
     }

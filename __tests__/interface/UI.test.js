@@ -871,5 +871,52 @@ describe('UI', () => {
 
             expect(ctx.__assignments.filter).toContain('grayscale(100%)');
         });
+
+        it('hourglass: when active, draws outer gold border and draws hourglass timer centered below', () => {
+            game.player.isHourglassActive = true;
+            game.player.hourglassTimer = 12345;
+
+            game.player.isRedPotionActive = false;
+            game.player.isInvisible = false;
+            game.player.dashAwaitingSecond = false;
+            game.player.dashTimer = game.player.dashCooldown;
+
+            ui.firedogAbilityUI(ctx);
+
+            expect(ctx.__assignments.shadowColor).toContain('rgba(255, 215, 0, 1)');
+            expect(ctx.__assignments.strokeStyle).toContain('rgba(255, 215, 0, 1)');
+
+            const expectedText = '12.3';
+            const expectedCx = 170;
+            const expectedCy = 240;
+
+            const hourglassCall = ctx.fillText.mock.calls.find(
+                (c) => c[0] === expectedText && c[1] === expectedCx && c[2] === expectedCy
+            );
+            expect(hourglassCall).toBeTruthy();
+        });
+
+        it('hourglass: grows border down when a below-timer is showing (extraDown=25) and positions hourglass timer lower', () => {
+            game.player.isHourglassActive = true;
+            game.player.hourglassTimer = 9000;
+
+            game.player.isRedPotionActive = true;
+            game.player.redPotionTimer = 5000;
+
+            game.player.isInvisible = false;
+            game.player.dashAwaitingSecond = false;
+            game.player.dashTimer = game.player.dashCooldown;
+
+            ui.firedogAbilityUI(ctx);
+
+            const expectedText = '9.0';
+            const expectedCx = 170;
+            const expectedCy = 265;
+
+            const hourglassCall = ctx.fillText.mock.calls.find(
+                (c) => c[0] === expectedText && c[1] === expectedCx && c[2] === expectedCy
+            );
+            expect(hourglassCall).toBeTruthy();
+        });
     });
 });

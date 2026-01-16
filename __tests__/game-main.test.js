@@ -8,6 +8,7 @@ import { Map7, Map3, BonusMap1 } from '../game/background/background.js';
 import {
   RedPotion,
   BluePotion,
+  Hourglass,
   HealthLive,
   Coin,
   OxygenTank,
@@ -1433,6 +1434,7 @@ describe('Game class (game-main.js)', () => {
       game.speed = 10;
       game.addPowerUp();
       expect(game.powerUps.some(p => p instanceof RedPotion)).toBe(true);
+      expect(game.powerUps.some(p => p instanceof Hourglass)).toBe(true);
       expect(game.powerUps.some(p => p instanceof BluePotion)).toBe(true);
       expect(game.powerUps.some(p => p instanceof HealthLive)).toBe(true);
       expect(game.powerUps.some(p => p instanceof Coin)).toBe(true);

@@ -1,5 +1,5 @@
 import {
-    RedPotion, BluePotion, HealthLive, Coin, OxygenTank,
+    RedPotion, BluePotion, Hourglass, HealthLive, Coin, OxygenTank,
     IceDrink, IceCube, Cauldron, BlackHole, Confuse, DeadSkull, CarbonDioxideTank
 } from '../../game/entities/powerUpAndDown';
 
@@ -10,6 +10,7 @@ describe('PowerUp & PowerDown subclasses (merged)', () => {
         // power ups
         redpotion: {},
         bluepotion: {},
+        hourglass: {},
         healthlive: {},
         coin: {},
         oxygenTank: {},
@@ -244,6 +245,113 @@ describe('PowerUp & PowerDown subclasses (merged)', () => {
                 game.debug = true;
                 blue.draw(ctx);
                 expect(ctx.strokeRect).toHaveBeenCalledWith(blue.x, blue.y, blue.width, blue.height);
+            });
+        });
+
+        // ---------------------------------------------------------------------------
+        // Hourglass
+        // ---------------------------------------------------------------------------
+        describe('Hourglass', () => {
+            let hg;
+            beforeEach(() => {
+                hg = new Hourglass(game);
+            });
+
+            test('constructor fields and position', () => {
+                expect(hg.game).toBe(game);
+                expect(hg.width).toBeCloseTo(43.8);
+                expect(hg.height).toBe(75);
+                expect(hg.image).toBe(fakeImages.hourglass);
+                expect(hg.maxFrame).toBe(4);
+                expect(hg.frameWidth).toBeCloseTo(43.8);
+                expect(hg.frameHeight).toBe(75);
+
+                expect(hg.x).toBeCloseTo(game.width + game.width * 0.5 * 0.5);
+
+                const minY = game.height - hg.height - game.groundMargin;
+                const maxY = 130;
+                expect(hg.y).toBeCloseTo(minY + 0.5 * (maxY - minY));
+
+                expect(hg.frameX).toBe(0);
+                expect(hg.frameY).toBe(0);
+                expect(hg.frameTimer).toBe(0);
+                expect(hg.markedForDeletion).toBe(false);
+            });
+
+            test('update moves left when cabin not visible', () => {
+                const start = hg.x;
+                hg.update(16);
+                expect(hg.x).toBe(start - game.speed);
+            });
+
+            test('update does not move when cabin visible', () => {
+                hg.x = 500;
+                game.cabin.isFullyVisible = true;
+                hg.update(16);
+                expect(hg.x).toBe(500);
+            });
+
+            test('animation increments frameTimer when below interval', () => {
+                hg.frameInterval = 1000;
+                hg.frameTimer = 0;
+                hg.update(200);
+                expect(hg.frameTimer).toBe(200);
+            });
+
+            test('animation wraps frameX when at maxFrame', () => {
+                hg.frameTimer = hg.frameInterval + 1;
+                hg.frameX = hg.maxFrame;
+                hg.update(0);
+                expect(hg.frameX).toBe(0);
+                expect(hg.frameTimer).toBe(0);
+            });
+
+            test('animation advances frameX when below maxFrame', () => {
+                hg.frameTimer = hg.frameInterval + 1;
+                hg.frameX = 0;
+                hg.update(0);
+                expect(hg.frameX).toBe(1);
+            });
+
+            test('markedForDeletion when off-screen horizontally or vertically', () => {
+                hg.x = -hg.width - 1;
+                hg.y = 100;
+                hg.update(0);
+                expect(hg.markedForDeletion).toBe(true);
+
+                hg.markedForDeletion = false;
+                hg.x = 100;
+                hg.y = game.height + 1;
+                hg.update(0);
+                expect(hg.markedForDeletion).toBe(true);
+            });
+
+            test('draw uses yellow shadowBlur=10, calls save/restore and correct drawImage', () => {
+                hg.draw(ctx);
+
+                expect(ctx.save).toHaveBeenCalled();
+                expect(ctx.shadowColor).toBe('yellow');
+                expect(ctx.shadowBlur).toBe(10);
+
+                expect(ctx.drawImage).toHaveBeenCalledWith(
+                    fakeImages.hourglass,
+                    hg.frameX * hg.frameWidth,
+                    hg.frameY * hg.frameHeight,
+                    hg.frameWidth,
+                    hg.frameHeight,
+                    hg.x,
+                    hg.y,
+                    hg.width,
+                    hg.height
+                );
+
+                expect(ctx.restore).toHaveBeenCalled();
+            });
+
+            test('draw shows debug rect when game.debug=true', () => {
+                game.debug = true;
+                hg.draw(ctx);
+                expect(ctx.strokeRect).toHaveBeenCalledWith(hg.x, hg.y, hg.width, hg.height);
             });
         });
 

@@ -290,6 +290,7 @@ export class PowerUpAndDownSFXAudioHandler extends AudioHandler {
       bluePotionSound: 'bluePotionSound',
       bluePotionSound2: 'bluePotionSound2',
       redPotionSound: 'redPotionSound',
+      hourglassSound: 'hourglassSound',
       healthLiveSound: 'healthLiveSound',
       oxygenTankSound: 'oxygenTankSound',
       //power down

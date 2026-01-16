@@ -135,6 +135,15 @@ export class Player {
         // red potion
         this.isRedPotionActive = false;
         this.redPotionTimer = 0;
+        // hourglass
+        this.isHourglassActive = false;
+        this.hourglassTimer = 0;
+        this.hourglassDuration = 25000;
+        this.cooldownRates = {
+            fireball: 1,
+            invisible: 1,
+            dash: 1,
+        };
         // poison
         this.isPoisonedActive = false;
         this.poisonTimer = 0;
@@ -295,6 +304,10 @@ export class Player {
         // red potion
         this.isRedPotionActive = false;
         this.redPotionTimer = 0;
+        // hourglass
+        this.isHourglassActive = false;
+        this.hourglassTimer = 0;
+        this.cooldownRates = { fireball: 1, invisible: 1, dash: 1 };
         // invisibility
         this.isInvisible = false;
         this.invisibleActiveCooldownTimer = 0;
@@ -402,6 +415,7 @@ export class Player {
         this.firedogLivesLimit();
         this.energyLogic(deltaTime);
         this.updateBluePotionTimer(deltaTime);
+        this.updateHourglass(deltaTime);
         this.dashImmunityTimer(deltaTime);
         this.checkIfFiredogIsSlowed(deltaTime);
         this.updateConfuse(deltaTime);
@@ -710,7 +724,7 @@ export class Player {
     }
 
     fireballAbility(input, deltaTime) {
-        this.fireballTimer += deltaTime;
+        this.fireballTimer += deltaTime * this.cooldownRates.fireball;
         this.fireballTimer = Math.min(this.fireballTimer, this.fireballCooldown);
 
         const inFireballState =
@@ -785,7 +799,7 @@ export class Player {
             return;
         }
 
-        this.invisibleTimer += deltaTime;
+        this.invisibleTimer += deltaTime * this.cooldownRates.invisible;
         this.invisibleTimer = Math.min(this.invisibleTimer, this.invisibleCooldown);
 
         if (this.game.input.isInvisibleDefense(input) && !this.game.gameOver) {
@@ -813,7 +827,7 @@ export class Player {
         }
 
         if (this.dashTimer < this.dashCooldown) {
-            this.dashTimer += deltaTime;
+            this.dashTimer += deltaTime * this.cooldownRates.dash;
             this.dashTimer = Math.min(this.dashTimer, this.dashCooldown);
 
             if (this.dashTimer >= this.dashCooldown) {
@@ -1295,6 +1309,28 @@ export class Player {
             this.normalSpeed = this.baseNormalSpeed;
             this.maxSpeed = this.baseMaxSpeed;
             this.weight = this.baseWeight;
+        }
+    }
+
+    activateHourglass() {
+        this.isHourglassActive = true;
+        this.hourglassTimer = this.hourglassDuration;
+
+        this.cooldownRates = {
+            fireball: 2,
+            invisible: 3,
+            dash: 3,
+        };
+    }
+
+    updateHourglass(deltaTime) {
+        if (!this.isHourglassActive) return;
+
+        this.hourglassTimer -= deltaTime;
+        if (this.hourglassTimer <= 0) {
+            this.hourglassTimer = 0;
+            this.isHourglassActive = false;
+            this.cooldownRates = { fireball: 1, invisible: 1, dash: 1 };
         }
     }
 
@@ -2868,6 +2904,10 @@ export class CollisionLogic {
 
                 player.blueFireTimer = 5000;
                 player.isBluePotionActive = true;
+            },
+            Hourglass() {
+                game.audioHandler.powerUpAndDownSFX.playSound('hourglassSound', false, true);
+                player.activateHourglass();
             },
             RandomPower(item) {
                 const candidates = Object.keys(upHandlers).filter(name => {
