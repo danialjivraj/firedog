@@ -49,7 +49,11 @@ export class Cutscene {
         this.coralAbyss = "Coral Abyss";
         this.verdantVine = "Verdant Vine";
         this.springlyLemony = "Springly Lemony";
+        this.venomveilLake = "Venomveil Lake";
         this.infernalCraterPeak = "Infernal Crater Peak";
+        this.iceboundCave = "Icebound Cave";
+        this.crimsonFissure = "Crimson Fissure";
+        this.cosmicRift = "Cosmic Rift";
         // phrases
         this.crypticToken = "Cryptic Token";
         this.temporalTimber = "Temporal Timber";
@@ -75,12 +79,18 @@ export class Cutscene {
             [this.glacikal]: 'cyan',
             [this.ntharax]: 'DeepPink',
             // map phrases
-            [this.lunarMoonlitGlade]: 'green',
-            [this.nightfallCityPhantom]: 'green',
-            [this.coralAbyss]: 'green',
-            [this.verdantVine]: 'green',
-            [this.springlyLemony]: 'green',
-            [this.infernalCraterPeak]: 'Crimson',
+            // story maps
+            [this.lunarMoonlitGlade]: '#57e2d0ff',
+            [this.nightfallCityPhantom]: '#a84ffcff',
+            [this.coralAbyss]: 'dodgerblue',
+            [this.verdantVine]: '#61c050ff',
+            [this.springlyLemony]: 'yellow',
+            [this.venomveilLake]: '#39ff14',
+            [this.infernalCraterPeak]: '#ff2100ff',
+            // bonus maps
+            [this.iceboundCave]: '#8fd7ff',
+            [this.crimsonFissure]: '#dc143c',
+            [this.cosmicRift]: '#ff41ffff',
             // project phrases
             [this.crypticToken]: 'DarkViolet',
             [this.temporalTimber]: 'GoldenRod',
@@ -292,8 +302,8 @@ export class Cutscene {
             if (this.isBackgroundBlackAndWhite) context.filter = 'grayscale(100%)';
 
             const canShake =
-            this.game.shakeActive &&
-            !this.game.menu.pause.isPaused;
+                this.game.shakeActive &&
+                !this.game.menu.pause.isPaused;
 
             if (canShake) preShake(context);
             context.drawImage(this.backgroundImage, 0, 0, this.game.width, this.game.height);

@@ -27,16 +27,16 @@ export class EnemyLore extends BaseMenu {
 
         this.phraseColors = {
             "EVERYWHERE": { fill: 'black', stroke: 'white', strokeBlur: 5 },
-            "LUNAR MOONLIT GLADE": { fill: 'blue', stroke: 'green', strokeBlur: 5 },
-            "NIGHTFALL CITY PHANTOM": { fill: 'purple', stroke: 'black', strokeBlur: 5 },
+            "LUNAR MOONLIT GLADE": { fill: '#57e2d0ff', stroke: '#06580dff', strokeBlur: 7 },
+            "NIGHTFALL CITY PHANTOM": { fill: '#a84ffcff', stroke: 'black', strokeBlur: 10 },
             "CORAL ABYSS": { fill: 'dodgerblue', stroke: 'darkblue', strokeBlur: 5 },
-            "VERDANT VINE": { fill: 'seagreen', stroke: 'black', strokeBlur: 15 },
+            "VERDANT VINE": { fill: '#61c050ff', stroke: 'black', strokeBlur: 15 },
             "SPRINGLY LEMONY": { fill: 'yellow', stroke: 'orange', strokeBlur: 5 },
             "VENOMVEIL LAKE": { fill: '#39ff14', stroke: '#003b00', strokeBlur: 10 },
-            "INFERNAL CRATER PEAK": { fill: 'red', stroke: 'black', strokeBlur: 10 },
+            "INFERNAL CRATER PEAK": { fill: '#ff3300ff', stroke: 'black', strokeBlur: 10 },
             "ICEBOUND CAVE": { fill: '#8fd7ff', stroke: '#1c4a7f', strokeBlur: 10 },
-            "COSMIC RIFT": { fill: '#ff4bff', stroke: '#270033', strokeBlur: 10 },
-            "CRIMSON FISSURE": { fill: '#ff3b1f', stroke: '#5a1408', strokeBlur: 10 },
+            "COSMIC RIFT": { fill: '#ff41ffff', stroke: '#270033', strokeBlur: 10 },
+            "CRIMSON FISSURE": { fill: '#ff2c56ff', stroke: '#000000ff', strokeBlur: 10 },
             "RED": { fill: 'red', stroke: 'black', strokeBlur: 1 },
             "STUN": { fill: 'yellow', stroke: 'black', strokeBlur: 1 },
         };
@@ -731,21 +731,7 @@ export class EnemyLore extends BaseMenu {
             "bonus"
         );
 
-        // BONUS MAPS 2 - Cosmic Rift
-        this.createPage(
-            "BONUS DOTTER",
-            "FLY & NORMAL",
-            "COSMIC RIFT",
-            "DUMMY LORE: LOREM IPSUM DOLOR SIT AMET, COSMIC ADIPISCING ADIPISCINCINCING COSMIC RIFT. SED MOLESTIE MI TELLUS.\n"
-            + "DUIS ALIQUAM COSMIC IPSUM, EGET RIFT ULLAMCORPER TORTOR COSMIC RIFT POSUERE.",
-            [
-                this.createImage('dotter', 60.083, 80, 0, this.pageWidth - 140, 60, 1.4),
-            ],
-            "bonusMap2",
-            "bonus"
-        );
-
-        // BONUS MAPS 3 - Crimson Fissure
+        // BONUS MAPS 2 - Crimson Fissure
         this.createPage(
             "BONUS CHIQUITA",
             "FLY & NORMAL",
@@ -754,6 +740,20 @@ export class EnemyLore extends BaseMenu {
             + "DUIS ALIQUAM EGESTAS IPSUM, EGET ULLAMCORPER TORTOR GRAVIDA POSUERE.",
             [
                 this.createImage('chiquita', 118.823529411764, 85, 0, this.pageWidth - 190, 40, 1),
+            ],
+            "bonusMap2",
+            "bonus"
+        );
+
+        // BONUS MAPS 3 - Cosmic Rift
+        this.createPage(
+            "BONUS DOTTER",
+            "FLY & NORMAL",
+            "COSMIC RIFT",
+            "DUMMY LORE: LOREM IPSUM DOLOR SIT AMET, COSMIC ADIPISCING ADIPISCINCINCING COSMIC RIFT. SED MOLESTIE MI TELLUS.\n"
+            + "DUIS ALIQUAM COSMIC IPSUM, EGET RIFT ULLAMCORPER TORTOR COSMIC RIFT POSUERE.",
+            [
+                this.createImage('dotter', 60.083, 80, 0, this.pageWidth - 140, 60, 1.4),
             ],
             "bonusMap3",
             "bonus"

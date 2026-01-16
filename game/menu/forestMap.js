@@ -41,16 +41,16 @@ export class ForestMapMenu extends BaseMenu {
         };
 
         this.mapColors = {
-            map1: { fill: 'deepskyblue', stroke: 'limegreen', strokeBlur: 8 },
-            map2: { fill: 'purple', stroke: 'black', strokeBlur: 5 },
-            map3: { fill: 'dodgerblue', stroke: 'darkblue', strokeBlur: 5 },
-            map4: { fill: 'seagreen', stroke: 'black', strokeBlur: 15 },
+            map1: { fill: '#57e2d0ff', stroke: '#097e12ff', strokeBlur: 5 },
+            map2: { fill: '#a84ffcff', stroke: '#380057ff', strokeBlur: 4 },
+            map3: { fill: 'dodgerblue', stroke: 'darkblue', strokeBlur: 4 },
+            map4: { fill: '#61c050ff', stroke: '#346b38ff', strokeBlur: 5 },
             map5: { fill: 'yellow', stroke: 'orange', strokeBlur: 5 },
             map6: { fill: '#39ff14', stroke: '#003b00', strokeBlur: 10 },
-            map7: { fill: 'red', stroke: 'black', strokeBlur: 10 },
+            map7: { fill: '#ff2100ff', stroke: 'black', strokeBlur: 5 },
             bonus1: { fill: '#8fd7ff', stroke: '#1c4a7f', strokeBlur: 10 },
-            bonus2: { fill: '#ff1f32ff', stroke: '#7A0F22', strokeBlur: 12 },
-            bonus3: { fill: '#ff4bff', stroke: '#270033', strokeBlur: 10 },
+            bonus2: { fill: '#dc143c', stroke: 'black', strokeBlur: 12 },
+            bonus3: { fill: '#ff41ffff', stroke: '#270033', strokeBlur: 10 },
         };
 
         this.defaultMapColor = {
