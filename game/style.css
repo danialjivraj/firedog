@@ -83,25 +83,25 @@ body {
     /* random power */
     #randomPower,
 /* map1 */ 
-#map1Background, #map1Ground, #map1Rocks, #map1Bush, #map1Trees1, #map1Trees2, #map1Trees3, #map1Trees4, #map1Trees5, #map1Trees6, #map1Trees7, 
+#map1Background, #map1Ground, #map1Zabby1, #map1Zabby2, #map1Zabby3, #map1Rocks, #map1Bush, #map1Trees1, #map1Trees2, #map1Trees3, #map1Trees4, #map1Trees5, #map1Trees6, #map1Trees7, 
 /* map2 */
-#map2Background, #map2Ground, #map2RedEyes, #map2CityLights1, #map2CityLights2, #map2CityLights3, #map2CityLights4, #map2Trees, #map2Tombstone1, #map2Tombstone2,
+#map2Background, #map2Ground, #map2Zabby1, #map2Zabby2, #map2Zabby3, #map2RedEyes, #map2CityLights1, #map2CityLights2, #map2CityLights3, #map2CityLights4, #map2Trees, #map2Tombstone1, #map2Tombstone2,
 /* map3 */
-#map3Background, #map3Ground, #map3BackgroundRocks, #map3seaPlants1, #map3seaPlants2, #map3seaPlants3, #map3seaPlants4, #map3seaPlants5, #map3seaPlants6, #map3seaPlants7, 
+#map3Background, #map3Ground, #map3Zabby1, #map3Zabby2, #map3Zabby3, #map3Zabby4, #map3Zabby5, #map3BackgroundRocks, #map3seaPlants1, #map3seaPlants2, #map3seaPlants3, #map3seaPlants4, #map3seaPlants5, #map3seaPlants6, #map3seaPlants7, #map3seaPlants8, #map3seaPlants9, 
 /* map4 */ 
-#map4Background, #map4Ground, #map4BottomVines, #map4TopVines, #map4Trees1, #map4Trees2, #map4Trees3, #map4Trees4, 
+#map4Background, #map4Ground, #map4Zabby1, #map4Zabby2, #map4Zabby3, #map4Zabby4, #map4BottomVines, #map4TopVines, #map4Trees1, #map4Trees2, #map4Trees3, #map4Trees4, 
 /* map5 */ 
-#map5Background, #map5Ground, #map5Flowers1, #map5Flowers2, #map5Bush1, #map5Bush2, #map5Trees1, #map5Trees2, #map5Trees3, #map5Trees4, #map5BigSunflowers, #map5TallGrass, #map5Cattails,
+#map5Background, #map5Ground, #map5Zabby1, #map5Zabby2, #map5Zabby3, #map5Zabby4, #map5Flowers1, #map5Flowers2, #map5Bush1, #map5Bush2, #map5Trees1, #map5Trees2, #map5Trees3, #map5Trees4, #map5BigSunflowers1, #map5BigSunflowers2, #map5TallGrass, #map5Cattails,
 /* map6 */ 
-#map6Background, #map6Ground, #map6Grass, #map6SmallMushrooms1, #map6SmallMushrooms2, #map6BigMushrooms, #map6DeadBranches1, #map6DeadBranches2, #map6Trees1, #map6Trees2, #map6Trees3, #map6Trees4, #map6Rocks1, #map6Rocks2, #map6GreenMist, 
+#map6Background, #map6Ground, #map6Zabby1, #map6Zabby2, #map6Zabby3, #map6Grass, #map6SmallMushrooms1, #map6SmallMushrooms2, #map6BigMushrooms, #map6DeadBranches1, #map6DeadBranches2, #map6Trees1, #map6Trees2, #map6Trees3, #map6Trees4, #map6Rocks1, #map6Rocks2, #map6GreenMist, 
 /* map7 */ 
-#map7Background, #map7Ground, #map7VolcanoLayer1, #map7VolcanoLayer2, #map7VolcanoLayer3, #map7VolcanoLayer4, #map7VolcanoLayer5, #map7spikeStones, #map7rocks1, #map7rocks2, #map7rocks3, #map7rocks4, #map7cactus,
+#map7Background, #map7Ground, #map7Zabby1, #map7Zabby2, #map7Zabby3, #map7Zabby4, #map7Zabby5, #map7VolcanoLayer1, #map7VolcanoLayer2, #map7VolcanoLayer3, #map7VolcanoLayer4, #map7VolcanoLayer5, #map7spikeStones, #map7rocks1, #map7rocks2, #map7rocks3, #map7rocks4, #map7cactus,
 /* bonusmap1 */ 
-#bonusMap1Background, #bonusMap1Ground, #bonusMap1TopIcicles, #bonusMap1IceSpikes, #bonusMap1IceRocks1, #bonusMap1IceRocks2, #bonusMap1IceRings, #bonusMap1BigIceCrystal,
+#bonusMap1Background, #bonusMap1Ground, #bonusMap1Zabby1, #bonusMap1Zabby2, #bonusMap1Zabby3, #bonusMap1Zabby4, #bonusMap1TopIcicles, #bonusMap1IceSpikes, #bonusMap1IceRocks1, #bonusMap1IceRocks2, #bonusMap1IceRings, #bonusMap1BigIceCrystal,
 /* bonusmap2 */ 
-#bonusMap2Background,  #bonusMap2Ground, #bonusMap2SpikeRocks, #bonusMap2RockLayer1, #bonusMap2RockLayer2, #bonusMap2RockLayer3, #bonusMap2RockLayer4, #bonusMap2RockLayer5, #bonusMap2CrypticRocks1, #bonusMap2CrypticRocks2, #bonusMap2DeadTrees, #bonusMap2RedMist,
+#bonusMap2Background, #bonusMap2Ground, #bonusMap2Zabby1, #bonusMap2Zabby2, #bonusMap2Zabby3, #bonusMap2Zabby4, #bonusMap2SpikeRocks, #bonusMap2RockLayer1, #bonusMap2RockLayer2, #bonusMap2RockLayer3, #bonusMap2RockLayer4, #bonusMap2RockLayer5, #bonusMap2CrypticRocks1, #bonusMap2CrypticRocks2, #bonusMap2DeadTrees, #bonusMap2RedMist,
 /* bonusmap3 */ 
-#bonusMap3Background, #bonusMap3Ground, #bonusMap3Stars, #bonusMap3PurpleSpiral, #bonusMap3Nebula, #bonusMap3Planets,
+#bonusMap3Background, #bonusMap3Ground, #bonusMap3Zabby1, #bonusMap3Zabby2, #bonusMap3Zabby3, #bonusMap3Zabby4, #bonusMap3Zabby5, #bonusMap3Stars, #bonusMap3PurpleSpiral, #bonusMap3Nebula, #bonusMap3Planets1, #bonusMap3Planets2, #bonusMap3Planets3, #bonusMap3Planets4, #bonusMap3Planets5, #bonusMap3Planets6, 
 /* secondaryImageLayers */ 
     /* fish */ 
     #jellyfish, #fish, #fish2, #fish3, #fish4, #fish5, #fish6, #fish7, #fish8, #fish9, #fish10, #fish11, #shark, #whale, 

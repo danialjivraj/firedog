@@ -18,6 +18,56 @@ export class Layer {
         this.defaultX = this.x;
         this.defaultY = this.y;
         this.defaultSequenceIndex = this.sequenceIndex;
+
+        this._oneShotImages = [];
+        this._oneShotImage = null;
+
+        this._oneShotState = "idle";
+        this._afterOneShotIndex = 0;
+    }
+
+    setOneShotImages(images) {
+        this._oneShotImages = Array.isArray(images) ? images.filter(Boolean) : [];
+        this._oneShotImage = null;
+
+        this._oneShotState = "idle";
+        this._afterOneShotIndex = 0;
+    }
+
+    getOneShotKeys() {
+        return Array.isArray(this._oneShotImages)
+            ? this._oneShotImages.map((img) => img?.id).filter(Boolean)
+            : [];
+    }
+
+    forceOneShotKey(key) {
+        if (!key) return false;
+        const match = this._oneShotImages?.find((img) => img?.id === key);
+        if (!match) return false;
+        this._oneShotImage = match;
+        return true;
+    }
+
+    _pickOneShotImageIfNeeded() {
+        if (this._oneShotImage) return this._oneShotImage;
+        if (!this._oneShotImages?.length) return null;
+
+        this._oneShotImage =
+            this._oneShotImages[Math.floor(Math.random() * this._oneShotImages.length)];
+
+        return this._oneShotImage;
+    }
+
+    hasOneShotCandidate() {
+        return !!this._oneShotImages?.length && this._oneShotState !== "done";
+    }
+
+    scheduleOneShotInsert() {
+        if (!this._pickOneShotImageIfNeeded()) return false;
+        if (this._oneShotState !== "idle") return false;
+
+        this._oneShotState = "pending";
+        return true;
     }
 
     captureDefaults() {
@@ -31,11 +81,55 @@ export class Layer {
         this.y = this.defaultY ?? 0;
         this.sequenceIndex = this.defaultSequenceIndex ?? 0;
         this.groundSpeed = 0;
+
+        this._oneShotState = "idle";
+        this._afterOneShotIndex = 0;
+        this._oneShotImage = null;
     }
 
-    _nextIndex() {
-        if (this.images.length <= 1) return;
-        this.sequenceIndex = (this.sequenceIndex + 1) % this.images.length;
+    _advanceSegment() {
+        const len = this.images.length || 1;
+
+        if (this._oneShotState === "active") {
+            this._oneShotState = "done";
+            this.sequenceIndex = this._afterOneShotIndex % len;
+            return;
+        }
+
+        if (this._oneShotState === "queued" && this._oneShotImage) {
+            this._oneShotState = "active";
+            return;
+        }
+
+        if (len > 1) this.sequenceIndex = (this.sequenceIndex + 1) % len;
+
+        if (this._oneShotState === "pending" && this._oneShotImage) {
+            this._oneShotState = "queued";
+            this._afterOneShotIndex = len > 1 ? (this.sequenceIndex + 1) % len : 0;
+        }
+    }
+
+    _getCurrentAndNextImages() {
+        const len = this.images.length || 1;
+
+        const baseCurrent = this.images[this.sequenceIndex % len];
+        const baseNext = len > 1 ? this.images[(this.sequenceIndex + 1) % len] : baseCurrent;
+
+        if (this._oneShotState === "active" && this._oneShotImage) {
+            return {
+                currentImg: this._oneShotImage,
+                nextImg: this.images[this._afterOneShotIndex % len],
+            };
+        }
+
+        if (this._oneShotState === "queued" && this._oneShotImage) {
+            return {
+                currentImg: baseCurrent,
+                nextImg: this._oneShotImage,
+            };
+        }
+
+        return { currentImg: baseCurrent, nextImg: baseNext };
     }
 
     update() {
@@ -44,7 +138,7 @@ export class Layer {
 
         while (this.x <= -this.game.width) {
             this.x += this.game.width;
-            this._nextIndex();
+            this._advanceSegment();
         }
     }
 
@@ -52,14 +146,10 @@ export class Layer {
         const x = Math.round(this.x);
         const y = Math.round(this.y);
 
-        const img0 = this.images[this.sequenceIndex % this.images.length];
-        const img1 =
-            this.images.length > 1
-                ? this.images[(this.sequenceIndex + 1) % this.images.length]
-                : img0;
+        const { currentImg, nextImg } = this._getCurrentAndNextImages();
 
-        context.drawImage(img0, x, y, this.game.width, this.game.height);
-        context.drawImage(img1, x + this.game.width, y, this.game.width, this.game.height);
+        context.drawImage(currentImg, x, y, this.game.width, this.game.height);
+        context.drawImage(nextImg, x + this.game.width, y, this.game.width, this.game.height);
     }
 }
 
@@ -94,33 +184,28 @@ export class MovingLayer extends Layer {
             ? this.baseScrollSpeed + this.groundSpeed
             : this.baseScrollSpeed;
 
-        if (this.direction === 'left') {
-            this.x -= axisSpeed;
-        } else if (this.direction === 'right') {
-            this.x += axisSpeed;
-        } else if (this.direction === 'up') {
-            this.y -= axisSpeed;
-        } else if (this.direction === 'down') {
-            this.y += axisSpeed;
-        }
+        if (this.direction === 'left') this.x -= axisSpeed;
+        else if (this.direction === 'right') this.x += axisSpeed;
+        else if (this.direction === 'up') this.y -= axisSpeed;
+        else if (this.direction === 'down') this.y += axisSpeed;
 
         if (this.axis === 'x') {
             while (this.x <= -this.game.width) {
                 this.x += this.game.width;
-                this._nextIndex();
+                this._advanceSegment();
             }
             while (this.x >= this.game.width) {
                 this.x -= this.game.width;
-                this._nextIndex();
+                this._advanceSegment();
             }
         } else {
             while (this.y <= -this.game.height) {
                 this.y += this.game.height;
-                this._nextIndex();
+                this._advanceSegment();
             }
             while (this.y >= this.game.height) {
                 this.y -= this.game.height;
-                this._nextIndex();
+                this._advanceSegment();
             }
         }
     }
@@ -129,18 +214,14 @@ export class MovingLayer extends Layer {
         const x = Math.round(this.x);
         const y = Math.round(this.y);
 
-        const img0 = this.images[this.sequenceIndex % this.images.length];
-        const img1 =
-            this.images.length > 1
-                ? this.images[(this.sequenceIndex + 1) % this.images.length]
-                : img0;
+        const { currentImg, nextImg } = this._getCurrentAndNextImages();
 
         if (this.axis === 'x') {
-            context.drawImage(img0, x, this.y, this.game.width, this.game.height);
-            context.drawImage(img1, x + this.game.width, this.y, this.game.width, this.game.height);
+            context.drawImage(currentImg, x, this.y, this.game.width, this.game.height);
+            context.drawImage(nextImg, x + this.game.width, this.y, this.game.width, this.game.height);
         } else {
-            context.drawImage(img0, this.x, y, this.game.width, this.game.height);
-            context.drawImage(img1, this.x, y + this.game.height, this.game.width, this.game.height);
+            context.drawImage(currentImg, this.x, y, this.game.width, this.game.height);
+            context.drawImage(nextImg, this.x, y + this.game.height, this.game.width, this.game.height);
         }
     }
 }
@@ -152,6 +233,11 @@ export class Background {
         this.soundId = undefined;
         this.soundPlayed = false;
 
+        const refDist = this._getOneShotReferenceDistance();
+        const pct = 0.40 + Math.random() * 0.40; // spawns between 40% – 80% of map completion
+        this._oneShotTriggerDistance = refDist * pct;
+        this._oneShotTriggered = false;
+        //console.log(`[OneShot] pct=${pct.toFixed(2)})`);
         this.backgroundLayers = layers.map((item) => {
             if (
                 item instanceof Layer ||
@@ -175,8 +261,38 @@ export class Background {
                 );
             }
 
-            return new Layer(this.game, item.bgSpeed, images, { imageIds: ids });
+            const layer = new Layer(this.game, item.bgSpeed, images, { imageIds: ids });
+
+            if (item.zabbyId) {
+                const idList = Array.isArray(item.zabbyId) ? item.zabbyId : [item.zabbyId];
+                const imgs = idList.map((id) => document.getElementById(id)).filter(Boolean);
+
+                if (imgs.length === 0) {
+                    throw new Error(
+                        `Background: no valid image found for zabbyId(s): ${JSON.stringify(item.zabbyId)}`
+                    );
+                }
+
+                layer.setOneShotImages(imgs);
+            }
+
+            return layer;
         });
+    }
+
+    _getOneShotReferenceDistance() {
+        const fallback = Math.max(1, Number(this.game?.maxDistance) || 1);
+
+        const bm = this.game?.bossManager;
+        if (!bm || typeof bm.getGateForMapName !== "function") return fallback;
+
+        const mapName = this.constructor?.name || this.game?.currentMap || null;
+        const gate = bm.getGateForMapName(mapName);
+
+        const ref = Number(gate?.minDistance);
+        if (Number.isFinite(ref) && ref > 0) return ref;
+
+        return fallback;
     }
 
     resetLayersByImageIds(imageIds) {
@@ -192,6 +308,60 @@ export class Background {
             }
         }
     }
+
+    _maybeTriggerOneShot() {
+        if (this._oneShotTriggered) return;
+        if (!this.game || this.game.cabin.isFullyVisible || this.game.isBossVisible) return;
+        if (this.totalDistanceTraveled < this._oneShotTriggerDistance) return;
+
+        const groups = new Map();
+
+        const addCarrier = (key, obj) => {
+            if (!key) return;
+            if (!groups.has(key)) groups.set(key, []);
+            groups.get(key).push(obj);
+        };
+
+        for (const obj of this.backgroundLayers) {
+            if (!obj) continue;
+
+            const canTrigger =
+                typeof obj.scheduleOneShotInsert === "function" ||
+                typeof obj.triggerOneShot === "function";
+
+            if (!canTrigger) continue;
+
+            const keys = typeof obj.getOneShotKeys === "function" ? obj.getOneShotKeys() : [];
+            if (!keys.length) continue;
+
+            if (typeof obj.hasOneShotCandidate === "function" && !obj.hasOneShotCandidate()) continue;
+
+            for (const key of keys) addCarrier(key, obj);
+        }
+
+        if (groups.size === 0) return;
+
+        const keys = Array.from(groups.keys());
+        const chosenKey = keys[Math.floor(Math.random() * keys.length)];
+
+        const carriers = groups.get(chosenKey);
+        const chosen = carriers[Math.floor(Math.random() * carriers.length)];
+
+        if (typeof chosen.forceOneShotKey === "function") {
+            chosen.forceOneShotKey(chosenKey);
+        }
+
+        let didTrigger = false;
+
+        if (typeof chosen.scheduleOneShotInsert === "function") {
+            didTrigger = chosen.scheduleOneShotInsert();
+        } else if (typeof chosen.triggerOneShot === "function") {
+            didTrigger = chosen.triggerOneShot();
+        }
+
+        if (didTrigger) this._oneShotTriggered = true;
+    }
+
 
     update(deltaTime) {
         if (!this.soundPlayed) {
@@ -210,11 +380,10 @@ export class Background {
 
         for (let i = this.backgroundLayers.length - 1; i >= 0; i--) {
             const layer = this.backgroundLayers[i];
+
             if (!this.game.cabin.isFullyVisible && !this.game.isBossVisible) {
                 layer.update(deltaTime);
-                if (layer.bgSpeed === 1 && !lastGroundLayer) {
-                    lastGroundLayer = layer;
-                }
+                if (layer.bgSpeed === 1 && !lastGroundLayer) lastGroundLayer = layer;
             } else {
                 layer.groundSpeed = 0;
                 if (
@@ -239,12 +408,14 @@ export class Background {
             this.totalDistanceTraveled += this.game.speed / 1000;
             this.totalDistanceTraveled = parseFloat(this.totalDistanceTraveled.toFixed(2));
         }
+
+        if (!tutorialBlocksScroll && lastGroundLayer) {
+            this._maybeTriggerOneShot();
+        }
     }
 
     draw(context) {
-        this.backgroundLayers.forEach((layer) => {
-            layer.draw(context);
-        });
+        this.backgroundLayers.forEach((layer) => layer.draw(context));
     }
 }
 
@@ -264,12 +435,12 @@ export class Map1 extends Background {
             { imageId: 'map1Trees1', bgSpeed: 0.2 },
             { imageId: 'map1Trees2', bgSpeed: 0.3 },
             fireflyLayer2,
-            { imageId: 'map1Trees5', bgSpeed: 0.35 },
+            { imageId: 'map1Trees5', zabbyId: 'map1Zabby2', bgSpeed: 0.35 },
             fireflyLayer3,
             { imageId: 'map1Trees3', bgSpeed: 0.4 },
-            { imageId: 'map1Trees4', bgSpeed: 0.5 },
+            { imageId: 'map1Trees4', zabbyId: 'map1Zabby3', bgSpeed: 0.5 },
             fireflyLayer4,
-            { imageId: 'map1Rocks', bgSpeed: 0.6 },
+            { imageId: 'map1Rocks', zabbyId: 'map1Zabby1', bgSpeed: 0.6 },
             { imageId: 'map1Bush', bgSpeed: 0.65 },
             { imageId: 'map1Trees6', bgSpeed: 0.7 },
             fireflyLayer5,
@@ -302,7 +473,7 @@ export class Map2 extends Background {
             { imageId: ['map2CityLights1', 'map2CityLights3'], bgSpeed: 0.6 },
             fireflyLayer,
             { imageId: 'map2Trees', bgSpeed: 0.7 },
-            { imageId: ['map2Tombstone1', 'map2Tombstone2'], bgSpeed: 0.8 },
+            { imageId: ['map2Tombstone1', 'map2Tombstone2'], zabbyId: ['map2Zabby1', 'map2Zabby2', 'map2Zabby3'], bgSpeed: 0.8 },
             fireflyLayer2,
             { imageId: 'map2Ground', bgSpeed: 1 },
         );
@@ -320,6 +491,9 @@ export class Map3 extends Background {
         const smallFish4 = new SmallFish(game, 3);
         const smallFish5 = new SmallFish(game, 3);
 
+        const zabby1FlyBy = new Map3Zabby1FlyBy(game);
+        zabby1FlyBy.setOneShotImageIds(['map3Zabby1']);
+
         super(
             game,
             { imageId: 'map3Background', bgSpeed: 0 },
@@ -328,15 +502,16 @@ export class Map3 extends Background {
             smallFish2,
             { imageId: 'map3BackgroundRocks', bgSpeed: 0 },
             smallFish3,
-            { imageId: 'map3seaPlants3', bgSpeed: 0.15 },
+            { imageId: ['map3seaPlants3', 'map3seaPlants8', 'map3seaPlants9'], zabbyId: ['map3Zabby2', 'map3Zabby5'], bgSpeed: 0.15 },
             smallFish4,
-            { imageId: 'map3seaPlants1', bgSpeed: 0.2 },
+            zabby1FlyBy,
+            { imageId: 'map3seaPlants1', zabbyId: ['map3Zabby3', 'map3Zabby4'], bgSpeed: 0.2 },
             { imageId: 'map3seaPlants2', bgSpeed: 0.3 },
             { imageId: 'map3seaPlants4', bgSpeed: 0.4 },
             { imageId: 'map3seaPlants6', bgSpeed: 0.45 },
             { imageId: 'map3seaPlants5', bgSpeed: 0.5 },
             smallFish5,
-            { imageId: 'map3seaPlants7', bgSpeed: 0.54 },
+            { imageId: ['map3seaPlants7'], bgSpeed: 0.54 },
             { imageId: 'map3Ground', bgSpeed: 1 },
         );
 
@@ -354,14 +529,14 @@ export class Map4 extends Background {
             game,
             { imageId: 'map4Background', bgSpeed: 0 },
             fireflyLayer,
-            { imageId: 'map4BottomVines', bgSpeed: 0.3 },
-            { imageId: 'map4Trees3', bgSpeed: 0.34 },
+            { imageId: 'map4BottomVines', zabbyId: 'map4Zabby3', bgSpeed: 0.3 },
+            { imageId: 'map4Trees3', zabbyId: 'map4Zabby1', bgSpeed: 0.34 },
             fireflyLayer2,
-            { imageId: 'map4Trees4', bgSpeed: 0.38 },
-            { imageId: 'map4Trees2', bgSpeed: 0.42 },
-            { imageId: 'map4Trees1', bgSpeed: 0.55 },
+            { imageId: 'map4Trees4', bgSpeed: 0.44 },
+            { imageId: 'map4Trees2', bgSpeed: 0.53 },
+            { imageId: 'map4Trees1', bgSpeed: 0.65 },
             fireflyLayer3,
-            { imageId: 'map4TopVines', bgSpeed: 0.92 },
+            { imageId: 'map4TopVines', zabbyId: ['map4Zabby2', 'map4Zabby4'], bgSpeed: 0.92 },
             { imageId: 'map4Ground', bgSpeed: 1 },
         );
 
@@ -386,14 +561,14 @@ export class Map5 extends Background {
             fireflyLayer,
             { imageId: 'map5TallGrass', bgSpeed: 0.1 },
             fireflyLayer2,
-            { imageId: 'map5BigSunflowers', bgSpeed: 0.15 },
+            { imageId: ['map5BigSunflowers1', 'map5BigSunflowers2'], zabbyId: 'map5Zabby1', bgSpeed: 0.15 },
             { imageId: ['map5Bush1', 'map5Bush2'], bgSpeed: 0.3 },
             fireflyLayer3,
             { imageId: ['map5Trees1', 'map5Trees2'], bgSpeed: 0.4 },
             fireflyLayer4,
-            { imageId: ['map5Trees3', 'map5Trees4'], bgSpeed: 0.5 },
+            { imageId: ['map5Trees3', 'map5Trees4'], zabbyId: 'map5Zabby2', bgSpeed: 0.5 },
             fireflyLayer5,
-            { imageId: 'map5Cattails', bgSpeed: 0.8 },
+            { imageId: 'map5Cattails', zabbyId: ['map5Zabby3', 'map5Zabby4'], bgSpeed: 0.8 },
             fireflyLayer6,
             { imageId: ['map5Flowers1', 'map5Flowers2'], bgSpeed: 0.87 },
             { imageId: 'map5Ground', bgSpeed: 1 },
@@ -407,9 +582,12 @@ export class Map5 extends Background {
     update(deltaTime) {
         super.update(deltaTime);
         let raindropLayer = this.backgroundLayers.find(layer => layer instanceof RaindropAnimation);
-        if (this.totalDistanceTraveled > 30 && this.totalDistanceTraveled <= 60 ||
-            this.totalDistanceTraveled > 120 && this.totalDistanceTraveled <= 160 ||
-            this.totalDistanceTraveled > 220) {
+
+        if (
+            (this.totalDistanceTraveled > 30 && this.totalDistanceTraveled <= 60) ||
+            (this.totalDistanceTraveled > 120 && this.totalDistanceTraveled <= 160) ||
+            (this.totalDistanceTraveled > 220)
+        ) {
             if (raindropLayer) {
                 raindropLayer.isRaining = true;
                 this.isRaining = true;
@@ -420,8 +598,9 @@ export class Map5 extends Background {
                 this.isRaining = false;
             }
         }
+
         if (this.game.cabin.isFullyVisible) {
-            raindropLayer.isRaining = false;
+            if (raindropLayer) raindropLayer.isRaining = false;
             this.isRaining = false;
         }
 
@@ -461,9 +640,9 @@ export class Map6 extends Background {
             greenBubbles1,
             greenBubbles2,
             greenBubbles3,
-            { imageId: ['map6Trees1', 'map6Trees2', 'map6Trees3', 'map6Trees4'], bgSpeed: 0.2 },
-            { imageId: 'map6BigMushrooms', bgSpeed: 0.3 },
-            { imageId: ['map6Rocks1', 'map6Rocks2'], bgSpeed: 0.4 },
+            { imageId: ['map6Trees1', 'map6Trees2', 'map6Trees3', 'map6Trees4'], zabbyId: 'map6Zabby1', bgSpeed: 0.2 },
+            { imageId: 'map6BigMushrooms', zabbyId: 'map6Zabby2', bgSpeed: 0.3 },
+            { imageId: ['map6Rocks1', 'map6Rocks2'], zabbyId: 'map6Zabby3', bgSpeed: 0.4 },
             { imageId: ['map6DeadBranches1', 'map6DeadBranches2'], bgSpeed: 0.5 },
             { imageId: ['map6SmallMushrooms1', 'map6SmallMushrooms2'], bgSpeed: 0.7 },
             greenMist,
@@ -477,7 +656,16 @@ export class Map6 extends Background {
 
 export class Map7 extends Background {
     constructor(game) {
+        const starField = new StarField(game, {
+            top: 0,
+            height: game.height * 0.25,
+            density: 0.1,
+            color: "white",
+            sizeScale: 0.5
+        });
+
         const redMist = new MovingLayer(game, 0, 'bonusMap2RedMist', 0.9, 'up', 'y');
+
         const orangeBubbles1 = new BubbleAnimation(game, 15, 0.65, { min: 0.0, max: 0.33 }, {
             base: '#ff3c00ff',
             highlight: '#fd8d0cff',
@@ -495,9 +683,11 @@ export class Map7 extends Background {
             highlight: '#fd8d0cff',
             shadow: '#bf1a1aff',
         });
+
         super(
             game,
             { imageId: 'map7Background', bgSpeed: 0 },
+            starField,
             orangeBubbles1,
             { imageId: 'map7VolcanoLayer1', bgSpeed: 0 },
             { imageId: 'map7VolcanoLayer2', bgSpeed: 0 },
@@ -507,12 +697,13 @@ export class Map7 extends Background {
             { imageId: 'map7VolcanoLayer5', bgSpeed: 0 },
             orangeBubbles3,
             redMist,
-            { imageId: ['map7rocks3', 'map7rocks4'], bgSpeed: 0.3 },
-            { imageId: ['map7rocks1', 'map7rocks2'], bgSpeed: 0.5 },
+            { imageId: ['map7rocks3', 'map7rocks4'], zabbyId: ['map7Zabby2', 'map7Zabby3', 'map7Zabby5'], bgSpeed: 0.3 },
+            { imageId: ['map7rocks1', 'map7rocks2'], zabbyId: 'map7Zabby4', bgSpeed: 0.5 },
             { imageId: 'map7cactus', bgSpeed: 0.6 },
-            { imageId: 'map7spikeStones', bgSpeed: 0.7 },
+            { imageId: 'map7spikeStones', zabbyId: 'map7Zabby1', bgSpeed: 0.7 },
             { imageId: 'map7Ground', bgSpeed: 1 },
         );
+
         this.soundId = 'map7Soundtrack';
     }
 }
@@ -533,12 +724,12 @@ export class BonusMap1 extends Background {
             game,
             snowBack,
             { imageId: 'bonusMap1Background', bgSpeed: 0 },
-            { imageId: 'bonusMap1IceRings', bgSpeed: 0.1 },
-            { imageId: 'bonusMap1BigIceCrystal', bgSpeed: 0.2 },
+            { imageId: 'bonusMap1IceRings', zabbyId: 'bonusMap1Zabby1', bgSpeed: 0.1 },
+            { imageId: 'bonusMap1BigIceCrystal', zabbyId: 'bonusMap1Zabby2', bgSpeed: 0.2 },
             snowMid,
-            { imageId: 'bonusMap1IceRocks1', bgSpeed: 0.3 },
+            { imageId: 'bonusMap1IceRocks1', zabbyId: 'bonusMap1Zabby4', bgSpeed: 0.3 },
             { imageId: 'bonusMap1IceRocks2', bgSpeed: 0.4 },
-            { imageId: 'bonusMap1TopIcicles', bgSpeed: 0.95 },
+            { imageId: 'bonusMap1TopIcicles', zabbyId: 'bonusMap1Zabby3', bgSpeed: 0.95 },
             { imageId: 'bonusMap1IceSpikes', bgSpeed: 1 },
             { imageId: 'bonusMap1Ground', bgSpeed: 1 },
             snowFront,
@@ -564,6 +755,9 @@ export class BonusMap2 extends Background {
         const dragon4 = new DragonSilhouette(game, 0.75, 0.7);
         const dragon5 = new DragonSilhouette(game, 0.85, 0.8);
         const dragon6 = new DragonSilhouette(game, 1, 0.9);
+        dragon4.setOneShotGroup('bonusMap2Zabby4');
+        dragon5.setOneShotGroup('bonusMap2Zabby4');
+        dragon6.setOneShotGroup('bonusMap2Zabby4');
 
         super(
             game,
@@ -577,7 +771,6 @@ export class BonusMap2 extends Background {
             dragon3,
             { imageId: 'bonusMap2RockLayer3', bgSpeed: 0 },
             dragon4,
-
             { imageId: 'bonusMap2RockLayer4', bgSpeed: 0 },
             dragon5,
             { imageId: 'bonusMap2RockLayer5', bgSpeed: 0 },
@@ -587,8 +780,8 @@ export class BonusMap2 extends Background {
             redBubbles3,
             redMist,
             { imageId: 'bonusMap2CrypticRocks1', bgSpeed: 0.1 },
-            { imageId: 'bonusMap2CrypticRocks2', bgSpeed: 0.2 },
-            { imageId: 'bonusMap2DeadTrees', bgSpeed: 0.4 },
+            { imageId: 'bonusMap2CrypticRocks2', zabbyId: 'bonusMap2Zabby2', bgSpeed: 0.2 },
+            { imageId: 'bonusMap2DeadTrees', zabbyId: ['bonusMap2Zabby1', 'bonusMap2Zabby3'], bgSpeed: 0.4 },
             { imageId: 'bonusMap2SpikeRocks', bgSpeed: 1 },
             { imageId: 'bonusMap2Ground', bgSpeed: 1 },
         );
@@ -605,6 +798,7 @@ export class BonusMap3 extends Background {
             minSpeed: 0.03,
             maxSpeed: 0.06,
         });
+        meteors.setOneShotImageIds(['bonusMap3Zabby2']);
 
         super(
             game,
@@ -613,8 +807,8 @@ export class BonusMap3 extends Background {
             shootingStars,
             meteors,
             { imageId: 'bonusMap3Stars', bgSpeed: 0.1 },
-            { imageId: 'bonusMap3Planets', bgSpeed: 0.2 },
-            { imageId: 'bonusMap3Nebula', bgSpeed: 0.35 },
+            { imageId: ['bonusMap3Planets6', 'bonusMap3Planets2', 'bonusMap3Planets3', 'bonusMap3Planets4', 'bonusMap3Planets5', 'bonusMap3Planets1'], zabbyId: ['bonusMap3Zabby3', 'bonusMap3Zabby4', 'bonusMap3Zabby5'], bgSpeed: 0.2 },
+            { imageId: 'bonusMap3Nebula', zabbyId: 'bonusMap3Zabby1', bgSpeed: 0.35 },
             { imageId: 'bonusMap3PurpleSpiral', bgSpeed: 0.4 },
             { imageId: 'bonusMap3Ground', bgSpeed: 1 },
         );
@@ -627,6 +821,57 @@ export class EntityAnimation {
     constructor(game, maxBackgroundEntities) {
         this.game = game;
         this.maxBackgroundEntities = maxBackgroundEntities;
+
+        this._oneShotIds = [];
+        this._oneShotPickedId = null;
+        this._oneShotShown = false;
+
+        this._oneShotGroupKey = null;
+        this._oneShotPreferredId = null;
+    }
+
+    setOneShotImageIds(ids) {
+        this._oneShotIds = Array.isArray(ids) ? ids.filter(Boolean) : (ids ? [ids] : []);
+        this._oneShotPickedId = null;
+        return this;
+    }
+
+    setOneShotGroup(groupKey, preferredId = null) {
+        this._oneShotGroupKey = groupKey || null;
+        this._oneShotPreferredId = preferredId || groupKey || null;
+
+        this.setOneShotImageIds(this._oneShotPreferredId ? [this._oneShotPreferredId] : []);
+        return this;
+    }
+
+    getOneShotKeys() {
+        if (this._oneShotGroupKey) return [this._oneShotGroupKey];
+        return Array.isArray(this._oneShotIds) ? this._oneShotIds.slice() : [];
+    }
+
+    forceOneShotKey(key) {
+        if (!key) return false;
+
+        if (this._oneShotGroupKey) {
+            if (key !== this._oneShotGroupKey) return false;
+            this._oneShotPickedId = this._oneShotPreferredId || this._oneShotGroupKey;
+            return true;
+        }
+
+        if (this._oneShotIds?.includes(key)) {
+            this._oneShotPickedId = key;
+            return true;
+        }
+
+        return false;
+    }
+
+    hasOneShotCandidate() {
+        return this.getOneShotKeys().length > 0 && !this._oneShotShown;
+    }
+
+    triggerOneShot() {
+        return false;
     }
 }
 
@@ -715,6 +960,147 @@ export class Firefly extends EntityAnimation {
             context.fill();
         }
         context.globalAlpha = 1;
+    }
+}
+export class Map3Zabby1FlyBy extends EntityAnimation {
+    constructor(game) {
+        super(game, 1);
+
+        this.game = game;
+
+        this.imageId = null;
+        this.image = null;
+
+        this.x = 0;
+        this.y = 0;
+
+        this.directionX = 1;
+        this.directionY = 0;
+        this.speed = 0;
+
+        this._active = false;
+
+        this._minSpeed = 1.6;
+        this._maxSpeed = 2.6;
+        this._maxAngleRad = Math.PI / 24;
+        this._offscreenPad = 40;
+
+        this._spriteFacesRight = true;
+
+        this._debug = false;
+
+        this._spawnedFromLeft = null;
+    }
+
+    _rand(min, max) {
+        return min + Math.random() * (max - min);
+    }
+
+    _spawn() {
+        if (!this.image) return false;
+
+        const w = this.image.width || 0;
+        const h = this.image.height || 0;
+
+        const fromLeft = Math.random() < 0.5;
+        this._spawnedFromLeft = fromLeft;
+
+        const yMin = this.game.height * 0.40;
+        const yMax = this.game.height * 0.60;
+        this.y = this._rand(yMin, yMax);
+
+        this.x = fromLeft
+            ? -w / 2 - this._offscreenPad
+            : this.game.width + w / 2 + this._offscreenPad;
+
+        const angle = this._rand(-this._maxAngleRad, this._maxAngleRad);
+
+        const baseDirX = Math.cos(angle);
+        const baseDirY = Math.sin(angle);
+
+        this.directionX = fromLeft ? baseDirX : -baseDirX;
+        this.directionY = Math.random() < 0.5 ? baseDirY : -baseDirY;
+
+        this.speed = this._rand(this._minSpeed, this._maxSpeed);
+
+        if (this._debug) {
+            console.log(
+                `[Map3Zabby1FlyBy] spawn=${fromLeft ? "LEFT" : "RIGHT"} ` +
+                `dirX=${this.directionX.toFixed(2)} dirY=${this.directionY.toFixed(2)} ` +
+                `x=${this.x.toFixed(1)} y=${this.y.toFixed(1)}`
+            );
+        }
+
+        return true;
+    }
+
+    triggerOneShot() {
+        if (this._oneShotShown || this._active) return false;
+
+        const pickedId =
+            this._oneShotPickedId ||
+            (Array.isArray(this._oneShotIds) ? this._oneShotIds[0] : null);
+
+        if (!pickedId) return false;
+
+        const img = document.getElementById(pickedId);
+        if (!img) return false;
+
+        this.imageId = pickedId;
+        this.image = img;
+
+        if (!this._spawn()) return false;
+
+        this._active = true;
+        return true;
+    }
+
+    update(deltaTime) {
+        if (!this._active || !this.image) return;
+
+        const dt = deltaTime / 16.67;
+
+        this.x += this.speed * this.directionX * dt;
+        this.y += this.speed * this.directionY * dt;
+
+        const w = this.image.width || 0;
+        const h = this.image.height || 0;
+
+        const offLeft = this.x < -w / 2 - this._offscreenPad;
+        const offRight = this.x > this.game.width + w / 2 + this._offscreenPad;
+        const offTop = this.y < -h / 2 - this._offscreenPad;
+        const offBottom = this.y > this.game.height + h / 2 + this._offscreenPad;
+
+        if (offLeft || offRight || offTop || offBottom) {
+            this._active = false;
+            this._oneShotShown = true;
+        }
+    }
+
+    draw(context) {
+        if (!this._active || !this.image) return;
+
+        context.save();
+
+        const rotationAngle = Math.atan2(this.directionY, this.directionX);
+
+        context.translate(this.x, this.y);
+        context.rotate(rotationAngle);
+
+        const movingLeft = this.directionX < 0;
+        const shouldFlip = this._spriteFacesRight ? movingLeft : !movingLeft;
+
+        if (shouldFlip) {
+            context.scale(1, -1);
+        }
+
+        context.drawImage(
+            this.image,
+            -this.image.width / 2,
+            -this.image.height / 2
+        );
+
+        context.restore();
     }
 }
 
@@ -1593,11 +1979,7 @@ export class ShootingStar extends EntityAnimation {
 }
 
 export class DragonSilhouette extends EntityAnimation {
-    constructor(
-        game,
-        scale = 1,
-        opacity = 1
-    ) {
+    constructor(game, scale = 1, opacity = 1) {
         super(game, 1);
         this.game = game;
 
@@ -1618,7 +2000,8 @@ export class DragonSilhouette extends EntityAnimation {
         this.frameInterval = 1000 / this.fps;
         this.frameTimer = 0;
 
-        this.imageId = 'dragonSilhouette';
+        this.defaultImageId = 'dragonSilhouette';
+        this.imageId = this.defaultImageId;
         this.image = document.getElementById(this.imageId);
 
         this.direction = -1;
@@ -1630,38 +2013,58 @@ export class DragonSilhouette extends EntityAnimation {
         this.angle = 0;
         this.va = Math.random() * 0.1 + 0.1;
 
+        this._oneShotActive = false;
+
         this.spawnInitialInScreen();
     }
 
-    ensureImageLoaded() {
-        if (!this.image) {
-            this.image = document.getElementById(this.imageId);
-        }
+    _pickOneShotIdIfNeeded() {
+        if (this._oneShotPickedId) return this._oneShotPickedId;
+        if (!Array.isArray(this._oneShotIds) || this._oneShotIds.length === 0) return null;
+
+        const idx = Math.floor(Math.random() * this._oneShotIds.length);
+        this._oneShotPickedId = this._oneShotIds[idx];
+        return this._oneShotPickedId;
     }
 
-    spawnInitialInScreen() {
-        this.width = this.frameWidth * this.scale;
-        this.height = this.frameHeight * this.scale;
+    spawnNearEdgeNow() {
+        const spawnFromLeft = Math.random() < 0.5;
 
         const randomBase = Math.random() * 0.5 + 0.5;
         this.speedX = randomBase * this.scale;
-
-        this.angle = 0;
-        this.va = Math.random() * 0.1 + 0.1;
 
         const minY = 0;
         const maxY = this.game.height / 2;
         this.y = minY + Math.random() * (maxY - minY);
 
-        this.x = Math.random() * (this.game.width - this.width);
-
-        if (Math.random() < 0.5) {
+        if (spawnFromLeft) {
             this.direction = 1;
             this.flipped = true;
+            this.x = -this.width + 2;
         } else {
             this.direction = -1;
             this.flipped = false;
+            this.x = this.game.width - 2;
         }
+    }
+
+    triggerOneShot() {
+        if (this._oneShotShown || this._oneShotActive) return false;
+
+        const picked = this._pickOneShotIdIfNeeded();
+        if (!picked) return false;
+
+        this.imageId = picked;
+        this.image = document.getElementById(this.imageId);
+        if (!this.image) {
+            this.imageId = this.defaultImageId;
+            this.image = document.getElementById(this.imageId);
+            return false;
+        }
+
+        this._oneShotActive = true;
+        this.spawnNearEdgeNow();
+        return true;
     }
 
     resetPosition() {
@@ -1704,9 +2107,7 @@ export class DragonSilhouette extends EntityAnimation {
         this.y += this.speedY;
 
         this.va = (Math.random() * 0.1 + 0.1) * this.speedX;
-
         this.angle += this.va;
-
         this.y += Math.sin(this.angle) * this.speedX * this.scale;
 
         this.advanceFrame(deltaTime);
@@ -1717,12 +2118,19 @@ export class DragonSilhouette extends EntityAnimation {
         const offTop = this.y + this.height < 0;
 
         if (offLeft || offRight || offBottom || offTop) {
+            if (this._oneShotActive) {
+                this._oneShotActive = false;
+                this._oneShotShown = true;
+
+                this.imageId = this.defaultImageId;
+                this.image = document.getElementById(this.imageId);
+            }
             this.resetPosition();
         }
     }
 
     draw(context) {
-        this.ensureImageLoaded();
+        if (!this.image) this.image = document.getElementById(this.imageId);
         if (!this.image) return;
 
         const sx = this.frameX * this.frameWidth;
@@ -1739,33 +2147,38 @@ export class DragonSilhouette extends EntityAnimation {
         if (this.flipped) {
             context.translate(this.x + dw, this.y);
             context.scale(-1, 1);
-            context.drawImage(
-                this.image,
-                sx,
-                sy,
-                sw,
-                sh,
-                0,
-                0,
-                dw,
-                dh
-            );
+            context.drawImage(this.image, sx, sy, sw, sh, 0, 0, dw, dh);
         } else {
             context.translate(this.x, this.y);
-            context.drawImage(
-                this.image,
-                sx,
-                sy,
-                sw,
-                sh,
-                0,
-                0,
-                dw,
-                dh
-            );
+            context.drawImage(this.image, sx, sy, sw, sh, 0, 0, dw, dh);
         }
 
         context.restore();
+    }
+
+    spawnInitialInScreen() {
+        this.width = this.frameWidth * this.scale;
+        this.height = this.frameHeight * this.scale;
+
+        const randomBase = Math.random() * 0.5 + 0.5;
+        this.speedX = randomBase * this.scale;
+
+        this.angle = 0;
+        this.va = Math.random() * 0.1 + 0.1;
+
+        const minY = 0;
+        const maxY = this.game.height / 2;
+        this.y = minY + Math.random() * (maxY - minY);
+
+        this.x = Math.random() * (this.game.width - this.width);
+
+        if (Math.random() < 0.5) {
+            this.direction = 1;
+            this.flipped = true;
+        } else {
+            this.direction = -1;
+            this.flipped = false;
+        }
     }
 }
 
@@ -1786,8 +2199,8 @@ export class MeteorBackground extends EntityAnimation {
         this.game = game;
         this.meteors = [];
 
-        this.imageId = 'meteorBackground';
-        this.image = document.getElementById(this.imageId);
+        this.defaultImageId = 'meteorBackground';
+        this.defaultImage = document.getElementById(this.defaultImageId);
 
         this.spriteWidth = 47;
         this.spriteHeight = 47;
@@ -1803,12 +2216,17 @@ export class MeteorBackground extends EntityAnimation {
 
         this.offscreenMargin = 100;
 
+        this._oneShotActive = false;
+
+        this._oneShotSpreadDeg = 18;
+        this._oneShotCenterPortion = 0.25;
+
         this.spawnAll();
     }
 
-    ensureImageLoaded() {
-        if (!this.image) {
-            this.image = document.getElementById(this.imageId);
+    ensureImagesLoaded() {
+        if (!this.defaultImage) {
+            this.defaultImage = document.getElementById(this.defaultImageId);
         }
     }
 
@@ -1838,24 +2256,19 @@ export class MeteorBackground extends EntityAnimation {
         if (spawnInScreen) {
             x = Math.random() * width;
         } else {
-            x = fromLeft
-                ? -this.offscreenMargin
-                : width + this.offscreenMargin;
+            x = fromLeft ? -this.offscreenMargin : width + this.offscreenMargin;
         }
 
         const spreadDeg = 40;
         const spread = (spreadDeg * Math.PI) / 180;
         const baseAngle = fromLeft ? 0 : Math.PI;
-        const angleHeading = baseAngle + this.randomRange(-spread, spread);
+        const heading = baseAngle + this.randomRange(-spread, spread);
 
         const speed = this.randomRange(this.minSpeed, this.maxSpeed);
-        const vx = Math.cos(angleHeading) * speed;
-        const vy = Math.sin(angleHeading) * speed;
+        const vx = Math.cos(heading) * speed;
+        const vy = Math.sin(heading) * speed;
 
-        const angularSpeed = this.randomRange(
-            this.minAngularSpeed,
-            this.maxAngularSpeed
-        );
+        const angularSpeed = this.randomRange(this.minAngularSpeed, this.maxAngularSpeed);
         const rotationDir = Math.random() < 0.5 ? -1 : 1;
 
         const scale = this.randomRange(this.minScale, this.maxScale);
@@ -1869,12 +2282,95 @@ export class MeteorBackground extends EntityAnimation {
             angularSpeed,
             rotationDir,
             scale,
+
+            imageId: this.defaultImageId,
+            image: this.defaultImage,
+
+            __oneShot: false,
         };
     }
 
+    _pickOneShotIdIfNeeded() {
+        if (this._oneShotPickedId) return this._oneShotPickedId;
+        if (!Array.isArray(this._oneShotIds) || this._oneShotIds.length === 0) return null;
+
+        const idx = Math.floor(Math.random() * this._oneShotIds.length);
+        this._oneShotPickedId = this._oneShotIds[idx];
+        return this._oneShotPickedId;
+    }
+
+    _makeOneShotMeteorFromSide(imageId, imageEl) {
+        const width = this.game.width;
+        const height = this.game.height;
+
+        const fromLeft = Math.random() < 0.5;
+
+        const bandMin = Math.max(0, Math.min(1, this.verticalBand.min ?? 0));
+        const bandMax = Math.max(bandMin, Math.min(1, this.verticalBand.max ?? 1));
+        const bandMid = (bandMin + bandMax) / 2;
+
+        const centerPortion = this._oneShotCenterPortion;
+        const halfSpan = ((bandMax - bandMin) * centerPortion) / 2;
+
+        const yNormMin = Math.max(bandMin, bandMid - halfSpan);
+        const yNormMax = Math.min(bandMax, bandMid + halfSpan);
+
+        const y = (height * yNormMin) + Math.random() * (height * (yNormMax - yNormMin));
+
+        const x = fromLeft ? -this.offscreenMargin : width + this.offscreenMargin;
+
+        const spread = (this._oneShotSpreadDeg * Math.PI) / 180;
+        const baseAngle = fromLeft ? 0 : Math.PI;
+        const heading = baseAngle + this.randomRange(-spread, spread);
+
+        const speed = this.randomRange(this.minSpeed, this.maxSpeed);
+        const vx = Math.cos(heading) * speed;
+        const vy = Math.sin(heading) * speed;
+
+        const angularSpeed = this.randomRange(this.minAngularSpeed, this.maxAngularSpeed);
+        const rotationDir = Math.random() < 0.5 ? -1 : 1;
+
+        return {
+            x,
+            y,
+            vx,
+            vy,
+            angle: Math.random() * Math.PI * 2,
+            angularSpeed,
+            rotationDir,
+
+            scale: 1,
+
+            imageId,
+            image: imageEl,
+
+            __oneShot: true,
+        };
+    }
+
+    triggerOneShot() {
+        if (this._oneShotShown || this._oneShotActive) return false;
+
+        const pickedId = this._pickOneShotIdIfNeeded();
+        if (!pickedId) return false;
+
+        const img = document.getElementById(pickedId);
+        if (!img) return false;
+
+        if (!this.meteors || this.meteors.length === 0) return false;
+
+        const oneShotMeteor = this._makeOneShotMeteorFromSide(pickedId, img);
+
+        const replaceIndex = Math.floor(Math.random() * this.meteors.length);
+        this.meteors[replaceIndex] = oneShotMeteor;
+
+        this._oneShotActive = true;
+        return true;
+    }
+
     update(deltaTime) {
-        this.ensureImageLoaded();
-        if (!this.image) return;
+        this.ensureImagesLoaded();
+        if (!this.defaultImage) return;
 
         const width = this.game.width;
         const height = this.game.height;
@@ -1894,33 +2390,35 @@ export class MeteorBackground extends EntityAnimation {
                 m.y > height + this.offscreenMargin;
 
             if (off) {
+                const wasOneShot = !!m.__oneShot;
+
                 this.meteors[i] = this.makeMeteor(false);
+
+                if (wasOneShot) {
+                    this._oneShotActive = false;
+                    this._oneShotShown = true;
+                }
             }
         }
     }
 
     draw(context) {
-        this.ensureImageLoaded();
-        if (!this.image) return;
+        this.ensureImagesLoaded();
+        if (!this.defaultImage) return;
 
         for (let i = 0; i < this.meteors.length; i++) {
             const m = this.meteors[i];
+            const img = m.image || this.defaultImage;
+            if (!img) continue;
 
-            const drawW = this.spriteWidth * m.scale;
-            const drawH = this.spriteHeight * m.scale;
+            const scale = (m.scale ?? 1);
+            const drawW = this.spriteWidth * scale;
+            const drawH = this.spriteHeight * scale;
 
             context.save();
             context.translate(m.x, m.y);
             context.rotate(m.angle);
-
-            context.drawImage(
-                this.image,
-                -drawW / 2,
-                -drawH / 2,
-                drawW,
-                drawH
-            );
-
+            context.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
             context.restore();
         }
     }

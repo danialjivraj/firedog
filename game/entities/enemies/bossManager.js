@@ -109,6 +109,12 @@ export class BossManager {
         return cfg ? cfg.gate : null;
     }
 
+    getGateForMapName(mapName) {
+        if (!mapName) return null;
+        const cfg = BOSS_CONFIG[mapName];
+        return cfg && cfg.gate ? cfg.gate : null;
+    }
+
     hasBossConfiguredForCurrentMap() {
         return !!this.getConfigForCurrentMap();
     }

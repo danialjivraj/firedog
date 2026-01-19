@@ -109,6 +109,11 @@ describe('Game class (game-main.js)', () => {
       <img id="map3seaPlants5">
       <img id="map3seaPlants7">
       <img id="map3Ground">
+      <img id="map3Zabby1">
+      <img id="map3Zabby2">
+      <img id="map3Zabby3">
+      <img id="map3Zabby4">
+      <img id="map3Zabby5">
 
       <!-- Map4 -->
       <img id="map4Background">
@@ -156,6 +161,11 @@ describe('Game class (game-main.js)', () => {
       <img id="map7cactus">
       <img id="map7spikeStones">
       <img id="map7Ground">
+      <img id="map7Zabby1">
+      <img id="map7Zabby2">
+      <img id="map7Zabby3">
+      <img id="map7Zabby4">
+      <img id="map7Zabby5">
 
       <!-- BonusMap1 -->
       <img id="bonusMap1Background">
@@ -166,6 +176,10 @@ describe('Game class (game-main.js)', () => {
       <img id="bonusMap1TopIcicles">
       <img id="bonusMap1IceSpikes">
       <img id="bonusMap1Ground">
+      <img id="bonusMap1Zabby1">
+      <img id="bonusMap1Zabby2">
+      <img id="bonusMap1Zabby3">
+      <img id="bonusMap1Zabby4">
 
       <!-- BonusMap2 -->
       <img id="bonusMap2Background">
@@ -184,7 +198,7 @@ describe('Game class (game-main.js)', () => {
       <!-- BonusMap3 -->
       <img id="bonusMap3Background">
       <img id="bonusMap3Stars">
-      <img id="bonusMap3Planets">
+      <img id="bonusMap3Planets1">
       <img id="bonusMap3Nebula">
       <img id="bonusMap3PurpleSpiral">
       <img id="bonusMap3Ground">
