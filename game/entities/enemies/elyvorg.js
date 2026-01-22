@@ -634,12 +634,13 @@ export class PurpleThunder extends ImmobileGroundEnemy {
         super(game, 182, 662, 5, "purpleThunder");
 
         this.game = game;
-        this.lives = 50
+        this.lives = 50;
         this.setFps(18);
 
         this.isSlowEnemy = true;
-
         this.dealsDirectHitDamage = false;
+
+        this.shouldInvert = Math.random() < 0.5;
 
         const halfW = this.width * 0.5;
         const minCenter = halfW;
@@ -717,11 +718,8 @@ export class PurpleThunder extends ImmobileGroundEnemy {
             }
 
             const t = Math.max(0, Math.min(1, this.timer / this.warningDuration));
-
             const pulse = 0.5 + 0.5 * Math.sin(t * Math.PI * 6);
-
             const baseIntensity = t;
-
             const globalAlpha = 0.5 + 0.5 * (baseIntensity * pulse);
 
             context.save();
@@ -734,10 +732,7 @@ export class PurpleThunder extends ImmobileGroundEnemy {
             const innerAlpha = 0.75 + 0.25 * baseIntensity;
             const midAlpha = 0.5 + 0.35 * baseIntensity;
 
-            const gradient = context.createRadialGradient(
-                0, 0, 0,
-                0, 0, glowWidth * 0.75
-            );
+            const gradient = context.createRadialGradient(0, 0, 0, 0, 0, glowWidth * 0.75);
             gradient.addColorStop(0, `rgba(250, 220, 255, ${innerAlpha})`);
             gradient.addColorStop(0.5, `rgba(210, 140, 255, ${midAlpha})`);
             gradient.addColorStop(1, "rgba(140, 0, 255, 0)");
@@ -751,15 +746,7 @@ export class PurpleThunder extends ImmobileGroundEnemy {
             context.shadowBlur = blurBase + blurExtra;
 
             context.beginPath();
-            context.ellipse(
-                0,
-                0,
-                glowWidth * 0.5,
-                glowHeight * 0.5,
-                0,
-                0,
-                Math.PI * 2
-            );
+            context.ellipse(0, 0, glowWidth * 0.5, glowHeight * 0.5, 0, 0, Math.PI * 2);
             context.fill();
 
             const coreT = Math.min(1, t * 1.15);
@@ -773,15 +760,7 @@ export class PurpleThunder extends ImmobileGroundEnemy {
             context.shadowColor = "rgba(255, 255, 255, 1)";
 
             context.beginPath();
-            context.ellipse(
-                0,
-                0,
-                coreRadiusX,
-                coreRadiusY,
-                0,
-                0,
-                Math.PI * 2
-            );
+            context.ellipse(0, 0, coreRadiusX, coreRadiusY, 0, 0, Math.PI * 2);
             context.strokeStyle = `rgba(255, 255, 255, ${0.65 + 0.35 * pulse})`;
             context.lineWidth = 3 + 3 * baseIntensity;
             context.stroke();
@@ -800,14 +779,17 @@ export class PurpleThunder extends ImmobileGroundEnemy {
             context.shadowColor = "rgba(220,180,255,0.95)";
             context.shadowBlur = 24;
 
+            context.translate(this.x + this.width / 2, this.y + this.height / 2);
+            context.scale(this.shouldInvert ? -1 : 1, 1);
+
             context.drawImage(
                 this.image,
                 this.frameX * this.width,
                 0,
                 this.width,
                 this.height,
-                this.x,
-                this.y,
+                -this.width / 2,
+                -this.height / 2,
                 this.width,
                 this.height
             );
