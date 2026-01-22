@@ -1497,19 +1497,19 @@ export class Map1EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //28
             `${this.duskmaw}`,
-            `I would suggest you to get your rest. ${this.nightfallCityPhantom} is known for being sort of... paranormal during the night...`,
+            `I would suggest you to get your rest. ${this.nightfallPhantomGraves} is known for being sort of... paranormal during the night...`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('duskmawLiftingHat', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //29
             `${this.firedog}`,
-            `Paranormal...? ${this.nightfallCityPhantom}?`,
+            `Paranormal...? ${this.nightfallPhantomGraves}?`,
             this.addImage(this.setfiredogNormalQuestionMark(), 1, 0, 79, 590, 610),
             this.addImage('duskmawLiftingHat', 0.7, 1300, 79, 590, 610),
         );
         this.addDialogue( //30
             `${this.duskmaw}`,
-            `Yes my friend, we're in ${this.nightfallCityPhantom} borders right now. You came just in time.`,
+            `Yes my friend, we're in ${this.nightfallPhantomGraves} borders right now. You came just in time.`,
             this.addImage(this.setfiredogNormalQuestionMark(), 0.7, 0, 79, 590, 610),
             this.addImage('duskmawLiftingHat', 1, 1300, 79, 590, 610),
         );
@@ -1576,13 +1576,13 @@ export class Map1EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //41
             `${this.duskmaw}`,
-            `—everyone has tried to move on past the wars... As I had told before, we are currently inside the borders of ${this.nightfallCityPhantom}.`,
+            `—everyone has tried to move on past the wars... As I had told before, we are currently inside the borders of ${this.nightfallPhantomGraves}.`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('duskmawNormal', 1, 1300, 79, 590, 610),
         );
         this.addDialogue( //42
             `${this.duskmaw}`,
-            `${this.nightfallCityPhantom} villagers managed to produce mass concrete. And thanks to this they managed to build big houses.`,
+            `${this.nightfallPhantomGraves} villagers managed to produce mass concrete. And thanks to this they managed to build big houses.`,
             this.addImage(this.setfiredogNormal(), 0.7, 0, 79, 590, 610),
             this.addImage('duskmawNormal', 1, 1300, 79, 590, 610),
         );
@@ -4211,7 +4211,7 @@ export class Map5EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //10
             `${this.firedog}`,
-            `Then on my way to the cave, near ${this.nightfallCityPhantom} is when I start getting these weird vivid dreams.`,
+            `Then on my way to the cave, near ${this.nightfallPhantomGraves} is when I start getting these weird vivid dreams.`,
             this.addImage(this.setfiredogTired(), 1, 0, 79, 590, 610),
         );
         this.addDialogue( //11

@@ -29,7 +29,7 @@ export class ForestMapMenu extends BaseMenu {
 
         this.mapNames = {
             map1: 'Lunar Moonlit Glade',
-            map2: 'Nightfall City Phantom',
+            map2: 'Nightfall Phantom Graves',
             map3: 'Coral Abyss',
             map4: 'Verdant Vine',
             map5: 'Springly Lemony',
@@ -473,7 +473,7 @@ export class ForestMapMenu extends BaseMenu {
             this.game.cabin = new Cabin(this.game, 'map1cabin', 630, 375, cabinY);
             this.game.penguini = new Penguini(this.game, 105.52380952380952380952380952381, 165, 'penguinBatSprite', 20);
         } else if (map instanceof Map2) {
-            this.game.cabin = new Cabin(this.game, 'map2cabin', 630, 375, cabinY);
+            this.game.cabin = new Cabin(this.game, 'map2cabin', 630, 375, cabinY - 5);
             this.game.penguini = new Penguini(this.game, 105.52380952380952380952380952381, 165, 'penguinBatSprite', 20);
         } else if (map instanceof Map3) {
             this.game.cabin = new Cabin(this.game, 'map3submarine', 903, 329, this.game.height - 411);

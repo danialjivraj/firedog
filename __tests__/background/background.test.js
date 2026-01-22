@@ -109,19 +109,28 @@ function seedDomImages() {
 
         // map2
         'map2Background',
-        'map2CityLights1',
-        'map2CityLights2',
-        'map2CityLights3',
-        'map2CityLights4',
+        'map2BackgroundLayer1',
         'map2Trees',
         'map2Ground',
-        'map2RedEyes',
+        'map2Bones1',
+        'map2Bones2',
+        'map2Bones3',
+        'map2Bushes1',
+        'map2Bushes2',
+        'map2Bushes3',
+        'map2Bushes4',
+        'map2Trees1',
+        'map2Trees2',
+        'map2Trees3',
+        'map2WhiteMist',
+        'map2Fence',
         'map2Tombstone1',
         'map2Tombstone2',
         // zabby
         'map2Zabby1',
         'map2Zabby2',
         'map2Zabby3',
+        'map2Zabby4',
 
         // map3
         'map3Background',
@@ -1110,7 +1119,7 @@ describe('Background', () => {
 describe('Map constructors', () => {
     const specs = [
         { Cls: Map1, id: 'map1Soundtrack', expectedLen: 16 },
-        { Cls: Map2, id: 'map2Soundtrack', expectedLen: 10 },
+        { Cls: Map2, id: 'map2Soundtrack', expectedLen: 15 },
         { Cls: Map3, id: 'map3Soundtrack', expectedLen: 17 },
         { Cls: Map4, id: 'map4Soundtrack', expectedLen: 11 },
         { Cls: Map5, id: 'map5Soundtrack', expectedLen: 16 },

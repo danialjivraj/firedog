@@ -45,7 +45,7 @@ export class Cutscene {
         this.ntharax = "N'Tharax";
         // maps
         this.lunarMoonlitGlade = "Lunar Moonlit Glade";
-        this.nightfallCityPhantom = "Nightfall City Phantom";
+        this.nightfallPhantomGraves = "Nightfall Phantom Graves";
         this.coralAbyss = "Coral Abyss";
         this.verdantVine = "Verdant Vine";
         this.springlyLemony = "Springly Lemony";
@@ -81,7 +81,7 @@ export class Cutscene {
             // map phrases
             // story maps
             [this.lunarMoonlitGlade]: '#57e2d0ff',
-            [this.nightfallCityPhantom]: '#a84ffcff',
+            [this.nightfallPhantomGraves]: '#a84ffcff',
             [this.coralAbyss]: 'dodgerblue',
             [this.verdantVine]: '#61c050ff',
             [this.springlyLemony]: 'yellow',

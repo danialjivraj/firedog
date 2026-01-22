@@ -453,13 +453,16 @@ export class Map1 extends Background {
 
 export class Map2 extends Background {
     constructor(game) {
-        const fireflyLayer = new Firefly(game, 5);
-        const fireflyLayer2 = new Firefly(game, 5);
+        const whiteMist = new MovingLayer(game, 0, 'map2WhiteMist', 1, 'left', 'x');
+        const fireflyLayer = new Firefly(game, 4);
+        const fireflyLayer2 = new Firefly(game, 3);
+        const fireflyLayer3 = new Firefly(game, 3);
+        const fireflyLayer4 = new Firefly(game, 3);
 
         const starField = new StarField(game, {
             top: 0,
-            height: game.height * 0.5,
-            density: 0.15,
+            height: game.height * 0.50,
+            density: 0.20,
             color: "white",
             sizeScale: 0.5
         });
@@ -468,13 +471,18 @@ export class Map2 extends Background {
             game,
             { imageId: 'map2Background', bgSpeed: 0 },
             starField,
-            { imageId: 'map2RedEyes', bgSpeed: 0.3 },
-            { imageId: ['map2CityLights2', 'map2CityLights4'], bgSpeed: 0.4 },
-            { imageId: ['map2CityLights1', 'map2CityLights3'], bgSpeed: 0.6 },
+            { imageId: 'map2BackgroundLayer1', bgSpeed: 0 },
             fireflyLayer,
-            { imageId: 'map2Trees', bgSpeed: 0.7 },
-            { imageId: ['map2Tombstone1', 'map2Tombstone2'], zabbyId: ['map2Zabby1', 'map2Zabby2', 'map2Zabby3'], bgSpeed: 0.8 },
+            { imageId: ['map2Bushes3', 'map2Bushes4'], bgSpeed: 0.3 },
+            { imageId: 'map2Fence', zabbyId: 'map2Zabby4', bgSpeed: 0.4 },
             fireflyLayer2,
+            { imageId: ['map2Bushes1', 'map2Bushes2'], bgSpeed: 0.45 },
+            { imageId: ['map2Trees1','map2Trees2', 'map2Trees3'], bgSpeed: 0.5 },
+            fireflyLayer3,
+            { imageId: ['map2Bones1', 'map2Bones2', 'map2Bones3'], zabbyId: 'map2Zabby2', bgSpeed: 0.7 },
+            { imageId: ['map2Tombstone1', 'map2Tombstone2'], zabbyId: ['map2Zabby1', 'map2Zabby3'], bgSpeed: 0.8 },
+            whiteMist,
+            fireflyLayer4,
             { imageId: 'map2Ground', bgSpeed: 1 },
         );
 

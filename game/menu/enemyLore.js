@@ -28,7 +28,7 @@ export class EnemyLore extends BaseMenu {
         this.phraseColors = {
             "EVERYWHERE": { fill: 'black', stroke: 'white', strokeBlur: 5 },
             "LUNAR MOONLIT GLADE": { fill: '#57e2d0ff', stroke: '#06580dff', strokeBlur: 7 },
-            "NIGHTFALL CITY PHANTOM": { fill: '#a84ffcff', stroke: 'black', strokeBlur: 10 },
+            "NIGHTFALL PHANTOM GRAVES": { fill: '#a84ffcff', stroke: 'black', strokeBlur: 10 },
             "CORAL ABYSS": { fill: 'dodgerblue', stroke: 'darkblue', strokeBlur: 5 },
             "VERDANT VINE": { fill: '#61c050ff', stroke: 'black', strokeBlur: 15 },
             "SPRINGLY LEMONY": { fill: 'yellow', stroke: 'orange', strokeBlur: 5 },
@@ -75,7 +75,7 @@ export class EnemyLore extends BaseMenu {
             "VERTIBAT",
             "FALL & NORMAL",
             "LUNAR MOONLIT GLADE",
-            "THESE VERTIBATS ARE COMMONLY FOUND IN NIGHTFALL CITY PHANTOM, HOWEVER, SOMETHING HAS CAUSED MOST OF THEM TO MIGRATE "
+            "THESE VERTIBATS ARE COMMONLY FOUND IN NIGHTFALL PHANTOM GRAVES, HOWEVER, SOMETHING HAS CAUSED MOST OF THEM TO MIGRATE "
             + "TO THE AREA OF LUNAR MOONLIT GLADE.\nIT IS SPECULATED THAT VERTIBATS CAN DETECT FREQUENCIES NO OTHER CREATURE CAN, INCLUDING PARANORMAL FREQUENCY, WHICH PROBABLY CAUSED "
             + "MOST OF THEM TO FIND REFUGE HERE!\nHIDING ON TOP OF TREES, THESE BATS WAIT FOR MOVEMENT BEFORE THEY FALL ONTO THEIR TARGET.\n",
             [
@@ -159,12 +159,12 @@ export class EnemyLore extends BaseMenu {
             "map1"
         );
 
-        // MAP 2 - Nightfall City Phantom
+        // MAP 2 - Nightfall Phantom Graves
         // 10
         this.createPage(
             "DUSK PLANT",
             "GROUND & NORMAL",
-            "NIGHTFALL CITY PHANTOM",
+            "NIGHTFALL PHANTOM GRAVES",
             "THESE RARE PLANTS ARE DORMANT BY DAY BUT AWAKEN AS DARKNESS FALLS, PROWLING THE SHADOWS IN SEARCH "
             + "OF UNSUSPECTING PREY.\n AS SOON AS THEY DETECT MOVEMENT, DUSK PLANTS WILL LAUNCH A VERY DARK LEAF FROM THEIR MOUTHS, AIMING TO SLICE THROUGH THEIR TARGET!",
             [
@@ -177,7 +177,7 @@ export class EnemyLore extends BaseMenu {
         this.createPage(
             "SILKNOIR",
             "CRAWLER & NORMAL",
-            "NIGHTFALL CITY PHANTOM",
+            "NIGHTFALL PHANTOM GRAVES   ",
             "THESE BIG SPIDERS APPEAR AT NIGHT, CRAWLING DOWN THE TALLEST TREES FOR SOME PREYS!\n"
             + "SILKNOIRS ARE BIG IN SIZE BECAUSE THEY FEAST ON ANYTHING THEY LAY THEIR EYES ON!",
             [
@@ -190,7 +190,7 @@ export class EnemyLore extends BaseMenu {
         this.createPage(
             "WALTER THE GHOST",
             "FLY & NORMAL",
-            "NIGHTFALL CITY PHANTOM",
+            "NIGHTFALL PHANTOM GRAVES   ",
             "WALTER IS A VERY CURIOUS AND SPOOKY GHOST.\nIF HE SPOTS YOU, HE MIGHT CHASE YOU!",
             [
                 this.createImage('walterTheGhost', 104.83, 84, 0, this.pageWidth - 160, 70, 1),
@@ -201,7 +201,7 @@ export class EnemyLore extends BaseMenu {
         this.createPage(
             "BEN",
             "FALL & NORMAL",
-            "NIGHTFALL CITY PHANTOM",
+            "NIGHTFALL PHANTOM GRAVES   ",
             "BEN IS A SMALL CREATURE WHO SEEMS TO APPEAR OUT OF NOWHERE.\nLITTLE IS KNOWN ABOUT HIS BACKSTORY OR PURPOSE, "
             + "EXCEPT THAT HE DROPS FROM ABOVE AND MOVES CURIOUSLY IN YOUR DIRECTION.",
             [
@@ -213,8 +213,8 @@ export class EnemyLore extends BaseMenu {
         this.createPage(
             "GLOOMLET",
             "FLY & RED",
-            "NIGHTFALL CITY PHANTOM",
-            "GLOOMLETS ARE SHADOWS THAT SLIPPED FREE FROM THE WALLS OF NIGHTFALL CITY PHANTOM.\n"
+            "NIGHTFALL PHANTOM GRAVES   ",
+            "GLOOMLETS ARE SHADOWS THAT SLIPPED FREE FROM THE WALLS OF NIGHTFALL PHANTOM GRAVES .\n"
             + "THEIR FACES NEVER CHANGE, BUT PEOPLE SWEAR THEIR EXPRESSIONS SHIFT WHEN NO ONE IS LOOKING.\n"
             + "SOME SAY THEY DRIFT TOWARD ANY PLACE WHERE A SECRET WAS ONCE WHISPERED, AS IF STILL LISTENING FOR THE REST OF THE STORY.",
             [
@@ -226,7 +226,7 @@ export class EnemyLore extends BaseMenu {
         this.createPage(
             "DOLLY",
             "FLY & NORMAL",
-            "NIGHTFALL CITY PHANTOM",
+            "NIGHTFALL PHANTOM GRAVES   ",
             "A LITTLE GIRL WAS ACCIDENTALLY BURIED IN CEMENT, CLUTCHING HER BELOVED DOLL, DOLLY, IN HER FINAL MOMENTS.\n"
             + "RUMOR HAS IT THAT THE CHILD'S SPIRIT NOW RESIDES WITHIN DOLLY, HAUNTING THOSE WHO ENCOUNTER HER AT NIGHT.\nIF YOU SEE DOLLY LAUNCHING A YELLOWISH AURA, "
             + "YOU SHOULD AVOID TOUCHING IT AT ALL COSTS!",

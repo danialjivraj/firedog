@@ -93,8 +93,6 @@ describe('Game class (game-main.js)', () => {
 
       <!-- Map2 -->
       <img id="map2Background">
-      <img id="map2CityLights2">
-      <img id="map2CityLights1">
       <img id="map2Trees">
       <img id="map2Ground">
 
