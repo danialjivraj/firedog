@@ -10,24 +10,57 @@ describe('EnemyLore', () => {
     const H = 689;
     let menu, mockGame, ctx;
 
+    const getPageIndex = (predicate) => {
+        const i = menu.pages.findIndex(predicate);
+        if (i === -1) throw new Error('Test setup error: page not found');
+        return i;
+    };
+
+    const getEnemyPageIndexByName = (name) =>
+        getPageIndex(p => p?.pageKind === 'enemy' && p?.name === name);
+
+    const getEnemyPageIndexByMapKey = (mapKey) =>
+        getPageIndex(p => p?.pageKind === 'enemy' && p?.mapKey === mapKey);
+
+    const getCoverPageIndexByMapKey = (mapKey) =>
+        getPageIndex(p => p?.pageKind === 'cover' && p?.mapKey === mapKey);
+
     beforeAll(() => {
         document.body.innerHTML = `
-      <img id="forestmap" />
-      <img id="forestmapNight" />
-      <img id="enemyLoreBookBackground" width="400" height="300" />
-      <img id="enemyLoreLeftPageBackground" />
-      <img id="enemyLoreRightPageBackground" />
-      <img id="goblinSteal" />
-      <img id="dotter" />
-      <img id="vertibat" />
-      <img id="ghobat" />
-      <img id="ravengloom" />
-      <img id="meatSoldier" />
-      <img id="skulnapSleep" />
-      <img id="skulnapAwake" />
-      <img id="chiquita" />
-      <img id="cactus" />
-    `;
+            <img id="forestmap" />
+            <img id="forestmapNight" />
+
+            <img id="enemyLoreBookBackground" width="400" height="300" />
+            <img id="enemyLoreLeftPageBackground" />
+            <img id="enemyLoreRightPageBackground" />
+
+            <!-- Covers -->
+            <img id="map1Cover" />
+            <img id="map2Cover" />
+            <img id="map3Cover" />
+            <img id="map4Cover" />
+            <img id="map5Cover" />
+            <img id="map6Cover" />
+            <img id="map7Cover" />
+            <img id="bonusMap1Cover" />
+            <img id="bonusMap2Cover" />
+            <img id="bonusMap3Cover" />
+
+            <!-- Enemies -->
+            <img id="goblinSteal" />
+            <img id="dotter" />
+            <img id="vertibat" />
+            <img id="ghobat" />
+            <img id="ravengloom" />
+            <img id="meatSoldier" />
+            <img id="skulnapSleep" />
+            <img id="skulnapAwake" />
+            <img id="chiquita" />
+            <img id="cactus" />
+            <img id="duskPlant" />
+            <img id="darkLeafAttack" />
+            <img id="piranha" />
+        `;
     });
 
     beforeEach(() => {
@@ -46,6 +79,9 @@ describe('EnemyLore', () => {
             bonusMap1Unlocked: false,
             bonusMap2Unlocked: false,
             bonusMap3Unlocked: false,
+
+            glacikalDefeated: false,
+            elyvorgDefeated: false,
 
             audioHandler: {
                 menu: {
@@ -82,6 +118,9 @@ describe('EnemyLore', () => {
             fill: jest.fn(),
             stroke: jest.fn(),
 
+            translate: jest.fn(),
+            rotate: jest.fn(),
+
             filter: '',
             shadowColor: '',
             shadowBlur: 0,
@@ -89,6 +128,9 @@ describe('EnemyLore', () => {
             strokeStyle: '',
             lineWidth: 0,
             textAlign: '',
+            textBaseline: '',
+            font: '',
+            globalAlpha: 1,
         };
 
         menu = new EnemyLore(mockGame);
@@ -116,18 +158,7 @@ describe('EnemyLore', () => {
     });
 
     describe('isNightMode()', () => {
-        it('uses forestMap.isNightMode if available on the game menu', () => {
-            const forestMapIsNightMode = jest.fn(() => true);
-            mockGame.menu = { forestMap: { isNightMode: forestMapIsNightMode } };
-            const loreWithMenu = new EnemyLore(mockGame);
-
-            const result = loreWithMenu.isNightMode();
-
-            expect(forestMapIsNightMode).toHaveBeenCalled();
-            expect(result).toBe(true);
-        });
-
-        it('falls back to storyNight and clockNight when forestMap is not available', () => {
+        it('returns true when storyNight is true (map2Unlocked true and map3Unlocked false)', () => {
             mockGame.map2Unlocked = true;
             mockGame.map3Unlocked = false;
             isLocalNight.mockReturnValue(false);
@@ -148,17 +179,28 @@ describe('EnemyLore', () => {
 
             expect(result).toBe(true);
         });
+
+        it('returns false when both storyNight and clockNight are false', () => {
+            mockGame.map2Unlocked = false;
+            mockGame.map3Unlocked = false;
+            isLocalNight.mockReturnValue(false);
+
+            const lore = new EnemyLore(mockGame);
+            const result = lore.isNightMode();
+
+            expect(result).toBe(false);
+        });
     });
 
     describe('paging logic', () => {
-        it('nextPage() increments currentPage but never past the last index', () => {
+        it('nextPage() increments currentPage but never past maxValidIndex', () => {
             menu.currentPage = 0;
             menu.nextPage();
             expect(menu.currentPage).toBe(1);
 
-            menu.currentPage = menu.pages.length - 1;
+            menu.currentPage = menu.getMaxValidIndex();
             menu.nextPage();
-            expect(menu.currentPage).toBe(menu.pages.length - 1);
+            expect(menu.currentPage).toBe(menu.getMaxValidIndex());
         });
 
         it('previousPage() decrements currentPage but never below 0', () => {
@@ -171,10 +213,14 @@ describe('EnemyLore', () => {
             expect(menu.currentPage).toBe(0);
         });
 
-        it('clickNextPage() advances by 2 (mouse click on next page)', () => {
+        it('clickNextPage() advances by 2 (mouse click on next page) but clamps to maxValidIndex', () => {
             menu.currentPage = 0;
             menu.clickNextPage();
             expect(menu.currentPage).toBe(2);
+
+            menu.currentPage = menu.getMaxValidIndex();
+            menu.clickNextPage();
+            expect(menu.currentPage).toBe(menu.getMaxValidIndex());
         });
 
         it('clickPreviousPage() retreats by 2 but not below 0', () => {
@@ -187,37 +233,22 @@ describe('EnemyLore', () => {
             expect(menu.currentPage).toBe(0);
         });
 
-        it('does not advance past the last page with clickNextPage()', () => {
-            menu.currentPage = menu.pages.length - 1;
-            menu.clickNextPage();
-            expect(menu.currentPage).toBe(menu.pages.length - 1);
-        });
-
-        it('does not go below page 0 with clickPreviousPage()', () => {
-            menu.currentPage = 0;
-            menu.clickPreviousPage();
-            expect(menu.currentPage).toBe(0);
-        });
-
-        it('plays the flip sound when calling nextPage()', () => {
+        it('plays the flip sound when calling next/previous and clickNext/clickPrevious (when movement happens)', () => {
             menu.currentPage = 0;
             menu.nextPage();
             expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlipForwardSound', false, true);
-        });
 
-        it('plays the flip sound when calling clickNextPage()', () => {
+            jest.clearAllMocks();
+            menu.currentPage = 2;
+            menu.previousPage();
+            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlipBackwardSound', false, true);
+
+            jest.clearAllMocks();
             menu.currentPage = 0;
             menu.clickNextPage();
             expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlipForwardSound', false, true);
-        });
 
-        it('plays the flip sound when calling previousPage()', () => {
-            menu.currentPage = 1;
-            menu.previousPage();
-            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlipBackwardSound', false, true);
-        });
-
-        it('plays the flip sound when calling clickPreviousPage()', () => {
+            jest.clearAllMocks();
             menu.currentPage = 2;
             menu.clickPreviousPage();
             expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlipBackwardSound', false, true);
@@ -246,6 +277,9 @@ describe('EnemyLore', () => {
         it('switches between main and bonus pages and remembers index per category', () => {
             mockGame.bonusMap1Unlocked = true;
 
+            menu = new EnemyLore(mockGame);
+            menu.activateMenu();
+
             expect(menu.mainPages.length).toBeGreaterThan(0);
             expect(menu.bonusPages.length).toBeGreaterThan(0);
 
@@ -267,8 +301,12 @@ describe('EnemyLore', () => {
             expect(menu.currentPage).toBe(4);
         });
 
-        it('plays flip sound when changing category', () => {
+        it('plays switch-tab sound when changing category', () => {
             mockGame.bonusMap1Unlocked = true;
+
+            menu = new EnemyLore(mockGame);
+            menu.activateMenu();
+
             menu.setCategory('bonus');
 
             expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('enemyLoreSwitchTabSound', false, true);
@@ -329,12 +367,16 @@ describe('EnemyLore', () => {
         });
 
         it('handleKeyDown: ArrowDown calls setCategory(bonus) when bonusMap1 is unlocked', () => {
-            jest.spyOn(menu, 'setCategory');
-
             mockGame.bonusMap1Unlocked = true;
+
+            menu = new EnemyLore(mockGame);
+            menu.activateMenu();
+
+            const spy = jest.spyOn(menu, 'setCategory');
+
             menu.handleKeyDown({ key: 'ArrowDown' });
 
-            expect(menu.setCategory).toHaveBeenCalledWith('bonus');
+            expect(spy).toHaveBeenCalledWith('bonus');
         });
 
         it('handleMouseWheel: deltaY < 0 calls clickNextPage; deltaY > 0 calls clickPreviousPage', () => {
@@ -406,8 +448,11 @@ describe('EnemyLore', () => {
         });
 
         it('clicking bonus tab calls setCategory(bonus) when bonusMap1 is unlocked and does not flip pages', () => {
-            menu.menuActive = true;
             mockGame.bonusMap1Unlocked = true;
+
+            menu = new EnemyLore(mockGame);
+            menu.activateMenu();
+            menu.menuActive = true;
 
             jest.spyOn(menu, 'setCategory');
             jest.spyOn(menu, 'clickNextPage');
@@ -470,6 +515,99 @@ describe('EnemyLore', () => {
         });
     });
 
+    describe('map gating + mini-tab behaviors', () => {
+        it('bonusMap3 is locked unless bonusMap3Unlocked, glacikalDefeated, and elyvorgDefeated are true, and it does not appear in getMapNumberTabs()', () => {
+            mockGame.bonusMap1Unlocked = true;
+            mockGame.bonusMap3Unlocked = true;
+            mockGame.glacikalDefeated = false;
+            mockGame.elyvorgDefeated = false;
+
+            menu = new EnemyLore(mockGame);
+            menu.activateMenu();
+            menu.setCategory('bonus');
+
+            expect(menu.isMapKeyUnlocked('bonusMap3')).toBe(false);
+
+            const tabs = menu.getMapNumberTabs();
+            expect(tabs.some(t => t.mapKey === 'bonusMap3')).toBe(false);
+        });
+
+        it('mini-tab click jumps to the correct spread (map1..map4 unlocked) and normalizes to even index', () => {
+            mockGame.map1Unlocked = true;
+            mockGame.map2Unlocked = true;
+            mockGame.map3Unlocked = true;
+            mockGame.map4Unlocked = true;
+
+            menu = new EnemyLore(mockGame);
+            menu.activateMenu();
+            menu.menuActive = true;
+
+            const startIdx = getEnemyPageIndexByMapKey('map1');
+            menu.currentPage = Math.min(startIdx, menu.getMaxValidIndex());
+
+            const tabs = menu.getMapNumberTabs();
+            const tab4 = tabs.find(t => t.mapKey === 'map4');
+            if (!tab4) throw new Error('Test setup error: expected map4 tab to exist');
+
+            // click inside the "4" tab
+            menu.handleMouseClick({
+                clientX: tab4.x + 2,
+                clientY: tab4.y + 2,
+            });
+
+            const firstMap4 = menu.getFirstPageIndexForMapKey('map4');
+            expect(firstMap4).toBeGreaterThanOrEqual(0);
+
+            const expected = Math.min(
+                (firstMap4 % 2 === 1) ? Math.max(0, firstMap4 - 1) : firstMap4,
+                menu.getMaxValidIndex()
+            );
+
+            expect(menu.currentPage).toBe(expected);
+        });
+
+        it('getActiveMapKeyForSpread returns the left mapKey when both pages share it', () => {
+            mockGame.map2Unlocked = true;
+
+            menu = new EnemyLore(mockGame);
+            menu.activateMenu();
+
+            const cover2 = getCoverPageIndexByMapKey('map2');
+
+            const evenCover2 = (cover2 % 2 === 1) ? cover2 - 1 : cover2;
+            menu.currentPage = evenCover2;
+
+            const leftKey = menu.pages[menu.currentPage]?.mapKey;
+            const rightKey = menu.pages[menu.currentPage + 1]?.mapKey;
+
+            expect(leftKey).toBe('map2');
+            expect(rightKey).toBe('map2');
+
+            expect(menu.getActiveMapKeyForSpread()).toBe('map2');
+        });
+
+        it('getActiveMapKeyForSpread prefers the right mapKey when it differs from the left', () => {
+            mockGame.map2Unlocked = true;
+
+            menu = new EnemyLore(mockGame);
+            menu.activateMenu();
+
+            const cover2 = getCoverPageIndexByMapKey('map2');
+
+            const candidate = Math.max(0, cover2 - 1);
+            menu.currentPage = Math.min(candidate, menu.getMaxValidIndex());
+
+            const leftKey = menu.pages[menu.currentPage]?.mapKey;
+            const rightKey = menu.pages[menu.currentPage + 1]?.mapKey;
+
+            expect(rightKey).toBe('map2');
+            expect(leftKey).not.toBeNull();
+            expect(leftKey).not.toBe(rightKey);
+
+            expect(menu.getActiveMapKeyForSpread()).toBe('map2');
+        });
+    });
+
     describe('draw()', () => {
         it('does nothing when menuActive is false', () => {
             menu.menuActive = false;
@@ -498,6 +636,9 @@ describe('EnemyLore', () => {
             mockGame.map2Unlocked = true;
             mockGame.map3Unlocked = false;
             isLocalNight.mockReturnValue(false);
+
+            menu = new EnemyLore(mockGame);
+            menu.activateMenu();
             menu.menuActive = true;
 
             menu.draw(ctx);
@@ -509,6 +650,9 @@ describe('EnemyLore', () => {
             mockGame.map2Unlocked = true;
             mockGame.map3Unlocked = true;
             isLocalNight.mockReturnValue(false);
+
+            menu = new EnemyLore(mockGame);
+            menu.activateMenu();
             menu.menuActive = true;
 
             menu.draw(ctx);
@@ -516,14 +660,13 @@ describe('EnemyLore', () => {
             expect(ctx.drawImage).toHaveBeenCalledWith(menu.backgroundImage, 0, 0, W, H);
         });
 
-        it('draws the book frame and both pages content', () => {
-            mockGame.map2Unlocked = false;
+        it('draws the book frame and both pages content (if a right page exists)', () => {
             menu.menuActive = true;
             jest.spyOn(menu, 'drawPageContent');
 
             menu.draw(ctx);
 
-            expect(menu.drawPageContent).toHaveBeenCalledTimes(2);
+            expect(menu.drawPageContent).toHaveBeenCalledWith(ctx, menu.currentPage, menu.bookX, menu.bookY);
 
             expect(ctx.drawImage).toHaveBeenCalledWith(
                 menu.enemyLoreBookBackground,
@@ -561,6 +704,9 @@ describe('EnemyLore', () => {
 
         it('draws the BONUS MAPS tab label when bonusMap1Unlocked is true', () => {
             mockGame.bonusMap1Unlocked = true;
+
+            menu = new EnemyLore(mockGame);
+            menu.activateMenu();
             menu.menuActive = true;
 
             const labels = [];
@@ -574,20 +720,39 @@ describe('EnemyLore', () => {
     });
 
     describe('drawPageContent()', () => {
-        it('renders locked placeholders when the page is locked', () => {
-            menu.drawPageContent(ctx, 9, 0, 0);
+        it('renders locked placeholders when an enemy page is locked', () => {
+            const idx = getEnemyPageIndexByMapKey('map2');
+
+            menu.drawPageContent(ctx, idx, 0, 0);
+
             const texts = ctx.fillText.mock.calls.map(call => call[0]);
             expect(texts).toEqual(['NAME: ???', 'TYPE: ??? & ???', 'FOUND AT: ???', 'DESCRIPTION: ???']);
         });
 
+        it('does not render enemy placeholders for cover pages; cover title becomes "???" when locked', () => {
+            const idx = getCoverPageIndexByMapKey('map2');
+
+            const labels = [];
+            ctx.fillText = (text) => labels.push(String(text));
+
+            menu.drawPageContent(ctx, idx, 0, 0);
+
+            expect(labels).toContain('???');
+        });
+
         it('applies phraseColors styling on unlocked pages', () => {
-            mockGame.map2Unlocked = true;
+            mockGame.map1Unlocked = true;
+
+            menu = new EnemyLore(mockGame);
+            menu.activateMenu();
+
             const records = [];
-            ctx.strokeText = (text, x, y) => {
-                records.push({ text, shadowColor: ctx.shadowColor, shadowBlur: ctx.shadowBlur });
+            ctx.strokeText = (text) => {
+                records.push({ text: String(text), shadowColor: ctx.shadowColor, shadowBlur: ctx.shadowBlur });
             };
 
-            menu.drawPageContent(ctx, 0, 0, 0);
+            const goblitoIdx = getEnemyPageIndexByName('GOBLITO');
+            menu.drawPageContent(ctx, goblitoIdx, 0, 0);
 
             const entry = records.find(r => r.text === 'EVERYWHERE');
             expect(entry).toBeDefined();
@@ -595,15 +760,16 @@ describe('EnemyLore', () => {
             expect(entry.shadowBlur).toBe(5);
         });
 
-        it('blurs images when the page is locked', () => {
-            menu.drawPageContent(ctx, 9, 0, 0);
+        it('blurs images when the enemy page is locked', () => {
+            const idx = getEnemyPageIndexByMapKey('map2');
+            menu.drawPageContent(ctx, idx, 0, 0);
             expect(ctx.filter).toBe('blur(15px)');
         });
     });
 
     describe('pages data', () => {
         it('contains CHIQUITA page with correct metadata and image', () => {
-            const chiquita = menu.pages.find(p => p.name === 'CHIQUITA');
+            const chiquita = menu.pages.find(p => p.pageKind === 'enemy' && p.name === 'CHIQUITA');
             expect(chiquita).toBeDefined();
             expect(chiquita).toMatchObject({
                 type: 'FLY & NORMAL',
@@ -613,7 +779,7 @@ describe('EnemyLore', () => {
         });
 
         it('stores the full CHIQUITA description exactly', () => {
-            const chiquita = menu.pages.find(p => p.name === 'CHIQUITA');
+            const chiquita = menu.pages.find(p => p.pageKind === 'enemy' && p.name === 'CHIQUITA');
             expect(chiquita.description).toBe(
                 'CHIQUITA IS A DELIGHTFUL AND FRIENDLY BIRD WHO LOVES TO EXPLORE THE SKIES.\n' +
                 'HER PEACEFUL FLIGHTS ARE A SIGHT TO BEHOLD, AS SHE GLIDES EFFORTLESSLY AND GRACEFULLY.\n' +
@@ -651,8 +817,25 @@ describe('EnemyLore', () => {
             const beforeMain = menu.mainPages.length;
             const beforeBonus = menu.bonusPages.length;
 
-            menu.createPage('TEST_MAIN', 'TYPE', 'WHERE', 'DESC', [], null, 'main');
-            menu.createPage('TEST_BONUS', 'TYPE', 'WHERE', 'DESC', [], null, 'bonus');
+            menu.createPage({
+                name: 'TEST_MAIN',
+                type: 'TYPE',
+                foundAt: 'WHERE',
+                description: 'DESC',
+                images: [],
+                mapKey: null,
+                category: 'main',
+            });
+
+            menu.createPage({
+                name: 'TEST_BONUS',
+                type: 'TYPE',
+                foundAt: 'WHERE',
+                description: 'DESC',
+                images: [],
+                mapKey: null,
+                category: 'bonus',
+            });
 
             expect(menu.mainPages.length).toBe(beforeMain + 1);
             expect(menu.bonusPages.length).toBe(beforeBonus + 1);
@@ -681,37 +864,41 @@ describe('EnemyLore', () => {
         });
     });
 
-    describe('phraseColors styling for every keyword (main maps)', () => {
+    describe('phraseColors styling (main maps)', () => {
         const cases = [
-            ['EVERYWHERE', 0, [], 'white', 5],
-            ['LUNAR', 1, [], '#06580dff', 7],
-            ['NIGHTFALL', 9, ['map2Unlocked'], 'black', 10],
-            ['CORAL', 15, ['map2Unlocked', 'map3Unlocked'], 'darkblue', 5],
-            ['VERDANT', 22, ['map2Unlocked', 'map3Unlocked', 'map4Unlocked'], 'black', 15],
-            ['SPRINGLY', 30, ['map2Unlocked', 'map3Unlocked', 'map4Unlocked', 'map5Unlocked'], 'orange', 5],
-            ['VENOMVEIL', 41, ['map2Unlocked', 'map3Unlocked', 'map4Unlocked', 'map5Unlocked', 'map6Unlocked'], '#003b00', 10],
-            ['INFERNAL', 42, ['map2Unlocked', 'map3Unlocked', 'map4Unlocked', 'map5Unlocked', 'map6Unlocked', 'map7Unlocked'], 'black', 10],
-            ['RED', 17, ['map2Unlocked', 'map3Unlocked'], 'black', 1],
-            ['STUN', 6, [], 'black', 1],
+            ['EVERYWHERE', 'GOBLITO', [], 'white', 5],
+            ['LUNAR', 'DOTTER', [], '#06580dff', 7],
+            ['NIGHTFALL', 'DUSK PLANT', ['map2Unlocked'], 'black', 10],
+            ['CORAL', 'PIRANHA', ['map3Unlocked'], 'darkblue', 5],
+            ['VERDANT', 'CHIQUITA', ['map4Unlocked'], 'black', 15],
+            ['SPRINGLY', 'SNAILEY', ['map5Unlocked'], 'orange', 5],
+            ['VENOMVEIL', 'CACTUS', ['map6Unlocked'], '#003b00', 10],
+            ['INFERNAL', 'PETROPLANT', ['map7Unlocked'], 'black', 10],
+            ['RED', 'SPEAR FISH', ['map3Unlocked'], 'black', 1],
+            ['STUN', 'SKULNAP', [], 'black', 1],
         ];
 
         test.each(cases)(
-            '"%s" on main page %i with flags %j sets stroke=%s blur=%i',
-            (phrase, pageIndex, flags, stroke, blur) => {
-                flags.forEach(f => {
-                    mockGame[f] = true;
-                });
+            '"%s" on page "%s" with flags %j sets stroke=%s blur=%i',
+            (token, pageName, flags, stroke, blur) => {
+                flags.forEach(f => { mockGame[f] = true; });
+
+                menu = new EnemyLore(mockGame);
+                menu.activateMenu();
+
+                const pageIdx = getEnemyPageIndexByName(pageName);
 
                 const rec = [];
-                ctx.strokeText = (t, x, y) =>
+                ctx.strokeText = (t) =>
                     rec.push({
                         text: String(t).trim(),
                         strokeColor: ctx.shadowColor,
                         shadowBlur: ctx.shadowBlur,
                     });
 
-                menu.drawPageContent(ctx, pageIndex, 0, 0);
-                const hit = rec.find(r => r.text === phrase);
+                menu.drawPageContent(ctx, pageIdx, 0, 0);
+
+                const hit = rec.find(r => r.text === token);
                 expect(hit).toBeDefined();
                 expect(hit.strokeColor).toBe(stroke);
                 expect(hit.shadowBlur).toBe(blur);
@@ -719,31 +906,34 @@ describe('EnemyLore', () => {
         );
     });
 
-    describe('phraseColors styling for bonus-map keywords', () => {
+    describe('phraseColors styling (bonus maps)', () => {
         const bonusCases = [
-            ['ICEBOUND', 0, ['bonusMap1Unlocked'], '#1c4a7f', 10],
-            ['CRIMSON', 1, ['bonusMap1Unlocked', 'bonusMap2Unlocked'], '#000000ff', 10],
-            ['COSMIC', 2, ['bonusMap1Unlocked', 'bonusMap3Unlocked'], '#270033', 10],
+            ['ICEBOUND', 'bonusMap1', ['bonusMap1Unlocked'], '#1c4a7f', 10],
+            ['CRIMSON', 'bonusMap2', ['bonusMap1Unlocked', 'bonusMap2Unlocked'], '#000000ff', 10],
+            ['COSMIC', 'bonusMap3', ['bonusMap1Unlocked', 'bonusMap3Unlocked', 'elyvorgDefeated', 'glacikalDefeated'], '#270033', 10],
         ];
 
         test.each(bonusCases)(
-            '"%s" on bonus page %i with flags %j sets stroke=%s blur=%i',
-            (token, pageIndex, flags, stroke, blur) => {
-                flags.forEach(f => {
-                    mockGame[f] = true;
-                });
+            '"%s" on bonus enemy page mapKey=%s with flags %j sets stroke=%s blur=%i',
+            (token, mapKey, flags, stroke, blur) => {
+                flags.forEach(f => { mockGame[f] = true; });
+
+                menu = new EnemyLore(mockGame);
+                menu.activateMenu();
 
                 menu.setCategory('bonus');
 
+                const idx = getEnemyPageIndexByMapKey(mapKey);
+
                 const rec = [];
-                ctx.strokeText = (t, x, y) =>
+                ctx.strokeText = (t) =>
                     rec.push({
                         text: String(t).trim(),
                         strokeColor: ctx.shadowColor,
                         shadowBlur: ctx.shadowBlur,
                     });
 
-                menu.drawPageContent(ctx, pageIndex, 0, 0);
+                menu.drawPageContent(ctx, idx, 0, 0);
 
                 const hit = rec.find(r => r.text === token);
                 expect(hit).toBeDefined();
@@ -770,18 +960,18 @@ describe('EnemyLore', () => {
             const cosmicStyle = menu.phraseColors['COSMIC RIFT'];
 
             const pageIndex = menu.pages.length;
-            menu.createPage(
-                'TEST ENEMY',
-                'TEST TYPE',
-                'COSMIC RIFT',
-                'COSMIC\nRIFT',
-                [],
-                null,
-                'main'
-            );
+            menu.createPage({
+                name: 'TEST ENEMY',
+                type: 'TEST TYPE',
+                foundAt: 'COSMIC RIFT',
+                description: 'COSMIC\nRIFT',
+                images: [],
+                mapKey: null,
+                category: 'main',
+            });
 
             const records = [];
-            ctx.strokeText = (text, x, y) => {
+            ctx.strokeText = (text) => {
                 records.push({
                     text: String(text),
                     shadowColor: ctx.shadowColor,
@@ -808,10 +998,17 @@ describe('EnemyLore', () => {
         it('does not style standalone COSMIC but styles COSMIC as part of COSMIC RIFT', () => {
             mockGame.bonusMap1Unlocked = true;
             mockGame.bonusMap3Unlocked = true;
+            mockGame.glacikalDefeated = true;
+            mockGame.elyvorgDefeated = true;
+
+            menu = new EnemyLore(mockGame);
+            menu.activateMenu();
             menu.setCategory('bonus');
 
+            const idx = getEnemyPageIndexByMapKey('bonusMap3');
+
             const records = [];
-            ctx.strokeText = (text, x, y) => {
+            ctx.strokeText = (text) => {
                 records.push({
                     text: String(text),
                     shadowColor: ctx.shadowColor,
@@ -819,7 +1016,7 @@ describe('EnemyLore', () => {
                 });
             };
 
-            menu.drawPageContent(ctx, 2, 0, 0);
+            menu.drawPageContent(ctx, idx, 0, 0);
 
             const cosmicEntries = records.filter(r => r.text === 'COSMIC');
             expect(cosmicEntries.length).toBeGreaterThan(0);
@@ -830,18 +1027,18 @@ describe('EnemyLore', () => {
 
         it('does not style a phrase word when the full phrase is not present', () => {
             const pageIndex = menu.pages.length;
-            menu.createPage(
-                'TEST ENEMY 2',
-                'TEST TYPE',
-                'NOWHERE',
-                'RIFT',
-                [],
-                null,
-                'main'
-            );
+            menu.createPage({
+                name: 'TEST ENEMY 2',
+                type: 'TEST TYPE',
+                foundAt: 'NOWHERE',
+                description: 'RIFT',
+                images: [],
+                mapKey: null,
+                category: 'main',
+            });
 
             const records = [];
-            ctx.strokeText = (text, x, y) => {
+            ctx.strokeText = (text) => {
                 records.push({
                     text: String(text),
                     shadowColor: ctx.shadowColor,

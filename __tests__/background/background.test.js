@@ -123,14 +123,17 @@ function seedDomImages() {
         'map2Trees2',
         'map2Trees3',
         'map2WhiteMist',
-        'map2Fence',
+        'map2Fence1',
+        'map2Fence2',
         'map2Tombstone1',
         'map2Tombstone2',
+        'map2Tombstone3',
         // zabby
         'map2Zabby1',
         'map2Zabby2',
         'map2Zabby3',
         'map2Zabby4',
+        'map2Zabby5',
 
         // map3
         'map3Background',

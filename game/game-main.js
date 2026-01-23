@@ -986,8 +986,6 @@ export class Game {
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
                 { type: Cactus, probability: 0.1, spawningDistance: 0 },
                 { type: PetroPlant, probability: 0.1, spawningDistance: 0 },
-                { type: Plazer, probability: 0.05, spawningDistance: 0 },
-                { type: Veynoculus, probability: 0.5, spawningDistance: 0 },
                 { type: Volcanurtle, probability: 0.1, spawningDistance: 0 },
                 { type: TheRock, probability: 0.05, spawningDistance: 0 },
                 { type: VolcanoWasp, probability: 0.03, spawningDistance: 0 },
@@ -1004,7 +1002,8 @@ export class Game {
             ],
             BonusMap3: [
                 { type: Goblin, probability: 1, spawningDistance: 0 },
-                { type: Silknoir, probability: 1, spawningDistance: 0 },
+                { type: Veynoculus, probability: 0.5, spawningDistance: 0 },
+                { type: Plazer, probability: 0.05, spawningDistance: 0 },
             ],
         };
 
