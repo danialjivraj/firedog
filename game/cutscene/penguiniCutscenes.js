@@ -412,73 +412,73 @@ export class Map3PenguinIngameCutscene extends PenguiniCutscene {
             `${this.penguini}`,
             `... Don't question our business model.`,
             this.addImage(this.setfiredogNormalExclamationMarkBorder(), 0.7, 100, 400, 200, 200),
-            this.addImage('penguinBatUpBorder', 1, 1200, 400, 200, 200),
+            this.addImage('penguinBatUpBorder', 1, 1265, 400, 200, 200),
         );
         this.addDialogue( //4
             `${this.penguini}`,
             `Anyways, you're breathing underwater... I see... so you managed to find ${this.zephyrion} ya' fool!`,
             this.addImage(this.setfiredogNormalExclamationMarkBorder(), 0.7, 100, 400, 200, 200),
-            this.addImage('penguinBatTalkNormalBorder', 1, 1200, 400, 200, 200),
+            this.addImage('penguinBatTalkNormalBorder', 1, 1265, 400, 200, 200),
         );
         this.addDialogue( //5
             `${this.penguini}`,
             `I don't usually see dogs in here. That's a first time ya' fool! Haha!`,
             this.addImage(this.setfiredogNormalExclamationMarkBorder(), 0.7, 100, 400, 200, 200),
-            this.addImage('penguinBatLaughBorder', 1, 1200, 400, 200, 200),
+            this.addImage('penguinBatLaughBorder', 1, 1265, 400, 200, 200),
         );
         this.addDialogue( //6
             `${this.firedog}`,
             `Well, thanks for that...`,
             this.addImage(this.setfiredogAngryBorder(), 1, 100, 400, 200, 200),
-            this.addImage('penguinBatLaughBorder', 0.7, 1200, 400, 200, 200),
+            this.addImage('penguinBatLaughBorder', 0.7, 1265, 400, 200, 200),
         );
         this.addDialogue( //7
             `${this.firedog}`,
             `Wait... so your brother told me that you guys and ${this.zephyrion} used to do business together!?`,
             this.addImage(this.setfiredogNormalExclamationMarkBorder(), 1, 100, 400, 200, 200),
-            this.addImage('penguinBatTalkNormalBorder', 0.7, 1200, 400, 200, 200),
+            this.addImage('penguinBatTalkNormalBorder', 0.7, 1265, 400, 200, 200),
         );
         this.addDialogue( //8
             `${this.firedog}`,
             `I see... so he was casting the spell for random explorers to breathe underwater and once they reached you, you just collect their money!`,
             this.addImage(this.setfiredogNormalExclamationMarkBorder(), 1, 100, 400, 200, 200),
-            this.addImage('penguinBatTalkNormalBorder', 0.7, 1200, 400, 200, 200),
+            this.addImage('penguinBatTalkNormalBorder', 0.7, 1265, 400, 200, 200),
         );
         this.addDialogue( //9
             `${this.firedog}`,
             `And then you split the profits with ${this.zephyrion}, am I right ${this.penguini}!?`,
             this.addImage(this.setfiredogNormalExclamationMarkBorder(), 1, 100, 400, 200, 200),
-            this.addImage('penguinBatTalkNormalBorder', 0.7, 1200, 400, 200, 200),
+            this.addImage('penguinBatTalkNormalBorder', 0.7, 1265, 400, 200, 200),
         );
         this.addDialogue( //10
             `${this.penguini}`,
             `Wha- How did you...`,
             this.addImage(this.setfiredogNormalExclamationMarkBorder(), 0.7, 100, 400, 200, 200),
-            this.addImage('penguinBatUpBorder', 1, 1200, 400, 200, 200),
+            this.addImage('penguinBatUpBorder', 1, 1265, 400, 200, 200),
         );
         this.addDialogue( //11
             `${this.penguini}`,
             `Enough of this conversation!`,
             this.addImage(this.setfiredogNormalExclamationMarkBorder(), 0.7, 100, 400, 200, 200),
-            this.addImage('penguinBatUpBorder', 1, 1200, 400, 200, 200),
+            this.addImage('penguinBatUpBorder', 1, 1265, 400, 200, 200),
         );
         this.addDialogue( //12
             `${this.penguini}`,
             `Let's get to business, aquatic dog!`,
             this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-            this.addImage('penguinBatUpBorder', 1, 1200, 400, 200, 200),
+            this.addImage('penguinBatUpBorder', 1, 1265, 400, 200, 200),
         );
         this.addDialogue( //13
             `${this.penguini}`,
             `I will need ${this.game.winningCoins} ${this.coinsText} for you to get a trip inside this beast of a sub!`,
             this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-            this.addImage('penguinBatTalkNormalBorder', 1, 1200, 400, 200, 200),
+            this.addImage('penguinBatTalkNormalBorder', 1, 1265, 400, 200, 200),
         );
         this.addDialogue( //14
             `${this.penguini}`,
             `It seems you have ${this.playerCoins} ${this.coinText}.`,
             this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-            this.addImage('penguinBatTalkNormalBorder', 1, 1200, 400, 200, 200),
+            this.addImage('penguinBatTalkNormalBorder', 1, 1265, 400, 200, 200),
         );
 
         // coin condition dialogues
@@ -495,31 +495,31 @@ export class Map3PenguinIngameCutscene extends PenguiniCutscene {
             `${this.penguini}`,
             `You can go inside now.`,
             this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-            this.addImage('penguinBatTalkNormalBorder', 1, 1200, 400, 200, 200),
+            this.addImage('penguinBatTalkNormalBorder', 1, 1265, 400, 200, 200),
         );
         this.addDialogue( //17
             `${this.firedog}`,
             `Thank you ${this.penguini}. I just have one question... Where are you going to take me exactly?`,
             this.addImage(this.setfiredogNormalQuestionMarkBorder(), 1, 100, 400, 200, 200),
-            this.addImage('penguinBatTalkNormalBorder', 0.7, 1200, 400, 200, 200),
+            this.addImage('penguinBatTalkNormalBorder', 0.7, 1265, 400, 200, 200),
         );
         this.addDialogue( //18
             `${this.penguini}`,
             `You will find out soon enough ya' fool! Now go before you choke on this water!`,
             this.addImage(this.setfiredogNormalQuestionMarkBorder(), 0.7, 100, 400, 200, 200),
-            this.addImage('penguinBatLaughBorder', 1, 1200, 400, 200, 200),
+            this.addImage('penguinBatLaughBorder', 1, 1265, 400, 200, 200),
         );
         this.addDialogue( //19
             `${this.firedog}`,
             `You're right, I can feel that the spell is about to end!`,
             this.addImage(this.setfiredogHeadacheBorder(), 1, 100, 400, 200, 200),
-            this.addImage('penguinBatLaughBorder', 0.7, 1200, 400, 200, 200),
+            this.addImage('penguinBatLaughBorder', 0.7, 1265, 400, 200, 200),
         );
         this.addDialogue( //20
             `${this.firedog}`,
             `Okay, let's get inside that submarine quickly!`,
             this.addImage(this.setfiredogTiredBorder(), 1, 100, 400, 200, 200),
-            this.addImage('penguinBatTalkNormalBorder', 0.7, 1200, 400, 200, 200),
+            this.addImage('penguinBatTalkNormalBorder', 0.7, 1265, 400, 200, 200),
         );
     }
 }
@@ -1482,7 +1482,7 @@ export class CoinDialogueConditionCutscene extends PenguiniCutscene {
                             dialogue: `That doesn't even cover half of my uranium submarine fuel!`,
                             images: [
                                 this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                                this.addImage('penguinBatUpBorder', 1, 1200, 400, 200, 200),
+                                this.addImage('penguinBatUpBorder', 1, 1265, 400, 200, 200),
                             ],
                         },
                         {
@@ -1490,7 +1490,7 @@ export class CoinDialogueConditionCutscene extends PenguiniCutscene {
                             dialogue: `You're not going inside of this submarine.`,
                             images: [
                                 this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                                this.addImage('penguinBatUpBorder', 1, 1200, 400, 200, 200),
+                                this.addImage('penguinBatUpBorder', 1, 1265, 400, 200, 200),
                             ],
                         },
                         {
@@ -1498,7 +1498,7 @@ export class CoinDialogueConditionCutscene extends PenguiniCutscene {
                             dialogue: `Come back when you have enough, get out of here now!`,
                             images: [
                                 this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-                                this.addImage('penguinBatUpBorder', 1, 1200, 400, 200, 200),
+                                this.addImage('penguinBatUpBorder', 1, 1265, 400, 200, 200),
                             ],
                         },
                         {
@@ -1506,7 +1506,7 @@ export class CoinDialogueConditionCutscene extends PenguiniCutscene {
                             dialogue: `Damn.. Gotta try again..`,
                             images: [
                                 this.addImage(this.setfiredogPhewBorder(), 1, 100, 400, 200, 200),
-                                this.addImage('penguinBatUpBorder', 0.7, 1200, 400, 200, 200),
+                                this.addImage('penguinBatUpBorder', 0.7, 1265, 400, 200, 200),
                             ],
                         }
                     );

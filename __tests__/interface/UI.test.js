@@ -153,7 +153,6 @@ describe('UI', () => {
                 currentState: null,
 
                 blueFireTimer: 0,
-                isDarkWhiteBorder: false,
             },
 
             time: 125000,

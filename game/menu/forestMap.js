@@ -107,23 +107,17 @@ export class ForestMapMenu extends BaseMenu {
             return;
         }
 
-        this.game.player.isUnderwater = false;
-        this.game.player.isDarkWhiteBorder = false;
-        this.game.player.isIce = false;
-        this.game.player.isSpace = false;
-
         const mapOptions = [
-            { underwater: false, darkWhiteBorder: false, maxDistance: 200, winningCoins: 230, Cutscene: Map1Cutscene, Map: Map1 },
-            { underwater: false, darkWhiteBorder: true, maxDistance: 240, winningCoins: 270, Cutscene: Map2Cutscene, Map: Map2 },
-            { underwater: true, darkWhiteBorder: true, maxDistance: 270, winningCoins: 200, Cutscene: Map3Cutscene, Map: Map3 },
-            { underwater: false, darkWhiteBorder: false, maxDistance: 240, winningCoins: 280, Cutscene: Map4Cutscene, Map: Map4 },
-            { underwater: false, darkWhiteBorder: false, maxDistance: 250, winningCoins: 300, Cutscene: Map5Cutscene, Map: Map5 },
-            { underwater: false, darkWhiteBorder: false, maxDistance: 100, winningCoins: 0, Cutscene: Map6Cutscene, Map: Map6 },
-            { underwater: false, darkWhiteBorder: false, maxDistance: 9999999, winningCoins: 0, Cutscene: Map7Cutscene, Map: Map7 },
-
-            { underwater: false, darkWhiteBorder: false, isIce: true, maxDistance: 9999999, winningCoins: 0, Cutscene: BonusMap1Cutscene, Map: BonusMap1 },
-            { underwater: false, darkWhiteBorder: false, maxDistance: 250, winningCoins: 0, Cutscene: BonusMap2Cutscene, Map: BonusMap2 },
-            { underwater: false, darkWhiteBorder: false, maxDistance: 250, winningCoins: 0, isSpace: true, Cutscene: BonusMap3Cutscene, Map: BonusMap3 },
+            { Map: Map1, maxDistance: 200, winningCoins: 230, environment: null, Cutscene: Map1Cutscene },
+            { Map: Map2, maxDistance: 240, winningCoins: 270, environment: null, Cutscene: Map2Cutscene },
+            { Map: Map3, maxDistance: 270, winningCoins: 200, environment: 'underwater', Cutscene: Map3Cutscene },
+            { Map: Map4, maxDistance: 240, winningCoins: 280, environment: null, Cutscene: Map4Cutscene },
+            { Map: Map5, maxDistance: 250, winningCoins: 300, environment: null, Cutscene: Map5Cutscene },
+            { Map: Map6, maxDistance: 100, winningCoins: 100, environment: null, Cutscene: Map6Cutscene },
+            { Map: Map7, maxDistance: 9999999, winningCoins: 0, environment: null, Cutscene: Map7Cutscene },
+            { Map: BonusMap1, maxDistance: 9999999, winningCoins: 0, environment: 'ice', Cutscene: BonusMap1Cutscene },
+            { Map: BonusMap2, maxDistance: 250, winningCoins: 0, environment: null, Cutscene: BonusMap2Cutscene },
+            { Map: BonusMap3, maxDistance: 250, winningCoins: 0, environment: 'space', Cutscene: BonusMap3Cutscene },
         ];
 
         const entry = mapOptions[circleIndex];
@@ -133,20 +127,28 @@ export class ForestMapMenu extends BaseMenu {
         }
 
         const {
-            underwater,
-            darkWhiteBorder,
-            isIce = false,
-            isSpace = false,
+            Map,
             maxDistance,
             winningCoins,
+            environment = null,
             Cutscene,
-            Map,
         } = entry;
 
-        this.game.player.isUnderwater = underwater;
-        this.game.player.isDarkWhiteBorder = darkWhiteBorder;
-        this.game.player.isIce = isIce;
-        this.game.player.isSpace = isSpace;
+        this.game.player.isUnderwater = false;
+        this.game.player.isIce = false;
+        this.game.player.isSpace = false;
+
+        switch (environment) {
+            case 'underwater':
+                this.game.player.isUnderwater = true;
+                break;
+            case 'ice':
+                this.game.player.isIce = true;
+                break;
+            case 'space':
+                this.game.player.isSpace = true;
+                break;
+        }
 
         this.game.maxDistance = maxDistance;
         this.game.winningCoins = winningCoins;
@@ -476,7 +478,7 @@ export class ForestMapMenu extends BaseMenu {
             this.game.cabin = new Cabin(this.game, 'map2cabin', 630, 375, cabinY - 5);
             this.game.penguini = new Penguini(this.game, 105.52380952380952380952380952381, 165, 'penguinBatSprite', 20);
         } else if (map instanceof Map3) {
-            this.game.cabin = new Cabin(this.game, 'map3submarine', 903, 329, this.game.height - 411);
+            this.game.cabin = new Cabin(this.game, 'map3submarine', 752, 474, cabinY - 100);
             this.game.penguini = new Penguini(this.game, 105.52380952380952380952380952381, 165, 'penguinBatSprite', 20);
         } else if (map instanceof Map4) {
             this.game.cabin = new Cabin(this.game, 'map4cabin', 630, 375, cabinY);

@@ -337,6 +337,15 @@ export class RecordsMenu extends BaseMenu {
         }
     }
 
+    activateMenu() {
+        this.scrollY = 0;
+        this.targetScrollY = 0;
+        this.draggingBar = false;
+        this.barRect = null;
+
+        super.activateMenu(0);
+    }
+
     handleMenuSelection() {
         if (!this.game.canSelect) return;
         super.handleMenuSelection();

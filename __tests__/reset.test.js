@@ -20,7 +20,6 @@ jest.mock('../game/entities/player.js', () => ({
         game,
         states: [{ enter: jest.fn() }],
         currentState: null,
-        isDarkWhiteBorder: false,
         isUnderwater: false,
         isIce: false,
         isSpace: false,
@@ -370,15 +369,6 @@ describe('Reset', () => {
                 reset.reset();
 
                 expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map1));
-            });
-
-            it('loads Map2 and enables darkWhiteBorder', () => {
-                game.background = { constructor: Maps.Map2 };
-
-                reset.reset();
-
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map2));
-                expect(game.player.isDarkWhiteBorder).toBe(true);
             });
 
             it('loads Map3 and enables underwater mode', () => {

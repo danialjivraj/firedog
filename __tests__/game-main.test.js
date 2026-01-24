@@ -2166,27 +2166,27 @@ describe('Game class (game-main.js)', () => {
       expect(game.boss.postFight).toBe(true);
     });
 
-    it('sets enterCabin=500 and openDoor="submarineDoorOpening" for Map3 and plays sound', () => {
+    it('uses default enterCabin=290 and sets openDoor="submarineDoorOpening" for Map3 (and plays it)', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
       game.saveGameState = jest.fn();
       game.menu.skins.currentSkin = { id: 'defaultSkin' };
       game.menu.audioSettings.getState = () => ({});
 
-      jest.spyOn(game.audioHandler.cutsceneSFX, 'playSound');
+      const playSpy = jest.spyOn(game.audioHandler.cutsceneSFX, 'playSound');
+
       game.background = new Map3(game);
       game.currentMap = 'Map3';
       game.cabin = { isFullyVisible: true, x: 100, width: 1000 };
-      game.player = { update: () => { }, x: 100 + 500, width: 10 };
+      game.player = { update: () => {}, x: 100 + 290, width: 10 };
       game.menu.pause.isPaused = false;
       game.tutorial.tutorialPause = false;
-      game.background.update = () => { };
+      game.background.update = () => {};
 
       game.update(0);
 
-      expect(game.enterCabin).toBe(500);
+      expect(game.enterCabin).toBe(290);
       expect(game.openDoor).toBe('submarineDoorOpening');
-      expect(game.audioHandler.cutsceneSFX.playSound)
-        .toHaveBeenCalledWith('submarineDoorOpening');
+      expect(playSpy).toHaveBeenCalledWith('submarineDoorOpening');
     });
 
     [

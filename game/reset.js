@@ -88,7 +88,6 @@ export class Reset {
                 break;
             case Map2:
                 selectedMap = new Map2(this.game);
-                this.game.player.isDarkWhiteBorder = true;
                 break;
             case Map3:
                 selectedMap = new Map3(this.game);

@@ -1030,7 +1030,7 @@ export class UI {
             player.currentState === player.states[6] || // stunned
             player.currentState === player.states[7];   // hit
 
-        const borderColor = player.isDarkWhiteBorder ? 'white' : 'black';
+        const borderColor = 'black';
 
         const fireballImage = this.fireballUI;
         const divingImage = this.divingUI;

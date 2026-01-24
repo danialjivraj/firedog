@@ -117,7 +117,6 @@ export class Game {
         this.cabin = null;
         this.penguini = null;
         this.fontColor = "black";
-        this.isDarkWhiteBorder = false;
         this.resetInstance = new Reset(this);
         this.audioHandler = {
             mapSoundtrack: new MapSoundtrackAudioHandler(this),
@@ -751,15 +750,13 @@ export class Game {
             }
 
             // end cutscenes after each map
+            this.enterCabin = 290;
+            this.openDoor = "doorOpening";
             if (this.background instanceof Map3) {
-                this.enterCabin = 500;
                 this.openDoor = "submarineDoorOpening";
             } else if (this.background instanceof Map7) {
                 this.enterCabin = 570;
                 this.openDoor = "walkingCutsceneSound";
-            } else {
-                this.enterCabin = 290;
-                this.openDoor = "doorOpening";
             }
             if (
                 this.cabin &&

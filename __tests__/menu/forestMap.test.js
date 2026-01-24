@@ -156,7 +156,6 @@ describe('ForestMapMenu', () => {
             },
             player: {
                 isUnderwater: null,
-                isDarkWhiteBorder: null,
                 isIce: null,
                 isSpace: null,
             },
@@ -775,7 +774,6 @@ describe('ForestMapMenu', () => {
             menu.handleMenuSelection();
 
             expect(mockGame.player.isUnderwater).toBe(true);
-            expect(mockGame.player.isDarkWhiteBorder).toBe(true);
             expect(mockGame.player.isIce).toBe(false);
             expect(mockGame.player.isSpace).toBe(false);
 
@@ -799,7 +797,6 @@ describe('ForestMapMenu', () => {
             menu.handleMenuSelection();
 
             expect(mockGame.player.isUnderwater).toBe(false);
-            expect(mockGame.player.isDarkWhiteBorder).toBe(false);
             expect(mockGame.player.isIce).toBe(true);
             expect(mockGame.player.isSpace).toBe(false);
 
