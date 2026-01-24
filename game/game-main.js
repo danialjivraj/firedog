@@ -2,6 +2,8 @@ import { Player } from "./entities/player.js";
 import { preShake, postShake } from './animations/shake.js';
 import { DistortionEffect } from "./animations/distortion.js";
 import { SpinningChicks } from "./animations/particles.js";
+import { RecordToast } from "./animations/recordToast.js";
+import { formatTimeMs } from "./config/formatTime.js";
 import {
     Goblin,
     Dotter, Vertibat, Ghobat, Ravengloom, MeatSoldier, Skulnap, Abyssaw, GlidoSpike,
@@ -194,6 +196,7 @@ export class Game {
         this.cabins = [];
         this.penguins = [];
         this.cutscenes = [];
+        this.recordToasts = [];
         // cutscene
         this.cutsceneActive = false;
         this.currentCutscene = null;
@@ -396,6 +399,19 @@ export class Game {
         this.shakeDuration = 0;
     }
 
+    showRecordToast(text, delayMs = 200) {
+        if (this._recordToastTimeoutId) {
+            clearTimeout(this._recordToastTimeoutId);
+            this._recordToastTimeoutId = null;
+        }
+
+        this._recordToastTimeoutId = setTimeout(() => {
+            this._recordToastTimeoutId = null;
+            this.recordToasts.push(new RecordToast(this, text, { y: 100 }));
+            this.audioHandler.mapSoundtrack.playSound('newRecordSound', false, true);
+        }, Math.max(0, delayMs));
+    }
+
     getEffectiveKeyBindings() {
         const tutorialMapActive =
             this.isTutorialActive && this.currentMap === "Map1";
@@ -434,6 +450,9 @@ export class Game {
         if (prev == null || newMs < prev) {
             this.records[mapKey].bossMs = newMs;
             this.saveGameState();
+
+            const t = formatTimeMs(newMs, 2);
+            this.showRecordToast(`NEW RECORD!\nFINAL BOSS BEATEN IN: ${t}`, 1000);
         }
     }
 
@@ -449,6 +468,9 @@ export class Game {
         if (prev == null || newMs < prev) {
             this.records[mapKey].clearMs = newMs;
             this.saveGameState();
+
+            const t = formatTimeMs(newMs, 2);
+            this.showRecordToast(`NEW RECORD!\nMAP CLEARED IN: ${t}`);
         }
     }
 
@@ -599,6 +621,10 @@ export class Game {
             this.floatingMessages.forEach((message) => {
                 message.update();
             });
+
+            // handle record toasts
+            this.recordToasts.forEach((t) => t.update(deltaTime));
+
             // handle cabin
             this.cabins.forEach((cabin) => {
                 cabin.update(deltaTime);
@@ -651,6 +677,7 @@ export class Game {
             this.floatingMessages = this.floatingMessages.filter(
                 (message) => !message.markedForDeletion
             );
+            this.recordToasts = this.recordToasts.filter((t) => !t.markedForDeletion);
 
             // penguin cutscenes
             if (
@@ -830,6 +857,7 @@ export class Game {
         this.floatingMessages.forEach((message) => {
             message.draw(context);
         });
+        this.recordToasts.forEach((t) => t.draw(context));
 
         const fillScreen = (ctx, style) => {
             ctx.save();

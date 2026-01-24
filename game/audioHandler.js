@@ -231,6 +231,7 @@ export class MapSoundtrackAudioHandler extends AudioHandler {
   constructor(game) {
     super(game);
     this.soundsMapping = {
+      newRecordSound: 'newRecordSound',
       map1Soundtrack: 'map1Soundtrack',
       map2Soundtrack: 'map2Soundtrack',
       map3Soundtrack: 'map3Soundtrack',

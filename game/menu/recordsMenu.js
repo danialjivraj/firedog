@@ -1,4 +1,5 @@
 import { BaseMenu } from "./baseMenu.js";
+import { formatTimeMs } from "../config/formatTime.js";
 
 export class RecordsMenu extends BaseMenu {
     constructor(game) {
@@ -66,23 +67,6 @@ export class RecordsMenu extends BaseMenu {
             },
         ];
         return all.filter((m) => m.unlocked);
-    }
-
-    formatTime(ms, decimals = 2) {
-        if (ms == null) return "—";
-        const totalMs = Math.max(0, Math.floor(ms));
-        const totalSeconds = Math.floor(totalMs / 1000);
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
-
-        const d = Math.max(0, decimals);
-        const scale = Math.pow(10, d);
-        const frac = Math.floor((totalMs % 1000) / (1000 / scale));
-
-        return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(frac).padStart(
-            d,
-            "0"
-        )}`;
     }
 
     drawHLine(ctx, x1, x2, y, alpha = 0.18, w = 2) {
@@ -445,10 +429,10 @@ export class RecordsMenu extends BaseMenu {
             const rec = (this.game.records && this.game.records[m.key]) || { clearMs: null, bossMs: null };
             const bossMap = this.isBossMap(m.key);
 
-            const clearText = this.formatTime(rec.clearMs, this.decimals);
+            const clearText = formatTimeMs(rec.clearMs, this.decimals);
 
             const hasBossLine = bossMap && rec.bossMs != null;
-            const bossText = hasBossLine ? this.formatTime(rec.bossMs, this.decimals) : null;
+            const bossText = hasBossLine ? formatTimeMs(rec.bossMs, this.decimals) : null;
 
             const isSelected = this.selectedOption === i;
 

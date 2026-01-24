@@ -18,6 +18,11 @@ export class Reset {
         if (cs && typeof cs.removeEventListeners === "function") {
             cs.removeEventListeners();
         }
+        // record
+        if (this.game._recordToastTimeoutId) {
+            clearTimeout(this.game._recordToastTimeoutId);
+            this.game._recordToastTimeoutId = null;
+        }
         // shake
         this.game.stopShake();
         // distortion
@@ -62,6 +67,7 @@ export class Reset {
         this.game.powerDowns = [];
         this.game.cabins = [];
         this.game.penguins = [];
+        this.game.recordToasts = [];
         // cutscene
         this.game.clearCutsceneState();
         // cabin

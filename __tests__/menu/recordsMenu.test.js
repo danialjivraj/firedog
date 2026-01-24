@@ -1,5 +1,6 @@
 import { RecordsMenu } from '../../game/menu/recordsMenu.js';
 import { BaseMenu } from '../../game/menu/baseMenu.js';
+import { formatTimeMs } from '../../game/config/formatTime.js';
 
 describe('RecordsMenu', () => {
     let menu;
@@ -185,24 +186,24 @@ describe('RecordsMenu', () => {
             });
         });
 
-        describe('formatTime(ms, decimals)', () => {
+        describe('formatTimeMs(ms, decimals)', () => {
             test('returns an em dash when ms is null/undefined', () => {
-                expect(menu.formatTime(null)).toBe('—');
-                expect(menu.formatTime(undefined)).toBe('—');
+                expect(formatTimeMs(null)).toBe('—');
+                expect(formatTimeMs(undefined)).toBe('—');
             });
 
             test('formats mm:ss.xx, floors fractional part, and clamps negative ms to 0', () => {
-                expect(menu.formatTime(65432, 2)).toBe('01:05.43');
+                expect(formatTimeMs(65432, 2)).toBe('01:05.43');
 
-                expect(menu.formatTime(-10, 2)).toBe('00:00.00');
+                expect(formatTimeMs(-10, 2)).toBe('00:00.00');
 
-                expect(menu.formatTime(1234, 0)).toBe('00:01.0');
+                expect(formatTimeMs(1234, 0)).toBe('00:01.0');
 
-                expect(menu.formatTime(1234, 3)).toBe('00:01.234');
+                expect(formatTimeMs(1234, 3)).toBe('00:01.234');
             });
 
             test('treats negative decimals as 0 (current behavior)', () => {
-                expect(menu.formatTime(1234, -2)).toBe('00:01.0');
+                expect(formatTimeMs(1234, -2)).toBe('00:01.0');
             });
         });
 

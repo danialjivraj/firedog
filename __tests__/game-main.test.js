@@ -3,6 +3,22 @@ jest.mock('../game/animations/fading.js', () => ({
     if (typeof cb === 'function') cb();
   }),
 }));
+
+jest.mock('../game/animations/recordToast.js', () => ({
+  RecordToast: jest.fn().mockImplementation((game, text, opts) => ({
+    game,
+    text,
+    opts,
+    markedForDeletion: false,
+    update: jest.fn(),
+    draw: jest.fn(),
+  })),
+}));
+
+jest.mock('../game/config/formatTime.js', () => ({
+  formatTimeMs: jest.fn((ms) => `07:30.95`),
+}));
+
 import { getDefaultKeyBindings } from '../game/config/keyBindings.js';
 import { Map7, Map3, BonusMap1 } from '../game/background/background.js';
 import {
@@ -39,6 +55,8 @@ import {
   BonusMap1GlacikalIngameCutsceneAfterFight
 } from '../game/cutscene/glacikalCutscenes.js';
 import { DistortionEffect } from '../game/animations/distortion.js';
+import { RecordToast } from '../game/animations/recordToast.js';
+import { formatTimeMs } from '../game/config/formatTime.js';
 
 beforeAll(() => {
   jest.spyOn(console, 'error').mockImplementation(() => { });
@@ -878,6 +896,122 @@ describe('Game class (game-main.js)', () => {
 
         spy.mockRestore();
       });
+    });
+  });
+
+  describe('record toast (showRecordToast)', () => {
+    beforeEach(() => jest.useFakeTimers());
+    afterEach(() => jest.useRealTimers());
+
+    it('schedules a RecordToast after the delay and plays the new record sound', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+
+      game.recordToasts = [];
+      jest.spyOn(game.audioHandler.mapSoundtrack, 'playSound').mockImplementation(() => { });
+
+      game.showRecordToast('HELLO', 200);
+
+      expect(game.recordToasts).toHaveLength(0);
+
+      jest.advanceTimersByTime(199);
+      expect(game.recordToasts).toHaveLength(0);
+
+      jest.advanceTimersByTime(1);
+
+      expect(RecordToast).toHaveBeenCalledTimes(1);
+      expect(RecordToast).toHaveBeenCalledWith(game, 'HELLO', { y: 100 });
+
+      expect(game.recordToasts).toHaveLength(1);
+
+      expect(game.audioHandler.mapSoundtrack.playSound).toHaveBeenCalledWith(
+        'newRecordSound',
+        false,
+        true
+      );
+    });
+
+    it('clears a previous pending toast when called again (only latest one shows)', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+
+      game.recordToasts = [];
+      jest.spyOn(game.audioHandler.mapSoundtrack, 'playSound').mockImplementation(() => { });
+      RecordToast.mockClear();
+
+      game.showRecordToast('A', 500);
+      game.showRecordToast('B', 200);
+
+      jest.advanceTimersByTime(200);
+
+      expect(RecordToast).toHaveBeenCalledTimes(1);
+      expect(RecordToast).toHaveBeenLastCalledWith(game, 'B', { y: 100 });
+      expect(game.recordToasts).toHaveLength(1);
+
+      jest.advanceTimersByTime(500);
+      expect(RecordToast).toHaveBeenCalledTimes(1);
+      expect(game.recordToasts).toHaveLength(1);
+    });
+
+    it('clamps negative delay to 0 (fires immediately on next tick)', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+
+      game.recordToasts = [];
+      jest.spyOn(game.audioHandler.mapSoundtrack, 'playSound').mockImplementation(() => { });
+      RecordToast.mockClear();
+
+      game.showRecordToast('NOW', -999);
+
+      expect(game.recordToasts).toHaveLength(0);
+
+      jest.advanceTimersByTime(0);
+
+      expect(RecordToast).toHaveBeenCalledTimes(1);
+      expect(game.recordToasts).toHaveLength(1);
+    });
+  });
+
+  describe('record toast integration (records methods)', () => {
+    it('onBossDefeated() triggers a toast with the expected text and 1000ms delay for a new record', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+
+      game.saveGameState = jest.fn();
+      jest.spyOn(game, 'showRecordToast').mockImplementation(() => { });
+      formatTimeMs.mockClear();
+
+      game.winningCoins = 100;
+      game.coins = 100;
+      game.currentMap = 'Map1';
+      game.records.Map1.bossMs = null;
+      game.bossTime = 1234.9;
+      game._bossDefeatRecorded = false;
+
+      game.onBossDefeated('any');
+
+      expect(formatTimeMs).toHaveBeenCalledWith(1234, 2);
+      expect(game.showRecordToast).toHaveBeenCalledWith(
+        'NEW RECORD!\nFINAL BOSS BEATEN IN: 07:30.95',
+        1000
+      );
+    });
+
+    it('updateBestFullClearRecord() triggers a toast with the expected text (default delay)', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+
+      game.saveGameState = jest.fn();
+      jest.spyOn(game, 'showRecordToast').mockImplementation(() => { });
+      formatTimeMs.mockClear();
+
+      game.winningCoins = 100;
+      game.coins = 100;
+      game.currentMap = 'Map2';
+      game.records.Map2.clearMs = null;
+      game.time = 5000.7;
+
+      game.updateBestFullClearRecord();
+
+      expect(formatTimeMs).toHaveBeenCalledWith(5000, 2);
+      expect(game.showRecordToast).toHaveBeenCalledWith(
+        'NEW RECORD!\nMAP CLEARED IN: 07:30.95'
+      );
     });
   });
 
@@ -2177,10 +2311,10 @@ describe('Game class (game-main.js)', () => {
       game.background = new Map3(game);
       game.currentMap = 'Map3';
       game.cabin = { isFullyVisible: true, x: 100, width: 1000 };
-      game.player = { update: () => {}, x: 100 + 290, width: 10 };
+      game.player = { update: () => { }, x: 100 + 290, width: 10 };
       game.menu.pause.isPaused = false;
       game.tutorial.tutorialPause = false;
-      game.background.update = () => {};
+      game.background.update = () => { };
 
       game.update(0);
 
