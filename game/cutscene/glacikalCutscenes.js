@@ -234,23 +234,26 @@ export class BonusMap1GlacikalIngameCutsceneBeforeFight extends GlacikalCutscene
     constructor(game) {
         super(game);
 
+        const FIREDOG = { x: 100, y: 400, width: 200, height: 200 };
+        const GLACIKAL = { x: 1560, y: 400, width: 200, height: 200 };
+
         this.addDialogue(
             `${this.firedog}`,
             `A hooded individual- So it's you...`,
-            this.addImage(this.setfiredogNormalBorder(), 1, 100, 400, 200, 200),
+            this.addImage(this.setfiredogNormalBorder(), FIREDOG, { talking: true }),
         );
 
         this.addDialogue(
             `${this.firedog}`,
             `You are the one who stole the ${this.crypticToken}, weren't you?`,
-            this.addImage(this.setfiredogAngry2Border(), 1, 100, 400, 200, 200),
+            this.addImage(this.setfiredogAngryBorder(), FIREDOG, { talking: true }),
         );
 
         this.addDialogue(
             `${this.glacikal}`,
             `Why have you come to this place? This is my territory!`,
-            this.addImage(this.setfiredogNormalExclamationMarkBorder(), 0.7, 100, 400, 200, 200),
-            this.addImage('glacikalBorder', 1, 1560, 400, 200, 200),
+            this.addImage(this.setfiredogCuriousBorder(), FIREDOG),
+            this.addImage('glacikalBorder', GLACIKAL, { talking: true }),
         );
     }
 }
@@ -259,18 +262,21 @@ export class BonusMap1GlacikalIngameCutsceneAfterFight extends GlacikalCutscene 
     constructor(game) {
         super(game);
 
+        const FIREDOG = { x: 100, y: 400, width: 200, height: 200 };
+        const GLACIKAL = { x: 1100, y: 400, width: 200, height: 200 };
+
         this.addDialogue(
             `${this.glacikal}`,
             `You're strong.`,
-            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-            this.addImage("glacikalBorder", 1, 1100, 400, 200, 200),
+            this.addImage(this.setfiredogNormalBorder(), FIREDOG),
+            this.addImage('glacikalBorder', GLACIKAL, { talking: true }),
         );
 
         this.addDialogue(
             `${this.firedog}`,
             `How do you know my fireball ability? How is this possible?`,
-            this.addImage(this.setfiredogNormalBorder(), 1, 100, 400, 200, 200),
-            this.addImage("glacikalBorder", 0.7, 1100, 400, 200, 200),
+            this.addImage(this.setfiredogNormalBorder(), FIREDOG, { talking: true }),
+            this.addImage('glacikalBorder', GLACIKAL),
         );
     }
 }

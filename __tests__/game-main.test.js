@@ -19,6 +19,44 @@ jest.mock('../game/config/formatTime.js', () => ({
   formatTimeMs: jest.fn((ms) => `07:30.95`),
 }));
 
+jest.mock('../game/cutscene/elyvorgCutscenes.js', () => {
+  class BaseMockCutscene {
+    constructor(game) { this.game = game; }
+    displayDialogue() { }
+    draw() { }
+    removeEventListeners() { }
+    stopAllAudio() { }
+  }
+
+  return {
+    Map7ElyvorgIngameCutsceneBeforeFight: class Map7ElyvorgIngameCutsceneBeforeFight extends BaseMockCutscene { },
+    Map7ElyvorgIngameCutsceneAfterFight: class Map7ElyvorgIngameCutsceneAfterFight extends BaseMockCutscene { },
+  };
+});
+
+jest.mock('../game/cutscene/storyCutscenes.js', () => {
+  class BaseMockCutscene {
+    constructor(game) { this.game = game; }
+    displayDialogue() { }
+    draw() { }
+    removeEventListeners() { }
+    stopAllAudio() { }
+  }
+
+  return {
+    Map1EndCutscene: class Map1EndCutscene extends BaseMockCutscene { },
+    Map2EndCutscene: class Map2EndCutscene extends BaseMockCutscene { },
+    Map3EndCutscene: class Map3EndCutscene extends BaseMockCutscene { },
+    Map4EndCutscene: class Map4EndCutscene extends BaseMockCutscene { },
+    Map5EndCutscene: class Map5EndCutscene extends BaseMockCutscene { },
+    Map6EndCutscene: class Map6EndCutscene extends BaseMockCutscene { },
+    Map7EndCutscene: class Map7EndCutscene extends BaseMockCutscene { },
+    BonusMap1EndCutscene: class BonusMap1EndCutscene extends BaseMockCutscene { },
+    BonusMap2EndCutscene: class BonusMap2EndCutscene extends BaseMockCutscene { },
+    BonusMap3EndCutscene: class BonusMap3EndCutscene extends BaseMockCutscene { },
+  };
+});
+
 import { getDefaultKeyBindings } from '../game/config/keyBindings.js';
 import { Map7, Map3, BonusMap1 } from '../game/background/background.js';
 import {
@@ -93,7 +131,7 @@ describe('Game class (game-main.js)', () => {
 
       <!-- skins -->
       <img id="defaultSkin"><img id="hatSkin"><img id="choloSkin">
-      <img id="zabkaSkin"><img id="shinySkin">
+      <img id="tigerSkin"><img id="shinySkin">
       <img id="skinStage">
 
       <!-- Map1 -->
@@ -387,7 +425,7 @@ describe('Game class (game-main.js)', () => {
       game.elyvorgDefeated = true;
       game.ntharaxDefeated = false;
       game.selectedDifficulty = 'Hard';
-      game.menu.skins.currentSkin = { id: 'zabka' };
+      game.menu.skins.getCurrentSkinId = () => 'tiger';
 
       game.menu.audioSettings.getState = () => VALID_AUDIO_STATE;
     });
@@ -399,7 +437,7 @@ describe('Game class (game-main.js)', () => {
       const snapshot = JSON.parse(item);
 
       expect(snapshot.map3Unlocked).toBe(true);
-      expect(snapshot.currentSkin).toBe('zabka');
+      expect(snapshot.currentSkinId).toBe('tiger');
       expect(snapshot.selectedDifficulty).toBe('Hard');
 
       expect(snapshot.audioSettingsState).toEqual(VALID_AUDIO_STATE);
@@ -435,7 +473,7 @@ describe('Game class (game-main.js)', () => {
     it('loadGameState() calls menu.setState / skins.setCurrentSkinById / levelDifficulty.setDifficulty', () => {
       const fake = {
         audioSettingsState: VALID_AUDIO_STATE,
-        currentSkin: 'zabka',
+        currentSkinId: 'tiger',
         selectedDifficulty: 'Hard',
       };
 
@@ -448,7 +486,7 @@ describe('Game class (game-main.js)', () => {
       g3.loadGameState();
 
       expect(g3.menu.audioSettings.setState).toHaveBeenCalledWith(VALID_AUDIO_STATE);
-      expect(g3.menu.skins.setCurrentSkinById).toHaveBeenCalledWith('zabka');
+      expect(g3.menu.skins.setCurrentSkinById).toHaveBeenCalledWith('tiger');
       expect(g3.menu.levelDifficulty.setDifficulty).toHaveBeenCalledWith('Hard');
     });
 
@@ -1065,7 +1103,7 @@ describe('Game class (game-main.js)', () => {
           },
         },
 
-        currentSkin: 'defaultSkin',
+        currentSkinId: 'defaultSkin',
         selectedDifficulty: 'Normal',
       });
 
@@ -1084,7 +1122,7 @@ describe('Game class (game-main.js)', () => {
       expect(game.menu.forestMap.resetSelectedCircleIndex).toHaveBeenCalled();
       expect(game.menu.enemyLore.currentPage).toBe(0);
       expect(game.menu.levelDifficulty.setDifficulty).toHaveBeenCalledWith('Normal');
-      expect(game.menu.skins.currentSkin).toBe(game.menu.skins.defaultSkin);
+      expect(game.menu.skins.getCurrentSkinId()).toBe('defaultSkin');
       expect(game.menu.skins.setCurrentSkinById).toHaveBeenCalledWith('defaultSkin');
 
       expect(game.menu.audioSettings.setState).toHaveBeenCalledWith({

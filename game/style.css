@@ -28,7 +28,7 @@ body {
 /* enemy lore images */ 
 #enemyLoreBookBackground, #enemyLoreLeftPageBackground, #enemyLoreRightPageBackground, #blackLine, #map1Cover, #map2Cover, #map3Cover, #map4Cover, #map5Cover, #map6Cover, #map7Cover, #bonusMap1Cover, #bonusMap2Cover, #bonusMap3Cover,
     /* forest images */ 
-    #forestmap, #forestmapNight, #forestmapFiredog, #forestmapHatFiredog, #forestmapCholoFiredog, #forestmapZabkaFiredog, #forestmapFiredogShiny, 
+    #forestmap, #forestmapNight, #forestmapFiredogDefault, #forestmapFiredogShinySkin, 
     /* saving images */ 
     #savingAnimation, #savingBookAnimation, #deleteProgressAnimation, #deleteProgressBookAnimation,  
 /* how to play */ 
@@ -38,7 +38,12 @@ body {
 #fireballUI, #fireballRedPotionUI, #divingUI, #dashingUI, #invisibleUI,
 /* entities */
     /* firedog */
-    #defaultSkin, #hatSkin, #choloSkin, #zabkaSkin, #shinySkin, 
+        /* skins */
+        #defaultSkin, #midnightSteelSkin, #sunsetIronSkin, #neonPinkSkin, #ghostSkin, #zombieSkin, #sharkSkin, #zebraSkin,#foxSkin, #leopardSkin, #tigerSkin, 
+        #reddenShockSkin, #iceBreakerSkin, #infernalSkin, #galaxySkin, #shinySkin,
+        /* outfits */
+        #neckerchiefOutfit, #scarfOutfit, #headBandanaOutfit, #hatOutfit, #frogCrownOutfit, #mustacheOutfit, #bullRingOutfit, #kingsCrownOutfit, #thugSunglassesOutfit, #cubanChainOutfit,
+        #pirateEyePatchOutfit, #cowboyHatOutfit, #unicornHornOutfit, #flowerOutfit, #catEarsOutfit, #devilHornsOutfit,
         /* firedog animations */ 
         #dust_black, #ice_crystal, #fire, #fireball, #redPotionFireball, #bluefire, #bubble, #bluebubble, #frozenIce, 
     /* penguin */
@@ -136,21 +141,57 @@ body {
     #scrollLetterMessageGaladon, #scrollLetterMessageGaladonClosed, #crypticTokenShining, #textBox, #reminderToSkipWithTab, #enterToTalkToPenguini, 
     /* character images */
         /* firedog */
+            /* skins */
             /* default */
-            #firedogHappy, #firedogLaugh, #firedogAngry, #firedogAngry2, #firedogPhew, #firedogTired, #firedogHeadache, #firedogCry, #firedogSad, 
-            #firedogNormal, #firedogNormalExclamationMark, #firedogNormalQuestionMark, #firedogNormalQuestionAndExlamationMark,
-            /* hat */
-            #hatfiredogHappy, #hatfiredogLaugh, #hatfiredogAngry, #hatfiredogAngry2, #hatfiredogPhew, #hatfiredogTired, #hatfiredogHeadache, #hatfiredogCry, #hatfiredogSad, 
-            #hatfiredogNormal, #hatfiredogNormalExclamationMark, #hatfiredogNormalQuestionMark, #hatfiredogNormalQuestionAndExlamationMark,
-            /* cholo */
-            #cholofiredogHappy, #cholofiredogLaugh, #cholofiredogAngry, #cholofiredogAngry2, #cholofiredogPhew, #cholofiredogTired, #cholofiredogHeadache, #cholofiredogCry, #cholofiredogSad, 
-            #cholofiredogNormal, #cholofiredogNormalExclamationMark, #cholofiredogNormalQuestionMark, #cholofiredogNormalQuestionAndExlamationMark,
-            /* zabka */
-            #zabkafiredogHappy, #zabkafiredogLaugh, #zabkafiredogAngry, #zabkafiredogAngry2, #zabkafiredogPhew, #zabkafiredogTired, #zabkafiredogHeadache, #zabkafiredogCry, #zabkafiredogSad, 
-            #zabkafiredogNormal, #zabkafiredogNormalExclamationMark, #zabkafiredogNormalQuestionMark, #zabkafiredogNormalQuestionAndExlamationMark,
+            #firedogHappy, #firedogUpset, #firedogAngry, #firedogPhew, #firedogTired, #firedogHeadache, #firedogCry,  #firedogCry2, #firedogSad, #firedogNormal, 
+            #firedogCurious, #firedogSurprised, #firedogDiscomfort, #firedogSigh, #firedogSmile,
             /* shiny */
-            #shinyfiredogHappy, #shinyfiredogLaugh, #shinyfiredogAngry, #shinyfiredogAngry2, #shinyfiredogPhew, #shinyfiredogTired, #shinyfiredogHeadache, #shinyfiredogCry, #shinyfiredogSad, 
-            #shinyfiredogNormal, #shinyfiredogNormalExclamationMark, #shinyfiredogNormalQuestionMark, #shinyfiredogNormalQuestionAndExlamationMark,
+            #shinyfiredogHappy, #shinyfiredogUpset, #shinyfiredogAngry, #shinyfiredogPhew, #shinyfiredogTired, #shinyfiredogHeadache, #shinyfiredogCry, #shinyfiredogCry2, #shinyfiredogSad, #shinyfiredogNormal, 
+            #shinyfiredogCurious, #shinyfiredogSurprised, #shinyfiredogDiscomfort, #shinyfiredogSigh, #shinyfiredogSmile,
+            /* midnightSteel */
+            #midnightSteelfiredogHappy, #midnightSteelfiredogUpset, #midnightSteelfiredogAngry, #midnightSteelfiredogPhew, #midnightSteelfiredogTired, #midnightSteelfiredogHeadache, #midnightSteelfiredogCry, #midnightSteelfiredogCry2, #midnightSteelfiredogSad, #midnightSteelfiredogNormal, 
+            #midnightSteelfiredogCurious, #midnightSteelfiredogSurprised, #midnightSteelfiredogDiscomfort, #midnightSteelfiredogSigh, #midnightSteelfiredogSmile,
+            /* sunsetIron */
+            #sunsetIronfiredogHappy, #sunsetIronfiredogUpset, #sunsetIronfiredogAngry, #sunsetIronfiredogPhew, #sunsetIronfiredogTired, #sunsetIronfiredogHeadache, #sunsetIronfiredogCry, #sunsetIronfiredogCry2, #sunsetIronfiredogSad, #sunsetIronfiredogNormal, 
+            #sunsetIronfiredogCurious, #sunsetIronfiredogSurprised, #sunsetIronfiredogDiscomfort, #sunsetIronfiredogSigh, #sunsetIronfiredogSmile,
+            /* reddenShock */
+            #reddenShockfiredogHappy, #reddenShockfiredogUpset, #reddenShockfiredogAngry, #reddenShockfiredogPhew, #reddenShockfiredogTired, #reddenShockfiredogHeadache, #reddenShockfiredogCry, #reddenShockfiredogCry2, #reddenShockfiredogSad, #reddenShockfiredogNormal, 
+            #reddenShockfiredogCurious, #reddenShockfiredogSurprised, #reddenShockfiredogDiscomfort, #reddenShockfiredogSigh, #reddenShockfiredogSmile,
+            /* ghost */
+            #ghostfiredogHappy, #ghostfiredogUpset, #ghostfiredogAngry, #ghostfiredogPhew, #ghostfiredogTired, #ghostfiredogHeadache, #ghostfiredogCry, #ghostfiredogCry2, #ghostfiredogSad, #ghostfiredogNormal, 
+            #ghostfiredogCurious, #ghostfiredogSurprised, #ghostfiredogDiscomfort, #ghostfiredogSigh, #ghostfiredogSmile,
+            /* zombie */
+            #zombiefiredogHappy, #zombiefiredogUpset, #zombiefiredogAngry, #zombiefiredogPhew, #zombiefiredogTired, #zombiefiredogHeadache, #zombiefiredogCry, #zombiefiredogCry2, #zombiefiredogSad, #zombiefiredogNormal, 
+            #zombiefiredogCurious, #zombiefiredogSurprised, #zombiefiredogDiscomfort, #zombiefiredogSigh, #zombiefiredogSmile,
+            /* shark */
+            #sharkfiredogHappy, #sharkfiredogUpset, #sharkfiredogAngry, #sharkfiredogPhew, #sharkfiredogTired, #sharkfiredogHeadache, #sharkfiredogCry, #sharkfiredogCry2, #sharkfiredogSad, #sharkfiredogNormal, 
+            #sharkfiredogCurious, #sharkfiredogSurprised, #sharkfiredogDiscomfort, #sharkfiredogSigh, #sharkfiredogSmile,
+            /* fox */
+            #foxfiredogHappy, #foxfiredogUpset, #foxfiredogAngry, #foxfiredogPhew, #foxfiredogTired, #foxfiredogHeadache, #foxfiredogCry, #foxfiredogCry2, #foxfiredogSad, #foxfiredogNormal, 
+            #foxfiredogCurious, #foxfiredogSurprised, #foxfiredogDiscomfort, #foxfiredogSigh, #foxfiredogSmile,
+            /* zebra */
+            #zebrafiredogHappy, #zebrafiredogUpset, #zebrafiredogAngry, #zebrafiredogPhew, #zebrafiredogTired, #zebrafiredogHeadache, #zebrafiredogCry, #zebrafiredogCry2, #zebrafiredogSad, #zebrafiredogNormal, 
+            #zebrafiredogCurious, #zebrafiredogSurprised, #zebrafiredogDiscomfort, #zebrafiredogSigh, #zebrafiredogSmile,
+            /* leopard */
+            #leopardfiredogHappy, #leopardfiredogUpset, #leopardfiredogAngry, #leopardfiredogPhew, #leopardfiredogTired, #leopardfiredogHeadache, #leopardfiredogCry, #leopardfiredogCry2, #leopardfiredogSad, #leopardfiredogNormal, 
+            #leopardfiredogCurious, #leopardfiredogSurprised, #leopardfiredogDiscomfort, #leopardfiredogSigh, #leopardfiredogSmile,
+            /* tiger */
+            #tigerfiredogHappy, #tigerfiredogUpset, #tigerfiredogAngry, #tigerfiredogPhew, #tigerfiredogTired, #tigerfiredogHeadache, #tigerfiredogCry, #tigerfiredogCry2, #tigerfiredogSad, #tigerfiredogNormal, 
+            #tigerfiredogCurious, #tigerfiredogSurprised, #tigerfiredogDiscomfort, #tigerfiredogSigh, #tigerfiredogSmile,
+            /* iceBreaker */
+            #iceBreakerfiredogHappy, #iceBreakerfiredogUpset, #iceBreakerfiredogAngry, #iceBreakerfiredogPhew, #iceBreakerfiredogTired, #iceBreakerfiredogHeadache, #iceBreakerfiredogCry, #iceBreakerfiredogCry2, #iceBreakerfiredogSad, #iceBreakerfiredogNormal, 
+            #iceBreakerfiredogCurious, #iceBreakerfiredogSurprised, #iceBreakerfiredogDiscomfort, #iceBreakerfiredogSigh, #iceBreakerfiredogSmile,
+            /* infernal */
+            #infernalfiredogHappy, #infernalfiredogUpset, #infernalfiredogAngry, #infernalfiredogPhew, #infernalfiredogTired, #infernalfiredogHeadache, #infernalfiredogCry, #infernalfiredogCry2, #infernalfiredogSad, #infernalfiredogNormal, 
+            #infernalfiredogCurious, #infernalfiredogSurprised, #infernalfiredogDiscomfort, #infernalfiredogSigh, #infernalfiredogSmile,
+            /* galaxy */
+            #galaxyfiredogHappy, #galaxyfiredogUpset, #galaxyfiredogAngry, #galaxyfiredogPhew, #galaxyfiredogTired, #galaxyfiredogHeadache, #galaxyfiredogCry, #galaxyfiredogCry2, #galaxyfiredogSad, #galaxyfiredogNormal, 
+            #galaxyfiredogCurious, #galaxyfiredogSurprised, #galaxyfiredogDiscomfort, #galaxyfiredogSigh, #galaxyfiredogSmile,
+            /* outfits */
+            #cutsceneHatOutfit, #cutsceneNeckerchiefOutfit, #cutsceneScarfOutfit, #cutsceneHeadBandanaOutfit, #cutsceneFrogCrownOutfit, #cutsceneMustacheOutfit, #cutsceneBullRingOutfit, #cutsceneThugSunglassesOutfit, #cutsceneKingsCrownOutfit, 
+            #cutsceneCowboyHatOutfit, #cutscenePirateEyePatchOutfit, #cutsceneDevilHornsOutfit, #cutsceneCubanChainOutfit, #cutsceneUnicornHornOutfit, #cutsceneFlowerOutfit, #cutsceneCatEarsOutfit, 
+            /* layers */
+            #angryIcon, #exclamationMark,  #questionMark, #exclamationAndQuestionMark, #phewAir,#sighSweatDrop, #sweatDrop, #yellowLines,
         /* galadon */
         #galadonNormal, #galadonSad, #galadonAmazed, #galadonHurt, #galadonScaredHurt, #galadonOh, #galadonSurprised, #galadonScared, 
         /* quilzorin */
@@ -164,22 +205,7 @@ body {
         /* penguini */
         #penguinBatLaugh, #penguinBatTalkNormal, #penguinBatUp, #penguinGunLaugh, #penguinGunTalkNormal, #penguinGunUp, 
     /* border images */
-        /* firedog */
-            /* default */
-            #firedogHappyBorder, #firedogLaughBorder, #firedogAngryBorder, #firedogAngry2Border, #firedogPhewBorder, #firedogTiredBorder, #firedogHeadacheBorder, #firedogCryBorder, #firedogSadBorder, 
-            #firedogNormalBorder, #firedogNormalExclamationMarkBorder, #firedogNormalQuestionMarkBorder, #firedogNormalQuestionAndExlamationMarkBorder,
-            /* hat */
-            #hatfiredogHappyBorder, #hatfiredogLaughBorder, #hatfiredogAngryBorder, #hatfiredogAngry2Border, #hatfiredogPhewBorder, #hatfiredogTiredBorder, #hatfiredogHeadacheBorder, #hatfiredogCryBorder, #hatfiredogSadBorder, 
-            #hatfiredogNormalBorder, #hatfiredogNormalExclamationMarkBorder, #hatfiredogNormalQuestionMarkBorder, #hatfiredogNormalQuestionAndExlamationMarkBorder,
-            /* cholo */
-            #cholofiredogHappyBorder, #cholofiredogLaughBorder, #cholofiredogAngryBorder, #cholofiredogAngry2Border, #cholofiredogPhewBorder, #cholofiredogTiredBorder, #cholofiredogHeadacheBorder, #cholofiredogCryBorder, #cholofiredogSadBorder, 
-            #cholofiredogNormalBorder, #cholofiredogNormalExclamationMarkBorder, #cholofiredogNormalQuestionMarkBorder, #cholofiredogNormalQuestionAndExlamationMarkBorder,
-            /* zabka */
-            #zabkafiredogHappyBorder, #zabkafiredogLaughBorder, #zabkafiredogAngryBorder, #zabkafiredogAngry2Border, #zabkafiredogPhewBorder, #zabkafiredogTiredBorder, #zabkafiredogHeadacheBorder, #zabkafiredogCryBorder, #zabkafiredogSadBorder, 
-            #zabkafiredogNormalBorder, #zabkafiredogNormalExclamationMarkBorder, #zabkafiredogNormalQuestionMarkBorder, #zabkafiredogNormalQuestionAndExlamationMarkBorder,
-            /* shiny */
-            #shinyfiredogHappyBorder, #shinyfiredogLaughBorder, #shinyfiredogAngryBorder, #shinyfiredogAngry2Border, #shinyfiredogPhewBorder, #shinyfiredogTiredBorder, #shinyfiredogHeadacheBorder, #shinyfiredogCryBorder, #shinyfiredogSadBorder, 
-            #shinyfiredogNormalBorder, #shinyfiredogNormalExclamationMarkBorder, #shinyfiredogNormalQuestionMarkBorder, #shinyfiredogNormalQuestionAndExlamationMarkBorder,
+    #blueBackground, #darkBlueBackground, #greenBackground, #redBackground, #yellowBackground,
         /* penguin */
         #penguinBatLaughBorder, #penguinBatTalkNormalBorder, #penguinBatUpBorder, #penguinGunLaughBorder, #penguinGunTalkNormalBorder, #penguinGunUpBorder, #penguinOnFloorBorder,
         /* elyvorg */

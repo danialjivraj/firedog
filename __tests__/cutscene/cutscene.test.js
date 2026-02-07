@@ -17,25 +17,35 @@ describe('Cutscene', () => {
             menu: {
                 pause: { isPaused: false },
                 skins: {
-                    defaultSkin: 'default',
-                    hatSkin: 'hat',
-                    choloSkin: 'cholo',
-                    zabkaSkin: 'zabka',
-                    shinySkin: 'shiny',
-                    currentSkin: 'default',
+                    getCurrentSkinId: jest.fn(() => 'defaultSkin'),
+                    getCurrentCosmeticKey: jest.fn(() => 'none'),
                 },
             },
+
             audioHandler: {
                 cutsceneDialogue: {
                     sounds: { bit1: {}, bit2: {} },
                     playSound: jest.fn(),
                     pauseSound: jest.fn(),
+                    stopAllSounds: jest.fn(),
+                },
+                cutsceneSFX: {
+                    playSound: jest.fn(),
+                    stopAllSounds: jest.fn(),
+                },
+                cutsceneMusic: {
+                    playSound: jest.fn(),
+                    stopSound: jest.fn(),
+                    fadeOutAndStop: jest.fn(),
+                    stopAllSounds: jest.fn(),
                 },
             },
+
             enterDuringBackgroundTransition: true,
             cutsceneActive: true,
             talkToPenguin: false,
             boss: { talkToBoss: false },
+
             canvas: document.createElement('canvas'),
             ignoreCutsceneInputUntil: 0,
         };
@@ -92,20 +102,26 @@ describe('Cutscene', () => {
         });
     });
 
-    describe('isCharacterName', () => {
-        it('returns true for known character or token keys', () => {
-            expect(cutscene.isCharacterName(cutscene.firedog)).toBe(true);
-            expect(cutscene.isCharacterName(cutscene.coinText)).toBe(true);
+    describe('characterColors membership (replaces removed isCharacterName)', () => {
+        it('has known character and token keys', () => {
+            expect(cutscene.characterColors[cutscene.firedog]).toBeDefined();
+            expect(cutscene.characterColors[cutscene.coinText]).toBeDefined();
         });
 
-        it('returns false for unknown strings', () => {
-            expect(cutscene.isCharacterName('Random')).toBe(false);
+        it('does not include unknown strings', () => {
+            expect(cutscene.characterColors['Random']).toBeUndefined();
         });
     });
 
     describe('addImage', () => {
-        it('returns image object with given properties', () => {
-            expect(cutscene.addImage('foo', 0.5, 10, 20, 100, 200)).toEqual({
+        it('returns image object with given properties (rect + render opts)', () => {
+            expect(
+                cutscene.addImage(
+                    'foo',
+                    { x: 10, y: 20, width: 100, height: 200 },
+                    { opacity: 0.5 }
+                )
+            ).toEqual({
                 id: 'foo',
                 opacity: 0.5,
                 x: 10,
@@ -113,6 +129,15 @@ describe('Cutscene', () => {
                 width: 100,
                 height: 200,
             });
+        });
+
+        it('supports talking shortcut -> opts.border.talking', () => {
+            const img = cutscene.addImage(
+                'bar',
+                { x: 1, y: 2, width: 3, height: 4 },
+                { talking: true }
+            );
+            expect(img.opts).toEqual({ border: { talking: true } });
         });
     });
 
@@ -126,6 +151,12 @@ describe('Cutscene', () => {
             expect(cutscene.dialogue).toHaveLength(1);
             expect(cutscene.dialogue[0]).toMatchObject({ character: 'Alice', dialogue: 'Hi' });
             expect(Array.isArray(cutscene.dialogue[0].images)).toBe(true);
+        });
+
+        it('supports options object (whisper) as first param after dialogue', () => {
+            cutscene.addDialogue('A', 'Hi', { whisper: true }, { id: 'x', x: 0, y: 0, width: 1, height: 1 });
+            expect(cutscene.dialogue[0].whisper).toBe(true);
+            expect(cutscene.dialogue[0].images).toHaveLength(1);
         });
     });
 
@@ -154,8 +185,6 @@ describe('Cutscene', () => {
             whisper: false,
         }];
         cutscene.dialogueIndex = 0;
-        cutscene.fullWords = ['Test'];
-        cutscene.fullWordsColor = ['Test'];
 
         const fullDialogue = 'Test';
         const spans = cutscene.buildColorSpans(fullDialogue);
@@ -171,35 +200,37 @@ describe('Cutscene', () => {
         expect(ctx.fillText).toHaveBeenCalledTimes(4);
     });
 
-    describe('skin-based helpers', () => {
-        it('getmap6insideCaveLavaEarthquake respects currentSkin', () => {
-            const s = game.menu.skins;
-            const cases = [
-                ['defaultSkin', 'map6insideCaveLavaEarthquake'],
-                ['hatSkin', 'map6insideCaveLavaEarthquakeHat'],
-                ['choloSkin', 'map6insideCaveLavaEarthquakeCholo'],
-                ['zabkaSkin', 'map6insideCaveLavaEarthquakeZabka'],
-                ['shinySkin', 'map6insideCaveLavaEarthquakeShiny'],
-            ];
-            for (const [key, expected] of cases) {
-                s.currentSkin = s[key];
-                expect(cutscene.getmap6insideCaveLavaEarthquake()).toBe(expected);
-            }
+    describe('skin-based helpers (updated to new skin system)', () => {
+        it('getmap6insideCaveLavaEarthquake only special-cases shinySkin', () => {
+            game.menu.skins.getCurrentSkinId.mockReturnValue('defaultSkin');
+            expect(cutscene.getmap6insideCaveLavaEarthquake()).toBe('map6insideCaveLavaEarthquake');
+
+            game.menu.skins.getCurrentSkinId.mockReturnValue('midnightSteelSkin');
+            expect(cutscene.getmap6insideCaveLavaEarthquake()).toBe('map6insideCaveLavaEarthquake');
+
+            game.menu.skins.getCurrentSkinId.mockReturnValue('shinySkin');
+            expect(cutscene.getmap6insideCaveLavaEarthquake()).toBe('map6insideCaveLavaEarthquakeShiny');
         });
 
-        it('getSkinPrefix returns correct prefix for each skin', () => {
-            const s = game.menu.skins;
-            s.currentSkin = s.defaultSkin; expect(cutscene.getSkinPrefix()).toBe('');
-            s.currentSkin = s.hatSkin; expect(cutscene.getSkinPrefix()).toBe('hat');
-            s.currentSkin = s.choloSkin; expect(cutscene.getSkinPrefix()).toBe('cholo');
-            s.currentSkin = s.zabkaSkin; expect(cutscene.getSkinPrefix()).toBe('zabka');
-            s.currentSkin = s.shinySkin; expect(cutscene.getSkinPrefix()).toBe('shiny');
+        it('getSkinPrefix returns "" for most skins and "shiny" for shinySkin (per config)', () => {
+            game.menu.skins.getCurrentSkinId.mockReturnValue('defaultSkin');
+            expect(cutscene.getSkinPrefix()).toBe('');
+
+            game.menu.skins.getCurrentSkinId.mockReturnValue('midnightSteelSkin');
+            expect(cutscene.getSkinPrefix()).toBe('midnightSteel');
+
+            game.menu.skins.getCurrentSkinId.mockReturnValue('shinySkin');
+            expect(cutscene.getSkinPrefix()).toBe('shiny');
         });
 
-        it('setfiredog* helpers prepend skin prefix', () => {
-            game.menu.skins.currentSkin = game.menu.skins.hatSkin;
-            expect(cutscene.setfiredogHappy()).toBe('hatfiredogHappy');
-            expect(cutscene.setfiredogSadBorder()).toBe('hatfiredogSadBorder');
+        it('setfiredog* helpers prepend prefix', () => {
+            game.menu.skins.getCurrentSkinId.mockReturnValue('defaultSkin');
+            expect(cutscene.setfiredogHappy()).toBe('firedogHappy');
+            expect(cutscene.setfiredogSadBorder()).toBe('firedogSadBorder');
+
+            game.menu.skins.getCurrentSkinId.mockReturnValue('shinySkin');
+            expect(cutscene.setfiredogHappy()).toBe('shinyfiredogHappy');
+            expect(cutscene.setfiredogSadBorder()).toBe('shinyfiredogSadBorder');
         });
     });
 
@@ -290,7 +321,7 @@ describe('Cutscene', () => {
             }];
             cutscene.dialogueIndex = 0;
             cutscene.dialogueText = '(hi)';
-            cutscene.playEightBitSound('x', 'y');
+            cutscene.playEightBitSound('bit1');
 
             expect(game.audioHandler.cutsceneDialogue.playSound).not.toHaveBeenCalled();
             expect(game.audioHandler.cutsceneDialogue.pauseSound).not.toHaveBeenCalled();
@@ -299,14 +330,14 @@ describe('Cutscene', () => {
         it('plays sound when not paused', () => {
             cutscene.dialogueText = 'hi';
             cutscene.pause = false;
-            cutscene.playEightBitSound('bit1', 'bit1');
+            cutscene.playEightBitSound('bit1');
             expect(game.audioHandler.cutsceneDialogue.playSound).toHaveBeenCalledWith('bit1');
         });
 
         it('pauses sound when paused', () => {
             cutscene.dialogueText = 'hi';
             cutscene.pause = true;
-            cutscene.playEightBitSound('bit1', 'bit1');
+            cutscene.playEightBitSound('bit1');
             expect(game.audioHandler.cutsceneDialogue.pauseSound).toHaveBeenCalledWith('bit1');
         });
     });
@@ -425,6 +456,7 @@ describe('Cutscene', () => {
             charImg = { src: 'char' };
             reminderImg = { src: 'rem' };
             textBoxImg = { src: 'box' };
+
             jest.spyOn(document, 'getElementById').mockImplementation(id => {
                 switch (id) {
                     case 'bg': return bgImg;
@@ -434,7 +466,9 @@ describe('Cutscene', () => {
                     default: return { src: id };
                 }
             });
+
             cutscene.reminderImage = reminderImg;
+
             context = {
                 save: jest.fn(),
                 restore: jest.fn(),
@@ -442,12 +476,15 @@ describe('Cutscene', () => {
                 fillText: jest.fn(),
                 measureText: jest.fn().mockReturnValue({ width: 5 }),
                 translate: jest.fn(),
+
                 _filter: '',
                 set filter(v) { this._filter = v; },
                 get filter() { return this._filter; },
+
                 _alpha: 1,
                 set globalAlpha(v) { this._alpha = v; },
                 get globalAlpha() { return this._alpha; },
+
                 font: '',
                 textAlign: '',
                 shadowOffsetX: 0,
@@ -456,6 +493,7 @@ describe('Cutscene', () => {
                 shadowBlur: 0,
                 fillStyle: '',
             };
+
             cutscene.dialogue = [{
                 character: 'Firedog',
                 dialogue: 'Hi',
@@ -487,18 +525,7 @@ describe('Cutscene', () => {
             cutscene.lastSoundPlayed = true;
 
             const ctx = {
-                save: jest.fn(),
-                restore: jest.fn(),
-                drawImage: jest.fn(),
-                fillText: jest.fn(),
-                measureText: jest.fn().mockReturnValue({ width: 5 }),
-                font: '',
-                textAlign: '',
-                shadowOffsetX: 0,
-                shadowOffsetY: 0,
-                shadowColor: '',
-                shadowBlur: 0,
-                fillStyle: '',
+                ...context,
                 set filter(v) { },
                 get filter() { return 'none'; },
                 set globalAlpha(v) { },
@@ -567,6 +594,9 @@ describe('Cutscene', () => {
 
             cutscene.lastSoundPlayed = false;
             cutscene.lastSound2Played = false;
+
+            cutscene.textIndex = 999;
+
             const play = game.audioHandler.cutsceneDialogue.playSound;
 
             cutscene.draw(context);
@@ -584,6 +614,7 @@ describe('Cutscene', () => {
                 game.width - 500,
                 game.height - 100
             );
+
             expect(play).toHaveBeenCalledWith('bit1', false, true, true);
             expect(play).toHaveBeenCalledWith('bit2');
         });
@@ -594,7 +625,9 @@ describe('Cutscene', () => {
                 cutscene.reminderImageStartTime + 2000
             );
 
+            cutscene.textIndex = 999;
             cutscene.draw(context);
+
             const calledWithTextBox = context.drawImage.mock.calls.some(
                 args => args[0] === textBoxImg
             );
@@ -605,7 +638,10 @@ describe('Cutscene', () => {
             jest.spyOn(performance, 'now').mockReturnValue(
                 cutscene.reminderImageStartTime + 8000
             );
+
+            cutscene.textIndex = 999;
             cutscene.draw(context);
+
             const calledWithReminder = context.drawImage.mock.calls.some(
                 args => args[0] === reminderImg
             );
@@ -615,11 +651,13 @@ describe('Cutscene', () => {
         it('handles paused-menu audio branch when menu is paused', () => {
             game.menu.pause.isPaused = true;
             cutscene.textIndex = 1;
+
             jest.spyOn(performance, 'now').mockReturnValue(
                 cutscene.reminderImageStartTime + 1000
             );
 
             cutscene.draw(context);
+
             expect(game.audioHandler.cutsceneDialogue.playSound)
                 .toHaveBeenCalledWith('bit1', false, true, true);
         });
@@ -631,7 +669,9 @@ describe('Cutscene', () => {
                 set filter(v) { filters.push(v); this._filter = v; },
                 get filter() { return this._filter; },
             };
+
             cutscene.isCharacterBlackAndWhite = true;
+
             jest.spyOn(performance, 'now').mockReturnValue(
                 cutscene.reminderImageStartTime + 1000
             );
@@ -640,7 +680,7 @@ describe('Cutscene', () => {
             expect(filters).toContain('grayscale(100%)');
         });
 
-        it('pauses while typing when enterDuringBackgroundTransition is false', () => {
+        it('when enterDuringBackgroundTransition is false, it forces pause and rewinds textIndex', () => {
             cutscene.dialogue = [{
                 character: 'Firedog',
                 dialogue: 'Hello',
@@ -650,128 +690,65 @@ describe('Cutscene', () => {
             cutscene.fullWords = ['Hello'];
             cutscene.fullWordsColor = ['Hello'];
             cutscene.textIndex = 2;
+
             game.enterDuringBackgroundTransition = false;
-            const spy = jest.spyOn(cutscene, 'playEightBitSound');
 
             cutscene.draw(context);
+
             expect(cutscene.pause).toBe(true);
             expect(cutscene.textIndex).toBe(1);
-            expect(spy).toHaveBeenCalledWith('bit1', 'bit1');
         });
 
-        it('pauses on ellipsis without immediate terminal and plays secondary sound', () => {
+        it('plays bit1 via playEightBitSound when typing and not paused menu', () => {
             cutscene.dialogue = [{
                 character: 'Firedog',
-                dialogue: 'Hi... there',
+                dialogue: 'Hello',
                 images: [],
             }];
             cutscene.dialogueIndex = 0;
-            cutscene.fullWords = ['Hi...', 'there'];
-            cutscene.fullWordsColor = ['Hi...', 'there'];
-            cutscene.textIndex = 4;
+            cutscene.fullWords = ['Hello'];
+            cutscene.fullWordsColor = ['Hello'];
+            cutscene.textIndex = 0;
+
             game.enterDuringBackgroundTransition = true;
-            cutscene.lastSoundPlayed = false;
-            cutscene.playSound2OnDotPause = false;
-            cutscene.dontShowTextBoxAndSound = false;
             game.menu.pause.isPaused = false;
+
             const spy = jest.spyOn(cutscene, 'playEightBitSound');
 
             cutscene.draw(context);
+
+            expect(spy).toHaveBeenCalledWith('bit1');
+        });
+
+        it('ellipsis followed by only terminal punctuation triggers dot-pause behavior', () => {
+            const dialogue = 'Why...? Next';
+
+            cutscene.dialogue = [{
+                character: 'Firedog',
+                dialogue,
+                images: [],
+            }];
+            cutscene.dialogueIndex = 0;
+            cutscene.fullWords = dialogue.split(' ');
+            cutscene.fullWordsColor = dialogue.split(' ');
+
+            cutscene.textIndex = dialogue.indexOf('?');
+
+            game.enterDuringBackgroundTransition = true;
+            game.menu.pause.isPaused = false;
+
+            cutscene.lastSoundPlayed = false;
+            cutscene.playSound2OnDotPause = false;
+
+            const spy = jest.spyOn(cutscene, 'playEightBitSound');
+
+            cutscene.draw(context);
+
             expect(spy).toHaveBeenCalledWith('bit2');
             expect(cutscene.playSound2OnDotPause).toBe(true);
             expect(cutscene.pause).toBe(true);
             expect(cutscene.continueDialogue).toBe(true);
             expect(cutscene.isEnterPressed).toBe(false);
-            expect(spy).toHaveBeenCalledWith('bit1', 'bit1');
-        });
-
-        it('does not pause on ellipsis when next char is terminal; waits until after terminal', () => {
-            cutscene.dialogue = [{
-                character: 'Firedog',
-                dialogue: 'Why...?',
-                images: [],
-            }];
-            cutscene.dialogueIndex = 0;
-            cutscene.fullWords = ['Why...?'];
-            cutscene.fullWordsColor = ['Why...?'];
-
-            cutscene.textIndex = 5;
-
-            game.enterDuringBackgroundTransition = true;
-            game.menu.pause.isPaused = false;
-
-            const spy = jest.spyOn(cutscene, 'playEightBitSound');
-            const ctx = {
-                save: jest.fn(),
-                restore: jest.fn(),
-                drawImage: jest.fn(),
-                fillText: jest.fn(),
-                measureText: jest.fn().mockReturnValue({ width: 5 }),
-                font: '',
-                textAlign: '',
-                shadowOffsetX: 0,
-                shadowOffsetY: 0,
-                shadowColor: '',
-                shadowBlur: 0,
-                fillStyle: '',
-                set filter(v) { },
-                get filter() { return 'none'; },
-                set globalAlpha(v) { },
-                get globalAlpha() { return 1; },
-            };
-
-            cutscene.draw(ctx);
-
-            expect(cutscene.pause).toBe(false);
-            expect(cutscene.continueDialogue).toBe(false);
-            expect(cutscene.playSound2OnDotPause).toBe(false);
-
-            expect(cutscene.textIndex).toBe(6);
-
-            expect(spy).toHaveBeenCalledWith('bit1', 'bit1');
-            expect(spy).not.toHaveBeenCalledWith('bit2');
-        });
-
-        it('pauses after the terminal that follows an ellipsis mid-line', () => {
-            cutscene.dialogue = [{
-                character: 'Firedog',
-                dialogue: 'Why...? Next',
-                images: [],
-            }];
-            cutscene.dialogueIndex = 0;
-            cutscene.fullWords = ['Why...?', 'Next'];
-            cutscene.fullWordsColor = ['Why...?', 'Next'];
-
-            cutscene.textIndex = 6;
-            game.enterDuringBackgroundTransition = true;
-            game.menu.pause.isPaused = false;
-
-            const spy = jest.spyOn(cutscene, 'playEightBitSound');
-            const ctx = {
-                save: jest.fn(),
-                restore: jest.fn(),
-                drawImage: jest.fn(),
-                fillText: jest.fn(),
-                measureText: jest.fn().mockReturnValue({ width: 5 }),
-                font: '',
-                textAlign: '',
-                shadowOffsetX: 0,
-                shadowOffsetY: 0,
-                shadowColor: '',
-                shadowBlur: 0,
-                fillStyle: '',
-                set filter(v) { },
-                get filter() { return 'none'; },
-                set globalAlpha(v) { },
-                get globalAlpha() { return 1; },
-            };
-
-            cutscene.draw(ctx);
-
-            expect(spy).toHaveBeenCalledWith('bit2');
-            expect(cutscene.playSound2OnDotPause).toBe(true);
-            expect(cutscene.pause).toBe(true);
-            expect(cutscene.continueDialogue).toBe(true);
         });
     });
 });

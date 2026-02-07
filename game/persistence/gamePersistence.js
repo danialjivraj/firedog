@@ -1,4 +1,7 @@
 import { getDefaultKeyBindings } from "../config/keyBindings.js";
+import { COSMETIC_SLOTS } from "../config/skins.js";
+
+const SAVE_KEY = "gameState";
 
 function buildGameState(game) {
     return {
@@ -21,35 +24,37 @@ function buildGameState(game) {
 
         audioSettingsState: game.menu.audioSettings.getState(),
 
-        currentSkin: game.menu.skins.currentSkin.id,
+        currentSkinId: game.menu.skins.getCurrentSkinId(),
+        currentCosmetics: {
+            [COSMETIC_SLOTS.HEAD]: game.menu.skins.getCurrentCosmeticKey(COSMETIC_SLOTS.HEAD),
+            [COSMETIC_SLOTS.NECK]: game.menu.skins.getCurrentCosmeticKey(COSMETIC_SLOTS.NECK),
+            [COSMETIC_SLOTS.EYES]: game.menu.skins.getCurrentCosmeticKey(COSMETIC_SLOTS.EYES),
+            [COSMETIC_SLOTS.FACE]: game.menu.skins.getCurrentCosmeticKey(COSMETIC_SLOTS.FACE),
+        },
+
         selectedDifficulty: game.selectedDifficulty,
-
         keyBindings: game.keyBindings,
-
         records: game.records,
     };
 }
 
 export function saveGameState(game) {
-    const gameState = buildGameState(game);
-
     try {
-        localStorage.setItem("gameState", JSON.stringify(gameState));
+        localStorage.setItem(SAVE_KEY, JSON.stringify(buildGameState(game)));
     } catch (e) {
         console.warn("Failed to save game state:", e);
     }
 }
 
 export function loadGameState(game) {
-    const savedGameState = localStorage.getItem("gameState");
-
-    if (!savedGameState) {
+    const saved = localStorage.getItem(SAVE_KEY);
+    if (!saved) {
         clearSavedData(game);
         return;
     }
 
     try {
-        const gameState = JSON.parse(savedGameState);
+        const gameState = JSON.parse(saved);
 
         game.currentMap = gameState.currentMap ?? game.currentMap;
         game.isTutorialActive = gameState.isTutorialActive ?? game.isTutorialActive;
@@ -61,9 +66,11 @@ export function loadGameState(game) {
         game.map5Unlocked = gameState.map5Unlocked ?? game.map5Unlocked;
         game.map6Unlocked = gameState.map6Unlocked ?? game.map6Unlocked;
         game.map7Unlocked = gameState.map7Unlocked ?? game.map7Unlocked;
+
         game.bonusMap1Unlocked = gameState.bonusMap1Unlocked ?? game.bonusMap1Unlocked;
         game.bonusMap2Unlocked = gameState.bonusMap2Unlocked ?? game.bonusMap2Unlocked;
         game.bonusMap3Unlocked = gameState.bonusMap3Unlocked ?? game.bonusMap3Unlocked;
+
         game.glacikalDefeated = gameState.glacikalDefeated ?? game.glacikalDefeated;
         game.elyvorgDefeated = gameState.elyvorgDefeated ?? game.elyvorgDefeated;
         game.ntharaxDefeated = gameState.ntharaxDefeated ?? game.ntharaxDefeated;
@@ -72,9 +79,13 @@ export function loadGameState(game) {
             game.menu.audioSettings.setState(gameState.audioSettingsState);
         }
 
-        if (gameState.currentSkin) {
-            game.menu.skins.setCurrentSkinById(gameState.currentSkin);
-        }
+        game.menu.skins.setCurrentSkinById(gameState.currentSkinId || "defaultSkin");
+
+        const c = gameState.currentCosmetics || {};
+        game.menu.skins.setCurrentCosmeticByKey(COSMETIC_SLOTS.HEAD, c[COSMETIC_SLOTS.HEAD] || "none");
+        game.menu.skins.setCurrentCosmeticByKey(COSMETIC_SLOTS.NECK, c[COSMETIC_SLOTS.NECK] || "none");
+        game.menu.skins.setCurrentCosmeticByKey(COSMETIC_SLOTS.EYES, c[COSMETIC_SLOTS.EYES] || "none");
+        game.menu.skins.setCurrentCosmeticByKey(COSMETIC_SLOTS.FACE, c[COSMETIC_SLOTS.FACE] || "none");
 
         if (gameState.selectedDifficulty) {
             game.menu.levelDifficulty.setDifficulty(gameState.selectedDifficulty);
@@ -91,14 +102,14 @@ export function loadGameState(game) {
         }
     } catch (e) {
         console.warn("Failed to load game state, clearing corrupted data:", e);
-        localStorage.removeItem("gameState");
-
+        localStorage.removeItem(SAVE_KEY);
         clearSavedData(game);
     }
 }
 
 export function clearSavedData(game) {
-    localStorage.removeItem("gameState");
+    localStorage.removeItem(SAVE_KEY);
+
     game.isTutorialActive = true;
 
     game.map1Unlocked = true;
@@ -121,8 +132,11 @@ export function clearSavedData(game) {
     game.menu.levelDifficulty.setDifficulty("Normal");
     game.selectedDifficulty = "Normal";
 
-    game.menu.skins.currentSkin = game.menu.skins.defaultSkin;
     game.menu.skins.setCurrentSkinById("defaultSkin");
+    game.menu.skins.setCurrentCosmeticByKey(COSMETIC_SLOTS.HEAD, "none");
+    game.menu.skins.setCurrentCosmeticByKey(COSMETIC_SLOTS.NECK, "none");
+    game.menu.skins.setCurrentCosmeticByKey(COSMETIC_SLOTS.EYES, "none");
+    game.menu.skins.setCurrentCosmeticByKey(COSMETIC_SLOTS.FACE, "none");
 
     game.menu.audioSettings.setState({
         tabData: {

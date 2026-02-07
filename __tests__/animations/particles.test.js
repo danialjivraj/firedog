@@ -998,7 +998,10 @@ describe('DashGhost', () => {
 
     test('update() moves by -(speedX + game.speed), fades life, shrinks scale, and eventually deletes', () => {
         const snapshot = {
-            img: fakeImages.test_img,
+            skinImg: fakeImages.test_img,
+
+            layers: [],
+
             sx: 0, sy: 0, sw: 10, sh: 10,
             x: 100, y: 50,
             dw: 20, dh: 30,
@@ -1007,18 +1010,22 @@ describe('DashGhost', () => {
 
         const g = new DashGhost(game, snapshot);
 
+        expect(g.markedForDeletion).toBe(false);
+
         g.speedX = 2;
         g.speedY = 1;
 
         const x0 = g.x;
         const y0 = g.y;
+        const life0 = g.life;
+        const scale0 = g.scale;
 
         g.update();
 
         expect(g.x).toBeCloseTo(x0 - (2 + game.speed));
         expect(g.y).toBeCloseTo(y0 - 1);
-        expect(g.life).toBeCloseTo(1.0 - g.fadeSpeed, 5);
-        expect(g.scale).toBeCloseTo(1.0 * g.shrink, 5);
+        expect(g.life).toBeCloseTo(life0 - g.fadeSpeed, 5);
+        expect(g.scale).toBeCloseTo(scale0 * g.shrink, 5);
         expect(g.markedForDeletion).toBe(false);
 
         g.life = 0.02;
@@ -1030,7 +1037,8 @@ describe('DashGhost', () => {
         game.cabin.isFullyVisible = true;
 
         const snapshot = {
-            img: fakeImages.test_img,
+            skinImg: fakeImages.test_img,
+            layers: [],
             sx: 0, sy: 0, sw: 10, sh: 10,
             x: 100, y: 50,
             dw: 20, dh: 30,
@@ -1042,12 +1050,16 @@ describe('DashGhost', () => {
         g.speedY = 0;
 
         g.update();
+
         expect(g.x).toBeCloseTo(95);
     });
 
     test('draw() flips when facingRight=false and draws using snapshot crop', () => {
         const snapshot = {
-            img: fakeImages.test_img,
+            skinImg: fakeImages.test_img,
+
+            layers: [fakeImages.test_img],
+
             sx: 1, sy: 2, sw: 3, sh: 4,
             x: 10, y: 20,
             dw: 30, dh: 40,
@@ -1055,6 +1067,9 @@ describe('DashGhost', () => {
         };
 
         const g = new DashGhost(game, snapshot);
+
+        expect(g.markedForDeletion).toBe(false);
+
         g.life = 1;
 
         g.draw(ctx);
@@ -1062,14 +1077,16 @@ describe('DashGhost', () => {
         expect(ctx.save).toHaveBeenCalled();
         expect(ctx.translate).toHaveBeenCalled();
         expect(ctx.scale).toHaveBeenCalledWith(-1, 1);
-        expect(ctx.drawImage).toHaveBeenCalledWith(
-            fakeImages.test_img,
-            1, 2, 3, 4,
-            expect.any(Number),
-            expect.any(Number),
-            expect.any(Number),
-            expect.any(Number)
-        );
+
+        expect(ctx.drawImage).toHaveBeenCalled();
+
+        const firstDraw = ctx.drawImage.mock.calls[0];
+        expect(firstDraw[0]).toBe(fakeImages.test_img);
+        expect(firstDraw[1]).toBe(1);
+        expect(firstDraw[2]).toBe(2);
+        expect(firstDraw[3]).toBe(3);
+        expect(firstDraw[4]).toBe(4);
+
         expect(ctx.restore).toHaveBeenCalled();
     });
 });

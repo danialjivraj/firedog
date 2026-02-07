@@ -830,7 +830,7 @@ export class BurrowingGroundEnemy extends ImmobileGroundEnemy {
 
     onRetractStart() {
         const id = this.soundIds?.retract;
-        if (id && this.game?.audioHandler?.enemySFX) {
+        if (id && this.game.audioHandler?.enemySFX) {
             this.game.audioHandler.enemySFX.playSound(id, false, true);
         }
     }

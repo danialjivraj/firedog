@@ -1,5 +1,10 @@
 import { isLocalNight } from '../config/timeOfDay.js';
-import { getMapIconElement } from '../config/skins.js';
+import {
+    FIREDOG_FRAME,
+    getSkinElement,
+    COSMETIC_LAYER_ORDER,
+    getCosmeticElement,
+} from '../config/skins.js';
 import { BaseMenu } from './baseMenu.js';
 import {
     Map1Cutscene, Map2Cutscene, Map3Cutscene, Map4Cutscene, Map5Cutscene, Map6Cutscene, Map7Cutscene,
@@ -28,7 +33,7 @@ export class ForestMapMenu extends BaseMenu {
         super(game);
 
         this.mapNames = {
-            map1: 'Lunar Moonlit Glade',
+            map1: 'Lunar Glade',
             map2: 'Nightfall Phantom Graves',
             map3: 'Coral Abyss',
             map4: 'Verdant Vine',
@@ -68,14 +73,6 @@ export class ForestMapMenu extends BaseMenu {
         this.backgroundImage = document.getElementById('forestmap');
         this.backgroundImageNight = document.getElementById('forestmapNight');
 
-        this.mapIcons = {
-            default: getMapIconElement('default'),
-            hat: getMapIconElement('hat'),
-            cholo: getMapIconElement('cholo'),
-            zabka: getMapIconElement('zabka'),
-            shiny: getMapIconElement('shiny'),
-        };
-
         this.fixedLeftRibbonWidth = null;
 
         this.lockedNoticeText = '';
@@ -108,7 +105,7 @@ export class ForestMapMenu extends BaseMenu {
         }
 
         const mapOptions = [
-            { Map: Map1, maxDistance: 200, winningCoins: 230, environment: null, Cutscene: Map1Cutscene },
+            { Map: Map1, maxDistance: 0, winningCoins: 0, environment: null, Cutscene: Map1Cutscene },
             { Map: Map2, maxDistance: 240, winningCoins: 270, environment: null, Cutscene: Map2Cutscene },
             { Map: Map3, maxDistance: 270, winningCoins: 200, environment: 'underwater', Cutscene: Map3Cutscene },
             { Map: Map4, maxDistance: 240, winningCoins: 280, environment: null, Cutscene: Map4Cutscene },
@@ -126,13 +123,7 @@ export class ForestMapMenu extends BaseMenu {
             return;
         }
 
-        const {
-            Map,
-            maxDistance,
-            winningCoins,
-            environment = null,
-            Cutscene,
-        } = entry;
+        const { Map, maxDistance, winningCoins, environment = null, Cutscene } = entry;
 
         this.game.player.isUnderwater = false;
         this.game.player.isIce = false;
@@ -170,18 +161,26 @@ export class ForestMapMenu extends BaseMenu {
     }
 
     getCurrentMapIcon() {
-        const skinId = this.game.menu.skins.getCurrentSkinId
-            ? this.game.menu.skins.getCurrentSkinId()
-            : (this.game.selectedSkinId || 'defaultSkin');
+        const skinKey = this.game.menu.skins?.currentSkinKey || 'defaultSkin';
+        return getSkinElement(skinKey) || getSkinElement('defaultSkin') || null;
+    }
 
-        const baseKey =
-            skinId === 'defaultSkin' ? 'default' :
-                skinId === 'shinySkin' ? 'shiny' :
-                    skinId === 'hatSkin' ? 'hat' :
-                        skinId === 'choloSkin' ? 'cholo' :
-                            skinId === 'zabkaSkin' ? 'zabka' : 'default';
+    getCurrentCosmeticIconsInLayerOrder() {
+        const skinsMenu = this.game.menu.skins;
+        if (!skinsMenu || typeof skinsMenu.getCurrentCosmeticKey !== 'function') {
+            return COSMETIC_LAYER_ORDER.map(() => null);
+        }
 
-        return this.mapIcons[baseKey] || this.mapIcons.default;
+        const imgs = [];
+        for (const slot of COSMETIC_LAYER_ORDER) {
+            const key = skinsMenu.getCurrentCosmeticKey(slot) || 'none';
+            if (key === 'none') {
+                imgs.push(null);
+                continue;
+            }
+            imgs.push(getCosmeticElement(slot, key) || null);
+        }
+        return imgs;
     }
 
     drawStraightConnection(context, fromCircle, toCircle) {
@@ -279,9 +278,7 @@ export class ForestMapMenu extends BaseMenu {
             let longestName = '';
             for (const key in this.mapNames) {
                 const value = this.mapNames[key] || '';
-                if (value.length > longestName.length) {
-                    longestName = value;
-                }
+                if (value.length > longestName.length) longestName = value;
             }
             const sampleText = longestName.toUpperCase();
             const sampleWidth = context.measureText(sampleText).width;
@@ -619,16 +616,52 @@ export class ForestMapMenu extends BaseMenu {
                     context.closePath();
                     context.restore();
 
-                    const icon = this.getCurrentMapIcon();
+                    const skinIcon = this.getCurrentMapIcon();
+                    const cosmeticIcons = this.getCurrentCosmeticIconsInLayerOrder();
+
+                    const FRAME_W = FIREDOG_FRAME.width;
+                    const FRAME_H = FIREDOG_FRAME.height;
+
+                    const TARGET_H = 53;
+                    const scale = TARGET_H / FRAME_H;
+
+                    const px = circle.x;
+                    const py = circle.y - 10;
+
+                    const drawFrame0 = (img, withGlow) => {
+                        if (!img) return;
+
+                        const dw = FRAME_W * scale;
+                        const dh = FRAME_H * scale;
+
+                        if (withGlow) {
+                            context.shadowColor = sealedBonus3
+                                ? 'rgba(255, 60, 60, 0.9)'
+                                : (isNight ? 'orange' : 'white');
+                            context.shadowBlur = 10;
+                        } else {
+                            context.shadowColor = 'transparent';
+                            context.shadowBlur = 0;
+                        }
+
+                        context.drawImage(
+                            img,
+                            0, 0, FRAME_W, FRAME_H,
+                            px - dw / 2,
+                            py - dh / 2,
+                            dw, dh
+                        );
+                    };
+
                     context.save();
                     context.globalAlpha = sealedBonus3 ? 0.45 : 1.0;
-                    context.shadowColor = sealedBonus3 ? 'rgba(255, 60, 60, 0.9)' : (isNight ? 'orange' : 'white');
-                    context.shadowBlur = 10;
-                    context.drawImage(
-                        icon,
-                        circle.x - icon.width / 2,
-                        circle.y - icon.height / 2 - 10
-                    );
+
+                    drawFrame0(skinIcon, true);
+
+                    for (const img of cosmeticIcons) {
+                        drawFrame0(img, false);
+                    }
+
                     context.restore();
                 }
             });

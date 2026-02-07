@@ -281,12 +281,12 @@ export class Background {
     }
 
     _getOneShotReferenceDistance() {
-        const fallback = Math.max(1, Number(this.game?.maxDistance) || 1);
+        const fallback = Math.max(1, Number(this.game.maxDistance) || 1);
 
-        const bm = this.game?.bossManager;
+        const bm = this.game.bossManager;
         if (!bm || typeof bm.getGateForMapName !== "function") return fallback;
 
-        const mapName = this.constructor?.name || this.game?.currentMap || null;
+        const mapName = this.constructor?.name || this.game.currentMap || null;
         const gate = bm.getGateForMapName(mapName);
 
         const ref = Number(gate?.minDistance);

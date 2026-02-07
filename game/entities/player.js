@@ -1,5 +1,9 @@
 import { getDefaultKeyBindings } from '../config/keyBindings.js';
-import { getSkinElement } from '../config/skins.js';
+import {
+    getSkinElement,
+    getCosmeticElement,
+    COSMETIC_LAYER_ORDER,
+} from '../config/skins.js';
 import { Sitting, Running, Jumping, Falling, Rolling, Diving, Stunned, Hit, Standing, Dying, Dashing } from '../animations/playerStates.js';
 import {
     CollisionAnimation, ExplosionCollisionAnimation, PoisonSpitSplash, InkSplashCollision, Blood,
@@ -31,12 +35,8 @@ import {
 export class Player {
     constructor(game) {
         this.game = game;
-        // images
-        this.image = getSkinElement('default');
-        this.hatImage = getSkinElement('hat');
-        this.choloImage = getSkinElement('cholo');
-        this.zabkaImage = getSkinElement('zabka');
-        this.shinyImage = getSkinElement('shiny');
+        // sprite
+        this.defaultSkinImage = getSkinElement('defaultSkin');
         // firedog vars
         this.width = 100;
         this.height = 91.3;
@@ -484,18 +484,26 @@ export class Player {
     }
 
     getCurrentSkinImage() {
-        switch (this.game.menu.skins.currentSkin) {
-            case this.game.menu.skins.hatSkin:
-                return this.hatImage;
-            case this.game.menu.skins.choloSkin:
-                return this.choloImage;
-            case this.game.menu.skins.zabkaSkin:
-                return this.zabkaImage;
-            case this.game.menu.skins.shinySkin:
-                return this.shinyImage;
-            default:
-                return this.image;
-        }
+        const menuSkinEl = this.game.menu?.skins?.currentSkin;
+
+        if (menuSkinEl && menuSkinEl.tagName === 'IMG') return menuSkinEl;
+
+        const id = menuSkinEl?.id || this.game.menu?.skins?.getCurrentSkinId?.() || 'defaultSkin';
+        const el = document.getElementById(id);
+        return el || this.defaultSkinImage;
+    }
+
+    getCurrentCosmeticImage(slot) {
+        const menu = this.game.menu?.skins;
+        const key = menu?.getCurrentCosmeticKey?.(slot) || 'none';
+        if (!key || key === 'none') return null;
+        return getCosmeticElement(slot, key);
+    }
+
+    getCurrentCosmeticImagesInOrder() {
+        return COSMETIC_LAYER_ORDER
+            .map(slot => this.getCurrentCosmeticImage(slot))
+            .filter(Boolean);
     }
 
     getTintedFrameCanvas(img, sx, sy, sw, sh, dw, dh, tint) {
@@ -536,9 +544,8 @@ export class Player {
     }
 
     drawPlayerWithCurrentSkin(context) {
-        if (this.isInvisible) context.globalAlpha = 0.5;
-
-        const img = this.getCurrentSkinImage();
+        const skinImg = this.getCurrentSkinImage();
+        const cosmeticImgs = this.getCurrentCosmeticImagesInOrder();
 
         const sx = this.frameX * this.width;
         const sy = this.frameY * this.height;
@@ -552,7 +559,15 @@ export class Player {
         const slowed = this.isSlowed;
         const poisoned = this.isPoisonedActive;
 
-        const drawGlow = (color, blur = 6) => {
+        const skinAlpha = this.isInvisible ? 0.5 : 1.0;
+
+        const drawLayer = (img) => {
+            if (!img) return;
+            context.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+        };
+
+        const drawGlowLayer = (img, color, blur = 6) => {
+            if (!img) return;
             context.save();
             context.shadowColor = color;
             context.shadowBlur = blur;
@@ -562,30 +577,84 @@ export class Player {
             context.restore();
         };
 
+        const drawTintLayer = (img, tint) => {
+            if (!img) return;
+            const oc = this.getTintedFrameCanvas(img, sx, sy, sw, sh, dw, dh, tint);
+            context.drawImage(oc, dx, dy, dw, dh);
+        };
+
+        const drawSkinBase = () => {
+            if (!skinImg) return;
+            context.save();
+            context.globalAlpha = skinAlpha;
+            drawLayer(skinImg);
+            context.restore();
+        };
+
+        const drawSkinGlow = (color, blur) => {
+            if (!skinImg) return;
+            context.save();
+            context.globalAlpha = skinAlpha;
+            drawGlowLayer(skinImg, color, blur);
+            context.restore();
+        };
+
+        const drawSkinTint = (tint) => {
+            if (!skinImg) return;
+            context.save();
+            context.globalAlpha = skinAlpha;
+            drawTintLayer(skinImg, tint);
+            context.restore();
+        };
+
+        const drawCosmeticsBase = () => {
+            for (const img of cosmeticImgs) drawLayer(img);
+        };
+
+        const drawCosmeticsGlow = (color, blur) => {
+            for (const img of cosmeticImgs) drawGlowLayer(img, color, blur);
+        };
+
+        const drawCosmeticsTint = (tint) => {
+            for (const img of cosmeticImgs) drawTintLayer(img, tint);
+        };
+
         if (slowed && poisoned) {
-            drawGlow('rgba(0,160,255,1)', 7);
-            const oc = this.getTintedFrameCanvas(
-                img, sx, sy, sw, sh, dw, dh,
-                {
-                    dir: 'horizontal',
-                    stops: [
-                        { offset: 0.00, color: 'rgba(0,100,0,0.40)' },
-                        { offset: 0.50, color: 'rgba(0,150,120,0.38)' },
-                        { offset: 1.00, color: 'rgba(0,120,255,0.35)' },
-                    ]
-                }
-            );
-            context.drawImage(oc, dx, dy, dw, dh);
+            const glow = 'rgba(0,160,255,1)';
+
+            drawSkinGlow(glow, 7);
+            drawCosmeticsGlow(glow, 7);
+
+            const mixTint = {
+                dir: 'horizontal',
+                stops: [
+                    { offset: 0.00, color: 'rgba(0,100,0,0.40)' },
+                    { offset: 0.50, color: 'rgba(0,150,120,0.38)' },
+                    { offset: 1.00, color: 'rgba(0,120,255,0.35)' },
+                ],
+            };
+
+            drawSkinTint(mixTint);
+            drawCosmeticsTint(mixTint);
         } else if (poisoned) {
-            drawGlow('rgba(0,130,0,1)', 6);
-            const oc = this.getTintedFrameCanvas(img, sx, sy, sw, sh, dw, dh, 'rgba(0,100,0,0.40)');
-            context.drawImage(oc, dx, dy, dw, dh);
+            const glow = 'rgba(0,130,0,1)';
+
+            drawSkinGlow(glow, 6);
+            drawCosmeticsGlow(glow, 6);
+
+            drawSkinTint('rgba(0,100,0,0.40)');
+            drawCosmeticsTint('rgba(0,100,0,0.40)');
         } else if (slowed) {
-            drawGlow('rgba(0,160,255,1)', 6);
-            const oc = this.getTintedFrameCanvas(img, sx, sy, sw, sh, dw, dh, 'rgba(0,120,255,0.35)');
-            context.drawImage(oc, dx, dy, dw, dh);
+            const glow = 'rgba(0,160,255,1)';
+
+            drawSkinGlow(glow, 6);
+            drawCosmeticsGlow(glow, 6);
+
+            drawSkinTint('rgba(0,120,255,0.35)');
+            drawCosmeticsTint('rgba(0,120,255,0.35)');
         } else {
-            context.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+            drawSkinBase();
+            drawCosmeticsBase();
         }
 
         if (this.isFrozen && this.frozenIceImage) {
@@ -599,8 +668,6 @@ export class Player {
             context.drawImage(iceImg, -iceW / 2, (-iceH / 2) + 10, iceW, iceH);
             context.restore();
         }
-
-        context.globalAlpha = 1;
     }
 
     // lives

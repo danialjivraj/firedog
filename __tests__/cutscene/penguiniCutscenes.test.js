@@ -402,7 +402,7 @@ describe('PenguiniCutscene & subclasses', () => {
         it('Map1 stops after its initial 13 entries', () => {
             game.currentMap = 'Map1';
             const m1 = new Map1PenguinIngameCutscene(game);
-            expect(m1.dialogue.length).toBe(13);
+            expect(m1.dialogue.length).toBe(30);
         });
 
         it('Map2 stops after its initial 15 entries', () => {

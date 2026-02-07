@@ -27,7 +27,7 @@ export class EnemyLore extends BaseMenu {
 
         this.phraseColors = {
             "EVERYWHERE": { fill: 'black', stroke: 'white', strokeBlur: 5 },
-            "LUNAR MOONLIT GLADE": { fill: '#57e2d0ff', stroke: '#06580dff', strokeBlur: 7 },
+            "LUNAR GLADE": { fill: '#57e2d0ff', stroke: '#06580dff', strokeBlur: 7 },
             "NIGHTFALL PHANTOM GRAVES": { fill: '#a84ffcff', stroke: 'black', strokeBlur: 10 },
             "CORAL ABYSS": { fill: 'dodgerblue', stroke: 'darkblue', strokeBlur: 5 },
             "VERDANT VINE": { fill: '#61c050ff', stroke: 'black', strokeBlur: 15 },
@@ -43,10 +43,10 @@ export class EnemyLore extends BaseMenu {
 
         this.highlightPhrases = this.buildHighlightTokens(this.phraseColors);
 
-        // MAP 1 - Lunar Moonlit Glade
+        // MAP 1 - Lunar Glade
         this.createCoverPage({
             mapKey: 'map1',
-            coverTitle: 'LUNAR MOONLIT GLADE',
+            coverTitle: 'LUNAR GLADE',
             category: 'main',
             coverImages: [
                 this.createCoverImage('map1Cover', 0, 0, this.pageWidth, this.pageHeight, { alpha: 1 }),
@@ -72,7 +72,7 @@ export class EnemyLore extends BaseMenu {
         this.createPage({
             name: "DOTTER",
             type: "FLY & NORMAL",
-            foundAt: "LUNAR MOONLIT GLADE",
+            foundAt: "LUNAR GLADE",
             description:
                 "IT IS SAID THAT DOTTERS HAVE BEEN AROUND FOR THOUSANDS OF YEARS...\n"
                 + "EVEN ON THE BRINK OF EXTINCTION, THEY HAVE ALWAYS MANAGED TO SURVIVE.\n"
@@ -87,10 +87,10 @@ export class EnemyLore extends BaseMenu {
         this.createPage({
             name: "VERTIBAT",
             type: "FALL & NORMAL",
-            foundAt: "LUNAR MOONLIT GLADE",
+            foundAt: "LUNAR GLADE",
             description:
                 "THESE VERTIBATS ARE COMMONLY FOUND IN NIGHTFALL PHANTOM GRAVES, HOWEVER, SOMETHING HAS CAUSED MOST OF THEM TO MIGRATE "
-                + "TO THE AREA OF LUNAR MOONLIT GLADE.\nIT IS SPECULATED THAT VERTIBATS CAN DETECT FREQUENCIES NO OTHER CREATURE CAN, INCLUDING PARANORMAL FREQUENCY, WHICH PROBABLY CAUSED "
+                + "TO THE AREA OF LUNAR GLADE.\nIT IS SPECULATED THAT VERTIBATS CAN DETECT FREQUENCIES NO OTHER CREATURE CAN, INCLUDING PARANORMAL FREQUENCY, WHICH PROBABLY CAUSED "
                 + "MOST OF THEM TO FIND REFUGE HERE!\nHIDING ON TOP OF TREES, THESE BATS WAIT FOR MOVEMENT BEFORE THEY FALL ONTO THEIR TARGET.\n",
             images: [
                 this.createImage('vertibat', 151.166, 90, 0, this.pageWidth - 210, 40, 1),
@@ -102,7 +102,7 @@ export class EnemyLore extends BaseMenu {
         this.createPage({
             name: "GHOBAT",
             type: "FLY & NORMAL",
-            foundAt: "LUNAR MOONLIT GLADE",
+            foundAt: "LUNAR GLADE",
             description:
                 "NOT MUCH IS KNOWN ABOUT THIS GHOST-SHAPED BAT.\n"
                 + "ALL THAT IS KNOWN IS THAT IT LIKES TO FLAP ITS WINGS AND CHASE DOTTERS...",
@@ -116,7 +116,7 @@ export class EnemyLore extends BaseMenu {
         this.createPage({
             name: "RAVENGLOOM",
             type: "FLY & NORMAL",
-            foundAt: "LUNAR MOONLIT GLADE",
+            foundAt: "LUNAR GLADE",
             description: "THIS FLYING CREATURE LIKES TO PEACEFULLY FLY THROUGH TREES!",
             images: [
                 this.createImage('ravengloom', 139.66, 100, 0, this.pageWidth - 200, 40, 1),
@@ -128,7 +128,7 @@ export class EnemyLore extends BaseMenu {
         this.createPage({
             name: "MEAT SOLDIER",
             type: "GROUND & NORMAL",
-            foundAt: "LUNAR MOONLIT GLADE",
+            foundAt: "LUNAR GLADE",
             description:
                 "MEAT SOLDIERS WERE ONCE FAMOUSLY HIRED AS OVERNIGHT GUARDS THROUGHOUT ALL LAND.\n"
                 + "HOWEVER, BEING VETERANS OF PAST WARS TOOK A MENTAL TOLL ON THEM, AND THEY EVENTUALLY BECAME UNCONTROLLABLE.\n"
@@ -143,7 +143,7 @@ export class EnemyLore extends BaseMenu {
         this.createPage({
             name: "SKULNAP",
             type: "GROUND & STUN",
-            foundAt: "LUNAR MOONLIT GLADE",
+            foundAt: "LUNAR GLADE",
             description:
                 "HE HAD NEVER BEEN IN THIS AREA UNTIL SOME TIME AGO. NO ONE KNOWS HIS ORIGIN, AND IT IS BELIEVED THAT SKULNAP WAS "
                 + "AN EXPERIMENT MADE BY ONE OF THE LANDS.\nHE CAN BE FOUND SLEEPING ON THE GROUND, BUT AS SOON AS YOU STEP WITHIN HEARING RANGE, YOU'LL WAKE HIM RIGHT AWAY!",
@@ -158,7 +158,7 @@ export class EnemyLore extends BaseMenu {
         this.createPage({
             name: "ABYSSAW",
             type: "FLY & NORMAL",
-            foundAt: "LUNAR MOONLIT GLADE",
+            foundAt: "LUNAR GLADE",
             description:
                 "YOU'LL HEAR THEM BEFORE YOU SEE THEM!\n"
                 + "THESE LOUD CREATURES SPIN AGGRESSIVELY LIKE A CHAINSAW AS THEY MOVE THROUGH THE TREES OF THE FOREST.\nWATCH OUT, SO YOU DON'T GET CUT!",
@@ -172,7 +172,7 @@ export class EnemyLore extends BaseMenu {
         this.createPage({
             name: "GLIDOSPIKE",
             type: "FLY & NORMAL",
-            foundAt: "LUNAR MOONLIT GLADE",
+            foundAt: "LUNAR GLADE",
             description:
                 "THOUSANDS OF YEARS AGO, A GROUP OF ANGRY GLIDOSPIKES WERE ROAMING AROUND CORAL ABYSS, "
                 + "FLAPPING THEIR WINGS VICIOUSLY NEAR THE SEA, WHICH IN TURN CAUSED A TSUNAMI BIG ENOUGH TO WIPE OUT HALF OF THE LAND.\n"

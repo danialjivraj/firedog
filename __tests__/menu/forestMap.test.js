@@ -20,11 +20,25 @@ jest.mock('../../game/config/timeOfDay.js', () => ({
 }));
 
 jest.mock('../../game/config/skins.js', () => ({
-    getMapIconElement: jest.fn((id) => ({
-        id,
-        width: 40,
-        height: 40,
-    })),
+    FIREDOG_FRAME: { width: 100, height: 91.3 },
+
+    getSkinElement: jest.fn((skinKey) => {
+        if (!skinKey) return null;
+
+        const idByKey = {
+            defaultSkin: 'default',
+            shinySkin: 'shiny',
+            tigerSkin: 'tiger',
+        };
+
+        const id = idByKey[skinKey];
+        if (!id) return null;
+
+        return { id, width: 40, height: 40 };
+    }),
+
+    COSMETIC_LAYER_ORDER: ['neck', 'eyes', 'face', 'head'],
+    getCosmeticElement: jest.fn(() => null),
 }));
 
 jest.mock('../../game/cutscene/storyCutscenes.js', () => {
@@ -109,11 +123,8 @@ describe('ForestMapMenu', () => {
         document.body.innerHTML = `
         <img id="forestmap" />
         <img id="forestmapNight" />
-        <img id="forestmapFiredog" />
-        <img id="forestmapHatFiredog" />
-        <img id="forestmapCholoFiredog" />
-        <img id="forestmapZabkaFiredog" />
-        <img id="forestmapFiredogShiny" />
+        <img id="forestmapFiredogDefault" />
+        <img id="forestmapFiredogShinySkin" />
 
         <img id="greenBand" />
         <img id="blankStarLeft" />
@@ -493,19 +504,20 @@ describe('ForestMapMenu', () => {
             expect(icon.id).toBe('default');
         });
 
-        it('uses selectedSkinId when getCurrentSkinId is not available', () => {
-            mockGame.selectedSkinId = 'shinySkin';
+        it('uses currentSkinKey when set on skins', () => {
+            mockGame.menu.skins.currentSkinKey = 'shinySkin';
             const menuWithSelection = new ForestMapMenu(mockGame);
 
             const icon = menuWithSelection.getCurrentMapIcon();
             expect(icon.id).toBe('shiny');
         });
 
-        it('uses getCurrentSkinId when it exists on skins', () => {
-            mockGame.menu.skins.getCurrentSkinId = jest.fn(() => 'hatSkin');
+        it('ignores getCurrentSkinId and uses currentSkinKey (source of truth)', () => {
+            mockGame.menu.skins.getCurrentSkinId = jest.fn(() => 'tigerSkin');
+            mockGame.menu.skins.currentSkinKey = 'shinySkin';
 
             const icon = menu.getCurrentMapIcon();
-            expect(icon.id).toBe('hat');
+            expect(icon.id).toBe('shiny');
         });
 
         it('falls back to default icon when skin id is unrecognized', () => {
@@ -542,7 +554,7 @@ describe('ForestMapMenu', () => {
 
             expect(result.nameKey).toBe('map1');
             expect(result.mapIndexLabel).toBe('MAP 1');
-            expect(result.mapNameLabel).toBe('LUNAR MOONLIT GLADE');
+            expect(result.mapNameLabel).toBe('LUNAR GLADE');
             expect(result.colorCfg).toBe(menu.mapColors.map1);
         });
 
@@ -584,7 +596,7 @@ describe('ForestMapMenu', () => {
 
             const ribbonY = mockGame.height - 60;
             const ribbonHeight = 60;
-            const mapFullText = 'MAP 1 LUNAR MOONLIT GLADE';
+            const mapFullText = 'MAP 1 LUNAR GLADE';
             const loreText = 'TAB FOR ENEMY LORE';
 
             menu.drawRibbonBackgroundsAndLines(
@@ -612,7 +624,7 @@ describe('ForestMapMenu', () => {
                 ctx,
                 ribbonY,
                 ribbonHeight,
-                'MAP 1 LUNAR MOONLIT GLADE',
+                'MAP 1 LUNAR GLADE',
                 'TAB FOR ENEMY LORE',
                 false,
                 true
@@ -999,7 +1011,7 @@ describe('ForestMapMenu', () => {
 
             const texts = ctx.fillText.mock.calls.map(args => args[0]);
             expect(texts).toContain('MAP 1');
-            expect(texts).toContain('LUNAR MOONLIT GLADE');
+            expect(texts).toContain('LUNAR GLADE');
             expect(texts).toContain('TAB FOR ENEMY LORE');
         });
 

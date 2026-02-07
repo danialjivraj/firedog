@@ -2273,7 +2273,7 @@ export class HowToPlayMenu extends BaseMenu {
         return {
             draw: (ctx) => {
                 const dt = this._dt();
-                const paused = this.game?.menu?.pause?.isPaused === true;
+                const paused = this.game.menu.pause?.isPaused === true;
 
                 if (!paused) {
                     const key = type === 'poison' ? 'poison' : 'slow';

@@ -104,6 +104,32 @@ jest.mock('../../game/entities/enemies/glacikal', () => {
     return { IceTrail, IcyStormBall, IceSlash, SpinningIceBalls, PointyIcicleShard, Glacikal, UndergroundIcicle };
 });
 
+const makeImg = (id = 'skinImg') => ({ id, tagName: 'IMG' });
+
+const withAlphaStack = (ctx) => {
+    const stack = [];
+    let _alpha = 1;
+
+    Object.defineProperty(ctx, 'globalAlpha', {
+        configurable: true,
+        get() { return _alpha; },
+        set(v) { _alpha = v; },
+    });
+
+    ctx.save = ctx.save || jest.fn();
+    ctx.restore = ctx.restore || jest.fn();
+
+    ctx.save.mockImplementation(() => {
+        stack.push(_alpha);
+    });
+    ctx.restore.mockImplementation(() => {
+        const prev = stack.pop();
+        ctx.globalAlpha = (prev == null ? 1 : prev);
+    });
+
+    return ctx;
+};
+
 describe('Player', () => {
     let game, player;
 
@@ -189,6 +215,8 @@ describe('Player', () => {
 
         player = new Player(game);
         game.player = player;
+
+        game.menu.skins.currentSkin = makeImg('defaultSkin');
 
         player.states = player.states.map(() => ({
             enter: jest.fn(),
@@ -482,7 +510,7 @@ describe('Player', () => {
                     firedogSFX: { playSound: jest.fn(), stopSound: jest.fn() },
                 },
 
-                menu: { skins: { currentSkin: null } },
+                menu: { skins: { currentSkin: makeImg('dashTestSkin') } },
 
                 particles: [],
                 behindPlayerParticles: [],
@@ -919,6 +947,7 @@ describe('Player', () => {
                 restore: jest.fn(),
                 strokeRect: jest.fn(),
             };
+            withAlphaStack(ctx);
         });
 
         test('draw flips horizontally when boss is to the left (player faces left)', () => {
@@ -936,14 +965,18 @@ describe('Player', () => {
             expect(ctx.strokeRect).toHaveBeenCalledWith(player.x, player.y, player.width, player.height);
         });
 
-        test('draw uses correct skin image', () => {
-            game.menu.skins.currentSkin = game.menu.skins.hatSkin;
+        test('draw uses correct skin image (currentSkin img)', () => {
+            const skin = makeImg('hatSkin');
+            game.menu.skins.currentSkin = skin;
+
             player.frameX = 0;
             player.frameY = 0;
             player.maxFrame = 0;
+
             player.drawPlayerWithCurrentSkin(ctx);
+
             expect(ctx.drawImage).toHaveBeenCalledWith(
-                player.hatImage,
+                skin,
                 0, 0, player.width, player.height,
                 -player.width / 2, -player.height / 2, player.width, player.height
             );
@@ -996,6 +1029,7 @@ describe('Player', () => {
         let ctx;
         beforeEach(() => {
             ctx = { save: jest.fn(), translate: jest.fn(), scale: jest.fn(), drawImage: jest.fn(), restore: jest.fn(), strokeRect: jest.fn() };
+            withAlphaStack(ctx);
         });
         test('uses gameOver branch scaling', () => {
             game.gameOver = true;
@@ -1012,19 +1046,24 @@ describe('Player', () => {
     describe('drawPlayerWithCurrentSkin()', () => {
         let ctx;
         beforeEach(() => {
-            ctx = { drawImage: jest.fn(), globalAlpha: 1 };
+            ctx = { drawImage: jest.fn(), save: jest.fn(), restore: jest.fn() };
+            withAlphaStack(ctx);
         });
+
         it.each([
-            ['defaultSkin', 'image'],
-            ['choloSkin', 'choloImage'],
-            ['zabkaSkin', 'zabkaImage'],
-            ['shinySkin', 'shinyImage'],
-        ])('draws %s correctly', (key, prop) => {
-            game.menu.skins.currentSkin = game.menu.skins[key];
+            ['defaultSkin'],
+            ['choloSkin'],
+            ['zabkaSkin'],
+            ['shinySkin'],
+        ])('draws %s correctly (currentSkin img)', (key) => {
+            const img = makeImg(key);
+            game.menu.skins.currentSkin = img;
+
             player.frameX = 1; player.frameY = 2;
             player.drawPlayerWithCurrentSkin(ctx);
+
             expect(ctx.drawImage).toHaveBeenCalledWith(
-                player[prop],
+                img,
                 player.frameX * player.width, player.frameY * player.height,
                 player.width, player.height,
                 -player.width / 2, -player.height / 2, player.width, player.height
@@ -1060,17 +1099,23 @@ describe('Player', () => {
 
     describe('drawPlayerWithCurrentSkin transparency', () => {
         test('sets globalAlpha to 0.5 then back to 1 when invisible', () => {
-            const ctx = { drawImage: jest.fn() };
+            const ctx = { drawImage: jest.fn(), save: jest.fn(), restore: jest.fn() };
             const alphas = [];
+            withAlphaStack(ctx);
+
+            const origDesc = Object.getOwnPropertyDescriptor(ctx, 'globalAlpha');
             Object.defineProperty(ctx, 'globalAlpha', {
                 configurable: true,
-                set(v) { alphas.push(v); },
-                get() { return alphas[alphas.length - 1]; },
+                get: origDesc.get,
+                set(v) { alphas.push(v); origDesc.set(v); },
             });
+
             player.isInvisible = true;
-            game.menu.skins.currentSkin = game.menu.skins.defaultSkin;
+            game.menu.skins.currentSkin = makeImg('defaultSkin');
             player.frameX = 0; player.frameY = 0;
+
             player.drawPlayerWithCurrentSkin(ctx);
+
             expect(alphas).toEqual([0.5, 1]);
             expect(ctx.drawImage).toHaveBeenCalled();
         });
@@ -1090,30 +1135,28 @@ describe('Player', () => {
                 save: jest.fn(),
                 restore: jest.fn(),
             };
-            let _alpha = 1;
-            Object.defineProperty(ctx, 'globalAlpha', {
-                configurable: true,
-                get() { return _alpha; },
-                set(v) { _alpha = v; }
-            });
+            withAlphaStack(ctx);
 
             player.frameX = 0;
             player.frameY = 0;
             player.width = 100;
             player.height = 90;
+
+            game.menu.skins.currentSkin = makeImg('tintSkin');
         });
 
-        test('poisoned branch: uses green tint and draws base + oc', () => {
+        test('poisoned branch: uses green tint and draws glow(base) + oc', () => {
             player.isPoisonedActive = true;
             player.isSlowed = false;
 
+            const skin = player.getCurrentSkinImage();
             const oc = fakeCanvas();
             const tintSpy = jest.spyOn(player, 'getTintedFrameCanvas').mockReturnValue(oc);
 
             player.drawPlayerWithCurrentSkin(ctx);
 
             expect(tintSpy).toHaveBeenCalledWith(
-                player.getCurrentSkinImage(),
+                skin,
                 0, 0, player.width, player.height,
                 player.width, player.height,
                 'rgba(0,100,0,0.40)'
@@ -1121,26 +1164,28 @@ describe('Player', () => {
 
             expect(ctx.drawImage).toHaveBeenNthCalledWith(
                 1,
-                player.getCurrentSkinImage(),
+                skin,
                 0, 0, player.width, player.height,
                 -player.width / 2, -player.height / 2, player.width, player.height
             );
+            // tint oc draw
             expect(ctx.drawImage).toHaveBeenNthCalledWith(
                 2, oc, -player.width / 2, -player.height / 2, player.width, player.height
             );
         });
 
-        test('slowed branch: uses blue tint and draws base + oc', () => {
+        test('slowed branch: uses blue tint and draws glow(base) + oc', () => {
             player.isPoisonedActive = false;
             player.isSlowed = true;
 
+            const skin = player.getCurrentSkinImage();
             const oc = fakeCanvas();
             const tintSpy = jest.spyOn(player, 'getTintedFrameCanvas').mockReturnValue(oc);
 
             player.drawPlayerWithCurrentSkin(ctx);
 
             expect(tintSpy).toHaveBeenCalledWith(
-                player.getCurrentSkinImage(),
+                skin,
                 0, 0, player.width, player.height,
                 player.width, player.height,
                 'rgba(0,120,255,0.35)'
@@ -1148,7 +1193,7 @@ describe('Player', () => {
 
             expect(ctx.drawImage).toHaveBeenNthCalledWith(
                 1,
-                player.getCurrentSkinImage(),
+                skin,
                 0, 0, player.width, player.height,
                 -player.width / 2, -player.height / 2, player.width, player.height
             );
@@ -1178,9 +1223,10 @@ describe('Player', () => {
             expect(Array.isArray(tintObj.stops)).toBe(true);
             expect(tintObj.stops.length).toBeGreaterThan(0);
 
+            const skin = player.getCurrentSkinImage();
             expect(ctx.drawImage).toHaveBeenNthCalledWith(
                 1,
-                player.getCurrentSkinImage(),
+                skin,
                 0, 0, player.width, player.height,
                 -player.width / 2, -player.height / 2, player.width, player.height
             );
@@ -1195,11 +1241,12 @@ describe('Player', () => {
 
             const tintSpy = jest.spyOn(player, 'getTintedFrameCanvas');
 
+            const skin = player.getCurrentSkinImage();
             player.drawPlayerWithCurrentSkin(ctx);
 
             expect(tintSpy).not.toHaveBeenCalled();
             expect(ctx.drawImage).toHaveBeenCalledWith(
-                player.getCurrentSkinImage(),
+                skin,
                 0, 0, player.width, player.height,
                 -player.width / 2, -player.height / 2, player.width, player.height
             );
@@ -1208,10 +1255,12 @@ describe('Player', () => {
         test('respects invisibility alpha (0.5 then restore to 1)', () => {
             player.isInvisible = true;
             const alphas = [];
+
+            const origDesc = Object.getOwnPropertyDescriptor(ctx, 'globalAlpha');
             Object.defineProperty(ctx, 'globalAlpha', {
                 configurable: true,
-                set(v) { alphas.push(v); },
-                get() { return alphas[alphas.length - 1]; },
+                get: origDesc.get,
+                set(v) { alphas.push(v); origDesc.set(v); },
             });
 
             player.drawPlayerWithCurrentSkin(ctx);
@@ -1557,7 +1606,7 @@ describe('emitStatusParticles (bubble status logic)', () => {
             menu: {
                 levelDifficulty: { setDifficulty: jest.fn() },
                 skins: {
-                    currentSkin: null,
+                    currentSkin: makeImg('statusSkin'),
                     defaultSkin: null,
                     hatSkin: null,
                     choloSkin: null,

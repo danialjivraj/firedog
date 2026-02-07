@@ -60,6 +60,8 @@ describe('playerStates.js', () => {
             facingRight: true,
             getCurrentSkinImage: jest.fn(() => ({ id: 'fakeSkinImg' })),
 
+            getCurrentCosmeticImagesInOrder: jest.fn(() => []),
+
             vy: 0,
             weight: 5,
             gravity: undefined,

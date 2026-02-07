@@ -239,23 +239,26 @@ export class BonusMap3NTharaxIngameCutsceneBeforeFight extends NTharaxCutscene {
     constructor(game) {
         super(game);
 
+        const FIREDOG = { x: 100, y: 400, width: 200, height: 200 };
+        const NTHARAX_RIGHT = { x: 1560, y: 400, width: 200, height: 200 };
+
         this.addDialogue(
             `${this.firedog}`,
             `A hooded individual- So it's you...`,
-            this.addImage(this.setfiredogNormalBorder(), 1, 100, 400, 200, 200),
+            this.addImage(this.setfiredogNormalBorder(), FIREDOG, { talking: true }),
         );
 
         this.addDialogue(
             `${this.firedog}`,
             `You are the one who stole the ${this.crypticToken}, weren't you?`,
-            this.addImage(this.setfiredogAngry2Border(), 1, 100, 400, 200, 200),
+            this.addImage(this.setfiredogAngryBorder(), FIREDOG, { talking: true }),
         );
 
         this.addDialogue(
             `${this.ntharax}`,
             `Why have you come to this place? This is my territory!`,
-            this.addImage(this.setfiredogNormalExclamationMarkBorder(), 0.7, 100, 400, 200, 200),
-            this.addImage('ntharaxBorder', 1, 1560, 400, 200, 200),
+            this.addImage(this.setfiredogCuriousBorder(), FIREDOG),
+            this.addImage('ntharaxBorder', NTHARAX_RIGHT, { talking: true }),
         );
     }
 }
@@ -264,18 +267,21 @@ export class BonusMap3NTharaxIngameCutsceneAfterFight extends NTharaxCutscene {
     constructor(game) {
         super(game);
 
+        const FIREDOG = { x: 100, y: 400, width: 200, height: 200 };
+        const NTHARAX = { x: 1100, y: 400, width: 200, height: 200 };
+
         this.addDialogue(
             `${this.ntharax}`,
             `You're strong.`,
-            this.addImage(this.setfiredogNormalBorder(), 0.7, 100, 400, 200, 200),
-            this.addImage('ntharaxBorder', 1, 1100, 400, 200, 200),
+            this.addImage(this.setfiredogNormalBorder(), FIREDOG),
+            this.addImage('ntharaxBorder', NTHARAX, { talking: true }),
         );
 
         this.addDialogue(
             `${this.firedog}`,
             `How do you know my fireball ability? How is this possible?`,
-            this.addImage(this.setfiredogNormalBorder(), 1, 100, 400, 200, 200),
-            this.addImage('ntharaxBorder', 0.7, 1100, 400, 200, 200),
+            this.addImage(this.setfiredogNormalBorder(), FIREDOG, { talking: true }),
+            this.addImage('ntharaxBorder', NTHARAX),
         );
     }
 }

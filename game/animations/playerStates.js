@@ -43,15 +43,18 @@ const spawnFire = (game, x, y) => game.particles.unshift(new Fire(game, x, y));
 const spawnIceCrystal = (game, x, y) => game.particles.unshift(new IceCrystal(game, x, y));
 
 const spawnDashGhost = (game, player) => {
-    const img = player.getCurrentSkinImage();
-    if (!img) return;
+    const skinImg = player.getCurrentSkinImage();
+    if (!skinImg) return;
+
+    const layers = player.getCurrentCosmeticImagesInOrder();
 
     const sx = player.frameX * player.width;
     const sy = player.frameY * player.height;
 
     game.behindPlayerParticles.unshift(
         new DashGhost(game, {
-            img,
+            skinImg,
+            layers,
             sx,
             sy,
             sw: player.width,

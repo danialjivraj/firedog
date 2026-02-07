@@ -541,20 +541,21 @@ export class DashGhost extends Particle {
     constructor(game, snapshot) {
         super(game);
 
-        this.img = snapshot.img;
+        this.skinImg = snapshot?.skinImg ?? null;
+        this.layers = Array.isArray(snapshot?.layers) ? snapshot.layers.filter(Boolean) : [];
 
-        this.sx = snapshot.sx;
-        this.sy = snapshot.sy;
-        this.sw = snapshot.sw;
-        this.sh = snapshot.sh;
+        this.sx = snapshot?.sx ?? 0;
+        this.sy = snapshot?.sy ?? 0;
+        this.sw = snapshot?.sw ?? 0;
+        this.sh = snapshot?.sh ?? 0;
 
-        this.x = snapshot.x;
-        this.y = snapshot.y;
+        this.x = snapshot?.x ?? 0;
+        this.y = snapshot?.y ?? 0;
 
-        this.dw = snapshot.dw;
-        this.dh = snapshot.dh;
+        this.dw = snapshot?.dw ?? 0;
+        this.dh = snapshot?.dh ?? 0;
 
-        this.facingRight = snapshot.facingRight;
+        this.facingRight = !!snapshot?.facingRight;
 
         this.speedX = 0;
         this.speedY = 0;
@@ -563,10 +564,18 @@ export class DashGhost extends Particle {
         this.fadeSpeed = 0.06;
         this.scale = 1.0;
         this.shrink = 0.992;
+
         this.alpha = 0.55;
+        this.cosmeticAlpha = 1.0;
+
+        if (!this.skinImg || !this.sw || !this.sh || !this.dw || !this.dh) {
+            this.markedForDeletion = true;
+        }
     }
 
     update() {
+        if (this.markedForDeletion) return;
+
         if (this.game.cabin.isFullyVisible || this.game.isBossVisible) {
             this.x -= this.speedX;
         } else {
@@ -581,26 +590,40 @@ export class DashGhost extends Particle {
     }
 
     draw(ctx) {
-        if (!this.img) return;
+        if (this.markedForDeletion || !this.skinImg) return;
 
         const cx = this.x + this.dw / 2;
         const cy = this.y + this.dh / 2;
+
+        const dw = this.dw * this.scale;
+        const dh = this.dh * this.scale;
+
+        const fade = Math.max(0, this.life);
+
+        const skinAlpha = fade * this.alpha;
+        const layerAlpha = Math.min(1, fade * this.cosmeticAlpha);
 
         ctx.save();
         ctx.translate(cx, cy);
         ctx.scale(this.facingRight ? 1 : -1, 1);
 
-        ctx.globalAlpha = Math.max(0, this.life) * this.alpha;
-
-        const dw = this.dw * this.scale;
-        const dh = this.dh * this.scale;
-
+        ctx.globalAlpha = skinAlpha;
         ctx.drawImage(
-            this.img,
+            this.skinImg,
             this.sx, this.sy, this.sw, this.sh,
-            -dw / 2, -dh / 2,
-            dw, dh
+            -dw / 2, -dh / 2, dw, dh
         );
+
+        if (this.layers.length) {
+            ctx.globalAlpha = layerAlpha;
+            for (const img of this.layers) {
+                ctx.drawImage(
+                    img,
+                    this.sx, this.sy, this.sw, this.sh,
+                    -dw / 2, -dh / 2, dw, dh
+                );
+            }
+        }
 
         ctx.restore();
         ctx.globalAlpha = 1;
