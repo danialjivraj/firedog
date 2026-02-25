@@ -42,8 +42,14 @@ body {
         #defaultSkin, #midnightSteelSkin, #sunsetIronSkin, #neonPinkSkin, #ghostSkin, #zombieSkin, #sharkSkin, #zebraSkin,#foxSkin, #leopardSkin, #tigerSkin, 
         #reddenShockSkin, #iceBreakerSkin, #infernalSkin, #galaxySkin, #shinySkin,
         /* outfits */
-        #neckerchiefOutfit, #scarfOutfit, #headBandanaOutfit, #hatOutfit, #frogCrownOutfit, #mustacheOutfit, #bullRingOutfit, #kingsCrownOutfit, #thugSunglassesOutfit, #cubanChainOutfit,
-        #pirateEyePatchOutfit, #cowboyHatOutfit, #unicornHornOutfit, #flowerOutfit, #catEarsOutfit, #devilHornsOutfit,
+            /* head */
+             #unicornHornOutfit, #hatOutfit,  #flowerOutfit, #frogCrownOutfit, #cowboyHatOutfit, #bandanaOutfit, #catEarsOutfit, #devilHornsOutfit, #kingsCrownOutfit, #vikingHelmetOutfit, #clownWigOutfit,
+            /* neck */
+             #hawaiianNecklaceOutfit, #tieOutfit, #bowtieOutfit,  #scarfOutfit, #neckerchiefOutfit,  #pearlOutfit,  #cubanChainOutfit, #championMedalOutfit, #spikeChokerOutfit,
+            /* eyes */
+            #roundGlassesOutfit, #wayfarerSunglassesOutfit, #leopardPrintSunglassesOutfit, #pirateEyePatchOutfit, #glasses3dOutfit, #thugSunglassesOutfit,
+            /* nose */
+             #bullRingOutfit, #catWhiskersOutfit, #clownNoseOutfit, #mustacheOutfit,
         /* firedog animations */ 
         #dust_black, #ice_crystal, #fire, #fireball, #redPotionFireball, #bluefire, #bubble, #bluebubble, #frozenIce, 
     /* penguin */
@@ -157,6 +163,9 @@ body {
             /* reddenShock */
             #reddenShockfiredogHappy, #reddenShockfiredogUpset, #reddenShockfiredogAngry, #reddenShockfiredogPhew, #reddenShockfiredogTired, #reddenShockfiredogHeadache, #reddenShockfiredogCry, #reddenShockfiredogCry2, #reddenShockfiredogSad, #reddenShockfiredogNormal, 
             #reddenShockfiredogCurious, #reddenShockfiredogSurprised, #reddenShockfiredogDiscomfort, #reddenShockfiredogSigh, #reddenShockfiredogSmile,
+            /* neonPink */
+            #neonPinkfiredogHappy, #neonPinkfiredogUpset, #neonPinkfiredogAngry, #neonPinkfiredogPhew, #neonPinkfiredogTired, #neonPinkfiredogHeadache, #neonPinkfiredogCry, #neonPinkfiredogCry2, #neonPinkfiredogSad, #neonPinkfiredogNormal, 
+            #neonPinkfiredogCurious, #neonPinkfiredogSurprised, #neonPinkfiredogDiscomfort, #neonPinkfiredogSigh, #neonPinkfiredogSmile,
             /* ghost */
             #ghostfiredogHappy, #ghostfiredogUpset, #ghostfiredogAngry, #ghostfiredogPhew, #ghostfiredogTired, #ghostfiredogHeadache, #ghostfiredogCry, #ghostfiredogCry2, #ghostfiredogSad, #ghostfiredogNormal, 
             #ghostfiredogCurious, #ghostfiredogSurprised, #ghostfiredogDiscomfort, #ghostfiredogSigh, #ghostfiredogSmile,
@@ -188,8 +197,14 @@ body {
             #galaxyfiredogHappy, #galaxyfiredogUpset, #galaxyfiredogAngry, #galaxyfiredogPhew, #galaxyfiredogTired, #galaxyfiredogHeadache, #galaxyfiredogCry, #galaxyfiredogCry2, #galaxyfiredogSad, #galaxyfiredogNormal, 
             #galaxyfiredogCurious, #galaxyfiredogSurprised, #galaxyfiredogDiscomfort, #galaxyfiredogSigh, #galaxyfiredogSmile,
             /* outfits */
-            #cutsceneHatOutfit, #cutsceneNeckerchiefOutfit, #cutsceneScarfOutfit, #cutsceneHeadBandanaOutfit, #cutsceneFrogCrownOutfit, #cutsceneMustacheOutfit, #cutsceneBullRingOutfit, #cutsceneThugSunglassesOutfit, #cutsceneKingsCrownOutfit, 
-            #cutsceneCowboyHatOutfit, #cutscenePirateEyePatchOutfit, #cutsceneDevilHornsOutfit, #cutsceneCubanChainOutfit, #cutsceneUnicornHornOutfit, #cutsceneFlowerOutfit, #cutsceneCatEarsOutfit, 
+                /* head */
+                #cutsceneUnicornHornOutfit, #cutsceneHatOutfit,  #cutsceneFlowerOutfit, #cutsceneFrogCrownOutfit, #cutsceneCowboyHatOutfit, #cutsceneBandanaOutfit, #cutsceneCatEarsOutfit, #cutsceneDevilHornsOutfit,  #cutsceneKingsCrownOutfit, #cutsceneVikingHelmetOutfit, #cutsceneClownWigOutfit,
+                /* neck */
+                #cutsceneHawaiianNecklaceOutfit, #cutsceneTieOutfit, #cutsceneBowtieOutfit,  #cutsceneScarfOutfit, #cutsceneNeckerchiefOutfit, #cutscenePearlOutfit, #cutsceneCubanChainOutfit, #cutsceneChampionMedalOutfit, #cutsceneSpikeChokerOutfit,
+                /* eyes */
+                #cutsceneRoundGlassesOutfit, #cutsceneWayfarerSunglassesOutfit, #cutsceneLeopardPrintSunglassesOutfit, #cutscenePirateEyePatchOutfit, #cutsceneGlasses3dOutfit, #cutsceneThugSunglassesOutfit, 
+                /* nose */
+                 #cutsceneBullRingOutfit, #cutsceneCatWhiskersOutfit, #cutsceneClownNoseOutfit, #cutsceneMustacheOutfit,
             /* layers */
             #angryIcon, #exclamationMark,  #questionMark, #exclamationAndQuestionMark, #phewAir,#sighSweatDrop, #sweatDrop, #yellowLines,
         /* galadon */

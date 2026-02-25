@@ -51,7 +51,7 @@ describe('MainMenu', () => {
       audioHandler: { menu: { playSound: jest.fn(), stopSound: jest.fn() } },
       menu: {
         forestMap: makeMenu(),
-        skins: makeMenu(),
+        wardrobe: makeMenu(),
         records: makeMenu(),
         howToPlay: makeMenu(),
         settings: makeMenu(),
@@ -90,7 +90,7 @@ describe('MainMenu', () => {
   describe('constructor and initial state', () => {
     test('initializes title, options, offsets, and saving flags', () => {
       expect(menu.title).toBe('Main Menu');
-      expect(menu.menuOptions).toEqual(['Play', 'Skins', 'Records', 'How to Play', 'Settings', 'Exit']);
+      expect(menu.menuOptions).toEqual(['Play', 'Wardrobe', 'Records', 'How to Play', 'Settings', 'Exit']);
       expect(menu.positionOffset).toBe(220);
       expect(menu.menuOptionsPositionOffset).toBe(65);
       expect(menu.showSavingSprite).toBe(false);
@@ -115,9 +115,9 @@ describe('MainMenu', () => {
       expect(mockGame.menu.forestMap.activateMenu).toHaveBeenCalled();
     });
 
-    test('"Skins" activates skins menu', () => {
+    test('"Wardrobe" activates wardrobe menu', () => {
       selectAndRun(1);
-      expect(mockGame.menu.skins.activateMenu).toHaveBeenCalled();
+      expect(mockGame.menu.wardrobe.activateMenu).toHaveBeenCalled();
     });
 
     test('"Records" activates records menu', () => {

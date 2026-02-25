@@ -187,12 +187,13 @@ describe('AudioSettingsMenu', () => {
         'Menu Master Volume',
         'Menu Music',
         'Map SFX',
+        'Wardrobe SFX',
         'Menu Navigation SFX',
         'Go Back',
       ]);
-      expect(menu.volumeLevels).toEqual([50, 50, 50, 50, null]);
+      expect(menu.volumeLevels).toEqual([50, 50, 50, 50, 50, null]);
 
-      expect(menu.muted).toEqual([false, false, false, false, null]);
+      expect(menu.muted).toEqual([false, false, false, false, false, null]);
 
       expect(menu.headerSelectionIndex).toBe(-1);
       expect(menu.selectedOption).toBe(-1);

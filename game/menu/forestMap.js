@@ -4,7 +4,9 @@ import {
     getSkinElement,
     COSMETIC_LAYER_ORDER,
     getCosmeticElement,
-} from '../config/skins.js';
+    getCosmeticChromaDegFromState,
+    drawWithOptionalHue,
+} from '../config/skinsAndCosmetics.js';
 import { BaseMenu } from './baseMenu.js';
 import {
     Map1Cutscene, Map2Cutscene, Map3Cutscene, Map4Cutscene, Map5Cutscene, Map6Cutscene, Map7Cutscene,
@@ -105,7 +107,7 @@ export class ForestMapMenu extends BaseMenu {
         }
 
         const mapOptions = [
-            { Map: Map1, maxDistance: 0, winningCoins: 0, environment: null, Cutscene: Map1Cutscene },
+            { Map: Map1, maxDistance: 200, winningCoins: 230, environment: null, Cutscene: Map1Cutscene },
             { Map: Map2, maxDistance: 240, winningCoins: 270, environment: null, Cutscene: Map2Cutscene },
             { Map: Map3, maxDistance: 270, winningCoins: 200, environment: 'underwater', Cutscene: Map3Cutscene },
             { Map: Map4, maxDistance: 240, winningCoins: 280, environment: null, Cutscene: Map4Cutscene },
@@ -161,26 +163,31 @@ export class ForestMapMenu extends BaseMenu {
     }
 
     getCurrentMapIcon() {
-        const skinKey = this.game.menu.skins?.currentSkinKey || 'defaultSkin';
+        const skinKey = this.game.menu.wardrobe?.currentSkinKey || 'defaultSkin';
         return getSkinElement(skinKey) || getSkinElement('defaultSkin') || null;
     }
 
     getCurrentCosmeticIconsInLayerOrder() {
-        const skinsMenu = this.game.menu.skins;
-        if (!skinsMenu || typeof skinsMenu.getCurrentCosmeticKey !== 'function') {
-            return COSMETIC_LAYER_ORDER.map(() => null);
-        }
+        const wardrobe = this.game.menu.wardrobe;
+        const chromaState = wardrobe.getCurrentCosmeticsChromaState() || {};
 
-        const imgs = [];
+        const out = [];
+
         for (const slot of COSMETIC_LAYER_ORDER) {
-            const key = skinsMenu.getCurrentCosmeticKey(slot) || 'none';
+            const key = wardrobe.getCurrentCosmeticKey(slot) || 'none';
+
             if (key === 'none') {
-                imgs.push(null);
+                out.push({ slot, key, img: null, hueDeg: 0 });
                 continue;
             }
-            imgs.push(getCosmeticElement(slot, key) || null);
+
+            const img = getCosmeticElement(slot, key) || null;
+            const hueDeg = getCosmeticChromaDegFromState(slot, key, chromaState);
+
+            out.push({ slot, key, img, hueDeg });
         }
-        return imgs;
+
+        return out;
     }
 
     drawStraightConnection(context, fromCircle, toCircle) {
@@ -628,7 +635,7 @@ export class ForestMapMenu extends BaseMenu {
                     const px = circle.x;
                     const py = circle.y - 10;
 
-                    const drawFrame0 = (img, withGlow) => {
+                    const drawFrame0WithHue = (img, withGlow, hueDeg = 0) => {
                         if (!img) return;
 
                         const dw = FRAME_W * scale;
@@ -644,22 +651,24 @@ export class ForestMapMenu extends BaseMenu {
                             context.shadowBlur = 0;
                         }
 
-                        context.drawImage(
-                            img,
-                            0, 0, FRAME_W, FRAME_H,
-                            px - dw / 2,
-                            py - dh / 2,
-                            dw, dh
-                        );
+                        drawWithOptionalHue(context, { hueDeg }, () => {
+                            context.drawImage(
+                                img,
+                                0, 0, FRAME_W, FRAME_H,
+                                px - dw / 2,
+                                py - dh / 2,
+                                dw, dh
+                            );
+                        });
                     };
 
                     context.save();
                     context.globalAlpha = sealedBonus3 ? 0.45 : 1.0;
 
-                    drawFrame0(skinIcon, true);
+                    drawFrame0WithHue(skinIcon, true, 0);
 
-                    for (const img of cosmeticIcons) {
-                        drawFrame0(img, false);
+                    for (const c of cosmeticIcons) {
+                        drawFrame0WithHue(c.img, false, c.hueDeg);
                     }
 
                     context.restore();

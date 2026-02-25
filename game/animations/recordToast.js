@@ -16,7 +16,7 @@ export class RecordToast {
         cacheScale = 2,
     } = {}) {
         this.game = game;
-        this.text = String(text);
+        this.text = text;
 
         this.x = x != null ? x : game.width / 2;
         this.y = y;
@@ -39,13 +39,31 @@ export class RecordToast {
         this.age = 0;
         this.markedForDeletion = false;
 
-        this.lines = this.text.split("\n");
+        this.richLines = this._normalizeToRichLines(text);
 
         this._cache = null;
         this._cacheW = 0;
         this._cacheH = 0;
 
         this._buildCache();
+    }
+
+    _normalizeToRichLines(text) {
+        if (Array.isArray(text)) {
+            return text.map((line) => {
+                if (!Array.isArray(line)) {
+                    return [{ text: String(line?.text ?? line ?? ""), fill: line?.fill }];
+                }
+                return line.map((seg) => ({
+                    text: String(seg?.text ?? ""),
+                    fill: seg?.fill,
+                }));
+            });
+        }
+
+        const safe = String(text ?? "");
+        const lines = safe.split("\n");
+        return lines.map((line) => [{ text: line, fill: this.fill }]);
     }
 
     clamp01(t) {
@@ -68,6 +86,14 @@ export class RecordToast {
         return m ? Number(m[1]) : 48;
     }
 
+    _measureRichLine(ctx, segments) {
+        let total = 0;
+        for (const seg of segments) {
+            total += ctx.measureText(seg.text).width;
+        }
+        return total;
+    }
+
     _buildCache() {
         const scale = this.cacheScale;
         const canvas = document.createElement("canvas");
@@ -76,16 +102,16 @@ export class RecordToast {
         // measure
         ctx.save();
         ctx.font = this.font;
-        ctx.textAlign = "center";
+        ctx.textAlign = "left";
         ctx.textBaseline = "middle";
 
         const fontSize = this._getFontSizePx();
         const lineH = fontSize * this.lineSpacing;
-        const totalH = (this.lines.length - 1) * lineH;
+        const totalH = (this.richLines.length - 1) * lineH;
 
         let maxW = 0;
-        for (const line of this.lines) {
-            const w = ctx.measureText(line).width;
+        for (const richLine of this.richLines) {
+            const w = this._measureRichLine(ctx, richLine);
             if (w > maxW) maxW = w;
         }
 
@@ -99,7 +125,7 @@ export class RecordToast {
         // render
         ctx.setTransform(scale, 0, 0, scale, 0, 0);
         ctx.font = this.font;
-        ctx.textAlign = "center";
+        ctx.textAlign = "left";
         ctx.textBaseline = "middle";
 
         const cx = canvas.width / (2 * scale);
@@ -110,15 +136,26 @@ export class RecordToast {
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 0;
 
-        for (let i = 0; i < this.lines.length; i++) {
+        for (let i = 0; i < this.richLines.length; i++) {
+            const segments = this.richLines[i];
             const yy = cy - totalH / 2 + i * lineH;
 
-            ctx.lineWidth = this.strokeWidth;
-            ctx.strokeStyle = this.stroke;
-            ctx.strokeText(this.lines[i], cx, yy);
+            const lineWidth = this._measureRichLine(ctx, segments);
+            let xCursor = cx - lineWidth / 2;
 
-            ctx.fillStyle = this.fill;
-            ctx.fillText(this.lines[i], cx, yy);
+            for (const seg of segments) {
+                const segText = seg.text;
+                const segFill = seg.fill || this.fill;
+
+                ctx.lineWidth = this.strokeWidth;
+                ctx.strokeStyle = this.stroke;
+                ctx.strokeText(segText, xCursor, yy);
+
+                ctx.fillStyle = segFill;
+                ctx.fillText(segText, xCursor, yy);
+
+                xCursor += ctx.measureText(segText).width;
+            }
         }
 
         ctx.restore();

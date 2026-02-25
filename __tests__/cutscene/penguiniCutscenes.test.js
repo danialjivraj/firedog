@@ -35,7 +35,7 @@ describe('PenguiniCutscene & subclasses', () => {
                 pause: { isPaused: false },
                 audioSettings: Symbol('settings'),
                 gameOver: { name: 'gameOver' },
-                skins: {
+                wardrobe: {
                     defaultSkin: 'default',
                     hatSkin: 'hat',
                     choloSkin: 'cholo',

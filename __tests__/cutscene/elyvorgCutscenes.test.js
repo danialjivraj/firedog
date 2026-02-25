@@ -49,7 +49,7 @@ const createBaseGame = () => {
 
 const createMap = (overrides = {}) => ({
     menu: {
-        skins: {
+        wardrobe: {
             defaultSkin: 'default',
             hatSkin: 'hat',
             choloSkin: 'cholo',

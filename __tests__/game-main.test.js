@@ -93,6 +93,7 @@ import {
   BonusMap1GlacikalIngameCutsceneAfterFight
 } from '../game/cutscene/glacikalCutscenes.js';
 import { DistortionEffect } from '../game/animations/distortion.js';
+import { SpinningChicks } from '../game/animations/particles.js';
 import { RecordToast } from '../game/animations/recordToast.js';
 import { formatTimeMs } from '../game/config/formatTime.js';
 
@@ -425,7 +426,7 @@ describe('Game class (game-main.js)', () => {
       game.elyvorgDefeated = true;
       game.ntharaxDefeated = false;
       game.selectedDifficulty = 'Hard';
-      game.menu.skins.getCurrentSkinId = () => 'tiger';
+      game.menu.wardrobe.getCurrentSkinId = () => 'tiger';
 
       game.menu.audioSettings.getState = () => VALID_AUDIO_STATE;
     });
@@ -481,12 +482,12 @@ describe('Game class (game-main.js)', () => {
 
       const g3 = new Game(canvas, canvas.width, canvas.height);
       g3.menu.audioSettings.setState = jest.fn();
-      g3.menu.skins.setCurrentSkinById = jest.fn();
+      g3.menu.wardrobe.setCurrentSkinById = jest.fn();
       g3.menu.levelDifficulty.setDifficulty = jest.fn();
       g3.loadGameState();
 
       expect(g3.menu.audioSettings.setState).toHaveBeenCalledWith(VALID_AUDIO_STATE);
-      expect(g3.menu.skins.setCurrentSkinById).toHaveBeenCalledWith('tiger');
+      expect(g3.menu.wardrobe.setCurrentSkinById).toHaveBeenCalledWith('tiger');
       expect(g3.menu.levelDifficulty.setDifficulty).toHaveBeenCalledWith('Hard');
     });
 
@@ -508,7 +509,7 @@ describe('Game class (game-main.js)', () => {
     it('saveGameState() includes keyBindings; loadGameState() merges them over defaults', () => {
       const g1 = new Game(canvas, canvas.width, canvas.height);
 
-      g1.menu.skins.currentSkin = { id: 'defaultSkin' };
+      g1.menu.wardrobe.currentSkin = { id: 'defaultSkin' };
 
       g1.menu.audioSettings.getState = () => VALID_AUDIO_STATE;
 
@@ -1007,6 +1008,144 @@ describe('Game class (game-main.js)', () => {
     });
   });
 
+  // ------------------------------------------------------------
+  // Meta toast
+  // ------------------------------------------------------------
+  describe('meta toast (showMetaToast)', () => {
+    beforeEach(() => jest.useFakeTimers());
+    afterEach(() => jest.useRealTimers());
+
+    it('schedules a RecordToast into metaToasts and plays the new record sound', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+
+      game.metaToasts = [];
+      jest.spyOn(game.audioHandler.mapSoundtrack, 'playSound').mockImplementation(() => { });
+      RecordToast.mockClear();
+
+      game.showMetaToast('HELLO META', 200);
+
+      expect(game.metaToasts).toHaveLength(0);
+
+      jest.advanceTimersByTime(199);
+      expect(game.metaToasts).toHaveLength(0);
+
+      jest.advanceTimersByTime(1);
+
+      expect(RecordToast).toHaveBeenCalledTimes(1);
+      expect(RecordToast).toHaveBeenCalledWith(game, 'HELLO META', { y: 100 });
+      expect(game.metaToasts).toHaveLength(1);
+
+      expect(game.audioHandler.mapSoundtrack.playSound).toHaveBeenCalledWith(
+        'newRecordSound',
+        false,
+        true
+      );
+    });
+
+    it('clamps negative delay to 0', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+
+      game.metaToasts = [];
+      jest.spyOn(game.audioHandler.mapSoundtrack, 'playSound').mockImplementation(() => { });
+      RecordToast.mockClear();
+
+      game.showMetaToast('NOW', -500);
+
+      expect(game.metaToasts).toHaveLength(0);
+      jest.advanceTimersByTime(0);
+
+      expect(RecordToast).toHaveBeenCalledTimes(1);
+      expect(game.metaToasts).toHaveLength(1);
+    });
+  });
+
+  describe('maybeAnnounceGiftSkins()', () => {
+    it('returns false and does nothing when no gift flags are set', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+
+      game.glacikalDefeated = false;
+      game.elyvorgDefeated = false;
+      game.ntharaxDefeated = false;
+      game._announcedGiftSkins = {};
+
+      const toastSpy = jest.spyOn(game, 'showMetaToast').mockImplementation(() => { });
+      const saveSpy = jest.spyOn(game, 'saveGameState').mockImplementation(() => { });
+
+      const out = game.maybeAnnounceGiftSkins({ delayMs: 123 });
+
+      expect(out).toBe(false);
+      expect(toastSpy).not.toHaveBeenCalled();
+      expect(saveSpy).not.toHaveBeenCalled();
+    });
+
+    it('announces an unlocked skin once, records guard, and saves when it announces', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+
+      game.glacikalDefeated = true;
+      game.elyvorgDefeated = false;
+      game.ntharaxDefeated = false;
+      game._announcedGiftSkins = {};
+
+      const toastSpy = jest.spyOn(game, 'showMetaToast').mockImplementation(() => { });
+      const saveSpy = jest.spyOn(game, 'saveGameState').mockImplementation(() => { });
+
+      const out1 = game.maybeAnnounceGiftSkins({ delayMs: 450 });
+
+      expect(out1).toBe(true);
+      expect(game._announcedGiftSkins.iceBreakerSkin).toBe(true);
+      expect(toastSpy).toHaveBeenCalledTimes(1);
+      expect(saveSpy).toHaveBeenCalledTimes(1);
+
+      const [payload, delay] = toastSpy.mock.calls[0];
+      expect(delay).toBe(450);
+
+      expect(Array.isArray(payload)).toBe(true);
+      expect(payload.length).toBe(2);
+      expect(payload[0][0].text).toBe('NEW SKIN UNLOCKED!');
+      expect(payload[0][0].fill).toBe('yellow');
+
+      const line2 = payload[1] || [];
+      const hasCyanSegment = line2.some(seg => seg && seg.fill === 'cyan');
+      expect(hasCyanSegment).toBe(true);
+
+      toastSpy.mockClear();
+      saveSpy.mockClear();
+
+      const out2 = game.maybeAnnounceGiftSkins({ delayMs: 450 });
+      expect(out2).toBe(false);
+      expect(toastSpy).not.toHaveBeenCalled();
+      expect(saveSpy).not.toHaveBeenCalled();
+    });
+
+    it('announces multiple skins and uses the correct per-skin label fill colors', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+
+      game.glacikalDefeated = true;
+      game.elyvorgDefeated = true;
+      game.ntharaxDefeated = true;
+      game._announcedGiftSkins = {};
+
+      const toastSpy = jest.spyOn(game, 'showMetaToast').mockImplementation(() => { });
+      const saveSpy = jest.spyOn(game, 'saveGameState').mockImplementation(() => { });
+
+      const out = game.maybeAnnounceGiftSkins({ delayMs: 1 });
+
+      expect(out).toBe(true);
+      expect(toastSpy).toHaveBeenCalledTimes(3);
+      expect(saveSpy).toHaveBeenCalledTimes(1);
+
+      const allPayloads = toastSpy.mock.calls.map(c => c[0]);
+
+      const hasOrangered = allPayloads.some(p => (p[1] || []).some(seg => seg && seg.fill === 'orangered'));
+      const hasViolet = allPayloads.some(p => (p[1] || []).some(seg => seg && seg.fill === 'violet'));
+      const hasCyan = allPayloads.some(p => (p[1] || []).some(seg => seg && seg.fill === 'cyan'));
+
+      expect(hasCyan).toBe(true);
+      expect(hasOrangered).toBe(true);
+      expect(hasViolet).toBe(true);
+    });
+  });
+
   describe('record toast integration (records methods)', () => {
     it('onBossDefeated() triggers a toast with the expected text and 1000ms delay for a new record', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
@@ -1061,7 +1200,7 @@ describe('Game class (game-main.js)', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
       game.menu.forestMap.resetSelectedCircleIndex = jest.fn();
       game.menu.levelDifficulty.setDifficulty = jest.fn();
-      game.menu.skins.setCurrentSkinById = jest.fn();
+      game.menu.wardrobe.setCurrentSkinById = jest.fn();
       game.menu.audioSettings.setState = jest.fn();
 
       localStorage.setItem('gameState', '{"foo":123}');
@@ -1098,7 +1237,7 @@ describe('Game class (game-main.js)', () => {
               volumeLevels: [50, 50, 50, 50, 50, 50, null],
             },
             MENU: {
-              volumeLevels: [50, 50, 50, 50, null],
+              volumeLevels: [50, 50, 50, 50, 50, null],
             },
           },
         },
@@ -1122,14 +1261,14 @@ describe('Game class (game-main.js)', () => {
       expect(game.menu.forestMap.resetSelectedCircleIndex).toHaveBeenCalled();
       expect(game.menu.enemyLore.currentPage).toBe(0);
       expect(game.menu.levelDifficulty.setDifficulty).toHaveBeenCalledWith('Normal');
-      expect(game.menu.skins.getCurrentSkinId()).toBe('defaultSkin');
-      expect(game.menu.skins.setCurrentSkinById).toHaveBeenCalledWith('defaultSkin');
+      expect(game.menu.wardrobe.getCurrentSkinId()).toBe('defaultSkin');
+      expect(game.menu.wardrobe.setCurrentSkinById).toHaveBeenCalledWith('defaultSkin');
 
       expect(game.menu.audioSettings.setState).toHaveBeenCalledWith({
         tabData: {
           MENU: {
-            volumeLevels: [50, 50, 50, 50, null],
-            muted: [false, false, false, false, null],
+            volumeLevels: [50, 50, 50, 50, 50, null],
+            muted: [false, false, false, false, false, null],
           },
           CUTSCENE: {
             volumeLevels: [50, 50, 50, 50, null],
@@ -1231,6 +1370,40 @@ describe('Game class (game-main.js)', () => {
       jest.advanceTimersByTime(4000);
       expect(game.menu.main.showSavingSprite).toBe(false);
       expect(game.canSelect).toBe(true);
+    });
+
+    it('calls maybeAnnounceGiftSkins({ delayMs: 450 }) when ending an end-cutscene and player is in cabin', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+
+      game.isEndCutscene = true;
+      game.player.x = 300;
+      game.player.width = 50;
+      game.cabin = { x: 100, width: 200 };
+      game.background = { constructor: { name: 'NotMap7' }, totalDistanceTraveled: game.maxDistance };
+      game.resetInstance = { reset: jest.fn() };
+
+      const giftSpy = jest.spyOn(game, 'maybeAnnounceGiftSkins').mockReturnValue(false);
+
+      game.endCutscene();
+
+      expect(giftSpy).toHaveBeenCalledWith({ delayMs: 450 });
+    });
+
+    it('does not call maybeAnnounceGiftSkins when not ending an end-cutscene', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+
+      game.isEndCutscene = false;
+      game.player.x = 300;
+      game.player.width = 50;
+      game.cabin = { x: 100, width: 200 };
+      game.background = { constructor: { name: 'NotMap7' }, totalDistanceTraveled: game.maxDistance };
+      game.resetInstance = { reset: jest.fn() };
+
+      const giftSpy = jest.spyOn(game, 'maybeAnnounceGiftSkins').mockReturnValue(false);
+
+      game.endCutscene();
+
+      expect(giftSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -2341,7 +2514,7 @@ describe('Game class (game-main.js)', () => {
     it('uses default enterCabin=290 and sets openDoor="submarineDoorOpening" for Map3 (and plays it)', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
       game.saveGameState = jest.fn();
-      game.menu.skins.currentSkin = { id: 'defaultSkin' };
+      game.menu.wardrobe.currentSkin = { id: 'defaultSkin' };
       game.menu.audioSettings.getState = () => ({});
 
       const playSpy = jest.spyOn(game.audioHandler.cutsceneSFX, 'playSound');
@@ -2374,7 +2547,7 @@ describe('Game class (game-main.js)', () => {
         const game = new Game(canvas, canvas.width, canvas.height);
 
         game.saveGameState = jest.fn();
-        game.menu.skins.currentSkin = { id: 'defaultSkin' };
+        game.menu.wardrobe.currentSkin = { id: 'defaultSkin' };
         game.menu.audioSettings.getState = () => ({});
         jest.spyOn(game, 'startCutscene');
         game.background = { constructor: { name }, update: () => { } };
@@ -2389,6 +2562,75 @@ describe('Game class (game-main.js)', () => {
         expect(game.isEndCutscene).toBe(true);
         expect(game.isPlayerInGame).toBe(false);
       });
+    });
+
+    it('converts coins to creditCoins on cabin entry (floors coins) and saves', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+
+      game.saveGameState = jest.fn();
+      game.menu.wardrobe.currentSkin = { id: 'defaultSkin' };
+      game.menu.audioSettings.getState = () => ({});
+
+      game.creditCoins = 10;
+      game.coins = 5.9;
+
+      game.background = { constructor: { name: 'Map1' }, update: () => { } };
+      game.currentMap = 'Map1';
+      game.cabin = { isFullyVisible: true, x: 100, width: 1000 };
+      game.player = { update: () => { }, x: 500, width: 10 };
+      game.menu.pause.isPaused = false;
+      game.tutorial.tutorialPause = false;
+
+      game.update(0);
+
+      expect(game.creditCoins).toBe(15);
+      expect(game.saveGameState).toHaveBeenCalled();
+    });
+
+    it('caps creditCoins at 999 on cabin entry', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+
+      game.saveGameState = jest.fn();
+      game.menu.wardrobe.currentSkin = { id: 'defaultSkin' };
+      game.menu.audioSettings.getState = () => ({});
+
+      game.creditCoins = 998;
+      game.coins = 10;
+
+      game.background = { constructor: { name: 'Map1' }, update: () => { } };
+      game.currentMap = 'Map1';
+      game.cabin = { isFullyVisible: true, x: 100, width: 1000 };
+      game.player = { update: () => { }, x: 500, width: 10 };
+      game.menu.pause.isPaused = false;
+      game.tutorial.tutorialPause = false;
+
+      game.update(0);
+
+      expect(game.creditCoins).toBe(999);
+      expect(game.saveGameState).toHaveBeenCalled();
+    });
+
+    it('does not save or change creditCoins when coins are <= 0 on cabin entry', () => {
+      const game = new Game(canvas, canvas.width, canvas.height);
+
+      game.saveGameState = jest.fn();
+      game.menu.wardrobe.currentSkin = { id: 'defaultSkin' };
+      game.menu.audioSettings.getState = () => ({});
+
+      game.creditCoins = 123;
+      game.coins = -5;
+
+      game.background = { constructor: { name: 'Map1' }, update: () => { } };
+      game.currentMap = 'Map1';
+      game.cabin = { isFullyVisible: true, x: 100, width: 1000 };
+      game.player = { update: () => { }, x: 500, width: 10 };
+      game.menu.pause.isPaused = false;
+      game.tutorial.tutorialPause = false;
+
+      game.update(0);
+
+      expect(game.creditCoins).toBe(123);
+      expect(game.saveGameState).not.toHaveBeenCalled();
     });
   });
 
@@ -2412,6 +2654,7 @@ describe('Game class (game-main.js)', () => {
       game.collisions = [{ draw: jest.fn() }];
       game.floatingMessages = [{ draw: jest.fn() }];
       game.cutscenes = [{ draw: jest.fn() }];
+      game.recordToasts = [];
       game.tutorial = { draw: jest.fn() };
       game.UI = { draw: jest.fn() };
       ctx.clearRect.mockClear();
@@ -2474,7 +2717,7 @@ describe('Game class (game-main.js)', () => {
     it('sets enterCabin=570 and openDoor="walkingCutsceneSound" for Map7 and plays sound', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
       game.saveGameState = jest.fn();
-      game.menu.skins.currentSkin = { id: 'defaultSkin' };
+      game.menu.wardrobe.currentSkin = { id: 'defaultSkin' };
       game.menu.audioSettings.getState = () => ({});
 
       jest.spyOn(game.audioHandler.cutsceneSFX, 'playSound');
@@ -2499,7 +2742,7 @@ describe('Game class (game-main.js)', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
 
       game.saveGameState = jest.fn();
-      game.menu.skins.currentSkin = { id: 'defaultSkin' };
+      game.menu.wardrobe.currentSkin = { id: 'defaultSkin' };
       game.menu.audioSettings.getState = () => ({});
 
       jest.spyOn(game.audioHandler.cutsceneSFX, 'playSound');
@@ -2596,6 +2839,27 @@ describe('Game class (game-main.js)', () => {
       game.particles = Array(5).fill().map(() => ({ update: () => { }, markedForDeletion: false }));
       game.update(0);
       expect(game.particles).toHaveLength(3);
+    });
+
+    it('keeps SpinningChicks particles when trimming (prioritized keep set)', () => {
+      game.maxParticles = 3;
+
+      const chick1 = Object.create(SpinningChicks.prototype);
+      chick1.update = jest.fn();
+      chick1.markedForDeletion = false;
+
+      const chick2 = Object.create(SpinningChicks.prototype);
+      chick2.update = jest.fn();
+      chick2.markedForDeletion = false;
+
+      const evictable = Array(5).fill().map(() => ({ update: () => { }, markedForDeletion: false }));
+
+      game.particles = [chick1, evictable[0], chick2, evictable[1], evictable[2], evictable[3], evictable[4]];
+
+      game.update(0);
+
+      expect(game.particles).toHaveLength(3);
+      expect(game.particles.filter(p => p instanceof SpinningChicks)).toHaveLength(2);
     });
   });
 

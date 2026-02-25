@@ -29,6 +29,7 @@
 <audio id="bookFlipBackwardSound" src="assets/audio/menu/bookFlipBackwardSound.mp3"></audio>
 <audio id="bookFlipForwardSound" src="assets/audio/menu/bookFlipForwardSound.mp3"></audio>
 <audio id="enemyLoreSwitchTabSound" src="assets/audio/menu/enemyLoreSwitchTabSound.mp3"></audio>
+<audio id="purchaseCompletedSound" src="assets/audio/menu/purchaseCompletedSound.mp3" preload="auto"></audio>
 <!-- cutscene audio -->
     <!-- background audio -->
     <audio id="cracklingMountainCampfirewithRelaxingRiver" src="assets/audio/cutscenes/background/cracklingMountainCampfirewithRelaxingRiver.mp3" preload="auto"></audio>
@@ -384,22 +385,40 @@
         <img id="galaxySkin" src="assets/entities/firedog/skins/galaxySkin.png">
         <img id="shinySkin" src="assets/entities/firedog/skins/shinySkin.png">
         <!-- outfits -->
-        <img id="neckerchiefOutfit" src="assets/entities/firedog/outfits/neckerchiefOutfit.png">
-        <img id="scarfOutfit" src="assets/entities/firedog/outfits/scarfOutfit.png">
-        <img id="headBandanaOutfit" src="assets/entities/firedog/outfits/headBandanaOutfit.png">
-        <img id="hatOutfit" src="assets/entities/firedog/outfits/hatOutfit.png">
-        <img id="frogCrownOutfit" src="assets/entities/firedog/outfits/frogCrownOutfit.png">
-        <img id="mustacheOutfit" src="assets/entities/firedog/outfits/mustacheOutfit.png">
-        <img id="bullRingOutfit" src="assets/entities/firedog/outfits/bullRingOutfit.png">
-        <img id="kingsCrownOutfit" src="assets/entities/firedog/outfits/kingsCrownOutfit.png">
-        <img id="thugSunglassesOutfit" src="assets/entities/firedog/outfits/thugSunglassesOutfit.png">
-        <img id="cubanChainOutfit" src="assets/entities/firedog/outfits/cubanChainOutfit.png">
-        <img id="pirateEyePatchOutfit" src="assets/entities/firedog/outfits/pirateEyePatchOutfit.png">
-        <img id="cowboyHatOutfit" src="assets/entities/firedog/outfits/cowboyHatOutfit.png">
-        <img id="unicornHornOutfit" src="assets/entities/firedog/outfits/unicornHornOutfit.png">
-        <img id="flowerOutfit" src="assets/entities/firedog/outfits/flowerOutfit.png">
-        <img id="catEarsOutfit" src="assets/entities/firedog/outfits/catEarsOutfit.png">
-        <img id="devilHornsOutfit" src="assets/entities/firedog/outfits/devilHornsOutfit.png">
+            <!-- head -->
+            <img id="unicornHornOutfit" src="assets/entities/firedog/outfits/unicornHornOutfit.png">
+            <img id="hatOutfit" src="assets/entities/firedog/outfits/hatOutfit.png">
+            <img id="flowerOutfit" src="assets/entities/firedog/outfits/flowerOutfit.png">
+            <img id="frogCrownOutfit" src="assets/entities/firedog/outfits/frogCrownOutfit.png">
+            <img id="cowboyHatOutfit" src="assets/entities/firedog/outfits/cowboyHatOutfit.png">
+            <img id="bandanaOutfit" src="assets/entities/firedog/outfits/bandanaOutfit.png">
+            <img id="catEarsOutfit" src="assets/entities/firedog/outfits/catEarsOutfit.png">
+            <img id="devilHornsOutfit" src="assets/entities/firedog/outfits/devilHornsOutfit.png">
+            <img id="kingsCrownOutfit" src="assets/entities/firedog/outfits/kingsCrownOutfit.png">
+            <img id="vikingHelmetOutfit" src="assets/entities/firedog/outfits/vikingHelmetOutfit.png">
+            <img id="clownWigOutfit" src="assets/entities/firedog/outfits/clownWigOutfit.png">
+            <!-- neck -->
+            <img id="hawaiianNecklaceOutfit" src="assets/entities/firedog/outfits/hawaiianNecklaceOutfit.png">
+            <img id="tieOutfit" src="assets/entities/firedog/outfits/tieOutfit.png">
+            <img id="bowtieOutfit" src="assets/entities/firedog/outfits/bowtieOutfit.png">
+            <img id="scarfOutfit" src="assets/entities/firedog/outfits/scarfOutfit.png">
+            <img id="neckerchiefOutfit" src="assets/entities/firedog/outfits/neckerchiefOutfit.png">
+            <img id="pearlOutfit" src="assets/entities/firedog/outfits/pearlOutfit.png">
+            <img id="cubanChainOutfit" src="assets/entities/firedog/outfits/cubanChainOutfit.png">
+            <img id="championMedalOutfit" src="assets/entities/firedog/outfits/championMedalOutfit.png">
+            <img id="spikeChokerOutfit" src="assets/entities/firedog/outfits/spikeChokerOutfit.png">
+            <!-- eyes -->
+            <img id="roundGlassesOutfit" src="assets/entities/firedog/outfits/roundGlassesOutfit.png">
+            <img id="wayfarerSunglassesOutfit" src="assets/entities/firedog/outfits/wayfarerSunglassesOutfit.png">
+            <img id="leopardPrintSunglassesOutfit" src="assets/entities/firedog/outfits/leopardPrintSunglassesOutfit.png">
+            <img id="pirateEyePatchOutfit" src="assets/entities/firedog/outfits/pirateEyePatchOutfit.png">
+            <img id="glasses3dOutfit" src="assets/entities/firedog/outfits/glasses3dOutfit.png">
+            <img id="thugSunglassesOutfit" src="assets/entities/firedog/outfits/thugSunglassesOutfit.png">
+            <!-- nose -->
+            <img id="bullRingOutfit" src="assets/entities/firedog/outfits/bullRingOutfit.png">
+            <img id="catWhiskersOutfit" src="assets/entities/firedog/outfits/catWhiskersOutfit.png">
+            <img id="clownNoseOutfit" src="assets/entities/firedog/outfits/clownNoseOutfit.png">
+            <img id="mustacheOutfit" src="assets/entities/firedog/outfits/mustacheOutfit.png">
         <!-- firedog animations -->
         <img id="dust_black" src="assets/entities/firedog/animations/dust_black.png">
         <img id="ice_crystal" src="assets/entities/firedog/animations/ice_crystal.png">
@@ -1000,6 +1019,22 @@
             <img id="reddenShockfiredogDiscomfort" src="assets/cutscenes/characterImages/Firedog/skins/reddenShock/reddenShockfiredogDiscomfort.png">
             <img id="reddenShockfiredogSigh" src="assets/cutscenes/characterImages/Firedog/skins/reddenShock/reddenShockfiredogSigh.png">
             <img id="reddenShockfiredogSmile" src="assets/cutscenes/characterImages/Firedog/skins/reddenShock/reddenShockfiredogSmile.png">
+            <!-- neonPink images -->
+            <img id="neonPinkfiredogHappy" src="assets/cutscenes/characterImages/Firedog/skins/neonPink/neonPinkfiredogHappy.png">
+            <img id="neonPinkfiredogUpset" src="assets/cutscenes/characterImages/Firedog/skins/neonPink/neonPinkfiredogUpset.png">
+            <img id="neonPinkfiredogAngry" src="assets/cutscenes/characterImages/Firedog/skins/neonPink/neonPinkfiredogAngry.png">
+            <img id="neonPinkfiredogPhew" src="assets/cutscenes/characterImages/Firedog/skins/neonPink/neonPinkfiredogPhew.png">
+            <img id="neonPinkfiredogTired" src="assets/cutscenes/characterImages/Firedog/skins/neonPink/neonPinkfiredogTired.png">
+            <img id="neonPinkfiredogHeadache" src="assets/cutscenes/characterImages/Firedog/skins/neonPink/neonPinkfiredogHeadache.png">
+            <img id="neonPinkfiredogCry" src="assets/cutscenes/characterImages/Firedog/skins/neonPink/neonPinkfiredogCry.png">
+            <img id="neonPinkfiredogCry2" src="assets/cutscenes/characterImages/Firedog/skins/neonPink/neonPinkfiredogCry2.png">
+            <img id="neonPinkfiredogSad" src="assets/cutscenes/characterImages/Firedog/skins/neonPink/neonPinkfiredogSad.png">
+            <img id="neonPinkfiredogNormal" src="assets/cutscenes/characterImages/Firedog/skins/neonPink/neonPinkfiredogNormal.png">
+            <img id="neonPinkfiredogCurious" src="assets/cutscenes/characterImages/Firedog/skins/neonPink/neonPinkfiredogCurious.png">
+            <img id="neonPinkfiredogSurprised" src="assets/cutscenes/characterImages/Firedog/skins/neonPink/neonPinkfiredogSurprised.png">
+            <img id="neonPinkfiredogDiscomfort" src="assets/cutscenes/characterImages/Firedog/skins/neonPink/neonPinkfiredogDiscomfort.png">
+            <img id="neonPinkfiredogSigh" src="assets/cutscenes/characterImages/Firedog/skins/neonPink/neonPinkfiredogSigh.png">
+            <img id="neonPinkfiredogSmile" src="assets/cutscenes/characterImages/Firedog/skins/neonPink/neonPinkfiredogSmile.png">
             <!-- ghost images -->
             <img id="ghostfiredogHappy" src="assets/cutscenes/characterImages/Firedog/skins/ghost/ghostfiredogHappy.png">
             <img id="ghostfiredogUpset" src="assets/cutscenes/characterImages/Firedog/skins/ghost/ghostfiredogUpset.png">
@@ -1161,22 +1196,40 @@
             <img id="galaxyfiredogSigh" src="assets/cutscenes/characterImages/Firedog/skins/galaxy/galaxyfiredogSigh.png">
             <img id="galaxyfiredogSmile" src="assets/cutscenes/characterImages/Firedog/skins/galaxy/galaxyfiredogSmile.png">
             <!-- outfit skins -->
-            <img id="cutsceneHatOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneHatOutfit.png">
-            <img id="cutsceneNeckerchiefOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneNeckerchiefOutfit.png">
-            <img id="cutsceneScarfOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneScarfOutfit.png">
-            <img id="cutsceneHeadBandanaOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneHeadBandanaOutfit.png">
-            <img id="cutsceneFrogCrownOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneFrogCrownOutfit.png">
-            <img id="cutsceneMustacheOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneMustacheOutfit.png">
-            <img id="cutsceneBullRingOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneBullRingOutfit.png">
-            <img id="cutsceneThugSunglassesOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneThugSunglassesOutfit.png">
-            <img id="cutsceneKingsCrownOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneKingsCrownOutfit.png">
-            <img id="cutscenePirateEyePatchOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutscenePirateEyePatchOutfit.png">
-            <img id="cutsceneCowboyHatOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneCowboyHatOutfit.png">
-            <img id="cutsceneDevilHornsOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneDevilHornsOutfit.png">
-            <img id="cutsceneCubanChainOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneCubanChainOutfit.png">
-            <img id="cutsceneUnicornHornOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneUnicornHornOutfit.png">
-            <img id="cutsceneFlowerOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneFlowerOutfit.png">
-            <img id="cutsceneCatEarsOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneCatEarsOutfit.png">
+                <!-- head -->
+                <img id="cutsceneUnicornHornOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneUnicornHornOutfit.png">
+                <img id="cutsceneHatOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneHatOutfit.png">
+                <img id="cutsceneFlowerOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneFlowerOutfit.png">
+                <img id="cutsceneFrogCrownOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneFrogCrownOutfit.png">
+                <img id="cutsceneCowboyHatOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneCowboyHatOutfit.png">
+                <img id="cutsceneBandanaOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneBandanaOutfit.png">
+                <img id="cutsceneCatEarsOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneCatEarsOutfit.png">
+                <img id="cutsceneDevilHornsOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneDevilHornsOutfit.png">
+                <img id="cutsceneKingsCrownOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneKingsCrownOutfit.png">
+                <img id="cutsceneVikingHelmetOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneVikingHelmetOutfit.png">
+                <img id="cutsceneClownWigOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneClownWigOutfit.png">
+                <!-- neck -->
+                <img id="cutsceneHawaiianNecklaceOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneHawaiianNecklaceOutfit.png">
+                <img id="cutsceneTieOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneTieOutfit.png">
+                <img id="cutsceneBowtieOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneBowtieOutfit.png">
+                <img id="cutsceneScarfOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneScarfOutfit.png">
+                <img id="cutsceneNeckerchiefOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneNeckerchiefOutfit.png">
+                <img id="cutscenePearlOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutscenePearlOutfit.png">
+                <img id="cutsceneCubanChainOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneCubanChainOutfit.png">
+                <img id="cutsceneChampionMedalOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneChampionMedalOutfit.png">
+                <img id="cutsceneSpikeChokerOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneSpikeChokerOutfit.png">
+                <!-- eyes -->
+                <img id="cutsceneRoundGlassesOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneRoundGlassesOutfit.png">
+                <img id="cutsceneWayfarerSunglassesOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneWayfarerSunglassesOutfit.png">
+                <img id="cutsceneLeopardPrintSunglassesOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneLeopardPrintSunglassesOutfit.png">
+                <img id="cutscenePirateEyePatchOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutscenePirateEyePatchOutfit.png">
+                <img id="cutsceneGlasses3dOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneGlasses3dOutfit.png">
+                <img id="cutsceneThugSunglassesOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneThugSunglassesOutfit.png">
+                <!-- nose -->
+                <img id="cutsceneBullRingOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneBullRingOutfit.png">
+                <img id="cutsceneCatWhiskersOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneCatWhiskersOutfit.png">
+                <img id="cutsceneClownNoseOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneClownNoseOutfit.png">
+                <img id="cutsceneMustacheOutfit" src="assets/cutscenes/characterImages/Firedog/outfits/cutsceneMustacheOutfit.png">
             <!-- layers -->
             <img id="angryIcon" src="assets/cutscenes/characterImages/Firedog/angryIcon.png">
             <img id="exclamationMark" src="assets/cutscenes/characterImages/Firedog/exclamationMark.png">

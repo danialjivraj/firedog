@@ -14,12 +14,16 @@ import {
 } from '../../game/background/background.js';
 import { Cabin } from '../../game/entities/cabin.js';
 import { Penguini } from '../../game/entities/penguini.js';
+import {
+    getCosmeticElement,
+    getCosmeticChromaDegFromState,
+} from '../../game/config/skinsAndCosmetics.js';
 
 jest.mock('../../game/config/timeOfDay.js', () => ({
     isLocalNight: jest.fn(() => false),
 }));
 
-jest.mock('../../game/config/skins.js', () => ({
+jest.mock('../../game/config/skinsAndCosmetics.js', () => ({
     FIREDOG_FRAME: { width: 100, height: 91.3 },
 
     getSkinElement: jest.fn((skinKey) => {
@@ -37,8 +41,13 @@ jest.mock('../../game/config/skins.js', () => ({
         return { id, width: 40, height: 40 };
     }),
 
-    COSMETIC_LAYER_ORDER: ['neck', 'eyes', 'face', 'head'],
+    COSMETIC_LAYER_ORDER: ['neck', 'eyes', 'nose', 'head'],
     getCosmeticElement: jest.fn(() => null),
+
+    getCosmeticChromaDegFromState: jest.fn(() => 0),
+    drawWithOptionalHue: jest.fn((ctx, opts, drawFn) => {
+        if (typeof drawFn === 'function') drawFn();
+    }),
 }));
 
 jest.mock('../../game/cutscene/storyCutscenes.js', () => {
@@ -159,9 +168,11 @@ describe('ForestMapMenu', () => {
             bonusMap3Unlocked: false,
             canSelectForestMap: false,
             menu: {
-                skins: {
+                wardrobe: {
                     defaultSkin: 'default',
                     currentSkin: 'default',
+                    getCurrentCosmeticsChromaState: jest.fn(() => ({})),
+                    getCurrentCosmeticKey: jest.fn(() => 'none'),
                 },
                 main: { closeAllMenus: jest.fn() },
             },
@@ -505,7 +516,7 @@ describe('ForestMapMenu', () => {
         });
 
         it('uses currentSkinKey when set on skins', () => {
-            mockGame.menu.skins.currentSkinKey = 'shinySkin';
+            mockGame.menu.wardrobe.currentSkinKey = 'shinySkin';
             const menuWithSelection = new ForestMapMenu(mockGame);
 
             const icon = menuWithSelection.getCurrentMapIcon();
@@ -513,18 +524,67 @@ describe('ForestMapMenu', () => {
         });
 
         it('ignores getCurrentSkinId and uses currentSkinKey (source of truth)', () => {
-            mockGame.menu.skins.getCurrentSkinId = jest.fn(() => 'tigerSkin');
-            mockGame.menu.skins.currentSkinKey = 'shinySkin';
+            mockGame.menu.wardrobe.getCurrentSkinId = jest.fn(() => 'tigerSkin');
+            mockGame.menu.wardrobe.currentSkinKey = 'shinySkin';
 
             const icon = menu.getCurrentMapIcon();
             expect(icon.id).toBe('shiny');
         });
 
         it('falls back to default icon when skin id is unrecognized', () => {
-            mockGame.menu.skins.getCurrentSkinId = jest.fn(() => 'unknownSkin');
+            mockGame.menu.wardrobe.getCurrentSkinId = jest.fn(() => 'unknownSkin');
 
             const icon = menu.getCurrentMapIcon();
             expect(icon.id).toBe('default');
+        });
+    });
+
+    describe('getCurrentCosmeticIconsInLayerOrder()', () => {
+        it('returns per-slot entries in layer order including nulls for "none"', () => {
+            const chromaState = { head: { hatOutfit: { variantId: 'blue' } } };
+
+            mockGame.menu.wardrobe.getCurrentCosmeticsChromaState = jest.fn(() => chromaState);
+            mockGame.menu.wardrobe.getCurrentCosmeticKey = jest.fn((slot) => {
+                if (slot === 'neck') return 'none';
+                if (slot === 'eyes') return 'thugSunglassesOutfit';
+                if (slot === 'nose') return 'none';
+                if (slot === 'head') return 'hatOutfit';
+                return 'none';
+            });
+
+            getCosmeticElement.mockImplementation((slot, key) => {
+                if (key === 'none') return null;
+                return { id: `${slot}:${key}` };
+            });
+
+            getCosmeticChromaDegFromState.mockImplementation((slot, key, state) => {
+                if (slot === 'eyes' && key === 'thugSunglassesOutfit') return 120;
+                if (slot === 'head' && key === 'hatOutfit') {
+                    return state === chromaState ? 240 : 0;
+                }
+                return 0;
+            });
+
+            const out = menu.getCurrentCosmeticIconsInLayerOrder();
+
+            expect(out).toEqual([
+                { slot: 'neck', key: 'none', img: null, hueDeg: 0 },
+                { slot: 'eyes', key: 'thugSunglassesOutfit', img: { id: 'eyes:thugSunglassesOutfit' }, hueDeg: 120 },
+                { slot: 'nose', key: 'none', img: null, hueDeg: 0 },
+                { slot: 'head', key: 'hatOutfit', img: { id: 'head:hatOutfit' }, hueDeg: 240 },
+            ]);
+
+            expect(mockGame.menu.wardrobe.getCurrentCosmeticsChromaState).toHaveBeenCalled();
+            expect(getCosmeticChromaDegFromState).toHaveBeenCalledWith('eyes', 'thugSunglassesOutfit', chromaState);
+            expect(getCosmeticChromaDegFromState).toHaveBeenCalledWith('head', 'hatOutfit', chromaState);
+        });
+
+        it('treats missing/undefined chroma state as empty object', () => {
+            mockGame.menu.wardrobe.getCurrentCosmeticsChromaState = jest.fn(() => undefined);
+            mockGame.menu.wardrobe.getCurrentCosmeticKey = jest.fn(() => 'none');
+
+            const out = menu.getCurrentCosmeticIconsInLayerOrder();
+            expect(out.every(x => x.hueDeg === 0)).toBe(true);
         });
     });
 
@@ -587,7 +647,7 @@ describe('ForestMapMenu', () => {
     });
 
     describe('drawRibbonBackgroundsAndLines()', () => {
-        it('does not draw right ribbon or line when showRightRibbon is false', () => {
+        it('does not draw right ribbon or right line when showRightRibbon is false', () => {
             menu.fixedLeftRibbonWidth = 200;
 
             ctx.measureText.mockClear();
@@ -596,14 +656,12 @@ describe('ForestMapMenu', () => {
 
             const ribbonY = mockGame.height - 60;
             const ribbonHeight = 60;
-            const mapFullText = 'MAP 1 LUNAR GLADE';
             const loreText = 'TAB FOR ENEMY LORE';
 
             menu.drawRibbonBackgroundsAndLines(
                 ctx,
                 ribbonY,
                 ribbonHeight,
-                mapFullText,
                 loreText,
                 false,
                 false
@@ -624,14 +682,13 @@ describe('ForestMapMenu', () => {
                 ctx,
                 ribbonY,
                 ribbonHeight,
-                'MAP 1 LUNAR GLADE',
                 'TAB FOR ENEMY LORE',
                 false,
                 true
             );
 
             expect(menu.fixedLeftRibbonWidth).not.toBeNull();
-            expect(ctx.measureText).toHaveBeenCalled();
+            expect(ctx.measureText.mock.calls.length).toBeGreaterThanOrEqual(2);
         });
     });
 

@@ -19,6 +19,7 @@ export class PauseMenu extends BaseMenu {
         if (selectedOption === "Resume") {
             this.togglePause();
         } else if (selectedOption === "Restart") {
+
             if (this.game.pauseContext === "storyCutscene") {
                 this.game.restartActiveCutscene();
                 if (this.isPaused) this.togglePause();
@@ -28,13 +29,16 @@ export class PauseMenu extends BaseMenu {
             this.togglePause();
             this.game.reset();
         } else if (selectedOption === "Settings") {
+
             this.game.menu.settings.activateMenu({
                 inGame: true,
                 selectedOption: 0,
                 returnMenu: "pause",
                 returnSelectedOption: 2,
             });
+
         } else if (selectedOption === "Back to Main Menu") {
+
             const isStoryCutscene = this.game.pauseContext === "storyCutscene";
             const leavingEndCutscene = isStoryCutscene && this.game.isEndCutscene;
 
@@ -43,10 +47,12 @@ export class PauseMenu extends BaseMenu {
             }
 
             if (this.isPaused) this.togglePause();
+
             this.game.isPlayerInGame = false;
             this.game.reset();
 
             if (leavingEndCutscene) {
+                this.game.maybeAnnounceGiftSkins({ delayMs: 450 });
                 this.game.goToMainMenuWithSavingAnimation(4000);
             } else {
                 this.game.menu.main.activateMenu();
@@ -59,13 +65,17 @@ export class PauseMenu extends BaseMenu {
         this.selectedOption = 0;
 
         if (this.isPaused === true) {
+
             if (this.game.cutsceneActive && this.game.currentCutscene) {
-                this.game.pauseContext = this.game.isPlayerInGame ? "inGameCutscene" : "storyCutscene";
+                this.game.pauseContext = this.game.isPlayerInGame
+                    ? "inGameCutscene"
+                    : "storyCutscene";
             } else {
                 this.game.pauseContext = "gameplay";
             }
 
             this.game.menu.pause.activateMenu();
+
             this.game.audioHandler.mapSoundtrack.pauseAllSounds();
             this.game.audioHandler.firedogSFX.pauseAllSounds();
             this.game.audioHandler.enemySFX.pauseAllSounds();
@@ -73,10 +83,12 @@ export class PauseMenu extends BaseMenu {
             this.game.audioHandler.powerUpAndDownSFX.pauseAllSounds();
             this.game.audioHandler.cutsceneMusic.pauseAllSounds();
             this.game.audioHandler.cutsceneSFX.pauseAllSounds();
-            this.game.audioHandler.cutsceneSFX.pauseAllSounds();
+
         } else {
+
             this.game.ignoreCutsceneInputUntil = performance.now() + 200;
             this.game.menu.pause.closeAllMenus();
+
             this.game.audioHandler.mapSoundtrack.resumeAllSounds();
             this.game.audioHandler.firedogSFX.resumeAllSounds();
             this.game.audioHandler.enemySFX.resumeAllSounds();

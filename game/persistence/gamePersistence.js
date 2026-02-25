@@ -1,5 +1,5 @@
 import { getDefaultKeyBindings } from "../config/keyBindings.js";
-import { COSMETIC_SLOTS } from "../config/skins.js";
+import { COSMETIC_SLOTS } from "../config/skinsAndCosmetics.js";
 
 const SAVE_KEY = "gameState";
 
@@ -22,15 +22,22 @@ function buildGameState(game) {
         elyvorgDefeated: game.elyvorgDefeated,
         ntharaxDefeated: game.ntharaxDefeated,
 
+        announcedGiftSkins: game._announcedGiftSkins ?? {},
+
         audioSettingsState: game.menu.audioSettings.getState(),
 
-        currentSkinId: game.menu.skins.getCurrentSkinId(),
+        currentSkinId: game.menu.wardrobe.getCurrentSkinId(),
         currentCosmetics: {
-            [COSMETIC_SLOTS.HEAD]: game.menu.skins.getCurrentCosmeticKey(COSMETIC_SLOTS.HEAD),
-            [COSMETIC_SLOTS.NECK]: game.menu.skins.getCurrentCosmeticKey(COSMETIC_SLOTS.NECK),
-            [COSMETIC_SLOTS.EYES]: game.menu.skins.getCurrentCosmeticKey(COSMETIC_SLOTS.EYES),
-            [COSMETIC_SLOTS.FACE]: game.menu.skins.getCurrentCosmeticKey(COSMETIC_SLOTS.FACE),
+            [COSMETIC_SLOTS.HEAD]: game.menu.wardrobe.getCurrentCosmeticKey(COSMETIC_SLOTS.HEAD),
+            [COSMETIC_SLOTS.NECK]: game.menu.wardrobe.getCurrentCosmeticKey(COSMETIC_SLOTS.NECK),
+            [COSMETIC_SLOTS.EYES]: game.menu.wardrobe.getCurrentCosmeticKey(COSMETIC_SLOTS.EYES),
+            [COSMETIC_SLOTS.NOSE]: game.menu.wardrobe.getCurrentCosmeticKey(COSMETIC_SLOTS.NOSE),
         },
+        currentCosmeticsChroma: game.menu.wardrobe.getCurrentCosmeticsChromaState?.() ?? {},
+
+        creditCoins: game.creditCoins ?? 0,
+        ownedSkins: game.ownedSkins ?? {},
+        ownedCosmetics: game.ownedCosmetics ?? {},
 
         selectedDifficulty: game.selectedDifficulty,
         keyBindings: game.keyBindings,
@@ -75,17 +82,27 @@ export function loadGameState(game) {
         game.elyvorgDefeated = gameState.elyvorgDefeated ?? game.elyvorgDefeated;
         game.ntharaxDefeated = gameState.ntharaxDefeated ?? game.ntharaxDefeated;
 
+        game._announcedGiftSkins = gameState.announcedGiftSkins ?? {};
+
+        game.creditCoins = gameState.creditCoins ?? game.creditCoins ?? 0;
+        game.ownedSkins = gameState.ownedSkins ?? {};
+        game.ownedCosmetics = gameState.ownedCosmetics ?? {};
+
         if (gameState.audioSettingsState) {
             game.menu.audioSettings.setState(gameState.audioSettingsState);
         }
 
-        game.menu.skins.setCurrentSkinById(gameState.currentSkinId || "defaultSkin");
+        game.menu.wardrobe.setCurrentSkinById(
+            gameState.currentSkinId || "defaultSkin"
+        );
 
-        const c = gameState.currentCosmetics || {};
-        game.menu.skins.setCurrentCosmeticByKey(COSMETIC_SLOTS.HEAD, c[COSMETIC_SLOTS.HEAD] || "none");
-        game.menu.skins.setCurrentCosmeticByKey(COSMETIC_SLOTS.NECK, c[COSMETIC_SLOTS.NECK] || "none");
-        game.menu.skins.setCurrentCosmeticByKey(COSMETIC_SLOTS.EYES, c[COSMETIC_SLOTS.EYES] || "none");
-        game.menu.skins.setCurrentCosmeticByKey(COSMETIC_SLOTS.FACE, c[COSMETIC_SLOTS.FACE] || "none");
+        const cosmetics = gameState.currentCosmetics || {};
+        game.menu.wardrobe.setCurrentCosmeticByKey(COSMETIC_SLOTS.HEAD, cosmetics[COSMETIC_SLOTS.HEAD] || "none");
+        game.menu.wardrobe.setCurrentCosmeticByKey(COSMETIC_SLOTS.NECK, cosmetics[COSMETIC_SLOTS.NECK] || "none");
+        game.menu.wardrobe.setCurrentCosmeticByKey(COSMETIC_SLOTS.EYES, cosmetics[COSMETIC_SLOTS.EYES] || "none");
+        game.menu.wardrobe.setCurrentCosmeticByKey(COSMETIC_SLOTS.NOSE, cosmetics[COSMETIC_SLOTS.NOSE] || "none");
+        const chromaState = gameState.currentCosmeticsChroma || {};
+        game.menu.wardrobe.setCurrentCosmeticsChromaState(chromaState);
 
         if (gameState.selectedDifficulty) {
             game.menu.levelDifficulty.setDifficulty(gameState.selectedDifficulty);
@@ -126,23 +143,30 @@ export function clearSavedData(game) {
     game.elyvorgDefeated = false;
     game.ntharaxDefeated = false;
 
+    game._announcedGiftSkins = {};
+
+    game.creditCoins = 0;
+    game.ownedSkins = {};
+    game.ownedCosmetics = {};
+
     game.menu.forestMap.resetSelectedCircleIndex();
     game.menu.enemyLore.currentPage = 0;
 
     game.menu.levelDifficulty.setDifficulty("Normal");
     game.selectedDifficulty = "Normal";
 
-    game.menu.skins.setCurrentSkinById("defaultSkin");
-    game.menu.skins.setCurrentCosmeticByKey(COSMETIC_SLOTS.HEAD, "none");
-    game.menu.skins.setCurrentCosmeticByKey(COSMETIC_SLOTS.NECK, "none");
-    game.menu.skins.setCurrentCosmeticByKey(COSMETIC_SLOTS.EYES, "none");
-    game.menu.skins.setCurrentCosmeticByKey(COSMETIC_SLOTS.FACE, "none");
+    game.menu.wardrobe.setCurrentSkinById("defaultSkin");
+    game.menu.wardrobe.setCurrentCosmeticByKey(COSMETIC_SLOTS.HEAD, "none");
+    game.menu.wardrobe.setCurrentCosmeticByKey(COSMETIC_SLOTS.NECK, "none");
+    game.menu.wardrobe.setCurrentCosmeticByKey(COSMETIC_SLOTS.EYES, "none");
+    game.menu.wardrobe.setCurrentCosmeticByKey(COSMETIC_SLOTS.NOSE, "none");
+    game.menu.wardrobe.setCurrentCosmeticsChromaState({});
 
     game.menu.audioSettings.setState({
         tabData: {
             MENU: {
-                volumeLevels: [50, 50, 50, 50, null],
-                muted: [false, false, false, false, null],
+                volumeLevels: [50, 50, 50, 50, 50, null],
+                muted: [false, false, false, false, false, null],
             },
             CUTSCENE: {
                 volumeLevels: [50, 50, 50, 50, null],

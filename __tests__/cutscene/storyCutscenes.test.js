@@ -26,7 +26,7 @@ describe('StoryCutscene', () => {
             winningCoins: 0,
             menu: {
                 pause: { isPaused: false },
-                skins: {
+                wardrobe: {
                     defaultSkin: 'def', hatSkin: 'hat', choloSkin: 'cho',
                     zabkaSkin: 'zab', shinySkin: 'shi', currentSkin: 'def'
                 },
@@ -299,7 +299,7 @@ describe('EndCutscene classes: unlock flags and save behavior', () => {
             },
             menu: {
                 pause: { isPaused: false },
-                skins: {
+                wardrobe: {
                     defaultSkin: 'def', hatSkin: 'hat', choloSkin: 'cho',
                     zabkaSkin: 'zab', shinySkin: 'shi', currentSkin: 'def'
                 },

@@ -3,7 +3,9 @@ import {
     getSkinElement,
     getCosmeticElement,
     COSMETIC_LAYER_ORDER,
-} from '../config/skins.js';
+    getCosmeticChromaDegFromState,
+    drawWithOptionalHue,
+} from '../config/skinsAndCosmetics.js';
 import { Sitting, Running, Jumping, Falling, Rolling, Diving, Stunned, Hit, Standing, Dying, Dashing } from '../animations/playerStates.js';
 import {
     CollisionAnimation, ExplosionCollisionAnimation, PoisonSpitSplash, InkSplashCollision, Blood,
@@ -484,25 +486,43 @@ export class Player {
     }
 
     getCurrentSkinImage() {
-        const menuSkinEl = this.game.menu?.skins?.currentSkin;
+        const wardrobe = this.game?.menu?.wardrobe;
+        const current = wardrobe?.currentSkin;
 
-        if (menuSkinEl && menuSkinEl.tagName === 'IMG') return menuSkinEl;
+        if (current && current.tagName === 'IMG') return current;
 
-        const id = menuSkinEl?.id || this.game.menu?.skins?.getCurrentSkinId?.() || 'defaultSkin';
-        const el = document.getElementById(id);
-        return el || this.defaultSkinImage;
+        const id = current && typeof current.id === 'string' ? current.id : null;
+        if (!id) return null;
+
+        const el = globalThis?.document?.getElementById?.(id) || null;
+        if (el && el.tagName === 'IMG') return el;
+
+        return null;
     }
 
     getCurrentCosmeticImage(slot) {
-        const menu = this.game.menu?.skins;
-        const key = menu?.getCurrentCosmeticKey?.(slot) || 'none';
+        const menu = this.game.menu.wardrobe;
+        const key = menu.getCurrentCosmeticKey?.(slot) || 'none';
         if (!key || key === 'none') return null;
         return getCosmeticElement(slot, key);
     }
 
     getCurrentCosmeticImagesInOrder() {
+        const menu = this.game.menu.wardrobe;
+
         return COSMETIC_LAYER_ORDER
-            .map(slot => this.getCurrentCosmeticImage(slot))
+            .map(slot => {
+                const key = menu.getCurrentCosmeticKey?.(slot) || 'none';
+                if (!key || key === 'none') return null;
+
+                const img = getCosmeticElement(slot, key);
+                if (!img) return null;
+
+                const chromaState = menu.getCurrentCosmeticsChromaState?.() || {};
+                const hueDeg = getCosmeticChromaDegFromState(slot, key, chromaState);
+
+                return { slot, key, img, hueDeg };
+            })
             .filter(Boolean);
     }
 
@@ -545,7 +565,7 @@ export class Player {
 
     drawPlayerWithCurrentSkin(context) {
         const skinImg = this.getCurrentSkinImage();
-        const cosmeticImgs = this.getCurrentCosmeticImagesInOrder();
+        const cosmeticLayers = this.getCurrentCosmeticImagesInOrder();
 
         const sx = this.frameX * this.width;
         const sy = this.frameY * this.height;
@@ -608,15 +628,30 @@ export class Player {
         };
 
         const drawCosmeticsBase = () => {
-            for (const img of cosmeticImgs) drawLayer(img);
+            for (const layer of cosmeticLayers) {
+                if (!layer?.img) continue;
+
+                drawWithOptionalHue(context, { hueDeg: layer.hueDeg }, () => {
+                    drawLayer(layer.img);
+                });
+            }
         };
 
         const drawCosmeticsGlow = (color, blur) => {
-            for (const img of cosmeticImgs) drawGlowLayer(img, color, blur);
+            for (const layer of cosmeticLayers) {
+                if (!layer?.img) continue;
+
+                drawWithOptionalHue(context, { hueDeg: layer.hueDeg }, () => {
+                    drawGlowLayer(layer.img, color, blur);
+                });
+            }
         };
 
         const drawCosmeticsTint = (tint) => {
-            for (const img of cosmeticImgs) drawTintLayer(img, tint);
+            for (const layer of cosmeticLayers) {
+                if (!layer?.img) continue;
+                drawTintLayer(layer.img, tint);
+            }
         };
 
         if (slowed && poisoned) {

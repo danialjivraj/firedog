@@ -98,15 +98,16 @@ describe('RecordToast', () => {
         clearCtxCalls();
     });
 
-    it('constructor sets defaults and coerces text to string', () => {
+    it('constructor sets defaults and keeps original text value; richLines use string text + default fill', () => {
         const game = makeGame({ width: 1000, height: 500 });
         const toast = makeToast(game, 123);
 
         expect(toast.game).toBe(game);
-        expect(toast.text).toBe('123');
-        expect(toast.lines).toEqual(['123']);
 
-        // default x is game center
+        expect(toast.text).toBe(123);
+
+        expect(toast.richLines).toEqual([[{ text: '123', fill: 'yellow' }]]);
+
         expect(toast.x).toBe(game.width / 2);
         expect(toast.y).toBe(100);
 
@@ -135,6 +136,40 @@ describe('RecordToast', () => {
         expect(toast.outMs).toBe(1);
         expect(toast.padding).toBe(0);
         expect(toast.cacheScale).toBe(1);
+    });
+
+    it('_normalizeToRichLines: null/undefined becomes one empty line using default fill', () => {
+        const game = makeGame();
+
+        const toastA = makeToast(game, null);
+        expect(toastA.richLines).toEqual([[{ text: '', fill: 'yellow' }]]);
+
+        const toastB = makeToast(game, undefined);
+        expect(toastB.richLines).toEqual([[{ text: '', fill: 'yellow' }]]);
+    });
+
+    it('_normalizeToRichLines: array mode supports non-array lines and array-of-segments lines', () => {
+        const game = makeGame();
+
+        const rich = [
+            { text: 999, fill: 'cyan' },
+            'plain',
+            [
+                { text: 'A', fill: 'red' },
+                { text: 123 },
+            ],
+        ];
+
+        const toast = makeToast(game, rich);
+
+        expect(toast.richLines).toEqual([
+            [{ text: '999', fill: 'cyan' }],
+            [{ text: 'plain', fill: undefined }],
+            [
+                { text: 'A', fill: 'red' },
+                { text: '123', fill: undefined },
+            ],
+        ]);
     });
 
     it('_getFontSizePx returns parsed px size or default 48', () => {
@@ -184,13 +219,59 @@ describe('RecordToast', () => {
             strokeWidth: 3,
         });
 
-        // cache built
         expect(toast._cache).toBeTruthy();
         expect(lastCreatedCanvas).toBeTruthy();
         expect(lastCreatedCanvas.width).toBeGreaterThan(0);
         expect(lastCreatedCanvas.height).toBeGreaterThan(0);
         expect(toast._cacheW).toBeGreaterThan(0);
         expect(toast._cacheH).toBeGreaterThan(0);
+
+        expect(ctx2d.setTransform).toHaveBeenCalledWith(2, 0, 0, 2, 0, 0);
+    });
+
+    it('_buildCache renders rich segments: strokeText/fillText per segment and advances xCursor by segment width', () => {
+        const game = makeGame();
+
+        const rich = [
+            [
+                { text: 'A', fill: 'red' },
+                { text: 'BB', fill: 'blue' },
+            ],
+        ];
+
+        const toast = new RecordToast(game, rich, {
+            font: '10px Test',
+            lineSpacing: 1,
+            padding: 0,
+            cacheScale: 1,
+            shadowBlur: 0,
+            strokeWidth: 0,
+        });
+
+        expect(toast._cache).toBeTruthy();
+        expect(toast._cacheW).toBeGreaterThan(0);
+        expect(toast._cacheH).toBeGreaterThan(0);
+
+        expect(ctx2d.measureText).toHaveBeenCalledWith('A');
+        expect(ctx2d.measureText).toHaveBeenCalledWith('BB');
+
+        expect(ctx2d.strokeText).toHaveBeenCalledTimes(2);
+        expect(ctx2d.fillText).toHaveBeenCalledTimes(2);
+
+        const s0 = ctx2d.strokeText.mock.calls[0]; // ['A', x, y]
+        const s1 = ctx2d.strokeText.mock.calls[1]; // ['BB', x, y]
+        expect(s0[0]).toBe('A');
+        expect(s1[0]).toBe('BB');
+
+        expect(s0[1]).toBeCloseTo(0, 6);
+        expect(s1[1]).toBeCloseTo(10, 6);
+
+        const f0 = ctx2d.fillText.mock.calls[0];
+        const f1 = ctx2d.fillText.mock.calls[1];
+        expect(f0[0]).toBe('A');
+        expect(f1[0]).toBe('BB');
+        expect(f0[1]).toBeCloseTo(0, 6);
+        expect(f1[1]).toBeCloseTo(10, 6);
     });
 
     it('update increments age with non-negative deltaTime and marks for deletion at durationMs', () => {

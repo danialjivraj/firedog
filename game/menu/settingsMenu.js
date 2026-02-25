@@ -108,7 +108,7 @@ export class SettingsMenu extends BaseMenu {
     }
 
     if (this.menuInGame && selected === "Go Back") {
-      const target = this.game.menu?.[this.returnMenu];
+      const target = this.game.menu[this.returnMenu];
       if (target && typeof target.activateMenu === "function") {
         target.activateMenu(this.returnSelectedOption);
       } else {

@@ -24,11 +24,12 @@ export class AudioSettingsMenu extends BaseMenu {
                     'Menu Master Volume',
                     'Menu Music',
                     'Map SFX',
+                    'Wardrobe SFX',
                     'Menu Navigation SFX',
                     'Go Back',
                 ],
-                volumeLevels: [50, 50, 50, 50, null],
-                muted: [false, false, false, false, null],
+                volumeLevels: [50, 50, 50, 50, 50, null],
+                muted: [false, false, false, false, false, null],
                 audioMap: null,
             },
             CUTSCENE: {
@@ -620,6 +621,9 @@ export class AudioSettingsMenu extends BaseMenu {
                 this.game.audioHandler.menu.soundsMapping.bookFlipBackwardSound,
                 this.game.audioHandler.menu.soundsMapping.bookFlipForwardSound,
                 this.game.audioHandler.menu.soundsMapping.enemyLoreSwitchTabSound,
+            ],
+            'Wardrobe SFX': [
+                this.game.audioHandler.menu.soundsMapping.purchaseCompletedSound,
             ],
             'Menu Navigation SFX': [
                 this.game.audioHandler.menu.soundsMapping.optionSelectedSound,

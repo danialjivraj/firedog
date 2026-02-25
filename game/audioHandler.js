@@ -164,6 +164,7 @@ export class MenuAudioHandler extends AudioHandler {
       bookFlipBackwardSound: 'bookFlipBackwardSound',
       bookFlipForwardSound: 'bookFlipForwardSound',
       enemyLoreSwitchTabSound: 'enemyLoreSwitchTabSound',
+      purchaseCompletedSound: 'purchaseCompletedSound',
     };
     this.initializeSounds();
   }

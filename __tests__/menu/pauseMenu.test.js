@@ -13,37 +13,39 @@ describe('PauseMenu', () => {
             .spyOn(BaseMenu.prototype, 'handleMenuSelection')
             .mockImplementation(() => { });
 
-        game = {
-            reset: jest.fn(),
-            isPlayerInGame: true,
+    game = {
+        reset: jest.fn(),
+        isPlayerInGame: true,
 
-            cutsceneActive: false,
-            currentCutscene: null,
+        cutsceneActive: false,
+        currentCutscene: null,
 
-            pauseContext: 'gameplay',
-            isEndCutscene: false,
+        pauseContext: 'gameplay',
+        isEndCutscene: false,
 
-            restartActiveCutscene: jest.fn(),
-            exitCutsceneToMainMenu: jest.fn(),
-            goToMainMenuWithSavingAnimation: jest.fn(),
+        restartActiveCutscene: jest.fn(),
+        exitCutsceneToMainMenu: jest.fn(),
+        goToMainMenuWithSavingAnimation: jest.fn(),
 
-            ignoreCutsceneInputUntil: 0,
+        maybeAnnounceGiftSkins: jest.fn(),
 
-            audioHandler: {
-                mapSoundtrack: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
-                firedogSFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
-                enemySFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
-                collisionSFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
-                powerUpAndDownSFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
-                cutsceneMusic: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
-                cutsceneSFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
-            },
+        ignoreCutsceneInputUntil: 0,
 
-            menu: {
-                main: { activateMenu: jest.fn() },
-                settings: { activateMenu: jest.fn() },
-            },
-        };
+        audioHandler: {
+            mapSoundtrack: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
+            firedogSFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
+            enemySFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
+            collisionSFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
+            powerUpAndDownSFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
+            cutsceneMusic: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
+            cutsceneSFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
+        },
+
+        menu: {
+            main: { activateMenu: jest.fn() },
+            settings: { activateMenu: jest.fn() },
+        },
+    };
 
         menu = new PauseMenu(game);
         game.menu.pause = menu;

@@ -542,7 +542,22 @@ export class DashGhost extends Particle {
         super(game);
 
         this.skinImg = snapshot?.skinImg ?? null;
-        this.layers = Array.isArray(snapshot?.layers) ? snapshot.layers.filter(Boolean) : [];
+
+        const rawLayers = Array.isArray(snapshot?.layers) ? snapshot.layers : [];
+        this.layers = rawLayers
+            .map(l => {
+                if (!l) return null;
+
+                if (typeof l === 'object' && 'img' in l) {
+                    return {
+                        img: l.img ?? null,
+                        hueDeg: Number(l.hueDeg) || 0,
+                    };
+                }
+
+                return { img: l, hueDeg: 0 };
+            })
+            .filter(e => e && e.img);
 
         this.sx = snapshot?.sx ?? 0;
         this.sy = snapshot?.sy ?? 0;
@@ -568,7 +583,11 @@ export class DashGhost extends Particle {
         this.alpha = 0.55;
         this.cosmeticAlpha = 1.0;
 
-        if (!this.skinImg || !this.sw || !this.sh || !this.dw || !this.dh) {
+        if (
+            !this.skinImg ||
+            typeof this.skinImg !== 'object' ||
+            !this.sw || !this.sh || !this.dw || !this.dh
+        ) {
             this.markedForDeletion = true;
         }
     }
@@ -576,7 +595,10 @@ export class DashGhost extends Particle {
     update() {
         if (this.markedForDeletion) return;
 
-        if (this.game.cabin.isFullyVisible || this.game.isBossVisible) {
+        const cabinFullyVisible = !!this.game.cabin?.isFullyVisible;
+        const bossVisible = !!this.game.isBossVisible;
+
+        if (cabinFullyVisible || bossVisible) {
             this.x -= this.speedX;
         } else {
             this.x -= this.speedX + this.game.speed;
@@ -608,6 +630,7 @@ export class DashGhost extends Particle {
         ctx.scale(this.facingRight ? 1 : -1, 1);
 
         ctx.globalAlpha = skinAlpha;
+        ctx.filter = 'none';
         ctx.drawImage(
             this.skinImg,
             this.sx, this.sy, this.sw, this.sh,
@@ -616,13 +639,22 @@ export class DashGhost extends Particle {
 
         if (this.layers.length) {
             ctx.globalAlpha = layerAlpha;
-            for (const img of this.layers) {
+
+            for (const layer of this.layers) {
+                const img = layer?.img;
+                if (!img) continue;
+
+                const d = Number(layer.hueDeg) || 0;
+                ctx.filter = Math.abs(d) > 0.001 ? `hue-rotate(${d}deg)` : 'none';
+
                 ctx.drawImage(
                     img,
                     this.sx, this.sy, this.sw, this.sh,
                     -dw / 2, -dh / 2, dw, dh
                 );
             }
+
+            ctx.filter = 'none';
         }
 
         ctx.restore();

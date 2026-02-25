@@ -4,13 +4,15 @@ import {
     COSMETIC_LAYER_ORDER,
     getCutsceneSkinPrefixBySkinId,
     getCutsceneCosmeticOverlayId,
-} from '../config/skins.js';
+    getCosmeticChromaDegFromState,
+    drawWithOptionalHue,
+} from '../config/skinsAndCosmetics.js';
 
 export class Cutscene {
     constructor(game) {
         this.game = game;
 
-        // core state   
+        // core state
         this.dialogue = [];
         this.characterLimit = 65;
         this.backgroundImage = null;
@@ -381,21 +383,46 @@ export class Cutscene {
         this.reminderImageStartTime = performance.now();
     }
 
-    // skin / cosmetic overlay
     getCurrentSkinIdSafe() {
-        if (this.game.menu?.skins?.getCurrentSkinId) return this.game.menu.skins.getCurrentSkinId();
+        if (this.game.menu.wardrobe.getCurrentSkinId) return this.game.menu.wardrobe.getCurrentSkinId();
         return this.game.selectedSkinId || 'defaultSkin';
     }
 
     getCurrentCosmeticKeySafe(slot) {
-        if (this.game.menu?.skins?.getCurrentCosmeticKey) {
-            return this.game.menu.skins.getCurrentCosmeticKey(slot) || 'none';
+        if (this.game.menu.wardrobe.getCurrentCosmeticKey) {
+            return this.game.menu.wardrobe.getCurrentCosmeticKey(slot) || 'none';
         }
         const saved = this.game.selectedCosmetics || this.game.currentCosmetics || null;
         if (saved && slot && Object.prototype.hasOwnProperty.call(saved, slot)) {
             return saved[slot] || 'none';
         }
         return 'none';
+    }
+
+    getCurrentCosmeticsChromaStateSafe() {
+        const w = this.game.menu.wardrobe;
+        if (w && typeof w.getCurrentCosmeticsChromaState === 'function') {
+            const st = w.getCurrentCosmeticsChromaState();
+            return (st && typeof st === 'object') ? st : {};
+        }
+        return {};
+    }
+
+    getCurrentCosmeticChromaDegSafe(slot) {
+        const key = this.getCurrentCosmeticKeySafe(slot) || 'none';
+        if (key === 'none') return 0;
+
+        const chromaState = this.getCurrentCosmeticsChromaStateSafe();
+        return getCosmeticChromaDegFromState(slot, key, chromaState);
+    }
+
+    drawImageWithOptionalHue(ctx, el, x, y, w, h, hueDeg) {
+        if (!el) return;
+
+        const baseFilter = this.isCharacterBlackAndWhite ? 'grayscale(100%)' : '';
+        drawWithOptionalHue(ctx, { hueDeg, baseFilter }, () => {
+            ctx.drawImage(el, x, y, w, h);
+        });
     }
 
     getSkinPrefix() {
@@ -447,12 +474,12 @@ export class Cutscene {
         return this.isFiredogEmotionImageId(id);
     }
 
-    getFiredogCosmeticOverlayIdsInLayerOrder() {
+    getFiredogCosmeticOverlaysInLayerOrder() {
         const out = [];
         for (const slot of COSMETIC_LAYER_ORDER) {
             const key = this.getCurrentCosmeticKeySafe(slot);
             const overlayId = getCutsceneCosmeticOverlayId(slot, key);
-            if (overlayId) out.push(overlayId);
+            if (overlayId) out.push({ slot, key, overlayId });
         }
         return out;
     }
@@ -636,10 +663,13 @@ export class Cutscene {
         context.drawImage(baseEl, dx, dy, drawW, drawH);
 
         if (this.shouldOverlayCosmeticsForImageId(baseId)) {
-            const overlayIds = this.getFiredogCosmeticOverlayIdsInLayerOrder();
-            for (const overlayId of overlayIds) {
-                const overlayEl = overlayId ? document.getElementById(overlayId) : null;
-                if (overlayEl) context.drawImage(overlayEl, dx, dy, drawW, drawH);
+            const overlays = this.getFiredogCosmeticOverlaysInLayerOrder();
+            for (const o of overlays) {
+                const overlayEl = o.overlayId ? document.getElementById(o.overlayId) : null;
+                if (!overlayEl) continue;
+
+                const hueDeg = this.getCurrentCosmeticChromaDegSafe(o.slot);
+                this.drawImageWithOptionalHue(context, overlayEl, dx, dy, drawW, drawH, hueDeg);
             }
         }
 
@@ -669,7 +699,7 @@ export class Cutscene {
         const canShake = this.game.shakeActive && !this.game.menu.pause.isPaused;
 
         if (canShake) preShake(context);
-        context.drawImage(this.backgroundImage, 0, 0, this.game.width, this.game.height);
+        context.drawImage(this.backgroundImage, 0, 0, this.game.width, this.game.gameHeight || this.game.height);
         if (canShake) postShake(context);
 
         context.filter = 'none';
@@ -727,10 +757,13 @@ export class Cutscene {
         }
 
         if (this.shouldOverlayCosmeticsForImageId(id)) {
-            const overlayIds = this.getFiredogCosmeticOverlayIdsInLayerOrder();
-            for (const overlayId of overlayIds) {
-                const overlayEl = overlayId ? document.getElementById(overlayId) : null;
-                if (overlayEl) context.drawImage(overlayEl, x, y, width, height);
+            const overlays = this.getFiredogCosmeticOverlaysInLayerOrder();
+            for (const o of overlays) {
+                const overlayEl = o.overlayId ? document.getElementById(o.overlayId) : null;
+                if (!overlayEl) continue;
+
+                const hueDeg = this.getCurrentCosmeticChromaDegSafe(o.slot);
+                this.drawImageWithOptionalHue(context, overlayEl, x, y, width, height, hueDeg);
             }
         }
 

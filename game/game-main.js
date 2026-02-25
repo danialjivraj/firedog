@@ -36,7 +36,7 @@ import { MainMenu } from "./menu/mainMenu.js";
 import { LevelDifficultyMenu } from "./menu/levelDifficultyMenu.js";
 import { ForestMapMenu } from "./menu/forestMap.js";
 import { HowToPlayMenu } from "./menu/howToPlayMenu.js";
-import { Skins } from "./menu/skinsMenu.js";
+import { Wardrobe } from "./menu/wardrobeMenu.js";
 import { RecordsMenu } from "./menu/recordsMenu.js";
 import { DeleteProgress, DeleteProgress2 } from "./menu/deleteProgress.js";
 import { SettingsMenu } from "./menu/settingsMenu.js";
@@ -81,6 +81,7 @@ import {
     clearSavedData as resetPersistedData
 } from "./persistence/gamePersistence.js";
 import { BossManager } from "./entities/enemies/bossManager.js";
+import { SKINS } from "./config/skinsAndCosmetics.js";
 
 export class Game {
     constructor(canvas, width, height) {
@@ -109,6 +110,12 @@ export class Game {
         this.invisibleColourOpacity = 0;
         this.gameOver = false;
         this.debug = false;
+        // credit coins and skins/cosmetics
+        this.creditCoins = 0;
+        this.ownedSkins = {};
+        this.ownedCosmetics = {};
+        this.metaToasts = [];
+        this._announcedGiftSkins = {};
         // player/audio handlers/menus/etc classes and vars...
         this.player = new Player(this);
         this.player.currentState = this.player.states[0];
@@ -140,7 +147,7 @@ export class Game {
             main: new MainMenu(this),
             forestMap: new ForestMapMenu(this),
             enemyLore: new EnemyLore(this),
-            skins: new Skins(this),
+            wardrobe: new Wardrobe(this),
             records: new RecordsMenu(this),
             levelDifficulty: new LevelDifficultyMenu(this),
             howToPlay: new HowToPlayMenu(this),
@@ -237,7 +244,58 @@ export class Game {
         this.currentCutscene = cutscene;
     }
 
+    showMetaToast(text, delayMs = 200) {
+        setTimeout(() => {
+            this.metaToasts.push(new RecordToast(this, text, { y: 100 }));
+            this.audioHandler.mapSoundtrack.playSound('newRecordSound', false, true);
+        }, Math.max(0, delayMs));
+    }
+
+    maybeAnnounceGiftSkins({ delayMs = 450 } = {}) {
+        const giftSkins = [
+            { key: 'iceBreakerSkin', flag: 'glacikalDefeated' },
+            { key: 'infernalSkin', flag: 'elyvorgDefeated' },
+            { key: 'galaxySkin', flag: 'ntharaxDefeated' },
+        ];
+
+        let announcedAny = false;
+
+        for (const gift of giftSkins) {
+            if (!this[gift.flag]) continue;
+            if (this._announcedGiftSkins[gift.key]) continue;
+
+            this._announcedGiftSkins[gift.key] = true;
+            announcedAny = true;
+
+            const label = SKINS?.[gift.key]?.label ?? gift.key;
+            const giftLabelColorByKey = {
+                iceBreakerSkin: "cyan",
+                infernalSkin: "orangered",
+                galaxySkin: "violet",
+            };
+
+            const labelFill = giftLabelColorByKey[gift.key] || "yellow";
+
+            this.showMetaToast([
+                [{ text: "NEW SKIN UNLOCKED!", fill: "yellow" }],
+                [
+                    { text: "YOU'VE RECEIVED THE ", fill: "yellow" },
+                    { text: label, fill: labelFill },
+                    { text: " SKIN!", fill: "yellow" },
+                ],
+            ], delayMs);
+        }
+
+        if (announcedAny) {
+            this.saveGameState();
+        }
+
+        return announcedAny;
+    }
+
     endCutscene() {
+        const wasEndCutscene = !!this.isEndCutscene;
+
         this.cutsceneActive = false;
         this.currentCutscene = null;
         this.pauseContext = 'gameplay';
@@ -253,6 +311,9 @@ export class Game {
         ) {
             this.reset();
             this.isPlayerInGame = false;
+            if (wasEndCutscene) {
+                this.maybeAnnounceGiftSkins({ delayMs: 450 });
+            }
             if (!(this.background instanceof Map7)) {
                 this.canSelectForestMap = false;
                 this.currentMenu = this.menu.forestMap;
@@ -791,6 +852,16 @@ export class Game {
                 this.player.x <= this.cabin.x + this.cabin.width &&
                 this.cabin.isFullyVisible
             ) {
+                const coinsNow = Math.max(0, Math.floor(this.coins));
+                if (coinsNow > 0) {
+                    const MAX_CC = 999;
+                    this.creditCoins = Math.min(
+                        MAX_CC,
+                        Math.max(0, Math.floor(this.creditCoins || 0)) + coinsNow
+                    );
+                    this.saveGameState();
+                }
+
                 this.audioHandler.cutsceneSFX.playSound(this.openDoor);
                 this.audioHandler.firedogSFX.stopAllSounds();
 
@@ -1198,6 +1269,9 @@ window.addEventListener("load", function () {
         const deltaTime = timeStamp - lastTime;
         lastTime = timeStamp;
 
+        game.metaToasts.forEach((t) => t.update(deltaTime));
+        game.metaToasts = game.metaToasts.filter((t) => !t.markedForDeletion);
+
         if (
             game.cutsceneActive &&
             !game.talkToPenguin &&
@@ -1223,10 +1297,14 @@ window.addEventListener("load", function () {
 
                 if (canShake) postShake(ctx);
 
+                game.metaToasts.forEach((t) => t.draw(ctx));
+
                 if (game.menu.pause.isPaused && game.currentMenu) {
                     game.currentMenu.menuActive = true;
                     game.currentMenu.draw(ctx);
                     game.currentMenu.update(deltaTime);
+
+                    game.metaToasts.forEach((t) => t.draw(ctx));
                 }
             }
         } else if (game.currentMenu && game.currentMenu.menuInGame === false) {
@@ -1234,6 +1312,8 @@ window.addEventListener("load", function () {
             game.currentMenu.menuActive = true;
             game.currentMenu.draw(ctx);
             game.currentMenu.update(deltaTime);
+
+            game.metaToasts.forEach((t) => t.draw(ctx));
         } else if (game.isPlayerInGame) {
             game.update(deltaTime);
 
@@ -1259,6 +1339,8 @@ window.addEventListener("load", function () {
                 game.currentMenu.draw(ctx);
                 game.currentMenu.update(deltaTime);
             }
+
+            game.metaToasts.forEach((t) => t.draw(ctx));
         }
 
         requestAnimationFrame(animate);

@@ -3,8 +3,39 @@ import { Fireball, PoisonBubbles, IceCrystalBubbles } from '../../game/animation
 import { CollisionLogic } from '../../game/entities/player.js';
 
 global.document = {
-    getElementById: jest.fn().mockReturnValue({ width: 1920, height: 689, id: 'stubImage' })
+    getElementById: jest.fn((id) => ({ id, tagName: 'IMG', width: 1920, height: 689 })),
+    createElement: jest.fn((tag) => {
+        if (tag !== 'canvas') return {};
+        return {
+            width: 0,
+            height: 0,
+            getContext: jest.fn(() => ({
+                setTransform: jest.fn(),
+                clearRect: jest.fn(),
+                drawImage: jest.fn(),
+                fillRect: jest.fn(),
+                createLinearGradient: jest.fn(() => ({ addColorStop: jest.fn() })),
+                globalCompositeOperation: 'source-over',
+                fillStyle: '',
+            })),
+        };
+    }),
 };
+
+jest.mock('../../game/config/skinsAndCosmetics', () => {
+    const makeImg = (id) => ({ id, tagName: 'IMG' });
+
+    return {
+        getSkinElement: jest.fn((id) => makeImg(id)),
+        getCosmeticElement: jest.fn((slot, key) => makeImg(`${slot}:${key}`)),
+        COSMETIC_LAYER_ORDER: ['neck', 'eyes', 'face', 'head'],
+        getCosmeticChromaDegFromState: jest.fn((slot, key, state) => {
+            const v = state?.[slot]?.[key];
+            return typeof v === 'number' ? v : 0;
+        }),
+        drawWithOptionalHue: jest.fn((ctx, opts, fn) => fn()),
+    };
+});
 
 jest.mock('../../game/animations/playerStates', () => ({
     Sitting: jest.fn().mockImplementation(() => ({})),
@@ -44,6 +75,7 @@ jest.mock('../../game/animations/tunnelVision', () => {
         this.game = game;
         this.restartFromCurrent = jest.fn();
         this.reset = jest.fn();
+        this.restartFromCurrentWithOptions = jest.fn();
     });
     return { TunnelVision };
 });
@@ -119,9 +151,7 @@ const withAlphaStack = (ctx) => {
     ctx.save = ctx.save || jest.fn();
     ctx.restore = ctx.restore || jest.fn();
 
-    ctx.save.mockImplementation(() => {
-        stack.push(_alpha);
-    });
+    ctx.save.mockImplementation(() => { stack.push(_alpha); });
     ctx.restore.mockImplementation(() => {
         const prev = stack.pop();
         ctx.globalAlpha = (prev == null ? 1 : prev);
@@ -147,7 +177,7 @@ describe('Player', () => {
                 isFireballAttack: jest.fn().mockReturnValue(false),
                 isInvisibleDefense: jest.fn().mockReturnValue(false),
                 isRollAttack: jest.fn().mockReturnValue(false),
-                keys: []
+                keys: [],
             },
             cabin: { isFullyVisible: false },
             debug: false,
@@ -175,20 +205,17 @@ describe('Player', () => {
                 firedogSFX: { playSound: jest.fn(), stopSound: jest.fn() },
                 collisionSFX: { playSound: jest.fn() },
                 enemySFX: { playSound: jest.fn() },
-                powerUpAndDownSFX: { playSound: jest.fn() }
+                powerUpAndDownSFX: { playSound: jest.fn() },
             },
             gameOver: false,
             menu: {
                 levelDifficulty: { setDifficulty: jest.fn() },
-                skins: {
+                wardrobe: {
                     currentSkin: null,
-                    defaultSkin: null,
-                    hatSkin: null,
-                    choloSkin: null,
-                    zabkaSkin: null,
-                    shinySkin: null
-                }
-            }
+                    getCurrentCosmeticKey: jest.fn(() => 'none'),
+                    getCurrentCosmeticsChromaState: jest.fn(() => ({})),
+                },
+            },
         };
 
         game.input.isActionActive = (binding, input) => {
@@ -216,12 +243,14 @@ describe('Player', () => {
         player = new Player(game);
         game.player = player;
 
-        game.menu.skins.currentSkin = makeImg('defaultSkin');
+        game.menu.wardrobe.currentSkin = makeImg('defaultSkin');
 
         player.states = player.states.map(() => ({
             enter: jest.fn(),
-            deathAnimation: false
+            deathAnimation: false,
+            handleInput: jest.fn(),
         }));
+        player.currentState = player.states[8];
     });
 
     test('constructs with expected defaults', () => {
@@ -308,6 +337,15 @@ describe('Player', () => {
         expect(player.frameX).toBe(0);
     });
 
+    test('spriteAnimation does not advance when frameTimer < frameInterval', () => {
+        player.maxFrame = 5;
+        player.frameX = 3;
+        player.frameInterval = 100;
+        player.frameTimer = 50;
+        player.spriteAnimation(50);
+        expect(player.frameX).toBe(3);
+    });
+
     test('onGround returns correct boolean', () => {
         player.y = game.height - player.height - game.groundMargin;
         expect(player.onGround()).toBe(true);
@@ -320,8 +358,9 @@ describe('Player', () => {
         player.states[2] = stub;
         game.isBossVisible = false;
         player.isBluePotionActive = false;
+        player.isFrozen = false;
         player.setState(2, 3);
-        expect(player.previousState).toBeNull();
+        expect(player.previousState).toBe(player.states[8]);
         expect(player.currentState).toBe(stub);
         expect(stub.enter).toHaveBeenCalled();
         expect(game.speed).toBe(game.normalSpeed * 3);
@@ -335,12 +374,25 @@ describe('Player', () => {
         expect(game.speed).toBe(0);
     });
 
+    test('setState uses speed=0 when frozen (and boss not visible)', () => {
+        const stub = { enter: jest.fn(), deathAnimation: false };
+        player.states[1] = stub;
+        game.isBossVisible = false;
+        player.isFrozen = true;
+
+        player.setState(1, 3);
+
+        expect(game.speed).toBe(0);
+        expect(stub.enter).toHaveBeenCalled();
+    });
+
     test('setState uses bluePotionSpeed when active and rolling', () => {
         const stub = { enter: jest.fn(), deathAnimation: false };
         player.states[4] = stub;
         player.isBluePotionActive = true;
         player.bluePotionSpeed = 20;
         game.isBossVisible = false;
+        player.isFrozen = false;
         player.setState(4, 1);
         expect(game.speed).toBe(20);
     });
@@ -352,6 +404,16 @@ describe('Player', () => {
         player.energyLogic(0);
         expect(player.energy).toBeGreaterThan(10);
         expect(player.energyTimer).toBe(0);
+    });
+
+    test('energyLogic flips isEnergyExhausted off once energy ≥ 20', () => {
+        player.isEnergyExhausted = true;
+        player.noEnergyLeftSound = true;
+        player.energy = 20;
+        player.energyTimer = player.energyInterval;
+        player.energyLogic(0);
+        expect(player.isEnergyExhausted).toBe(false);
+        expect(player.noEnergyLeftSound).toBe(false);
     });
 
     test('energyLogic poison drains and disables', () => {
@@ -372,6 +434,8 @@ describe('Player', () => {
             player.fireballTimer = player.fireballCooldown;
             player.currentState = player.states[0];
             game.cabin.isFullyVisible = false;
+            player.isUnderwater = false;
+            player.isRedPotionActive = false;
         });
 
         test('spawns one normal fireball and drains 8 energy', () => {
@@ -431,6 +495,63 @@ describe('Player', () => {
         });
     });
 
+    describe('fireballAbility y-offset when sitting', () => {
+        beforeEach(() => {
+            Fireball.mockClear();
+            player.fireballTimer = player.fireballCooldown;
+            player.currentState = player.states[0];
+            game.cabin.isFullyVisible = false;
+            player.isRedPotionActive = false;
+            player.isUnderwater = false;
+        });
+
+        test('adds +15px y offset in Sitting state', () => {
+            game.input.isFireballAttack.mockReturnValue(true);
+
+            const baseY = player.y + player.height * 0.5;
+            player.fireballAbility(game.input, 0);
+
+            expect(Fireball).toHaveBeenCalledTimes(1);
+            const call = Fireball.mock.calls[0];
+            const yArg = call[2];
+            expect(yArg).toBeCloseTo(baseY + 15);
+        });
+    });
+
+    describe('fireballAbility cabin visibility', () => {
+        beforeEach(() => {
+            Fireball.mockClear();
+            player.fireballTimer = player.fireballCooldown;
+            player.currentState = player.states[1];
+        });
+        test('does not spawn when cabin is fully visible', () => {
+            game.input.isFireballAttack.mockReturnValue(true);
+            game.cabin.isFullyVisible = true;
+            player.fireballAbility(game.input, 0);
+            expect(Fireball).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('fireballAbility isEnergyExhausted blocks spawn', () => {
+        beforeEach(() => Fireball.mockClear());
+        test('does not fire when isEnergyExhausted', () => {
+            player.isEnergyExhausted = true;
+            player.fireballTimer = player.fireballCooldown;
+            game.input.isFireballAttack.mockReturnValue(true);
+            player.currentState = player.states[1];
+            player.fireballAbility(game.input, 0);
+            expect(Fireball).not.toHaveBeenCalled();
+        });
+    });
+
+    test('red potion expires after duration', () => {
+        player.isRedPotionActive = true;
+        player.redPotionTimer = 1000;
+        player.currentState = player.states[0];
+        player.fireballAbility(game.input, 1000);
+        expect(player.isRedPotionActive).toBe(false);
+    });
+
     describe('invisibleAbility', () => {
         test('activation when timer full', () => {
             player.isInvisible = false;
@@ -439,8 +560,7 @@ describe('Player', () => {
             game.input.isInvisibleDefense.mockReturnValue(true);
             player.invisibleAbility(game.input, 0);
             expect(player.isInvisible).toBe(true);
-            expect(game.audioHandler.firedogSFX.playSound)
-                .toHaveBeenCalledWith('invisibleInSFX');
+            expect(game.audioHandler.firedogSFX.playSound).toHaveBeenCalledWith('invisibleInSFX');
         });
 
         test('deactivation after active cooldown', () => {
@@ -461,6 +581,127 @@ describe('Player', () => {
             expect(player.invisibleTimer).toBe(0);
 
             expect(game.audioHandler.firedogSFX.playSound).toHaveBeenCalledWith('invisibleOutSFX');
+        });
+    });
+
+    describe('getCurrentSkinImage', () => {
+        test('returns IMG from document.getElementById when currentSkin is an object with id', () => {
+            const fallback = { id: 'skinFromDom' };
+            game.menu.wardrobe.currentSkin = fallback;
+
+            const spy = jest
+                .spyOn(global.document, 'getElementById')
+                .mockImplementation((id) => {
+                    if (id === 'skinFromDom') return { id, tagName: 'IMG' };
+                    return null;
+                });
+
+            expect(player.getCurrentSkinImage()).toEqual({ id: 'skinFromDom', tagName: 'IMG' });
+
+            spy.mockRestore();
+        });
+
+        test('returns null when currentSkin has no id or element is not IMG', () => {
+            game.menu.wardrobe.currentSkin = { id: 'notImg' };
+
+            const spy = jest
+                .spyOn(global.document, 'getElementById')
+                .mockReturnValue({ id: 'notImg', tagName: 'DIV' });
+
+            expect(player.getCurrentSkinImage()).toBeNull();
+
+            spy.mockRestore();
+        });
+    });
+
+    describe('cosmetics getters', () => {
+        const skinsCos = jest.requireMock('../../game/config/skinsAndCosmetics');
+
+        test('getCurrentCosmeticImage returns null for none', () => {
+            game.menu.wardrobe.getCurrentCosmeticKey.mockReturnValue('none');
+            expect(player.getCurrentCosmeticImage('head')).toBeNull();
+        });
+
+        test('getCurrentCosmeticImage returns element for non-none', () => {
+            game.menu.wardrobe.getCurrentCosmeticKey.mockReturnValue('hatOutfit');
+            const img = player.getCurrentCosmeticImage('head');
+            expect(img).toEqual({ id: 'head:hatOutfit', tagName: 'IMG' });
+            expect(skinsCos.getCosmeticElement).toHaveBeenCalledWith('head', 'hatOutfit');
+        });
+
+        test('getCurrentCosmeticImagesInOrder returns ordered layers with hueDeg from chroma state', () => {
+            game.menu.wardrobe.getCurrentCosmeticKey.mockImplementation((slot) => {
+                if (slot === 'neck') return 'tieOutfit';
+                if (slot === 'eyes') return 'none';
+                if (slot === 'face') return 'clownNoseOutfit';
+                if (slot === 'head') return 'hatOutfit';
+                return 'none';
+            });
+
+            game.menu.wardrobe.getCurrentCosmeticsChromaState.mockReturnValue({
+                neck: { tieOutfit: 120 },
+                face: { clownNoseOutfit: 45 },
+                head: { hatOutfit: 0 },
+            });
+
+            const out = player.getCurrentCosmeticImagesInOrder();
+
+            expect(out.map(o => o.slot)).toEqual(['neck', 'face', 'head']);
+            expect(out.map(o => o.key)).toEqual(['tieOutfit', 'clownNoseOutfit', 'hatOutfit']);
+            expect(out.map(o => o.hueDeg)).toEqual([120, 45, 0]);
+
+            expect(skinsCos.getCosmeticChromaDegFromState).toHaveBeenCalledWith(
+                'neck', 'tieOutfit', expect.any(Object)
+            );
+            expect(skinsCos.getCosmeticChromaDegFromState).toHaveBeenCalledWith(
+                'face', 'clownNoseOutfit', expect.any(Object)
+            );
+            expect(skinsCos.getCosmeticChromaDegFromState).toHaveBeenCalledWith(
+                'head', 'hatOutfit', expect.any(Object)
+            );
+        });
+    });
+
+    describe('drawPlayerWithCurrentSkin() cosmetics hue application', () => {
+        const skinsCos = jest.requireMock('../../game/config/skinsAndCosmetics');
+
+        let ctx;
+        beforeEach(() => {
+            skinsCos.drawWithOptionalHue.mockClear();
+
+            ctx = {
+                drawImage: jest.fn(),
+                save: jest.fn(),
+                restore: jest.fn(),
+                translate: jest.fn(),
+                scale: jest.fn(),
+                strokeRect: jest.fn(),
+            };
+            withAlphaStack(ctx);
+
+            player.frameX = 0;
+            player.frameY = 0;
+
+            game.menu.wardrobe.getCurrentCosmeticKey.mockImplementation((slot) => {
+                if (slot === 'neck') return 'tieOutfit';
+                if (slot === 'head') return 'hatOutfit';
+                return 'none';
+            });
+            game.menu.wardrobe.getCurrentCosmeticsChromaState.mockReturnValue({
+                neck: { tieOutfit: 30 },
+                head: { hatOutfit: 210 },
+            });
+        });
+
+        test('wraps each cosmetic draw in drawWithOptionalHue with correct hueDeg', () => {
+            player.drawPlayerWithCurrentSkin(ctx);
+
+            expect(ctx.drawImage).toHaveBeenCalled();
+            expect(skinsCos.drawWithOptionalHue).toHaveBeenCalledTimes(2);
+
+            const calls = skinsCos.drawWithOptionalHue.mock.calls;
+            const hues = calls.map(c => c[1]?.hueDeg);
+            expect(hues).toEqual([30, 210]);
         });
     });
 
@@ -510,7 +751,7 @@ describe('Player', () => {
                     firedogSFX: { playSound: jest.fn(), stopSound: jest.fn() },
                 },
 
-                menu: { skins: { currentSkin: makeImg('dashTestSkin') } },
+                menu: { wardrobe: { currentSkin: makeImg('dashTestSkin') } },
 
                 particles: [],
                 behindPlayerParticles: [],
@@ -640,6 +881,16 @@ describe('Player', () => {
             expect(player.tryStartDash(['d'])).toBe(false);
         });
 
+        test('tryStartDash: if energy drops to 0, isEnergyExhausted becomes true', () => {
+            game.input.isDashAttack.mockReturnValue(true);
+            player.energy = player.dashEnergyCost;
+
+            player.tryStartDash(['d']);
+
+            expect(player.energy).toBe(0);
+            expect(player.isEnergyExhausted).toBe(true);
+        });
+
         test('dashAbility: countdown ends dash and clears velocity', () => {
             player.isDashing = true;
             player.dashTimeLeft = 10;
@@ -700,16 +951,6 @@ describe('Player', () => {
             player.x = 5;
             player.playerHorizontalMovement([], 16);
             expect(player.x).toBe(0);
-        });
-
-        test('tryStartDash: if energy drops to 0, isEnergyExhausted becomes true', () => {
-            game.input.isDashAttack.mockReturnValue(true);
-            player.energy = player.dashEnergyCost;
-
-            player.tryStartDash(['d']);
-
-            expect(player.energy).toBe(0);
-            expect(player.isEnergyExhausted).toBe(true);
         });
     });
 
@@ -774,8 +1015,7 @@ describe('Player', () => {
 
             player.playerSFXAudios();
 
-            expect(game.audioHandler.firedogSFX.playSound)
-                .toHaveBeenCalledWith('rollingUnderwaterSFX', true, true);
+            expect(game.audioHandler.firedogSFX.playSound).toHaveBeenCalledWith('rollingUnderwaterSFX', true, true);
             expect(player.isRolling).toBe(true);
         });
     });
@@ -850,33 +1090,6 @@ describe('Player', () => {
         });
     });
 
-    test('red potion expires after duration', () => {
-        player.isRedPotionActive = true;
-        player.redPotionTimer = 1000;
-        player.currentState = player.states[0];
-        player.fireballAbility(game.input, 1000);
-        expect(player.isRedPotionActive).toBe(false);
-    });
-
-    test('energyLogic flips isEnergyExhausted off once energy ≥ 20', () => {
-        player.isEnergyExhausted = true;
-        player.noEnergyLeftSound = true;
-        player.energy = 20;
-        player.energyTimer = player.energyInterval;
-        player.energyLogic(0);
-        expect(player.isEnergyExhausted).toBe(false);
-        expect(player.noEnergyLeftSound).toBe(false);
-    });
-
-    test('spriteAnimation does not advance when frameTimer < frameInterval', () => {
-        player.maxFrame = 5;
-        player.frameX = 3;
-        player.frameInterval = 100;
-        player.frameTimer = 50;
-        player.spriteAnimation(50);
-        expect(player.frameX).toBe(3);
-    });
-
     test('update skips input-driven subsystems when deathAnimation is true', () => {
         const stubState = { deathAnimation: true, handleInput: jest.fn() };
         player.currentState = stubState;
@@ -910,8 +1123,7 @@ describe('Player', () => {
         game.noDamageDuringTutorial = true;
         player.currentState = { deathAnimation: false };
         player.checkIfFiredogIsDead();
-        expect(game.menu.levelDifficulty.setDifficulty)
-            .toHaveBeenCalledWith(game.selectedDifficulty);
+        expect(game.menu.levelDifficulty.setDifficulty).toHaveBeenCalledWith(game.selectedDifficulty);
     });
 
     test('checkIfFiredogIsSlowed drains timer and restores speed after two calls', () => {
@@ -957,7 +1169,6 @@ describe('Player', () => {
             game.isBossVisible = true;
             game.boss.current = { x: player.x - 200, width: 50 };
 
-            player.states[8].enter = jest.fn();
             player.currentState = player.states[8];
             player.draw(ctx);
 
@@ -965,9 +1176,20 @@ describe('Player', () => {
             expect(ctx.strokeRect).toHaveBeenCalledWith(player.x, player.y, player.width, player.height);
         });
 
+        test('draw uses gameOver branch scaling', () => {
+            game.gameOver = true;
+            player.facingLeft = true;
+            player.facingRight = false;
+            player.draw(ctx);
+            expect(ctx.save).toHaveBeenCalled();
+            expect(ctx.translate).toHaveBeenCalled();
+            expect(ctx.scale).toHaveBeenCalledWith(-1, 1);
+            expect(ctx.restore).toHaveBeenCalled();
+        });
+
         test('draw uses correct skin image (currentSkin img)', () => {
             const skin = makeImg('hatSkin');
-            game.menu.skins.currentSkin = skin;
+            game.menu.wardrobe.currentSkin = skin;
 
             player.frameX = 0;
             player.frameY = 0;
@@ -983,7 +1205,179 @@ describe('Player', () => {
         });
     });
 
-    describe('energyLogic blue‐potion branch', () => {
+    describe('drawPlayerWithCurrentSkin transparency', () => {
+        test('sets globalAlpha to 0.5 then back to 1 when invisible', () => {
+            const ctx = { drawImage: jest.fn(), save: jest.fn(), restore: jest.fn() };
+            const alphas = [];
+            withAlphaStack(ctx);
+
+            const origDesc = Object.getOwnPropertyDescriptor(ctx, 'globalAlpha');
+            Object.defineProperty(ctx, 'globalAlpha', {
+                configurable: true,
+                get: origDesc.get,
+                set(v) { alphas.push(v); origDesc.set(v); },
+            });
+
+            player.isInvisible = true;
+            game.menu.wardrobe.currentSkin = makeImg('defaultSkin');
+            player.frameX = 0; player.frameY = 0;
+
+            player.drawPlayerWithCurrentSkin(ctx);
+
+            expect(alphas).toEqual([0.5, 1]);
+            expect(ctx.drawImage).toHaveBeenCalled();
+        });
+    });
+
+    describe('color tint & glow rendering', () => {
+        const fakeCanvas = (w = 10, h = 10) => ({
+            width: w,
+            height: h,
+            getContext: jest.fn(() => ({})),
+        });
+
+        let ctx;
+        beforeEach(() => {
+            ctx = {
+                drawImage: jest.fn(),
+                save: jest.fn(),
+                restore: jest.fn(),
+                shadowColor: '',
+                shadowBlur: 0,
+                shadowOffsetX: 0,
+                shadowOffsetY: 0,
+            };
+            withAlphaStack(ctx);
+
+            player.frameX = 0;
+            player.frameY = 0;
+            player.width = 100;
+            player.height = 90;
+
+            game.menu.wardrobe.currentSkin = makeImg('tintSkin');
+            game.menu.wardrobe.getCurrentCosmeticKey.mockReturnValue('none');
+            game.menu.wardrobe.getCurrentCosmeticsChromaState.mockReturnValue({});
+        });
+
+        test('poisoned branch: uses green tint and draws glow(base) + oc', () => {
+            player.isPoisonedActive = true;
+            player.isSlowed = false;
+
+            const skin = player.getCurrentSkinImage();
+            const oc = fakeCanvas();
+            const tintSpy = jest.spyOn(player, 'getTintedFrameCanvas').mockReturnValue(oc);
+
+            player.drawPlayerWithCurrentSkin(ctx);
+
+            expect(tintSpy).toHaveBeenCalledWith(
+                skin,
+                0, 0, player.width, player.height,
+                player.width, player.height,
+                'rgba(0,100,0,0.40)'
+            );
+
+            expect(ctx.drawImage).toHaveBeenNthCalledWith(
+                1,
+                skin,
+                0, 0, player.width, player.height,
+                -player.width / 2, -player.height / 2, player.width, player.height
+            );
+            expect(ctx.drawImage).toHaveBeenNthCalledWith(
+                2, oc, -player.width / 2, -player.height / 2, player.width, player.height
+            );
+        });
+
+        test('slowed branch: uses blue tint and draws glow(base) + oc', () => {
+            player.isPoisonedActive = false;
+            player.isSlowed = true;
+
+            const skin = player.getCurrentSkinImage();
+            const oc = fakeCanvas();
+            const tintSpy = jest.spyOn(player, 'getTintedFrameCanvas').mockReturnValue(oc);
+
+            player.drawPlayerWithCurrentSkin(ctx);
+
+            expect(tintSpy).toHaveBeenCalledWith(
+                skin,
+                0, 0, player.width, player.height,
+                player.width, player.height,
+                'rgba(0,120,255,0.35)'
+            );
+
+            expect(ctx.drawImage).toHaveBeenNthCalledWith(
+                1,
+                skin,
+                0, 0, player.width, player.height,
+                -player.width / 2, -player.height / 2, player.width, player.height
+            );
+            expect(ctx.drawImage).toHaveBeenNthCalledWith(
+                2, oc, -player.width / 2, -player.height / 2, player.width, player.height
+            );
+        });
+
+        test('slowed + poisoned branch: gradient tint then oc', () => {
+            player.isPoisonedActive = true;
+            player.isSlowed = true;
+
+            const oc = fakeCanvas();
+            const tintSpy = jest.spyOn(player, 'getTintedFrameCanvas').mockReturnValue(oc);
+
+            player.drawPlayerWithCurrentSkin(ctx);
+
+            expect(tintSpy).toHaveBeenCalled();
+            const tintArgs = tintSpy.mock.calls[0];
+            const tintObj = tintArgs[tintArgs.length - 1];
+            expect(tintObj).toEqual(expect.objectContaining({ dir: 'horizontal', stops: expect.any(Array) }));
+            expect(Array.isArray(tintObj.stops)).toBe(true);
+            expect(tintObj.stops.length).toBeGreaterThan(0);
+
+            const skin = player.getCurrentSkinImage();
+            expect(ctx.drawImage).toHaveBeenNthCalledWith(
+                1,
+                skin,
+                0, 0, player.width, player.height,
+                -player.width / 2, -player.height / 2, player.width, player.height
+            );
+            expect(ctx.drawImage).toHaveBeenNthCalledWith(
+                2, oc, -player.width / 2, -player.height / 2, player.width, player.height
+            );
+        });
+
+        test('normal branch: draws base image only (no tint helper)', () => {
+            player.isPoisonedActive = false;
+            player.isSlowed = false;
+
+            const tintSpy = jest.spyOn(player, 'getTintedFrameCanvas');
+
+            const skin = player.getCurrentSkinImage();
+            player.drawPlayerWithCurrentSkin(ctx);
+
+            expect(tintSpy).not.toHaveBeenCalled();
+            expect(ctx.drawImage).toHaveBeenCalledWith(
+                skin,
+                0, 0, player.width, player.height,
+                -player.width / 2, -player.height / 2, player.width, player.height
+            );
+        });
+
+        test('respects invisibility alpha (0.5 then restore to 1)', () => {
+            player.isInvisible = true;
+            const alphas = [];
+
+            const origDesc = Object.getOwnPropertyDescriptor(ctx, 'globalAlpha');
+            Object.defineProperty(ctx, 'globalAlpha', {
+                configurable: true,
+                get: origDesc.get,
+                set(v) { alphas.push(v); origDesc.set(v); },
+            });
+
+            player.drawPlayerWithCurrentSkin(ctx);
+
+            expect(alphas).toEqual([0.5, 1]);
+        });
+    });
+
+    describe('energyLogic blue-potion branch', () => {
         test('blue potion slows enemy interval & regen', () => {
             player.isBluePotionActive = true;
             player.currentState = player.states[4];
@@ -1025,336 +1419,6 @@ describe('Player', () => {
         });
     });
 
-    describe('draw()', () => {
-        let ctx;
-        beforeEach(() => {
-            ctx = { save: jest.fn(), translate: jest.fn(), scale: jest.fn(), drawImage: jest.fn(), restore: jest.fn(), strokeRect: jest.fn() };
-            withAlphaStack(ctx);
-        });
-        test('uses gameOver branch scaling', () => {
-            game.gameOver = true;
-            player.facingLeft = true;
-            player.facingRight = false;
-            player.draw(ctx);
-            expect(ctx.save).toHaveBeenCalled();
-            expect(ctx.translate).toHaveBeenCalled();
-            expect(ctx.scale).toHaveBeenCalledWith(-1, 1);
-            expect(ctx.restore).toHaveBeenCalled();
-        });
-    });
-
-    describe('drawPlayerWithCurrentSkin()', () => {
-        let ctx;
-        beforeEach(() => {
-            ctx = { drawImage: jest.fn(), save: jest.fn(), restore: jest.fn() };
-            withAlphaStack(ctx);
-        });
-
-        it.each([
-            ['defaultSkin'],
-            ['choloSkin'],
-            ['zabkaSkin'],
-            ['shinySkin'],
-        ])('draws %s correctly (currentSkin img)', (key) => {
-            const img = makeImg(key);
-            game.menu.skins.currentSkin = img;
-
-            player.frameX = 1; player.frameY = 2;
-            player.drawPlayerWithCurrentSkin(ctx);
-
-            expect(ctx.drawImage).toHaveBeenCalledWith(
-                img,
-                player.frameX * player.width, player.frameY * player.height,
-                player.width, player.height,
-                -player.width / 2, -player.height / 2, player.width, player.height
-            );
-        });
-    });
-
-    describe('fireballAbility cabin visibility', () => {
-        beforeEach(() => {
-            Fireball.mockClear();
-            player.fireballTimer = player.fireballCooldown;
-            player.currentState = player.states[1];
-        });
-        test('does not spawn when cabin is fully visible', () => {
-            game.input.isFireballAttack.mockReturnValue(true);
-            game.cabin.isFullyVisible = true;
-            player.fireballAbility(game.input, 0);
-            expect(Fireball).not.toHaveBeenCalled();
-        });
-    });
-
-    describe('fireballAbility isEnergyExhausted blocks spawn', () => {
-        beforeEach(() => Fireball.mockClear());
-        test('does not fire when isEnergyExhausted', () => {
-            player.isEnergyExhausted = true;
-            player.fireballTimer = player.fireballCooldown;
-            game.input.isFireballAttack.mockReturnValue(true);
-            player.currentState = player.states[1];
-            player.fireballAbility(game.input, 0);
-            expect(Fireball).not.toHaveBeenCalled();
-        });
-    });
-
-    describe('drawPlayerWithCurrentSkin transparency', () => {
-        test('sets globalAlpha to 0.5 then back to 1 when invisible', () => {
-            const ctx = { drawImage: jest.fn(), save: jest.fn(), restore: jest.fn() };
-            const alphas = [];
-            withAlphaStack(ctx);
-
-            const origDesc = Object.getOwnPropertyDescriptor(ctx, 'globalAlpha');
-            Object.defineProperty(ctx, 'globalAlpha', {
-                configurable: true,
-                get: origDesc.get,
-                set(v) { alphas.push(v); origDesc.set(v); },
-            });
-
-            player.isInvisible = true;
-            game.menu.skins.currentSkin = makeImg('defaultSkin');
-            player.frameX = 0; player.frameY = 0;
-
-            player.drawPlayerWithCurrentSkin(ctx);
-
-            expect(alphas).toEqual([0.5, 1]);
-            expect(ctx.drawImage).toHaveBeenCalled();
-        });
-    });
-
-    describe('color tint & glow rendering', () => {
-        const fakeCanvas = (w = 10, h = 10) => ({
-            width: w,
-            height: h,
-            getContext: jest.fn(() => ({})),
-        });
-
-        let ctx;
-        beforeEach(() => {
-            ctx = {
-                drawImage: jest.fn(),
-                save: jest.fn(),
-                restore: jest.fn(),
-            };
-            withAlphaStack(ctx);
-
-            player.frameX = 0;
-            player.frameY = 0;
-            player.width = 100;
-            player.height = 90;
-
-            game.menu.skins.currentSkin = makeImg('tintSkin');
-        });
-
-        test('poisoned branch: uses green tint and draws glow(base) + oc', () => {
-            player.isPoisonedActive = true;
-            player.isSlowed = false;
-
-            const skin = player.getCurrentSkinImage();
-            const oc = fakeCanvas();
-            const tintSpy = jest.spyOn(player, 'getTintedFrameCanvas').mockReturnValue(oc);
-
-            player.drawPlayerWithCurrentSkin(ctx);
-
-            expect(tintSpy).toHaveBeenCalledWith(
-                skin,
-                0, 0, player.width, player.height,
-                player.width, player.height,
-                'rgba(0,100,0,0.40)'
-            );
-
-            expect(ctx.drawImage).toHaveBeenNthCalledWith(
-                1,
-                skin,
-                0, 0, player.width, player.height,
-                -player.width / 2, -player.height / 2, player.width, player.height
-            );
-            // tint oc draw
-            expect(ctx.drawImage).toHaveBeenNthCalledWith(
-                2, oc, -player.width / 2, -player.height / 2, player.width, player.height
-            );
-        });
-
-        test('slowed branch: uses blue tint and draws glow(base) + oc', () => {
-            player.isPoisonedActive = false;
-            player.isSlowed = true;
-
-            const skin = player.getCurrentSkinImage();
-            const oc = fakeCanvas();
-            const tintSpy = jest.spyOn(player, 'getTintedFrameCanvas').mockReturnValue(oc);
-
-            player.drawPlayerWithCurrentSkin(ctx);
-
-            expect(tintSpy).toHaveBeenCalledWith(
-                skin,
-                0, 0, player.width, player.height,
-                player.width, player.height,
-                'rgba(0,120,255,0.35)'
-            );
-
-            expect(ctx.drawImage).toHaveBeenNthCalledWith(
-                1,
-                skin,
-                0, 0, player.width, player.height,
-                -player.width / 2, -player.height / 2, player.width, player.height
-            );
-            expect(ctx.drawImage).toHaveBeenNthCalledWith(
-                2, oc, -player.width / 2, -player.height / 2, player.width, player.height
-            );
-        });
-
-        test('slowed + poisoned branch: gradient tint then oc (no masks)', () => {
-            player.isPoisonedActive = true;
-            player.isSlowed = true;
-
-            const oc = fakeCanvas();
-            const tintSpy = jest.spyOn(player, 'getTintedFrameCanvas').mockReturnValue(oc);
-
-            player.drawPlayerWithCurrentSkin(ctx);
-
-            expect(tintSpy).toHaveBeenCalled();
-            const tintArgs = tintSpy.mock.calls[0];
-            const tintObj = tintArgs[tintArgs.length - 1];
-            expect(tintObj).toEqual(
-                expect.objectContaining({
-                    dir: 'horizontal',
-                    stops: expect.any(Array),
-                })
-            );
-            expect(Array.isArray(tintObj.stops)).toBe(true);
-            expect(tintObj.stops.length).toBeGreaterThan(0);
-
-            const skin = player.getCurrentSkinImage();
-            expect(ctx.drawImage).toHaveBeenNthCalledWith(
-                1,
-                skin,
-                0, 0, player.width, player.height,
-                -player.width / 2, -player.height / 2, player.width, player.height
-            );
-            expect(ctx.drawImage).toHaveBeenNthCalledWith(
-                2, oc, -player.width / 2, -player.height / 2, player.width, player.height
-            );
-        });
-
-        test('normal branch: draws base image only (no helpers)', () => {
-            player.isPoisonedActive = false;
-            player.isSlowed = false;
-
-            const tintSpy = jest.spyOn(player, 'getTintedFrameCanvas');
-
-            const skin = player.getCurrentSkinImage();
-            player.drawPlayerWithCurrentSkin(ctx);
-
-            expect(tintSpy).not.toHaveBeenCalled();
-            expect(ctx.drawImage).toHaveBeenCalledWith(
-                skin,
-                0, 0, player.width, player.height,
-                -player.width / 2, -player.height / 2, player.width, player.height
-            );
-        });
-
-        test('respects invisibility alpha (0.5 then restore to 1)', () => {
-            player.isInvisible = true;
-            const alphas = [];
-
-            const origDesc = Object.getOwnPropertyDescriptor(ctx, 'globalAlpha');
-            Object.defineProperty(ctx, 'globalAlpha', {
-                configurable: true,
-                get: origDesc.get,
-                set(v) { alphas.push(v); origDesc.set(v); },
-            });
-
-            player.drawPlayerWithCurrentSkin(ctx);
-
-            expect(alphas).toEqual([0.5, 1]);
-        });
-    });
-
-    describe('update() smoke test', () => {
-        it('calls all major subsystems when alive', () => {
-            jest.spyOn(player, 'energyLogic');
-            jest.spyOn(player, 'fireballAbility');
-            jest.spyOn(player, 'invisibleAbility');
-            jest.spyOn(player, 'playerSFXAudios');
-            jest.spyOn(player, 'spriteAnimation');
-            jest.spyOn(player, 'playerHorizontalMovement');
-            jest.spyOn(player, 'playerVerticalMovement');
-
-            player.currentState = { deathAnimation: false, handleInput: jest.fn() };
-            player.update([], 16);
-
-            expect(player.energyLogic).toHaveBeenCalled();
-            expect(player.fireballAbility).toHaveBeenCalled();
-            expect(player.invisibleAbility).toHaveBeenCalled();
-            expect(player.playerSFXAudios).toHaveBeenCalled();
-            expect(player.spriteAnimation).toHaveBeenCalled();
-            expect(player.playerHorizontalMovement).toHaveBeenCalled();
-            expect(player.playerVerticalMovement).toHaveBeenCalled();
-        });
-    });
-
-    describe('ice movement (applyIceMovementExact)', () => {
-        beforeEach(() => {
-            player.isIce = true;
-            player.currentState = player.states[1];
-            player.x = 100;
-            player.vx = 0;
-            player.maxSpeed = 10;
-        });
-
-        test('accelerates on ice when holding right and clamps speed', () => {
-            for (let i = 0; i < 10; i++) {
-                player.playerHorizontalMovement({ d: true }, 16);
-            }
-            expect(player.vx).toBeGreaterThan(0);
-            expect(player.vx).toBeLessThanOrEqual(player.maxSpeed);
-            expect(player.x).toBeGreaterThan(100);
-        });
-
-        test('slides (decays) when released and respects bounds', () => {
-            for (let i = 0; i < 10; i++) player.playerHorizontalMovement({ d: true }, 16);
-            const vAfterAccel = player.vx;
-
-            player.playerHorizontalMovement({}, 16);
-            expect(player.vx).toBeLessThan(vAfterAccel);
-            expect(player.vx).toBeGreaterThanOrEqual(0);
-
-            player.x = -5;
-            player.vx = -2;
-            player.playerHorizontalMovement({}, 16);
-            expect(player.x).toBe(0);
-            expect(player.vx).toBe(0);
-
-            player.x = game.width - player.width + 10;
-            player.vx = 5;
-            player.playerHorizontalMovement({}, 16);
-            expect(player.x).toBe(game.width - player.width);
-            expect(player.vx).toBe(0);
-        });
-    });
-
-    describe('fireballAbility y-offset when sitting', () => {
-        beforeEach(() => {
-            Fireball.mockClear();
-            player.fireballTimer = player.fireballCooldown;
-            player.currentState = player.states[0];
-            game.cabin.isFullyVisible = false;
-            player.isRedPotionActive = false;
-            player.isUnderwater = false;
-        });
-
-        test('adds +15px y offset in Sitting state', () => {
-            game.input.isFireballAttack.mockReturnValue(true);
-
-            const baseY = player.y + player.height * 0.5;
-            player.fireballAbility(game.input, 0);
-
-            expect(Fireball).toHaveBeenCalledTimes(1);
-            const call = Fireball.mock.calls[0];
-            const yArg = call[2];
-            expect(yArg).toBeCloseTo(baseY + 15);
-        });
-    });
-
     describe('freezing and startFrozen/updateFrozen/clearFreeze', () => {
         beforeEach(() => {
             player.currentState = { deathAnimation: false };
@@ -1380,6 +1444,7 @@ describe('Player', () => {
             expect(player.vy).toBe(0);
             expect(game.input.keys).toEqual([]);
         });
+
         test('updateFrozen keeps game speed at 0 and counts down while frozen', () => {
             player.isFrozen = true;
             player.frozenTimer = 1000;
@@ -1533,7 +1598,7 @@ describe('Player', () => {
             expect(spy).toHaveBeenCalledWith(8, 0);
         });
 
-        test('stops relevant SFX and removes status particles', () => {
+        test('stops relevant SFX and removes status particles + tunnel vision collisions', () => {
             game.particles = [
                 { constructor: { name: 'PoisonBubbles' } },
                 { constructor: { name: 'IceCrystalBubbles' } },
@@ -1541,9 +1606,15 @@ describe('Player', () => {
                 { constructor: { name: 'SomeOtherParticle' } },
             ];
 
+            game.collisions = [
+                { constructor: { name: 'TunnelVision' } },
+                { constructor: { name: 'OtherCollision' } },
+            ];
+
             player.clearAllStatusEffects();
 
             expect(game.particles.map(p => p.constructor.name)).toEqual(['SomeOtherParticle']);
+            expect(game.collisions.map(c => c.constructor.name)).toEqual(['OtherCollision']);
 
             const stop = game.audioHandler.firedogSFX.stopSound;
             expect(stop).toHaveBeenCalledWith('bluePotionEnergyGoingUp');
@@ -1551,6 +1622,69 @@ describe('Player', () => {
             expect(stop).toHaveBeenCalledWith('rollingSFX');
             expect(stop).toHaveBeenCalledWith('rollingUnderwaterSFX');
             expect(stop).toHaveBeenCalledWith('frozenSound');
+        });
+    });
+
+    describe('update() smoke test', () => {
+        it('calls all major subsystems when alive', () => {
+            jest.spyOn(player, 'energyLogic');
+            jest.spyOn(player, 'fireballAbility');
+            jest.spyOn(player, 'invisibleAbility');
+            jest.spyOn(player, 'playerSFXAudios');
+            jest.spyOn(player, 'spriteAnimation');
+            jest.spyOn(player, 'playerHorizontalMovement');
+            jest.spyOn(player, 'playerVerticalMovement');
+
+            player.currentState = { deathAnimation: false, handleInput: jest.fn() };
+            player.update([], 16);
+
+            expect(player.energyLogic).toHaveBeenCalled();
+            expect(player.fireballAbility).toHaveBeenCalled();
+            expect(player.invisibleAbility).toHaveBeenCalled();
+            expect(player.playerSFXAudios).toHaveBeenCalled();
+            expect(player.spriteAnimation).toHaveBeenCalled();
+            expect(player.playerHorizontalMovement).toHaveBeenCalled();
+            expect(player.playerVerticalMovement).toHaveBeenCalled();
+        });
+    });
+
+    describe('ice movement (applyIceMovementExact)', () => {
+        beforeEach(() => {
+            player.isIce = true;
+            player.currentState = player.states[1];
+            player.x = 100;
+            player.vx = 0;
+            player.maxSpeed = 10;
+        });
+
+        test('accelerates on ice when holding right and clamps speed', () => {
+            for (let i = 0; i < 10; i++) {
+                player.playerHorizontalMovement({ d: true }, 16);
+            }
+            expect(player.vx).toBeGreaterThan(0);
+            expect(player.vx).toBeLessThanOrEqual(player.maxSpeed);
+            expect(player.x).toBeGreaterThan(100);
+        });
+
+        test('slides (decays) when released and respects bounds', () => {
+            for (let i = 0; i < 10; i++) player.playerHorizontalMovement({ d: true }, 16);
+            const vAfterAccel = player.vx;
+
+            player.playerHorizontalMovement({}, 16);
+            expect(player.vx).toBeLessThan(vAfterAccel);
+            expect(player.vx).toBeGreaterThanOrEqual(0);
+
+            player.x = -5;
+            player.vx = -2;
+            player.playerHorizontalMovement({}, 16);
+            expect(player.x).toBe(0);
+            expect(player.vx).toBe(0);
+
+            player.x = game.width - player.width + 10;
+            player.vx = 5;
+            player.playerHorizontalMovement({}, 16);
+            expect(player.x).toBe(game.width - player.width);
+            expect(player.vx).toBe(0);
         });
     });
 });
@@ -1573,7 +1707,7 @@ describe('emitStatusParticles (bubble status logic)', () => {
                 isFireballAttack: jest.fn().mockReturnValue(false),
                 isInvisibleDefense: jest.fn().mockReturnValue(false),
                 isRollAttack: jest.fn().mockReturnValue(false),
-                keys: []
+                keys: [],
             },
             cabin: { isFullyVisible: false },
             debug: false,
@@ -1600,20 +1734,17 @@ describe('emitStatusParticles (bubble status logic)', () => {
                 firedogSFX: { playSound: jest.fn(), stopSound: jest.fn() },
                 collisionSFX: { playSound: jest.fn() },
                 enemySFX: { playSound: jest.fn() },
-                powerUpAndDownSFX: { playSound: jest.fn() }
+                powerUpAndDownSFX: { playSound: jest.fn() },
             },
             gameOver: false,
             menu: {
                 levelDifficulty: { setDifficulty: jest.fn() },
-                skins: {
+                wardrobe: {
                     currentSkin: makeImg('statusSkin'),
-                    defaultSkin: null,
-                    hatSkin: null,
-                    choloSkin: null,
-                    zabkaSkin: null,
-                    shinySkin: null
-                }
-            }
+                    getCurrentCosmeticKey: jest.fn(() => 'none'),
+                    getCurrentCosmeticsChromaState: jest.fn(() => ({})),
+                },
+            },
         };
 
         player = new Player(game);
@@ -1691,7 +1822,7 @@ describe('emitStatusParticles (bubble status logic)', () => {
         expect(game.particles.length).toBe(2);
     });
 
-    test('when NEITHER slowed nor poisoned: spawns nothing', () => {
+    test('when NEITHER slowed nor poisoned: spawns nothing (except SpinningChicks baseline)', () => {
         player.isPoisonedActive = false;
         player.isSlowed = false;
 

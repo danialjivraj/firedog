@@ -25,10 +25,10 @@ const fakeImages = {
     bluebubble: { name: 'bluebubble' },
 };
 
+const defaultGetElById = (id) => fakeImages[id] || null;
+
 beforeAll(() => {
-    jest
-        .spyOn(document, 'getElementById')
-        .mockImplementation((id) => fakeImages[id] || null);
+    jest.spyOn(document, 'getElementById').mockImplementation(defaultGetElById);
 });
 
 afterAll(() => {
@@ -102,9 +102,9 @@ describe('Dust', () => {
 
     beforeEach(() => {
         jest.spyOn(Math, 'random')
-            .mockReturnValueOnce(0.5)  // size
-            .mockReturnValueOnce(0.2)  // speedX
-            .mockReturnValueOnce(0.3)  // speedY
+            .mockReturnValueOnce(0.5) // size
+            .mockReturnValueOnce(0.2) // speedX
+            .mockReturnValueOnce(0.3) // speedY
             .mockReturnValueOnce(0.95) // createBubble
             .mockReturnValueOnce(0.8); // createDust
 
@@ -160,7 +160,7 @@ describe('Dust', () => {
             .mockReturnValueOnce(0.5)
             .mockReturnValueOnce(0.2)
             .mockReturnValueOnce(0.3)
-            .mockReturnValueOnce(0)    // createBubble false
+            .mockReturnValueOnce(0) // createBubble false
             .mockReturnValueOnce(0.8); // createDust true
 
         dust = new Dust(game, 0, 0);
@@ -180,7 +180,7 @@ describe('Dust', () => {
             .mockReturnValueOnce(0.2)
             .mockReturnValueOnce(0.3)
             .mockReturnValueOnce(0.95) // createBubble true
-            .mockReturnValueOnce(0);   // createDust false
+            .mockReturnValueOnce(0); // createDust false
 
         dust = new Dust(game, 0, 0);
         dust.update();
@@ -202,6 +202,27 @@ describe('Dust', () => {
             size
         );
         expect(dust.y).toBeCloseTo(py - 2);
+    });
+
+    it('draw() on land draws this.image and does not apply underwater lift', () => {
+        Math.random.mockRestore();
+        jest.spyOn(Math, 'random')
+            .mockReturnValueOnce(0.5)
+            .mockReturnValueOnce(0.2)
+            .mockReturnValueOnce(0.3)
+            .mockReturnValueOnce(0.95)
+            .mockReturnValueOnce(0.8);
+
+        game.player.isUnderwater = false;
+        dust = new Dust(game, 10, 20);
+        dust.update();
+        const y0 = dust.y;
+
+        ctx.drawImage.mockClear();
+        dust.draw(ctx);
+
+        expect(ctx.drawImage).toHaveBeenCalledTimes(1);
+        expect(dust.y).toBe(y0);
     });
 });
 
@@ -291,6 +312,25 @@ describe('Bubble', () => {
 
         expect(ctx.drawImage).not.toHaveBeenCalled();
     });
+
+    it('draw() on land draws image and does not apply underwater lift', () => {
+        Math.random.mockRestore();
+        jest.spyOn(Math, 'random')
+            .mockReturnValueOnce(0.5)
+            .mockReturnValueOnce(0.2)
+            .mockReturnValueOnce(0.3)
+            .mockReturnValueOnce(0.95);
+
+        game.player.isUnderwater = false;
+        bubble = new Bubble(game, 10, 10);
+        bubble.update();
+        const y0 = bubble.y;
+
+        bubble.draw(ctx);
+
+        expect(ctx.drawImage).toHaveBeenCalledTimes(1);
+        expect(bubble.y).toBe(y0);
+    });
 });
 
 describe('Splash', () => {
@@ -338,6 +378,21 @@ describe('Splash', () => {
         splash.draw(ctx);
 
         expect(ctx.drawImage).toHaveBeenCalled();
+    });
+
+    it('draw() returns early when resolved image is missing', () => {
+        const prevImpl = document.getElementById.getMockImplementation();
+        document.getElementById.mockImplementation((id) => {
+            if (id === splash.imageId) return null;
+            return prevImpl(id);
+        });
+
+        ctx.drawImage.mockClear();
+        splash.draw(ctx);
+
+        expect(ctx.drawImage).not.toHaveBeenCalled();
+
+        document.getElementById.mockImplementation(prevImpl);
     });
 });
 
@@ -395,6 +450,21 @@ describe('Fire', () => {
         expect(ctx.save).toHaveBeenCalled();
         expect(ctx.drawImage).toHaveBeenCalled();
         expect(ctx.restore).toHaveBeenCalled();
+    });
+
+    it('draw() returns early when image is missing', () => {
+        const prevImpl = document.getElementById.getMockImplementation();
+        document.getElementById.mockImplementation((id) => {
+            if (id === fire.imageId) return null;
+            return prevImpl(id);
+        });
+
+        ctx.drawImage.mockClear();
+        fire.draw(ctx);
+
+        expect(ctx.drawImage).not.toHaveBeenCalled();
+
+        document.getElementById.mockImplementation(prevImpl);
     });
 });
 
@@ -863,6 +933,16 @@ describe('IceCrystalBubbles', () => {
 
         expect(icb.markedForDeletion).toBe(true);
     });
+
+    it('draw() returns early when image is not ready', () => {
+        fakeImages.ice_crystal.complete = false;
+        const icb = new IceCrystalBubbles(game, 10, 20);
+
+        ctx.drawImage.mockClear();
+        icb.draw(ctx);
+
+        expect(ctx.drawImage).not.toHaveBeenCalled();
+    });
 });
 
 describe('SpinningChicks', () => {
@@ -993,15 +1073,15 @@ describe('DashGhost', () => {
             drawImage: jest.fn(),
             set globalAlpha(v) { this._ga = v; },
             get globalAlpha() { return this._ga; },
+            set filter(v) { this._f = v; },
+            get filter() { return this._f; },
         };
     });
 
     test('update() moves by -(speedX + game.speed), fades life, shrinks scale, and eventually deletes', () => {
         const snapshot = {
             skinImg: fakeImages.test_img,
-
             layers: [],
-
             sx: 0, sy: 0, sw: 10, sh: 10,
             x: 100, y: 50,
             dw: 20, dh: 30,
@@ -1054,12 +1134,35 @@ describe('DashGhost', () => {
         expect(g.x).toBeCloseTo(95);
     });
 
+    test('constructor marks for deletion when snapshot is invalid', () => {
+        const bad1 = new DashGhost(game, null);
+        expect(bad1.markedForDeletion).toBe(true);
+
+        const bad2 = new DashGhost(game, {
+            skinImg: fakeImages.test_img,
+            layers: [],
+            sx: 0, sy: 0, sw: 0, sh: 10,
+            x: 0, y: 0,
+            dw: 20, dh: 30,
+            facingRight: true,
+        });
+        expect(bad2.markedForDeletion).toBe(true);
+
+        const bad3 = new DashGhost(game, {
+            skinImg: fakeImages.test_img,
+            layers: [],
+            sx: 0, sy: 0, sw: 10, sh: 10,
+            x: 0, y: 0,
+            dw: 0, dh: 30,
+            facingRight: true,
+        });
+        expect(bad3.markedForDeletion).toBe(true);
+    });
+
     test('draw() flips when facingRight=false and draws using snapshot crop', () => {
         const snapshot = {
             skinImg: fakeImages.test_img,
-
             layers: [fakeImages.test_img],
-
             sx: 1, sy: 2, sw: 3, sh: 4,
             x: 10, y: 20,
             dw: 30, dh: 40,
@@ -1067,9 +1170,6 @@ describe('DashGhost', () => {
         };
 
         const g = new DashGhost(game, snapshot);
-
-        expect(g.markedForDeletion).toBe(false);
-
         g.life = 1;
 
         g.draw(ctx);
@@ -1089,6 +1189,60 @@ describe('DashGhost', () => {
 
         expect(ctx.restore).toHaveBeenCalled();
     });
+
+    test('draw() supports chroma layers (ctx.filter hue-rotate) and resets ctx.filter to none', () => {
+        const filterAssignments = [];
+        const ctx2 = {
+            save: jest.fn(),
+            restore: jest.fn(),
+            translate: jest.fn(),
+            scale: jest.fn(),
+            drawImage: jest.fn(),
+            set globalAlpha(v) { this._ga = v; },
+            get globalAlpha() { return this._ga; },
+            set filter(v) { filterAssignments.push(v); this._f = v; },
+            get filter() { return this._f; },
+        };
+
+        const snapshot = {
+            skinImg: fakeImages.test_img,
+            layers: [
+                { img: fakeImages.test_img, hueDeg: 120 },
+                { img: fakeImages.test_img, hueDeg: 0 },
+            ],
+            sx: 0, sy: 0, sw: 10, sh: 10,
+            x: 10, y: 20,
+            dw: 30, dh: 40,
+            facingRight: true,
+        };
+
+        const g = new DashGhost(game, snapshot);
+        g.life = 1;
+
+        g.draw(ctx2);
+
+        expect(ctx2.drawImage).toHaveBeenCalledTimes(3);
+        expect(filterAssignments.some(v => String(v).includes('hue-rotate(120deg)'))).toBe(true);
+        expect(filterAssignments.includes('none')).toBe(true);
+    });
+
+    test('draw() no-ops safely when markedForDeletion', () => {
+        const snapshot = {
+            skinImg: fakeImages.test_img,
+            layers: [],
+            sx: 0, sy: 0, sw: 10, sh: 10,
+            x: 10, y: 20,
+            dw: 30, dh: 40,
+            facingRight: true,
+        };
+
+        const g = new DashGhost(game, snapshot);
+        g.markedForDeletion = true;
+
+        ctx.drawImage.mockClear();
+        expect(() => g.draw(ctx)).not.toThrow();
+        expect(ctx.drawImage).not.toHaveBeenCalled();
+    });
 });
 
 describe('DashFireArc', () => {
@@ -1096,6 +1250,7 @@ describe('DashFireArc', () => {
 
     beforeEach(() => {
         game = {
+            width: 200,
             cabin: { isFullyVisible: false },
             isBossVisible: false,
             speed: 2,
@@ -1104,13 +1259,10 @@ describe('DashFireArc', () => {
             menu: { pause: { isPaused: false } },
             player: {
                 x: 100,
-
                 isUnderwater: false,
                 isBluePotionActive: false,
-
                 isDashing: false,
                 dashInstanceId: 1,
-
                 dashVelocity: 10,
             },
         };
@@ -1146,7 +1298,9 @@ describe('DashFireArc', () => {
         expect(p4.imageId).toBe('bluebubble');
     });
 
-    test('update() early-returns when paused (age still increments due to super.update, but custom logic stops)', () => {
+    test('update() returns early when paused (age stays 0; base Particle update still runs)', () => {
+        jest.spyOn(Math, 'random').mockReturnValue(0);
+
         const p = new DashFireArc(game, 100, 100, true);
         const x0 = p.x;
         const y0 = p.y;
@@ -1157,8 +1311,9 @@ describe('DashFireArc', () => {
 
         expect(p.x).not.toBe(x0);
         expect(p.y).not.toBe(y0);
-
         expect(p.age).toBe(0);
+
+        Math.random.mockRestore();
     });
 
     test('follow logic: while age < followMs and same dash, x is additionally pushed by player.x delta * followFactor', () => {
@@ -1178,11 +1333,67 @@ describe('DashFireArc', () => {
         const p2 = new DashFireArc(game, 100, 100, true);
 
         game.player.dashInstanceId = 1000;
-
         game.player.x += 20;
         p2.update();
 
         expect(p.x).toBeGreaterThan(p2.x);
+
+        Math.random.mockRestore();
+    });
+
+    test('worldStopped: when worldStopped=true and same dash, arc scrolls against dash direction', () => {
+        jest.spyOn(Math, 'random').mockReturnValue(0);
+
+        game.speed = 0;
+        game.player.isDashing = true;
+        game.player.dashInstanceId = 77;
+
+        const normal = new DashFireArc(game, 100, 100, true, false);
+        const stopped = new DashFireArc(game, 100, 100, true, true);
+
+        normal.spawnDashInstanceId = 77;
+        stopped.spawnDashInstanceId = 77;
+
+        normal.wobbleAmp = 0;
+        normal.va = 0;
+        stopped.wobbleAmp = 0;
+        stopped.va = 0;
+
+        normal.followMs = 0;
+        stopped.followMs = 0;
+
+        normal.update();
+        stopped.update();
+
+        expect(stopped.x).toBeLessThan(normal.x);
+
+        Math.random.mockRestore();
+    });
+
+    test('ramp behavior: speedX lerps from startSpeedX toward baseSpeedX while age < rampMs', () => {
+        jest.spyOn(Math, 'random').mockReturnValue(0);
+
+        game.speed = 0;
+
+        const p = new DashFireArc(game, 100, 100, true, false);
+
+        p.startSpeedX = 1;
+        p.baseSpeedX = 10;
+        p.drag = 1;
+        p.damp = 1;
+        p.boostMs = 0;
+        p.boost = 0;
+        p.curveSign = 1;
+        p.speedY = 0;
+        p.va = 0;
+        p.wobbleAmp = 0;
+
+        p.rampMs = 1000;
+        p.age = 0;
+
+        p.update();
+
+        expect(p.speedX).toBeCloseTo(1.144, 3);
 
         Math.random.mockRestore();
     });
@@ -1219,6 +1430,19 @@ describe('DashFireArc', () => {
             expect.any(Number),
             expect.any(Number)
         );
+
+        Math.random.mockRestore();
+    });
+
+    test('draw() returns early when image is missing', () => {
+        jest.spyOn(Math, 'random').mockReturnValue(0);
+
+        const p = new DashFireArc(game, 100, 100, true);
+        p.imageId = 'missing_img';
+
+        ctx.drawImage.mockClear();
+        expect(() => p.draw(ctx)).not.toThrow();
+        expect(ctx.drawImage).not.toHaveBeenCalled();
 
         Math.random.mockRestore();
     });

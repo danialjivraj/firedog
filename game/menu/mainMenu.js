@@ -3,7 +3,7 @@ import { DeleteProgressAnimation, DeleteProgressBookAnimation, SavingAnimation, 
 
 export class MainMenu extends BaseMenu {
     constructor(game) {
-        const menuOptions = ['Play', 'Skins', 'Records', 'How to Play', 'Settings', 'Exit'];
+        const menuOptions = ['Play', 'Wardrobe', 'Records', 'How to Play', 'Settings', 'Exit'];
         super(game, menuOptions, 'Main Menu');
         this.showSavingSprite = false;
         this.savingAnimation = new SavingAnimation(this.game);
@@ -19,8 +19,8 @@ export class MainMenu extends BaseMenu {
             if (selectedOption === 'Play') {
                 this.game.audioHandler.menu.playSound('mapOpening');
                 this.game.menu.forestMap.activateMenu();
-            } else if (selectedOption === 'Skins') {
-                this.game.menu.skins.activateMenu();
+            } else if (selectedOption === 'Wardrobe') {
+                this.game.menu.wardrobe.activateMenu();
             } else if (selectedOption === 'Records') {
                 this.game.menu.records.activateMenu();
             } else if (selectedOption === 'How to Play') {

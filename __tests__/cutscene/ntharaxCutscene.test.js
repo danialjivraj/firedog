@@ -64,7 +64,7 @@ const createBaseGame = () => {
 
 const createBonusMap3 = (overrides = {}) => ({
     menu: {
-        skins: {
+        wardrobe: {
             defaultSkin: 'default',
             hatSkin: 'hat',
             choloSkin: 'cholo',
