@@ -3,6 +3,14 @@ import { SelectMenu, BaseMenu } from '../../game/menu/baseMenu.js';
 describe('SelectMenu', () => {
   let menu, mockGame, ctx;
 
+  const mockClickEvent = (overrides = {}) => ({
+    clientX: 0,
+    clientY: 0,
+    preventDefault: jest.fn(),
+    stopImmediatePropagation: jest.fn(),
+    ...overrides,
+  });
+
   beforeAll(() => {
     document.body.innerHTML = `
       <img id="mainmenubackground" />
@@ -123,14 +131,15 @@ describe('SelectMenu', () => {
       mockGame.saveGameState.mockClear();
       menu.selectedOption = 0;
 
-      menu.handleMouseClick({ clientX: 0, clientY: 0 });
+      menu.handleMouseClick(mockClickEvent());
 
       expect(mockGame.saveGameState).toHaveBeenCalledTimes(1);
       expect(menu.onSelect).toHaveBeenCalledWith(0, 'Opt A');
 
       mockGame.saveGameState.mockClear();
       menu.selectedOption = 0;
-      menu.handleMouseClick({ clientX: 0, clientY: 0 });
+
+      menu.handleMouseClick(mockClickEvent());
 
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });

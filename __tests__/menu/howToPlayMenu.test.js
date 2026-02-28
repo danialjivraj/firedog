@@ -44,7 +44,7 @@ jest.mock('../../game/entities/powerUpAndDown.js', () => {
                 this.y = 0;
                 this.markedForDeletion = false;
             }
-            update() {}
+            update() { }
             draw(ctx) {
                 ctx.__powerDrawCalls = (ctx.__powerDrawCalls || 0) + 1;
             }
@@ -67,7 +67,7 @@ jest.mock('../../game/animations/particles.js', () => {
             this.parallax = 1;
             this.markedForDeletion = false;
         }
-        update() {}
+        update() { }
         draw(ctx) {
             ctx.__poisonParticleDrawCalls = (ctx.__poisonParticleDrawCalls || 0) + 1;
         }
@@ -79,7 +79,7 @@ jest.mock('../../game/animations/particles.js', () => {
             this.parallax = 1;
             this.markedForDeletion = false;
         }
-        update() {}
+        update() { }
         draw(ctx) {
             ctx.__slowParticleDrawCalls = (ctx.__slowParticleDrawCalls || 0) + 1;
         }
@@ -153,8 +153,8 @@ function installDomAssets() {
                 createLinearGradient: jest.fn(() => ({
                     addColorStop: jest.fn(),
                 })),
-                set globalCompositeOperation(_) {},
-                set fillStyle(_) {},
+                set globalCompositeOperation(_) { },
+                set fillStyle(_) { },
             }),
         };
         return canvas;
@@ -201,7 +201,7 @@ function makeCtx() {
 }
 
 function makeGame({ W = 1920, H = 689 } = {}) {
-    return {
+    const game = {
         width: W,
         height: H,
         groundMargin: 80,
@@ -211,6 +211,10 @@ function makeGame({ W = 1920, H = 689 } = {}) {
             pause: { isPaused: false },
             main: { activateMenu: jest.fn() },
         },
+
+        goBackMenu: jest.fn(() => {
+            game.menu.main.activateMenu(3);
+        }),
 
         UI: {
             drawTutorialProgressBar: jest.fn(),
@@ -230,6 +234,8 @@ function makeGame({ W = 1920, H = 689 } = {}) {
             currentState: { name: 'default' },
         },
     };
+
+    return game;
 }
 
 function findPageIndex(menu, titleIncludes) {
@@ -394,7 +400,7 @@ describe('HowToPlayMenu (new logic)', () => {
             expect(menu.currentPage).toBe(1);
         });
 
-        it('Go Back resets page and activates main menu 3', () => {
+        it('Go Back resets page and calls game.goBackMenu (which activates main menu with arg 3)', () => {
             menu.currentPage = 5;
             menu.selectedOption = 2; // Go Back
 
@@ -402,6 +408,8 @@ describe('HowToPlayMenu (new logic)', () => {
 
             expect(menu.currentPage).toBe(0);
             expect(BaseMenu.prototype.handleMenuSelection).toHaveBeenCalledTimes(1);
+
+            expect(game.goBackMenu).toHaveBeenCalledTimes(1);
             expect(game.menu.main.activateMenu).toHaveBeenCalledWith(3);
         });
     });

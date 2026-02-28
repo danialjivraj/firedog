@@ -360,27 +360,23 @@ export class ControlsSettingsMenu extends BaseMenu {
         this.handleMenuSelection();
     }
 
-    activateMenu(arg = 0) {
-        let selectedOption = 0;
-        let inGame = false;
-
-        if (typeof arg === "number") {
-            selectedOption = arg;
-        } else if (arg && typeof arg === "object") {
-            if (typeof arg.selectedOption === "number") selectedOption = arg.selectedOption;
-            if (typeof arg.inGame === "boolean") inGame = arg.inGame;
-        }
-
-        this.menuInGame = inGame;
+    activateMenu({ selectedOption = 0, inGame = false } = {}) {
+        this.menuInGame = !!inGame;
         this.showStarsSticker = !this.menuInGame;
 
-        this.selectedOption = 0;
+        this.selectedOption = selectedOption;
         this.scrollY = 0;
         this.targetScrollY = 0;
 
-        super.activateMenu(0);
-
+        super.activateMenu(this.selectedOption);
         this.scrollSelectedIntoView();
+    }
+
+    activateFromNav(state = {}) {
+        this.activateMenu({
+            inGame: state.menuInGame ?? this.menuInGame,
+            selectedOption: state.selectedOption ?? 0,
+        });
     }
 
     handleMenuSelection() {
@@ -388,13 +384,10 @@ export class ControlsSettingsMenu extends BaseMenu {
 
         if (option === "Go Back") {
             super.handleMenuSelection();
-            if (this.menuInGame) {
-                this.game.menu.settings.activateMenu({ inGame: true, selectedOption: 1 }); // highlight Controls
-            } else {
-                this.game.menu.settings.activateMenu(1);
-            }
+            this.game.goBackMenu();
             return;
         }
+
         if (option === 'Reset to Defaults') {
             super.handleMenuSelection();
             this.game.keyBindings = getDefaultKeyBindings();

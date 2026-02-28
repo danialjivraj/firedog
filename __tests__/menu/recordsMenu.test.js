@@ -24,50 +24,56 @@ describe('RecordsMenu', () => {
             stroke: jest.fn(),
             createLinearGradient: jest.fn(() => grad),
 
-            set font(_) {},
-            set fillStyle(_) {},
-            set shadowColor(_) {},
-            set shadowOffsetX(_) {},
-            set shadowOffsetY(_) {},
-            set textAlign(_) {},
-            set textBaseline(_) {},
-            set strokeStyle(_) {},
-            set lineWidth(_) {},
+            set font(_) { },
+            set fillStyle(_) { },
+            set shadowColor(_) { },
+            set shadowOffsetX(_) { },
+            set shadowOffsetY(_) { },
+            set textAlign(_) { },
+            set textBaseline(_) { },
+            set strokeStyle(_) { },
+            set lineWidth(_) { },
         };
     };
 
-    const makeGame = () => ({
-        width: 1280,
-        height: 720,
-        canSelect: true,
-        canSelectForestMap: true,
-        audioHandler: { menu: { playSound: jest.fn() } },
-        menu: {
-            main: { activateMenu: jest.fn() },
-            pause: { isPaused: false },
-        },
-        canvas: {
+    const makeGame = () => {
+        const g = {
             width: 1280,
             height: 720,
-            getBoundingClientRect: () => ({ left: 0, top: 0, width: 1280, height: 720 }),
-        },
+            canSelect: true,
+            canSelectForestMap: true,
+            audioHandler: { menu: { playSound: jest.fn() } },
+            menu: {
+                main: { activateMenu: jest.fn() },
+                pause: { isPaused: false },
+            },
+            canvas: {
+                width: 1280,
+                height: 720,
+                getBoundingClientRect: () => ({ left: 0, top: 0, width: 1280, height: 720 }),
+            },
 
-        map1Unlocked: false,
-        map2Unlocked: false,
-        map3Unlocked: false,
-        map4Unlocked: false,
-        map5Unlocked: false,
-        map6Unlocked: false,
-        map7Unlocked: false,
-        bonusMap1Unlocked: false,
-        bonusMap2Unlocked: false,
-        bonusMap3Unlocked: false,
+            map1Unlocked: false,
+            map2Unlocked: false,
+            map3Unlocked: false,
+            map4Unlocked: false,
+            map5Unlocked: false,
+            map6Unlocked: false,
+            map7Unlocked: false,
+            bonusMap1Unlocked: false,
+            bonusMap2Unlocked: false,
+            bonusMap3Unlocked: false,
 
-        glacikalDefeated: false,
-        elyvorgDefeated: false,
+            glacikalDefeated: false,
+            elyvorgDefeated: false,
 
-        records: {},
-    });
+            records: {},
+        };
+
+        g.goBackMenu = jest.fn(() => g.menu.main.activateMenu(2));
+
+        return g;
+    };
 
     const unlock = (...keys) => {
         for (const k of keys) game[`${k}Unlocked`] = true;
@@ -633,6 +639,9 @@ describe('RecordsMenu', () => {
             menu.handleMenuSelection();
 
             expect(superSpy).toHaveBeenCalledTimes(1);
+
+            expect(game.goBackMenu).toHaveBeenCalledTimes(1);
+
             expect(game.menu.main.activateMenu).toHaveBeenCalledWith(2);
 
             superSpy.mockRestore();
@@ -645,6 +654,7 @@ describe('RecordsMenu', () => {
             menu.handleMenuSelection();
 
             expect(superSpy).not.toHaveBeenCalled();
+            expect(game.goBackMenu).not.toHaveBeenCalled();
             expect(game.menu.main.activateMenu).not.toHaveBeenCalled();
 
             superSpy.mockRestore();

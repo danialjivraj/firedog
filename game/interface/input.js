@@ -59,11 +59,17 @@ export class InputHandler {
 
             if (e.key === 'Tab' && this.game.canSelectForestMap) {
                 if (this.game.currentMenu === this.game.menu.forestMap) {
-                    this.game.menu.enemyLore.activateMenu();
+                    this.game.nav.openTransient(this.game.menu.enemyLore, 0);
                     this.game.audioHandler.menu.playSound('enemyLoreOpenBookSound', false, true);
-                } else if (this.game.currentMenu === this.game.menu.enemyLore) {
-                    this.game.menu.forestMap.activateMenu();
+                    e.preventDefault();
+                    return;
+                }
+
+                if (this.game.currentMenu === this.game.menu.enemyLore) {
+                    this.game.nav.closeTransient();
                     this.game.audioHandler.menu.playSound('enemyLoreCloseBookSound', false, true);
+                    e.preventDefault();
+                    return;
                 }
             }
 
@@ -98,7 +104,11 @@ export class InputHandler {
                     if (!this.game.enterDuringBackgroundTransition) return;
                     if (this.game.fadingIn || this.game.waitForFadeInOpacity) return;
 
-                    this.game.pauseContext = 'cutscene';
+                    if (this.game.menu.pause.isPaused && this.game.currentMenu) {
+                        this.handleEscapeKey();
+                        return;
+                    }
+
                     this.game.menu.pause.togglePause();
                     return;
                 }
@@ -119,7 +129,6 @@ export class InputHandler {
 
                 if (
                     this.game.currentMenu &&
-                    this.game.currentMenu !== this.game.menu.main &&
                     this.game.menu.forestMap.showSavingSprite === false
                 ) {
                     this.handleEscapeKey();
@@ -280,26 +289,47 @@ export class InputHandler {
             return;
         }
 
-        if (this.game.currentMenu.menuInGame === false) {
-            if (this.game.currentMenu !== this.game.menu.enemyLore) {
-                for (const menuKey in this.game.menu) {
-                    const menu = this.game.menu[menuKey];
-                    if (menu.menuActive) {
-                        menu.activateMenu(0);
-                        break;
-                    }
-                }
-                this.game.menu.howToPlay.currentImageIndex = 0;
-                this.game.currentMenu = this.game.menu.main;
-            } else {
-                this.game.audioHandler.menu.playSound('enemyLoreCloseBookSound', false, true);
-                this.game.menu.forestMap.activateMenu();
+        const cur = this.game.currentMenu;
+        if (!cur) return;
+
+        if (cur === this.game.menu.main) {
+            if (cur.selectedOption !== 0) {
+                cur.selectedOption = 0;
+                this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
             }
-        } else {
-            if (this.game.menu.pause.canEscape && !this.game.gameOver) {
-                this.game.menu.pause.canEscape = false;
-                this.game.menu.pause.togglePause();
-            }
+            return;
         }
+
+        if (cur === this.game.menu.enemyLore) {
+            this.game.audioHandler.menu.playSound('enemyLoreCloseBookSound', false, true);
+            this.game.nav.closeTransient();
+            return;
+        }
+
+        const gameOverRootActive =
+            !!this.game.gameOver ||
+            !!this.game.notEnoughCoins ||
+            !!this.game.menu.gameOver?.menuActive;
+
+        if (gameOverRootActive) {
+            if (cur === this.game.menu.gameOver) return;
+            this.game.goBackMenu();
+            return;
+        }
+
+        if (cur.menuInGame === true) {
+            if (cur === this.game.menu.pause) {
+                if (this.game.menu.pause.canEscape) {
+                    this.game.menu.pause.canEscape = false;
+                    this.game.menu.pause.togglePause();
+                }
+                return;
+            }
+
+            this.game.goBackMenu();
+            return;
+        }
+
+        this.game.goBackMenu();
     }
 }

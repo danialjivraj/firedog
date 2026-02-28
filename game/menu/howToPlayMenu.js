@@ -93,8 +93,10 @@ export class HowToPlayMenu extends BaseMenu {
 
         if (selected === 'Go Back') {
             this.currentPage = 0;
+            this._lastPageIndex = -1;
+            this._resetDemosOnPageChange();
             super.handleMenuSelection();
-            this.game.menu.main.activateMenu(3);
+            this.game.goBackMenu();
         }
     }
 

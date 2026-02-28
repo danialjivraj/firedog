@@ -64,6 +64,8 @@ describe('ControlsSettingsMenu', () => {
                     stopSound: jest.fn(),
                 },
             },
+            goBackMenu: jest.fn(),
+
             menu: {
                 settings: { activateMenu: jest.fn() },
                 pause: { isPaused: false },
@@ -147,12 +149,12 @@ describe('ControlsSettingsMenu', () => {
                 .toHaveBeenCalledWith('optionSelectedSound', false, true);
         });
 
-        test('"Go Back" activates settings menu index 1 and does not save', () => {
+        test('"Go Back" delegates to game.goBackMenu() and does not save', () => {
             menu.selectedOption = menu.menuOptions.indexOf('Go Back');
 
             menu.handleMenuSelection();
 
-            expect(mockGame.menu.settings.activateMenu).toHaveBeenCalledWith(1);
+            expect(mockGame.goBackMenu).toHaveBeenCalledTimes(1);
             expect(mockGame.saveGameState).not.toHaveBeenCalled();
             expect(mockGame.audioHandler.menu.playSound)
                 .toHaveBeenCalledWith('optionSelectedSound', false, true);

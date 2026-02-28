@@ -13,44 +13,47 @@ describe('PauseMenu', () => {
             .spyOn(BaseMenu.prototype, 'handleMenuSelection')
             .mockImplementation(() => { });
 
-    game = {
-        reset: jest.fn(),
-        isPlayerInGame: true,
+        game = {
+            reset: jest.fn(),
+            isPlayerInGame: true,
 
-        cutsceneActive: false,
-        currentCutscene: null,
+            cutsceneActive: false,
+            currentCutscene: null,
 
-        pauseContext: 'gameplay',
-        isEndCutscene: false,
+            pauseContext: 'gameplay',
+            isEndCutscene: false,
 
-        restartActiveCutscene: jest.fn(),
-        exitCutsceneToMainMenu: jest.fn(),
-        goToMainMenuWithSavingAnimation: jest.fn(),
+            restartActiveCutscene: jest.fn(),
+            exitCutsceneToMainMenu: jest.fn(),
+            goToMainMenuWithSavingAnimation: jest.fn(),
 
-        maybeAnnounceGiftSkins: jest.fn(),
+            maybeAnnounceGiftSkins: jest.fn(),
 
-        ignoreCutsceneInputUntil: 0,
+            ignoreCutsceneInputUntil: 0,
 
-        audioHandler: {
-            mapSoundtrack: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
-            firedogSFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
-            enemySFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
-            collisionSFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
-            powerUpAndDownSFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
-            cutsceneMusic: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
-            cutsceneSFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
-        },
+            setMenuRoot: jest.fn(),
+            openMenu: jest.fn(),
+            nav: { clear: jest.fn() },
 
-        menu: {
-            main: { activateMenu: jest.fn() },
-            settings: { activateMenu: jest.fn() },
-        },
-    };
+            audioHandler: {
+                mapSoundtrack: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
+                firedogSFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
+                enemySFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
+                collisionSFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
+                powerUpAndDownSFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
+                cutsceneMusic: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
+                cutsceneSFX: { pauseAllSounds: jest.fn(), resumeAllSounds: jest.fn() },
+            },
+
+            menu: {
+                main: { activateMenu: jest.fn() },
+                settings: { activateMenu: jest.fn() },
+            },
+        };
 
         menu = new PauseMenu(game);
         game.menu.pause = menu;
 
-        jest.spyOn(menu, 'activateMenu').mockImplementation(() => { });
         jest.spyOn(menu, 'closeAllMenus').mockImplementation(() => { });
 
         menu.activateMenu();
@@ -85,7 +88,8 @@ describe('PauseMenu', () => {
 
             expect(menu.isPaused).toBe(true);
             expect(menu.selectedOption).toBe(0);
-            expect(menu.activateMenu).toHaveBeenCalled();
+
+            expect(game.setMenuRoot).toHaveBeenCalledWith(game.menu.pause, 0);
 
             expect(game.audioHandler.mapSoundtrack.pauseAllSounds).toHaveBeenCalled();
             expect(game.audioHandler.firedogSFX.pauseAllSounds).toHaveBeenCalled();
@@ -108,7 +112,9 @@ describe('PauseMenu', () => {
 
             expect(menu.isPaused).toBe(false);
             expect(menu.selectedOption).toBe(0);
+
             expect(menu.closeAllMenus).toHaveBeenCalled();
+            expect(game.nav.clear).toHaveBeenCalled();
 
             expect(game.audioHandler.mapSoundtrack.resumeAllSounds).toHaveBeenCalled();
             expect(game.audioHandler.firedogSFX.resumeAllSounds).toHaveBeenCalled();
@@ -229,12 +235,12 @@ describe('PauseMenu', () => {
             menu.handleMenuSelection();
 
             expect(baseSelectSpy).toHaveBeenCalled();
-            expect(game.menu.settings.activateMenu).toHaveBeenCalledWith({
+
+            expect(game.openMenu).toHaveBeenCalledWith(game.menu.settings, {
                 inGame: true,
                 selectedOption: 0,
-                returnMenu: "pause",
-                returnSelectedOption: 2,
             });
+
             expect(menu.menuActive).toBe(false);
         });
 
@@ -249,11 +255,17 @@ describe('PauseMenu', () => {
 
             expect(baseSelectSpy).toHaveBeenCalled();
             expect(game.exitCutsceneToMainMenu).not.toHaveBeenCalled();
+
             expect(toggleSpy).toHaveBeenCalled();
+
             expect(game.isPlayerInGame).toBe(false);
             expect(game.reset).toHaveBeenCalled();
+            expect(game.nav.clear).toHaveBeenCalled();
+
+            expect(game.setMenuRoot).toHaveBeenCalledWith(game.menu.main, 0);
             expect(game.goToMainMenuWithSavingAnimation).not.toHaveBeenCalled();
             expect(game.menu.main.activateMenu).toHaveBeenCalled();
+
             expect(menu.menuActive).toBe(false);
 
             toggleSpy.mockRestore();
@@ -274,9 +286,12 @@ describe('PauseMenu', () => {
             expect(game.exitCutsceneToMainMenu).toHaveBeenCalled();
 
             expect(toggleSpy).toHaveBeenCalled();
+
             expect(game.isPlayerInGame).toBe(false);
             expect(game.reset).toHaveBeenCalled();
+            expect(game.nav.clear).toHaveBeenCalled();
 
+            expect(game.setMenuRoot).toHaveBeenCalledWith(game.menu.main, 0);
             expect(game.goToMainMenuWithSavingAnimation).not.toHaveBeenCalled();
             expect(game.menu.main.activateMenu).toHaveBeenCalled();
 
@@ -292,9 +307,16 @@ describe('PauseMenu', () => {
             menu.handleMenuSelection();
 
             expect(game.exitCutsceneToMainMenu).toHaveBeenCalled();
+
             expect(game.reset).toHaveBeenCalled();
             expect(game.isPlayerInGame).toBe(false);
+
+            expect(game.nav.clear).toHaveBeenCalled();
+            expect(game.setMenuRoot).toHaveBeenCalledWith(game.menu.main, 0);
+
+            expect(game.maybeAnnounceGiftSkins).toHaveBeenCalledWith({ delayMs: 450 });
             expect(game.goToMainMenuWithSavingAnimation).toHaveBeenCalledWith(4000);
+
             expect(game.menu.main.activateMenu).not.toHaveBeenCalled();
         });
     });

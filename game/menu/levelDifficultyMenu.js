@@ -55,7 +55,7 @@ export class LevelDifficultyMenu extends SelectMenu {
     }
 
     onGoBack() {
-        this.game.menu.settings.activateMenu(2);
+        this.game.goBackMenu();
     }
 
     getSelectedOption() {

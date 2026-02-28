@@ -35,16 +35,16 @@ export class BaseMenu {
             context.save();
             if (this.menuInGame === false) {
                 context.drawImage(this.backgroundImage, 0, 0, this.game.width, this.game.height);
-        } else {
-            const isPause = !!this.game.menu.pause?.isPaused;
-            const isGameOver = !!this.game.gameOver || !!this.game.menu.gameOver?.menuActive || !!this.game.notEnoughCoins;
+            } else {
+                const isPause = !!this.game.menu.pause?.isPaused;
+                const isGameOver = !!this.game.gameOver || !!this.game.menu.gameOver?.menuActive || !!this.game.notEnoughCoins;
 
-            if (isPause || isGameOver) {
-                const alpha = isPause ? 0.7 : (this.game.notEnoughCoins ? 0.5 : 0.2);
-                context.fillStyle = `rgba(0, 0, 0, ${alpha})`;
-                context.fillRect(0, 0, this.game.width, this.game.height);
+                if (isPause || isGameOver) {
+                    const alpha = isPause ? 0.7 : (this.game.notEnoughCoins ? 0.5 : 0.2);
+                    context.fillStyle = `rgba(0, 0, 0, ${alpha})`;
+                    context.fillRect(0, 0, this.game.width, this.game.height);
+                }
             }
-        }
 
             context.font = 'bold 46px Love Ya Like A Sister';
             context.fillStyle = 'white';
@@ -143,9 +143,9 @@ export class BaseMenu {
             ? this.filledStarRightImage
             : this.blankStarRightImage;
 
-        context.drawImage(middleStar, x, y);
         context.drawImage(rightStar, x, y);
         context.drawImage(leftStar, x, y);
+        context.drawImage(middleStar, x, y);
 
         if (this.game.elyvorgDefeated && this.storyCompleteTextImage) {
             context.drawImage(this.storyCompleteTextImage, x, y);
@@ -154,13 +154,22 @@ export class BaseMenu {
         context.restore();
     }
 
+    getNavState() {
+        return { selectedOption: this.selectedOption ?? 0 };
+    }
+
+    activateFromNav(state = {}) {
+        const sel = state.selectedOption ?? 0;
+        this.activateMenu(sel);
+    }
     activateMenu(selectedOption = 0) {
         this.menuActive = true;
-        for (const menuName in this.game.menu) {
-            if (menuName !== this.constructor.name) {
-                this.game.menu[menuName].menuActive = false;
-            }
+
+        for (const k in this.game.menu) {
+            this.game.menu[k].menuActive = false;
         }
+
+        this.menuActive = true;
         this.selectedOption = selectedOption;
         this.game.currentMenu = this;
     }
@@ -196,6 +205,8 @@ export class BaseMenu {
                 this.handleNavigation(1);
                 this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
             } else if (event.key === 'Enter') {
+                event.preventDefault();
+                event.stopImmediatePropagation();
                 this.handleMenuSelection();
             }
         }
@@ -211,6 +222,7 @@ export class BaseMenu {
     handleRightClick(event) {
         if (this.menuActive && this.game.canSelect && this.game.canSelectForestMap) {
             event.preventDefault();
+            event.stopImmediatePropagation();
             this.game.input.handleEscapeKey();
         }
     }
@@ -248,6 +260,8 @@ export class BaseMenu {
 
     handleMouseClick(event) {
         if (this.menuActive && this.game.canSelect && this.game.canSelectForestMap) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
             this.handleMenuSelection();
         }
     }

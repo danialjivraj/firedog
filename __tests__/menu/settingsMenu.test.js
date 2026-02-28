@@ -6,40 +6,55 @@ describe('SettingsMenu', () => {
   let mockGame;
   let ctx;
 
-  const createMockGame = () => ({
-    width: 1920,
-    height: 689,
-    canSelect: true,
-    canSelectForestMap: true,
-    isPlayerInGame: true,
-    cutsceneActive: false,
-
-    isTutorialActive: false,
-    tutorial: { tutorialPause: true },
-
-    audioHandler: { menu: { playSound: jest.fn(), stopSound: jest.fn() } },
-    saveGameState: jest.fn(),
-    menu: {
-      main: { activateMenu: jest.fn() },
-      audioSettings: { activateMenu: jest.fn() },
-      controlsSettings: { activateMenu: jest.fn() },
-      levelDifficulty: { activateMenu: jest.fn(), selectedDifficultyIndex: 1 },
-      deleteProgress: { activateMenu: jest.fn() },
-      pause: { isPaused: false, activateMenu: jest.fn() },
-    },
-    currentMenu: null,
-    input: { handleEscapeKey: jest.fn() },
-    canvas: {
+  const createMockGame = () => {
+    const g = {
       width: 1920,
       height: 689,
-      getBoundingClientRect: () => ({
-        left: 0,
-        top: 0,
+      canSelect: true,
+      canSelectForestMap: true,
+      isPlayerInGame: true,
+      cutsceneActive: false,
+
+      isTutorialActive: false,
+      tutorial: { tutorialPause: true },
+
+      audioHandler: { menu: { playSound: jest.fn(), stopSound: jest.fn() } },
+      saveGameState: jest.fn(),
+
+      menu: {
+        main: { activateMenu: jest.fn() },
+        audioSettings: { activateMenu: jest.fn() },
+        controlsSettings: { activateMenu: jest.fn() },
+        levelDifficulty: { activateMenu: jest.fn(), selectedDifficultyIndex: 1 },
+        deleteProgress: { activateMenu: jest.fn() },
+        pause: { isPaused: false, activateMenu: jest.fn() },
+      },
+
+      openMenu: jest.fn(),
+      goBackMenu: jest.fn(),
+
+      currentMenu: null,
+      input: { handleEscapeKey: jest.fn() },
+      canvas: {
         width: 1920,
         height: 689,
-      }),
-    },
-  });
+        getBoundingClientRect: () => ({
+          left: 0,
+          top: 0,
+          width: 1920,
+          height: 689,
+        }),
+      },
+    };
+
+    g.openMenu.mockImplementation((targetMenu, arg) => {
+      if (targetMenu && typeof targetMenu.activateMenu === 'function') {
+        targetMenu.activateMenu(arg);
+      }
+    });
+
+    return g;
+  };
 
   const createMockContext = () => ({
     save: jest.fn(),
@@ -57,6 +72,16 @@ describe('SettingsMenu', () => {
     menu.selectedOption = index;
     mockGame.saveGameState.mockClear();
     mockGame.audioHandler.menu.playSound.mockClear();
+    mockGame.openMenu.mockClear();
+    mockGame.goBackMenu.mockClear();
+
+    mockGame.menu.audioSettings.activateMenu.mockClear();
+    mockGame.menu.controlsSettings.activateMenu.mockClear();
+    mockGame.menu.levelDifficulty.activateMenu.mockClear();
+    mockGame.menu.deleteProgress.activateMenu.mockClear();
+    mockGame.menu.main.activateMenu.mockClear();
+    mockGame.menu.pause.activateMenu.mockClear();
+
     menu.handleMenuSelection();
   };
 
@@ -121,7 +146,6 @@ describe('SettingsMenu', () => {
       menu.activateMenu({ inGame: true, selectedOption: 999 });
 
       expect(menu.menuInGame).toBe(true);
-      expect(menu.menuOptions).toEqual(menu.inGameOptions);
       expect(menu.menuOptions).toEqual(['Audio', 'Controls', 'Go Back']);
       expect(menu.selectedOption).toBe(menu.menuOptions.length - 1);
       expect(mockGame.currentMenu).toBe(menu);
@@ -141,87 +165,6 @@ describe('SettingsMenu', () => {
       ]);
       expect(menu.selectedOption).toBe(2);
       expect(mockGame.currentMenu).toBe(menu);
-    });
-  });
-
-  describe('returnMenu / returnSelectedOption routing (in-game Go Back)', () => {
-    beforeEach(() => {
-      menu.activateMenu({ inGame: true, selectedOption: 0 });
-      mockGame.audioHandler.menu.playSound.mockClear();
-      mockGame.menu.pause.activateMenu.mockClear();
-    });
-
-    test('activateMenu({returnMenu, returnSelectedOption}) stores routing metadata', () => {
-      menu.activateMenu({
-        inGame: true,
-        selectedOption: 0,
-        returnMenu: 'gameOver',
-        returnSelectedOption: 1,
-      });
-
-      expect(menu.returnMenu).toBe('gameOver');
-      expect(menu.returnSelectedOption).toBe(1);
-    });
-
-    test('in-game Go Back routes to configured return menu if it exists', () => {
-      mockGame.menu.gameOver = { activateMenu: jest.fn() };
-
-      menu.activateMenu({
-        inGame: true,
-        selectedOption: 2, // go back
-        returnMenu: 'gameOver',
-        returnSelectedOption: 1,
-      });
-
-      menu.handleMenuSelection();
-
-      expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith(
-        'optionSelectedSound',
-        false,
-        true
-      );
-
-      expect(mockGame.menu.gameOver.activateMenu).toHaveBeenCalledWith(1);
-      expect(mockGame.menu.pause.activateMenu).not.toHaveBeenCalled();
-      expect(mockGame.menu.main.activateMenu).not.toHaveBeenCalled();
-    });
-
-    test('in-game Go Back falls back to pause.activateMenu(2) if return menu missing', () => {
-      menu.activateMenu({
-        inGame: true,
-        selectedOption: 2, // go back
-        returnMenu: 'doesNotExist',
-        returnSelectedOption: 123,
-      });
-
-      menu.handleMenuSelection();
-
-      expect(mockGame.menu.pause.activateMenu).toHaveBeenCalledWith(2);
-    });
-
-    test('in-game Go Back falls back to pause.activateMenu(2) if return menu has no activateMenu', () => {
-      mockGame.menu.gameOver = {};
-
-      menu.activateMenu({
-        inGame: true,
-        selectedOption: 2, // go back
-        returnMenu: 'gameOver',
-        returnSelectedOption: 1,
-      });
-
-      menu.handleMenuSelection();
-
-      expect(mockGame.menu.pause.activateMenu).toHaveBeenCalledWith(2);
-    });
-
-    test('return routing persists across activateMenu calls when not overridden', () => {
-      mockGame.menu.gameOver = { activateMenu: jest.fn() };
-
-      menu.activateMenu({ inGame: true, returnMenu: 'gameOver', returnSelectedOption: 1, selectedOption: 0 });
-      menu.activateMenu({ inGame: true, selectedOption: 2 });
-
-      menu.handleMenuSelection();
-      expect(mockGame.menu.gameOver.activateMenu).toHaveBeenCalledWith(1);
     });
   });
 
@@ -278,6 +221,8 @@ describe('SettingsMenu', () => {
       menu.activateMenu({ inGame: false, selectedOption: 0 });
       mockGame.audioHandler.menu.playSound.mockClear();
       mockGame.saveGameState.mockClear();
+      mockGame.openMenu.mockClear();
+      mockGame.goBackMenu.mockClear();
     });
 
     test('"Tutorial Activation" toggles isTutorialActive, updates label, and saves', () => {
@@ -310,11 +255,19 @@ describe('SettingsMenu', () => {
         false,
         true
       );
+
+      expect(mockGame.openMenu).toHaveBeenCalledWith(
+        mockGame.menu.audioSettings,
+        { inGame: false, selectedOption: 0 }
+      );
+
       expect(mockGame.menu.audioSettings.activateMenu).toHaveBeenCalledWith({
         inGame: false,
         selectedOption: 0,
       });
+
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
+      expect(mockGame.goBackMenu).not.toHaveBeenCalled();
     });
 
     test('"Controls" plays select sound and opens Controls Settings at index 0', () => {
@@ -325,11 +278,19 @@ describe('SettingsMenu', () => {
         false,
         true
       );
+
+      expect(mockGame.openMenu).toHaveBeenCalledWith(
+        mockGame.menu.controlsSettings,
+        { inGame: false, selectedOption: 0 }
+      );
+
       expect(mockGame.menu.controlsSettings.activateMenu).toHaveBeenCalledWith({
         inGame: false,
         selectedOption: 0,
       });
+
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
+      expect(mockGame.goBackMenu).not.toHaveBeenCalled();
     });
 
     test('"Level Difficulty" plays select sound and opens Level Difficulty using selectedDifficultyIndex', () => {
@@ -340,10 +301,18 @@ describe('SettingsMenu', () => {
         false,
         true
       );
+
+      expect(mockGame.openMenu).toHaveBeenCalledWith(
+        mockGame.menu.levelDifficulty,
+        mockGame.menu.levelDifficulty.selectedDifficultyIndex
+      );
+
       expect(mockGame.menu.levelDifficulty.activateMenu).toHaveBeenCalledWith(
         mockGame.menu.levelDifficulty.selectedDifficultyIndex
       );
+
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
+      expect(mockGame.goBackMenu).not.toHaveBeenCalled();
     });
 
     test('"Delete Progress" plays select sound and opens Delete Progress at index 1', () => {
@@ -354,11 +323,19 @@ describe('SettingsMenu', () => {
         false,
         true
       );
+
+      expect(mockGame.openMenu).toHaveBeenCalledWith(
+        mockGame.menu.deleteProgress,
+        1
+      );
+
       expect(mockGame.menu.deleteProgress.activateMenu).toHaveBeenCalledWith(1);
+
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
+      expect(mockGame.goBackMenu).not.toHaveBeenCalled();
     });
 
-    test('"Go Back" plays select sound and returns to Main Menu at index 4', () => {
+    test('"Go Back" plays select sound and delegates to goBackMenu()', () => {
       selectAndRun(5);
 
       expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith(
@@ -366,7 +343,12 @@ describe('SettingsMenu', () => {
         false,
         true
       );
-      expect(mockGame.menu.main.activateMenu).toHaveBeenCalledWith(4);
+
+      expect(mockGame.goBackMenu).toHaveBeenCalled();
+
+      expect(mockGame.menu.main.activateMenu).not.toHaveBeenCalled();
+      expect(mockGame.menu.pause.activateMenu).not.toHaveBeenCalled();
+
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });
   });
@@ -374,7 +356,11 @@ describe('SettingsMenu', () => {
   describe('handleMenuSelection() in-game routing', () => {
     beforeEach(() => {
       menu.activateMenu({ inGame: true, selectedOption: 0 });
+
       mockGame.audioHandler.menu.playSound.mockClear();
+      mockGame.openMenu.mockClear();
+      mockGame.goBackMenu.mockClear();
+
       mockGame.menu.audioSettings.activateMenu.mockClear();
       mockGame.menu.controlsSettings.activateMenu.mockClear();
       mockGame.menu.pause.activateMenu.mockClear();
@@ -393,13 +379,18 @@ describe('SettingsMenu', () => {
         false,
         true
       );
+
+      expect(mockGame.openMenu).toHaveBeenCalledWith(
+        mockGame.menu.audioSettings,
+        { inGame: true, selectedOption: 0 }
+      );
+
       expect(mockGame.menu.audioSettings.activateMenu).toHaveBeenCalledWith({
         inGame: true,
         selectedOption: 0,
       });
 
-      expect(mockGame.menu.pause.activateMenu).not.toHaveBeenCalled();
-      expect(mockGame.menu.main.activateMenu).not.toHaveBeenCalled();
+      expect(mockGame.goBackMenu).not.toHaveBeenCalled();
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });
 
@@ -412,17 +403,22 @@ describe('SettingsMenu', () => {
         false,
         true
       );
+
+      expect(mockGame.openMenu).toHaveBeenCalledWith(
+        mockGame.menu.controlsSettings,
+        { inGame: true, selectedOption: 0 }
+      );
+
       expect(mockGame.menu.controlsSettings.activateMenu).toHaveBeenCalledWith({
         inGame: true,
         selectedOption: 0,
       });
 
-      expect(mockGame.menu.pause.activateMenu).not.toHaveBeenCalled();
-      expect(mockGame.menu.main.activateMenu).not.toHaveBeenCalled();
+      expect(mockGame.goBackMenu).not.toHaveBeenCalled();
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });
 
-    test('in-game "Go Back" routes to pause menu (activateMenu(2)) and NOT main menu', () => {
+    test('in-game "Go Back" delegates to goBackMenu() (stack decides where to go)', () => {
       menu.selectedOption = 2; // go back
       menu.handleMenuSelection();
 
@@ -431,11 +427,12 @@ describe('SettingsMenu', () => {
         false,
         true
       );
-      expect(mockGame.menu.pause.activateMenu).toHaveBeenCalledWith(2);
 
+      expect(mockGame.goBackMenu).toHaveBeenCalled();
+
+      expect(mockGame.menu.pause.activateMenu).not.toHaveBeenCalled();
       expect(mockGame.menu.main.activateMenu).not.toHaveBeenCalled();
-      expect(mockGame.menu.levelDifficulty.activateMenu).not.toHaveBeenCalled();
-      expect(mockGame.menu.deleteProgress.activateMenu).not.toHaveBeenCalled();
+
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });
   });
@@ -444,7 +441,11 @@ describe('SettingsMenu', () => {
     test('Enter triggers handleMenuSelection when menu is active', () => {
       const spy = jest.spyOn(menu, 'handleMenuSelection');
 
-      menu.handleKeyDown({ key: 'Enter' });
+      menu.handleKeyDown({
+        key: 'Enter',
+        preventDefault: jest.fn(),
+        stopImmediatePropagation: jest.fn(),
+      });
 
       expect(spy).toHaveBeenCalled();
       spy.mockRestore();
@@ -456,12 +457,18 @@ describe('SettingsMenu', () => {
       menu.selectedOption = 0;
       mockGame.saveGameState.mockClear();
 
-      menu.handleMouseClick({ clientX: 0, clientY: 0 });
-
-      expect(mockGame.menu.audioSettings.activateMenu).toHaveBeenCalledWith({
-        inGame: false,
-        selectedOption: 0,
+      menu.handleMouseClick({
+        clientX: 0,
+        clientY: 0,
+        preventDefault: jest.fn(),
+        stopImmediatePropagation: jest.fn(),
       });
+
+      expect(mockGame.openMenu).toHaveBeenCalledWith(
+        mockGame.menu.audioSettings,
+        { inGame: false, selectedOption: 0 }
+      );
+
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });
   });

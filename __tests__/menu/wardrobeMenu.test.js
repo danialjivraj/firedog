@@ -845,8 +845,6 @@ describe('Wardrobe menu', () => {
         it('right click otherwise delegates to input.handleEscapeKey', () => {
             const e = { preventDefault: jest.fn(), clientX: 10, clientY: 10 };
             menu.handleRightClick(e);
-
-            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('optionSelectedSound', false, true);
             expect(mockGame.input.handleEscapeKey).toHaveBeenCalled();
         });
     });

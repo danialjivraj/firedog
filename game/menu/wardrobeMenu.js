@@ -1728,7 +1728,13 @@ export class Wardrobe extends BaseMenu {
     }
 
     onGoBack() {
-        this.game.menu.main.activateMenu(1);
+        if (this.modal) {
+            this._closeModal();
+            this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
+            return;
+        }
+
+        this.game.goBackMenu();
     }
 
     // update
@@ -1864,7 +1870,6 @@ export class Wardrobe extends BaseMenu {
             return;
         }
 
-        this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
         this.game.input.handleEscapeKey();
     }
 
@@ -2073,7 +2078,6 @@ export class Wardrobe extends BaseMenu {
             mouseY <= gb.y;
 
         if (inGoBack) {
-            this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
             this.onGoBack();
             return;
         }

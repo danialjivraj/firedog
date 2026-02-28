@@ -82,6 +82,7 @@ import {
 } from "./persistence/gamePersistence.js";
 import { BossManager } from "./entities/enemies/bossManager.js";
 import { SKINS } from "./config/skinsAndCosmetics.js";
+import { MenuNavigator } from "./menu/menuNavigator.js";
 
 export class Game {
     constructor(canvas, width, height) {
@@ -159,6 +160,8 @@ export class Game {
             pause: new PauseMenu(this),
             gameOver: new GameOverMenu(this),
         };
+        this.nav = new MenuNavigator(this);
+        this.nav.setRoot(this.menu.main, 0);
         this.currentMenu = this.menu.main;
         this.canSelect = true;
         this.canSelectForestMap = true;
@@ -238,6 +241,22 @@ export class Game {
     }
 
     // ------------------------------------------------------------ Game Class logic ------------------------------------------------------------
+
+    setMenuRoot(menu, arg = 0) {
+        if (!this.nav) return;
+        this.nav.setRoot(menu, arg);
+    }
+
+    openMenu(menu, arg = 0) {
+        if (!this.nav) return;
+        this.nav.open(menu, arg);
+    }
+
+    goBackMenu() {
+        if (!this.nav) return;
+        this.nav.back();
+    }
+
     startCutscene(cutscene) {
         this.fadingIn = true;
         this.cutsceneActive = true;
@@ -1334,7 +1353,7 @@ window.addEventListener("load", function () {
 
             game.UI.draw(ctx);
 
-            if (game.currentMenu || game.gameOver) {
+            if (game.currentMenu) {
                 game.currentMenu.menuActive = true;
                 game.currentMenu.draw(ctx);
                 game.currentMenu.update(deltaTime);

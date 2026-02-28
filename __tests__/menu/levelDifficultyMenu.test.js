@@ -22,8 +22,17 @@ describe('LevelDifficultyMenu', () => {
         if (expectedLabels) expect(menu.menuOptions).toEqual(expectedLabels);
     };
 
+    const clickEvt = (extra = {}) => ({
+        clientX: 0,
+        clientY: 0,
+        preventDefault: jest.fn(),
+        stopImmediatePropagation: jest.fn(),
+        ...extra,
+    });
+
     beforeAll(() => {
         jest.spyOn(BaseMenu.prototype, 'handleMenuSelection').mockImplementation(() => { });
+        document.body.innerHTML = `<img id="mainmenubackground" />`;
     });
 
     afterAll(() => {
@@ -32,6 +41,12 @@ describe('LevelDifficultyMenu', () => {
 
     beforeEach(() => {
         mockGame = {
+            width: 1920,
+            height: 1080,
+
+            canSelect: true,
+            canSelectForestMap: true,
+
             lives: null,
             selectedDifficulty: null,
 
@@ -39,11 +54,36 @@ describe('LevelDifficultyMenu', () => {
                 syncLivesState: jest.fn(),
             },
 
-            menu: {
-                main: { activateMenu: jest.fn() },
-                settings: { activateMenu: jest.fn() },
+            audioHandler: {
+                menu: {
+                    playSound: jest.fn(),
+                    stopSound: jest.fn(),
+                },
             },
+
+            input: { handleEscapeKey: jest.fn() },
+            saveGameState: jest.fn(),
+
+            canvas: {
+                width: 1920,
+                height: 1080,
+                getBoundingClientRect: () => ({ left: 0, top: 0, width: 1920, height: 1080 }),
+            },
+
+            menu: {
+                main: { activateMenu: jest.fn(), menuActive: false },
+                settings: { activateMenu: jest.fn(), menuActive: false },
+                pause: { isPaused: false },
+            },
+
+            currentMenu: null,
         };
+
+        mockGame.goBackMenu = jest.fn(() => {
+            mockGame.menu.settings.activateMenu(2);
+            mockGame.currentMenu = mockGame.menu.settings;
+        });
+
         menu = new LevelDifficultyMenu(mockGame);
     });
 
@@ -55,8 +95,10 @@ describe('LevelDifficultyMenu', () => {
 
             menu.setDifficulty('Easy');
             expect(menu.menuOptions).toHaveLength(6);
+
             menu.selectedOption = 5;
             menu.handleMenuSelection();
+
             expect(menu.menuOptions).toHaveLength(6);
         });
 
@@ -179,7 +221,10 @@ describe('LevelDifficultyMenu', () => {
         it('Go Back: activates main menu and never appends "- Selected"', () => {
             menu.selectedOption = 5;
             menu.menuOptions[5] = 'Go Back';
+
             menu.handleMenuSelection();
+
+            expect(mockGame.goBackMenu).toHaveBeenCalledTimes(1);
             expect(mockGame.menu.settings.activateMenu).toHaveBeenCalledWith(2);
             expect(menu.menuOptions[5]).toBe('Go Back');
         });
@@ -202,20 +247,12 @@ describe('LevelDifficultyMenu', () => {
 
     describe('saving behavior (LevelDifficulty via SelectMenu)', () => {
         beforeEach(() => {
-            mockGame.saveGameState = jest.fn();
-            mockGame.canSelect = true;
-            mockGame.canSelectForestMap = true;
-            mockGame.width = mockGame.width ?? 1920;
-            mockGame.height = mockGame.height ?? 1080;
-            mockGame.canvas = mockGame.canvas ?? {
-                width: 1920,
-                height: 1080,
-                getBoundingClientRect: () => ({ left: 0, top: 0, width: 1920, height: 1080 }),
-            };
+            mockGame.saveGameState.mockClear();
+            mockGame.goBackMenu.mockClear();
+            mockGame.menu.settings.activateMenu.mockClear();
         });
 
         it('saves once when changing to a different difficulty via Enter', () => {
-            mockGame.saveGameState.mockClear();
             menu.selectedOption = 0;
             menu.handleMenuSelection();
 
@@ -238,6 +275,8 @@ describe('LevelDifficultyMenu', () => {
             mockGame.saveGameState.mockClear();
             menu.selectedOption = 5;
             menu.handleMenuSelection();
+
+            expect(mockGame.goBackMenu).toHaveBeenCalledTimes(1);
             expect(mockGame.menu.settings.activateMenu).toHaveBeenCalledWith(2);
             expect(mockGame.saveGameState).not.toHaveBeenCalled();
         });
@@ -247,13 +286,15 @@ describe('LevelDifficultyMenu', () => {
             mockGame.saveGameState.mockClear();
 
             menu.selectedOption = 3;
-            menu.handleMouseClick({ clientX: 0, clientY: 0 });
+            menu.handleMouseClick(clickEvt());
+
             expect(menu.selectedDifficultyIndex).toBe(3);
             expect(mockGame.saveGameState).toHaveBeenCalledTimes(1);
 
             mockGame.saveGameState.mockClear();
             menu.selectedOption = 3;
-            menu.handleMouseClick({ clientX: 0, clientY: 0 });
+            menu.handleMouseClick(clickEvt());
+
             expect(mockGame.saveGameState).not.toHaveBeenCalled();
         });
     });

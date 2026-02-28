@@ -100,6 +100,8 @@ describe('AudioSettingsMenu', () => {
         },
       },
 
+      goBackMenu: jest.fn(),
+
       saveGameState: jest.fn(),
 
       audioHandler: {
@@ -177,7 +179,7 @@ describe('AudioSettingsMenu', () => {
   });
 
   describe('construction & defaults', () => {
-    test('initializes tabs, defaults to MENU tab, and header row is selected on activateMenu()', () => {
+    test('initializes tabs, defaults to MENU tab, and first row is selected on activateMenu()', () => {
       expect(menu.title).toBe('Audio Settings');
 
       expect(menu.tabs).toEqual(['MENU', 'CUTSCENE', 'INGAME']);
@@ -192,12 +194,11 @@ describe('AudioSettingsMenu', () => {
         'Go Back',
       ]);
       expect(menu.volumeLevels).toEqual([50, 50, 50, 50, 50, null]);
-
       expect(menu.muted).toEqual([false, false, false, false, false, null]);
 
       expect(menu.headerSelectionIndex).toBe(-1);
-      expect(menu.selectedOption).toBe(-1);
-      expect(menu.isHeaderSelected()).toBe(true);
+      expect(menu.selectedOption).toBe(0);
+      expect(menu.isHeaderSelected()).toBe(false);
     });
 
     test('setTab falls back to MENU for unknown tab keys', () => {
@@ -224,7 +225,9 @@ describe('AudioSettingsMenu', () => {
       expect(menu.menuInGame).toBe(true);
       expect(menu.showStarsSticker).toBe(false);
       expect(menu.activeTab).toBe('INGAME');
-      expect(menu.selectedOption).toBe(menu.headerSelectionIndex);
+
+      expect(menu.selectedOption).toBe(0);
+      expect(menu.isHeaderSelected()).toBe(false);
     });
 
     test('when paused + cutsceneActive + currentCutscene, activateMenu() chooses CUTSCENE tab and hides stars sticker', () => {
@@ -238,7 +241,9 @@ describe('AudioSettingsMenu', () => {
       expect(menu.menuInGame).toBe(true);
       expect(menu.showStarsSticker).toBe(false);
       expect(menu.activeTab).toBe('CUTSCENE');
-      expect(menu.selectedOption).toBe(menu.headerSelectionIndex);
+
+      expect(menu.selectedOption).toBe(0);
+      expect(menu.isHeaderSelected()).toBe(false);
     });
 
     test('paused cutsceneActive but missing currentCutscene does NOT infer cutscene overlay', () => {
@@ -277,9 +282,9 @@ describe('AudioSettingsMenu', () => {
       expect(menu.showStarsSticker).toBe(true);
     });
 
-    test('opts.selectedOption is accepted but selection is clamped into header range', () => {
+    test('opts.selectedOption is accepted and then clamped only if out of range', () => {
       menu.activateMenu({ selectedOption: 2 });
-      expect(menu.selectedOption).toBe(menu.headerSelectionIndex);
+      expect(menu.selectedOption).toBe(2);
     });
   });
 
@@ -494,6 +499,7 @@ describe('AudioSettingsMenu', () => {
     });
 
     test('ArrowLeft/ArrowRight on header cycles tabs and plays hover sound', () => {
+      menu.selectedOption = menu.headerSelectionIndex;
       expect(menu.isHeaderSelected()).toBe(true);
 
       menu.handleKeyDown({ key: 'ArrowRight' });
@@ -863,7 +869,7 @@ describe('AudioSettingsMenu', () => {
   });
 
   describe('handleMenuSelection: Go Back routing', () => {
-    test('out-of-game Go Back: activates settings(0)', () => {
+    test('out-of-game Go Back: delegates to game.goBackMenu()', () => {
       menu.menuInGame = false;
       menu.setTab('MENU');
 
@@ -873,11 +879,12 @@ describe('AudioSettingsMenu', () => {
       menu.handleMenuSelection();
 
       expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionSelectedSound', false, true);
-      expect(game.menu.settings.activateMenu).toHaveBeenCalledWith(0);
+      expect(game.goBackMenu).toHaveBeenCalled();
+      expect(game.menu.settings.activateMenu).not.toHaveBeenCalled();
       expect(game.menu.pause.activateMenu).not.toHaveBeenCalled();
     });
 
-    test('in-game Go Back: activates settings({inGame:true, selectedOption:0})', () => {
+    test('in-game Go Back: delegates to game.goBackMenu()', () => {
       menu.menuInGame = true;
       menu.setTab('INGAME');
 
@@ -887,7 +894,8 @@ describe('AudioSettingsMenu', () => {
       menu.handleMenuSelection();
 
       expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionSelectedSound', false, true);
-      expect(game.menu.settings.activateMenu).toHaveBeenCalledWith({ inGame: true, selectedOption: 0 });
+      expect(game.goBackMenu).toHaveBeenCalled();
+      expect(game.menu.settings.activateMenu).not.toHaveBeenCalled();
       expect(game.menu.pause.activateMenu).not.toHaveBeenCalled();
     });
 
@@ -895,14 +903,12 @@ describe('AudioSettingsMenu', () => {
       menu.setTab('MENU');
       menu.selectedOption = 1;
 
-      game.menu.settings.activateMenu.mockClear();
-      game.menu.pause.activateMenu.mockClear();
+      game.goBackMenu.mockClear();
 
       menu.handleMenuSelection();
 
       expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionSelectedSound', false, true);
-      expect(game.menu.settings.activateMenu).not.toHaveBeenCalled();
-      expect(game.menu.pause.activateMenu).not.toHaveBeenCalled();
+      expect(game.goBackMenu).not.toHaveBeenCalled();
     });
   });
 

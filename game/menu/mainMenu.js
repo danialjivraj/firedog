@@ -14,22 +14,23 @@ export class MainMenu extends BaseMenu {
 
     handleMenuSelection() {
         const selectedOption = this.menuOptions[this.selectedOption];
-        if (this.game.canSelect) {
-            super.handleMenuSelection();
-            if (selectedOption === 'Play') {
-                this.game.audioHandler.menu.playSound('mapOpening');
-                this.game.menu.forestMap.activateMenu();
-            } else if (selectedOption === 'Wardrobe') {
-                this.game.menu.wardrobe.activateMenu();
-            } else if (selectedOption === 'Records') {
-                this.game.menu.records.activateMenu();
-            } else if (selectedOption === 'How to Play') {
-                this.game.menu.howToPlay.activateMenu();
-            } else if (selectedOption === 'Settings') {
-                this.game.menu.settings.activateMenu();
-            } else if (selectedOption === 'Exit') {
-                window.electronAPI.quitApp();
-            }
+        if (!this.game.canSelect) return;
+
+        super.handleMenuSelection();
+
+        if (selectedOption === 'Play') {
+            this.game.audioHandler.menu.playSound('mapOpening');
+            this.game.openMenu(this.game.menu.forestMap, 0);
+        } else if (selectedOption === 'Wardrobe') {
+            this.game.openMenu(this.game.menu.wardrobe, 0);
+        } else if (selectedOption === 'Records') {
+            this.game.openMenu(this.game.menu.records, 0);
+        } else if (selectedOption === 'How to Play') {
+            this.game.openMenu(this.game.menu.howToPlay, 0);
+        } else if (selectedOption === 'Settings') {
+            this.game.openMenu(this.game.menu.settings, 0);
+        } else if (selectedOption === 'Exit') {
+            window.electronAPI.quitApp();
         }
     }
 

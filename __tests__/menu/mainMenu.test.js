@@ -49,6 +49,7 @@ describe('MainMenu', () => {
       ntharaxDefeated: false,
 
       audioHandler: { menu: { playSound: jest.fn(), stopSound: jest.fn() } },
+
       menu: {
         forestMap: makeMenu(),
         wardrobe: makeMenu(),
@@ -58,6 +59,12 @@ describe('MainMenu', () => {
         deleteProgress2: { showSavingSprite: false },
         pause: { isPaused: false },
       },
+
+      openMenu: jest.fn((targetMenu, arg = 0) => {
+        if (targetMenu && typeof targetMenu.activateMenu === 'function') {
+          targetMenu.activateMenu(arg);
+        }
+      }),
 
       currentMenu: null,
 
@@ -105,34 +112,45 @@ describe('MainMenu', () => {
 
     test('when canSelect=true, plays optionSelectedSound first', () => {
       selectAndRun(0);
+
       expect(mockGame.audioHandler.menu.playSound.mock.calls[0])
         .toEqual(['optionSelectedSound', false, true]);
     });
 
     test('"Play" plays mapOpening and activates forestMap', () => {
       selectAndRun(0);
+
       expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('mapOpening');
-      expect(mockGame.menu.forestMap.activateMenu).toHaveBeenCalled();
+      expect(mockGame.openMenu).toHaveBeenCalledWith(mockGame.menu.forestMap, 0);
+      expect(mockGame.menu.forestMap.activateMenu).toHaveBeenCalledWith(0);
     });
 
     test('"Wardrobe" activates wardrobe menu', () => {
       selectAndRun(1);
-      expect(mockGame.menu.wardrobe.activateMenu).toHaveBeenCalled();
+
+      expect(mockGame.openMenu).toHaveBeenCalledWith(mockGame.menu.wardrobe, 0);
+      expect(mockGame.menu.wardrobe.activateMenu).toHaveBeenCalledWith(0);
     });
 
     test('"Records" activates records menu', () => {
       selectAndRun(2);
-      expect(mockGame.menu.records.activateMenu).toHaveBeenCalled();
+
+      expect(mockGame.openMenu).toHaveBeenCalledWith(mockGame.menu.records, 0);
+      expect(mockGame.menu.records.activateMenu).toHaveBeenCalledWith(0);
     });
 
     test('"How to Play" activates howToPlay menu', () => {
       selectAndRun(3);
-      expect(mockGame.menu.howToPlay.activateMenu).toHaveBeenCalled();
+
+      expect(mockGame.openMenu).toHaveBeenCalledWith(mockGame.menu.howToPlay, 0);
+      expect(mockGame.menu.howToPlay.activateMenu).toHaveBeenCalledWith(0);
     });
 
     test('"Settings" activates settings menu', () => {
       selectAndRun(4);
-      expect(mockGame.menu.settings.activateMenu).toHaveBeenCalled();
+
+      expect(mockGame.openMenu).toHaveBeenCalledWith(mockGame.menu.settings, 0);
+      expect(mockGame.menu.settings.activateMenu).toHaveBeenCalledWith(0);
     });
 
     test('"Exit" calls electron quitApp', () => {
@@ -146,6 +164,7 @@ describe('MainMenu', () => {
       selectAndRun(0);
 
       expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalled();
+      expect(mockGame.openMenu).not.toHaveBeenCalled();
       expect(mockGame.menu.forestMap.activateMenu).not.toHaveBeenCalled();
       expect(window.electronAPI.quitApp).not.toHaveBeenCalled();
     });

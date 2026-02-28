@@ -333,7 +333,7 @@ export class RecordsMenu extends BaseMenu {
     handleMenuSelection() {
         if (!this.game.canSelect) return;
         super.handleMenuSelection();
-        this.game.menu.main.activateMenu(2);
+        this.game.goBackMenu();
     }
 
     canvasMouse(event) {

@@ -9,21 +9,23 @@ export class DeleteProgress extends BaseMenu {
 
     handleMenuSelection() {
         const selectedOption = this.menuOptions[this.selectedOption];
-
         super.handleMenuSelection();
+
         if (selectedOption === 'Yes') {
-            this.game.currentMenu = this.game.menu.deleteProgress2;
-            this.game.menu.deleteProgress2.selectedOption = 1;
-        } else if (selectedOption === 'No') {
-            this.game.menu.settings.activateMenu(4);
+            this.game.openMenu(this.game.menu.deleteProgress2, 1);
+            return;
         }
-        this.menuActive = false;
+
+        this.game.goBackMenu();
     }
 }
 
 export class DeleteProgress2 extends BaseMenu {
     constructor(game) {
-        const menuOptions = ["Yes, I want to delete my game progress", "No, I do not want to delete my game progress"];
+        const menuOptions = [
+            "Yes, I want to delete my game progress",
+            "No, I do not want to delete my game progress",
+        ];
         super(game, menuOptions, 'All your progress will be lost!');
         this.selectedOption = 1;
         this.showSavingSprite = false;
@@ -31,26 +33,29 @@ export class DeleteProgress2 extends BaseMenu {
 
     deleteProgessionAnimation() {
         this.game.canSelect = false;
-        this.game.menu.deleteProgress2.showSavingSprite = true;
+        this.showSavingSprite = true;
+
         fadeIn(this.game.canvas, 4000, () => {
             this.game.canSelect = true;
-            this.game.menu.deleteProgress2.showSavingSprite = false;
+            this.showSavingSprite = false;
         });
     }
 
     handleMenuSelection() {
         const selectedOption = this.menuOptions[this.selectedOption];
-
         super.handleMenuSelection();
 
         if (selectedOption === "Yes, I want to delete my game progress") {
             this.game.clearSavedData();
             this.deleteProgessionAnimation();
-            this.game.menu.main.activateMenu(0);
+
+            this.game.setMenuRoot(this.game.menu.main, 0);
+
             this.game.audioHandler.menu.stopSound('soundtrack');
             this.game.audioHandler.menu.playSound('soundtrack');
-        } else if (selectedOption === "No, I do not want to delete my game progress") {
-            this.game.menu.settings.activateMenu(4);
+            return;
         }
+
+        this.game.goBackMenu();
     }
 }

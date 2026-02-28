@@ -20,11 +20,9 @@ export class GameOverMenu extends BaseMenu {
             }
 
             if (selectedOption === 'Settings') {
-                this.game.menu.settings.activateMenu({
+                this.game.openMenu(this.game.menu.settings, {
                     inGame: true,
                     selectedOption: 0,
-                    returnMenu: 'gameOver',
-                    returnSelectedOption: this.menuOptions.indexOf('Settings'),
                 });
                 return;
             }

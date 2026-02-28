@@ -6,6 +6,12 @@ const getOptionCenterY = (game, menu, index) => {
   return topY + optionHeight * index + optionHeight / 2;
 };
 
+const makeEvent = (overrides = {}) => ({
+  preventDefault: jest.fn(),
+  stopImmediatePropagation: jest.fn(),
+  ...overrides,
+});
+
 describe('BaseMenu', () => {
   let menu, mockGame, ctx, preventEvent;
 
@@ -25,7 +31,8 @@ describe('BaseMenu', () => {
   });
 
   beforeEach(() => {
-    preventEvent = { preventDefault: jest.fn() };
+    preventEvent = makeEvent();
+
     mockGame = {
       width: 1920,
       height: 689,
@@ -232,7 +239,7 @@ describe('BaseMenu', () => {
 
   describe('keyboard input', () => {
     test('ArrowDown moves selection down and plays hover sound', () => {
-      menu.handleKeyDown({ key: 'ArrowDown' });
+      menu.handleKeyDown(makeEvent({ key: 'ArrowDown' }));
 
       expect(menu.selectedOption).toBe(1);
       expect(mockGame.audioHandler.menu.playSound)
@@ -242,7 +249,7 @@ describe('BaseMenu', () => {
     test('ArrowUp moves selection up and plays hover sound', () => {
       menu.selectedOption = 1;
 
-      menu.handleKeyDown({ key: 'ArrowUp' });
+      menu.handleKeyDown(makeEvent({ key: 'ArrowUp' }));
 
       expect(menu.selectedOption).toBe(0);
       expect(mockGame.audioHandler.menu.playSound)
@@ -253,11 +260,11 @@ describe('BaseMenu', () => {
       const spy = jest.spyOn(menu, 'handleMenuSelection');
 
       menu.menuActive = false;
-      menu.handleKeyDown({ key: 'Enter' });
+      menu.handleKeyDown(makeEvent({ key: 'Enter' }));
       expect(spy).not.toHaveBeenCalled();
 
       menu.menuActive = true;
-      menu.handleKeyDown({ key: 'Enter' });
+      menu.handleKeyDown(makeEvent({ key: 'Enter' }));
       expect(spy).toHaveBeenCalled();
     });
 
@@ -265,7 +272,7 @@ describe('BaseMenu', () => {
       menu.menuActive = true;
       mockGame.audioHandler.menu.playSound.mockClear();
 
-      menu.handleKeyDown({ key: 'a' });
+      menu.handleKeyDown(makeEvent({ key: 'a' }));
 
       expect(menu.selectedOption).toBe(0);
       expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalled();
@@ -275,7 +282,7 @@ describe('BaseMenu', () => {
       const spyNav = jest.spyOn(menu, 'handleNavigation');
 
       menu.menuActive = false;
-      menu.handleKeyDown({ key: 'ArrowDown' });
+      menu.handleKeyDown(makeEvent({ key: 'ArrowDown' }));
 
       expect(spyNav).not.toHaveBeenCalled();
       expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalled();
@@ -286,7 +293,7 @@ describe('BaseMenu', () => {
       mockGame.canSelect = false;
       mockGame.audioHandler.menu.playSound.mockClear();
 
-      menu.handleKeyDown({ key: 'ArrowDown' });
+      menu.handleKeyDown(makeEvent({ key: 'ArrowDown' }));
 
       expect(menu.selectedOption).toBe(0);
       expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalled();
@@ -297,7 +304,7 @@ describe('BaseMenu', () => {
       mockGame.canSelectForestMap = false;
       mockGame.audioHandler.menu.playSound.mockClear();
 
-      menu.handleKeyDown({ key: 'ArrowUp' });
+      menu.handleKeyDown(makeEvent({ key: 'ArrowUp' }));
 
       expect(menu.selectedOption).toBe(0);
       expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalled();
@@ -308,13 +315,13 @@ describe('BaseMenu', () => {
     test('handleMouseWheel adjusts selection and plays hover sound', () => {
       menu.selectedOption = 0;
 
-      menu.handleMouseWheel({ deltaY: -100 });
+      menu.handleMouseWheel(makeEvent({ deltaY: -100 }));
       expect(menu.selectedOption).toBe(2);
       expect(mockGame.audioHandler.menu.playSound)
         .toHaveBeenCalledWith('optionHoveredSound', false, true);
 
       mockGame.audioHandler.menu.playSound.mockClear();
-      menu.handleMouseWheel({ deltaY: 100 });
+      menu.handleMouseWheel(makeEvent({ deltaY: 100 }));
       expect(menu.selectedOption).toBe(0);
       expect(mockGame.audioHandler.menu.playSound)
         .toHaveBeenCalledWith('optionHoveredSound', false, true);
@@ -324,7 +331,7 @@ describe('BaseMenu', () => {
       menu.menuActive = false;
       mockGame.audioHandler.menu.playSound.mockClear();
 
-      menu.handleMouseWheel({ deltaY: 100 });
+      menu.handleMouseWheel(makeEvent({ deltaY: 100 }));
 
       expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalled();
     });
@@ -334,7 +341,7 @@ describe('BaseMenu', () => {
       mockGame.canSelect = false;
       mockGame.audioHandler.menu.playSound.mockClear();
 
-      menu.handleMouseWheel({ deltaY: -100 });
+      menu.handleMouseWheel(makeEvent({ deltaY: -100 }));
 
       expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalled();
     });
@@ -344,7 +351,7 @@ describe('BaseMenu', () => {
     test('handleMouseMove changes selection when pointer is over an option and plays sound', () => {
       const y2 = getOptionCenterY(mockGame, menu, 1);
 
-      menu.handleMouseMove({ clientX: mockGame.width / 2, clientY: y2 });
+      menu.handleMouseMove(makeEvent({ clientX: mockGame.width / 2, clientY: y2 }));
 
       expect(menu.selectedOption).toBe(1);
       expect(mockGame.audioHandler.menu.playSound)
@@ -356,7 +363,7 @@ describe('BaseMenu', () => {
       mockGame.canSelectForestMap = false;
       mockGame.audioHandler.menu.playSound.mockClear();
 
-      menu.handleMouseMove({ clientX: 100, clientY: 100 });
+      menu.handleMouseMove(makeEvent({ clientX: 100, clientY: 100 }));
 
       expect(menu.selectedOption).toBe(0);
       expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalled();
@@ -365,7 +372,7 @@ describe('BaseMenu', () => {
 
   describe('mouse click input', () => {
     test('mouse click calls BaseMenu selection but never saveGameState', () => {
-      menu.handleMouseClick({ clientX: 0, clientY: 0 });
+      menu.handleMouseClick(makeEvent({ clientX: 0, clientY: 0 }));
 
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });
@@ -374,7 +381,7 @@ describe('BaseMenu', () => {
       menu.menuActive = false;
       mockGame.saveGameState.mockClear();
 
-      menu.handleMouseClick({ clientX: 0, clientY: 0 });
+      menu.handleMouseClick(makeEvent({ clientX: 0, clientY: 0 }));
 
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });
@@ -384,7 +391,7 @@ describe('BaseMenu', () => {
       mockGame.canSelectForestMap = false;
       mockGame.saveGameState.mockClear();
 
-      menu.handleMouseClick({ clientX: 0, clientY: 0 });
+      menu.handleMouseClick(makeEvent({ clientX: 0, clientY: 0 }));
 
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });
@@ -395,17 +402,19 @@ describe('BaseMenu', () => {
       menu.handleRightClick(preventEvent);
 
       expect(preventEvent.preventDefault).toHaveBeenCalled();
+      expect(preventEvent.stopImmediatePropagation).toHaveBeenCalled();
       expect(mockGame.input.handleEscapeKey).toHaveBeenCalled();
     });
 
     test('handleRightClick does nothing when canSelectForestMap=false', () => {
       menu.menuActive = true;
       mockGame.canSelectForestMap = false;
-      const evt = { preventDefault: jest.fn() };
+      const evt = makeEvent();
 
       menu.handleRightClick(evt);
 
       expect(evt.preventDefault).not.toHaveBeenCalled();
+      expect(evt.stopImmediatePropagation).not.toHaveBeenCalled();
       expect(mockGame.input.handleEscapeKey).not.toHaveBeenCalled();
     });
   });
@@ -466,7 +475,7 @@ describe('BaseMenu', () => {
     test('Enter triggers selection sound but does NOT save', () => {
       mockGame.saveGameState.mockClear();
 
-      menu.handleKeyDown({ key: 'Enter' });
+      menu.handleKeyDown(makeEvent({ key: 'Enter' }));
 
       expect(mockGame.audioHandler.menu.playSound)
         .toHaveBeenCalledWith('optionSelectedSound', false, true);
@@ -476,8 +485,8 @@ describe('BaseMenu', () => {
     test('ArrowUp/ArrowDown navigate but do NOT save', () => {
       mockGame.saveGameState.mockClear();
 
-      menu.handleKeyDown({ key: 'ArrowDown' });
-      menu.handleKeyDown({ key: 'ArrowUp' });
+      menu.handleKeyDown(makeEvent({ key: 'ArrowDown' }));
+      menu.handleKeyDown(makeEvent({ key: 'ArrowUp' }));
 
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });
@@ -485,8 +494,8 @@ describe('BaseMenu', () => {
     test('mouse wheel navigates but does NOT save', () => {
       mockGame.saveGameState.mockClear();
 
-      menu.handleMouseWheel({ deltaY: -100 });
-      menu.handleMouseWheel({ deltaY: 100 });
+      menu.handleMouseWheel(makeEvent({ deltaY: -100 }));
+      menu.handleMouseWheel(makeEvent({ deltaY: 100 }));
 
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });
@@ -495,18 +504,19 @@ describe('BaseMenu', () => {
       mockGame.saveGameState.mockClear();
       const y1 = getOptionCenterY(mockGame, menu, 0);
 
-      menu.handleMouseMove({ clientX: mockGame.width / 2, clientY: y1 });
+      menu.handleMouseMove(makeEvent({ clientX: mockGame.width / 2, clientY: y1 }));
 
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });
 
     test('right-click delegates escape but does NOT save', () => {
       mockGame.saveGameState.mockClear();
-      const evt = { preventDefault: jest.fn() };
+      const evt = makeEvent();
 
       menu.handleRightClick(evt);
 
       expect(evt.preventDefault).toHaveBeenCalled();
+      expect(evt.stopImmediatePropagation).toHaveBeenCalled();
       expect(mockGame.input.handleEscapeKey).toHaveBeenCalled();
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });

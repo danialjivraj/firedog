@@ -138,7 +138,7 @@ export class AudioSettingsMenu extends BaseMenu {
 
         this.setTab(defaultTab);
 
-        super.activateMenu(this.headerSelectionIndex);
+        super.activateMenu(selectedOption);
         this.clampSelection();
     }
 
@@ -894,12 +894,7 @@ export class AudioSettingsMenu extends BaseMenu {
 
         if (selected === 'Go Back') {
             super.handleMenuSelection();
-
-            if (this.menuInGame) {
-                this.game.menu.settings.activateMenu({ inGame: true, selectedOption: 0 });
-            } else {
-                this.game.menu.settings.activateMenu(0);
-            }
+            this.game.goBackMenu();
             return;
         }
 

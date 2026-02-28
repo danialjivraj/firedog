@@ -24,67 +24,105 @@ const mouseDown = (button) =>
 const mouseUp = (button) =>
   document.dispatchEvent(new MouseEvent('mouseup', { button }));
 
+const makeGame = () => {
+  const game = {
+    enterToTalkToPenguin: false,
+    talkToPenguin: false,
+
+    boss: { talkToBoss: false },
+    isBossVisible: false,
+
+    enterDuringBackgroundTransition: true,
+
+    fadingIn: false,
+    waitForFadeInOpacity: false,
+    pauseContext: 'gameplay',
+
+    isPlayerInGame: false,
+    cutsceneActive: false,
+    notEnoughCoins: false,
+    gameOver: false,
+    canSelectForestMap: false,
+    currentMenu: null,
+
+    player: { isUnderwater: false },
+    tutorial: { tutorialPause: false },
+    isTutorialActive: false,
+
+    menu: {
+      pause: {
+        isPaused: false,
+        canEscape: false,
+        togglePause: jest.fn(),
+      },
+      forestMap: {
+        activateMenu: jest.fn(),
+        showSavingSprite: false,
+      },
+      enemyLore: {
+        activateMenu: jest.fn(),
+        menuActive: false,
+      },
+      howToPlay: {
+        menuInGame: false,
+        currentImageIndex: 5,
+      },
+      main: {
+        activateMenu: jest.fn(),
+        selectedOption: 0,
+      },
+    },
+
+    audioHandler: {
+      firedogSFX: { playSound: jest.fn() },
+      menu: { playSound: jest.fn() },
+      cutsceneSFX: { isPlaying: jest.fn(() => false) },
+    },
+
+    saveGameState: jest.fn(),
+    debug: false,
+  };
+
+  game.nav = {
+    openTransient: jest.fn((menu, arg = 0) => {
+      if (menu && typeof menu.activateMenu === 'function') menu.activateMenu(arg);
+      game.currentMenu = menu;
+    }),
+    closeTransient: jest.fn(() => {
+      if (game.menu.forestMap && typeof game.menu.forestMap.activateMenu === 'function') {
+        game.menu.forestMap.activateMenu(0);
+      }
+      game.currentMenu = game.menu.forestMap;
+    }),
+  };
+
+  game.goBackMenu = jest.fn(() => {
+    if (game.menu.main && typeof game.menu.main.activateMenu === 'function') {
+      game.menu.main.activateMenu(0);
+    }
+    game.currentMenu = game.menu.main;
+  });
+
+  return game;
+};
+
 describe('InputHandler', () => {
   let game;
   let ih;
 
+  beforeAll(() => {
+    ih = new InputHandler(makeGame());
+  });
+
   beforeEach(() => {
-    game = {
-      enterToTalkToPenguin: false,
-      talkToPenguin: false,
+    game = makeGame();
 
-      boss: { talkToBoss: false },
-      isBossVisible: false,
+    ih.game = game;
 
-      enterDuringBackgroundTransition: true,
-
-      fadingIn: false,
-      waitForFadeInOpacity: false,
-      pauseContext: 'gameplay',
-
-      isPlayerInGame: false,
-      cutsceneActive: false,
-      notEnoughCoins: false,
-      gameOver: false,
-      canSelectForestMap: false,
-      currentMenu: null,
-
-      player: { isUnderwater: false },
-      tutorial: { tutorialPause: false },
-      isTutorialActive: false,
-
-      menu: {
-        pause: {
-          isPaused: false,
-          canEscape: false,
-          togglePause: jest.fn(),
-        },
-        forestMap: {
-          activateMenu: jest.fn(),
-          showSavingSprite: false,
-        },
-        enemyLore: {
-          activateMenu: jest.fn(),
-          menuActive: false,
-        },
-        howToPlay: {
-          menuInGame: false,
-          currentImageIndex: 5,
-        },
-        main: {},
-      },
-
-      audioHandler: {
-        firedogSFX: { playSound: jest.fn() },
-        menu: { playSound: jest.fn() },
-        cutsceneSFX: { isPlaying: jest.fn(() => false) },
-      },
-
-      saveGameState: jest.fn(),
-      debug: false,
-    };
-
-    ih = new InputHandler(game);
+    ih.keys = [];
+    ih.arrowUpPressed = false;
+    ih.arrowDownPressed = false;
+    ih.isJumpKeyPressed = false;
   });
 
   afterEach(() => {
@@ -235,12 +273,16 @@ describe('InputHandler', () => {
 
         keyDown('Tab');
 
-        expect(game.menu.enemyLore.activateMenu).toHaveBeenCalled();
+        expect(game.nav.openTransient).toHaveBeenCalledWith(game.menu.enemyLore, 0);
+        expect(game.menu.enemyLore.activateMenu).toHaveBeenCalledWith(0);
+
         expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith(
           'enemyLoreOpenBookSound',
           false,
           true
         );
+
+        expect(game.currentMenu).toBe(game.menu.enemyLore);
       });
 
       test('toggles from enemyLore back to forestMap and plays enemyLoreCloseBookSound when allowed', () => {
@@ -249,26 +291,33 @@ describe('InputHandler', () => {
 
         keyDown('Tab');
 
-        expect(game.menu.forestMap.activateMenu).toHaveBeenCalled();
+        expect(game.nav.closeTransient).toHaveBeenCalledTimes(1);
+
         expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith(
           'enemyLoreCloseBookSound',
           false,
           true
         );
+
+        expect(game.menu.forestMap.activateMenu).toHaveBeenCalledWith(0);
+        expect(game.currentMenu).toBe(game.menu.forestMap);
       });
 
       test('does nothing when forestMap selection is disabled', () => {
         game.canSelectForestMap = false;
+        game.currentMenu = game.menu.forestMap;
 
         keyDown('Tab');
 
+        expect(game.nav.openTransient).not.toHaveBeenCalled();
+        expect(game.nav.closeTransient).not.toHaveBeenCalled();
         expect(game.menu.enemyLore.activateMenu).not.toHaveBeenCalled();
         expect(game.menu.forestMap.activateMenu).not.toHaveBeenCalled();
       });
     });
 
     describe('Escape key (pause / menu / cutscene handling)', () => {
-      test('when in story cutscene (not in-game, not penguin, not boss), Escape toggles pause and sets pauseContext=cutscene', () => {
+      test('when in story cutscene (not in-game, not penguin, not boss), Escape toggles pause', () => {
         game.cutsceneActive = true;
         game.isPlayerInGame = false;
         game.talkToPenguin = false;
@@ -277,11 +326,9 @@ describe('InputHandler', () => {
         game.enterDuringBackgroundTransition = true;
         game.fadingIn = false;
         game.waitForFadeInOpacity = false;
-        game.pauseContext = 'gameplay';
 
         keyDown('Escape');
 
-        expect(game.pauseContext).toBe('cutscene');
         expect(game.menu.pause.togglePause).toHaveBeenCalledTimes(1);
       });
 
@@ -330,8 +377,11 @@ describe('InputHandler', () => {
 
       test('when in-game with no menu and no blockers, toggles pause menu', () => {
         game.isPlayerInGame = true;
-        game.audioHandler.cutsceneSFX.isPlaying.mockReturnValue(false);
         game.currentMenu = null;
+        game.cutsceneActive = false;
+        game.notEnoughCoins = false;
+        game.gameOver = false;
+        game.enterDuringBackgroundTransition = true;
 
         keyDown('Escape');
 
@@ -342,8 +392,8 @@ describe('InputHandler', () => {
         game.isPlayerInGame = true;
         game.cutsceneActive = true;
         game.talkToPenguin = true;
-        game.audioHandler.cutsceneSFX.isPlaying.mockReturnValue(false);
         game.currentMenu = null;
+        game.enterDuringBackgroundTransition = true;
 
         keyDown('Escape');
 
@@ -420,7 +470,9 @@ describe('InputHandler', () => {
 
       test('pushes sideClick1 for mouse button 4 (dash mouse binding)', () => {
         ih.keys = [];
-        const prevent = jest.spyOn(MouseEvent.prototype, 'preventDefault').mockImplementation(() => {});
+        const prevent = jest
+          .spyOn(MouseEvent.prototype, 'preventDefault')
+          .mockImplementation(() => { });
 
         mouseDown(4);
 
@@ -531,17 +583,12 @@ describe('InputHandler', () => {
   });
 
   describe('handleEscapeKey direct logic', () => {
-    test('when in non-enemyLore submenu, deactivates active menu and returns to main', () => {
-      const submenu = { menuActive: true, activateMenu: jest.fn() };
-      game.menu.testSub = submenu;
-      game.menu.enemyLore.menuActive = false;
-      game.menu.howToPlay.currentImageIndex = 3;
+    test('when in non-enemyLore submenu, goes back to main via goBackMenu', () => {
       game.currentMenu = { menuInGame: false };
 
       ih.handleEscapeKey();
 
-      expect(submenu.activateMenu).toHaveBeenCalledWith(0);
-      expect(game.menu.howToPlay.currentImageIndex).toBe(0);
+      expect(game.goBackMenu).toHaveBeenCalledTimes(1);
       expect(game.currentMenu).toBe(game.menu.main);
     });
 
@@ -557,7 +604,9 @@ describe('InputHandler', () => {
         false,
         true
       );
-      expect(game.menu.forestMap.activateMenu).toHaveBeenCalled();
+      expect(game.nav.closeTransient).toHaveBeenCalledTimes(1);
+      expect(game.menu.forestMap.activateMenu).toHaveBeenCalledWith(0);
+      expect(game.currentMenu).toBe(game.menu.forestMap);
     });
 
     test('when in in-game menu and canEscape is true, toggles pause and clears canEscape', () => {
