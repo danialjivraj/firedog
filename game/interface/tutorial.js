@@ -1,5 +1,6 @@
 import { Dotter, MeatSoldier, Piper, Skulnap, SpearFish } from "../entities/enemies/enemies.js";
 import { getDefaultKeyBindings } from "../config/keyBindings.js";
+import { fadeInAndOut } from "../animations/fading.js";
 
 export class Tutorial {
     constructor(game) {
@@ -12,6 +13,8 @@ export class Tutorial {
         this.cooldownTime = 0;
 
         this._lastStepIndex = -1;
+
+        this._skipInProgress = false;
 
         this.phraseColors = {
             // words
@@ -31,6 +34,7 @@ export class Tutorial {
             D: { fill: "orange", stroke: "black" },
             Enter: { fill: "orange", stroke: "black" },
             Shift: { fill: "orange", stroke: "black" },
+            Tab: { fill: "orange", stroke: "black" },
 
             // enemies
             "Meat Soldier": { fill: "FireBrick", stroke: "black" },
@@ -48,7 +52,7 @@ export class Tutorial {
 
         this.steps = [
             {
-                message: "Welcome to the Tutorial!\nPress Enter to continue.",
+                message: "Welcome to the Tutorial!\nPress Enter to continue.\nYou can always skip the Tutorial by pressing Tab!",
                 action: "rollAttack",
                 condition: () => true,
                 timerDuration: 0,
@@ -352,6 +356,81 @@ export class Tutorial {
 
         this._firstDashStepIndex = this._dashStepIndices[0] ?? -1;
         this._secondDashStepIndex = this._dashStepIndices[1] ?? -1;
+    }
+
+    isActiveOnMap1() {
+        return (
+            this.game &&
+            this.game.isPlayerInGame === true &&
+            this.game.isTutorialActive === true &&
+            this.game.currentMap === "Map1" &&
+            this.game.menu.pause.isPaused === false
+        );
+    }
+
+    isSkipInProgress() {
+        return !!this._skipInProgress;
+    }
+
+    skipToLastStepWithFade(fadeOutMs = 200, blackMs = 300, fadeInMs = 200) {
+        if (!this.isActiveOnMap1()) return;
+        if (this._skipInProgress) return;
+
+        const lastIndex = this.steps.length - 1;
+        if (lastIndex < 0) return;
+        if (this.currentStepIndex === lastIndex) return;
+
+        this._skipInProgress = true;
+
+        this.tutorialPause = true;
+        this.elapsedTime = 0;
+        this.cooldownTime = 0;
+
+        this.game.enterDuringBackgroundTransition = false;
+
+        fadeInAndOut(this.game.canvas, fadeOutMs, blackMs, fadeInMs, () => {
+            this.game.enterDuringBackgroundTransition = true;
+            this._skipInProgress = false;
+        });
+
+        setTimeout(() => {
+            const lastStep = this.steps[lastIndex];
+            this.game.canvas.style.opacity = 0;
+
+            this.game.audioHandler.firedogSFX.stopAllSounds();
+            this.game.audioHandler.enemySFX.stopAllSounds();
+            this.game.audioHandler.collisionSFX.stopAllSounds();
+
+            this.game.behindPlayerParticles = [];
+            this.game.particles = [];
+            this.game.collisions = [];
+            this.game.enemies = [];
+            if (Array.isArray(this.game.floatingMessages)) this.game.floatingMessages = [];
+
+            const p = this.game.player;
+            if (p) {
+                this.game.input.keys = [];
+
+                p.clearAllStatusEffects();
+
+                p.speed = 0;
+                p.vx = 0;
+                p.vy = 0;
+
+                p.x = 0;
+                p.y = this.game.height - p.height - this.game.groundMargin;
+
+                p.setState(0, 0);
+            }
+
+            this.currentStepIndex = lastIndex;
+            this._lastStepIndex = -1;
+            this.tutorialPause = true;
+            this.elapsedTime = 0;
+            this.cooldownTime = 0;
+
+            lastStep.resetGameValues();
+        }, Math.max(0, fadeOutMs));
     }
 
     getKeyForAction(action) {

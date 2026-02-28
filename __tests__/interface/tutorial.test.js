@@ -1,20 +1,34 @@
 import { Tutorial } from '../../game/interface/tutorial';
+import { fadeInAndOut } from '../../game/animations/fading';
+
+jest.mock('../../game/animations/fading', () => ({
+    fadeInAndOut: jest.fn(),
+}));
 
 describe('Tutorial', () => {
     let game;
     let tutorial;
 
     beforeEach(() => {
+        jest.useFakeTimers();
+        jest.clearAllMocks();
+
         game = {
             width: 1920,
             height: 689,
+            groundMargin: 80,
 
             saveGameState: jest.fn(),
+
+            canvas: { style: { opacity: 1 } },
 
             player: {
                 x: 100,
                 y: 0,
                 vy: 0,
+                vx: 0,
+                speed: 0,
+                height: 91.3,
                 isEnergyExhausted: false,
                 fireballTimer: 0,
                 fireballCooldown: 0,
@@ -23,35 +37,56 @@ describe('Tutorial', () => {
                 energy: 50,
                 onGround: jest.fn(() => true),
                 clearAllStatusEffects: jest.fn(),
+                setState: jest.fn(),
             },
+
             enemies: [],
+            particles: [],
+            behindPlayerParticles: [],
+            collisions: [],
+            floatingMessages: [],
+
             menu: {
                 pause: { isPaused: false },
                 levelDifficulty: { setDifficulty: jest.fn() },
             },
+
             audioHandler: {
                 firedogSFX: {
                     pauseAllSounds: jest.fn(),
                     resumeAllSounds: jest.fn(),
+                    stopAllSounds: jest.fn(),
                 },
                 enemySFX: {
                     pauseAllSounds: jest.fn(),
                     resumeAllSounds: jest.fn(),
+                    stopAllSounds: jest.fn(),
                 },
                 collisionSFX: {
                     pauseAllSounds: jest.fn(),
                     resumeAllSounds: jest.fn(),
+                    stopAllSounds: jest.fn(),
                 },
             },
+
             input: { keys: [] },
+
             selectedDifficulty: 'Hard',
             coins: 123,
             time: 12435,
 
             isTutorialActive: true,
+            isPlayerInGame: true,
+            currentMap: 'Map1',
+
+            enterDuringBackgroundTransition: true,
         };
 
         tutorial = new Tutorial(game);
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
     });
 
     describe('createSpawnEnemy', () => {
@@ -96,6 +131,94 @@ describe('Tutorial', () => {
             const spawned = game.enemies[0];
             expect(spawned.y).toBe(123);
             expect(spawned.lives).toBe(3);
+        });
+    });
+
+    describe('skipToLastStepWithFade', () => {
+        test('does nothing when not active on Map1', () => {
+            game.currentMap = 'Map2';
+            tutorial.skipToLastStepWithFade();
+            expect(fadeInAndOut).not.toHaveBeenCalled();
+        });
+
+        test('does nothing when already skipping', () => {
+            tutorial._skipInProgress = true;
+            tutorial.skipToLastStepWithFade();
+            expect(fadeInAndOut).not.toHaveBeenCalled();
+        });
+
+        test('does nothing when already on last step', () => {
+            tutorial.currentStepIndex = tutorial.steps.length - 1;
+            tutorial.skipToLastStepWithFade();
+            expect(fadeInAndOut).not.toHaveBeenCalled();
+        });
+
+        test('calls fadeInAndOut, blocks input during transition, and resets state during black', () => {
+            const fadeOutMs = 200;
+            const blackMs = 300;
+            const fadeInMs = 200;
+
+            game.behindPlayerParticles = [{ a: 1 }];
+            game.particles = [{ b: 2 }];
+            game.collisions = [{ c: 3 }];
+            game.enemies = [{ d: 4 }];
+            game.floatingMessages = [{ e: 5 }];
+
+            const lastIndex = tutorial.steps.length - 1;
+            const lastStep = tutorial.steps[lastIndex];
+            const resetSpy = jest.spyOn(lastStep, 'resetGameValues');
+
+            fadeInAndOut.mockImplementation((canvas, outMs, blkMs, inMs, done) => {
+                done && done();
+            });
+
+            game.enterDuringBackgroundTransition = true;
+
+            tutorial.currentStepIndex = 0;
+            tutorial.skipToLastStepWithFade(fadeOutMs, blackMs, fadeInMs);
+
+            expect(tutorial._skipInProgress).toBe(false);
+            expect(game.enterDuringBackgroundTransition).toBe(true);
+            expect(fadeInAndOut).toHaveBeenCalledWith(
+                game.canvas,
+                fadeOutMs,
+                blackMs,
+                fadeInMs,
+                expect.any(Function)
+            );
+
+            jest.advanceTimersByTime(fadeOutMs);
+
+            expect(game.canvas.style.opacity).toBe(0);
+
+            expect(game.audioHandler.firedogSFX.stopAllSounds).toHaveBeenCalled();
+            expect(game.audioHandler.enemySFX.stopAllSounds).toHaveBeenCalled();
+            expect(game.audioHandler.collisionSFX.stopAllSounds).toHaveBeenCalled();
+
+            expect(game.behindPlayerParticles).toEqual([]);
+            expect(game.particles).toEqual([]);
+            expect(game.collisions).toEqual([]);
+            expect(game.enemies).toEqual([]);
+            expect(game.floatingMessages).toEqual([]);
+
+            expect(game.input.keys).toEqual([]);
+
+            expect(game.player.clearAllStatusEffects).toHaveBeenCalled();
+            expect(game.player.speed).toBe(0);
+            expect(game.player.vx).toBe(0);
+            expect(game.player.vy).toBe(0);
+
+            expect(game.player.x).toBe(0);
+            expect(game.player.y).toBe(game.height - game.player.height - game.groundMargin);
+
+            expect(game.player.setState).toHaveBeenCalledWith(0, 0);
+
+            expect(tutorial.currentStepIndex).toBe(lastIndex);
+            expect(tutorial.tutorialPause).toBe(true);
+            expect(tutorial.elapsedTime).toBe(0);
+            expect(tutorial.cooldownTime).toBe(0);
+
+            expect(resetSpy).toHaveBeenCalled();
         });
     });
 
@@ -226,7 +349,6 @@ describe('Tutorial', () => {
 
             expect(game.isTutorialActive).toBe(false);
             expect(tutorial.tutorialPause).toBe(true);
-
             expect(game.saveGameState).toHaveBeenCalled();
         });
     });
@@ -303,16 +425,22 @@ describe('Tutorial', () => {
             };
         });
 
-        test('renders text tokens when paused with correct colors', () => {
+        test('renders text tokens when paused with correct colors (includes Tab)', () => {
             tutorial.tutorialPause = true;
             tutorial.currentStepIndex = 0;
             tutorial.draw(ctx);
+
             expect(ctx.save).toHaveBeenCalled();
             expect(ctx.restore).toHaveBeenCalled();
+
             const tkn = fills.find((c) => c.text === 'Tutorial');
             expect(tkn.style).toBe(tutorial.phraseColors['Tutorial'].fill);
+
             const en = fills.find((c) => c.text === 'Enter');
             expect(en.style).toBe(tutorial.phraseColors['Enter'].fill);
+
+            const tab = fills.find((c) => c.text === 'Tab');
+            expect(tab.style).toBe(tutorial.phraseColors['Tab'].fill);
         });
 
         test('does not render when not paused', () => {

@@ -24,6 +24,22 @@ export class InputHandler {
                 this.game.enterToTalkToPenguin = true;
             }
 
+            if (e.key === 'Tab') {
+                const tutorialMapActive =
+                    this.game.isPlayerInGame === true &&
+                    this.game.isTutorialActive === true &&
+                    this.game.currentMap === 'Map1' &&
+                    this.game.menu.pause.isPaused === false;
+
+                if (tutorialMapActive && this.game.tutorial) {
+                    if (!e.repeat && !this.game.tutorial.isSkipInProgress()) {
+                        this.game.tutorial.skipToLastStepWithFade(200, 300, 200);
+                    }
+                    e.preventDefault();
+                    return;
+                }
+            }
+
             const isGameplayKey = this.isMappedGameplayKey(lowercaseKey);
 
             const jumpNorm = this.getJumpKeyNorm();
