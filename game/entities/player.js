@@ -2238,15 +2238,30 @@ export class CollisionLogic {
 
         const isAttackState = this.isRollingOrDiving(player);
 
-        if (!player.isDashing && !isAttackState && player.collisionCooldowns[enemy.id] > 0) return;
+        if (!player.isDashing && player.collisionCooldowns[enemy.id] > 0) return;
 
         if (!this.enemyHitsRect(enemy, this.getPlayerRect())) return;
 
+        if (this.isKamehameha(enemy)) {
+            if (!player.isDashing) {
+                player.collisionCooldowns[enemy.id] = 220;
+            }
+
+            this.hit(enemy, player);
+
+            if (player.isDashing) {
+                const dashId = player.dashInstanceId;
+                if (enemy._lastDashKameFxId === dashId) return;
+                enemy._lastDashKameFxId = dashId;
+            }
+
+            if (!player.isInvisible || this.isRollingOrDiving(player) || player.isDashing) {
+                this.playCollisionFx(enemy);
+            }
+            return;
+        }
+
         if (!player.isDashing && player.postDashGraceTimer > 0 && !isAttackState) {
-            player.collisionCooldowns[enemy.id] = Math.max(
-                player.collisionCooldowns[enemy.id] || 0,
-                player.postDashGraceTimer
-            );
             return;
         }
 
@@ -2258,26 +2273,6 @@ export class CollisionLogic {
                 (this.game.boss && this.game.boss.preFight);
 
             if (bossInvulnerable) return;
-        }
-
-        if (this.isKamehameha(enemy)) {
-            if (!player.isDashing) {
-                player.collisionCooldowns[enemy.id] = 220;
-            }
-
-            this.hit(enemy, player);
-
-            if (player.isDashing) {
-                const dashId = player.dashInstanceId;
-
-                if (enemy._lastDashKameFxId === dashId) return;
-                enemy._lastDashKameFxId = dashId;
-            }
-
-            if (!player.isInvisible || this.isRollingOrDiving(player) || player.isDashing) {
-                this.playCollisionFx(enemy);
-            }
-            return;
         }
 
         if (this.shouldSkipElyvorgTeleportCollision(enemy, player)) return;
@@ -2306,13 +2301,8 @@ export class CollisionLogic {
         if (player.isDashing) {
             const dashId = player.dashInstanceId;
 
-            if (enemy instanceof Elyvorg && enemy.isBarrierActive) {
-                return;
-            }
-
-            if (enemy instanceof NTharax && enemy.isBarrierActive) {
-                return;
-            }
+            if (enemy instanceof Elyvorg && enemy.isBarrierActive) return;
+            if (enemy instanceof NTharax && enemy.isBarrierActive) return;
 
             if (enemy._lastDashHitId !== dashId) {
                 enemy._lastDashHitId = dashId;
