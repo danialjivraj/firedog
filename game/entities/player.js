@@ -2236,10 +2236,13 @@ export class CollisionLogic {
         const player = this.game.player;
         if (this.game.gameOver) return;
 
-        if (!player.isDashing && player.collisionCooldowns[enemy.id] > 0) return;
+        const isAttackState = this.isRollingOrDiving(player);
+
+        if (!player.isDashing && !isAttackState && player.collisionCooldowns[enemy.id] > 0) return;
+
         if (!this.enemyHitsRect(enemy, this.getPlayerRect())) return;
 
-        if (!player.isDashing && player.postDashGraceTimer > 0) {
+        if (!player.isDashing && player.postDashGraceTimer > 0 && !isAttackState) {
             player.collisionCooldowns[enemy.id] = Math.max(
                 player.collisionCooldowns[enemy.id] || 0,
                 player.postDashGraceTimer
