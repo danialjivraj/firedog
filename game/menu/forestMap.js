@@ -510,7 +510,7 @@ export class ForestMapMenu extends BaseMenu {
     }
 
     update(deltaTime) {
-        this.game.audioHandler.menu.stopSound('soundtrack');
+        this.game.audioHandler.menu.stopSound('criminalitySoundtrack');
 
         if (this.menuActive && this.justOpened && this.game.currentMap) {
             const name = this.game.currentMap;

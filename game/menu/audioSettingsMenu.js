@@ -613,7 +613,7 @@ export class AudioSettingsMenu extends BaseMenu {
     _buildAudioMaps() {
         this.tabData.MENU.audioMap = {
             'Menu Master Volume': { ...this.game.audioHandler.menu.getSoundsMapping() },
-            'Menu Music': this.game.audioHandler.menu.soundsMapping.soundtrack,
+            'Menu Music': this.game.audioHandler.menu.soundsMapping.criminalitySoundtrack,
             'Map SFX': [
                 this.game.audioHandler.menu.soundsMapping.mapOpening,
                 this.game.audioHandler.menu.soundsMapping.enemyLoreOpenBookSound,
@@ -624,6 +624,7 @@ export class AudioSettingsMenu extends BaseMenu {
             ],
             'Wardrobe SFX': [
                 this.game.audioHandler.menu.soundsMapping.purchaseCompletedSound,
+                this.game.audioHandler.menu.soundsMapping.shinySkinRizzSound,
             ],
             'Menu Navigation SFX': [
                 this.game.audioHandler.menu.soundsMapping.optionSelectedSound,

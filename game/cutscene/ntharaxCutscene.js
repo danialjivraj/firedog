@@ -14,12 +14,12 @@ export class NTharaxCutscene extends Cutscene {
 
         this.actions = {
             pre: {
-                1: () => this.game.audioHandler.mapSoundtrack.playSound(
-                    "crypticTokenDarkAmbienceSoundInGame",
+                1: () => this.game.audioHandler.cutsceneMusic.playSound(
+                    "crypticTokenDarkAmbienceSound",
                     true
                 ),
-                5: () => this.game.audioHandler.mapSoundtrack.fadeOutAndStop(
-                    "crypticTokenDarkAmbienceSoundInGame"
+                5: () => this.game.audioHandler.cutsceneMusic.fadeOutAndStop(
+                    "crypticTokenDarkAmbienceSound"
                 ),
                 12: () => this.dreamFlash(),
                 15: () => this.dreamFlash(),
@@ -30,12 +30,12 @@ export class NTharaxCutscene extends Cutscene {
                     "unboundPurpose",
                     true
                 ),
-                25: () => this.game.audioHandler.mapSoundtrack.playSound(
-                    "crypticTokenDarkAmbienceSoundInGame",
+                25: () => this.game.audioHandler.cutsceneMusic.playSound(
+                    "crypticTokenDarkAmbienceSound",
                     true
                 ),
-                29: () => this.game.audioHandler.mapSoundtrack.fadeOutAndStop(
-                    "crypticTokenDarkAmbienceSoundInGame"
+                29: () => this.game.audioHandler.cutsceneMusic.fadeOutAndStop(
+                    "crypticTokenDarkAmbienceSound"
                 ),
                 37: () => this.game.audioHandler.cutsceneMusic.fadeOutAndStop(
                     "unboundPurpose"

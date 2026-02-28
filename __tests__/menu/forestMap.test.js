@@ -974,9 +974,9 @@ describe('ForestMapMenu', () => {
     });
 
     describe('update()', () => {
-        it('always stops the soundtrack', () => {
+        it('always stops the criminalitySoundtrack', () => {
             menu.update(16);
-            expect(mockGame.audioHandler.menu.stopSound).toHaveBeenCalledWith('soundtrack');
+            expect(mockGame.audioHandler.menu.stopSound).toHaveBeenCalledWith('criminalitySoundtrack');
         });
 
         it('updates saving animations when showSavingSprite is true', () => {

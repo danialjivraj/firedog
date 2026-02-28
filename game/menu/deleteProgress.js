@@ -51,8 +51,8 @@ export class DeleteProgress2 extends BaseMenu {
 
             this.game.setMenuRoot(this.game.menu.main, 0);
 
-            this.game.audioHandler.menu.stopSound('soundtrack');
-            this.game.audioHandler.menu.playSound('soundtrack');
+            this.game.audioHandler.menu.stopSound('criminalitySoundtrack');
+            this.game.audioHandler.menu.playSound('criminalitySoundtrack');
             return;
         }
 

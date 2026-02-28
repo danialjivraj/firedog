@@ -151,9 +151,9 @@ describe('EnemyLore', () => {
     });
 
     describe('update()', () => {
-        it('stops the soundtrack on each update call', () => {
+        it('stops the criminalitySoundtrack on each update call', () => {
             menu.update();
-            expect(mockGame.audioHandler.menu.stopSound).toHaveBeenCalledWith('soundtrack');
+            expect(mockGame.audioHandler.menu.stopSound).toHaveBeenCalledWith('criminalitySoundtrack');
         });
     });
 
@@ -615,10 +615,10 @@ describe('EnemyLore', () => {
             expect(ctx.drawImage).not.toHaveBeenCalled();
         });
 
-        it('stops the soundtrack when drawing', () => {
+        it('stops the criminalitySoundtrack when drawing', () => {
             menu.menuActive = true;
             menu.draw(ctx);
-            expect(mockGame.audioHandler.menu.stopSound).toHaveBeenCalledWith('soundtrack');
+            expect(mockGame.audioHandler.menu.stopSound).toHaveBeenCalledWith('criminalitySoundtrack');
         });
 
         it('draws day background when storyNight and clockNight are both false', () => {

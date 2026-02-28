@@ -955,7 +955,7 @@ export class EnemyLore extends BaseMenu {
     }
 
     update() {
-        this.game.audioHandler.menu.stopSound('soundtrack');
+        this.game.audioHandler.menu.stopSound('criminalitySoundtrack');
     }
 
     isNightMode() {
@@ -1549,7 +1549,7 @@ export class EnemyLore extends BaseMenu {
     draw(context) {
         if (!this.menuActive) return;
 
-        this.game.audioHandler.menu.stopSound('soundtrack');
+        this.game.audioHandler.menu.stopSound('criminalitySoundtrack');
 
         const isNight = this.isNightMode();
         const bg = isNight ? this.backgroundImageNight : this.backgroundImage;

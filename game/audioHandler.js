@@ -154,7 +154,7 @@ export class MenuAudioHandler extends AudioHandler {
   constructor(game) {
     super(game);
     this.soundsMapping = {
-      soundtrack: 'soundtrack',
+      criminalitySoundtrack: 'criminalitySoundtrack',
       shinySkinRizzSound: 'shinySkinRizzSound',
       optionSelectedSound: 'optionSelectedSound',
       optionHoveredSound: 'optionHoveredSound',
@@ -242,7 +242,6 @@ export class MapSoundtrackAudioHandler extends AudioHandler {
       map7Soundtrack: 'map7Soundtrack',
       ntharaxBattleTheme: 'ntharaxBattleTheme',
       elyvorgBattleTheme: 'elyvorgBattleTheme',
-      crypticTokenDarkAmbienceSoundInGame: 'crypticTokenDarkAmbienceSoundInGame',
       timeTickingSound: 'timeTickingSound',
       rainSound: 'rainSound',
     };

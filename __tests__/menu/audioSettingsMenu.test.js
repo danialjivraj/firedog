@@ -51,7 +51,9 @@ describe('AudioSettingsMenu', () => {
 
   const makeGame = () => {
     const menuSoundsMapping = {
-      soundtrack: 'menu_track',
+
+      criminalitySoundtrack: 'criminalitySoundtrack',
+
       mapOpening: 'map_open',
       enemyLoreOpenBookSound: 'lore_open',
       enemyLoreCloseBookSound: 'lore_close',
@@ -60,6 +62,9 @@ describe('AudioSettingsMenu', () => {
       enemyLoreSwitchTabSound: 'lore_tab',
       optionSelectedSound: 'opt_sel',
       optionHoveredSound: 'opt_hov',
+
+      purchaseCompletedSound: 'purchase_done',
+      shinySkinRizzSound: 'shiny_rizz',
     };
 
     const cutsceneMusicMapping = { cm1: 'cut_music_1' };
@@ -128,7 +133,7 @@ describe('AudioSettingsMenu', () => {
   const addAllAudioEls = () => {
     [
       // menu
-      'menu_track',
+      'criminalitySoundtrack',
       'map_open',
       'lore_open',
       'lore_close',
@@ -137,10 +142,14 @@ describe('AudioSettingsMenu', () => {
       'lore_tab',
       'opt_sel',
       'opt_hov',
+      'purchase_done',
+      'shiny_rizz',
+
       // cutscene
       'cut_music_1',
       'cut_sfx_1',
       'cut_dia_1',
+
       // ingame
       'ingame_music_1',
       'enemy_sfx_1',
@@ -351,7 +360,8 @@ describe('AudioSettingsMenu', () => {
       const map = menu.tabData.MENU.audioMap;
 
       expect(map['Menu Master Volume']).toEqual({ ...game.audioHandler.menu.getSoundsMapping() });
-      expect(map['Menu Music']).toBe(game.audioHandler.menu.soundsMapping.soundtrack);
+
+      expect(map['Menu Music']).toBe(game.audioHandler.menu.soundsMapping.criminalitySoundtrack);
 
       expect(map['Map SFX']).toEqual([
         game.audioHandler.menu.soundsMapping.mapOpening,
@@ -375,7 +385,7 @@ describe('AudioSettingsMenu', () => {
       menu.volumeLevels[1] = 50;
 
       menu.updateAudioVolume(menu.audioMap['Menu Music'], 1);
-      expect(document.getElementById('menu_track').volume).toBeCloseTo(0.25, 5);
+      expect(document.getElementById('criminalitySoundtrack').volume).toBeCloseTo(0.25, 5);
 
       menu.volumeLevels[2] = 80;
       menu.updateAudioVolume(menu.audioMap['Map SFX'], 2);
@@ -385,7 +395,7 @@ describe('AudioSettingsMenu', () => {
       menu.volumeLevels[0] = 30;
       menu.updateAudioVolume(menu.audioMap['Menu Master Volume'], 0);
 
-      expect(document.getElementById('menu_track').volume).toBeCloseTo(0.15, 5);
+      expect(document.getElementById('criminalitySoundtrack').volume).toBeCloseTo(0.15, 5);
     });
 
     test('muted index forces volume to 0 (per-channel mute)', () => {
@@ -395,11 +405,11 @@ describe('AudioSettingsMenu', () => {
       menu.volumeLevels[1] = 100;
 
       menu.updateAudioVolume(menu.audioMap['Menu Music'], 1);
-      expect(document.getElementById('menu_track').volume).toBeCloseTo(1, 5);
+      expect(document.getElementById('criminalitySoundtrack').volume).toBeCloseTo(1, 5);
 
       menu.muted[1] = true;
       menu.updateAudioVolume(menu.audioMap['Menu Music'], 1);
-      expect(document.getElementById('menu_track').volume).toBeCloseTo(0, 5);
+      expect(document.getElementById('criminalitySoundtrack').volume).toBeCloseTo(0, 5);
     });
 
     test('master muted forces all mapped audio volumes to 0, regardless of channel volumes', () => {
@@ -410,12 +420,12 @@ describe('AudioSettingsMenu', () => {
       menu.volumeLevels[2] = 80;
 
       menu.updateAudioVolume(menu.audioMap['Menu Music'], 1);
-      expect(document.getElementById('menu_track').volume).toBeGreaterThan(0);
+      expect(document.getElementById('criminalitySoundtrack').volume).toBeGreaterThan(0);
 
       menu.muted[0] = true;
       menu.updateAudioVolume(menu.audioMap['Menu Master Volume'], 0);
 
-      expect(document.getElementById('menu_track').volume).toBe(0);
+      expect(document.getElementById('criminalitySoundtrack').volume).toBe(0);
       expect(document.getElementById('map_open').volume).toBe(0);
       expect(document.getElementById('lore_open').volume).toBe(0);
     });
@@ -542,13 +552,13 @@ describe('AudioSettingsMenu', () => {
       menu.handleKeyDown({ key: 'ArrowRight', repeat: false });
       expect(menu.volumeLevels[1]).toBe(51);
       expect(menu.muted[1]).toBe(true);
-      expect(document.getElementById('menu_track').volume).toBe(0);
+      expect(document.getElementById('criminalitySoundtrack').volume).toBe(0);
       expect(game.saveGameState).toHaveBeenCalled();
 
       menu.handleKeyDown({ key: 'ArrowRight', repeat: true });
       expect(menu.volumeLevels[1]).toBe(53);
       expect(menu.muted[1]).toBe(true);
-      expect(document.getElementById('menu_track').volume).toBe(0);
+      expect(document.getElementById('criminalitySoundtrack').volume).toBe(0);
     });
 
     test('Enter on header plays select sound but does not toggle mute', () => {
@@ -573,7 +583,7 @@ describe('AudioSettingsMenu', () => {
 
       menu.muted[1] = false;
       menu.updateAudioVolume(menu.audioMap['Menu Music'], 1);
-      expect(document.getElementById('menu_track').volume).toBeCloseTo(1, 5);
+      expect(document.getElementById('criminalitySoundtrack').volume).toBeCloseTo(1, 5);
 
       game.saveGameState.mockClear();
       game.audioHandler.menu.playSound.mockClear();
@@ -582,14 +592,14 @@ describe('AudioSettingsMenu', () => {
 
       expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionSelectedSound', false, true);
       expect(menu.muted[1]).toBe(true);
-      expect(document.getElementById('menu_track').volume).toBe(0);
+      expect(document.getElementById('criminalitySoundtrack').volume).toBe(0);
       expect(game.saveGameState).toHaveBeenCalled();
 
       game.saveGameState.mockClear();
       menu.handleKeyDown({ key: 'Enter' });
 
       expect(menu.muted[1]).toBe(false);
-      expect(document.getElementById('menu_track').volume).toBeCloseTo(1, 5);
+      expect(document.getElementById('criminalitySoundtrack').volume).toBeCloseTo(1, 5);
       expect(game.saveGameState).toHaveBeenCalled();
     });
   });
@@ -670,7 +680,7 @@ describe('AudioSettingsMenu', () => {
 
       expect(menu.volumeLevels[1]).toBe(75);
       expect(menu.muted[1]).toBe(true);
-      expect(document.getElementById('menu_track').volume).toBe(0);
+      expect(document.getElementById('criminalitySoundtrack').volume).toBe(0);
       expect(game.saveGameState).toHaveBeenCalled();
     });
 
@@ -702,7 +712,7 @@ describe('AudioSettingsMenu', () => {
       menu.volumeLevels[1] = 100;
 
       menu.updateAudioVolume(menu.audioMap['Menu Music'], 1);
-      expect(document.getElementById('menu_track').volume).toBeCloseTo(1, 5);
+      expect(document.getElementById('criminalitySoundtrack').volume).toBeCloseTo(1, 5);
 
       const r = menu.getLabelRect(1);
       const evt = clientFromCanvas(r.x + r.w * 0.75, r.y + r.h / 2);
@@ -712,7 +722,7 @@ describe('AudioSettingsMenu', () => {
 
       expect(menu.selectedOption).toBe(1);
       expect(menu.muted[1]).toBe(true);
-      expect(document.getElementById('menu_track').volume).toBe(0);
+      expect(document.getElementById('criminalitySoundtrack').volume).toBe(0);
       expect(game.saveGameState).toHaveBeenCalled();
     });
 
@@ -864,7 +874,7 @@ describe('AudioSettingsMenu', () => {
 
       expect(menu.volumeLevels[1]).toBeGreaterThanOrEqual(90);
       expect(menu.muted[1]).toBe(true);
-      expect(document.getElementById('menu_track').volume).toBe(0);
+      expect(document.getElementById('criminalitySoundtrack').volume).toBe(0);
     });
   });
 
@@ -950,7 +960,7 @@ describe('AudioSettingsMenu', () => {
 
       expect(menu2.activeTab).toBe('MENU');
 
-      expect(document.getElementById('menu_track').volume).toBe(0);
+      expect(document.getElementById('criminalitySoundtrack').volume).toBe(0);
     });
   });
 
@@ -965,19 +975,19 @@ describe('AudioSettingsMenu', () => {
       menu.muted[1] = false;
 
       menu.updateAudioVolume(menu.audioMap['Menu Music'], 1);
-      expect(document.getElementById('menu_track').volume).toBeCloseTo(1, 5);
+      expect(document.getElementById('criminalitySoundtrack').volume).toBeCloseTo(1, 5);
 
       menu.selectedOption = 0;
       menu.handleKeyDown({ key: 'Enter' });
 
       expect(menu.muted[0]).toBe(true);
-      expect(document.getElementById('menu_track').volume).toBe(0);
+      expect(document.getElementById('criminalitySoundtrack').volume).toBe(0);
 
       menu.selectedOption = 1;
       menu.handleKeyDown({ key: 'ArrowLeft', repeat: false });
 
       expect(menu.muted[0]).toBe(true);
-      expect(document.getElementById('menu_track').volume).toBe(0);
+      expect(document.getElementById('criminalitySoundtrack').volume).toBe(0);
     });
   });
 
@@ -992,7 +1002,7 @@ describe('AudioSettingsMenu', () => {
       menu.muted[1] = false;
 
       menu.updateAudioVolume(menu.audioMap['Menu Music'], 1);
-      expect(document.getElementById('menu_track').volume).toBe(0);
+      expect(document.getElementById('criminalitySoundtrack').volume).toBe(0);
 
       menu.selectedOption = 1;
 

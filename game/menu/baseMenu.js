@@ -86,9 +86,9 @@ export class BaseMenu {
             !this.game.isPlayerInGame;
 
         if (isRealMenuScreen) {
-            this.game.audioHandler.menu.playSound('soundtrack');
+            this.game.audioHandler.menu.playSound('criminalitySoundtrack');
         } else {
-            this.game.audioHandler.menu.stopSound('soundtrack');
+            this.game.audioHandler.menu.stopSound('criminalitySoundtrack');
         }
 
         if (this.frameTimer > this.frameInterval) {

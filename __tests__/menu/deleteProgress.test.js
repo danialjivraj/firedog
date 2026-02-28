@@ -210,7 +210,7 @@ describe('DeleteProgress2', () => {
         expect(mockGame.menu.deleteProgress2.showSavingSprite).toBe(false);
     });
 
-    it('“Yes” branch: clears data, runs animation, jumps to main[0], stops & restarts soundtrack', () => {
+    it('“Yes” branch: clears data, runs animation, jumps to main[0], stops & restarts criminalitySoundtrack', () => {
         menu2.selectedOption = 0; // Yes
         menu2.handleMenuSelection();
 
@@ -226,13 +226,13 @@ describe('DeleteProgress2', () => {
         expect(mockGame.setMenuRoot).toHaveBeenCalledWith(mockGame.menu.main, 0);
         expect(mockGame.menu.main.activateMenu).toHaveBeenCalledWith(0);
 
-        expect(mockGame.audioHandler.menu.stopSound).toHaveBeenCalledWith('soundtrack');
-        expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('soundtrack');
+        expect(mockGame.audioHandler.menu.stopSound).toHaveBeenCalledWith('criminalitySoundtrack');
+        expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('criminalitySoundtrack');
 
         expect(mockGame.menu.settings.activateMenu).not.toHaveBeenCalled();
     });
 
-    it('“No” branch: returns to settings[4] without clearing or restarting soundtrack', () => {
+    it('“No” branch: returns to settings[4] without clearing or restarting criminalitySoundtrack', () => {
         menu2.selectedOption = 1; // No
         menu2.handleMenuSelection();
 
@@ -250,6 +250,6 @@ describe('DeleteProgress2', () => {
         expect(mockGame.menu.main.activateMenu).not.toHaveBeenCalled();
 
         expect(mockGame.audioHandler.menu.stopSound).not.toHaveBeenCalled();
-        expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalledWith('soundtrack');
+        expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalledWith('criminalitySoundtrack');
     });
 });

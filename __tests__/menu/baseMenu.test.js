@@ -419,8 +419,8 @@ describe('BaseMenu', () => {
     });
   });
 
-  describe('update() soundtrack behavior', () => {
-    test('plays soundtrack only on a real menu screen (menuInGame=false, not cutscene, not paused, not in game)', () => {
+  describe('update() criminalitySoundtrack behavior', () => {
+    test('plays criminalitySoundtrack only on a real menu screen (menuInGame=false, not cutscene, not paused, not in game)', () => {
       menu.menuInGame = false;
       mockGame.cutsceneActive = false;
       mockGame.menu.pause.isPaused = false;
@@ -428,8 +428,8 @@ describe('BaseMenu', () => {
 
       menu.update(16);
 
-      expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('soundtrack');
-      expect(mockGame.audioHandler.menu.stopSound).not.toHaveBeenCalledWith('soundtrack');
+      expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('criminalitySoundtrack');
+      expect(mockGame.audioHandler.menu.stopSound).not.toHaveBeenCalledWith('criminalitySoundtrack');
     });
 
     test.each([
@@ -437,7 +437,7 @@ describe('BaseMenu', () => {
       ['cutsceneActive=true', () => { mockGame.cutsceneActive = true; }],
       ['pause.isPaused=true', () => { mockGame.menu.pause.isPaused = true; }],
       ['isPlayerInGame=true', () => { mockGame.isPlayerInGame = true; }],
-    ])('stops soundtrack when NOT a real menu screen because %s', (_label, tweak) => {
+    ])('stops criminalitySoundtrack when NOT a real menu screen because %s', (_label, tweak) => {
       menu.menuInGame = false;
       mockGame.cutsceneActive = false;
       mockGame.menu.pause.isPaused = false;
@@ -450,8 +450,8 @@ describe('BaseMenu', () => {
 
       menu.update(16);
 
-      expect(mockGame.audioHandler.menu.stopSound).toHaveBeenCalledWith('soundtrack');
-      expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalledWith('soundtrack');
+      expect(mockGame.audioHandler.menu.stopSound).toHaveBeenCalledWith('criminalitySoundtrack');
+      expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalledWith('criminalitySoundtrack');
     });
   });
 

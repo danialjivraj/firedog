@@ -1747,15 +1747,6 @@ export class Wardrobe extends BaseMenu {
     }
 
     update(deltaTime) {
-        const isRealMenuScreen =
-            this.menuInGame === false &&
-            !this.game.cutsceneActive &&
-            !this.game.menu.pause.isPaused &&
-            !this.game.isPlayerInGame;
-
-        if (isRealMenuScreen) this.game.audioHandler.menu.playSound('soundtrack');
-        else this.game.audioHandler.menu.stopSound('soundtrack');
-
         if (this.menuActive) this._advancePreview(deltaTime);
 
         if (this.menuActive) {

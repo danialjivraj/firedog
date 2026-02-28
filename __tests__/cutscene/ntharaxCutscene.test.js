@@ -412,7 +412,7 @@ describe('NTharaxCutscene', () => {
                 cut.cutsceneController();
 
                 expect(game.audioHandler.mapSoundtrack.playSound)
-                    .toHaveBeenCalledWith('crypticTokenDarkAmbienceSoundInGame', true);
+                    .toHaveBeenCalledWith('crypticTokenDarkAmbienceSound', true);
             });
 
             it('dialogueIndex 5 fades out dark ambience', () => {
@@ -421,7 +421,7 @@ describe('NTharaxCutscene', () => {
                 cut.cutsceneController();
 
                 expect(game.audioHandler.mapSoundtrack.fadeOutAndStop)
-                    .toHaveBeenCalledWith('crypticTokenDarkAmbienceSoundInGame');
+                    .toHaveBeenCalledWith('crypticTokenDarkAmbienceSound');
             });
 
             [12, 15, 17].forEach(idx => {
@@ -469,7 +469,7 @@ describe('NTharaxCutscene', () => {
                 cut.cutsceneController();
 
                 expect(game.audioHandler.mapSoundtrack.playSound)
-                    .toHaveBeenCalledWith('crypticTokenDarkAmbienceSoundInGame', true);
+                    .toHaveBeenCalledWith('crypticTokenDarkAmbienceSound', true);
             });
 
             it('dialogueIndex 29 fades out dark ambience', () => {
@@ -478,7 +478,7 @@ describe('NTharaxCutscene', () => {
                 cut.cutsceneController();
 
                 expect(game.audioHandler.mapSoundtrack.fadeOutAndStop)
-                    .toHaveBeenCalledWith('crypticTokenDarkAmbienceSoundInGame');
+                    .toHaveBeenCalledWith('crypticTokenDarkAmbienceSound');
             });
 
             it('dialogueIndex 37 fades out unboundPurpose', () => {
