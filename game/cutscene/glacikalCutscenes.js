@@ -56,7 +56,7 @@ export class GlacikalCutscene extends Cutscene {
         boss.inFight = true;
         boss.progressComplete = true;
         this.game.cutscenes = [];
-        this.game.audioHandler.mapSoundtrack.playSound("elyvorgBattleTheme", true);
+        this.game.audioHandler.mapSoundtrack.playSound("glacikalBattleTheme", true);
     }
 
     enterOrLeftClick() {

@@ -240,8 +240,12 @@ export class MapSoundtrackAudioHandler extends AudioHandler {
       map5Soundtrack: 'map5Soundtrack',
       map6Soundtrack: 'map6Soundtrack',
       map7Soundtrack: 'map7Soundtrack',
-      ntharaxBattleTheme: 'ntharaxBattleTheme',
+      bonusMap1Soundtrack: 'bonusMap1Soundtrack',
+      bonusMap2Soundtrack: 'bonusMap2Soundtrack',
+      bonusMap3Soundtrack: 'bonusMap3Soundtrack',
+      glacikalBattleTheme: 'glacikalBattleTheme',
       elyvorgBattleTheme: 'elyvorgBattleTheme',
+      ntharaxBattleTheme: 'ntharaxBattleTheme',
       timeTickingSound: 'timeTickingSound',
       rainSound: 'rainSound',
     };

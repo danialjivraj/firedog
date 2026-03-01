@@ -743,7 +743,7 @@ export class BonusMap1 extends Background {
             snowFront,
         );
 
-        this.soundId = 'map3Soundtrack';
+        this.soundId = 'bonusMap1Soundtrack';
     }
 }
 
@@ -794,7 +794,7 @@ export class BonusMap2 extends Background {
             { imageId: 'bonusMap2Ground', bgSpeed: 1 },
         );
 
-        this.soundId = 'map3Soundtrack';
+        this.soundId = 'bonusMap2Soundtrack';
     }
 }
 
@@ -821,7 +821,7 @@ export class BonusMap3 extends Background {
             { imageId: 'bonusMap3Ground', bgSpeed: 1 },
         );
 
-        this.soundId = 'map3Soundtrack';
+        this.soundId = 'bonusMap3Soundtrack';
     }
 }
 

@@ -235,7 +235,7 @@ describe('GlacikalCutscene', () => {
             expect(game.boss.progressComplete).toBe(true);
             expect(game.cutscenes).toEqual([]);
             expect(game.audioHandler.mapSoundtrack.playSound)
-                .toHaveBeenCalledWith('elyvorgBattleTheme', true);
+                .toHaveBeenCalledWith('glacikalBattleTheme', true);
         });
     });
 
@@ -340,7 +340,7 @@ describe('GlacikalCutscene', () => {
             expect(game.cutscenes).toEqual([]);
             expect(cut.dialogueIndex).toBe(2);
             expect(game.audioHandler.mapSoundtrack.playSound)
-                .toHaveBeenCalledWith('elyvorgBattleTheme', true);
+                .toHaveBeenCalledWith('glacikalBattleTheme', true);
         });
 
         it('Tab does nothing when not in pre-fight', () => {

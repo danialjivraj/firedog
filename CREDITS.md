@@ -81,10 +81,10 @@ Below, only soundtracks will be credited.
     - **Elyvorg Themes:** 
         - [Super Meat Boy: The Battle of Lil' Slugger](https://www.youtube.com/watch?v=WL-8rU8ltA4)
         - [Unbound Purpose by Greg Dombrowski](https://www.youtube.com/watch?v=Kw1-B9FGYTA)
-- **Bonus Map 1:** [XXX]()
+- **Bonus Map 1:** [Mega Man Powered Up OST - Ice Man Stage](https://www.youtube.com/watch?v=uLS_MRkwcUE)
     - **Glacikal Themes:**
-        - [XXX]()
-- **Bonus Map 2:** [XXX]()
-- **Bonus Map 3:** [XXX]()
+        - [The Binding of Isaac Soundtrack: Divine Combat](https://www.youtube.com/watch?v=UaxjRoDrpus)
+- **Bonus Map 2:** [Magma Cavern - Pokémon Mystery Dungeon Red Rescue Team](https://www.youtube.com/watch?v=YaMre9vbkvw)
+- **Bonus Map 3:** [Steam Cave - Pokémon Mystery Dungeon Explorers of Sky](https://www.youtube.com/watch?v=X7ekvLh3i1k)
     - **N'Tharax Themes:**
         - [Hotline Miami 2: Wrong Number Soundtrack - Acid Spit](https://www.youtube.com/watch?v=Qf6-xx2fLa8)

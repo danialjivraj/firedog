@@ -550,7 +550,7 @@ export class Glacikal extends EnemyBoss {
             this.defeatCommon({
                 bossId: "glacikal",
                 bossClass: Glacikal,
-                battleThemeId: "elyvorgBattleTheme",
+                battleThemeId: "glacikalBattleTheme",
                 onBeforeClear: () => {
                     this.game.stopShake();
                     this.game.bossManager.releaseScreenEffect("glacikal_icy_storm");

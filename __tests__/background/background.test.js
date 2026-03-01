@@ -1128,9 +1128,9 @@ describe('Map constructors', () => {
         { Cls: Map5, id: 'map5Soundtrack', expectedLen: 16 },
         { Cls: Map6, id: 'map6Soundtrack', expectedLen: 12 },
         { Cls: Map7, id: 'map7Soundtrack', expectedLen: 16 },
-        { Cls: BonusMap1, id: 'map3Soundtrack', expectedLen: 11 },
-        { Cls: BonusMap2, id: 'map3Soundtrack', expectedLen: 23 },
-        { Cls: BonusMap3, id: 'map3Soundtrack', expectedLen: 9 },
+        { Cls: BonusMap1, id: 'bonusMap1Soundtrack', expectedLen: 11 },
+        { Cls: BonusMap2, id: 'bonusMap2Soundtrack', expectedLen: 23 },
+        { Cls: BonusMap3, id: 'bonusMap3Soundtrack', expectedLen: 9 },
     ];
 
     test.each(specs)('%s wires soundtrack id and expected background layer count', ({ Cls, id, expectedLen }) => {
@@ -1159,7 +1159,7 @@ describe('BonusMap specifics', () => {
 
         randomSpy.mockRestore();
 
-        expect(b1.soundId).toBe('map3Soundtrack');
+        expect(b1.soundId).toBe('bonusMap1Soundtrack');
 
         const snowLayers = b1.backgroundLayers.filter((l) => l instanceof SnowflakeAnimation);
         expect(snowLayers).toHaveLength(3);
@@ -1177,8 +1177,8 @@ describe('BonusMap specifics', () => {
 
     test('BonusMap2 and BonusMap3 use underwater soundtrack id', () => {
         const game = makeGame({ width: 800, height: 600, speed: 0 });
-        expect(new BonusMap2(game).soundId).toBe('map3Soundtrack');
-        expect(new BonusMap3(game).soundId).toBe('map3Soundtrack');
+        expect(new BonusMap2(game).soundId).toBe('bonusMap2Soundtrack');
+        expect(new BonusMap3(game).soundId).toBe('bonusMap3Soundtrack');
     });
 
     test('Map6 includes three BubbleAnimation layers and a vertical MovingLayer mist', () => {
