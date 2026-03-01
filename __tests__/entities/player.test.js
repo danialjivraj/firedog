@@ -1273,7 +1273,8 @@ describe('Player', () => {
                 skin,
                 0, 0, player.width, player.height,
                 player.width, player.height,
-                'rgba(0,100,0,0.40)'
+                'rgba(0,100,0,0.40)',
+                null
             );
 
             expect(ctx.drawImage).toHaveBeenNthCalledWith(
@@ -1301,7 +1302,8 @@ describe('Player', () => {
                 skin,
                 0, 0, player.width, player.height,
                 player.width, player.height,
-                'rgba(0,120,255,0.35)'
+                'rgba(0,120,255,0.35)',
+                null
             );
 
             expect(ctx.drawImage).toHaveBeenNthCalledWith(
@@ -1326,7 +1328,7 @@ describe('Player', () => {
 
             expect(tintSpy).toHaveBeenCalled();
             const tintArgs = tintSpy.mock.calls[0];
-            const tintObj = tintArgs[tintArgs.length - 1];
+            const tintObj = tintArgs[tintArgs.length - 2];
             expect(tintObj).toEqual(expect.objectContaining({ dir: 'horizontal', stops: expect.any(Array) }));
             expect(Array.isArray(tintObj.stops)).toBe(true);
             expect(tintObj.stops.length).toBeGreaterThan(0);

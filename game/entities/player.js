@@ -526,7 +526,7 @@ export class Player {
             .filter(Boolean);
     }
 
-    getTintedFrameCanvas(img, sx, sy, sw, sh, dw, dh, tint) {
+    getTintedFrameCanvas(img, sx, sy, sw, sh, dw, dh, tint, hueDeg = null) {
         const OW = Math.max(1, Math.round(dw));
         const OH = Math.max(1, Math.round(dh));
 
@@ -545,7 +545,10 @@ export class Player {
         octx.setTransform(1, 0, 0, 1, 0, 0);
         octx.clearRect(0, 0, OW, OH);
         octx.globalCompositeOperation = 'source-over';
-        octx.drawImage(img, sx, sy, sw, sh, 0, 0, OW, OH);
+
+        drawWithOptionalHue(octx, { hueDeg }, () => {
+            octx.drawImage(img, sx, sy, sw, sh, 0, 0, OW, OH);
+        });
 
         octx.globalCompositeOperation = 'source-atop';
         if (typeof tint === 'string') {
@@ -597,9 +600,9 @@ export class Player {
             context.restore();
         };
 
-        const drawTintLayer = (img, tint) => {
+        const drawTintLayer = (img, tint, hueDeg = null) => {
             if (!img) return;
-            const oc = this.getTintedFrameCanvas(img, sx, sy, sw, sh, dw, dh, tint);
+            const oc = this.getTintedFrameCanvas(img, sx, sy, sw, sh, dw, dh, tint, hueDeg);
             context.drawImage(oc, dx, dy, dw, dh);
         };
 
@@ -650,7 +653,7 @@ export class Player {
         const drawCosmeticsTint = (tint) => {
             for (const layer of cosmeticLayers) {
                 if (!layer?.img) continue;
-                drawTintLayer(layer.img, tint);
+                drawTintLayer(layer.img, tint, layer.hueDeg);
             }
         };
 
