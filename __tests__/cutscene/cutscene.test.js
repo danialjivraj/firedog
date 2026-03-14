@@ -27,7 +27,8 @@ jest.mock('../../game/config/skinsAndCosmetics.js', () => {
 });
 
 describe('Cutscene', () => {
-    let game, cutscene;
+    let game;
+    let cutscene;
 
     beforeEach(() => {
         game = {
@@ -55,11 +56,11 @@ describe('Cutscene', () => {
                 },
                 cutsceneSFX: {
                     playSound: jest.fn(),
+                    fadeOutAndStop: jest.fn(),
                     stopAllSounds: jest.fn(),
                 },
                 cutsceneMusic: {
                     playSound: jest.fn(),
-                    stopSound: jest.fn(),
                     fadeOutAndStop: jest.fn(),
                     stopAllSounds: jest.fn(),
                 },
@@ -76,13 +77,14 @@ describe('Cutscene', () => {
 
         jest
             .spyOn(fading, 'fadeInAndOut')
-            .mockImplementation((canvas, f1, stay, f2, cb) => cb());
+            .mockImplementation((canvas, fadeIn, stay, fadeOut, cb) => cb());
 
         cutscene = new Cutscene(game);
     });
 
     afterEach(() => {
         jest.restoreAllMocks();
+        jest.useRealTimers();
     });
 
     describe('splitDialogueIntoWords', () => {
@@ -99,23 +101,6 @@ describe('Cutscene', () => {
         });
     });
 
-    describe('getLinesWithinLimit', () => {
-        it('wraps into at most two lines when limit is exceeded once', () => {
-            const words = ['aaa', 'bbbbbb', 'ccc', 'dddd'];
-            const fullWords = ['aaa', 'bbbbbb', 'ccc', 'dddd'];
-            cutscene.characterLimit = 8;
-            const lines = cutscene.getLinesWithinLimit(words, fullWords, 8);
-            expect(lines).toEqual(['aaa', 'bbbbbb ccc dddd']);
-        });
-
-        it('keeps text on a single line when under limit', () => {
-            cutscene.characterLimit = 50;
-            expect(
-                cutscene.getLinesWithinLimit(['short', 'text'], ['short', 'text'], 50)
-            ).toEqual(['short text']);
-        });
-    });
-
     describe('getDotIndices', () => {
         it('finds all start indices of "..."', () => {
             expect(cutscene.getDotIndices('Wait... What...?!')).toEqual([4, 12]);
@@ -127,11 +112,11 @@ describe('Cutscene', () => {
     });
 
     describe('ellipsis helpers', () => {
-        it('ellipsisFollowedOnlyByTerminalPunct: true when only terminal punctuation follows', () => {
+        it('ellipsisFollowedOnlyByTerminalPunct returns true when only terminal punctuation follows', () => {
             expect(cutscene.ellipsisFollowedOnlyByTerminalPunct('Hi...?!', 2)).toBe(true);
         });
 
-        it('ellipsisFollowedOnlyByTerminalPunct: false when next non-terminal text exists', () => {
+        it('ellipsisFollowedOnlyByTerminalPunct returns false when next non-terminal text exists', () => {
             expect(cutscene.ellipsisFollowedOnlyByTerminalPunct('Hi... Next', 2)).toBe(false);
         });
 
@@ -147,33 +132,76 @@ describe('Cutscene', () => {
         });
     });
 
-    describe('characterColors membership (replaces removed isCharacterName)', () => {
+    describe('characterColors membership', () => {
         it('has known character and token keys', () => {
             expect(cutscene.characterColors[cutscene.firedog]).toBeDefined();
             expect(cutscene.characterColors[cutscene.coinText]).toBeDefined();
         });
 
         it('does not include unknown strings', () => {
-            expect(cutscene.characterColors['Random']).toBeUndefined();
+            expect(cutscene.characterColors.Random).toBeUndefined();
         });
     });
 
     describe('buildColorSpans / colorAtGlobal', () => {
-        it('buildColorSpans prefers longer keys (no overlap issues) and returns spans', () => {
+        it('buildColorSpans returns spans for known terms', () => {
             cutscene.characterColors = {
                 Firedog: 'yellow',
                 'Project Cryptoterra Genesis': 'OrangeRed',
             };
 
-            const spans = cutscene.buildColorSpans('Firedog said Project Cryptoterra Genesis now');
+            const text = 'Firedog said Project Cryptoterra Genesis now';
+            const spans = cutscene.buildColorSpans(text);
+
             expect(spans.length).toBeGreaterThan(0);
 
-            const idx = 'Firedog said'.indexOf('Firedog');
-            expect(cutscene.colorAtGlobal(idx, spans, 'white')).toBe('yellow');
+            const firedogIdx = text.indexOf('Firedog');
+            const projectIdx = text.indexOf('Project Cryptoterra Genesis');
+
+            expect(cutscene.colorAtGlobal(firedogIdx, spans, 'white')).toBe('yellow');
+            expect(cutscene.colorAtGlobal(projectIdx, spans, 'white')).toBe('OrangeRed');
+        });
+
+        it('buildColorSpans includes possessive matches', () => {
+            cutscene.characterColors = {
+                Firedog: 'yellow',
+            };
+
+            const text = `Firedog's journey`;
+            const spans = cutscene.buildColorSpans(text);
+
+            expect(cutscene.colorAtGlobal(0, spans, 'white')).toBe('yellow');
+            expect(cutscene.colorAtGlobal(7, spans, 'white')).toBe('yellow');
         });
 
         it('colorAtGlobal falls back when no span matches', () => {
             expect(cutscene.colorAtGlobal(10, [], 'white')).toBe('white');
+        });
+    });
+
+    describe('filters', () => {
+        it('getCharacterBaseFilter returns sepia over grayscale when sepia is enabled', () => {
+            cutscene.isCharacterBlackAndWhite = true;
+            cutscene.isCharacterSepia = true;
+            expect(cutscene.getCharacterBaseFilter()).toBe('sepia(100%) saturate(140%) contrast(115%) brightness(80%)');
+        });
+
+        it('getCharacterBaseFilter returns grayscale when black and white is enabled', () => {
+            cutscene.isCharacterBlackAndWhite = true;
+            cutscene.isCharacterSepia = false;
+            expect(cutscene.getCharacterBaseFilter()).toBe('grayscale(100%)');
+        });
+
+        it('getBackgroundBaseFilter returns sepia over grayscale when sepia is enabled', () => {
+            cutscene.isBackgroundBlackAndWhite = true;
+            cutscene.isBackgroundSepia = true;
+            expect(cutscene.getBackgroundBaseFilter()).toBe('sepia(100%) saturate(140%) contrast(115%) brightness(50%)');
+        });
+
+        it('getBackgroundBaseFilter returns grayscale when black and white is enabled', () => {
+            cutscene.isBackgroundBlackAndWhite = true;
+            cutscene.isBackgroundSepia = false;
+            expect(cutscene.getBackgroundBaseFilter()).toBe('grayscale(100%)');
         });
     });
 
@@ -204,6 +232,24 @@ describe('Cutscene', () => {
             expect(img.opts).toEqual({ border: { talking: true } });
         });
 
+        it('supports border object and effectKey', () => {
+            const img = cutscene.addImage(
+                'bar',
+                { x: 1, y: 2, width: 3, height: 4 },
+                { border: { color: 'red' }, effectKey: 'firedogHappy' }
+            );
+
+            expect(img).toEqual({
+                id: 'bar',
+                x: 1,
+                y: 2,
+                width: 3,
+                height: 4,
+                effectKey: 'firedogHappy',
+                opts: { border: { color: 'red' } },
+            });
+        });
+
         it('throws when rect is missing', () => {
             expect(() => cutscene.addImage('x')).toThrow(/requires a rect/);
         });
@@ -223,18 +269,29 @@ describe('Cutscene', () => {
                 { id: 'img', opacity: 1, x: 0, y: 0, width: 10, height: 10 }
             );
             expect(cutscene.dialogue).toHaveLength(1);
-            expect(cutscene.dialogue[0]).toMatchObject({ character: 'Alice', dialogue: 'Hi' });
+            expect(cutscene.dialogue[0]).toMatchObject({
+                character: 'Alice',
+                dialogue: 'Hi',
+                whisper: false,
+                onAdvance: null,
+                onEnter: null,
+            });
             expect(Array.isArray(cutscene.dialogue[0].images)).toBe(true);
         });
 
-        it('supports options object (whisper) as first param after dialogue', () => {
+        it('supports options object as first param after dialogue', () => {
+            const onAdvance = jest.fn();
+            const onEnter = jest.fn();
+
             cutscene.addDialogue(
                 'A',
                 'Hi',
-                { whisper: true },
+                { whisper: true, onAdvance, onEnter },
                 { id: 'x', x: 0, y: 0, width: 1, height: 1 }
             );
             expect(cutscene.dialogue[0].whisper).toBe(true);
+            expect(cutscene.dialogue[0].onAdvance).toBe(onAdvance);
+            expect(cutscene.dialogue[0].onEnter).toBe(onEnter);
             expect(cutscene.dialogue[0].images).toHaveLength(1);
         });
     });
@@ -243,47 +300,169 @@ describe('Cutscene', () => {
         it('initializes internal state and sets reminderImageStartTime', () => {
             const now = jest.spyOn(performance, 'now').mockReturnValue(123);
             cutscene.dialogue = [{ character: 'A', dialogue: 'X', images: [] }];
+            const addListenersSpy = jest.spyOn(cutscene, 'addEventListeners').mockImplementation(() => {});
+
             cutscene.displayDialogue();
+
             expect(cutscene.fullWords).toEqual(['X']);
             expect(cutscene.dialogueIndex).toBe(0);
             expect(cutscene.reminderImageStartTime).toBe(123);
+            expect(addListenersSpy).toHaveBeenCalled();
+
             now.mockRestore();
         });
 
         it('builds and caches spans for current dialogueIndex', () => {
             cutscene.dialogue = [{ character: 'Firedog', dialogue: 'Hello Firedog', images: [] }];
+            jest.spyOn(cutscene, 'addEventListeners').mockImplementation(() => {});
+
             cutscene.displayDialogue();
+
             expect(cutscene.currentSpansForIndex).toBe(0);
             expect(Array.isArray(cutscene.currentColorSpans)).toBe(true);
         });
+
+        it('runs onEnter for first dialogue', () => {
+            const onEnter = jest.fn();
+            cutscene.addDialogue('A', 'Hi', { onEnter });
+            jest.spyOn(cutscene, 'addEventListeners').mockImplementation(() => {});
+
+            cutscene.displayDialogue();
+
+            expect(onEnter).toHaveBeenCalledTimes(1);
+        });
     });
 
-    it('renders each character of each word exactly once in characterColorLogic', () => {
-        const ctx = {
-            fillText: jest.fn(),
-            measureText: jest.fn().mockReturnValue({ width: 5 }),
-        };
+    describe('dialogue hooks', () => {
+        it('getCurrentDialogueEntry returns current entry or null', () => {
+            expect(cutscene.getCurrentDialogueEntry()).toBeNull();
 
-        cutscene.dialogue = [{
-            character: 'Firedog',
-            dialogue: 'Test',
-            images: [],
-            whisper: false,
-        }];
-        cutscene.dialogueIndex = 0;
+            cutscene.dialogue = [{ character: 'A', dialogue: 'Hi', images: [] }];
+            cutscene.dialogueIndex = 0;
 
-        const fullDialogue = 'Test';
-        const spans = cutscene.buildColorSpans(fullDialogue);
+            expect(cutscene.getCurrentDialogueEntry()).toEqual(cutscene.dialogue[0]);
+        });
 
-        cutscene.characterColorLogic(
-            ctx,
-            ['Test'],
-            ['Test'],
-            'Firedog: ',
-            fullDialogue,
-            spans
-        );
-        expect(ctx.fillText).toHaveBeenCalledTimes(4);
+        it('isCurrentDialogueFullyTyped reflects textIndex against dialogue length', () => {
+            cutscene.dialogue = [{ character: 'A', dialogue: 'Hello', images: [] }];
+            cutscene.dialogueIndex = 0;
+
+            cutscene.textIndex = 5;
+            expect(cutscene.isCurrentDialogueFullyTyped()).toBe(true);
+
+            cutscene.textIndex = 4;
+            expect(cutscene.isCurrentDialogueFullyTyped()).toBe(false);
+        });
+
+        it('runCurrentDialogueAdvanceActionIfAny runs only when fully typed', () => {
+            const onAdvance = jest.fn();
+            cutscene.addDialogue('A', 'Hello', { onAdvance });
+            cutscene.dialogueIndex = 0;
+
+            cutscene.textIndex = 4;
+            cutscene.runCurrentDialogueAdvanceActionIfAny();
+            expect(onAdvance).not.toHaveBeenCalled();
+
+            cutscene.textIndex = 5;
+            cutscene.runCurrentDialogueAdvanceActionIfAny();
+            expect(onAdvance).toHaveBeenCalledTimes(1);
+        });
+
+        it('runCurrentDialogueEnterActionIfAny runs onEnter when present', () => {
+            const onEnter = jest.fn();
+            cutscene.addDialogue('A', 'Hello', { onEnter });
+            cutscene.dialogueIndex = 0;
+
+            cutscene.runCurrentDialogueEnterActionIfAny();
+
+            expect(onEnter).toHaveBeenCalledTimes(1);
+        });
+
+        it('jumpToDialogue resets typing state, caches spans, and runs onEnter', () => {
+            const onEnter = jest.fn();
+
+            cutscene.addDialogue('A', 'First');
+            cutscene.addDialogue('B', 'Second Firedog', { onEnter });
+
+            cutscene.textIndex = 999;
+            cutscene.lastSound2Played = true;
+            cutscene.playSound2OnDotPause = true;
+            cutscene.pause = true;
+            cutscene.continueDialogue = true;
+            cutscene.isEnterPressed = true;
+
+            cutscene.jumpToDialogue(1);
+
+            expect(cutscene.dialogueIndex).toBe(1);
+            expect(cutscene.textIndex).toBe(0);
+            expect(cutscene.lastSound2Played).toBe(false);
+            expect(cutscene.playSound2OnDotPause).toBe(false);
+            expect(cutscene.pause).toBe(false);
+            expect(cutscene.continueDialogue).toBe(false);
+            expect(cutscene.isEnterPressed).toBe(false);
+            expect(cutscene.currentSpansForIndex).toBe(1);
+            expect(Array.isArray(cutscene.currentColorSpans)).toBe(true);
+            expect(cutscene.fullWordsColor).toEqual(['Second', 'Firedog']);
+            expect(onEnter).toHaveBeenCalledTimes(1);
+        });
+
+        it('jumpToDialogue ignores out of range indices', () => {
+            cutscene.addDialogue('A', 'Hello');
+            cutscene.dialogueIndex = 0;
+
+            cutscene.jumpToDialogue(-1);
+            expect(cutscene.dialogueIndex).toBe(0);
+
+            cutscene.jumpToDialogue(10);
+            expect(cutscene.dialogueIndex).toBe(0);
+        });
+    });
+
+    describe('audio wrappers', () => {
+        it('playSFX proxies to cutsceneSFX.playSound', () => {
+            cutscene.playSFX('boom', true);
+            expect(game.audioHandler.cutsceneSFX.playSound).toHaveBeenCalledWith('boom', true);
+        });
+
+        it('fadeOutSFX proxies to cutsceneSFX.fadeOutAndStop', () => {
+            cutscene.fadeOutSFX('boom', 300);
+            expect(game.audioHandler.cutsceneSFX.fadeOutAndStop).toHaveBeenCalledWith('boom', 300);
+        });
+
+        it('playMusic proxies to cutsceneMusic.playSound', () => {
+            cutscene.playMusic('song', true);
+            expect(game.audioHandler.cutsceneMusic.playSound).toHaveBeenCalledWith('song', true);
+        });
+
+        it('fadeOutMusic proxies to cutsceneMusic.fadeOutAndStop', () => {
+            cutscene.fadeOutMusic('song', 500);
+            expect(game.audioHandler.cutsceneMusic.fadeOutAndStop).toHaveBeenCalledWith('song', 500);
+        });
+
+        it('stopAllAudio stops dialogue, sfx, and music', () => {
+            cutscene.stopAllAudio();
+
+            expect(game.audioHandler.cutsceneDialogue.stopAllSounds).toHaveBeenCalled();
+            expect(game.audioHandler.cutsceneSFX.stopAllSounds).toHaveBeenCalled();
+            expect(game.audioHandler.cutsceneMusic.stopAllSounds).toHaveBeenCalled();
+        });
+
+        it('stopTypingAudio stops dialogue and resets typing flags', () => {
+            cutscene.lastSoundPlayed = true;
+            cutscene.lastSound2Played = true;
+            cutscene.playSound2OnDotPause = true;
+            cutscene.pause = true;
+            cutscene.continueDialogue = true;
+
+            cutscene.stopTypingAudio();
+
+            expect(game.audioHandler.cutsceneDialogue.stopAllSounds).toHaveBeenCalled();
+            expect(cutscene.lastSoundPlayed).toBe(false);
+            expect(cutscene.lastSound2Played).toBe(false);
+            expect(cutscene.playSound2OnDotPause).toBe(false);
+            expect(cutscene.pause).toBe(false);
+            expect(cutscene.continueDialogue).toBe(false);
+        });
     });
 
     describe('safe wardrobe getters', () => {
@@ -301,7 +480,7 @@ describe('Cutscene', () => {
             expect(cutscene.getCurrentSkinIdSafe()).toBe('defaultSkin');
         });
 
-        it('getCurrentCosmeticKeySafe uses wardrobe getter when present and normalizes falsy to none', () => {
+        it('getCurrentCosmeticKeySafe uses wardrobe getter and normalizes falsy to none', () => {
             game.menu.wardrobe.getCurrentCosmeticKey.mockReturnValue('');
             expect(cutscene.getCurrentCosmeticKeySafe('head')).toBe('none');
 
@@ -346,7 +525,36 @@ describe('Cutscene', () => {
         });
     });
 
-    describe('skin-based helpers (updated to new skin system)', () => {
+    describe('drawImageWithOptionalHue', () => {
+        it('does nothing when element is missing', () => {
+            const ctx = { drawImage: jest.fn() };
+
+            cutscene.drawImageWithOptionalHue(ctx, null, 0, 0, 1, 1, 120);
+
+            expect(skinsAndCosmetics.drawWithOptionalHue).not.toHaveBeenCalled();
+            expect(ctx.drawImage).not.toHaveBeenCalled();
+        });
+
+        it('passes hue and current character baseFilter into drawWithOptionalHue', () => {
+            const ctx = { drawImage: jest.fn() };
+            const el = { id: 'overlay' };
+            cutscene.isCharacterSepia = true;
+
+            cutscene.drawImageWithOptionalHue(ctx, el, 1, 2, 3, 4, 180);
+
+            expect(skinsAndCosmetics.drawWithOptionalHue).toHaveBeenCalledWith(
+                ctx,
+                {
+                    hueDeg: 180,
+                    baseFilter: 'sepia(100%) saturate(140%) contrast(115%) brightness(80%)',
+                },
+                expect.any(Function)
+            );
+            expect(ctx.drawImage).toHaveBeenCalledWith(el, 1, 2, 3, 4);
+        });
+    });
+
+    describe('skin-based helpers', () => {
         it('getmap6insideCaveLavaEarthquake only special-cases shinySkin', () => {
             game.menu.wardrobe.getCurrentSkinId.mockReturnValue('defaultSkin');
             expect(cutscene.getmap6insideCaveLavaEarthquake()).toBe('map6insideCaveLavaEarthquake');
@@ -369,7 +577,7 @@ describe('Cutscene', () => {
             expect(cutscene.getSkinPrefix()).toBe('shiny');
         });
 
-        it('setfiredog* helpers prepend prefix', () => {
+        it('setfiredog helpers prepend prefix', () => {
             game.menu.wardrobe.getCurrentSkinId.mockReturnValue('defaultSkin');
             expect(cutscene.setfiredogHappy()).toBe('firedogHappy');
             expect(cutscene.setfiredogSadBorder()).toBe('firedogSadBorder');
@@ -387,22 +595,45 @@ describe('Cutscene', () => {
             expect(cutscene.getFiredogCoreId('nope')).toBe('nope');
         });
 
-        it('aliases firedogLaugh -> firedogHappy and NormalQuestionAndExlamationMark -> firedogNormal', () => {
+        it('aliases firedogLaugh -> firedogHappy and NormalQuestionAndExclamationMark -> firedogNormal', () => {
             expect(cutscene.getAliasedFiredogDomId('shinyfiredogLaugh')).toBe('shinyfiredogHappy');
-            expect(cutscene.getAliasedFiredogDomId('firedogNormalQuestionAndExlamationMark')).toBe('firedogNormal');
+            expect(cutscene.getAliasedFiredogDomId('firedogNormalQuestionAndExclamationMark')).toBe('firedogNormal');
         });
 
-        it('isFiredogEmotionImageId matches allowed emotion ids (with optional prefix)', () => {
+        it('isFiredogEmotionImageId matches allowed emotion ids', () => {
             expect(cutscene.isFiredogEmotionImageId('firedogHappy')).toBe(true);
             expect(cutscene.isFiredogEmotionImageId('shinyfiredogHappy')).toBe(true);
             expect(cutscene.isFiredogEmotionImageId('firedogHappyBorder')).toBe(true);
             expect(cutscene.isFiredogEmotionImageId('catHappy')).toBe(false);
         });
 
-        it('shouldDrawPanelBorderForImageId returns false for firedogBorderRequestId and true for other *Border', () => {
+        it('isFiredogBorderRequestId matches only firedog border request ids', () => {
+            expect(cutscene.isFiredogBorderRequestId('firedogHappyBorder')).toBe(true);
+            expect(cutscene.isFiredogBorderRequestId('shinyfiredogHappyBorder')).toBe(true);
+            expect(cutscene.isFiredogBorderRequestId('someCardBorder')).toBe(false);
+        });
+
+        it('shouldDrawPanelBorderForImageId returns false for firedog border request ids and true for other *Border ids', () => {
             expect(cutscene.shouldDrawPanelBorderForImageId('firedogHappyBorder')).toBe(false);
             expect(cutscene.shouldDrawPanelBorderForImageId('someCardBorder')).toBe(true);
             expect(cutscene.shouldDrawPanelBorderForImageId('plain')).toBe(false);
+        });
+
+        it('getBaseIdFromBorderRequestId strips Border suffix', () => {
+            expect(cutscene.getBaseIdFromBorderRequestId('firedogHappyBorder')).toBe('firedogHappy');
+        });
+
+        it('getBorderAssetIdForBaseFiredogId returns themed border asset ids', () => {
+            expect(cutscene.getBorderAssetIdForBaseFiredogId('firedogAngry')).toBe('redBackground');
+            expect(cutscene.getBorderAssetIdForBaseFiredogId('firedogHappy')).toBe('greenBackground');
+            expect(cutscene.getBorderAssetIdForBaseFiredogId('firedogPhew')).toBe('darkBlueBackground');
+            expect(cutscene.getBorderAssetIdForBaseFiredogId('firedogLaugh')).toBe('yellowBackground');
+            expect(cutscene.getBorderAssetIdForBaseFiredogId('firedogNormal')).toBe('blueBackground');
+        });
+
+        it('shouldOverlayCosmeticsForImageId follows firedog emotion image detection', () => {
+            expect(cutscene.shouldOverlayCosmeticsForImageId('firedogHappy')).toBe(true);
+            expect(cutscene.shouldOverlayCosmeticsForImageId('someCardBorder')).toBe(false);
         });
     });
 
@@ -495,15 +726,16 @@ describe('Cutscene', () => {
     });
 
     describe('transitionWithBg', () => {
-        it('removes listeners, runs before, triggers background change, then re-adds listeners and sets bg after delay', () => {
+        it('removes listeners, stops typing audio, runs beforeFade, triggers background change, then re-adds listeners and sets bg after delay', () => {
             jest.useFakeTimers();
 
-            const before = jest.fn();
-            const after = jest.fn();
+            const beforeFade = jest.fn();
+            const onBlack = jest.fn();
 
-            const remSpy = jest.spyOn(cutscene, 'removeEventListeners').mockImplementation(() => { });
-            const addSpy = jest.spyOn(cutscene, 'addEventListeners').mockImplementation(() => { });
-            const bgSpy = jest.spyOn(cutscene, 'cutsceneBackgroundChange');
+            const remSpy = jest.spyOn(cutscene, 'removeEventListeners').mockImplementation(() => {});
+            const addSpy = jest.spyOn(cutscene, 'addEventListeners').mockImplementation(() => {});
+            const stopTypingSpy = jest.spyOn(cutscene, 'stopTypingAudio').mockImplementation(() => {});
+            const bgSpy = jest.spyOn(cutscene, 'cutsceneBackgroundChange').mockImplementation(() => {});
 
             const bgEl = { id: 'myBg' };
             jest.spyOn(document, 'getElementById').mockImplementation((id) => {
@@ -511,10 +743,19 @@ describe('Cutscene', () => {
                 return null;
             });
 
-            cutscene.transitionWithBg(1, 2, 3, 'myBg', 600, before, after);
+            cutscene.transitionWithBg({
+                fadeIn: 1,
+                blackDuration: 2,
+                fadeOut: 3,
+                imageId: 'myBg',
+                onBlackDelayMs: 600,
+                beforeFade,
+                onBlack,
+            });
 
             expect(remSpy).toHaveBeenCalled();
-            expect(before).toHaveBeenCalled();
+            expect(stopTypingSpy).toHaveBeenCalled();
+            expect(beforeFade).toHaveBeenCalled();
             expect(bgSpy).toHaveBeenCalledWith(1, 2, 3);
 
             expect(addSpy).not.toHaveBeenCalled();
@@ -524,15 +765,33 @@ describe('Cutscene', () => {
 
             expect(addSpy).toHaveBeenCalled();
             expect(cutscene.backgroundImage).toBe(bgEl);
-            expect(after).toHaveBeenCalled();
+            expect(onBlack).toHaveBeenCalled();
+        });
 
-            jest.useRealTimers();
+        it('uses default onBlack delay of fadeIn + 100', () => {
+            jest.useFakeTimers();
+
+            const addSpy = jest.spyOn(cutscene, 'addEventListeners').mockImplementation(() => {});
+            const onBlack = jest.fn();
+
+            cutscene.transitionWithBg({
+                fadeIn: 500,
+                blackDuration: 1000,
+                fadeOut: 500,
+                onBlack,
+            });
+
+            jest.advanceTimersByTime(599);
+            expect(addSpy).not.toHaveBeenCalled();
+
+            jest.advanceTimersByTime(1);
+            expect(addSpy).toHaveBeenCalled();
+            expect(onBlack).toHaveBeenCalled();
         });
     });
 
     describe('playEightBitSound', () => {
         beforeEach(() => {
-            cutscene.dialogueText = '';
             cutscene.pause = false;
         });
 
@@ -544,7 +803,7 @@ describe('Cutscene', () => {
                 whisper: true,
             }];
             cutscene.dialogueIndex = 0;
-            cutscene.dialogueText = '(hi)';
+
             cutscene.playEightBitSound('bit1');
 
             expect(game.audioHandler.cutsceneDialogue.playSound).not.toHaveBeenCalled();
@@ -552,21 +811,37 @@ describe('Cutscene', () => {
         });
 
         it('plays sound when not paused', () => {
-            cutscene.dialogueText = 'hi';
+            cutscene.dialogue = [{
+                character: 'A',
+                dialogue: 'hi',
+                images: [],
+                whisper: false,
+            }];
+            cutscene.dialogueIndex = 0;
             cutscene.pause = false;
+
             cutscene.playEightBitSound('bit1');
+
             expect(game.audioHandler.cutsceneDialogue.playSound).toHaveBeenCalledWith('bit1');
         });
 
         it('pauses sound when paused', () => {
-            cutscene.dialogueText = 'hi';
+            cutscene.dialogue = [{
+                character: 'A',
+                dialogue: 'hi',
+                images: [],
+                whisper: false,
+            }];
+            cutscene.dialogueIndex = 0;
             cutscene.pause = true;
+
             cutscene.playEightBitSound('bit1');
+
             expect(game.audioHandler.cutsceneDialogue.pauseSound).toHaveBeenCalledWith('bit1');
         });
     });
 
-    describe('addEventListeners and removeEventListeners (wrapped gating)', () => {
+    describe('addEventListeners and removeEventListeners', () => {
         it('registers and deregisters the four expected listeners and clears wrapped refs to null', () => {
             cutscene.handleKeyDown = jest.fn();
             cutscene.handleKeyUp = jest.fn();
@@ -579,23 +854,18 @@ describe('Cutscene', () => {
             cutscene.addEventListeners();
 
             expect(addSpy).toHaveBeenCalledTimes(4);
-
             expect(typeof cutscene._wrappedKeyDown).toBe('function');
-            expect(cutscene._wrappedKeyUp).toBeTruthy();
+            expect(typeof cutscene._wrappedKeyUp).toBe('function');
             expect(typeof cutscene._wrappedLeftClick).toBe('function');
-            expect(cutscene._wrappedLeftClickUp).toBeTruthy();
+            expect(typeof cutscene._wrappedLeftClickUp).toBe('function');
 
             cutscene.removeEventListeners();
 
             expect(remSpy).toHaveBeenCalledTimes(4);
-
             expect(cutscene._wrappedKeyDown).toBeNull();
             expect(cutscene._wrappedKeyUp).toBeNull();
             expect(cutscene._wrappedLeftClick).toBeNull();
             expect(cutscene._wrappedLeftClickUp).toBeNull();
-
-            addSpy.mockRestore();
-            remSpy.mockRestore();
         });
 
         it('gates all wrapped handlers when pause menu is paused', () => {
@@ -609,7 +879,7 @@ describe('Cutscene', () => {
             cutscene.handleLeftClick = lc;
             cutscene.handleLeftClickUp = lcu;
 
-            const nowSpy = jest.spyOn(performance, 'now').mockReturnValue(9999);
+            jest.spyOn(performance, 'now').mockReturnValue(9999);
 
             game.menu.pause.isPaused = true;
             game.ignoreCutsceneInputUntil = 0;
@@ -625,12 +895,9 @@ describe('Cutscene', () => {
             expect(ku).not.toHaveBeenCalled();
             expect(lc).not.toHaveBeenCalled();
             expect(lcu).not.toHaveBeenCalled();
-
-            cutscene.removeEventListeners();
-            nowSpy.mockRestore();
         });
 
-        it('gates keydown + left click when performance.now() is before ignoreCutsceneInputUntil', () => {
+        it('gates handlers when performance.now() is before ignoreCutsceneInputUntil', () => {
             const kd = jest.fn();
             const lc = jest.fn();
 
@@ -638,7 +905,6 @@ describe('Cutscene', () => {
             cutscene.handleLeftClick = lc;
 
             const nowSpy = jest.spyOn(performance, 'now');
-
             nowSpy.mockReturnValue(1000);
             game.ignoreCutsceneInputUntil = 2000;
 
@@ -649,12 +915,9 @@ describe('Cutscene', () => {
 
             expect(kd).not.toHaveBeenCalled();
             expect(lc).not.toHaveBeenCalled();
-
-            cutscene.removeEventListeners();
-            nowSpy.mockRestore();
         });
 
-        it('allows keydown + left click once performance.now() passes ignoreCutsceneInputUntil', () => {
+        it('allows handlers once performance.now() passes ignoreCutsceneInputUntil', () => {
             const kd = jest.fn();
             const lc = jest.fn();
 
@@ -662,7 +925,6 @@ describe('Cutscene', () => {
             cutscene.handleLeftClick = lc;
 
             const nowSpy = jest.spyOn(performance, 'now');
-
             nowSpy.mockReturnValue(1000);
             game.ignoreCutsceneInputUntil = 2000;
 
@@ -680,15 +942,13 @@ describe('Cutscene', () => {
 
             expect(kd).toHaveBeenCalledTimes(1);
             expect(lc).toHaveBeenCalledTimes(1);
-
-            cutscene.removeEventListeners();
-            nowSpy.mockRestore();
         });
     });
 
     describe('keyboard / click callbacks', () => {
         beforeEach(() => {
             cutscene.dialogue = [{ character: 'A', dialogue: 'hello', images: [] }];
+            jest.spyOn(cutscene, 'addEventListeners').mockImplementation(() => {});
             cutscene.displayDialogue();
             cutscene.isEnterPressed = true;
         });
@@ -704,10 +964,222 @@ describe('Cutscene', () => {
         });
     });
 
-    describe('drawSingleImage', () => {
+    describe('panel helpers', () => {
         let ctx;
 
         beforeEach(() => {
+            ctx = {
+                save: jest.fn(),
+                restore: jest.fn(),
+                beginPath: jest.fn(),
+                closePath: jest.fn(),
+                moveTo: jest.fn(),
+                arcTo: jest.fn(),
+                fill: jest.fn(),
+                stroke: jest.fn(),
+                lineWidth: 0,
+                strokeStyle: '',
+                shadowColor: '',
+                shadowBlur: 0,
+                shadowOffsetX: 0,
+                shadowOffsetY: 0,
+                fillStyle: '',
+            };
+        });
+
+        it('getPanelBorderStrokeColorFromOpts returns border color when provided', () => {
+            expect(cutscene.getPanelBorderStrokeColorFromOpts({ border: { color: '#f00' } })).toBe('#f00');
+        });
+
+        it('getPanelBorderStrokeColorFromOpts returns talking color when talking is true', () => {
+            expect(cutscene.getPanelBorderStrokeColorFromOpts({ border: { talking: true } })).toBe('#FFD000');
+        });
+
+        it('getPanelBorderStrokeColorFromOpts returns default otherwise', () => {
+            expect(cutscene.getPanelBorderStrokeColorFromOpts({})).toBe('#000000');
+        });
+
+        it('drawRoundedPanelBorder draws a rounded border', () => {
+            const roundRectSpy = jest.spyOn(cutscene, 'roundRectPath');
+
+            cutscene.drawRoundedPanelBorder(ctx, 10, 20, 100, 80, { border: { talking: true } });
+
+            expect(ctx.save).toHaveBeenCalled();
+            expect(roundRectSpy).toHaveBeenCalled();
+            expect(ctx.stroke).toHaveBeenCalled();
+            expect(ctx.restore).toHaveBeenCalled();
+            expect(ctx.strokeStyle).toBe('#FFD000');
+        });
+
+        it('drawTextBoxPanel draws rounded textbox panel', () => {
+            const roundRectSpy = jest.spyOn(cutscene, 'roundRectPath');
+
+            cutscene.drawTextBoxPanel(ctx, 15, 20, 200, 96);
+
+            expect(ctx.save).toHaveBeenCalled();
+            expect(roundRectSpy).toHaveBeenCalledWith(ctx, 15, 20, 200, 96, 16);
+            expect(ctx.fill).toHaveBeenCalled();
+            expect(ctx.stroke).toHaveBeenCalled();
+            expect(ctx.restore).toHaveBeenCalled();
+        });
+
+        it('drawTextBox returns early when dontShowTextBoxAndSound is true', () => {
+            const panelSpy = jest.spyOn(cutscene, 'drawTextBoxPanel');
+
+            cutscene.dontShowTextBoxAndSound = true;
+            cutscene.drawTextBox(ctx);
+
+            expect(panelSpy).not.toHaveBeenCalled();
+        });
+
+        it('drawTextBox draws panel at expected coordinates otherwise', () => {
+            const panelSpy = jest.spyOn(cutscene, 'drawTextBoxPanel');
+
+            cutscene.dontShowTextBoxAndSound = false;
+            cutscene.drawTextBox(ctx);
+
+            expect(panelSpy).toHaveBeenCalledWith(
+                ctx,
+                15,
+                game.height - 65,
+                cutscene.textBoxWidth,
+                96
+            );
+        });
+    });
+
+    describe('drawReminder', () => {
+        let ctx;
+
+        beforeEach(() => {
+            ctx = {
+                drawImage: jest.fn(),
+            };
+            cutscene.reminderImage = { id: 'rem' };
+        });
+
+        it('draws reminder while within time window and cutscene is active', () => {
+            cutscene.reminderImageStartTime = 1000;
+            jest.spyOn(performance, 'now').mockReturnValue(2000);
+
+            cutscene.drawReminder(ctx);
+
+            expect(ctx.drawImage).toHaveBeenCalledWith(
+                cutscene.reminderImage,
+                game.width - 500,
+                game.height - 100
+            );
+        });
+
+        it('does not draw reminder outside time window', () => {
+            cutscene.reminderImageStartTime = 1000;
+            jest.spyOn(performance, 'now').mockReturnValue(9000);
+
+            cutscene.drawReminder(ctx);
+
+            expect(ctx.drawImage).not.toHaveBeenCalled();
+        });
+
+        it('does not draw reminder when talkToPenguin or boss talk is active', () => {
+            cutscene.reminderImageStartTime = 1000;
+            jest.spyOn(performance, 'now').mockReturnValue(2000);
+
+            game.talkToPenguin = true;
+            cutscene.drawReminder(ctx);
+            expect(ctx.drawImage).not.toHaveBeenCalled();
+
+            game.talkToPenguin = false;
+            game.boss.talkToBoss = true;
+            cutscene.drawReminder(ctx);
+            expect(ctx.drawImage).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('drawDialogueTextWrapped', () => {
+        let ctx;
+
+        beforeEach(() => {
+            ctx = {
+                fillStyle: '',
+                fillText: jest.fn(),
+                measureText: jest.fn((text) => ({ width: String(text).length * 10 })),
+            };
+        });
+
+        it('renders each typed character', () => {
+            cutscene.dialogue = [{
+                character: 'Firedog',
+                dialogue: 'Test',
+                images: [],
+            }];
+            cutscene.dialogueIndex = 0;
+
+            const fullDialogue = 'Test';
+            const partialText = 'Test';
+            const spans = cutscene.buildColorSpans(fullDialogue);
+
+            cutscene.drawDialogueTextWrapped(
+                ctx,
+                'Firedog: ',
+                fullDialogue,
+                partialText,
+                spans
+            );
+
+            expect(ctx.fillText).toHaveBeenCalledTimes(4);
+        });
+
+        it('wraps onto next line when remaining width is insufficient', () => {
+            cutscene.textBoxWidth = 120;
+            cutscene.dialogue = [{
+                character: 'Firedog',
+                dialogue: 'hello world',
+                images: [],
+            }];
+            cutscene.dialogueIndex = 0;
+
+            cutscene.drawDialogueTextWrapped(
+                ctx,
+                'Firedog: ',
+                'hello world',
+                'hello world',
+                []
+            );
+
+            const yValues = ctx.fillText.mock.calls.map(call => call[2]);
+            expect(new Set(yValues).size).toBeGreaterThan(1);
+        });
+
+        it('does not color punctuation characters', () => {
+            cutscene.characterColors = { Firedog: 'yellow' };
+            cutscene.dialogue = [{
+                character: 'Narrator',
+                dialogue: 'Firedog!',
+                images: [],
+            }];
+            cutscene.dialogueIndex = 0;
+
+            const spans = cutscene.buildColorSpans('Firedog!');
+
+            cutscene.drawDialogueTextWrapped(
+                ctx,
+                'Narrator: ',
+                'Firedog!',
+                'Firedog!',
+                spans
+            );
+
+            const punctuationCallIndex = ctx.fillText.mock.calls.findIndex(call => call[0] === '!');
+            expect(punctuationCallIndex).toBeGreaterThan(-1);
+        });
+    });
+
+    describe('drawSingleImage / drawImages', () => {
+        let ctx;
+
+        beforeEach(() => {
+            skinsAndCosmetics.drawWithOptionalHue.mockClear();
+
             ctx = {
                 save: jest.fn(),
                 restore: jest.fn(),
@@ -720,7 +1192,7 @@ describe('Cutscene', () => {
                 fillText: jest.fn(),
                 measureText: jest.fn().mockReturnValue({ width: 5 }),
                 stroke: jest.fn(),
-                translate: jest.fn(),
+                fill: jest.fn(),
                 lineWidth: 1,
                 strokeStyle: '',
                 shadowColor: '',
@@ -732,18 +1204,19 @@ describe('Cutscene', () => {
             };
 
             jest.spyOn(document, 'getElementById').mockImplementation((id) => {
-                // base firedog
                 if (id === 'firedogHappy') return { id, naturalWidth: 100, naturalHeight: 100 };
-                // overlays
                 if (id === 'head_hatOutfit_overlay') return { id };
                 if (id === 'eyes_thugSunglassesOutfit_overlay') return { id };
-                // border assets
                 if (id === 'blueBackground') return { id };
                 if (id === 'darkBlueBackground') return { id };
                 if (id === 'greenBackground') return { id };
                 if (id === 'redBackground') return { id };
                 if (id === 'yellowBackground') return { id };
-                // generic
+                if (id === 'angryIcon') return { id };
+                if (id === 'sweatDrop') return { id };
+                if (id === 'questionMark') return { id };
+                if (id === 'exclamationMark') return { id };
+                if (id === 'exclamationAndQuestionMark') return { id };
                 return { id, naturalWidth: 100, naturalHeight: 100 };
             });
 
@@ -759,7 +1232,7 @@ describe('Cutscene', () => {
         });
 
         it('for a firedog border request id, delegates to drawFiredogBorderComposite and returns', () => {
-            const spy = jest.spyOn(cutscene, 'drawFiredogBorderComposite').mockImplementation(() => { });
+            const spy = jest.spyOn(cutscene, 'drawFiredogBorderComposite').mockImplementation(() => {});
 
             cutscene.drawSingleImage(ctx, {
                 id: 'firedogHappyBorder',
@@ -779,12 +1252,11 @@ describe('Cutscene', () => {
                 'firedogHappy',
                 {}
             );
-
-            expect(ctx.drawImage).not.toHaveBeenCalledWith(expect.objectContaining({ id: 'firedogHappyBorder' }), 10, 20, 30, 40);
         });
 
-        it('overlays cosmetics and applies per-slot chroma hue via drawWithOptionalHue when drawing emotion image', () => {
-            cutscene.isCharacterBlackAndWhite = false;
+        it('draws standard image, optional panel border, cosmetic overlays, and effect layers', () => {
+            const borderSpy = jest.spyOn(cutscene, 'drawRoundedPanelBorder').mockImplementation(() => {});
+            const effectSpy = jest.spyOn(cutscene, 'drawFiredogEffectLayers').mockImplementation(() => {});
 
             cutscene.drawSingleImage(ctx, {
                 id: 'firedogHappy',
@@ -792,17 +1264,31 @@ describe('Cutscene', () => {
                 y: 20,
                 width: 30,
                 height: 40,
+                effectKey: 'firedogHeadache',
             });
 
             expect(ctx.drawImage).toHaveBeenCalledWith(expect.objectContaining({ id: 'firedogHappy' }), 10, 20, 30, 40);
             expect(skinsAndCosmetics.drawWithOptionalHue).toHaveBeenCalledTimes(2);
-
-            const calls = skinsAndCosmetics.drawWithOptionalHue.mock.calls;
-            const hues = calls.map(c => c[1]?.hueDeg).sort((a, b) => a - b);
-            expect(hues).toEqual([120, 240]);
+            expect(effectSpy).toHaveBeenCalled();
+            expect(borderSpy).not.toHaveBeenCalled();
         });
 
-        it('when isCharacterBlackAndWhite is true, drawWithOptionalHue receives baseFilter grayscale', () => {
+        it('draws panel border for non-firedog Border ids', () => {
+            const borderSpy = jest.spyOn(cutscene, 'drawRoundedPanelBorder').mockImplementation(() => {});
+
+            cutscene.drawSingleImage(ctx, {
+                id: 'someCardBorder',
+                x: 1,
+                y: 2,
+                width: 3,
+                height: 4,
+                opts: { border: { talking: true } },
+            });
+
+            expect(borderSpy).toHaveBeenCalledWith(ctx, 1, 2, 3, 4, { border: { talking: true } });
+        });
+
+        it('when isCharacterBlackAndWhite is true, drawWithOptionalHue receives grayscale baseFilter', () => {
             cutscene.isCharacterBlackAndWhite = true;
 
             cutscene.drawSingleImage(ctx, {
@@ -818,7 +1304,7 @@ describe('Cutscene', () => {
         });
 
         it('drawImages safely handles non-array and draws each image in array', () => {
-            const spy = jest.spyOn(cutscene, 'drawSingleImage').mockImplementation(() => { });
+            const spy = jest.spyOn(cutscene, 'drawSingleImage').mockImplementation(() => {});
 
             cutscene.drawImages(ctx, null);
             cutscene.drawImages(ctx, 'nope');
@@ -832,22 +1318,152 @@ describe('Cutscene', () => {
         });
     });
 
+    describe('drawFiredogEffectLayers', () => {
+        let ctx;
+
+        beforeEach(() => {
+            ctx = {
+                save: jest.fn(),
+                restore: jest.fn(),
+                drawImage: jest.fn(),
+                globalAlpha: 1,
+            };
+
+            jest.spyOn(document, 'getElementById').mockImplementation((id) => ({ id }));
+        });
+
+        it('draws each effect layer with original size when scale is 1', () => {
+            cutscene.drawFiredogEffectLayers(
+                ctx,
+                'firedogAngry',
+                { x: 10, y: 20, width: 30, height: 40, opacity: 0.5 }
+            );
+
+            expect(ctx.save).toHaveBeenCalled();
+            expect(ctx.drawImage).toHaveBeenCalledWith(expect.objectContaining({ id: 'angryIcon' }), 10, 20, 30, 40);
+            expect(ctx.restore).toHaveBeenCalled();
+        });
+
+        it('applies scaled drawing when layerScaleFn returns non-1', () => {
+            cutscene.drawFiredogEffectLayers(
+                ctx,
+                'firedogSurprised',
+                { x: 10, y: 20, width: 100, height: 80, opacity: 1 },
+                () => 0.5
+            );
+
+            expect(ctx.drawImage).toHaveBeenCalledWith(
+                expect.objectContaining({ id: 'exclamationMark' }),
+                35,
+                40,
+                50,
+                40
+            );
+        });
+    });
+
+    describe('drawFiredogBorderComposite', () => {
+        let ctx;
+
+        beforeEach(() => {
+            skinsAndCosmetics.drawWithOptionalHue.mockClear();
+
+            ctx = {
+                save: jest.fn(),
+                restore: jest.fn(),
+                drawImage: jest.fn(),
+                clip: jest.fn(),
+                beginPath: jest.fn(),
+                closePath: jest.fn(),
+                moveTo: jest.fn(),
+                arcTo: jest.fn(),
+                stroke: jest.fn(),
+                fill: jest.fn(),
+                filter: 'none',
+                globalAlpha: 1,
+                lineWidth: 0,
+                strokeStyle: '',
+                shadowColor: '',
+                shadowBlur: 0,
+                shadowOffsetX: 0,
+                shadowOffsetY: 0,
+            };
+
+            jest.spyOn(document, 'getElementById').mockImplementation((id) => {
+                if (id === 'greenBackground') return { id };
+                if (id === 'firedogHappy') return { id, naturalWidth: 100, naturalHeight: 100, width: 100, height: 100 };
+                if (id === 'head_hatOutfit_overlay') return { id };
+                if (id === 'eyes_thugSunglassesOutfit_overlay') return { id };
+                if (id === 'questionMark') return { id };
+                if (id === 'yellowLines') return { id };
+                return null;
+            });
+
+            game.menu.wardrobe.getCurrentCosmeticKey = jest.fn((slot) => {
+                if (slot === 'head') return 'hatOutfit';
+                if (slot === 'eyes') return 'thugSunglassesOutfit';
+                return 'none';
+            });
+            game.menu.wardrobe.getCurrentCosmeticsChromaState = jest.fn(() => ({
+                head: { hatOutfit: 120 },
+                eyes: { thugSunglassesOutfit: 240 },
+            }));
+        });
+
+        it('returns early when base element is missing', () => {
+            document.getElementById.mockImplementation((id) => {
+                if (id === 'greenBackground') return { id };
+                return null;
+            });
+
+            cutscene.drawFiredogBorderComposite(
+                ctx,
+                'firedogHappyBorder',
+                { x: 0, y: 0, width: 100, height: 100 },
+                1
+            );
+
+            expect(ctx.drawImage).not.toHaveBeenCalled();
+        });
+
+        it('draws border asset, panel border, base image, cosmetic overlays, and effect layers', () => {
+            const borderSpy = jest.spyOn(cutscene, 'drawRoundedPanelBorder').mockImplementation(() => {});
+            const effectSpy = jest.spyOn(cutscene, 'drawFiredogEffectLayers').mockImplementation(() => {});
+
+            cutscene.drawFiredogBorderComposite(
+                ctx,
+                'firedogHappyBorder',
+                { x: 10, y: 20, width: 100, height: 100 },
+                0.8,
+                'firedogCurious',
+                { border: { talking: true } }
+            );
+
+            expect(ctx.drawImage).toHaveBeenCalledWith(expect.objectContaining({ id: 'greenBackground' }), 10, 20, 100, 100);
+            expect(borderSpy).toHaveBeenCalledWith(ctx, 10, 20, 100, 100, { border: { talking: true } });
+            expect(skinsAndCosmetics.drawWithOptionalHue).toHaveBeenCalledTimes(2);
+            expect(effectSpy).toHaveBeenCalled();
+            expect(ctx.restore).toHaveBeenCalled();
+        });
+    });
+
     describe('draw', () => {
-        let context, bgImg, charImg, reminderImg, textBoxImg;
+        let context;
+        let bgImg;
+        let charImg;
+        let reminderImg;
 
         beforeEach(() => {
             bgImg = { src: 'bg' };
             charImg = { src: 'char' };
             reminderImg = { src: 'rem' };
-            textBoxImg = { src: 'box' };
 
             jest.spyOn(document, 'getElementById').mockImplementation(id => {
                 switch (id) {
                     case 'bg': return bgImg;
                     case 'charSprite': return charImg;
                     case 'reminderToSkipWithTab': return reminderImg;
-                    case 'textBox': return textBoxImg;
-                    default: return { src: id, naturalWidth: 100, naturalHeight: 100 };
+                    default: return { id, src: id, naturalWidth: 100, naturalHeight: 100 };
                 }
             });
 
@@ -856,16 +1472,17 @@ describe('Cutscene', () => {
             context = {
                 save: jest.fn(),
                 restore: jest.fn(),
+                translate: jest.fn(),
                 drawImage: jest.fn(),
                 fillText: jest.fn(),
-                measureText: jest.fn().mockReturnValue({ width: 5 }),
-                translate: jest.fn(),
+                measureText: jest.fn((text) => ({ width: String(text).length * 5 })),
                 beginPath: jest.fn(),
                 closePath: jest.fn(),
                 moveTo: jest.fn(),
                 arcTo: jest.fn(),
                 clip: jest.fn(),
                 stroke: jest.fn(),
+                fill: jest.fn(),
 
                 _filter: '',
                 set filter(v) { this._filter = v; },
@@ -899,47 +1516,9 @@ describe('Cutscene', () => {
 
             game.shakeActive = false;
             game.menu.pause.isPaused = false;
-
             game.cutsceneActive = true;
             game.talkToPenguin = false;
             game.boss.talkToBoss = false;
-        });
-
-        it('passes wrapped lines into characterColorLogic based on characterLimit', () => {
-            const longText = 'aaa bbbbbb ccc dddd';
-            cutscene.characterLimit = 8;
-
-            cutscene.dialogue = [{
-                character: 'Firedog',
-                dialogue: longText,
-                images: [],
-            }];
-            cutscene.dialogueIndex = 0;
-            cutscene.textIndex = longText.length;
-            cutscene.fullWords = longText.split(' ');
-
-            cutscene.lastSoundPlayed = true;
-
-            const ctx = {
-                ...context,
-                set filter(v) { },
-                get filter() { return 'none'; },
-                set globalAlpha(v) { },
-                get globalAlpha() { return 1; },
-            };
-
-            const colorSpy = jest.spyOn(cutscene, 'characterColorLogic');
-
-            cutscene.draw(ctx);
-
-            expect(colorSpy).toHaveBeenCalledWith(
-                ctx,
-                ['aaa bbbbbb', 'ccc dddd'],
-                expect.any(Array),
-                'Firedog: ',
-                longText,
-                expect.any(Array),
-            );
         });
 
         it('draws background, shakes when game.shakeActive and not paused, then restores filter', () => {
@@ -989,7 +1568,7 @@ describe('Cutscene', () => {
             expect(post).not.toHaveBeenCalled();
         });
 
-        it('renders character image, textBox, reminder image, and final sounds', () => {
+        it('draws images, textbox panel, reminder image, and final sounds', () => {
             cutscene.backgroundImage = null;
             cutscene.dontShowTextBoxAndSound = false;
 
@@ -999,44 +1578,29 @@ describe('Cutscene', () => {
 
             cutscene.lastSoundPlayed = false;
             cutscene.lastSound2Played = false;
-
             cutscene.textIndex = 999;
 
-            const play = game.audioHandler.cutsceneDialogue.playSound;
+            const textBoxSpy = jest.spyOn(cutscene, 'drawTextBox');
+            const reminderSpy = jest.spyOn(cutscene, 'drawReminder');
 
             cutscene.draw(context);
 
             expect(context.drawImage).toHaveBeenCalledWith(charImg, 10, 20, 30, 40);
-            expect(context.drawImage).toHaveBeenCalledWith(
-                textBoxImg,
-                15,
-                game.height - 70,
-                cutscene.textBoxWidth,
-                96
-            );
-            expect(context.drawImage).toHaveBeenCalledWith(
-                reminderImg,
-                game.width - 500,
-                game.height - 100
-            );
-
-            expect(play).toHaveBeenCalledWith('bit1', false, true, true);
-            expect(play).toHaveBeenCalledWith('bit2');
+            expect(textBoxSpy).toHaveBeenCalledWith(context);
+            expect(reminderSpy).toHaveBeenCalledWith(context);
+            expect(game.audioHandler.cutsceneDialogue.playSound).toHaveBeenCalledWith('bit1', false, true, true);
+            expect(game.audioHandler.cutsceneDialogue.playSound).toHaveBeenCalledWith('bit2');
         });
 
-        it('skips textBox when dontShowTextBoxAndSound is true', () => {
-            cutscene.dontShowTextBoxAndSound = true;
-            jest.spyOn(performance, 'now').mockReturnValue(
-                cutscene.reminderImageStartTime + 2000
-            );
+        it('stops typing audio once when dialogueIndex is past the dialogue length', () => {
+            cutscene.dialogueIndex = 10;
+            const stopSpy = jest.spyOn(cutscene, 'stopTypingAudio').mockImplementation(() => {});
 
-            cutscene.textIndex = 999;
+            cutscene.draw(context);
             cutscene.draw(context);
 
-            const calledWithTextBox = context.drawImage.mock.calls.some(
-                args => args[0] === textBoxImg
-            );
-            expect(calledWithTextBox).toBe(false);
+            expect(stopSpy).toHaveBeenCalledTimes(1);
+            expect(cutscene._stoppedAtDialogueEnd).toBe(true);
         });
 
         it('does not draw reminder image after timeout (>= 7000ms)', () => {
@@ -1079,8 +1643,6 @@ describe('Cutscene', () => {
                 images: [],
             }];
             cutscene.dialogueIndex = 0;
-            cutscene.fullWords = ['Hello'];
-            cutscene.fullWordsColor = ['Hello'];
             cutscene.textIndex = 2;
 
             game.enterDuringBackgroundTransition = false;
@@ -1091,15 +1653,13 @@ describe('Cutscene', () => {
             expect(cutscene.textIndex).toBe(1);
         });
 
-        it('plays bit1 via playEightBitSound when typing and not paused menu', () => {
+        it('plays bit1 via playEightBitSound when typing and menu is not paused', () => {
             cutscene.dialogue = [{
                 character: 'Firedog',
                 dialogue: 'Hello',
                 images: [],
             }];
             cutscene.dialogueIndex = 0;
-            cutscene.fullWords = ['Hello'];
-            cutscene.fullWordsColor = ['Hello'];
             cutscene.textIndex = 0;
 
             game.enterDuringBackgroundTransition = true;
@@ -1126,7 +1686,7 @@ describe('Cutscene', () => {
                 .toHaveBeenCalledWith('bit1', false, true, true);
         });
 
-        it('ellipsis followed by only terminal punctuation triggers dot-pause behavior', () => {
+        it('ellipsis followed by terminal punctuation triggers dot-pause behavior', () => {
             const dialogue = 'Why...? Next';
 
             cutscene.dialogue = [{
@@ -1135,9 +1695,6 @@ describe('Cutscene', () => {
                 images: [],
             }];
             cutscene.dialogueIndex = 0;
-            cutscene.fullWords = dialogue.split(' ');
-            cutscene.fullWordsColor = dialogue.split(' ');
-
             cutscene.textIndex = dialogue.indexOf('?');
 
             game.enterDuringBackgroundTransition = true;
@@ -1157,13 +1714,10 @@ describe('Cutscene', () => {
             expect(cutscene.isEnterPressed).toBe(false);
         });
 
-        it('partial ends with "..." and next char is non-terminal can trigger dot-pause behavior', () => {
+        it('partial ending with "..." and followed by non-terminal text triggers dot-pause behavior', () => {
             const dialogue = 'Wait... next';
             cutscene.dialogue = [{ character: 'Firedog', dialogue, images: [] }];
             cutscene.dialogueIndex = 0;
-            cutscene.fullWords = dialogue.split(' ');
-            cutscene.fullWordsColor = dialogue.split(' ');
-
             cutscene.textIndex = dialogue.indexOf('...') + 2;
 
             cutscene.lastSoundPlayed = false;
@@ -1178,6 +1732,21 @@ describe('Cutscene', () => {
             expect(spy).toHaveBeenCalledWith('bit2');
             expect(cutscene.pause).toBe(true);
             expect(cutscene.continueDialogue).toBe(true);
+        });
+
+        it('rebuilds cached spans when dialogueIndex changes', () => {
+            cutscene.dialogue = [
+                { character: 'Firedog', dialogue: 'Hello Firedog', images: [] },
+                { character: 'A', dialogue: 'Bye', images: [] },
+            ];
+            cutscene.dialogueIndex = 1;
+            cutscene.currentSpansForIndex = 0;
+            cutscene.textIndex = 1;
+
+            cutscene.draw(context);
+
+            expect(cutscene.currentSpansForIndex).toBe(1);
+            expect(Array.isArray(cutscene.currentColorSpans)).toBe(true);
         });
     });
 });

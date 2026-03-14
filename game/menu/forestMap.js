@@ -9,8 +9,8 @@ import {
 } from '../config/skinsAndCosmetics.js';
 import { BaseMenu } from './baseMenu.js';
 import {
-    Map1Cutscene, Map2Cutscene, Map3Cutscene, Map4Cutscene, Map5Cutscene, Map6Cutscene, Map7Cutscene,
-    BonusMap1Cutscene, BonusMap2Cutscene, BonusMap3Cutscene
+    Map1StartCutscene, Map2StartCutscene, Map3StartCutscene, Map4StartCutscene, Map5StartCutscene, Map6StartCutscene, Map7StartCutscene,
+    BonusMap1StartCutscene, BonusMap2StartCutscene, BonusMap3StartCutscene
 } from '../cutscene/storyCutscenes.js';
 import { Map1, Map2, Map3, Map4, Map5, Map6, Map7, BonusMap1, BonusMap2, BonusMap3 } from '../background/background.js';
 import { SavingAnimation, SavingBookAnimation } from '../animations/savingAnimation.js';
@@ -107,16 +107,16 @@ export class ForestMapMenu extends BaseMenu {
         }
 
         const mapOptions = [
-            { Map: Map1, maxDistance: 200, winningCoins: 230, environment: null, Cutscene: Map1Cutscene },
-            { Map: Map2, maxDistance: 240, winningCoins: 270, environment: null, Cutscene: Map2Cutscene },
-            { Map: Map3, maxDistance: 270, winningCoins: 200, environment: 'underwater', Cutscene: Map3Cutscene },
-            { Map: Map4, maxDistance: 240, winningCoins: 280, environment: null, Cutscene: Map4Cutscene },
-            { Map: Map5, maxDistance: 250, winningCoins: 300, environment: null, Cutscene: Map5Cutscene },
-            { Map: Map6, maxDistance: 100, winningCoins: 100, environment: null, Cutscene: Map6Cutscene },
-            { Map: Map7, maxDistance: 9999999, winningCoins: 0, environment: null, Cutscene: Map7Cutscene },
-            { Map: BonusMap1, maxDistance: 9999999, winningCoins: 0, environment: 'ice', Cutscene: BonusMap1Cutscene },
-            { Map: BonusMap2, maxDistance: 250, winningCoins: 0, environment: null, Cutscene: BonusMap2Cutscene },
-            { Map: BonusMap3, maxDistance: 250, winningCoins: 0, environment: 'space', Cutscene: BonusMap3Cutscene },
+            { Map: Map1, maxDistance: 200, winningCoins: 230, environment: null, Cutscene: Map1StartCutscene },
+            { Map: Map2, maxDistance: 240, winningCoins: 270, environment: null, Cutscene: Map2StartCutscene },
+            { Map: Map3, maxDistance: 270, winningCoins: 200, environment: 'underwater', Cutscene: Map3StartCutscene },
+            { Map: Map4, maxDistance: 240, winningCoins: 280, environment: null, Cutscene: Map4StartCutscene },
+            { Map: Map5, maxDistance: 250, winningCoins: 300, environment: null, Cutscene: Map5StartCutscene },
+            { Map: Map6, maxDistance: 100, winningCoins: 100, environment: null, Cutscene: Map6StartCutscene },
+            { Map: Map7, maxDistance: 9999999, winningCoins: 0, environment: null, Cutscene: Map7StartCutscene },
+            { Map: BonusMap1, maxDistance: 9999999, winningCoins: 0, environment: 'ice', Cutscene: BonusMap1StartCutscene },
+            { Map: BonusMap2, maxDistance: 250, winningCoins: 0, environment: null, Cutscene: BonusMap2StartCutscene },
+            { Map: BonusMap3, maxDistance: 9999999, winningCoins: 0, environment: 'space', Cutscene: BonusMap3StartCutscene },
         ];
 
         const entry = mapOptions[circleIndex];

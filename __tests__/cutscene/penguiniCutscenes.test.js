@@ -88,7 +88,7 @@ describe('PenguiniCutscene & subclasses', () => {
                 { dialogue: "That's good enough, give me that!" },
                 { dialogue: "Last line." }
             ];
-            cutscene.dialogueIndex = 1; // cash-out dialogue
+            cutscene.dialogueIndex = 1;
             cutscene.textIndex = cutscene.dialogue[1].dialogue.length;
             cutscene.lastSound2Played = true;
             cutscene.continueDialogue = false;
@@ -259,7 +259,7 @@ describe('PenguiniCutscene & subclasses', () => {
         });
 
         it('does not skip forward when already past the coin-check dialogue', () => {
-            cutscene.dialogueIndex = 1;  // coin-check index
+            cutscene.dialogueIndex = 1;
             fading.fadeInAndOut.mockClear();
             cutscene.handleKeyDown({ key: 'Tab' });
             expect(fading.fadeInAndOut).not.toHaveBeenCalled();
@@ -402,7 +402,7 @@ describe('PenguiniCutscene & subclasses', () => {
         it('Map1 stops after its initial 13 entries', () => {
             game.currentMap = 'Map1';
             const m1 = new Map1PenguinIngameCutscene(game);
-            expect(m1.dialogue.length).toBe(30);
+            expect(m1.dialogue.length).toBe(13);
         });
 
         it('Map2 stops after its initial 15 entries', () => {
@@ -429,10 +429,10 @@ describe('PenguiniCutscene & subclasses', () => {
             expect(m5.dialogue.length).toBe(20);
         });
 
-        it('Map6 stops after its initial 11 entries', () => {
+        it('Map6 stops after its initial 9 entries', () => {
             game.currentMap = 'Map6';
             const m6 = new Map6PenguinIngameCutscene(game);
-            expect(m6.dialogue.length).toBe(11);
+            expect(m6.dialogue.length).toBe(9);
         });
     });
 
@@ -446,22 +446,22 @@ describe('PenguiniCutscene & subclasses', () => {
             jest.restoreAllMocks();
         });
 
-        it('BonusMap1 stops after its initial 11 entries', () => {
+        it('BonusMap1 stops after its initial 22 entries', () => {
             game.currentMap = 'BonusMap1';
             const m = new BonusMap1PenguinIngameCutscene(game);
-            expect(m.dialogue.length).toBe(11);
+            expect(m.dialogue.length).toBe(22);
         });
 
-        it('BonusMap2 stops after its initial 11 entries', () => {
+        it('BonusMap2 stops after its initial 13 entries', () => {
             game.currentMap = 'BonusMap2';
             const m = new BonusMap2PenguinIngameCutscene(game);
-            expect(m.dialogue.length).toBe(11);
+            expect(m.dialogue.length).toBe(13);
         });
 
-        it('BonusMap3 stops after its initial 11 entries', () => {
+        it('BonusMap3 stops after its initial 14 entries', () => {
             game.currentMap = 'BonusMap3';
             const m = new BonusMap3PenguinIngameCutscene(game);
-            expect(m.dialogue.length).toBe(11);
+            expect(m.dialogue.length).toBe(14);
         });
     });
 

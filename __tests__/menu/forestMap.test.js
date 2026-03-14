@@ -1,9 +1,9 @@
 import { ForestMapMenu } from '../../game/menu/forestMap.js';
 import { isLocalNight } from '../../game/config/timeOfDay.js';
 import {
-    Map3Cutscene,
-    BonusMap1Cutscene,
-    BonusMap3Cutscene,
+    Map3StartCutscene,
+    BonusMap1StartCutscene,
+    BonusMap3StartCutscene,
 } from '../../game/cutscene/storyCutscenes.js';
 import {
     Map1,
@@ -59,16 +59,16 @@ jest.mock('../../game/cutscene/storyCutscenes.js', () => {
         }));
 
     return {
-        Map1Cutscene: makeCutscene('Map1Cutscene'),
-        Map2Cutscene: makeCutscene('Map2Cutscene'),
-        Map3Cutscene: makeCutscene('Map3Cutscene'),
-        Map4Cutscene: makeCutscene('Map4Cutscene'),
-        Map5Cutscene: makeCutscene('Map5Cutscene'),
-        Map6Cutscene: makeCutscene('Map6Cutscene'),
-        Map7Cutscene: makeCutscene('Map7Cutscene'),
-        BonusMap1Cutscene: makeCutscene('BonusMap1Cutscene'),
-        BonusMap2Cutscene: makeCutscene('BonusMap2Cutscene'),
-        BonusMap3Cutscene: makeCutscene('BonusMap3Cutscene'),
+        Map1StartCutscene: makeCutscene('Map1StartCutscene'),
+        Map2StartCutscene: makeCutscene('Map2StartCutscene'),
+        Map3StartCutscene: makeCutscene('Map3StartCutscene'),
+        Map4StartCutscene: makeCutscene('Map4StartCutscene'),
+        Map5StartCutscene: makeCutscene('Map5StartCutscene'),
+        Map6StartCutscene: makeCutscene('Map6StartCutscene'),
+        Map7StartCutscene: makeCutscene('Map7StartCutscene'),
+        BonusMap1StartCutscene: makeCutscene('BonusMap1StartCutscene'),
+        BonusMap2StartCutscene: makeCutscene('BonusMap2StartCutscene'),
+        BonusMap3StartCutscene: makeCutscene('BonusMap3StartCutscene'),
     };
 });
 
@@ -355,8 +355,8 @@ describe('ForestMapMenu', () => {
 
                 menu.handleMenuSelection();
 
-                expect(BonusMap3Cutscene).toHaveBeenCalledWith(mockGame);
-                const cutsceneInstance = BonusMap3Cutscene.mock.results[0].value;
+                expect(BonusMap3StartCutscene).toHaveBeenCalledWith(mockGame);
+                const cutsceneInstance = BonusMap3StartCutscene.mock.results[0].value;
                 expect(mockGame.startCutscene).toHaveBeenCalledWith(cutsceneInstance);
                 expect(cutsceneInstance.displayDialogue).toHaveBeenCalled();
 
@@ -849,8 +849,8 @@ describe('ForestMapMenu', () => {
             expect(mockGame.maxDistance).toBe(270);
             expect(mockGame.winningCoins).toBe(200);
 
-            expect(Map3Cutscene).toHaveBeenCalledWith(mockGame);
-            const cutsceneInstance = Map3Cutscene.mock.results[0].value;
+            expect(Map3StartCutscene).toHaveBeenCalledWith(mockGame);
+            const cutsceneInstance = Map3StartCutscene.mock.results[0].value;
             expect(mockGame.startCutscene).toHaveBeenCalledWith(cutsceneInstance);
             expect(cutsceneInstance.displayDialogue).toHaveBeenCalled();
 
@@ -872,8 +872,8 @@ describe('ForestMapMenu', () => {
             expect(mockGame.maxDistance).toBe(9999999);
             expect(mockGame.winningCoins).toBe(0);
 
-            expect(BonusMap1Cutscene).toHaveBeenCalledWith(mockGame);
-            const cutsceneInstance = BonusMap1Cutscene.mock.results[0].value;
+            expect(BonusMap1StartCutscene).toHaveBeenCalledWith(mockGame);
+            const cutsceneInstance = BonusMap1StartCutscene.mock.results[0].value;
             expect(mockGame.startCutscene).toHaveBeenCalledWith(cutsceneInstance);
             expect(cutsceneInstance.displayDialogue).toHaveBeenCalled();
 

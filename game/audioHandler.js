@@ -193,12 +193,20 @@ export class CutsceneSFXAudioHandler extends AudioHandler {
       walkingCutsceneSound: 'walkingCutsceneSound',
       slashSound: 'slashSound',
       dreamSound: 'dreamSound',
+      flashbackStart: 'flashbackStart',
+      flashbackEnd: 'flashbackEnd',
+      insertingCrypticToken: 'insertingCrypticToken',
       cutsceneMapOpening: 'cutsceneMapOpening',
       waterSplashSound: 'waterSplashSound',
       sorcererEnteringMindSound: 'sorcererEnteringMindSound',
       sorcererTeleportBackSound: 'sorcererTeleportBackSound',
       sorcererWaterSpellSound: 'sorcererWaterSpellSound',
+      sorcererDoubleJumpSpellSound: 'sorcererDoubleJumpSpellSound',
       submarineRevving: 'submarineRevving',
+      tremorSound: 'tremorSound',
+      insidePortalSound: 'insidePortalSound',
+      fallingOutOfPortalSound: 'fallingOutOfPortalSound',
+      touchingPortalSound: 'touchingPortalSound',
     };
     this.initializeSounds();
   }
@@ -213,6 +221,10 @@ export class CutsceneMusicAudioHandler extends AudioHandler {
       exaleDeskant: 'exaleDeskant',
       inTheFuture: 'inTheFuture',
       planetsParalysis: 'planetsParalysis',
+      iSawSomethingAgain: 'iSawSomethingAgain',
+      ohNo: 'ohNo',
+      thePowerOfDarkness: 'thePowerOfDarkness',
+      downADarkPath: 'downADarkPath',
       blizzardWindFireplace: 'blizzardWindFireplace',
       echoesOfTime: 'echoesOfTime',
       windBreezeSound: 'windBreezeSound',
@@ -223,6 +235,11 @@ export class CutsceneMusicAudioHandler extends AudioHandler {
       bubblingVolcanoLavaSound: 'bubblingVolcanoLavaSound',
       groundShakingSound: 'groundShakingSound',
       gta4Theme: 'gta4Theme',
+      darkTensionRisingSound: 'darkTensionRisingSound',
+      tundraSuite: 'tundraSuite',
+      portalTremorSound: 'portalTremorSound',
+      hidingInTheDarkSuspense: 'hidingInTheDarkSuspense',
+      portalHummingSound: 'portalHummingSound',
     };
     this.initializeSounds();
   }
@@ -274,7 +291,6 @@ export class FiredogAudioHandler extends AudioHandler {
       gettingHit: 'gettingHit',
       stunnedSound: 'stunnedSound',
       energyExhaustedSound: 'energyExhaustedSound',
-      dreamSoundInGame: 'dreamSoundInGame',
       invisibleInSFX: 'invisibleInSFX',
       invisibleOutSFX: 'invisibleOutSFX',
       dash1: 'dash1',

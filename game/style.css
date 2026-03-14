@@ -140,11 +140,19 @@ body {
         /* map4 cutscene images */
             #map4OutsideCabin, #map4beginningForestView, #map4footsteps, #map4CloningLab, #map4hospitalBedEmpty, #map4ElyvorgFlames, #map4EvilElyvorg, #map4CabinEndCutscene, 
         /* map5 cutscene images */
-            #map5insideCabin, 
+            #map5insideCabin, #cutsceneOperatingBed,
         /* map6 cutscene images */
-            #map6VolcanoWalkUp, #map6insideCaveLava, #map6insideCaveLavaEarthquake, #map6insideCaveLavaEarthquakeHat, #map6insideCaveLavaEarthquakeCholo, #map6insideCaveLavaEarthquakeZabka, #map6insideCaveLavaEarthquakeShiny, #map6elyvorgTokenPlaceFind, #map6elyvorgTokenPlace, #map6elyvorgTokenPlaceActive, #map6stone, #map6stone2, #map6stone3, 
+            #map6InsideCabin, #map6VolcanoWalkUp, #map6insideCaveLava, #map6insideCaveLavaEarthquake, #map6insideCaveLavaEarthquakeHat, #map6insideCaveLavaEarthquakeCholo, 
+            #map6insideCaveLavaEarthquakeZabka, #map6insideCaveLavaEarthquakeShiny, #map6elyvorgTokenPlaceFind, #map6elyvorgTokenPlace, #map6elyvorgTokenPlaceActive,
+            #map6stone, #map6stone2, #map6stone3,
+        /* other cutscene images */
+             #bonusMap1CaveEntrance, #bonusMap1InsideCabin, #bonusMap1Village, #theWoodsForest, #bonusMap2GroundFissures, #bonusMap2InsideCabin, #bonusMap2InsideFissures, #bonusMap2FissureRockCloseUp,
+             #bonusMap2FissureRockCloseUp2, #bonusMap2FissurePortal, #bonusMap2WritingsEnergyLeak, #bonusMap2PortalEnergy, #bonusMap2Tsunami, #bonusMap2OutsideCabinWindow,
+             #bonusMap3PortalEnergy, #bonusMap3ForestCloseUp, #bonusMap3ForestCloseUp2, #bonusMap3InsidePortal, #bonusMap3InsideCabin, #bonusMap3AnchoredPortal,
+             #bonusMap3AnchoredPortalDestroyed, #bonusMap3PortalDestroyed, 
+             
     /* normal images */
-    #scrollLetterMessageGaladon, #scrollLetterMessageGaladonClosed, #crypticTokenShining, #textBox, #reminderToSkipWithTab, #enterToTalkToPenguini, 
+    #scrollLetterMessageGaladon, #crypticTokenShining, #reminderToSkipWithTab, #enterToTalkToPenguini, 
     /* character images */
         /* firedog */
             /* skins */
@@ -209,8 +217,8 @@ body {
             #angryIcon, #exclamationMark,  #questionMark, #exclamationAndQuestionMark, #phewAir,#sighSweatDrop, #sweatDrop, #yellowLines,
         /* galadon */
         #galadonNormal, #galadonSad, #galadonAmazed, #galadonHurt, #galadonScaredHurt, #galadonOh, #galadonSurprised, #galadonScared, 
-        /* quilzorin */
-        #quilzorinExplaining, #quilzorinExplaining2, #quilzorinHandUp, #quilzorinLaugh, #quilzorinNormal, #quilzorinScared, #quilzorinSurprised, 
+        /* nysera */
+        #nyseraExplaining, #nyseraExplaining2, #nyseraHandUp, #nyseraLaugh, #nyseraNormal, #nyseraNormalBlur, #nyseraScared, #nyseraSurprised, 
         /* valdorin */
         #valdorinCrossedArms, #valdorinFistUp, #valdorinNormal, #valdorinSurprised, #ValdorinTalking,
         /* duskmaw */

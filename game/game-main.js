@@ -411,6 +411,7 @@ export class Game {
     restartActiveCutscene() {
         const cs = this.currentCutscene;
         if (!cs) return;
+        this.stopShake();
 
         if (typeof cs.removeEventListeners === 'function') cs.removeEventListeners();
         if (typeof cs.stopAllAudio === 'function') cs.stopAllAudio();
@@ -1305,17 +1306,7 @@ window.addEventListener("load", function () {
                     game.waitForFadeInOpacity = false;
                 }, 2200);
             } else {
-                const canShake =
-                    game.shakeActive &&
-                    !game.menu.pause.isPaused &&
-                    game.tutorial.tutorialPause === false;
-
-                if (canShake) preShake(ctx);
-
                 game.currentCutscene.draw(ctx);
-
-                if (canShake) postShake(ctx);
-
                 game.metaToasts.forEach((t) => t.draw(ctx));
 
                 if (game.menu.pause.isPaused && game.currentMenu) {

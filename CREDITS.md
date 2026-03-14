@@ -63,12 +63,21 @@ Below, only soundtracks will be credited.
 ### Cutscene
 - **Echoes of Time v2 by** [Kevin MacLeod](https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300029)
 - **Exale by** [Deskant](https://www.youtube.com/watch?v=T7jQ8URIuIc&ab_channel=Deskant-Topic)
+- **Unbound Purpose by** [Greg Dombrowski](https://www.youtube.com/watch?v=Kw1-B9FGYTA)
+- **Dark Tension Rising Music by** [Mattia Cupelli](https://www.youtube.com/watch?v=-zvQoPyY2XEA)
+- **Tundra Suite by** [Fat Bard](https://www.youtube.com/watch?v=TrCeqqnBhmM)
+- **Hiding In The Dark by** [Peder B. Helland](https://www.youtube.com/watch?v=-mCJnf5hGs4)
+
 - **Grand Theft Auto IV Theme Song Edit by**
     [Raul Apxpei](https://www.youtube.com/watch?v=0bAF189Rf2U)
 - **Pokémon Mystery Dungeon**
   - [On the Beach at Dusk](https://www.youtube.com/watch?v=_cys21Mq-Os)
   - [In the Future](https://www.youtube.com/watch?v=boxhke2611E)
   - [Planet's Paralysis](https://www.youtube.com/watch?v=MGDmukO7Bmk)
+  - [I Saw Something Again...](https://www.youtube.com/watch?v=0WJtVAK0ldI)
+  - [Oh No!](https://www.youtube.com/watch?v=24oxGKBdGYI)
+  - [The Power of Darkness](https://www.youtube.com/watch?v=6BUb4JBbgKM)
+  - [Down a Dark Path](https://www.youtube.com/watch?v=gNCwBZ88kmc)
 
 ### Ingame
 - **Map 1:** [Road to the Great Tower - Super Mario 3D World](https://www.youtube.com/watch?v=PAlHBecPsiU)
@@ -80,7 +89,6 @@ Below, only soundtracks will be credited.
 - **Map 7:** [Atmospheric Video Game Music (Volcano) - Last Sanctum](https://www.youtube.com/watch?v=18x7qaVb7Bc)
     - **Elyvorg Themes:** 
         - [Super Meat Boy: The Battle of Lil' Slugger](https://www.youtube.com/watch?v=WL-8rU8ltA4)
-        - [Unbound Purpose by Greg Dombrowski](https://www.youtube.com/watch?v=Kw1-B9FGYTA)
 - **Bonus Map 1:** [Mega Man Powered Up OST - Ice Man Stage](https://www.youtube.com/watch?v=uLS_MRkwcUE)
     - **Glacikal Themes:**
         - [The Binding of Isaac Soundtrack: Divine Combat](https://www.youtube.com/watch?v=UaxjRoDrpus)

@@ -14,10 +14,10 @@ export class Cutscene {
 
         // core state
         this.dialogue = [];
-        this.characterLimit = 65;
         this.backgroundImage = null;
         this.dialogueIndex = 0;
         this.textIndex = 0;
+        this.textBoxBackgroundOpacity = 0.65;
 
         // sfx typing/pause
         this.lastSoundPlayed = false;
@@ -35,6 +35,8 @@ export class Cutscene {
         // effects
         this.isCharacterBlackAndWhite = false;
         this.isBackgroundBlackAndWhite = false;
+        this.isCharacterSepia = false;
+        this.isBackgroundSepia = false;
 
         // text rendering cache
         this.fullWords = [];
@@ -43,7 +45,6 @@ export class Cutscene {
         this.currentSpansForIndex = -1;
 
         // timing / layout
-        this.halfASecond = 500;
         this.playerCoins = this.game.coins;
         this.textBoxWidth = 870;
 
@@ -55,8 +56,12 @@ export class Cutscene {
         this.firedog = 'Firedog';
         this.elyvorg = 'Elyvorg';
         this.galadon = 'Galadon';
-        this.quilzorin = 'Quilzorin';
+        this.nysera = 'Nysera';
         this.duskmaw = 'Duskmaw';
+        this.aurellia = 'Aurellia';
+        this.craggle = 'Craggle';
+        this.orialis = 'Orialis';
+        this.orelian = 'Orelian';
         this.everyone = 'Everyone';
         this.threeDots = '... ';
         this.questionMark = '???';
@@ -97,8 +102,12 @@ export class Cutscene {
             [this.galadon]: 'tomato',
             [this.valdorin]: 'RoyalBlue',
             [this.valdonotski]: 'RoyalBlue',
-            [this.quilzorin]: 'Teal',
+            [this.nysera]: 'Teal',
             [this.duskmaw]: 'DarkOliveGreen',
+            [this.aurellia]: 'Plum',
+            [this.craggle]: 'SaddleBrown',
+            [this.orialis]: 'MediumPurple',
+            [this.orelian]: 'MediumPurple',
             [this.penguini]: 'cyan',
             [this.zephyrion]: 'DodgerBlue',
             [this.elyvorg]: 'red',
@@ -141,7 +150,7 @@ export class Cutscene {
             firedogLaugh: ['yellowLines'],
             firedogSurprised: ['exclamationMark'],
             firedogCurious: ['questionMark'],
-            firedogNormalQuestionAndExlamationMark: ['exclamationAndQuestionMark'],
+            firedogNormalQuestionAndExclamationMark: ['exclamationAndQuestionMark'],
         };
 
         this.borderFxShrinkIds = new Set(['exclamationMark', 'questionMark', 'exclamationAndQuestionMark']);
@@ -174,26 +183,41 @@ export class Cutscene {
         this.borderInnerScale = 1.30;
         this.borderOffsetX = -35;
         this.borderOffsetY = -20;
+
+        this._stoppedAtDialogueEnd = false;
     }
 
     // text colouring
     splitDialogueIntoWords(text) { return text.split(' '); }
-    escapeRegExp(str) { return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+    escapeRegExp(str) {
+        return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
 
     buildColorSpans(fullText) {
         const spans = [];
+
         const keys = Object.keys(this.characterColors)
             .filter(k => typeof k === 'string' && k.trim().length > 0)
             .sort((a, b) => b.length - a.length);
 
         for (const key of keys) {
             const color = this.characterColors[key];
-            const rx = new RegExp(`\\b${this.escapeRegExp(key)}\\b`, 'g');
+
+            const rxExact = new RegExp(`\\b${this.escapeRegExp(key)}\\b`, 'gu');
             let m;
-            while ((m = rx.exec(fullText)) !== null) {
+            while ((m = rxExact.exec(fullText)) !== null) {
                 spans.push([m.index, m.index + m[0].length, color]);
             }
+
+            if (/\p{L}$/u.test(key)) {
+                const rxPossessive = new RegExp(`\\b${this.escapeRegExp(key)}['’]s\\b`, 'gu');
+                while ((m = rxPossessive.exec(fullText)) !== null) {
+                    spans.push([m.index, m.index + m[0].length, color]);
+                }
+            }
         }
+
         return spans;
     }
 
@@ -229,17 +253,28 @@ export class Cutscene {
         return /[\)\]\}»"'’”!?]/u.test(ch);
     }
 
+    // filters
+    getCharacterBaseFilter() {
+        if (this.isCharacterSepia) return 'sepia(100%) saturate(140%) contrast(115%) brightness(80%)';
+        if (this.isCharacterBlackAndWhite) return 'grayscale(100%)';
+        return '';
+    }
+
+    getBackgroundBaseFilter() {
+        if (this.isBackgroundSepia) return 'sepia(100%) saturate(140%) contrast(115%) brightness(50%)';
+        if (this.isBackgroundBlackAndWhite) return 'grayscale(100%)';
+        return '';
+    }
+
     // input
     addEventListeners() {
-        const gate = (fn) => {
-            return (event) => {
-                if (this.game.menu.pause.isPaused) return;
+        const gate = (fn) => (event) => {
+            if (this.game.menu.pause.isPaused) return;
 
-                const until = this.game.ignoreCutsceneInputUntil || 0;
-                if (performance.now() < until) return;
+            const until = this.game.ignoreCutsceneInputUntil || 0;
+            if (performance.now() < until) return;
 
-                return fn && fn(event);
-            };
+            return fn && fn(event);
         };
 
         this._wrappedKeyDown = gate(this.handleKeyDown);
@@ -265,21 +300,57 @@ export class Cutscene {
         this._wrappedLeftClickUp = null;
     }
 
-    transitionWithBg(d1, d2, d3, bgId, afterDelay = this.halfASecond + 100, before = null, after = null) {
+    transitionWithBg({
+        fadeIn, blackDuration, fadeOut,
+        imageId = null,
+        onBlackDelayMs = null,
+        beforeFade = null,
+        onBlack = null,
+    } = {}) {
         this.removeEventListeners();
-        if (typeof before === 'function') before();
 
-        this.cutsceneBackgroundChange(d1, d2, d3);
+        this.stopTypingAudio();
+
+        if (beforeFade) beforeFade();
+
+        this.cutsceneBackgroundChange(fadeIn, blackDuration, fadeOut);
+
+        const delay = Number.isFinite(onBlackDelayMs) ? onBlackDelayMs : (fadeIn + 100);
 
         setTimeout(() => {
             this.addEventListeners();
-            if (bgId) this.backgroundImage = document.getElementById(bgId);
-            if (typeof after === 'function') after();
-        }, afterDelay);
+
+            if (imageId) {
+                this.backgroundImage = document.getElementById(imageId);
+            }
+
+            if (onBlack) onBlack();
+        }, delay);
+    }
+
+    jumpToDialogue(index) {
+        if (index < 0 || index >= this.dialogue.length) return;
+
+        this.dialogueIndex = index;
+        this.textIndex = 0;
+        this.lastSound2Played = false;
+        this.playSound2OnDotPause = false;
+        this.pause = false;
+        this.continueDialogue = false;
+        this.isEnterPressed = false;
+
+        const currentDialogue = this.dialogue[this.dialogueIndex];
+        const words = this.splitDialogueIntoWords(currentDialogue.dialogue);
+        this.fullWordsColor = words;
+        this.currentColorSpans = this.buildColorSpans(currentDialogue.dialogue);
+        this.currentSpansForIndex = this.dialogueIndex;
+
+        this.runCurrentDialogueEnterActionIfAny();
     }
 
     // audio
     playSFX(...args) { this.game.audioHandler.cutsceneSFX.playSound(...args); }
+    fadeOutSFX(...args) { this.game.audioHandler.cutsceneSFX.fadeOutAndStop(...args); }
     playMusic(...args) { this.game.audioHandler.cutsceneMusic.playSound(...args); }
     fadeOutMusic(...args) { this.game.audioHandler.cutsceneMusic.fadeOutAndStop(...args); }
 
@@ -289,7 +360,16 @@ export class Cutscene {
         this.game.audioHandler.cutsceneMusic.stopAllSounds();
     }
 
-    // map
+    stopTypingAudio() {
+        this.game.audioHandler.cutsceneDialogue.stopAllSounds();
+        this.lastSoundPlayed = false;
+        this.lastSound2Played = false;
+        this.playSound2OnDotPause = false;
+        this.pause = false;
+        this.continueDialogue = false;
+    }
+
+    // map helpers
     getCurrentMapId() {
         const id = this.game.currentMap
             || (this.game.background && this.game.background.constructor.name)
@@ -303,24 +383,47 @@ export class Cutscene {
         return m ? Number(m[1]) : null;
     }
 
-    // dialogue
-    cutsceneController() {
-        if (this.textIndex !== this.dialogue[this.dialogueIndex].dialogue.length) return;
-        const resolver = typeof this.resolveCutsceneAction === 'function' ? this.resolveCutsceneAction() : undefined;
-        if (typeof resolver === 'function') resolver();
+    // dialogue hooks
+    getCurrentDialogueEntry() {
+        if (this.dialogueIndex < 0 || this.dialogueIndex >= this.dialogue.length) return null;
+        return this.dialogue[this.dialogueIndex] || null;
+    }
+
+    isCurrentDialogueFullyTyped() {
+        const d = this.getCurrentDialogueEntry();
+        if (!d) return false;
+        return this.textIndex === d.dialogue.length;
+    }
+
+    runCurrentDialogueAdvanceActionIfAny() {
+        if (!this.isCurrentDialogueFullyTyped()) return;
+        const d = this.getCurrentDialogueEntry();
+        if (d && typeof d.onAdvance === 'function') d.onAdvance();
+    }
+
+    runCurrentDialogueEnterActionIfAny() {
+        const d = this.getCurrentDialogueEntry();
+        if (d && typeof d.onEnter === 'function') d.onEnter();
     }
 
     addDialogue(character, dialogue, ...maybeImages) {
-        let options = {};
+        let options = null;
         let images = maybeImages;
 
-        if (
-            maybeImages.length > 0 &&
-            typeof maybeImages[0] === 'object' &&
-            !maybeImages[0].hasOwnProperty('id') &&
-            (maybeImages[0].hasOwnProperty('whisper') || maybeImages[0].hasOwnProperty('options'))
-        ) {
-            options = maybeImages[0];
+        const first = maybeImages[0];
+        const isOptions =
+            first &&
+            typeof first === 'object' &&
+            !Array.isArray(first) &&
+            !Object.prototype.hasOwnProperty.call(first, 'id') &&
+            (
+                Object.prototype.hasOwnProperty.call(first, 'whisper') ||
+                Object.prototype.hasOwnProperty.call(first, 'onAdvance') ||
+                Object.prototype.hasOwnProperty.call(first, 'onEnter')
+            );
+
+        if (isOptions) {
+            options = first;
             images = maybeImages.slice(1);
         }
 
@@ -328,7 +431,9 @@ export class Cutscene {
             character,
             dialogue,
             images,
-            whisper: !!options.whisper,
+            whisper: !!options?.whisper,
+            onAdvance: typeof options?.onAdvance === 'function' ? options.onAdvance : null,
+            onEnter: typeof options?.onEnter === 'function' ? options.onEnter : null,
         });
     }
 
@@ -367,6 +472,7 @@ export class Cutscene {
         this.textIndex = 0;
         this.lastSound2Played = false;
         this.isEnterPressed = false;
+        this._stoppedAtDialogueEnd = false;
 
         this.handleKeyUp = (event) => {
             if (event.key === 'Enter') this.isEnterPressed = false;
@@ -379,10 +485,13 @@ export class Cutscene {
         this.currentColorSpans = this.buildColorSpans(this.dialogue[this.dialogueIndex].dialogue);
         this.currentSpansForIndex = this.dialogueIndex;
 
+        this.runCurrentDialogueEnterActionIfAny();
+
         this.addEventListeners();
         this.reminderImageStartTime = performance.now();
     }
 
+    // wardrobe/cosmetics helpers
     getCurrentSkinIdSafe() {
         if (this.game.menu.wardrobe.getCurrentSkinId) return this.game.menu.wardrobe.getCurrentSkinId();
         return this.game.selectedSkinId || 'defaultSkin';
@@ -419,12 +528,13 @@ export class Cutscene {
     drawImageWithOptionalHue(ctx, el, x, y, w, h, hueDeg) {
         if (!el) return;
 
-        const baseFilter = this.isCharacterBlackAndWhite ? 'grayscale(100%)' : '';
+        const baseFilter = this.getCharacterBaseFilter();
         drawWithOptionalHue(ctx, { hueDeg, baseFilter }, () => {
             ctx.drawImage(el, x, y, w, h);
         });
     }
 
+    // firedog DOM id mapping / overlays
     getSkinPrefix() {
         const skinId = this.getCurrentSkinIdSafe();
         return getCutsceneSkinPrefixBySkinId(skinId) || '';
@@ -445,7 +555,7 @@ export class Cutscene {
         switch (coreBaseId) {
             case 'firedogLaugh':
                 return 'firedogHappy';
-            case 'firedogNormalQuestionAndExlamationMark':
+            case 'firedogNormalQuestionAndExclamationMark':
                 return 'firedogNormal';
             default:
                 return coreBaseId;
@@ -466,7 +576,7 @@ export class Cutscene {
 
     isFiredogEmotionImageId(id) {
         const core = this.getFiredogCoreId(id);
-        const RX = /^firedog(?:Upset|Angry|Cry|Cry2|Happy|Headache|Laugh|Normal|Phew|Sad|Tired|Curious|Discomfort|Sigh|Smile|Surprised|NormalQuestionAndExlamationMark)(?:Border)?$/;
+        const RX = /^firedog(?:Upset|Angry|Cry|Cry2|Happy|Headache|Laugh|Normal|Phew|Sad|Tired|Curious|Discomfort|Sigh|Smile|Surprised|NormalQuestionAndExclamationMark)(?:Border)?$/;
         return RX.test(core);
     }
 
@@ -528,7 +638,7 @@ export class Cutscene {
     // border helpers
     isFiredogBorderRequestId(id) {
         const core = this.getFiredogCoreId(id);
-        const RX = /^firedog(?:Upset|Angry|Cry|Cry2|Happy|Headache|Laugh|Normal|Phew|Sad|Tired|Curious|Discomfort|Sigh|Smile|Surprised|NormalQuestionAndExlamationMark)Border$/;
+        const RX = /^firedog(?:Upset|Angry|Cry|Cry2|Happy|Headache|Laugh|Normal|Phew|Sad|Tired|Curious|Discomfort|Sigh|Smile|Surprised|NormalQuestionAndExclamationMark)Border$/;
         return RX.test(core);
     }
 
@@ -588,7 +698,6 @@ export class Cutscene {
         ctx.lineWidth = lineW;
         ctx.strokeStyle = this.getPanelBorderStrokeColorFromOpts(opts);
 
-        // keep shadow dark even when stroke is yellow
         ctx.shadowColor = `rgba(0,0,0,${this.panelBorderShadowAlpha})`;
         ctx.shadowBlur = shadowBlur;
         ctx.shadowOffsetX = shadowOff;
@@ -624,7 +733,8 @@ export class Cutscene {
 
         context.save();
 
-        if (this.isCharacterBlackAndWhite) context.filter = 'grayscale(100%)';
+        const f = this.getCharacterBaseFilter();
+        if (f) context.filter = f;
         context.globalAlpha = alpha;
 
         if (borderEl) context.drawImage(borderEl, x, y, width, height);
@@ -673,7 +783,6 @@ export class Cutscene {
             }
         }
 
-        // fx layers
         const key = effectKeyOverride || baseId;
         if (this.hasFiredogEffectLayersForKey(key)) {
             const scaleFn = (layerId) => (this.borderFxShrinkIds.has(layerId) ? this.borderFxShrinkScale : 1);
@@ -694,7 +803,8 @@ export class Cutscene {
     drawBackground(context) {
         if (!this.backgroundImage) return;
 
-        if (this.isBackgroundBlackAndWhite) context.filter = 'grayscale(100%)';
+        const f = this.getBackgroundBaseFilter();
+        if (f) context.filter = f;
 
         const canShake = this.game.shakeActive && !this.game.menu.pause.isPaused;
 
@@ -705,15 +815,41 @@ export class Cutscene {
         context.filter = 'none';
     }
 
+    drawTextBoxPanel(ctx, x, y, w, h) {
+        const radius = 16;
+
+        ctx.save();
+
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = 12;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 4;
+
+        ctx.fillStyle = `rgba(0,0,0,${this.textBoxBackgroundOpacity})`;
+        this.roundRectPath(ctx, x, y, w, h, radius);
+        ctx.fill();
+
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+        ctx.stroke();
+
+        ctx.restore();
+    }
+
     drawTextBox(context) {
         if (this.dontShowTextBoxAndSound) return;
-        context.drawImage(
-            document.getElementById('textBox'),
-            15,
-            this.game.height - 70,
-            this.textBoxWidth,
-            96
-        );
+
+        const x = 15;
+        const y = this.game.height - 65;
+        const w = this.textBoxWidth;
+        const h = 96;
+
+        this.drawTextBoxPanel(context, x, y, w, h);
     }
 
     drawReminder(context) {
@@ -745,7 +881,8 @@ export class Cutscene {
 
         context.save();
 
-        if (this.isCharacterBlackAndWhite) context.filter = 'grayscale(100%)';
+        const f = this.getCharacterBaseFilter();
+        if (f) context.filter = f;
         context.globalAlpha = opacity !== undefined ? opacity : 1;
 
         const baseDomId = this.isFiredogEmotionImageId(id) ? this.getAliasedFiredogDomId(id) : id;
@@ -780,11 +917,153 @@ export class Cutscene {
         for (const img of images) this.drawSingleImage(context, img);
     }
 
+    drawDialogueTextWrapped(context, characterName, fullDialogue, partialText, spans) {
+        const lineHeight = 25;
+        const y0 = this.game.height - 33;
+
+        const boxX = 15;
+        const boxW = this.textBoxWidth;
+
+        const baseX = 50;
+        const rightPad = 30;
+
+        const charNameW = context.measureText(characterName).width;
+
+        const textStartX = baseX + charNameW;
+
+        const maxW = Math.max(10, (boxX + boxW - rightPad) - textStartX);
+        const maxLines = 2;
+
+        const punctuationChars = ',!?.:;()"';
+        const dlgObj = this.dialogue[this.dialogueIndex];
+        const specificPhrases = ['It seems you have', 'I will need'];
+        const allowNumericColor = specificPhrases.some(p => dlgObj.dialogue.includes(p));
+
+        const numericRanges = [];
+        if (!allowNumericColor) {
+            const rxNum = /\b\d+(?:\.\d+)?\b/g;
+            let m;
+            while ((m = rxNum.exec(fullDialogue)) !== null) {
+                numericRanges.push([m.index, m.index + m[0].length]);
+            }
+        }
+
+        const isIndexInNumeric = (idx) => {
+            for (const [s, e] of numericRanges) {
+                if (idx >= s && idx < e) return true;
+            }
+            return false;
+        };
+
+        const drawChar = (ch, globalIndex, x, y) => {
+            let color = this.colorAtGlobal(globalIndex, spans, 'white');
+
+            if (!allowNumericColor && isIndexInNumeric(globalIndex)) color = 'white';
+            if (punctuationChars.includes(ch)) color = 'white';
+
+            context.fillStyle = color;
+            context.fillText(ch, x, y);
+            return context.measureText(ch).width;
+        };
+
+        const getFullWordFrom = (text, startIdx) => {
+            let end = startIdx;
+            while (end < text.length && text[end] !== ' ') end++;
+            return text.slice(startIdx, end);
+        };
+
+        const words = this.splitDialogueIntoWords(partialText);
+
+        let searchCursor = 0;
+        const wordStartsGlobal = words.map(w => {
+            const idx = fullDialogue.indexOf(w, searchCursor);
+            if (idx >= 0) {
+                searchCursor = idx + w.length + 1;
+                return idx;
+            }
+            searchCursor += (w.length + 1);
+            return Math.max(0, searchCursor - (w.length + 1));
+        });
+
+        const spaceW = context.measureText(' ').width;
+
+        let line = 0;
+        let x = textStartX;
+        let y = y0;
+
+        const usedW = () => x - textStartX;
+        const remainingW = () => maxW - usedW();
+
+        const gotoNextLine = () => {
+            line += 1;
+            if (line >= maxLines) return false;
+            x = textStartX;
+            y = y0 + (line * lineHeight);
+            return true;
+        };
+
+        const typingMidWord = partialText.length < fullDialogue.length && !partialText.endsWith(' ');
+
+        for (let wi = 0; wi < words.length; wi++) {
+            const word = words[wi];
+            const wordStart = wordStartsGlobal[wi];
+
+            const isLastToken = wi === words.length - 1;
+            const isIncompleteTypedWord = typingMidWord && isLastToken;
+
+            const fullWord = isIncompleteTypedWord ? getFullWordFrom(fullDialogue, wordStart) : word;
+
+            const fullWordW = context.measureText(fullWord).width;
+
+            const hasAnyOnLine = usedW() > 0;
+            const neededW = (hasAnyOnLine ? spaceW : 0) + fullWordW;
+
+            if (neededW > remainingW() && fullWordW <= maxW) {
+                if (hasAnyOnLine) {
+                    if (!gotoNextLine()) return;
+                }
+            }
+
+            const hasAnyNow = usedW() > 0;
+            const neededNow = (hasAnyNow ? spaceW : 0) + fullWordW;
+
+            if (neededNow <= remainingW()) {
+                if (hasAnyNow) x += spaceW;
+
+                for (let ci = 0; ci < word.length; ci++) {
+                    x += drawChar(word[ci], wordStart + ci, x, y);
+                }
+                continue;
+            }
+
+            if (hasAnyNow) {
+                if (!gotoNextLine()) return;
+            }
+
+            for (let ci = 0; ci < word.length; ci++) {
+                const ch = word[ci];
+                const chW = context.measureText(ch).width;
+
+                if (chW > remainingW()) {
+                    if (!gotoNextLine()) return;
+                }
+
+                x += drawChar(ch, wordStart + ci, x, y);
+            }
+        }
+    }
+
     // draw
     draw(context) {
         this.drawBackground(context);
 
-        if (this.dialogueIndex >= this.dialogue.length) return;
+        if (this.dialogueIndex >= this.dialogue.length) {
+            if (!this._stoppedAtDialogueEnd) {
+                this.stopTypingAudio();
+                this._stoppedAtDialogueEnd = true;
+            }
+            return;
+        }
 
         const currentDialogue = this.dialogue[this.dialogueIndex];
         const { character, dialogue, images } = currentDialogue;
@@ -796,9 +1075,6 @@ export class Cutscene {
 
         const partialText = dialogue.substring(0, this.textIndex + 1);
         this.dialogueText = partialText;
-
-        const words = this.splitDialogueIntoWords(partialText);
-        const lines = this.getLinesWithinLimit(words, this.dialogueText, this.characterLimit);
 
         context.save();
 
@@ -870,8 +1146,15 @@ export class Cutscene {
             }
         }
 
-        // dialogue text (colored per-span)
-        this.characterColorLogic(context, lines, words, characterName, dialogue, this.currentColorSpans);
+        if (this.game.enterDuringBackgroundTransition) {
+            this.drawDialogueTextWrapped(
+                context,
+                characterName,
+                dialogue,
+                partialText,
+                this.currentColorSpans
+            );
+        }
 
         // sound + advance typing
         if (this.textIndex < dialogue.length) {
@@ -894,60 +1177,6 @@ export class Cutscene {
         context.restore();
     }
 
-    characterColorLogic(context, lines, words, characterName, fullDialogue, spans) {
-        const punctuationChars = ',!?.:;()"';
-        const dlgObj = this.dialogue[this.dialogueIndex];
-        const specificPhrases = ['It seems you have', 'I will need'];
-
-        let searchCursor = 0;
-        const wordStartsGlobal = words.map(w => {
-            const idx = fullDialogue.indexOf(w, searchCursor);
-            if (idx >= 0) {
-                searchCursor = idx + w.length + 1;
-                return idx;
-            }
-            searchCursor += (w.length + 1);
-            return Math.max(0, searchCursor - (w.length + 1));
-        });
-
-        let consumedWords = 0;
-
-        for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
-            const line = lines[lineIdx];
-            const lineWords = this.splitDialogueIntoWords(line);
-
-            let x = 50 + context.measureText(characterName).width;
-
-            for (let lw = 0; lw < lineWords.length; lw++) {
-                const word = lineWords[lw];
-
-                const posInRemaining = words.slice(consumedWords).indexOf(word);
-                const wordsIdx = posInRemaining === -1 ? -1 : (consumedWords + posInRemaining);
-                if (wordsIdx === -1) continue;
-
-                const globalStart = wordStartsGlobal[wordsIdx];
-                consumedWords = wordsIdx + 1;
-
-                for (let i = 0; i < word.length; i++) {
-                    const ch = word[i];
-
-                    let color = this.colorAtGlobal(globalStart + i, spans, 'white');
-
-                    if (!isNaN(word) && !specificPhrases.some(p => dlgObj.dialogue.includes(p))) {
-                        color = 'white';
-                    }
-                    if (punctuationChars.includes(ch)) color = 'white';
-
-                    context.fillStyle = color;
-                    context.fillText(ch, x, this.game.height - 33 + (lineIdx * 25));
-                    x += context.measureText(ch).width;
-                }
-
-                x += context.measureText(' ').width;
-            }
-        }
-    }
-
     playEightBitSound(soundName) {
         const current = this.dialogue[this.dialogueIndex];
         if (current && current.whisper) return;
@@ -957,28 +1186,6 @@ export class Cutscene {
         } else {
             this.game.audioHandler.cutsceneDialogue.pauseSound(soundName);
         }
-    }
-
-    getLinesWithinLimit(words, fullWords, limit) {
-        const lines = [];
-        let currentLine = '';
-        let lineCounter = 1;
-
-        for (let i = 0; i < words.length; i++) {
-            const word = words[i];
-            const currentLineLength = currentLine.length;
-
-            if (fullWords[i] && (currentLineLength + fullWords[i].length) > limit && lineCounter < 2) {
-                lines.push(currentLine);
-                currentLine = word;
-                lineCounter++;
-            } else {
-                currentLine += (currentLine === '' ? '' : ' ') + word;
-            }
-        }
-
-        if (currentLine !== '') lines.push(currentLine);
-        return lines;
     }
 
     cutsceneBackgroundChange(fadein, stay, fadeout) {
@@ -1011,7 +1218,7 @@ export class Cutscene {
     setfiredogDiscomfort() { return this.setFiredogImage('Discomfort'); }
     setfiredogSigh() { return this.setFiredogImage('Sigh'); }
     setfiredogSmile() { return this.setFiredogImage('Smile'); }
-    setfiredogNormalQuestionAndExlamationMark() { return this.setFiredogImage('NormalQuestionAndExlamationMark'); }
+    setfiredogNormalQuestionAndExclamationMark() { return this.setFiredogImage('NormalQuestionAndExclamationMark'); }
 
     // border
     setfiredogUpsetBorder() { return this.setFiredogImage('UpsetBorder'); }
@@ -1026,7 +1233,7 @@ export class Cutscene {
     setfiredogSadBorder() { return this.setFiredogImage('SadBorder'); }
     setfiredogTiredBorder() { return this.setFiredogImage('TiredBorder'); }
     setfiredogCuriousBorder() { return this.setFiredogImage('CuriousBorder'); }
-    setfiredogNormalQuestionAndExlamationMarkBorder() { return this.setFiredogImage('NormalQuestionAndExlamationMarkBorder'); }
+    setfiredogNormalQuestionAndExclamationMarkBorder() { return this.setFiredogImage('NormalQuestionAndExclamationMarkBorder'); }
     setfiredogSurprisedBorder() { return this.setFiredogImage('SurprisedBorder'); }
     setfiredogDiscomfortBorder() { return this.setFiredogImage('DiscomfortBorder'); }
     setfiredogSighBorder() { return this.setFiredogImage('SighBorder'); }

@@ -18,10 +18,25 @@ const createBaseGame = () => {
         menu: {
             pause: { isPaused: false },
             audioSettings: Symbol('settings'),
+            wardrobe: {
+                defaultSkin: 'default',
+                hatSkin: 'hat',
+                choloSkin: 'cholo',
+                zabkaSkin: 'zabka',
+                shinySkin: 'shiny',
+                currentSkin: 'default',
+            },
         },
         currentMenu: null,
         enterDuringBackgroundTransition: true,
         canvas: {},
+        input: { keys: ['a'] },
+        maxDistance: 0,
+        width: 1920,
+        height: 1080,
+        gameHeight: 1080,
+        coins: 0,
+        winningCoins: 100,
 
         background: {
             resetLayersByImageIds: jest.fn(),
@@ -29,8 +44,16 @@ const createBaseGame = () => {
         },
 
         audioHandler: {
-            cutsceneSFX: { playSound: noop, stopAllSounds: noop },
-            cutsceneDialogue: { playSound: noop, stopAllSounds: noop },
+            cutsceneSFX: {
+                playSound: noop,
+                stopAllSounds: noop,
+                fadeOutAndStop: noop,
+            },
+            cutsceneDialogue: {
+                playSound: noop,
+                stopAllSounds: noop,
+                pauseSound: noop,
+            },
             cutsceneMusic: {
                 playSound: noop,
                 fadeOutAndStop: noop,
@@ -39,12 +62,13 @@ const createBaseGame = () => {
             mapSoundtrack: {
                 playSound: noop,
                 fadeOutAndStop: noop,
+                stopAllSounds: noop,
             },
-            firedogSFX: { playSound: noop },
+            firedogSFX: {
+                playSound: noop,
+                stopAllSounds: noop,
+            },
         },
-
-        input: { keys: ['a'] },
-        maxDistance: 0,
 
         endCutscene: jest.fn(),
         cutscenes: [],
@@ -63,17 +87,16 @@ const createBaseGame = () => {
 };
 
 const createMap = (overrides = {}) => ({
+    ...createBaseGame(),
+    ...overrides,
     menu: {
+        ...createBaseGame().menu,
+        ...(overrides.menu || {}),
         wardrobe: {
-            defaultSkin: 'default',
-            hatSkin: 'hat',
-            choloSkin: 'cholo',
-            zabkaSkin: 'zabka',
-            shinySkin: 'shiny',
-            currentSkin: 'default',
+            ...createBaseGame().menu.wardrobe,
+            ...((overrides.menu && overrides.menu.wardrobe) || {}),
         },
     },
-    ...overrides,
 });
 
 describe('GlacikalCutscene', () => {
@@ -88,7 +111,7 @@ describe('GlacikalCutscene', () => {
         cut = new GlacikalCutscene(game);
 
         cut.dialogue = [
-            { dialogue: 'Hello...' },
+            { dialogue: 'Hello...', onAdvance: jest.fn() },
             { dialogue: 'Goodbye.' },
         ];
     });
@@ -98,18 +121,29 @@ describe('GlacikalCutscene', () => {
         jest.clearAllTimers();
     });
 
-    it('invokes cutsceneController, updates player state, and sets flags', () => {
-        jest.spyOn(cut, 'cutsceneController');
+    it('uses Glacikal boss metadata', () => {
+        expect(cut.getBossId()).toBe('glacikal');
+        expect(cut.getBattleTheme()).toBe('glacikalBattleTheme');
+        expect(cut.getResetLayerImageIds()).toEqual([
+            'bonusMap1IceRings',
+            'bonusMap1BigIceCrystal',
+        ]);
+        expect(cut.shouldRemoveBossAfterPostFight()).toBe(true);
+    });
+
+    it('runs current dialogue onAdvance, updates player state, and sets flags', () => {
         cut.textIndex = cut.dialogue[0].dialogue.length;
         cut.dialogueIndex = 0;
         game.player.currentState = 'not-s8';
 
         cut.enterOrLeftClick();
 
-        expect(cut.cutsceneController).toHaveBeenCalled();
+        expect(cut.dialogue[0].onAdvance).toHaveBeenCalled();
         expect(game.player.setState).toHaveBeenCalledWith(8, 0);
-        expect(cut.isEnterPressed).toBe(true);
         expect(cut.playSound2OnDotPause).toBe(false);
+        expect(cut.dialogueIndex).toBe(1);
+        expect(cut.textIndex).toBe(0);
+        expect(cut.isEnterPressed).toBe(false);
     });
 
     it('does not change player state when already in state 8', () => {
@@ -164,7 +198,7 @@ describe('GlacikalCutscene', () => {
         });
 
         it('advances to next dialogue when current line is fully revealed', () => {
-            cut.textIndex = cut.dialogue[0].dialogue.length; // 3
+            cut.textIndex = cut.dialogue[0].dialogue.length;
             cut.dialogueIndex = 0;
             cut.lastSound2Played = true;
 
@@ -228,6 +262,8 @@ describe('GlacikalCutscene', () => {
 
             jest.advanceTimersByTime(3000);
 
+            expect(game.background.resetLayersByImageIds)
+                .toHaveBeenCalledWith(['bonusMap1IceRings', 'bonusMap1BigIceCrystal']);
             expect(game.endCutscene).toHaveBeenCalled();
             expect(game.boss.talkToBoss).toBe(false);
             expect(game.boss.preFight).toBe(false);
@@ -263,19 +299,19 @@ describe('GlacikalCutscene', () => {
             expect(game.endCutscene).toHaveBeenCalled();
             expect(game.cutscenes).toEqual([]);
 
-            jest.advanceTimersByTime(470); // fadeIn - 30
+            jest.advanceTimersByTime(470);
 
             expect(enemy.markedForDeletion).toBe(true);
             expect(boss.isVisible).toBe(false);
             expect(boss.current).toBeNull();
-            expect(game.maxDistance).toBe(105); // 100 + 5
+            expect(game.maxDistance).toBe(105);
         });
     });
 
     it('resets isEnterPressed via interval when at end of a line', () => {
         cut.dialogue = [{ dialogue: 'X' }];
         cut.dialogueIndex = 0;
-        cut.textIndex = 1; // at end
+        cut.textIndex = 1;
         cut.isEnterPressed = true;
 
         cut.enterOrLeftClick();
@@ -322,7 +358,7 @@ describe('GlacikalCutscene', () => {
             ];
             cut.displayDialogue();
 
-            cut.handleKeyDown({ key: 'Tab' });
+            cut.handleKeyDown({ key: 'Tab', preventDefault: jest.fn() });
 
             expect(cut.removeEventListeners).toHaveBeenCalled();
             expect(cut.cutsceneBackgroundChange).toHaveBeenCalledWith(500, 2500, 200);
@@ -348,7 +384,7 @@ describe('GlacikalCutscene', () => {
             const spyRemove = jest.spyOn(cut, 'removeEventListeners');
             const spyStopAll = jest.spyOn(cut, 'stopAllAudio');
 
-            cut.handleKeyDown({ key: 'Tab' });
+            cut.handleKeyDown({ key: 'Tab', preventDefault: jest.fn() });
 
             expect(spyRemove).not.toHaveBeenCalled();
             expect(spyStopAll).not.toHaveBeenCalled();
@@ -376,121 +412,6 @@ describe('GlacikalCutscene', () => {
             expect(cut.enterOrLeftClick).toHaveBeenCalledTimes(1);
         });
     });
-
-    describe('cutsceneController()', () => {
-        beforeEach(() => {
-            cut.dialogue = Array.from({ length: 40 }, () => ({ dialogue: 'X' }));
-            cut.textIndex = 1;
-            game.boss.preFight = false;
-            game.boss.postFight = false;
-        });
-
-        it('does nothing when not in pre/post-fight modes', () => {
-            Object.values(game.audioHandler).forEach(h => {
-                if (h.playSound) h.playSound.mockClear();
-                if (h.fadeOutAndStop) h.fadeOutAndStop.mockClear();
-            });
-
-            cut.cutsceneController();
-
-            Object.values(game.audioHandler).forEach(h => {
-                if (h.playSound) expect(h.playSound).not.toHaveBeenCalled();
-                if (h.fadeOutAndStop) expect(h.fadeOutAndStop).not.toHaveBeenCalled();
-            });
-        });
-
-        describe('pre-fight ambience & dream scenes', () => {
-            beforeEach(() => {
-                game.boss.preFight = true;
-                game.boss.current = {};
-                cut.textIndex = cut.dialogue[0].dialogue.length;
-            });
-
-            it('dialogueIndex 1 starts dark ambience', () => {
-                cut.dialogueIndex = 1;
-
-                cut.cutsceneController();
-
-                expect(game.audioHandler.mapSoundtrack.playSound)
-                    .toHaveBeenCalledWith('crypticTokenDarkAmbienceSound', true);
-            });
-
-            it('dialogueIndex 5 fades out dark ambience', () => {
-                cut.dialogueIndex = 5;
-
-                cut.cutsceneController();
-
-                expect(game.audioHandler.mapSoundtrack.fadeOutAndStop)
-                    .toHaveBeenCalledWith('crypticTokenDarkAmbienceSound');
-            });
-
-            [12, 15, 17].forEach(idx => {
-                it(`dialogueIndex ${idx} triggers dream sound and background change`, () => {
-                    jest.spyOn(cut, 'removeEventListeners');
-                    jest.spyOn(cut, 'addEventListeners');
-                    jest.spyOn(cut, 'cutsceneBackgroundChange');
-                    jest.clearAllTimers();
-                    cut.dialogueIndex = idx;
-
-                    cut.cutsceneController();
-
-                    expect(cut.removeEventListeners).toHaveBeenCalled();
-                    expect(game.audioHandler.firedogSFX.playSound)
-                        .toHaveBeenCalledWith('dreamSoundInGame');
-                    expect(cut.cutsceneBackgroundChange)
-                        .toHaveBeenCalledWith(500, 500, 500);
-
-                    jest.advanceTimersByTime(1000);
-
-                    expect(cut.addEventListeners).toHaveBeenCalled();
-                });
-            });
-        });
-
-        describe('post-fight music transitions', () => {
-            beforeEach(() => {
-                game.boss.postFight = true;
-                game.boss.current = {};
-                cut.textIndex = cut.dialogue[0].dialogue.length;
-            });
-
-            it('dialogueIndex 2 starts unboundPurpose music', () => {
-                cut.dialogueIndex = 2;
-
-                cut.cutsceneController();
-
-                expect(game.audioHandler.cutsceneMusic.playSound)
-                    .toHaveBeenCalledWith('unboundPurpose', true);
-            });
-
-            it('dialogueIndex 25 starts dark ambience', () => {
-                cut.dialogueIndex = 25;
-
-                cut.cutsceneController();
-
-                expect(game.audioHandler.mapSoundtrack.playSound)
-                    .toHaveBeenCalledWith('crypticTokenDarkAmbienceSound', true);
-            });
-
-            it('dialogueIndex 29 fades out dark ambience', () => {
-                cut.dialogueIndex = 29;
-
-                cut.cutsceneController();
-
-                expect(game.audioHandler.mapSoundtrack.fadeOutAndStop)
-                    .toHaveBeenCalledWith('crypticTokenDarkAmbienceSound');
-            });
-
-            it('dialogueIndex 37 fades out unboundPurpose', () => {
-                cut.dialogueIndex = 37;
-
-                cut.cutsceneController();
-
-                expect(game.audioHandler.cutsceneMusic.fadeOutAndStop)
-                    .toHaveBeenCalledWith('unboundPurpose');
-            });
-        });
-    });
 });
 
 describe('BonusMap1GlacikalIngameCutsceneBeforeFight', () => {
@@ -501,13 +422,34 @@ describe('BonusMap1GlacikalIngameCutsceneBeforeFight', () => {
         m6pre = new BonusMap1GlacikalIngameCutsceneBeforeFight(game);
     });
 
-    it('registers exactly 3 dialogues', () => {
-        expect(m6pre.dialogue.length).toBe(3);
+    afterEach(() => {
+        jest.clearAllMocks();
+        jest.clearAllTimers();
+    });
+
+    it('registers exactly 18 dialogues', () => {
+        expect(m6pre.dialogue.length).toBe(18);
     });
 
     it('inherits GlacikalCutscene interaction methods', () => {
         expect(typeof m6pre.enterOrLeftClick).toBe('function');
         expect(typeof m6pre.displayDialogue).toBe('function');
+    });
+
+    it('dialogue 0 starts thePowerOfDarkness music', () => {
+        jest.spyOn(m6pre, 'playMusic');
+
+        m6pre.dialogue[0].onAdvance();
+
+        expect(m6pre.playMusic).toHaveBeenCalledWith('thePowerOfDarkness', true);
+    });
+
+    it('dialogue 17 fades out thePowerOfDarkness music', () => {
+        jest.spyOn(m6pre, 'fadeOutMusic');
+
+        m6pre.dialogue[17].onAdvance();
+
+        expect(m6pre.fadeOutMusic).toHaveBeenCalledWith('thePowerOfDarkness');
     });
 });
 
@@ -519,12 +461,25 @@ describe('BonusMap1GlacikalIngameCutsceneAfterFight', () => {
         m6post = new BonusMap1GlacikalIngameCutsceneAfterFight(game);
     });
 
-    it('registers exactly 2 dialogues', () => {
-        expect(m6post.dialogue.length).toBe(2);
+    afterEach(() => {
+        jest.clearAllMocks();
+        jest.clearAllTimers();
+    });
+
+    it('registers exactly 36 dialogues', () => {
+        expect(m6post.dialogue.length).toBe(36);
     });
 
     it('inherits GlacikalCutscene interaction methods', () => {
         expect(typeof m6post.enterOrLeftClick).toBe('function');
         expect(typeof m6post.displayDialogue).toBe('function');
+    });
+
+    it('includes the whisper dialogue at index 23', () => {
+        expect(m6post.dialogue[23].whisper).toBe(true);
+    });
+
+    it('last dialogue is Glacikal farewelling Firedog', () => {
+        expect(m6post.dialogue[35].dialogue).toBe(`Farewell, ${m6post.firedog}. May the ice spare your path.`);
     });
 });

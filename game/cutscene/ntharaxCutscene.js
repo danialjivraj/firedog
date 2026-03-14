@@ -1,237 +1,26 @@
-import { Cutscene } from "./cutscene.js";
-import { fadeInAndOut } from "../animations/fading.js";
+import { BossCutscene } from './bossCutscene.js';
 
-export class NTharaxCutscene extends Cutscene {
+export class NTharaxCutscene extends BossCutscene {
     constructor(game) {
         super(game);
-
-        this.dreamFlash = () => {
-            this.removeEventListeners();
-            this.game.audioHandler.firedogSFX.playSound("dreamSoundInGame");
-            this.cutsceneBackgroundChange(500, 500, 500);
-            setTimeout(() => this.addEventListeners(), 1000);
-        };
-
-        this.actions = {
-            pre: {
-                1: () => this.game.audioHandler.cutsceneMusic.playSound(
-                    "crypticTokenDarkAmbienceSound",
-                    true
-                ),
-                5: () => this.game.audioHandler.cutsceneMusic.fadeOutAndStop(
-                    "crypticTokenDarkAmbienceSound"
-                ),
-                12: () => this.dreamFlash(),
-                15: () => this.dreamFlash(),
-                17: () => this.dreamFlash(),
-            },
-            post: {
-                2: () => this.game.audioHandler.cutsceneMusic.playSound(
-                    "unboundPurpose",
-                    true
-                ),
-                25: () => this.game.audioHandler.cutsceneMusic.playSound(
-                    "crypticTokenDarkAmbienceSound",
-                    true
-                ),
-                29: () => this.game.audioHandler.cutsceneMusic.fadeOutAndStop(
-                    "crypticTokenDarkAmbienceSound"
-                ),
-                37: () => this.game.audioHandler.cutsceneMusic.fadeOutAndStop(
-                    "unboundPurpose"
-                ),
-            },
-        };
     }
 
-    _beginNTharaxBattle(boss) {
-        this.game.background.resetLayersByImageIds([
-            "bonusMap3Planets",
-        ]);
-
-        this.game.endCutscene();
-        boss.talkToBoss = false;
-        boss.preFight = false;
-        boss.inFight = true;
-        boss.progressComplete = true;
-        this.game.cutscenes = [];
-        this.game.audioHandler.mapSoundtrack.playSound("ntharaxBattleTheme", true);
+    getBossId() {
+        return 'ntharax';
     }
 
-    enterOrLeftClick() {
-        const boss = this.game.boss;
-
-        this.cutsceneController();
-
-        if (this.game.player.currentState !== this.game.player.states[8]) {
-            this.game.player.setState(8, 0);
-        }
-
-        this.isEnterPressed = true;
-        this.playSound2OnDotPause = false;
-
-        const dlg = this.dialogue[this.dialogueIndex].dialogue;
-
-        if (this.continueDialogue) {
-            this.pause = false;
-            this.textIndex++;
-            this.continueDialogue = false;
-
-        } else if (this.textIndex < dlg.length) {
-            const dotIndices = this.getDotIndices(dlg);
-            const nextDotIndex = dotIndices.find((idx) => idx > this.textIndex);
-
-            if (nextDotIndex !== undefined) {
-                this.textIndex = this.ellipsisFollowedOnlyByTerminalPunct(dlg, nextDotIndex)
-                    ? dlg.length
-                    : nextDotIndex;
-            } else {
-                this.textIndex = dlg.length;
-            }
-
-        } else if (this.dialogueIndex < this.dialogue.length - 1) {
-            this.dialogueIndex++;
-            this.textIndex = 0;
-            this.lastSound2Played = false;
-
-            const currentDialogue = this.dialogue[this.dialogueIndex];
-            const words = this.splitDialogueIntoWords(currentDialogue.dialogue);
-            this.fullWordsColor = words;
-
-        } else {
-            if (boss && boss.current && boss.id === "ntharax") {
-                if (boss.preFight) {
-                    this.startBossFight(boss);
-                } else if (boss.postFight) {
-                    this.finishPostFight(boss);
-                }
-            }
-        }
-
-        const checkAnimationStatus = setInterval(() => {
-            if (this.textIndex >= this.dialogue[this.dialogueIndex].dialogue.length) {
-                this.isEnterPressed = false;
-                clearInterval(checkAnimationStatus);
-            }
-        }, 100);
+    getBattleTheme() {
+        return 'ntharaxBattleTheme';
     }
 
-    startBossFight(boss) {
-        this.removeEventListeners();
-        this.cutsceneBackgroundChange(500, 2500, 200);
-        this.game.audioHandler.cutsceneSFX.playSound("battleStarting");
-
-        setTimeout(() => {
-            this._beginNTharaxBattle(boss);
-        }, 3000);
+    getResetLayerImageIds() {
+        return [
+            'bonusMap3Planets',
+        ];
     }
 
-    finishPostFight(boss) {
-        this.removeEventListeners();
-
-        this.game.enterDuringBackgroundTransition = false;
-        this.game.input.keys = [];
-
-        boss.talkToBoss = false;
-        boss.postFight = false;
-        boss.runAway = false;
-
-        const fadeIn = 500;
-        const stayBlack = 250;
-        const fadeOut = 500;
-
-        fadeInAndOut(this.game.canvas, fadeIn, stayBlack, fadeOut, () => {
-            this.game.enterDuringBackgroundTransition = true;
-        });
-
-        this.game.endCutscene();
-        this.game.cutscenes = [];
-
-        setTimeout(() => {
-            if (boss.current && boss.id === "ntharax") {
-                boss.current.markedForDeletion = true;
-            }
-            boss.isVisible = false;
-            boss.current = null;
-
-            const bg = this.game.background;
-            const dist = (bg && bg.totalDistanceTraveled) || 0;
-
-            this.game.maxDistance = dist + 5;
-        }, fadeIn - 30);
-    }
-
-    displayDialogue() {
-        this.handleKeyDown = (event) => {
-            const boss = this.game.boss;
-
-            if (
-                this.game.menu.pause.isPaused ||
-                this.game.currentMenu === this.game.menu.audioSettings
-            ) {
-                return;
-            }
-
-            if (event.key === "Tab" && this.game.enterDuringBackgroundTransition) {
-                event.preventDefault?.();
-
-                if (boss && boss.current && boss.id === "ntharax" && boss.preFight) {
-                    this.skipPreFightAndStartBattle(boss);
-                }
-            }
-
-            if (
-                event.key === "Enter" &&
-                !this.isEnterPressed &&
-                this.game.enterDuringBackgroundTransition
-            ) {
-                this.enterOrLeftClick();
-            }
-        };
-
-        this.handleLeftClick = () => {
-            if (
-                !this.isEnterPressed &&
-                this.game.enterDuringBackgroundTransition &&
-                !this.game.menu.pause.isPaused &&
-                this.game.currentMenu !== this.game.menu.audioSettings
-            ) {
-                this.enterOrLeftClick();
-            }
-        };
-
-        super.displayDialogue();
-    }
-
-    skipPreFightAndStartBattle(boss) {
-        this.removeEventListeners();
-        this.cutsceneBackgroundChange(500, 2500, 200);
-
-        this.stopAllAudio();
-        this.game.audioHandler.cutsceneDialogue.playSound("bit1", false, true, true);
-
-        this.game.audioHandler.cutsceneSFX.playSound("battleStarting");
-
-        setTimeout(() => {
-            this.dialogueIndex = this.dialogue.length - 1;
-            this._beginNTharaxBattle(boss);
-        }, 3000);
-    }
-
-    resolveCutsceneAction() {
-        const boss = this.game.boss;
-        const isNTharax = boss && boss.current && boss.id === "ntharax";
-
-        const mode = isNTharax && boss.preFight
-            ? "pre"
-            : (isNTharax && boss.postFight ? "post" : null);
-
-        if (!mode) return undefined;
-
-        const table = this.actions[mode];
-        if (!table) return undefined;
-
-        return table[this.dialogueIndex];
+    shouldRemoveBossAfterPostFight() {
+        return true;
     }
 }
 
@@ -240,24 +29,106 @@ export class BonusMap3NTharaxIngameCutsceneBeforeFight extends NTharaxCutscene {
         super(game);
 
         const FIREDOG = { x: 100, y: 400, width: 200, height: 200 };
-        const NTHARAX_RIGHT = { x: 1560, y: 400, width: 200, height: 200 };
+        const NTHARAX_RIGHT = { x: 1520, y: 400, width: 200, height: 200 };
 
-        this.addDialogue(
+        this.addDialogue( //0
             `${this.firedog}`,
-            `A hooded individual- So it's you...`,
-            this.addImage(this.setfiredogNormalBorder(), FIREDOG, { talking: true }),
+            `Wait... is that the celestial tyrant?`,
+            {
+                onAdvance: () => this.playMusic('downADarkPath', true),
+            },
+            this.addImage(this.setfiredogSurprisedBorder(), FIREDOG, { talking: true }),
         );
-
-        this.addDialogue(
+        this.addDialogue( //1
             `${this.firedog}`,
-            `You are the one who stole the ${this.crypticToken}, weren't you?`,
-            this.addImage(this.setfiredogAngryBorder(), FIREDOG, { talking: true }),
+            `Are you ${this.ntharax}...?`,
+            this.addImage(this.setfiredogSurprisedBorder(), FIREDOG, { talking: true }),
         );
-
-        this.addDialogue(
+        this.addDialogue( //2
             `${this.ntharax}`,
-            `Why have you come to this place? This is my territory!`,
-            this.addImage(this.setfiredogCuriousBorder(), FIREDOG),
+            `SO... THE CREATURE WHO DARED ENTER MY REALM HAS FINALLY REACHED ME.`,
+            this.addImage(this.setfiredogSurprisedBorder(), FIREDOG),
+            this.addImage('ntharaxBorder', NTHARAX_RIGHT, { talking: true }),
+        );
+        this.addDialogue( //3
+            `${this.firedog}`,
+            `I'm here to stop you from breaking through that portal into our world.`,
+            this.addImage(this.setfiredogUpsetBorder(), FIREDOG, { talking: true }),
+            this.addImage('ntharaxBorder', NTHARAX_RIGHT),
+        );
+        this.addDialogue( //4
+            `${this.ntharax}`,
+            `STOP ME?`,
+            this.addImage(this.setfiredogUpsetBorder(), FIREDOG),
+            this.addImage('ntharaxBorder', NTHARAX_RIGHT, { talking: true }),
+        );
+        this.addDialogue( //5
+            `${this.ntharax}`,
+            `I HAVE WAITED THROUGH AGES OF SILENCE TO TEAR OPEN THE WAY BACK.`,
+            this.addImage(this.setfiredogUpsetBorder(), FIREDOG),
+            this.addImage('ntharaxBorder', NTHARAX_RIGHT, { talking: true }),
+        );
+        this.addDialogue( //6
+            `${this.ntharax}`,
+            `YOUR WORLD WAS NEVER MEANT TO ESCAPE ME FOREVER.`,
+            this.addImage(this.setfiredogUpsetBorder(), FIREDOG),
+            this.addImage('ntharaxBorder', NTHARAX_RIGHT, { talking: true }),
+        );
+        this.addDialogue( //7
+            `${this.firedog}`,
+            `Not happening.`,
+            this.addImage(this.setfiredogUpsetBorder(), FIREDOG, { talking: true }),
+            this.addImage('ntharaxBorder', NTHARAX_RIGHT),
+        );
+        this.addDialogue( //8
+            `${this.ntharax}`,
+            `WHEN MY ENERGY STABILIZES THE BREACH, YOUR SKIES WILL BREAK AND YOUR SEAS WILL RISE.`,
+            this.addImage(this.setfiredogUpsetBorder(), FIREDOG),
+            this.addImage('ntharaxBorder', NTHARAX_RIGHT, { talking: true }),
+        );
+        this.addDialogue( //9
+            `${this.ntharax}`,
+            `ALL THINGS BENEATH THEM WILL DROWN.`,
+            this.addImage(this.setfiredogUpsetBorder(), FIREDOG),
+            this.addImage('ntharaxBorder', NTHARAX_RIGHT, { talking: true }),
+        );
+        this.addDialogue( //10
+            `${this.firedog}`,
+            `Then I'll stop you here.`,
+            this.addImage(this.setfiredogAngryBorder(), FIREDOG, { talking: true }),
+            this.addImage('ntharaxBorder', NTHARAX_RIGHT),
+        );
+        this.addDialogue( //11
+            `${this.ntharax}`,
+            `YOU STAND IN A REALM SHAPED BY MY WILL, LITTLE FOOL.`,
+            this.addImage(this.setfiredogAngryBorder(), FIREDOG),
+            this.addImage('ntharaxBorder', NTHARAX_RIGHT, { talking: true }),
+        );
+        this.addDialogue( //12
+            `${this.ntharax}`,
+            `I AM ${this.ntharax}, THE CELESTIAL TYRANT. CIVILIZATIONS ONCE TREMBLED AT THE SHADOW OF MY RETURN.`,
+            this.addImage(this.setfiredogAngryBorder(), FIREDOG),
+            this.addImage('ntharaxBorder', NTHARAX_RIGHT, { talking: true }),
+        );
+        this.addDialogue( //13
+            `${this.firedog}`,
+            `Then I'll make sure you never return!`,
+            this.addImage(this.setfiredogAngryBorder(), FIREDOG, { talking: true }),
+            this.addImage('ntharaxBorder', NTHARAX_RIGHT),
+        );
+        this.addDialogue( //14
+            `${this.ntharax}`,
+            `COME, THEN.`,
+            this.addImage(this.setfiredogAngryBorder(), FIREDOG),
+            this.addImage('ntharaxBorder', NTHARAX_RIGHT, { talking: true }),
+        );
+        this.addDialogue( //15
+            `${this.ntharax}`,
+            `DIE, AND LET YOUR FALL BE THE FINAL STEP IN MY ASCENT.`,
+            {
+                onAdvance: () => this.fadeOutMusic('downADarkPath'),
+            },
+            this.addImage(this.setfiredogAngryBorder(), FIREDOG),
             this.addImage('ntharaxBorder', NTHARAX_RIGHT, { talking: true }),
         );
     }
@@ -268,20 +139,60 @@ export class BonusMap3NTharaxIngameCutsceneAfterFight extends NTharaxCutscene {
         super(game);
 
         const FIREDOG = { x: 100, y: 400, width: 200, height: 200 };
-        const NTHARAX = { x: 1100, y: 400, width: 200, height: 200 };
+        const NTHARAX = { x: 750, y: 400, width: 200, height: 200 };
 
-        this.addDialogue(
+        this.addDialogue( //0
             `${this.ntharax}`,
-            `You're strong.`,
+            `NO...! THIS CANNOT BE...!`,
             this.addImage(this.setfiredogNormalBorder(), FIREDOG),
             this.addImage('ntharaxBorder', NTHARAX, { talking: true }),
         );
-
-        this.addDialogue(
+        this.addDialogue( //1
+            `${this.ntharax}`,
+            `MY RETURN... I WAS SO CLOSE!`,
+            this.addImage(this.setfiredogNormalBorder(), FIREDOG),
+            this.addImage('ntharaxBorder', NTHARAX, { talking: true }),
+        );
+        this.addDialogue( //2
             `${this.firedog}`,
-            `How do you know my fireball ability? How is this possible?`,
-            this.addImage(this.setfiredogNormalBorder(), FIREDOG, { talking: true }),
+            `It's over, ${this.ntharax}.`,
+            this.addImage(this.setfiredogUpsetBorder(), FIREDOG, { talking: true }),
             this.addImage('ntharaxBorder', NTHARAX),
+        );
+        this.addDialogue( //3
+            `${this.ntharax}`,
+            `OVER?`,
+            this.addImage(this.setfiredogUpsetBorder(), FIREDOG),
+            this.addImage('ntharaxBorder', NTHARAX, { talking: true }),
+        );
+        this.addDialogue( //4
+            `${this.ntharax}`,
+            `YOU HAVE DELAYED ME... NOTHING MORE...`,
+            this.addImage(this.setfiredogSurprisedBorder(), FIREDOG),
+            this.addImage('ntharaxBorder', NTHARAX, { talking: true }),
+        );
+        this.addDialogue( //5
+            `${this.ntharax}`,
+            `THE VOID DOES NOT FORGET... AND ONE DAY... I WILL RETURN...`,
+            this.addImage(this.setfiredogSurprisedBorder(), FIREDOG),
+            this.addImage('ntharaxBorder', NTHARAX, { talking: true }),
+        );
+        this.addDialogue( //6
+            `${this.ntharax}`,
+            `NOOOOOOOO...!`,
+            this.addImage(this.setfiredogSurprisedBorder(), FIREDOG),
+            this.addImage('ntharaxBorder', NTHARAX, { talking: true }),
+        );
+        this.addDialogue( //7
+            `${this.ntharax}`,
+            `I WILL BE BACK...!`,
+            this.addImage(this.setfiredogSurprisedBorder(), FIREDOG),
+            this.addImage('ntharaxBorder', NTHARAX, { talking: true }),
+        );
+        this.addDialogue( //8
+            `${this.firedog}`,
+            `Ugh... that was rough... but at least he's gone... well.. at least for now.`,
+            this.addImage(this.setfiredogTiredBorder(), FIREDOG, { talking: true }),
         );
     }
 }

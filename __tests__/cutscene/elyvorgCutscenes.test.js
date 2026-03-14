@@ -1,7 +1,7 @@
 import {
     ElyvorgCutscene,
     Map7ElyvorgIngameCutsceneBeforeFight,
-    Map7ElyvorgIngameCutsceneAfterFight
+    Map7ElyvorgIngameCutsceneAfterFight,
 } from '../../game/cutscene/elyvorgCutscenes.js';
 import * as fading from '../../game/animations/fading.js';
 
@@ -9,32 +9,79 @@ jest.useFakeTimers();
 
 const createBaseGame = () => {
     const noop = jest.fn();
+
     return {
+        canvas: {},
+        width: 1920,
+        height: 1080,
+        gameHeight: 1080,
+        coins: 0,
+        winningCoins: 100,
+        currentMap: 'Map7',
+        input: { keys: [] },
+
         player: {
             currentState: 'foo',
             states: Array.from({ length: 10 }, (_, i) => `s${i}`),
-            setState: jest.fn()
+            setState: jest.fn(),
         },
+
         menu: {
             pause: { isPaused: false },
-            audioSettings: Symbol('settings')
+            audioSettings: Symbol('settings'),
+            wardrobe: {
+                defaultSkin: 'default',
+                hatSkin: 'hat',
+                choloSkin: 'cholo',
+                zabkaSkin: 'zabka',
+                shinySkin: 'shiny',
+                currentSkin: 'default',
+            },
         },
+
         currentMenu: null,
         enterDuringBackgroundTransition: true,
+        maxDistance: 0,
+        cutsceneActive: false,
+        talkToPenguin: false,
+        shakeActive: false,
 
         background: {
+            totalDistanceTraveled: 42,
             resetLayersByImageIds: jest.fn(),
+            constructor: { name: 'Map7' },
         },
 
         audioHandler: {
-            cutsceneSFX: { playSound: noop, stopAllSounds: noop },
-            cutsceneDialogue: { playSound: noop, stopAllSounds: noop },
-            cutsceneMusic: { playSound: noop, fadeOutAndStop: noop, stopAllSounds: noop },
-            mapSoundtrack: { playSound: noop, fadeOutAndStop: noop },
-            firedogSFX: { playSound: noop }
+            cutsceneSFX: {
+                playSound: noop,
+                stopAllSounds: noop,
+                fadeOutAndStop: noop,
+            },
+            cutsceneDialogue: {
+                playSound: noop,
+                stopAllSounds: noop,
+                pauseSound: noop,
+            },
+            cutsceneMusic: {
+                playSound: noop,
+                fadeOutAndStop: noop,
+                stopAllSounds: noop,
+            },
+            mapSoundtrack: {
+                playSound: noop,
+                fadeOutAndStop: noop,
+                stopAllSounds: noop,
+            },
+            firedogSFX: {
+                playSound: noop,
+                stopAllSounds: noop,
+            },
         },
+
         endCutscene: jest.fn(),
         cutscenes: [],
+
         boss: {
             id: 'elyvorg',
             current: {},
@@ -42,39 +89,79 @@ const createBaseGame = () => {
             preFight: false,
             postFight: false,
             inFight: false,
+            progressComplete: false,
             runAway: false,
+            isVisible: true,
         },
     };
 };
 
-const createMap = (overrides = {}) => ({
-    menu: {
-        wardrobe: {
-            defaultSkin: 'default',
-            hatSkin: 'hat',
-            choloSkin: 'cholo',
-            zabkaSkin: 'zabka',
-            shinySkin: 'shiny',
-            currentSkin: 'default'
-        }
-    },
-    ...overrides
+const createMapGame = (overrides = {}) => {
+    const base = createBaseGame();
+
+    return {
+        ...base,
+        ...overrides,
+        menu: {
+            ...base.menu,
+            ...(overrides.menu || {}),
+            wardrobe: {
+                ...base.menu.wardrobe,
+                ...((overrides.menu && overrides.menu.wardrobe) || {}),
+            },
+        },
+        background: {
+            ...base.background,
+            ...(overrides.background || {}),
+        },
+        audioHandler: {
+            ...base.audioHandler,
+            ...(overrides.audioHandler || {}),
+        },
+        player: {
+            ...base.player,
+            ...(overrides.player || {}),
+        },
+        boss: {
+            ...base.boss,
+            ...(overrides.boss || {}),
+        },
+        input: {
+            ...base.input,
+            ...(overrides.input || {}),
+        },
+    };
+};
+
+beforeAll(() => {
+    if (!document.getElementById) {
+        document.getElementById = jest.fn(() => ({}));
+    } else {
+        jest.spyOn(document, 'getElementById').mockImplementation(() => ({}));
+    }
+});
+
+afterAll(() => {
+    if (document.getElementById.mockRestore) {
+        document.getElementById.mockRestore();
+    }
 });
 
 describe('ElyvorgCutscene', () => {
-    let game, cut;
+    let game;
+    let cut;
 
     beforeEach(() => {
         game = createBaseGame();
 
-        jest.spyOn(fading, 'fadeInAndOut')
-            .mockImplementation((canvas, a, b, c, cb) => cb());
+        jest.spyOn(fading, 'fadeInAndOut').mockImplementation((canvas, fadeIn, stayBlack, fadeOut, cb) => {
+            if (cb) cb();
+        });
 
         cut = new ElyvorgCutscene(game);
-
         cut.dialogue = [
-            { dialogue: 'Hello...' },
-            { dialogue: 'Goodbye.' }
+            { dialogue: 'Hello...', onAdvance: jest.fn() },
+            { dialogue: 'Goodbye.' },
         ];
     });
 
@@ -83,24 +170,37 @@ describe('ElyvorgCutscene', () => {
         jest.clearAllTimers();
     });
 
-    it('invokes cutsceneController, updates player state, and sets flags', () => {
-        jest.spyOn(cut, 'cutsceneController');
+    it('uses Elyvorg boss metadata', () => {
+        expect(cut.getBossId()).toBe('elyvorg');
+        expect(cut.getBattleTheme()).toBe('elyvorgBattleTheme');
+        expect(cut.getResetLayerImageIds()).toEqual([
+            'map7spikeStones',
+            'map7cactus',
+            'map7rocks1',
+            'map7rocks3',
+        ]);
+        expect(cut.shouldRemoveBossAfterPostFight()).toBe(false);
+    });
+
+    it('runs current dialogue onAdvance, updates player state, and advances to the next dialogue state correctly', () => {
         cut.textIndex = cut.dialogue[0].dialogue.length;
         cut.dialogueIndex = 0;
         game.player.currentState = 'not-s8';
 
         cut.enterOrLeftClick();
 
-        expect(cut.cutsceneController).toHaveBeenCalled();
+        expect(cut.dialogue[0].onAdvance).toHaveBeenCalled();
         expect(game.player.setState).toHaveBeenCalledWith(8, 0);
-        expect(cut.isEnterPressed).toBe(true);
         expect(cut.playSound2OnDotPause).toBe(false);
+        expect(cut.dialogueIndex).toBe(1);
+        expect(cut.textIndex).toBe(0);
+        expect(cut.isEnterPressed).toBe(false);
     });
 
     it('does not change player state when already in state 8', () => {
         game.player.currentState = game.player.states[8];
-        cut.textIndex = 0;
         cut.dialogueIndex = 0;
+        cut.textIndex = 0;
 
         cut.enterOrLeftClick();
 
@@ -111,13 +211,13 @@ describe('ElyvorgCutscene', () => {
         beforeEach(() => {
             cut.dialogue = [
                 { dialogue: 'One' },
-                { dialogue: 'Two' }
+                { dialogue: 'Two' },
             ];
             cut.dialogueIndex = 0;
             cut.textIndex = 0;
         });
 
-        it('continueDialogue branch advances one character', () => {
+        it('continueDialogue branch advances one character and clears the flag', () => {
             cut.continueDialogue = true;
             cut.textIndex = 2;
 
@@ -135,7 +235,7 @@ describe('ElyvorgCutscene', () => {
 
             cut.enterOrLeftClick();
 
-            expect(cut.textIndex).toBe(5); // "Hello".length
+            expect(cut.textIndex).toBe(5);
         });
 
         it('jumps to the next dot when dialogue contains ellipses', () => {
@@ -148,8 +248,8 @@ describe('ElyvorgCutscene', () => {
             expect(cut.textIndex).toBe(1);
         });
 
-        it('advances to next dialogue when current line is fully revealed', () => {
-            cut.textIndex = cut.dialogue[0].dialogue.length; // 3
+        it('advances to the next dialogue when current line is already fully revealed', () => {
+            cut.textIndex = cut.dialogue[0].dialogue.length;
             cut.dialogueIndex = 0;
             cut.lastSound2Played = true;
 
@@ -168,27 +268,33 @@ describe('ElyvorgCutscene', () => {
             game.boss.current = {};
             cut.dialogueIndex = 1;
             cut.textIndex = cut.dialogue[1].dialogue.length;
+
             jest.spyOn(cut, 'removeEventListeners');
             jest.spyOn(cut, 'cutsceneBackgroundChange');
         });
 
-        it('plays battleStarting SFX, then after 3s ends cutscene and starts fight', () => {
+        it('plays battleStarting SFX, then begins the boss fight after 3 seconds', () => {
             cut.enterOrLeftClick();
 
             expect(cut.removeEventListeners).toHaveBeenCalled();
             expect(cut.cutsceneBackgroundChange).toHaveBeenCalledWith(500, 2500, 200);
-            expect(game.audioHandler.cutsceneSFX.playSound)
-                .toHaveBeenCalledWith('battleStarting');
+            expect(game.audioHandler.cutsceneSFX.playSound).toHaveBeenCalledWith('battleStarting');
 
             jest.advanceTimersByTime(3000);
 
+            expect(game.background.resetLayersByImageIds).toHaveBeenCalledWith([
+                'map7spikeStones',
+                'map7cactus',
+                'map7rocks1',
+                'map7rocks3',
+            ]);
             expect(game.endCutscene).toHaveBeenCalled();
             expect(game.boss.talkToBoss).toBe(false);
             expect(game.boss.preFight).toBe(false);
             expect(game.boss.inFight).toBe(true);
+            expect(game.boss.progressComplete).toBe(true);
             expect(game.cutscenes).toEqual([]);
-            expect(game.audioHandler.mapSoundtrack.playSound)
-                .toHaveBeenCalledWith('elyvorgBattleTheme', true);
+            expect(game.audioHandler.mapSoundtrack.playSound).toHaveBeenCalledWith('elyvorgBattleTheme', true);
         });
     });
 
@@ -198,10 +304,12 @@ describe('ElyvorgCutscene', () => {
             game.boss.current = {};
             cut.dialogueIndex = 1;
             cut.textIndex = cut.dialogue[1].dialogue.length;
+
             jest.spyOn(cut, 'removeEventListeners');
+            jest.spyOn(cut, 'onPostFightFinished');
         });
 
-        it('immediately ends cutscene without background change', () => {
+        it('ends the cutscene, makes the boss run away, and updates maxDistance', () => {
             cut.enterOrLeftClick();
 
             expect(game.endCutscene).toHaveBeenCalled();
@@ -210,14 +318,15 @@ describe('ElyvorgCutscene', () => {
             expect(game.boss.talkToBoss).toBe(false);
             expect(game.boss.postFight).toBe(false);
             expect(game.boss.runAway).toBe(true);
+            expect(game.maxDistance).toBe(47);
+            expect(cut.onPostFightFinished).toHaveBeenCalled();
         });
     });
 
-    it('resets isEnterPressed via interval when at end of a post-fight line', () => {
-        game.boss.postFight = true;
+    it('resets isEnterPressed via interval once the line is fully revealed', () => {
         cut.dialogue = [{ dialogue: 'X' }];
         cut.dialogueIndex = 0;
-        cut.textIndex = 1; // at end
+        cut.textIndex = 1;
         cut.isEnterPressed = true;
 
         cut.enterOrLeftClick();
@@ -225,6 +334,41 @@ describe('ElyvorgCutscene', () => {
         jest.advanceTimersByTime(100);
 
         expect(cut.isEnterPressed).toBe(false);
+    });
+
+    it('finishPostFightWithBossRemoval removes the boss and updates distance', () => {
+        class RemovingElyvorgCutscene extends ElyvorgCutscene {
+            shouldRemoveBossAfterPostFight() {
+                return true;
+            }
+        }
+
+        const removeGame = createBaseGame();
+        removeGame.boss.postFight = true;
+        removeGame.boss.current = { markedForDeletion: false };
+
+        const removeCut = new RemovingElyvorgCutscene(removeGame);
+        removeCut.dialogue = [{ dialogue: 'Done.' }];
+        removeCut.dialogueIndex = 0;
+        removeCut.textIndex = 5;
+
+        jest.spyOn(removeCut, 'removeEventListeners');
+        jest.spyOn(removeCut, 'onPostFightFinished');
+
+        removeCut.enterOrLeftClick();
+
+        expect(removeCut.removeEventListeners).toHaveBeenCalled();
+        expect(removeGame.enterDuringBackgroundTransition).toBe(true);
+        expect(removeGame.input.keys).toEqual([]);
+        expect(removeGame.endCutscene).toHaveBeenCalled();
+        expect(removeGame.cutscenes).toEqual([]);
+
+        jest.advanceTimersByTime(470);
+
+        expect(removeGame.boss.current).toBeNull();
+        expect(removeGame.boss.isVisible).toBe(false);
+        expect(removeGame.maxDistance).toBe(47);
+        expect(removeCut.onPostFightFinished).toHaveBeenCalled();
     });
 
     describe('displayDialogue event handling', () => {
@@ -242,234 +386,251 @@ describe('ElyvorgCutscene', () => {
             expect(cut.enterOrLeftClick).toHaveBeenCalled();
         });
 
-        it('left mouse click invokes enterOrLeftClick when allowed', () => {
+        it('left click invokes enterOrLeftClick when allowed', () => {
             cut.isEnterPressed = false;
 
-            cut.handleLeftClick({ button: 0 });
+            cut.handleLeftClick();
 
             expect(cut.enterOrLeftClick).toHaveBeenCalled();
         });
 
-        it('Tab in pre-fight immediately starts battle sequence and jumps to last dialogue', () => {
+        it('Tab in pre-fight skips to the last dialogue and starts battle after 3 seconds', () => {
             game.boss.preFight = true;
             game.boss.current = {};
-            jest.spyOn(cut, 'removeEventListeners');
-            jest.spyOn(cut, 'cutsceneBackgroundChange');
-
             cut.dialogue = [
                 { dialogue: 'First' },
                 { dialogue: 'Middle' },
-                { dialogue: 'Last' }
+                { dialogue: 'Last' },
             ];
-            cut.displayDialogue();
-            cut.handleKeyDown({ key: 'Tab' });
 
+            jest.spyOn(cut, 'removeEventListeners');
+            jest.spyOn(cut, 'cutsceneBackgroundChange');
+
+            const preventDefault = jest.fn();
+
+            cut.displayDialogue();
+            cut.handleKeyDown({ key: 'Tab', preventDefault });
+
+            expect(preventDefault).toHaveBeenCalled();
             expect(cut.removeEventListeners).toHaveBeenCalled();
             expect(cut.cutsceneBackgroundChange).toHaveBeenCalledWith(500, 2500, 200);
             expect(game.audioHandler.cutsceneDialogue.stopAllSounds).toHaveBeenCalled();
             expect(game.audioHandler.cutsceneSFX.stopAllSounds).toHaveBeenCalled();
             expect(game.audioHandler.cutsceneMusic.stopAllSounds).toHaveBeenCalled();
-            expect(game.audioHandler.cutsceneDialogue.playSound)
-                .toHaveBeenCalledWith('bit1', false, true, true);
-            expect(game.audioHandler.cutsceneSFX.playSound)
-                .toHaveBeenCalledWith('battleStarting');
+            expect(game.audioHandler.cutsceneDialogue.playSound).toHaveBeenCalledWith('bit1', false, true, true);
+            expect(game.audioHandler.cutsceneSFX.playSound).toHaveBeenCalledWith('battleStarting');
 
-            // after 3s, now in-fight and index jumped
             jest.advanceTimersByTime(3000);
 
+            expect(cut.dialogueIndex).toBe(2);
             expect(game.boss.inFight).toBe(true);
             expect(game.boss.talkToBoss).toBe(false);
             expect(game.boss.preFight).toBe(false);
             expect(game.cutscenes).toEqual([]);
+            expect(game.audioHandler.mapSoundtrack.playSound).toHaveBeenCalledWith('elyvorgBattleTheme', true);
+        });
+
+        it('Tab in post-fight before the last dialogue skips to the final dialogue', () => {
+            game.boss.postFight = true;
+            game.boss.current = {};
+            cut.dialogue = [
+                { dialogue: 'First' },
+                { dialogue: 'Middle' },
+                { dialogue: 'Last' },
+            ];
+            cut.dialogueIndex = 0;
+
+            jest.spyOn(cut, 'transitionWithBg').mockImplementation(({ beforeFade, onBlack }) => {
+                beforeFade();
+                onBlack();
+            });
+
+            const preventDefault = jest.fn();
+
+            cut.displayDialogue();
+            cut.handleKeyDown({ key: 'Tab', preventDefault });
+
+            expect(preventDefault).toHaveBeenCalled();
+            expect(cut.transitionWithBg).toHaveBeenCalled();
+            expect(game.audioHandler.cutsceneDialogue.stopAllSounds).toHaveBeenCalled();
+            expect(game.audioHandler.cutsceneSFX.stopAllSounds).toHaveBeenCalled();
+            expect(game.audioHandler.cutsceneMusic.stopAllSounds).toHaveBeenCalled();
+            expect(game.audioHandler.cutsceneDialogue.playSound).toHaveBeenCalledWith('bit1', false, true, true);
             expect(cut.dialogueIndex).toBe(2);
-            expect(game.audioHandler.mapSoundtrack.playSound)
-                .toHaveBeenCalledWith('elyvorgBattleTheme', true);
         });
 
-        it('Tab does nothing when not in pre-fight', () => {
-            game.boss.preFight = false;
-            const spyRemove = jest.spyOn(cut, 'removeEventListeners');
-            const spyStopDialogue = jest.spyOn(game.audioHandler.cutsceneDialogue, 'stopAllSounds');
+        it('Tab does nothing when boss does not match Elyvorg', () => {
+            game.boss.id = 'someOtherBoss';
+            game.boss.preFight = true;
 
-            cut.handleKeyDown({ key: 'Tab' });
+            const spySkip = jest.spyOn(cut, 'skipPreFightAndStartBattle');
 
-            expect(spyRemove).not.toHaveBeenCalled();
-            expect(spyStopDialogue).not.toHaveBeenCalled();
+            cut.handleKeyDown({ key: 'Tab', preventDefault: jest.fn() });
+
+            expect(spySkip).not.toHaveBeenCalled();
         });
 
-        it('does not trigger Enter/Click handlers when paused, in settings, or transition disabled', () => {
-            // baseline call
+        it('does not trigger Enter or click while paused, in settings, or when transition is disabled', () => {
             cut.handleKeyDown({ key: 'Enter' });
             expect(cut.enterOrLeftClick).toHaveBeenCalledTimes(1);
 
-            // paused
             game.menu.pause.isPaused = true;
             cut.handleKeyDown({ key: 'Enter' });
-            cut.handleLeftClick({ button: 0 });
+            cut.handleLeftClick();
             expect(cut.enterOrLeftClick).toHaveBeenCalledTimes(1);
 
-            // in settings menu
             game.menu.pause.isPaused = false;
             game.currentMenu = game.menu.audioSettings;
             cut.handleKeyDown({ key: 'Enter' });
-            cut.handleLeftClick({ button: 0 });
+            cut.handleLeftClick();
             expect(cut.enterOrLeftClick).toHaveBeenCalledTimes(1);
 
-            // transition disabled
             game.currentMenu = null;
             game.enterDuringBackgroundTransition = false;
             cut.handleKeyDown({ key: 'Enter' });
-            cut.handleLeftClick({ button: 0 });
+            cut.handleLeftClick();
             expect(cut.enterOrLeftClick).toHaveBeenCalledTimes(1);
-        });
-    });
-
-    describe('cutsceneController()', () => {
-        beforeEach(() => {
-            cut.dialogue = Array.from({ length: 40 }, () => ({ dialogue: 'X' }));
-            cut.textIndex = 1; // not at end
-            game.boss.preFight = false;
-            game.boss.postFight = false;
-        });
-
-        it('does nothing when textIndex does not equal current dialogue length', () => {
-            Object.values(game.audioHandler).forEach(h => {
-                if (h.playSound) h.playSound.mockClear();
-                if (h.fadeOutAndStop) h.fadeOutAndStop.mockClear();
-            });
-
-            cut.cutsceneController();
-
-            Object.values(game.audioHandler).forEach(h => {
-                if (h.playSound) expect(h.playSound).not.toHaveBeenCalled();
-                if (h.fadeOutAndStop) expect(h.fadeOutAndStop).not.toHaveBeenCalled();
-            });
-        });
-
-        describe('pre-fight ambience & dream scenes', () => {
-            beforeEach(() => {
-                game.boss.preFight = true;
-                game.boss.current = {};
-                cut.textIndex = cut.dialogue[0].dialogue.length;
-            });
-
-            it('dialogueIndex 1 starts dark ambience', () => {
-                cut.dialogueIndex = 1;
-
-                cut.cutsceneController();
-
-                expect(game.audioHandler.mapSoundtrack.playSound)
-                    .toHaveBeenCalledWith('crypticTokenDarkAmbienceSound', true);
-            });
-
-            it('dialogueIndex 5 fades out dark ambience', () => {
-                cut.dialogueIndex = 5;
-
-                cut.cutsceneController();
-
-                expect(game.audioHandler.mapSoundtrack.fadeOutAndStop)
-                    .toHaveBeenCalledWith('crypticTokenDarkAmbienceSound');
-            });
-
-            [12, 15, 17].forEach(idx => {
-                it(`dialogueIndex ${idx} triggers dream sound and background change`, () => {
-                    jest.spyOn(cut, 'removeEventListeners');
-                    jest.spyOn(cut, 'addEventListeners');
-                    jest.clearAllTimers();
-                    cut.dialogueIndex = idx;
-
-                    cut.cutsceneController();
-
-                    expect(cut.removeEventListeners).toHaveBeenCalled();
-                    expect(game.audioHandler.firedogSFX.playSound)
-                        .toHaveBeenCalledWith('dreamSoundInGame');
-                    expect(fading.fadeInAndOut).toHaveBeenCalled();
-
-                    jest.advanceTimersByTime(1000);
-
-                    expect(cut.addEventListeners).toHaveBeenCalled();
-                });
-            });
-        });
-
-        describe('post-fight music transitions', () => {
-            beforeEach(() => {
-                game.boss.postFight = true;
-                game.boss.current = {};
-                cut.textIndex = cut.dialogue[0].dialogue.length;
-            });
-
-            it('dialogueIndex 2 starts unboundPurpose music', () => {
-                cut.dialogueIndex = 2;
-
-                cut.cutsceneController();
-
-                expect(game.audioHandler.cutsceneMusic.playSound)
-                    .toHaveBeenCalledWith('unboundPurpose', true);
-            });
-
-            it('dialogueIndex 25 starts dark ambience', () => {
-                cut.dialogueIndex = 25;
-
-                cut.cutsceneController();
-
-                expect(game.audioHandler.mapSoundtrack.playSound)
-                    .toHaveBeenCalledWith('crypticTokenDarkAmbienceSound', true);
-            });
-
-            it('dialogueIndex 29 fades out dark ambience', () => {
-                cut.dialogueIndex = 29;
-
-                cut.cutsceneController();
-
-                expect(game.audioHandler.mapSoundtrack.fadeOutAndStop)
-                    .toHaveBeenCalledWith('crypticTokenDarkAmbienceSound');
-            });
-
-            it('dialogueIndex 37 fades out unboundPurpose', () => {
-                cut.dialogueIndex = 37;
-
-                cut.cutsceneController();
-
-                expect(game.audioHandler.cutsceneMusic.fadeOutAndStop)
-                    .toHaveBeenCalledWith('unboundPurpose');
-            });
         });
     });
 });
 
 describe('Map7ElyvorgIngameCutsceneBeforeFight', () => {
-    let game, m6pre;
+    let game;
+    let cutscene;
 
     beforeEach(() => {
-        game = createMap();
-        m6pre = new Map7ElyvorgIngameCutsceneBeforeFight(game);
+        game = createMapGame();
+        cutscene = new Map7ElyvorgIngameCutsceneBeforeFight(game);
     });
 
-    it('registers exactly 29 dialogues', () => {
-        expect(m6pre.dialogue.length).toBe(29);
+    afterEach(() => {
+        jest.clearAllMocks();
+        jest.clearAllTimers();
     });
 
     it('inherits ElyvorgCutscene interaction methods', () => {
-        expect(typeof m6pre.enterOrLeftClick).toBe('function');
-        expect(typeof m6pre.displayDialogue).toBe('function');
+        expect(typeof cutscene.enterOrLeftClick).toBe('function');
+        expect(typeof cutscene.displayDialogue).toBe('function');
+    });
+
+    it('uses Elyvorg boss metadata', () => {
+        expect(cutscene.getBossId()).toBe('elyvorg');
+        expect(cutscene.getBattleTheme()).toBe('elyvorgBattleTheme');
+    });
+
+    it('registers exactly 29 dialogues', () => {
+        expect(cutscene.dialogue.length).toBe(29);
+    });
+
+    it('first dialogue is Firedog recognizing the hooded individual', () => {
+        expect(cutscene.dialogue[0].dialogue).toBe(`A hooded individual- So it's you...`);
+    });
+
+    it('dialogue 1 starts crypticTokenDarkAmbienceSound', () => {
+        jest.spyOn(cutscene, 'playMusic');
+
+        cutscene.dialogue[1].onAdvance();
+
+        expect(cutscene.playMusic).toHaveBeenCalledWith('crypticTokenDarkAmbienceSound', true);
+    });
+
+    it('dialogue 5 fades out crypticTokenDarkAmbienceSound', () => {
+        jest.spyOn(cutscene, 'fadeOutMusic');
+
+        cutscene.dialogue[5].onAdvance();
+
+        expect(cutscene.fadeOutMusic).toHaveBeenCalledWith('crypticTokenDarkAmbienceSound');
+    });
+
+    it('dialogues 12, 15, and 17 trigger the dream transition sequence', () => {
+        [12, 15, 17].forEach((idx) => {
+            jest.spyOn(cutscene, 'playSFX');
+            jest.spyOn(cutscene, 'removeEventListeners');
+            jest.spyOn(cutscene, 'cutsceneBackgroundChange');
+            jest.spyOn(cutscene, 'addEventListeners');
+
+            cutscene.dialogue[idx].onAdvance();
+
+            expect(cutscene.playSFX).toHaveBeenCalledWith('dreamSound');
+            expect(cutscene.removeEventListeners).toHaveBeenCalled();
+            expect(cutscene.cutsceneBackgroundChange).toHaveBeenCalledWith(500, 500, 500);
+
+            jest.advanceTimersByTime(1000);
+
+            expect(cutscene.addEventListeners).toHaveBeenCalled();
+
+            jest.clearAllMocks();
+            jest.clearAllTimers();
+        });
+    });
+
+    it('dialogues 14, 15, 17, 19, 20, 21, and 22 are whisper dialogues where expected', () => {
+        [14, 15, 17, 19, 20, 21, 22].forEach((idx) => {
+            expect(cutscene.dialogue[idx].whisper).toBe(true);
+        });
+
+        expect(cutscene.dialogue[13].whisper).not.toBe(true);
+        expect(cutscene.dialogue[18].whisper).not.toBe(true);
+        expect(cutscene.dialogue[23].whisper).not.toBe(true);
     });
 });
 
 describe('Map7ElyvorgIngameCutsceneAfterFight', () => {
-    let game, m6post;
+    let game;
+    let cutscene;
 
     beforeEach(() => {
-        game = createMap();
-        m6post = new Map7ElyvorgIngameCutsceneAfterFight(game);
+        game = createMapGame();
+        cutscene = new Map7ElyvorgIngameCutsceneAfterFight(game);
     });
 
-    it('registers exactly 44 dialogues', () => {
-        expect(m6post.dialogue.length).toBe(44);
+    afterEach(() => {
+        jest.clearAllMocks();
+        jest.clearAllTimers();
     });
 
     it('inherits ElyvorgCutscene interaction methods', () => {
-        expect(typeof m6post.enterOrLeftClick).toBe('function');
-        expect(typeof m6post.displayDialogue).toBe('function');
+        expect(typeof cutscene.enterOrLeftClick).toBe('function');
+        expect(typeof cutscene.displayDialogue).toBe('function');
+    });
+
+    it('registers exactly 49 dialogues', () => {
+        expect(cutscene.dialogue.length).toBe(49);
+    });
+
+    it('dialogue 2 starts unboundPurpose music', () => {
+        jest.spyOn(cutscene, 'playMusic');
+
+        cutscene.dialogue[2].onAdvance();
+
+        expect(cutscene.playMusic).toHaveBeenCalledWith('unboundPurpose', true);
+    });
+
+    it('dialogue 23 starts crypticTokenDarkAmbienceSound music', () => {
+        jest.spyOn(cutscene, 'playMusic');
+
+        cutscene.dialogue[23].onAdvance();
+
+        expect(cutscene.playMusic).toHaveBeenCalledWith('crypticTokenDarkAmbienceSound', true);
+    });
+
+    it('dialogue 27 fades out crypticTokenDarkAmbienceSound', () => {
+        jest.spyOn(cutscene, 'fadeOutMusic');
+
+        cutscene.dialogue[27].onAdvance();
+
+        expect(cutscene.fadeOutMusic).toHaveBeenCalledWith('crypticTokenDarkAmbienceSound');
+    });
+
+    it('dialogue 41 fades out unboundPurpose', () => {
+        jest.spyOn(cutscene, 'fadeOutMusic');
+
+        cutscene.dialogue[41].onAdvance();
+
+        expect(cutscene.fadeOutMusic).toHaveBeenCalledWith('unboundPurpose');
+    });
+
+    it('last dialogue is Firedog refusing to let Elyvorg escape', () => {
+        expect(cutscene.dialogue[48].dialogue).toBe(`Uh? I'm not letting you run away, no!`);
     });
 });
