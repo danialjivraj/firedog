@@ -67,7 +67,6 @@ Below, only soundtracks will be credited.
 - **Dark Tension Rising Music by** [Mattia Cupelli](https://www.youtube.com/watch?v=-zvQoPyY2XEA)
 - **Tundra Suite by** [Fat Bard](https://www.youtube.com/watch?v=TrCeqqnBhmM)
 - **Hiding In The Dark by** [Peder B. Helland](https://www.youtube.com/watch?v=-mCJnf5hGs4)
-
 - **Grand Theft Auto IV Theme Song Edit by**
     [Raul Apxpei](https://www.youtube.com/watch?v=0bAF189Rf2U)
 - **Pokémon Mystery Dungeon**
