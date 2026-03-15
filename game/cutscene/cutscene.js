@@ -360,6 +360,12 @@ export class Cutscene {
         this.game.audioHandler.cutsceneMusic.stopAllSounds();
     }
 
+    fadeOutAndStopAllAudio(duration = 500) {
+        this.game.audioHandler.cutsceneDialogue.stopAllSounds();
+        this.game.audioHandler.cutsceneSFX.fadeOutAndStopAllSounds(duration);
+        this.game.audioHandler.cutsceneMusic.fadeOutAndStopAllSounds(duration);
+    }
+
     stopTypingAudio() {
         this.game.audioHandler.cutsceneDialogue.stopAllSounds();
         this.lastSoundPlayed = false;

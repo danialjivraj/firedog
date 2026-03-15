@@ -58,11 +58,13 @@ describe('StoryCutscene', () => {
                     stopAllSounds: jest.fn(),
                     playSound: jest.fn(),
                     fadeOutAndStop: jest.fn(),
+                    fadeOutAndStopAllSounds: jest.fn(),
                 },
                 cutsceneMusic: {
                     stopAllSounds: jest.fn(),
                     playSound: jest.fn(),
                     fadeOutAndStop: jest.fn(),
+                    fadeOutAndStopAllSounds: jest.fn(),
                 },
             },
 
@@ -104,7 +106,7 @@ describe('StoryCutscene', () => {
         it('pressing Tab skips to the final dialogue and ends the cutscene after the timeout', () => {
             const removeSpy = jest.spyOn(cutscene, 'removeEventListeners');
             const bgSpy = jest.spyOn(cutscene, 'cutsceneBackgroundChange');
-            const stopSpy = jest.spyOn(cutscene, 'stopAllAudio');
+            const fadeSpy = jest.spyOn(cutscene, 'fadeOutAndStopAllAudio');
 
             cutscene.handleKeyDown({ key: 'Tab' });
 
@@ -117,9 +119,7 @@ describe('StoryCutscene', () => {
             expect(game.endCutscene).toHaveBeenCalled();
             expect(game.stopShake).toHaveBeenCalled();
             expect(game.isPlayerInGame).toBe(true);
-            expect(stopSpy).toHaveBeenCalled();
-            expect(game.audioHandler.cutsceneDialogue.playSound)
-                .toHaveBeenCalledWith('bit1', false, true, true);
+            expect(fadeSpy).toHaveBeenCalled();
         });
 
         it('pressing Tab sets isPlayerInGame to false when game.isEndCutscene is true', () => {
@@ -291,7 +291,7 @@ describe('StoryCutscene', () => {
         it('triggers the end-of-cutscene flow when on the last dialogue and it has finished', () => {
             const removeSpy = jest.spyOn(cutscene, 'removeEventListeners');
             const bgSpy = jest.spyOn(cutscene, 'cutsceneBackgroundChange');
-            const stopSpy = jest.spyOn(cutscene, 'stopAllAudio');
+            const fadeSpy = jest.spyOn(cutscene, 'fadeOutAndStopAllAudio');
 
             cutscene.dialogueIndex = 1;
             cutscene.textIndex = cutscene.dialogue[1].dialogue.length;
@@ -307,9 +307,7 @@ describe('StoryCutscene', () => {
             expect(game.endCutscene).toHaveBeenCalled();
             expect(game.isPlayerInGame).toBe(true);
             expect(game.input.keys).toEqual([]);
-            expect(stopSpy).toHaveBeenCalled();
-            expect(game.audioHandler.cutsceneDialogue.playSound)
-                .toHaveBeenCalledWith('bit1', false, true, true);
+            expect(fadeSpy).toHaveBeenCalled();
         });
 
         it('sets isPlayerInGame to false in the final branch when game.isEndCutscene is true', () => {
@@ -372,11 +370,13 @@ describe('EndCutscene classes: unlock flags and save behavior', () => {
                     stopAllSounds: jest.fn(),
                     playSound: jest.fn(),
                     fadeOutAndStop: jest.fn(),
+                    fadeOutAndStopAllSounds: jest.fn(),
                 },
                 cutsceneMusic: {
                     stopAllSounds: jest.fn(),
                     playSound: jest.fn(),
                     fadeOutAndStop: jest.fn(),
+                    fadeOutAndStopAllSounds: jest.fn(),
                 },
             },
 

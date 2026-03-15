@@ -48,6 +48,7 @@ export class StoryCutscene extends Cutscene {
         } else {
             this.removeEventListeners();
             this.cutsceneBackgroundChange(400, 600, 400);
+            this.fadeOutAndStopAllAudio();
             setTimeout(() => {
                 this.game.endCutscene();
                 if (this.game.isEndCutscene) {
@@ -56,8 +57,6 @@ export class StoryCutscene extends Cutscene {
                     this.game.isPlayerInGame = true;
                 }
                 this.game.input.keys = [];
-                this.stopAllAudio();
-                this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
             }, 500);
         }
 
@@ -74,6 +73,7 @@ export class StoryCutscene extends Cutscene {
             if (event.key === 'Tab' && this.game.fadingIn === false && this.game.enterDuringBackgroundTransition && this.game.waitForFadeInOpacity === false) {
                 this.removeEventListeners();
                 this.cutsceneBackgroundChange(400, 600, 400);
+                this.fadeOutAndStopAllAudio();
                 setTimeout(() => {
                     this.dialogueIndex = this.dialogue.length - 1;
                     this.game.endCutscene();
@@ -83,8 +83,6 @@ export class StoryCutscene extends Cutscene {
                     } else {
                         this.game.isPlayerInGame = true;
                     }
-                    this.stopAllAudio();
-                    this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
                 }, 500);
             }
             if (event.key === 'Enter' && !this.isEnterPressed && !this.game.fadingIn &&
