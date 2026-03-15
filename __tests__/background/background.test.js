@@ -1828,6 +1828,31 @@ describe('Map3Zabby1FlyBy', () => {
 
         expect(flyby._oneShotShown).toBe(true);
     });
+
+    test('Map3 zabby fly-by does not remove existing normal fish entities', () => {
+        const game = {
+            width: 600,
+            height: 400,
+            speed: 1,
+            cabin: { isFullyVisible: false },
+            player: { isUnderwater: false },
+        };
+
+        const smallFish = new SmallFish(game, 3);
+        const bigFish = new BigFish(game, 1);
+        const flyby = new Map3Zabby1FlyBy(game);
+
+        flyby.setOneShotImageIds(['map3Zabby1']);
+
+        const smallFishCountBefore = smallFish.backgroundEntities.length;
+        const bigFishCountBefore = bigFish.backgroundEntities.length;
+
+        expect(flyby.triggerOneShot()).toBe(true);
+
+        expect(smallFish.backgroundEntities.length).toBe(smallFishCountBefore);
+        expect(bigFish.backgroundEntities.length).toBe(bigFishCountBefore);
+        expect(flyby._active).toBe(true);
+    });
 });
 
 // -----------------------------------------------------------------------------
@@ -1867,27 +1892,72 @@ describe('DragonSilhouette', () => {
         expect(ctx.restore).toHaveBeenCalled();
     });
 
-    test('triggerOneShot switches to one-shot image and spawns near edge; update later consumes it and restores default image', () => {
+    test('triggerOneShot adds an extra one-shot dragon without replacing the normal dragon, then removes only the extra one when it exits', () => {
         const dragon = new DragonSilhouette(game, 1, 0.5);
 
-        const spawnSpy = jest.spyOn(dragon, 'spawnNearEdgeNow').mockImplementation(() => {
-            dragon.x = -dragon.width - 1;
-            dragon.y = 10;
-            dragon.direction = 1;
-            dragon.flipped = true;
-        });
-
         dragon.setOneShotImageIds(['bonusMap2Zabby4']);
-        expect(dragon.triggerOneShot()).toBe(true);
-        expect(dragon.imageId).toBe('bonusMap2Zabby4');
-        expect(spawnSpy).toHaveBeenCalled();
 
+        const originalImageId = dragon.imageId;
+        const originalX = dragon.x;
+        const originalY = dragon.y;
+
+        expect(dragon._oneShotDragon).toBe(null);
+
+        expect(dragon.triggerOneShot()).toBe(true);
+
+        expect(dragon.imageId).toBe(originalImageId);
+        expect(dragon.x).toBe(originalX);
+        expect(dragon.y).toBe(originalY);
+
+        expect(dragon._oneShotActive).toBe(true);
+        expect(dragon._oneShotDragon).toBeTruthy();
+        expect(dragon._oneShotDragon.imageId).toBe('bonusMap2Zabby4');
+        expect(dragon._oneShotDragon.__oneShot).toBe(true);
+
+        dragon._oneShotDragon.x = -dragon._oneShotDragon.width - 1000;
         dragon.update(16);
 
+        expect(dragon._oneShotActive).toBe(false);
         expect(dragon._oneShotShown).toBe(true);
-        expect(dragon.imageId).toBe(dragon.defaultImageId);
+        expect(dragon._oneShotDragon).toBe(null);
 
-        spawnSpy.mockRestore();
+        expect(dragon.imageId).toBe(dragon.defaultImageId);
+    });
+
+    test('draw renders both the normal dragon and the extra one-shot dragon when one-shot is active', () => {
+        const dragon = new DragonSilhouette(game, 1, 0.5);
+        dragon.setOneShotImageIds(['bonusMap2Zabby4']);
+
+        expect(dragon.triggerOneShot()).toBe(true);
+        expect(dragon._oneShotDragon).toBeTruthy();
+
+        ctx.drawImage.mockClear();
+        dragon.draw(ctx);
+
+        expect(ctx.drawImage).toHaveBeenCalledTimes(2);
+    });
+
+    test('BonusMap2 dragon zabby one-shot does not remove any existing DragonSilhouette carriers', () => {
+        const game = makeGame({
+            width: 1920,
+            height: 689,
+            speed: 1,
+            currentMap: 'BonusMap2',
+        });
+
+        const map = new BonusMap2(game);
+        const dragons = map.backgroundLayers.filter((l) => l instanceof DragonSilhouette);
+
+        expect(dragons.length).toBe(8);
+
+        const target = dragons.find((d) => d.getOneShotKeys().includes('bonusMap2Zabby4'));
+        expect(target).toBeTruthy();
+
+        expect(target.triggerOneShot()).toBe(true);
+
+        const dragonsAfter = map.backgroundLayers.filter((l) => l instanceof DragonSilhouette);
+        expect(dragonsAfter.length).toBe(8);
+        expect(target._oneShotDragon).toBeTruthy();
     });
 });
 
@@ -1952,24 +2022,50 @@ describe('MeteorBackground', () => {
         expect(mb.meteors[0]).not.toBe(original);
     });
 
-    test('triggerOneShot replaces one meteor with a one-shot meteor and marks it shown when it exits', () => {
+    test('triggerOneShot adds an extra one-shot meteor without removing existing meteors, then removes only the extra meteor when it exits', () => {
         const mb = new MeteorBackground(game, 3);
         mb.setOneShotImageIds(['bonusMap3Zabby2']);
+
+        const initialCount = mb.meteors.length;
+        const originalMeteorRefs = [...mb.meteors];
 
         const ok = mb.triggerOneShot();
         expect(ok).toBe(true);
         expect(mb._oneShotActive).toBe(true);
 
-        const idx = mb.meteors.findIndex((m) => m.__oneShot);
-        expect(idx).toBeGreaterThanOrEqual(0);
-        expect(mb.meteors[idx].imageId).toBe('bonusMap3Zabby2');
+        expect(mb.meteors).toHaveLength(initialCount + 1);
+        expect(originalMeteorRefs.every((m) => mb.meteors.includes(m))).toBe(true);
 
-        mb.meteors[idx].x = -mb.offscreenMargin - 1000;
+        const oneShotMeteor = mb.meteors.find((m) => m.__oneShot);
+        expect(oneShotMeteor).toBeTruthy();
+        expect(oneShotMeteor.imageId).toBe('bonusMap3Zabby2');
+
+        oneShotMeteor.x = -mb.offscreenMargin - 1000;
         mb.update(1);
 
         expect(mb._oneShotActive).toBe(false);
         expect(mb._oneShotShown).toBe(true);
+        expect(mb.meteors).toHaveLength(initialCount);
         expect(mb.meteors.some((m) => m.__oneShot)).toBe(false);
+        expect(originalMeteorRefs.every((m) => mb.meteors.includes(m))).toBe(true);
+    });
+
+    test('triggerOneShot keeps all existing normal meteors and only appends one extra one-shot meteor', () => {
+        const mb = new MeteorBackground(game, 3);
+        mb.setOneShotImageIds(['bonusMap3Zabby2']);
+
+        const originals = [...mb.meteors];
+
+        expect(mb.triggerOneShot()).toBe(true);
+
+        expect(mb.meteors).toHaveLength(4);
+        expect(originals[0]).toBe(mb.meteors[0]);
+        expect(originals[1]).toBe(mb.meteors[1]);
+        expect(originals[2]).toBe(mb.meteors[2]);
+
+        const oneShots = mb.meteors.filter((m) => m.__oneShot);
+        expect(oneShots).toHaveLength(1);
+        expect(oneShots[0].imageId).toBe('bonusMap3Zabby2');
     });
 
     test('draw renders each meteor sprite when image is available', () => {

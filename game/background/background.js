@@ -477,7 +477,7 @@ export class Map2 extends Background {
             { imageId: ['map2Fence1', 'map2Fence2'], zabbyId: 'map2Zabby4', bgSpeed: 0.4 },
             fireflyLayer2,
             { imageId: ['map2Bushes1', 'map2Bushes2'], bgSpeed: 0.45 },
-            { imageId: ['map2Trees1','map2Trees2', 'map2Trees3'], zabbyId: 'map2Zabby5', bgSpeed: 0.5 },
+            { imageId: ['map2Trees1', 'map2Trees2', 'map2Trees3'], zabbyId: 'map2Zabby5', bgSpeed: 0.5 },
             fireflyLayer3,
             { imageId: ['map2Bones1', 'map2Bones2', 'map2Bones3'], zabbyId: 'map2Zabby2', bgSpeed: 0.7 },
             { imageId: ['map2Tombstone1', 'map2Tombstone2', 'map2Tombstone3'], zabbyId: ['map2Zabby1', 'map2Zabby3'], bgSpeed: 0.8 },
@@ -2022,6 +2022,7 @@ export class DragonSilhouette extends EntityAnimation {
         this.va = Math.random() * 0.1 + 0.1;
 
         this._oneShotActive = false;
+        this._oneShotDragon = null;
 
         this.spawnInitialInScreen();
     }
@@ -2035,25 +2036,92 @@ export class DragonSilhouette extends EntityAnimation {
         return this._oneShotPickedId;
     }
 
-    spawnNearEdgeNow() {
-        const spawnFromLeft = Math.random() < 0.5;
+    _makeDragon(spawnInScreen = false, imageId = this.defaultImageId, image = null) {
+        const width = this.frameWidth * this.scale;
+        const height = this.frameHeight * this.scale;
 
         const randomBase = Math.random() * 0.5 + 0.5;
-        this.speedX = randomBase * this.scale;
+        const speedX = randomBase * this.scale;
 
         const minY = 0;
         const maxY = this.game.height / 2;
-        this.y = minY + Math.random() * (maxY - minY);
+        const y = minY + Math.random() * (maxY - minY);
+
+        const angle = 0;
+        const va = Math.random() * 0.1 + 0.1;
+
+        let x;
+        let direction;
+        let flipped;
+
+        if (spawnInScreen) {
+            x = Math.random() * (this.game.width - width);
+
+            if (Math.random() < 0.5) {
+                direction = 1;
+                flipped = true;
+            } else {
+                direction = -1;
+                flipped = false;
+            }
+        } else {
+            const spawnFromLeft = Math.random() < 0.5;
+            if (spawnFromLeft) {
+                direction = 1;
+                flipped = true;
+                x = -width - Math.random() * this.game.width * 0.5;
+            } else {
+                direction = -1;
+                flipped = false;
+                x = this.game.width + Math.random() * this.game.width * 0.5;
+            }
+        }
+
+        return {
+            x,
+            y,
+            width,
+            height,
+            speedX,
+            speedY: 0,
+            angle,
+            va,
+            direction,
+            flipped,
+            frameX: Math.floor(Math.random() * (this.maxFrame + 1)),
+            frameTimer: 0,
+            imageId,
+            image: image || document.getElementById(imageId),
+            __oneShot: imageId !== this.defaultImageId,
+        };
+    }
+
+    _makeOneShotDragonFromSide(imageId, imageEl) {
+        const dragon = this._makeDragon(false, imageId, imageEl);
+
+        const spawnFromLeft = Math.random() < 0.5;
+        const minY = 0;
+        const maxY = this.game.height / 2;
+        dragon.y = minY + Math.random() * (maxY - minY);
+
+        const randomBase = Math.random() * 0.5 + 0.5;
+        dragon.speedX = randomBase * this.scale;
+
+        dragon.angle = 0;
+        dragon.va = Math.random() * 0.1 + 0.1;
 
         if (spawnFromLeft) {
-            this.direction = 1;
-            this.flipped = true;
-            this.x = -this.width + 2;
+            dragon.direction = 1;
+            dragon.flipped = true;
+            dragon.x = -dragon.width + 2;
         } else {
-            this.direction = -1;
-            this.flipped = false;
-            this.x = this.game.width - 2;
+            dragon.direction = -1;
+            dragon.flipped = false;
+            dragon.x = this.game.width - 2;
         }
+
+        dragon.__oneShot = true;
+        return dragon;
     }
 
     triggerOneShot() {
@@ -2062,22 +2130,15 @@ export class DragonSilhouette extends EntityAnimation {
         const picked = this._pickOneShotIdIfNeeded();
         if (!picked) return false;
 
-        this.imageId = picked;
-        this.image = document.getElementById(this.imageId);
-        if (!this.image) {
-            this.imageId = this.defaultImageId;
-            this.image = document.getElementById(this.imageId);
-            return false;
-        }
+        const image = document.getElementById(picked);
+        if (!image) return false;
 
+        this._oneShotDragon = this._makeOneShotDragonFromSide(picked, image);
         this._oneShotActive = true;
-        this.spawnNearEdgeNow();
         return true;
     }
 
     resetPosition() {
-        const spawnFromLeft = Math.random() < 0.5;
-
         this.width = this.frameWidth * this.scale;
         this.height = this.frameHeight * this.scale;
 
@@ -2090,6 +2151,8 @@ export class DragonSilhouette extends EntityAnimation {
         const minY = 0;
         const maxY = this.game.height / 2;
         this.y = minY + Math.random() * (maxY - minY);
+
+        const spawnFromLeft = Math.random() < 0.5;
 
         if (spawnFromLeft) {
             this.direction = 1;
@@ -2110,6 +2173,32 @@ export class DragonSilhouette extends EntityAnimation {
         }
     }
 
+    _advanceDragonFrame(dragon, deltaTime) {
+        dragon.frameTimer += deltaTime;
+        if (dragon.frameTimer > this.frameInterval) {
+            dragon.frameTimer = 0;
+            dragon.frameX = dragon.frameX < this.maxFrame ? dragon.frameX + 1 : 0;
+        }
+    }
+
+    _updateDragon(dragon, deltaTime) {
+        dragon.x += dragon.speedX * dragon.direction;
+        dragon.y += dragon.speedY;
+
+        dragon.va = (Math.random() * 0.1 + 0.1) * dragon.speedX;
+        dragon.angle += dragon.va;
+        dragon.y += Math.sin(dragon.angle) * dragon.speedX * this.scale;
+
+        this._advanceDragonFrame(dragon, deltaTime);
+
+        const offLeft = dragon.x + dragon.width < 0;
+        const offRight = dragon.x > this.game.width;
+        const offBottom = dragon.y > this.game.height;
+        const offTop = dragon.y + dragon.height < 0;
+
+        return offLeft || offRight || offBottom || offTop;
+    }
+
     update(deltaTime) {
         this.x += this.speedX * this.direction;
         this.y += this.speedY;
@@ -2126,42 +2215,53 @@ export class DragonSilhouette extends EntityAnimation {
         const offTop = this.y + this.height < 0;
 
         if (offLeft || offRight || offBottom || offTop) {
-            if (this._oneShotActive) {
+            this.resetPosition();
+        }
+
+        if (this._oneShotDragon) {
+            const oneShotOffscreen = this._updateDragon(this._oneShotDragon, deltaTime);
+
+            if (oneShotOffscreen) {
+                this._oneShotDragon = null;
                 this._oneShotActive = false;
                 this._oneShotShown = true;
-
-                this.imageId = this.defaultImageId;
-                this.image = document.getElementById(this.imageId);
             }
-            this.resetPosition();
         }
     }
 
-    draw(context) {
-        if (!this.image) this.image = document.getElementById(this.imageId);
-        if (!this.image) return;
+    _drawDragon(context, dragon) {
+        if (!dragon.image) dragon.image = document.getElementById(dragon.imageId);
+        if (!dragon.image) return;
 
-        const sx = this.frameX * this.frameWidth;
+        const sx = dragon.frameX * this.frameWidth;
         const sy = 0;
         const sw = this.frameWidth;
         const sh = this.frameHeight;
 
-        const dw = this.width;
-        const dh = this.height;
+        const dw = dragon.width;
+        const dh = dragon.height;
 
         context.save();
         context.globalAlpha = this.opacity;
 
-        if (this.flipped) {
-            context.translate(this.x + dw, this.y);
+        if (dragon.flipped) {
+            context.translate(dragon.x + dw, dragon.y);
             context.scale(-1, 1);
-            context.drawImage(this.image, sx, sy, sw, sh, 0, 0, dw, dh);
+            context.drawImage(dragon.image, sx, sy, sw, sh, 0, 0, dw, dh);
         } else {
-            context.translate(this.x, this.y);
-            context.drawImage(this.image, sx, sy, sw, sh, 0, 0, dw, dh);
+            context.translate(dragon.x, dragon.y);
+            context.drawImage(dragon.image, sx, sy, sw, sh, 0, 0, dw, dh);
         }
 
         context.restore();
+    }
+
+    draw(context) {
+        this._drawDragon(context, this);
+
+        if (this._oneShotDragon) {
+            this._drawDragon(context, this._oneShotDragon);
+        }
     }
 
     spawnInitialInScreen() {
@@ -2290,10 +2390,8 @@ export class MeteorBackground extends EntityAnimation {
             angularSpeed,
             rotationDir,
             scale,
-
             imageId: this.defaultImageId,
             image: this.defaultImage,
-
             __oneShot: false,
         };
     }
@@ -2346,12 +2444,9 @@ export class MeteorBackground extends EntityAnimation {
             angle: Math.random() * Math.PI * 2,
             angularSpeed,
             rotationDir,
-
             scale: 1,
-
             imageId,
             image: imageEl,
-
             __oneShot: true,
         };
     }
@@ -2365,12 +2460,8 @@ export class MeteorBackground extends EntityAnimation {
         const img = document.getElementById(pickedId);
         if (!img) return false;
 
-        if (!this.meteors || this.meteors.length === 0) return false;
-
         const oneShotMeteor = this._makeOneShotMeteorFromSide(pickedId, img);
-
-        const replaceIndex = Math.floor(Math.random() * this.meteors.length);
-        this.meteors[replaceIndex] = oneShotMeteor;
+        this.meteors.push(oneShotMeteor);
 
         this._oneShotActive = true;
         return true;
@@ -2383,7 +2474,7 @@ export class MeteorBackground extends EntityAnimation {
         const width = this.game.width;
         const height = this.game.height;
 
-        for (let i = 0; i < this.meteors.length; i++) {
+        for (let i = this.meteors.length - 1; i >= 0; i--) {
             const m = this.meteors[i];
 
             m.x += m.vx * deltaTime;
@@ -2400,11 +2491,12 @@ export class MeteorBackground extends EntityAnimation {
             if (off) {
                 const wasOneShot = !!m.__oneShot;
 
-                this.meteors[i] = this.makeMeteor(false);
-
                 if (wasOneShot) {
+                    this.meteors.splice(i, 1);
                     this._oneShotActive = false;
                     this._oneShotShown = true;
+                } else {
+                    this.meteors[i] = this.makeMeteor(false);
                 }
             }
         }
@@ -2419,7 +2511,7 @@ export class MeteorBackground extends EntityAnimation {
             const img = m.image || this.defaultImage;
             if (!img) continue;
 
-            const scale = (m.scale ?? 1);
+            const scale = m.scale ?? 1;
             const drawW = this.spriteWidth * scale;
             const drawH = this.spriteHeight * scale;
 
