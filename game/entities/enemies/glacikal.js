@@ -439,7 +439,7 @@ export class Glacikal extends EnemyBoss {
         this.iceTrailNextSpawn = 0;
         this.iceTrailCooldownMin = 250;
         this.iceTrailCooldownMax = 700;
-        this.iceTrailSpawnChance = 0.65;
+        this.iceTrailSpawnChance = 0.35;
         this.iceTrailMinGap = 60;
 
         // jump
