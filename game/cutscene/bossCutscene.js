@@ -1,5 +1,6 @@
 import { Cutscene } from './cutscene.js';
 import { fadeInAndOut } from '../animations/fading.js';
+import { NuclearDisintegrationCollision } from '../animations/collisionAnimation.js';
 
 export class BossCutscene extends Cutscene {
     constructor(game) {
@@ -24,6 +25,31 @@ export class BossCutscene extends Cutscene {
     }
 
     onPostFightFinished() {}
+
+    startCurrentBossDisintegration(options = {}) {
+        const boss = this.game.boss;
+        if (!boss || !boss.current) return;
+        if (boss.id !== this.getBossId()) return;
+
+        const enemy = boss.current;
+        if (enemy.cutsceneDisintegrating) return;
+
+        enemy.cutsceneDisintegrating = true;
+
+        this.game.collisions.push(
+            new NuclearDisintegrationCollision(this.game, enemy, {
+                ...options,
+            })
+        );
+    }
+
+    completeCurrentBossDisintegrationState() {
+        const boss = this.game.boss;
+        if (!boss || boss.id !== this.getBossId()) return;
+        if (!boss.current) return;
+
+        boss.current.cutsceneDisintegrating = true;
+    }
 
     _beginBossBattle(boss) {
         this.game.background.resetLayersByImageIds(this.getResetLayerImageIds());
@@ -71,7 +97,7 @@ export class BossCutscene extends Cutscene {
         } else if (this.dialogueIndex < this.dialogue.length - 1) {
             this.jumpToDialogue(this.dialogueIndex + 1);
 
-        } else if (boss && boss.current && boss.id === this.getBossId()) {
+        } else if (boss && boss.id === this.getBossId()) {
             if (boss.preFight) {
                 this.startBossFight(boss);
             } else if (boss.postFight) {
@@ -232,6 +258,10 @@ export class BossCutscene extends Cutscene {
                 this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
             },
             onBlack: () => {
+                if (this.shouldRemoveBossAfterPostFight()) {
+                    this.completeCurrentBossDisintegrationState();
+                }
+
                 this.jumpToDialogue(this.dialogue.length - 1);
             },
         });

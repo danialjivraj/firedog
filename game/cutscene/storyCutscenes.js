@@ -9505,6 +9505,11 @@ export class BonusMap3EndCutscene extends StoryCutscene {
         this.addDialogue( //47
             `${this.firedog}`,
             `Let me tell you both everything that has happened.`,
+            {
+                onAdvance: () => {
+                    this.cutsceneBackgroundChange(500, 2000, 500);
+                },
+            },
             this.addImage(this.setfiredogNormal(), LEFT),
         );
         this.addDialogue( //48

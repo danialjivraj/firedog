@@ -3376,7 +3376,7 @@ export class NTharax extends EnemyBoss {
         this.overhealPercent = 0.20;
         this.lives = this.maxLives;
         this._defeatTriggered = false;
-
+        this.cutsceneDisintegrating = false;
         // idle
         this.state = "idle";
         this.previousState = null;
@@ -6776,6 +6776,7 @@ export class NTharax extends EnemyBoss {
     }
 
     draw(context) {
+        if (this.cutsceneDisintegrating) return;
         if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
 
         if (this.state !== "fly") {

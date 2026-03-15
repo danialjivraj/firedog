@@ -68,6 +68,7 @@ const createBaseGame = () => {
         },
 
         input: { keys: [] },
+        collisions: [],
         maxDistance: 0,
 
         endCutscene: jest.fn(),
@@ -296,5 +297,80 @@ describe('BonusMap3NTharaxIngameCutsceneAfterFight', () => {
             height: 200,
             opts: { border: { talking: true } },
         });
+    });
+
+    it('dialogue 5 onAdvance starts ntharax disintegration once, fades out music, and plays poof sfx', () => {
+        const startDisintegrationSpy = jest.spyOn(cutscene, 'startCurrentBossDisintegration');
+        const playSFXSpy = jest.spyOn(cutscene, 'playSFX');
+
+        cutscene.dialogue[5].onAdvance();
+
+        expect(cutscene.ntharaxDisintegrationStarted).toBe(true);
+        expect(startDisintegrationSpy).toHaveBeenCalledTimes(1);
+        expect(playSFXSpy).toHaveBeenCalledWith('ntharaxExplosionSound');
+    });
+
+    it('dialogue 5 onAdvance does not start ntharax disintegration more than once', () => {
+        const startDisintegrationSpy = jest.spyOn(cutscene, 'startCurrentBossDisintegration');
+
+        cutscene.dialogue[5].onAdvance();
+        cutscene.dialogue[5].onAdvance();
+
+        expect(startDisintegrationSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('skipPostFightToLastDialogue marks ntharax as cutsceneDisintegrating and jumps to the last dialogue', () => {
+        game.boss.postFight = true;
+        game.boss.current = {};
+        cutscene.dialogueIndex = 3;
+
+        jest.spyOn(cutscene, 'transitionWithBg').mockImplementation(({ beforeFade, onBlack }) => {
+            if (beforeFade) beforeFade();
+            if (onBlack) onBlack();
+        });
+
+        const stopAllAudioSpy = jest.spyOn(cutscene, 'stopAllAudio');
+        const jumpToDialogueSpy = jest.spyOn(cutscene, 'jumpToDialogue');
+
+        cutscene.skipPostFightToLastDialogue();
+
+        expect(stopAllAudioSpy).toHaveBeenCalled();
+        expect(game.boss.current.cutsceneDisintegrating).toBe(true);
+        expect(jumpToDialogueSpy).toHaveBeenCalledWith(cutscene.dialogue.length - 1);
+    });
+
+    it('skipPostFightToLastDialogue does not remove ntharax immediately', () => {
+        game.boss.postFight = true;
+        game.boss.current = {};
+        cutscene.dialogueIndex = 2;
+
+        jest.spyOn(cutscene, 'transitionWithBg').mockImplementation(({ beforeFade, onBlack }) => {
+            if (beforeFade) beforeFade();
+            if (onBlack) onBlack();
+        });
+
+        cutscene.skipPostFightToLastDialogue();
+
+        expect(game.boss.current).not.toBeNull();
+        expect(game.boss.current.cutsceneDisintegrating).toBe(true);
+    });
+
+    it('skipPostFightToLastDialogue leaves ntharax present but in a non-drawing cutsceneDisintegrating state', () => {
+        game.boss.postFight = true;
+        game.boss.current = {
+            cutsceneDisintegrating: false,
+            draw: jest.fn(),
+        };
+        cutscene.dialogueIndex = 2;
+
+        jest.spyOn(cutscene, 'transitionWithBg').mockImplementation(({ beforeFade, onBlack }) => {
+            if (beforeFade) beforeFade();
+            if (onBlack) onBlack();
+        });
+
+        cutscene.skipPostFightToLastDialogue();
+
+        expect(game.boss.current).not.toBeNull();
+        expect(game.boss.current.cutsceneDisintegrating).toBe(true);
     });
 });

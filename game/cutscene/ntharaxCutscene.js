@@ -138,6 +138,8 @@ export class BonusMap3NTharaxIngameCutsceneAfterFight extends NTharaxCutscene {
     constructor(game) {
         super(game);
 
+        this.ntharaxDisintegrationStarted = false;
+
         const FIREDOG = { x: 100, y: 400, width: 200, height: 200 };
         const NTHARAX = { x: 750, y: 400, width: 200, height: 200 };
 
@@ -174,6 +176,14 @@ export class BonusMap3NTharaxIngameCutsceneAfterFight extends NTharaxCutscene {
         this.addDialogue( //5
             `${this.ntharax}`,
             `THE VOID DOES NOT FORGET... AND ONE DAY... I WILL RETURN...`,
+            {
+                onAdvance: () => {
+                    if (this.ntharaxDisintegrationStarted) return;
+                    this.ntharaxDisintegrationStarted = true;
+                    this.startCurrentBossDisintegration();
+                    this.playSFX('ntharaxExplosionSound');
+                },
+            },
             this.addImage(this.setfiredogSurprisedBorder(), FIREDOG),
             this.addImage('ntharaxBorder', NTHARAX, { talking: true }),
         );
