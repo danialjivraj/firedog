@@ -27,7 +27,6 @@ export class Cutscene {
         this.continueDialogue = false;
 
         // UI / input
-        this.dontShowTextBoxAndSound = false;
         this.dialogueText = '';
         this.isEnterPressed = false;
         this.isTabPressed = true;
@@ -251,6 +250,15 @@ export class Cutscene {
 
     isTerminalChar(ch) {
         return /[\)\]\}»"'’”!?]/u.test(ch);
+    }
+
+    isDialogueEntryVisuallyEmpty(entry) {
+        if (!entry) return false;
+        return String(entry.character ?? '') === '' && String(entry.dialogue ?? '') === '';
+    }
+
+    isCurrentDialogueVisuallyEmpty() {
+        return this.isDialogueEntryVisuallyEmpty(this.getCurrentDialogueEntry());
     }
 
     // filters
@@ -848,7 +856,7 @@ export class Cutscene {
     }
 
     drawTextBox(context) {
-        if (this.dontShowTextBoxAndSound) return;
+        if (this.isCurrentDialogueVisuallyEmpty()) return;
 
         const x = 15;
         const y = this.game.height - 65;
@@ -1073,6 +1081,7 @@ export class Cutscene {
 
         const currentDialogue = this.dialogue[this.dialogueIndex];
         const { character, dialogue, images } = currentDialogue;
+        const isVisuallyEmptyDialogue = this.isDialogueEntryVisuallyEmpty(currentDialogue);
 
         if (this.currentSpansForIndex !== this.dialogueIndex) {
             this.currentColorSpans = this.buildColorSpans(dialogue);
@@ -1152,7 +1161,7 @@ export class Cutscene {
             }
         }
 
-        if (this.game.enterDuringBackgroundTransition) {
+        if (this.game.enterDuringBackgroundTransition && !isVisuallyEmptyDialogue) {
             this.drawDialogueTextWrapped(
                 context,
                 characterName,
@@ -1173,7 +1182,7 @@ export class Cutscene {
         } else {
             if (!this.lastSoundPlayed) {
                 this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
-                if (!this.lastSound2Played && !this.dontShowTextBoxAndSound) {
+                if (!this.lastSound2Played && !isVisuallyEmptyDialogue) {
                     this.playEightBitSound('bit2');
                     this.lastSound2Played = true;
                 }
@@ -1199,12 +1208,6 @@ export class Cutscene {
         fadeInAndOut(this.game.canvas, fadein, stay, fadeout, () => {
             this.game.enterDuringBackgroundTransition = true;
         });
-    }
-
-    getmap6insideCaveLavaEarthquake() {
-        const skinId = this.getCurrentSkinIdSafe();
-        if (skinId === 'shinySkin') return 'map6insideCaveLavaEarthquakeShiny';
-        return 'map6insideCaveLavaEarthquake';
     }
 
     // image setters

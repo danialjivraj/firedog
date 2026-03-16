@@ -128,29 +128,36 @@ body {
 #electricityCollision, #blueCollisionAnimation, #poisonSpitSplash, #poisonDropCollision, #blackInk, #inkBombCollision, #blood, #raindropSplash, #poisonDropGroundCollision,
 #icyStormBallCollision, #iceSlashCollision, #iceTrailCollision, #spinningIceBallsCollision, #pointyIcicleShardCollision, #undergroundIcicleCollision, #galacticSpikeCollision, #purpleFireballCollision,
 /* cutscene images */
-    /* background images */
-    #toBeContinued, #madeByDanial,
-        /* map1 cutscene images */
-            #map1blackBackground, #map1TentFireplace, #map1outsideCastleDoor, #map1KingsBedroom, #map1crypticTokenWar, #map1SafeRoom, #map1outsideLakeAndTrees, #map1crypticTokenWallpaper, 
-            #cabincutscene1, #map1Lab, #map1DestroyedTree, #map1RegeneratedTree, 
-        /* map2 cutscene images */
-            #dreamLight1, #dreamLight2, #dreamLight3, #dreamLight4, #dreamLight5, #dreamLight6, #dreamLight7, #dreamDark1, #dreamDark2, #dreamDark3, #dreamDark4, #dreamDark5, #dreamDark6, #cabincutscene1_5, #map2outsideCabin, 
-        /* map3 cutscene images */
-            #map3CutsceneCabin, #map3CutsceneCabinNight, #map3OutsideCabin, #map3InsideSubmarine, #map3Sorcerer, #map3ForestRiver, 
-        /* map4 cutscene images */
-            #map4OutsideCabin, #map4beginningForestView, #map4footsteps, #map4CloningLab, #map4hospitalBedEmpty, #map4ElyvorgFlames, #map4EvilElyvorg, #map4CabinEndCutscene, 
-        /* map5 cutscene images */
-            #map5insideCabin, #cutsceneOperatingBed,
-        /* map6 cutscene images */
-            #map6InsideCabin, #map6VolcanoWalkUp, #map6insideCaveLava, #map6insideCaveLavaEarthquake, #map6insideCaveLavaEarthquakeHat, #map6insideCaveLavaEarthquakeCholo, 
-            #map6insideCaveLavaEarthquakeZabka, #map6insideCaveLavaEarthquakeShiny, #map6elyvorgTokenPlaceFind, #map6elyvorgTokenPlace, #map6elyvorgTokenPlaceActive,
-            #map6stone, #map6stone2, #map6stone3,
-        /* other cutscene images */
-             #bonusMap1CaveEntrance, #bonusMap1InsideCabin, #bonusMap1Village, #theWoodsForest, #bonusMap2GroundFissures, #bonusMap2InsideCabin, #bonusMap2InsideFissures, #bonusMap2FissureRockCloseUp,
-             #bonusMap2FissureRockCloseUp2, #bonusMap2FissurePortal, #bonusMap2WritingsEnergyLeak, #bonusMap2PortalEnergy, #bonusMap2Tsunami, #bonusMap2OutsideCabinWindow,
-             #bonusMap3PortalEnergy, #bonusMap3ForestCloseUp, #bonusMap3ForestCloseUp2, #bonusMap3InsidePortal, #bonusMap3InsideCabin, #bonusMap3AnchoredPortal,
-             #bonusMap3AnchoredPortalDestroyed, #bonusMap3PortalDestroyed, 
-             
+    /* background */
+    #blackBackground, #cutsceneOperatingBed, #madeByDanial, #toBeContinued,
+    /* chapters */
+    #chapter1, #chapter2, #chapter3, #chapter4, #chapter5, #chapter6, #chapter7, #bonusChapter1, #bonusChapter2, #bonusChapter3,
+        /* inside cabin */
+            #map1InsideCabin, #map1InsideCabinNight, #map2InsideCabin, #map2InsideCabinNight, #map3InsideSubmarine, #map4InsideCabin, #map5InsideCabin, #map6InsideCabin, 
+            #bonusMap1InsideCabin, #bonusMap2InsideCabin, #bonusMap3InsideCabin,
+        /* dream */
+            #dreamLight1, #dreamLight2, #dreamLight3, #dreamLight4, #dreamLight5, #dreamLight6, #dreamLight7, #dreamDark1, #dreamDark2, #dreamDark3, #dreamDark4,
+            #dreamDark5, #dreamDark6, 
+        /* map1 cutscene */
+            #map1crypticTokenWallpaper, #map1crypticTokenWar, #map1DestroyedTree,  #map1KingsBedroom, #map1Lab, #map1outsideCastleDoor,  #map1outsideLakeAndTrees,
+            #map1RegeneratedTree,  #map1SafeRoom, #map1TentFireplace, 
+        /* map2 cutscene */
+            #map2outsideCabin, 
+        /* map3 cutscene */
+            #map3ForestRiver, #map3OutsideCabin, #map3Sorcerer,
+        /* map4 cutscene */
+            #map4beginningForestView, #map4CloningLab, #map4ElyvorgFlames, #map4EvilElyvorg, #map4footsteps, #map4hospitalBedEmpty, #map4OutsideCabin,
+        /* map7 cutscene */
+            #map7ElyvorgInsideCave, #map7EnteringVolcanoZone, #map7FiredogEnteringCave, #map7FiredogFurtherIntoTheCave, #map7TemporalTimber1, #map7TemporalTimber2,
+            #map7TemporalTimber3,  #map7TemporalTimberActive, #map7TemporalTimberLocation,
+        /* bonusMap1 cutscene */
+            #bonusMap1CaveEntrance, #bonusMap1Village, 
+        /* bonusMap2 cutscene */
+        #bonusMap2FissurePortal, #bonusMap2FissureRockCloseUp, #bonusMap2FissureRockCloseUp2, #bonusMap2GroundFissures, #bonusMap2InsideFissures, #bonusMap2OutsideCabinWindow,
+        #bonusMap2PortalEnergy, #bonusMap2Tsunami, #bonusMap2WoodsForest, #bonusMap2WritingsEnergyLeak,
+        /* bonusMap3 cutscene */
+        #bonusMap3AnchoredPortal, #bonusMap3AnchoredPortalDestroyed, #bonusMap3ForestCloseUp, #bonusMap3ForestCloseUp2, #bonusMap3InsidePortal, #bonusMap3PortalDestroyed, 
+        #bonusMap3PortalEnergy,   
     /* normal images */
     #scrollLetterMessageGaladon, #crypticTokenShining, #reminderToSkipWithTab, #enterToTalkToPenguini, 
     /* character images */

@@ -1088,30 +1088,36 @@ export class Map7PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //7
             `${this.penguini}`,
-            `Please go ahead ya' fool, I'll be fine.. I've already warned my brothers telepathically about the situation, they'll come to my rescue shortly.`,
+            `Please go ahead ya' fool, I'll be fine...`,
             this.addImage(this.setfiredogUpsetBorder(), FIREDOG),
             this.addImage('penguinOnFloorBorder', PENGUIN_FLOOR, { talking: true }),
         );
         this.addDialogue( //8
             `${this.penguini}`,
-            `Stop him, make that fool pay for what he did to me.`,
+            `I've already warned my brothers telepathically about the situation, they'll come to my rescue shortly.`,
             this.addImage(this.setfiredogUpsetBorder(), FIREDOG),
             this.addImage('penguinOnFloorBorder', PENGUIN_FLOOR, { talking: true }),
         );
         this.addDialogue( //9
+            `${this.penguini}`,
+            `Stop him, make that fool pay for what he did to me.`,
+            this.addImage(this.setfiredogUpsetBorder(), FIREDOG),
+            this.addImage('penguinOnFloorBorder', PENGUIN_FLOOR, { talking: true }),
+        );
+        this.addDialogue( //10
             `${this.firedog}`,
             `I promise I will ${this.penguini}.`,
             this.addImage(this.setfiredogAngryBorder(), FIREDOG, { talking: true }),
             this.addImage('penguinOnFloorBorder', PENGUIN_FLOOR),
         );
-        this.addDialogue( //10
+        this.addDialogue( //11
             `${this.firedog}`,
             `(${this.elyvorg}, I'm going to make you regret this.)`,
             { whisper: true },
             this.addImage(this.setfiredogAngryBorder(), FIREDOG, { talking: true }),
             this.addImage('penguinOnFloorBorder', PENGUIN_FLOOR),
         );
-        this.addDialogue( //11
+        this.addDialogue( //12
             `${this.firedog}`,
             `I'm going inside now.`,
             this.addImage(this.setfiredogUpsetBorder(), FIREDOG, { talking: true }),

@@ -466,11 +466,11 @@ describe('PenguiniCutscene & subclasses', () => {
     });
 
     describe('Map7PenguinIngameCutscene always includes full dialogues', () => {
-        it('includes all 12 entries even if notEnoughCoins is true', () => {
+        it('includes all 13 entries even if notEnoughCoins is true', () => {
             game.notEnoughCoins = true;
             game.currentMap = 'Map7';
             const m7 = new Map7PenguinIngameCutscene(game);
-            expect(m7.dialogue.length).toBe(12);
+            expect(m7.dialogue.length).toBe(13);
         });
     });
 

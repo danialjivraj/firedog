@@ -300,7 +300,7 @@ describe('Cutscene', () => {
         it('initializes internal state and sets reminderImageStartTime', () => {
             const now = jest.spyOn(performance, 'now').mockReturnValue(123);
             cutscene.dialogue = [{ character: 'A', dialogue: 'X', images: [] }];
-            const addListenersSpy = jest.spyOn(cutscene, 'addEventListeners').mockImplementation(() => {});
+            const addListenersSpy = jest.spyOn(cutscene, 'addEventListeners').mockImplementation(() => { });
 
             cutscene.displayDialogue();
 
@@ -314,7 +314,7 @@ describe('Cutscene', () => {
 
         it('builds and caches spans for current dialogueIndex', () => {
             cutscene.dialogue = [{ character: 'Firedog', dialogue: 'Hello Firedog', images: [] }];
-            jest.spyOn(cutscene, 'addEventListeners').mockImplementation(() => {});
+            jest.spyOn(cutscene, 'addEventListeners').mockImplementation(() => { });
 
             cutscene.displayDialogue();
 
@@ -325,7 +325,7 @@ describe('Cutscene', () => {
         it('runs onEnter for first dialogue', () => {
             const onEnter = jest.fn();
             cutscene.addDialogue('A', 'Hi', { onEnter });
-            jest.spyOn(cutscene, 'addEventListeners').mockImplementation(() => {});
+            jest.spyOn(cutscene, 'addEventListeners').mockImplementation(() => { });
 
             cutscene.displayDialogue();
 
@@ -555,17 +555,6 @@ describe('Cutscene', () => {
     });
 
     describe('skin-based helpers', () => {
-        it('getmap6insideCaveLavaEarthquake only special-cases shinySkin', () => {
-            game.menu.wardrobe.getCurrentSkinId.mockReturnValue('defaultSkin');
-            expect(cutscene.getmap6insideCaveLavaEarthquake()).toBe('map6insideCaveLavaEarthquake');
-
-            game.menu.wardrobe.getCurrentSkinId.mockReturnValue('midnightSteelSkin');
-            expect(cutscene.getmap6insideCaveLavaEarthquake()).toBe('map6insideCaveLavaEarthquake');
-
-            game.menu.wardrobe.getCurrentSkinId.mockReturnValue('shinySkin');
-            expect(cutscene.getmap6insideCaveLavaEarthquake()).toBe('map6insideCaveLavaEarthquakeShiny');
-        });
-
         it('getSkinPrefix uses getCutsceneSkinPrefixBySkinId', () => {
             game.menu.wardrobe.getCurrentSkinId.mockReturnValue('defaultSkin');
             expect(cutscene.getSkinPrefix()).toBe('');
@@ -732,10 +721,10 @@ describe('Cutscene', () => {
             const beforeFade = jest.fn();
             const onBlack = jest.fn();
 
-            const remSpy = jest.spyOn(cutscene, 'removeEventListeners').mockImplementation(() => {});
-            const addSpy = jest.spyOn(cutscene, 'addEventListeners').mockImplementation(() => {});
-            const stopTypingSpy = jest.spyOn(cutscene, 'stopTypingAudio').mockImplementation(() => {});
-            const bgSpy = jest.spyOn(cutscene, 'cutsceneBackgroundChange').mockImplementation(() => {});
+            const remSpy = jest.spyOn(cutscene, 'removeEventListeners').mockImplementation(() => { });
+            const addSpy = jest.spyOn(cutscene, 'addEventListeners').mockImplementation(() => { });
+            const stopTypingSpy = jest.spyOn(cutscene, 'stopTypingAudio').mockImplementation(() => { });
+            const bgSpy = jest.spyOn(cutscene, 'cutsceneBackgroundChange').mockImplementation(() => { });
 
             const bgEl = { id: 'myBg' };
             jest.spyOn(document, 'getElementById').mockImplementation((id) => {
@@ -771,7 +760,7 @@ describe('Cutscene', () => {
         it('uses default onBlack delay of fadeIn + 100', () => {
             jest.useFakeTimers();
 
-            const addSpy = jest.spyOn(cutscene, 'addEventListeners').mockImplementation(() => {});
+            const addSpy = jest.spyOn(cutscene, 'addEventListeners').mockImplementation(() => { });
             const onBlack = jest.fn();
 
             cutscene.transitionWithBg({
@@ -948,7 +937,7 @@ describe('Cutscene', () => {
     describe('keyboard / click callbacks', () => {
         beforeEach(() => {
             cutscene.dialogue = [{ character: 'A', dialogue: 'hello', images: [] }];
-            jest.spyOn(cutscene, 'addEventListeners').mockImplementation(() => {});
+            jest.spyOn(cutscene, 'addEventListeners').mockImplementation(() => { });
             cutscene.displayDialogue();
             cutscene.isEnterPressed = true;
         });
@@ -1023,19 +1012,23 @@ describe('Cutscene', () => {
             expect(ctx.restore).toHaveBeenCalled();
         });
 
-        it('drawTextBox returns early when dontShowTextBoxAndSound is true', () => {
+        it('drawTextBox returns early when current dialogue is visually empty', () => {
             const panelSpy = jest.spyOn(cutscene, 'drawTextBoxPanel');
 
-            cutscene.dontShowTextBoxAndSound = true;
+            cutscene.dialogue = [{ character: '', dialogue: '', images: [] }];
+            cutscene.dialogueIndex = 0;
+
             cutscene.drawTextBox(ctx);
 
             expect(panelSpy).not.toHaveBeenCalled();
         });
 
-        it('drawTextBox draws panel at expected coordinates otherwise', () => {
+        it('drawTextBox draws panel at expected coordinates for non-empty dialogue', () => {
             const panelSpy = jest.spyOn(cutscene, 'drawTextBoxPanel');
 
-            cutscene.dontShowTextBoxAndSound = false;
+            cutscene.dialogue = [{ character: 'Firedog', dialogue: 'Hello', images: [] }];
+            cutscene.dialogueIndex = 0;
+
             cutscene.drawTextBox(ctx);
 
             expect(panelSpy).toHaveBeenCalledWith(
@@ -1045,6 +1038,25 @@ describe('Cutscene', () => {
                 cutscene.textBoxWidth,
                 96
             );
+        });
+    });
+
+    describe('visual empty dialogue helpers', () => {
+        it('isDialogueEntryVisuallyEmpty returns true only when both character and dialogue are empty', () => {
+            expect(cutscene.isDialogueEntryVisuallyEmpty({ character: '', dialogue: '' })).toBe(true);
+            expect(cutscene.isDialogueEntryVisuallyEmpty({ character: 'A', dialogue: '' })).toBe(false);
+            expect(cutscene.isDialogueEntryVisuallyEmpty({ character: '', dialogue: 'Hi' })).toBe(false);
+            expect(cutscene.isDialogueEntryVisuallyEmpty({ character: 'A', dialogue: 'Hi' })).toBe(false);
+        });
+
+        it('isCurrentDialogueVisuallyEmpty checks the current dialogue entry', () => {
+            cutscene.dialogue = [{ character: '', dialogue: '', images: [] }];
+            cutscene.dialogueIndex = 0;
+            expect(cutscene.isCurrentDialogueVisuallyEmpty()).toBe(true);
+
+            cutscene.dialogue = [{ character: 'A', dialogue: '', images: [] }];
+            cutscene.dialogueIndex = 0;
+            expect(cutscene.isCurrentDialogueVisuallyEmpty()).toBe(false);
         });
     });
 
@@ -1232,7 +1244,7 @@ describe('Cutscene', () => {
         });
 
         it('for a firedog border request id, delegates to drawFiredogBorderComposite and returns', () => {
-            const spy = jest.spyOn(cutscene, 'drawFiredogBorderComposite').mockImplementation(() => {});
+            const spy = jest.spyOn(cutscene, 'drawFiredogBorderComposite').mockImplementation(() => { });
 
             cutscene.drawSingleImage(ctx, {
                 id: 'firedogHappyBorder',
@@ -1255,8 +1267,8 @@ describe('Cutscene', () => {
         });
 
         it('draws standard image, optional panel border, cosmetic overlays, and effect layers', () => {
-            const borderSpy = jest.spyOn(cutscene, 'drawRoundedPanelBorder').mockImplementation(() => {});
-            const effectSpy = jest.spyOn(cutscene, 'drawFiredogEffectLayers').mockImplementation(() => {});
+            const borderSpy = jest.spyOn(cutscene, 'drawRoundedPanelBorder').mockImplementation(() => { });
+            const effectSpy = jest.spyOn(cutscene, 'drawFiredogEffectLayers').mockImplementation(() => { });
 
             cutscene.drawSingleImage(ctx, {
                 id: 'firedogHappy',
@@ -1274,7 +1286,7 @@ describe('Cutscene', () => {
         });
 
         it('draws panel border for non-firedog Border ids', () => {
-            const borderSpy = jest.spyOn(cutscene, 'drawRoundedPanelBorder').mockImplementation(() => {});
+            const borderSpy = jest.spyOn(cutscene, 'drawRoundedPanelBorder').mockImplementation(() => { });
 
             cutscene.drawSingleImage(ctx, {
                 id: 'someCardBorder',
@@ -1304,7 +1316,7 @@ describe('Cutscene', () => {
         });
 
         it('drawImages safely handles non-array and draws each image in array', () => {
-            const spy = jest.spyOn(cutscene, 'drawSingleImage').mockImplementation(() => {});
+            const spy = jest.spyOn(cutscene, 'drawSingleImage').mockImplementation(() => { });
 
             cutscene.drawImages(ctx, null);
             cutscene.drawImages(ctx, 'nope');
@@ -1427,8 +1439,8 @@ describe('Cutscene', () => {
         });
 
         it('draws border asset, panel border, base image, cosmetic overlays, and effect layers', () => {
-            const borderSpy = jest.spyOn(cutscene, 'drawRoundedPanelBorder').mockImplementation(() => {});
-            const effectSpy = jest.spyOn(cutscene, 'drawFiredogEffectLayers').mockImplementation(() => {});
+            const borderSpy = jest.spyOn(cutscene, 'drawRoundedPanelBorder').mockImplementation(() => { });
+            const effectSpy = jest.spyOn(cutscene, 'drawFiredogEffectLayers').mockImplementation(() => { });
 
             cutscene.drawFiredogBorderComposite(
                 ctx,
@@ -1570,7 +1582,6 @@ describe('Cutscene', () => {
 
         it('draws images, textbox panel, reminder image, and final sounds', () => {
             cutscene.backgroundImage = null;
-            cutscene.dontShowTextBoxAndSound = false;
 
             jest.spyOn(performance, 'now').mockReturnValue(
                 cutscene.reminderImageStartTime + 2000
@@ -1594,7 +1605,7 @@ describe('Cutscene', () => {
 
         it('stops typing audio once when dialogueIndex is past the dialogue length', () => {
             cutscene.dialogueIndex = 10;
-            const stopSpy = jest.spyOn(cutscene, 'stopTypingAudio').mockImplementation(() => {});
+            const stopSpy = jest.spyOn(cutscene, 'stopTypingAudio').mockImplementation(() => { });
 
             cutscene.draw(context);
             cutscene.draw(context);

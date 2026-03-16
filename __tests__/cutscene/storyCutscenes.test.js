@@ -408,11 +408,11 @@ describe('EndCutscene classes: unlock flags and save behavior', () => {
         };
 
         [
-            'cabincutscene1',
-            'map3CutsceneCabinNight',
+            'map1InsideCabin',
+            'map2InsideCabinNight',
             'scrollLetterMessageGaladon',
             'dreamLight1',
-            'map1blackBackground',
+            'blackBackground',
             'reminderToSkipWithTab',
         ].forEach(id => {
             if (!document.getElementById(id)) {
