@@ -129,7 +129,7 @@ body {
 #icyStormBallCollision, #iceSlashCollision, #iceTrailCollision, #spinningIceBallsCollision, #pointyIcicleShardCollision, #undergroundIcicleCollision, #galacticSpikeCollision, #purpleFireballCollision,
 /* cutscene images */
     /* background */
-    #blackBackground, #cutsceneOperatingBed, #madeByDanial, #toBeContinued,
+    #blackBackground, #madeByDanial, #toBeContinued,
     /* chapters */
     #chapter1, #chapter2, #chapter3, #chapter4, #chapter5, #chapter6, #chapter7, #bonusChapter1, #bonusChapter2, #bonusChapter3,
         /* inside cabin */
@@ -146,7 +146,11 @@ body {
         /* map3 cutscene */
             #map3ForestRiver, #map3OutsideCabin, #map3Sorcerer,
         /* map4 cutscene */
-            #map4beginningForestView, #map4CloningLab, #map4ElyvorgFlames, #map4EvilElyvorg, #map4footsteps, #map4hospitalBedEmpty, #map4OutsideCabin,
+            #map4beginningForestView, #map4CloningLab, #map4ElyvorgFlames, #map4EvilElyvorg, #map4footsteps, #map4BrokenGlassChamber, #map4OutsideCabin,
+        /* map5 cutscene */
+            #map5InsideGlassChamber,
+        /* map6 cutscene */
+            #map6OperatingBed,
         /* map7 cutscene */
             #map7ElyvorgInsideCave, #map7EnteringVolcanoZone, #map7FiredogEnteringCave, #map7FiredogFurtherIntoTheCave, #map7TemporalTimber1, #map7TemporalTimber2,
             #map7TemporalTimber3,  #map7TemporalTimberActive, #map7TemporalTimberLocation,

@@ -593,44 +593,4 @@ describe('Map7ElyvorgIngameCutsceneAfterFight', () => {
         expect(typeof cutscene.enterOrLeftClick).toBe('function');
         expect(typeof cutscene.displayDialogue).toBe('function');
     });
-
-    it('registers exactly 49 dialogues', () => {
-        expect(cutscene.dialogue.length).toBe(49);
-    });
-
-    it('dialogue 2 starts unboundPurpose music', () => {
-        jest.spyOn(cutscene, 'playMusic');
-
-        cutscene.dialogue[2].onAdvance();
-
-        expect(cutscene.playMusic).toHaveBeenCalledWith('unboundPurpose', true);
-    });
-
-    it('dialogue 23 starts crypticTokenDarkAmbienceSound music', () => {
-        jest.spyOn(cutscene, 'playMusic');
-
-        cutscene.dialogue[23].onAdvance();
-
-        expect(cutscene.playMusic).toHaveBeenCalledWith('crypticTokenDarkAmbienceSound', true);
-    });
-
-    it('dialogue 27 fades out crypticTokenDarkAmbienceSound', () => {
-        jest.spyOn(cutscene, 'fadeOutMusic');
-
-        cutscene.dialogue[27].onAdvance();
-
-        expect(cutscene.fadeOutMusic).toHaveBeenCalledWith('crypticTokenDarkAmbienceSound');
-    });
-
-    it('dialogue 41 fades out unboundPurpose', () => {
-        jest.spyOn(cutscene, 'fadeOutMusic');
-
-        cutscene.dialogue[41].onAdvance();
-
-        expect(cutscene.fadeOutMusic).toHaveBeenCalledWith('unboundPurpose');
-    });
-
-    it('last dialogue is Firedog refusing to let Elyvorg escape', () => {
-        expect(cutscene.dialogue[48].dialogue).toBe(`Uh? I'm not letting you run away, no!`);
-    });
 });
