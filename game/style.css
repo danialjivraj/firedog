@@ -231,11 +231,19 @@ body {
         /* nysera */
         #nyseraExplaining, #nyseraExplaining2, #nyseraHandUp, #nyseraLaugh, #nyseraNormal, #nyseraNormalBlur, #nyseraScared, #nyseraSurprised, 
         /* valdorin */
-        #valdorinCrossedArms, #valdorinFistUp, #valdorinNormal, #valdorinSurprised, #ValdorinTalking,
+        #valdorinCrossedArms, #valdorinFistUp, #valdorinNormal, #valdorinSurprised, #valdorinTalking,
         /* duskmaw */
         #duskmawLaugh, #duskmawLiftingHat, #duskmawLiftingHat2, #duskmawNormal, 
         /* zephyrion */
-        #zephyrionDistraught, #zephyrionEyesClosed, #zephyrionHappy, #zephyrionNormal, #zephyrionSurprised, 
+        #zephyrionDistraught, #zephyrionEyesClosed, #zephyrionHappy, #zephyrionNormal, #zephyrionTerrified, #zephyrionCastingSpell, #zephyrionStrugglingSpell, #zephyrionExhausted,
+        /* craggle */
+        #craggleNormal, #craggleCountingRocks, #craggleSurprised, #craggleUpset, #craggleHappy,
+        /* aurellia */
+         #aurelliaHappy, #aurelliaSad, #aurelliaSmile, #aurelliaTalking, #aurelliaSurprised, #aurelliaWorried,
+        /* orialis */
+        #orialisHappy, #orialisSad, #orialisSurprised, #orialisTalking,  #orialisTear,  #orialisWorried,
+        /* orelian */
+        #orelianHappy, #orelianHurt, #orelianSurprised, #orelianTalking, #orelianWorried, 
         /* penguini */
         #penguinBatLaugh, #penguinBatTalkNormal, #penguinBatUp, #penguinGunLaugh, #penguinGunTalkNormal, #penguinGunUp, 
     /* border images */

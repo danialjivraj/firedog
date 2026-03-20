@@ -825,39 +825,39 @@ export class Map1StartCutscene extends StoryCutscene {
         this.addDialogue( //119
             `${this.valdorin}`,
             `The ${this.crypticToken} without the ${this.temporalTimber} is still incredibly powerful.`,
-            this.addImage('ValdorinTalking', RIGHT),
+            this.addImage('valdorinTalking', RIGHT),
         );
         this.addDialogue( //120
             `${this.valdorin}`,
             `But the thief will not be able to channel its full power unless the two relics are joined again.`,
-            this.addImage('ValdorinTalking', RIGHT),
+            this.addImage('valdorinTalking', RIGHT),
         );
         this.addDialogue( //121
             `${this.valdorin}`,
             `And if that happens, the corruptive energy within the token will grow far worse.`,
-            this.addImage('ValdorinTalking', RIGHT),
+            this.addImage('valdorinTalking', RIGHT),
         );
         this.addDialogue( //122
             `${this.valdorin}`,
             `That is why we still have a chance... but not much time.`,
-            this.addImage('ValdorinTalking', RIGHT),
+            this.addImage('valdorinTalking', RIGHT),
         );
         this.addDialogue( //123
             `${this.firedog}`,
             `Where can the ${this.temporalTimber} be found? Is it near our land?`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('ValdorinTalking', RIGHT),
+            this.addImage('valdorinTalking', RIGHT),
         );
         this.addDialogue( //124
             `${this.valdorin}`,
             `Unfortunately not... The ${this.temporalTimber} is inside a cave in ${this.infernalCraterPeak}...`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('ValdorinTalking', RIGHT),
+            this.addImage('valdorinTalking', RIGHT),
         );
         this.addDialogue( //125
             `${this.valdorin}`,
             `If the culprit gets there before we do, the consequences will be huge. That's assuming they know the location of the ${this.temporalTimber}.`,
-            this.addImage('ValdorinTalking', RIGHT),
+            this.addImage('valdorinTalking', RIGHT),
         );
         this.addDialogue( //126
             `${this.valdorin}`,
@@ -2882,7 +2882,7 @@ export class Map3StartCutscene extends StoryCutscene {
                     this.playSFX('sorcererTeleportBackSound');
                 },
             },
-            this.addImage('zephyrionEyesClosed', RIGHT),
+            this.addImage('zephyrionCastingSpell', RIGHT),
         );
         this.addDialogue( //75
             `${this.questionMark}`,
@@ -2904,20 +2904,20 @@ export class Map3StartCutscene extends StoryCutscene {
             `${this.zephyrion}`,
             `Wha!`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionSurprised', RIGHT),
+            this.addImage('zephyrionTerrified', RIGHT),
         );
         this.addDialogue( //77
             `${this.firedog}`,
             `Huh? Everything okay ${this.zephyrion}?`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionSurprised', RIGHT),
+            this.addImage('zephyrionTerrified', RIGHT),
         );
         this.addDialogue( //78
             `${this.zephyrion}`,
             `(What was that? It was inside ${this.firedog}? Inside of his thoughts? His heart?)`,
             { whisper: true },
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionSurprised', RIGHT),
+            this.addImage('zephyrionTerrified', RIGHT),
         );
         this.addDialogue( //79
             `${this.zephyrion}`,
@@ -2992,13 +2992,13 @@ export class Map3StartCutscene extends StoryCutscene {
                 onAdvance: () => this.playSFX('sorcererWaterSpellSound'),
             },
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionEyesClosed', RIGHT),
+            this.addImage('zephyrionCastingSpell', RIGHT),
         );
         this.addDialogue( //91
             `${this.zephyrion}`,
             `Hydroaetherial Breath: Aquatic Veil!`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionEyesClosed', RIGHT),
+            this.addImage('zephyrionCastingSpell', RIGHT),
         );
         this.addDialogue( //92
             `${this.zephyrion}`,
@@ -3763,13 +3763,13 @@ export class Map4StartCutscene extends StoryCutscene {
             `${this.valdorin}`,
             `We continued with the ${this.projectCryptoterraGenesis} for one more year after that incident.`,
             this.addImage('nyseraNormal', LEFT),
-            this.addImage('ValdorinTalking', RIGHT),
+            this.addImage('valdorinTalking', RIGHT),
         );
         this.addDialogue( //74
             `${this.valdorin}`,
             `After many more failures, we found another survivor... ${this.firedog}.`,
             this.addImage('nyseraNormal', LEFT),
-            this.addImage('ValdorinTalking', RIGHT),
+            this.addImage('valdorinTalking', RIGHT),
         );
         this.addDialogue( //75
             `${this.valdorin}`,
@@ -3895,37 +3895,37 @@ export class Map4StartCutscene extends StoryCutscene {
             `${this.valdorin}`,
             `So our sorcerers worked and came up with a solution. Currently, ${this.lunarGlade} is surrounded by a protective layer built by our sorcerers.`,
             this.addImage('nyseraNormal', LEFT),
-            this.addImage('ValdorinTalking', RIGHT),
+            this.addImage('valdorinTalking', RIGHT),
         );
         this.addDialogue( //96
             `${this.valdorin}`,
             `This magical layer is preventing outside hidden entities from entering the land, and it also has the ability to detect unknown souls that trespass it.`,
             this.addImage('nyseraNormal', LEFT),
-            this.addImage('ValdorinTalking', RIGHT),
+            this.addImage('valdorinTalking', RIGHT),
         );
         this.addDialogue( //97
             `${this.valdorin}`,
             `This same exact magical layer is used to protect the safe room, where the ${this.crypticToken} was.`,
             this.addImage('nyseraNormal', LEFT),
-            this.addImage('ValdorinTalking', RIGHT),
+            this.addImage('valdorinTalking', RIGHT),
         );
         this.addDialogue( //98
             `${this.valdorin}`,
             `So inside the safe room, the ${this.crypticToken}'s energy is completely trapped.`,
             this.addImage('nyseraNormal', LEFT),
-            this.addImage('ValdorinTalking', RIGHT),
+            this.addImage('valdorinTalking', RIGHT),
         );
         this.addDialogue( //99
             `${this.valdorin}`,
             `And soon enough, ${this.firedog} started having fewer of these dreams... and then he simply became normal again.`,
             this.addImage('nyseraNormal', LEFT),
-            this.addImage('ValdorinTalking', RIGHT),
+            this.addImage('valdorinTalking', RIGHT),
         );
         this.addDialogue( //100
             `${this.valdorin}`,
             `I believe that because ${this.firedog} survived the token's energy, he somehow remained connected to it.`,
             this.addImage('nyseraNormal', LEFT),
-            this.addImage('ValdorinTalking', RIGHT),
+            this.addImage('valdorinTalking', RIGHT),
         );
         this.addDialogue( //101
             `${this.valdorin}`,
@@ -4532,10 +4532,13 @@ export class Map5StartCutscene extends StoryCutscene {
                     onBlack: () => {
                         this.isCharacterSepia = true;
                         this.isBackgroundSepia = true;
-
+                        this.fadeOutMusic('blizzardWindFireplace');
                         setTimeout(() => {
                             this.playSFX('flashbackStart', false, true);
                         }, 200);
+                        setTimeout(() => {
+                            this.playMusic('insideGlassChamberBubbleSound', true);
+                        }, 1600);
                     },
                 }),
             },
@@ -4629,6 +4632,8 @@ export class Map5StartCutscene extends StoryCutscene {
                     onBlackDelayMs: 1000,
                     onBlack: () => {
                         this.playSFX('flashbackEnd', false, true);
+                        this.playMusic('blizzardWindFireplace', true);
+                        this.fadeOutMusic('insideGlassChamberBubbleSound');
                         this.isCharacterSepia = false;
                         this.isBackgroundSepia = false;
                     },
@@ -4953,16 +4958,19 @@ export class Map5EndCutscene extends StoryCutscene {
             `${this.threeDots}`,
             `230... 231... 232... 233...`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //4
             `${this.firedog}`,
             `Huh? Who's counting? Who's there?`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //5
             `${this.threeDots}`,
             `Hey! You're ruining my rock counting!`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('craggleUpset', RIGHT),
         );
         this.addDialogue( //6
             `${this.threeDots}`,
@@ -4980,19 +4988,19 @@ export class Map5EndCutscene extends StoryCutscene {
             `${this.craggle}`,
             `I'm a rock collector. I like exploring nearby lands and collecting rocks from those places.`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('craggleNormal', RIGHT),
+            this.addImage('craggleHappy', RIGHT),
         );
         this.addDialogue( //9
             `${this.craggle}`,
             `I was counting how many rocks I've got so far... well, until you interrupted me!`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('craggleNormal', RIGHT),
+            this.addImage('craggleUpset', RIGHT),
         );
         this.addDialogue( //10
             `${this.firedog}`,
             `Oh... sorry for interrupting you...`,
             this.addImage(this.setfiredogSigh(), LEFT),
-            this.addImage('craggleNormal', RIGHT),
+            this.addImage('craggleUpset', RIGHT),
         );
         this.addDialogue( //11
             `${this.craggle}`,
@@ -5010,7 +5018,7 @@ export class Map5EndCutscene extends StoryCutscene {
             `${this.craggle}`,
             `It sure is! But anyway, what brings you here?`,
             this.addImage(this.setfiredogLaugh(), LEFT),
-            this.addImage('craggleNormal', RIGHT),
+            this.addImage('craggleHappy', RIGHT),
         );
         this.addDialogue( //14
             `${this.firedog}`,
@@ -5022,13 +5030,13 @@ export class Map5EndCutscene extends StoryCutscene {
             `${this.craggle}`,
             `Hm... that sounded sarcastic...`,
             this.addImage(this.setfiredogLaugh(), LEFT),
-            this.addImage('craggleSuspicious', RIGHT),
+            this.addImage('craggleUpset', RIGHT),
         );
         this.addDialogue( //16
             `${this.firedog}`,
             `Sorry, sorry!`,
             this.addImage(this.setfiredogLaugh(), LEFT),
-            this.addImage('craggleSuspicious', RIGHT),
+            this.addImage('craggleUpset', RIGHT),
         );
         this.addDialogue( //17
             `${this.craggle}`,
@@ -5046,49 +5054,49 @@ export class Map5EndCutscene extends StoryCutscene {
             `${this.craggle}`,
             `Well, if you're just exploring, you picked a strange place to stop by.`,
             this.addImage(this.setfiredogHappy(), LEFT),
-            this.addImage('craggleNormal', RIGHT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //20
             `${this.firedog}`,
             `How so?`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('craggleNormal', RIGHT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //21
             `${this.craggle}`,
             `Not many travelers make it this far. Most of them turn back long before they get here.`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('craggleNormal', RIGHT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //22
             `${this.craggle}`,
             `The farther you go from here, the less friendly the lands become.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('craggleNormal', RIGHT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //23
             `${this.firedog}`,
             `Yeah... I've kinda noticed that already.`,
             this.addImage(this.setfiredogPhew(), LEFT),
-            this.addImage('craggleNormal', RIGHT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //24
             `${this.craggle}`,
             `Still, this cabin is useful.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('craggleNormal', RIGHT),
+            this.addImage('craggleHappy', RIGHT),
         );
         this.addDialogue( //25
             `${this.craggle}`,
             `Travelers leave all sorts of things behind sometimes. Coins, tools... and occasionally rocks.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('craggleNormal', RIGHT),
+            this.addImage('craggleHappy', RIGHT),
         );
         this.addDialogue( //26
             `${this.firedog}`,
             `So that's why you like staying here?`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('craggleNormal', RIGHT),
+            this.addImage('craggleHappy', RIGHT),
         );
         this.addDialogue( //27
             `${this.craggle}`,
@@ -5106,7 +5114,7 @@ export class Map5EndCutscene extends StoryCutscene {
             `${this.craggle}`,
             `That's because you don't understand rocks yet.`,
             this.addImage(this.setfiredogLaugh(), LEFT),
-            this.addImage('craggleHappy', RIGHT),
+            this.addImage('craggleNormal', RIGHT),
         );
         this.addDialogue( //30
             `${this.craggle}`,
@@ -5142,7 +5150,7 @@ export class Map5EndCutscene extends StoryCutscene {
             `${this.craggle}`,
             `Haha! Fair enough.`,
             this.addImage(this.setfiredogDiscomfort(), LEFT),
-            this.addImage('craggleHappy', RIGHT),
+            this.addImage('craggleNormal', RIGHT),
         );
         this.addDialogue( //36
             `${this.firedog}`,
@@ -5154,13 +5162,13 @@ export class Map5EndCutscene extends StoryCutscene {
             `${this.craggle}`,
             `Good idea. You look like you've had a long journey.`,
             this.addImage(this.setfiredogPhew(), LEFT),
-            this.addImage('craggleNormal', RIGHT),
+            this.addImage('craggleHappy', RIGHT),
         );
         this.addDialogue( //38
             `${this.firedog}`,
             `You could say that.`,
             this.addImage(this.setfiredogPhew(), LEFT),
-            this.addImage('craggleNormal', RIGHT),
+            this.addImage('craggleHappy', RIGHT),
         );
 
         this.game.map6Unlocked = true;
@@ -5184,6 +5192,9 @@ export class Map6StartCutscene extends StoryCutscene {
                 onAdvance: () => this.transitionWithBg({
                     fadeIn: 500, blackDuration: 500, fadeOut: 500,
                     imageId: 'map5InsideCabin',
+                    beforeFade: () => {
+                        this.playMusic('blizzardWindFireplace', true);
+                    },
                 }),
             },
         );
@@ -5197,28 +5208,33 @@ export class Map6StartCutscene extends StoryCutscene {
             `${this.craggle}`,
             `234... 235... 236... 237...`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //3
             `${this.firedog}`,
             `(He's still counting those rocks...)`,
             { whisper: true },
             this.addImage(this.setfiredogSigh(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //4
             `${this.craggle}`,
             `238... 239... 240...`,
             this.addImage(this.setfiredogSigh(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //5
             `${this.firedog}`,
             `...`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //6
             `${this.firedog}`,
             `(Why does that sound so familiar all of a sudden?)`,
             { whisper: true },
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //7
             `${this.craggle}`,
@@ -5230,12 +5246,14 @@ export class Map6StartCutscene extends StoryCutscene {
                 },
             },
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //8
             `${this.firedog}`,
             `(Ugh...)`,
             { whisper: true },
             this.addImage(this.setfiredogHeadache(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //9
             `${this.firedog}`,
@@ -5249,6 +5267,7 @@ export class Map6StartCutscene extends StoryCutscene {
                     onBlack: () => {
                         this.isCharacterSepia = true;
                         this.isBackgroundSepia = true;
+                        this.fadeOutMusic('blizzardWindFireplace');
 
                         setTimeout(() => {
                             this.playSFX('flashbackStart', false, true);
@@ -5257,6 +5276,7 @@ export class Map6StartCutscene extends StoryCutscene {
                 }),
             },
             this.addImage(this.setfiredogHeadache(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //10
             `${this.nysera}`,
@@ -5375,6 +5395,9 @@ export class Map6StartCutscene extends StoryCutscene {
                         setTimeout(() => {
                             this.playSFX('flashbackStart', false, true);
                         }, 200);
+                        setTimeout(() => {
+                            this.playMusic('insideGlassChamberBubbleSound', true);
+                        }, 1600);
                     },
                 }),
             },
@@ -5497,6 +5520,8 @@ export class Map6StartCutscene extends StoryCutscene {
                     onBlackDelayMs: 1000,
                     onBlack: () => {
                         this.playSFX('flashbackEnd', false, true);
+                        this.fadeOutMusic('insideGlassChamberBubbleSound');
+                        this.playMusic('blizzardWindFireplace', true);
                         this.isCharacterSepia = false;
                         this.isBackgroundSepia = false;
                     },
@@ -5514,147 +5539,174 @@ export class Map6StartCutscene extends StoryCutscene {
             `${this.craggle}`,
             `Hey! You are interrupting my counting again!`,
             this.addImage(this.setfiredogHeadache(), LEFT),
+            this.addImage('craggleUpset', RIGHT),
         );
         this.addDialogue( //48
             `${this.firedog}`,
             `(It happened again... I just had another flashback...)`,
             { whisper: true },
             this.addImage(this.setfiredogDiscomfort(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //49
             `${this.firedog}`,
             `(And ${this.valdorin}... he erased all my memories?)`,
             { whisper: true },
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //50
             `${this.firedog}`,
             `(That would explain why I don't recall any of these memories... was I meant to never remember this?)`,
             { whisper: true },
             this.addImage(this.setfiredogHeadache(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //51
             `${this.firedog}`,
             `(He also said that if I ever started showing signs again, they would keep me inside ${this.lunarGlade}...)`,
             { whisper: true },
             this.addImage(this.setfiredogHeadache(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //52
             `${this.firedog}`,
             `(So all those years... was I really trapped there because of what they did to me?)`,
             { whisper: true },
             this.addImage(this.setfiredogHeadache(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //53
             `${this.firedog}`,
             `(${this.valdorin} said I was the second one to get that far... Who was the first?)`,
             { whisper: true },
             this.addImage(this.setfiredogHeadache(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //54
             `${this.firedog}`,
             `(I hate this feeling... was I really used as an experiment?)`,
             { whisper: true },
             this.addImage(this.setfiredogSad(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //55
             `${this.firedog}`,
             `(It all seems to make sense... But ${this.valdorin} always took care of me... I really don't want to believe this until I get a chance to talk to him...)`,
             { whisper: true },
             this.addImage(this.setfiredogSad(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //56
             `${this.firedog}`,
             `(But at the same time, is it safe for me to come back to ${this.lunarGlade}?)`,
             { whisper: true },
             this.addImage(this.setfiredogSad(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //57
             `${this.firedog}`,
             `(I don't want to ignore these flashbacks I just had, but I have no time to think now. I need to get going.)`,
             { whisper: true },
             this.addImage(this.setfiredogHeadache(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //58
             `${this.firedog}`,
             `(After all, if the ${this.crypticToken} is in the wrong hands, it doesn't matter what is true or not. The whole world could be at stake right now.)`,
             { whisper: true },
             this.addImage(this.setfiredogHeadache(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //59
             `${this.firedog}`,
             `Alright...`,
             this.addImage(this.setfiredogPhew(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //60
             `${this.firedog}`,
             `I think I've rested long enough.`,
             this.addImage(this.setfiredogPhew(), LEFT),
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //61
             `${this.craggle}`,
             `Leaving already?`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //62
             `${this.firedog}`,
             `Yeah. I still have a long way to go.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //63
             `${this.craggle}`,
             `Where are you headed?`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //64
             `${this.firedog}`,
             `I'm trying to reach a cave near ${this.infernalCraterPeak}.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //65
             `${this.craggle}`,
             `${this.infernalCraterPeak}?`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //66
             `${this.craggle}`,
             `How interesting.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //67
             `${this.craggle}`,
             `A strange traveler passed by near here not too long ago. They looked a bit intimidating, but I saw them from the cabin's window.`,
             this.addImage(this.setfiredogNormalQuestionAndExclamationMark(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //68
             `${this.craggle}`,
             `It seemed that they were running toward ${this.venomveilLake}.`,
             this.addImage(this.setfiredogNormalQuestionAndExclamationMark(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //69
             `${this.craggle}`,
             `So I can only assume they were heading toward ${this.infernalCraterPeak}.`,
             this.addImage(this.setfiredogNormalQuestionAndExclamationMark(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //70
             `${this.firedog}`,
             `Wait... what did they look like?`,
             this.addImage(this.setfiredogCurious(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //71
             `${this.craggle}`,
             `Hard to say exactly as I only saw them from afar.`,
             this.addImage(this.setfiredogCurious(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //72
             `${this.craggle}`,
             `But they were wearing a dark hood. Well, that's all I could make out.`,
             this.addImage(this.setfiredogCurious(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //73
             `${this.firedog}`,
             `A dark hood...?`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //74
             `${this.craggle}`,
@@ -5663,58 +5715,69 @@ export class Map6StartCutscene extends StoryCutscene {
                 onAdvance: () => this.playMusic('ohNo', true),
             },
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //75
             `${this.firedog}`,
             `(Wait... that's the thief!)`,
             { whisper: true },
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //76
             `${this.firedog}`,
             `Oh no! How long ago did you see this traveler?`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //77
             `${this.craggle}`,
             `It must've been a couple of hours ago, I'd say.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //78
             `${this.firedog}`,
             `(Damn it... a couple of hours... I'm still so far behind!)`,
             { whisper: true },
             this.addImage(this.setfiredogAngry(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //79
             `${this.craggle}`,
             `Why do you look so worried? Do you know this traveler?`,
             this.addImage(this.setfiredogAngry(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //80
             `${this.firedog}`,
             `Something like that. But I have no time to waste. I need to leave right now.`,
             this.addImage(this.setfiredogAngry(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //81
             `${this.craggle}`,
             `Are you sure? You still look exhausted.`,
             this.addImage(this.setfiredogAngry(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //82
             `${this.firedog}`,
             `Exhausted or not, if I don't go now, this could be the end for everyone!`,
             this.addImage(this.setfiredogAngry(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //83
             `${this.craggle}`,
             `I... don't understand...`,
             this.addImage(this.setfiredogAngry(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //84
             `${this.firedog}`,
             `Thanks for letting me know, ${this.craggle}. I have to go now!`,
             this.addImage(this.setfiredogAngry(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //85
             `${this.craggle}`,
@@ -5730,18 +5793,22 @@ export class Map6StartCutscene extends StoryCutscene {
                 }),
             },
             this.addImage(this.setfiredogAngry(), LEFT),
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //86
             `${this.craggle}`,
             `Oh... ${this.firedog} just left...`,
+            this.addImage('craggleSurprised', RIGHT),
         );
         this.addDialogue( //87
             `${this.craggle}`,
             `Now then... where was I?`,
+            this.addImage('craggleCountingRocks', RIGHT),
         );
         this.addDialogue( //88
             `${this.craggle}`,
             `247... 248... 249... 250...`,
+            this.addImage('craggleCountingRocks', RIGHT),
         );
     }
 }
@@ -6905,77 +6972,79 @@ export class BonusMap1StartCutscene extends StoryCutscene {
             `${this.threeDots}`,
             `Oh! I'm sorry... I didn't mean to wake anyone.`,
             this.addImage(this.setfiredogUpset(), LEFT),
+            this.addImage('aurelliaSurprised', RIGHT),
         );
         this.addDialogue( //15
             `${this.firedog}`,
             `It's fine. You sounded desperate. I am ${this.firedog}, and you are?`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('aurelliaSurprised', RIGHT),
         );
         this.addDialogue( //16
             `${this.threeDots}`,
             `My name is ${this.aurellia}, and yes... I am desperate...`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaSad', RIGHT),
         );
         this.addDialogue( //17
             `${this.aurellia}`,
             `I came down from the outskirts near ${this.iceboundCave}. Something has changed there.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaSad', RIGHT),
         );
         this.addDialogue( //18
             `${this.firedog}`,
             `${this.iceboundCave}?`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaSad', RIGHT),
         );
         this.addDialogue( //19
             `${this.aurellia}`,
             `Yes. ${this.iceboundCave} is known for its caves and dozens of different entrances. It is a land up north, hard to reach due to how snowy and cold it is.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaExplaining', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //20
             `${this.aurellia}`,
             `It was always cold, but never like this.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaExplaining', RIGHT),
+            this.addImage('aurelliaWorried', RIGHT),
         );
         this.addDialogue( //21
             `${this.aurellia}`,
             `The wind there now bites through fur and bone. The paths are freezing over faster than they should.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaExplaining', RIGHT),
+            this.addImage('aurelliaWorried', RIGHT),
         );
         this.addDialogue( //22
             `${this.aurellia}`,
             `Creatures have been fleeing from the cave... and the few who went inside never returned.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaExplaining', RIGHT),
+            this.addImage('aurelliaWorried', RIGHT),
         );
         this.addDialogue( //23
             `${this.aurellia}`,
             `There's been a few avalanches that crashed down just a few miles from our village. If it keeps going like this...`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaExplaining', RIGHT),
+            this.addImage('aurelliaWorried', RIGHT),
         );
         this.addDialogue( //24
             `${this.aurellia}`,
             `The whole village may eventually be drowned in snow... This is extremely bad... This is why I am asking for help!`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaExplaining', RIGHT),
+            this.addImage('aurelliaSad', RIGHT),
         );
         this.addDialogue( //25
             `${this.firedog}`,
             `That doesn't sound normal at all...`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('aurelliaExplaining', RIGHT),
+            this.addImage('aurelliaSad', RIGHT),
         );
         this.addDialogue( //26
             `${this.penguini}`,
             `Well, it would definitely affect my brother's business up in ${this.iceboundCave}... That would be no good.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('penguinBatUp', RIGHT),
+            this.addImage('penguinBatTalkNormal', RIGHT),
         );
         this.addDialogue( //27
             `${this.penguini}`,
@@ -7023,77 +7092,77 @@ export class BonusMap1StartCutscene extends StoryCutscene {
             `${this.aurellia}`,
             `Some say an ancient ice beast has awakened deep inside the cave.`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('aurelliaExplaining', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //35
             `${this.aurellia}`,
             `Others say it is a guardian... or a king of frost.`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('aurelliaExplaining', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //36
             `${this.aurellia}`,
             `They call it ${this.glacikal}.`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('aurelliaExplaining', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //37
             `${this.aurellia}`,
             `It is believed that he is the one causing all the problems...`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('aurelliaExplaining', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //38
             `${this.firedog}`,
             `${this.glacikal}...`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('aurelliaExplaining', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //39
             `${this.penguini}`,
             `I heard ${this.glacikal} was nothing but an old legend. Even my brothers up in ${this.iceboundCave} have never seen such a monster!`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('aurelliaExplaining', RIGHT),
+            this.addImage('penguinBatTalkNormal', RIGHT),
         );
         this.addDialogue( //40
             `${this.firedog}`,
             `(Hm... An ice cave... people disappearing...)`,
             { whisper: true },
             this.addImage(this.setfiredogNormalQuestionAndExclamationMark(), LEFT),
-            this.addImage('penguinBatUp', RIGHT),
+            this.addImage('aurelliaSad', RIGHT),
         );
         this.addDialogue( //41
             `${this.firedog}`,
             `(This has nothing to do with the ${this.crypticToken}... Do I even have time for this?)`,
             { whisper: true },
             this.addImage(this.setfiredogSigh(), LEFT),
-            this.addImage('penguinBatUp', RIGHT),
+            this.addImage('aurelliaSad', RIGHT),
         );
         this.addDialogue( //42
             `${this.firedog}`,
             `(But I can't just ignore this either...)`,
             { whisper: true },
             this.addImage(this.setfiredogSigh(), LEFT),
-            this.addImage('penguinBatUp', RIGHT),
+            this.addImage('aurelliaSad', RIGHT),
         );
         this.addDialogue( //43
             `${this.firedog}`,
             `(Ugh...)`,
             { whisper: true },
             this.addImage(this.setfiredogHeadache(), LEFT),
-            this.addImage('penguinBatUp', RIGHT),
+            this.addImage('aurelliaSad', RIGHT),
         );
         this.addDialogue( //44
             `${this.firedog}`,
             `Okay, fine... I'll go check out ${this.iceboundCave}.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaSurprised', RIGHT),
+            this.addImage('aurelliaSad', RIGHT),
         );
         this.addDialogue( //45
             `${this.aurellia}`,
             `Really!?`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaSurprised', RIGHT),
+            this.addImage('aurelliaHappy', RIGHT),
         );
         this.addDialogue( //46
             `${this.firedog}`,
@@ -7105,13 +7174,13 @@ export class BonusMap1StartCutscene extends StoryCutscene {
             `${this.aurellia}`,
             `Thank you... truly.`,
             this.addImage(this.setfiredogHappy(), LEFT),
-            this.addImage('aurelliaHappy', RIGHT),
+            this.addImage('aurelliaSmile', RIGHT),
         );
         this.addDialogue( //48
             `${this.firedog}`,
             `No worries ${this.aurellia}! Lead me to ${this.iceboundCave}!`,
             this.addImage(this.setfiredogHappy(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaSmile', RIGHT),
         );
         this.addDialogue( //49
             `${this.aurellia}`,
@@ -7129,73 +7198,73 @@ export class BonusMap1StartCutscene extends StoryCutscene {
                 }),
             },
             this.addImage(this.setfiredogHappy(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaSmile', RIGHT),
         );
         this.addDialogue( //50
             `${this.aurellia}`,
             `We are currently in a small village near ${this.iceboundCave}, this is the village I grew up in!`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //51
             `${this.firedog}`,
             `Oh wow! It is so cold! I never saw so much snow in my life!`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //52
             `${this.firedog}`,
             `I had no idea such a village existed.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //53
             `${this.aurellia}`,
             `It is indeed a beautiful place to live in. However, recently, many of the villagers have been preparing to leave.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //54
             `${this.aurellia}`,
             `We collect water and find treasures inside the cave, but without being able to go inside...`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //55
             `${this.aurellia}`,
             `.. there will be no water for us to drink... no treasures for us to find and sell...`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //56
             `${this.aurellia}`,
             `All the villagers think it's only a matter of time before an avalanche collapses the whole village.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //57
             `${this.aurellia}`,
             `I can't blame them... I am scared myself...`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaSad', RIGHT),
         );
         this.addDialogue( //58
             `${this.firedog}`,
             `I see... Things are getting really bad here...`,
             this.addImage(this.setfiredogSad(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaSad', RIGHT),
         );
         this.addDialogue( //59
             `${this.firedog}`,
             `Okay... I've made up my mind.. I am stopping whatever is inside that cave and bring back peace to the village!`,
             this.addImage(this.setfiredogUpset(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaSad', RIGHT),
         );
         this.addDialogue( //60
             `${this.aurellia}`,
             `Thank you so much ${this.firedog}... It means a lot to us.`,
             this.addImage(this.setfiredogUpset(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaSmile', RIGHT),
         );
         this.addDialogue( //61
             `${this.aurellia}`,
@@ -7212,147 +7281,153 @@ export class BonusMap1StartCutscene extends StoryCutscene {
                 }),
             },
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //62
             `${this.aurellia}`,
             `Okay.. here we are.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //63
             `${this.firedog}`,
             `Phew... It got even colder now. Hopefully I don't freeze to death!`,
             this.addImage(this.setfiredogDiscomfort(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //64
             `${this.firedog}`,
             `Before I go, ${this.aurellia}, do you know anything else about ${this.glacikal}? You mentioned it was an ice beast, or a guardian?`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //65
             `${this.aurellia}`,
             `Yes.. No one has seen ${this.glacikal} with their own eyes in the village. And to be honest, these are rumors passed down from our ancestors.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //66
             `${this.aurellia}`,
             `It is believed ${this.glacikal} rests in the deepest parts of ${this.iceboundCave}, and once he awakens, disaster strikes...`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //67
             `${this.aurellia}`,
             `The snow falls harder... avalanches come out of nowhere... the wind blows harder... the temperature drops significantly...`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //68
             `${this.aurellia}`,
             `This is exactly what happened centuries ago.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //69
             `${this.aurellia}`,
             `Lost writings were found inside the cave by our ancestors, detailing the dangerous encounter with ${this.glacikal}, with the same exact disasters happening.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //70
             `${this.firedog}`,
             `I see... so ${this.glacikal} is a legend that may or may not even exist?`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //71
             `${this.aurellia}`,
             `Yeah.. but I do believe he exists.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //72
             `${this.aurellia}`,
             `It is believed that ${this.glacikal} keeps the icy caves and the surrounding snowy land in balance.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //73
             `${this.aurellia}`,
             `As long as he sleeps, the ice remains calm and the caves stay stable.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //74
             `${this.aurellia}`,
             `But why has ${this.glacikal} awakened? And how? I wish I knew...`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //75
             `${this.firedog}`,
             `(It seems I am dealing with either a real ice monster, or just something completely unrelated...)`,
             { whisper: true },
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //76
             `${this.firedog}`,
             `(Nonetheless, we are already here, so we might as well get to the bottom of the truth!)`,
             { whisper: true },
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //77
             `${this.firedog}`,
             `Thank you for this information, ${this.aurellia}. I think I'm ready to go inside now!`,
             this.addImage(this.setfiredogSmile(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //78
             `${this.aurellia}`,
             `Before you go, be careful with the ice ground. It is extremely slippery!`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //79
             `${this.firedog}`,
             `Extremely slippery ground? Doesn't sound too fun...`,
             this.addImage(this.setfiredogSigh(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //80
             `${this.firedog}`,
             `But nothing that won't stop me!`,
             this.addImage(this.setfiredogHappy(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //81
             `${this.firedog}`,
             `I'll go now!`,
             this.addImage(this.setfiredogHappy(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaTalking', RIGHT),
         );
         this.addDialogue( //82
             `${this.aurellia}`,
             `Please make sure to come back.. you are our only hope...`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaSad', RIGHT),
         );
         this.addDialogue( //83
             `${this.firedog}`,
             `I'll come back, and I'll get to the bottom of these disasters!`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaSad', RIGHT),
         );
         this.addDialogue( //84
-            `${this.firedog}`,
-            `Now, let's go!`,
+            `${this.aurellia}`,
+            `Thank you...`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaSad', RIGHT),
+        );
+        this.addDialogue( //85
+            `${this.firedog}`,
+            `Alright, let's go!`,
+            this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('aurelliaSad', RIGHT),
         );
     }
 }
@@ -7445,13 +7520,13 @@ export class BonusMap1EndCutscene extends StoryCutscene {
             `${this.aurellia}`,
             `What happened? Did you find anything inside ${this.iceboundCave}?`,
             this.addImage(this.setfiredogLaugh(), LEFT),
-            this.addImage('aurelliaCurious', RIGHT),
+            this.addImage('aurelliaSurprised', RIGHT),
         );
         this.addDialogue( //13
             `${this.firedog}`,
             `Yes... and you were right.`,
             this.addImage(this.setfiredogHappy(), LEFT),
-            this.addImage('aurelliaCurious', RIGHT),
+            this.addImage('aurelliaSurprised', RIGHT),
         );
         this.addDialogue( //14
             `${this.firedog}`,
@@ -7481,31 +7556,31 @@ export class BonusMap1EndCutscene extends StoryCutscene {
             `${this.aurellia}`,
             `So the rumors were true all along...`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaSad', RIGHT),
+            this.addImage('aurelliaSurprised', RIGHT),
         );
         this.addDialogue( //19
             `${this.firedog}`,
             `Yeah... but he's calmed down now.`,
             this.addImage(this.setfiredogHappy(), LEFT),
-            this.addImage('aurelliaSad', RIGHT),
+            this.addImage('aurelliaSurprised', RIGHT),
         );
         this.addDialogue( //20
             `${this.firedog}`,
             `He told me he was going back to his deep slumber, so things should return to normal.`,
             this.addImage(this.setfiredogHappy(), LEFT),
-            this.addImage('aurelliaHappy', RIGHT),
+            this.addImage('aurelliaSurprised', RIGHT),
         );
         this.addDialogue( //21
             `${this.aurellia}`,
             `Now that you mention it... the wind already feels less violent.`,
             this.addImage(this.setfiredogHappy(), LEFT),
-            this.addImage('aurelliaCurious', RIGHT),
+            this.addImage('aurelliaSurprised', RIGHT),
         );
         this.addDialogue( //22
             `${this.aurellia}`,
             `And the air doesn't feel as heavy as before either...`,
             this.addImage(this.setfiredogHappy(), LEFT),
-            this.addImage('aurelliaCurious', RIGHT),
+            this.addImage('aurelliaSurprised', RIGHT),
         );
         this.addDialogue( //23
             `${this.aurellia}`,
@@ -7535,37 +7610,37 @@ export class BonusMap1EndCutscene extends StoryCutscene {
             `${this.aurellia}`,
             `Please know that everyone here will remember what you did for us.`,
             this.addImage(this.setfiredogLaugh(), LEFT),
-            this.addImage('aurelliaHappy', RIGHT),
+            this.addImage('aurelliaSmile', RIGHT),
         );
         this.addDialogue( //28
             `${this.firedog}`,
             `Thank you, ${this.aurellia}... but I should get going now.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaSmile', RIGHT),
         );
         this.addDialogue( //29
             `${this.aurellia}`,
             `Leaving already?`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('aurelliaSad', RIGHT),
+            this.addImage('aurelliaSurprised', RIGHT),
         );
         this.addDialogue( //30
             `${this.firedog}`,
             `Yeah. I still have my own journey to continue.`,
             this.addImage(this.setfiredogSmile(), LEFT),
-            this.addImage('aurelliaSad', RIGHT),
+            this.addImage('aurelliaSurprised', RIGHT),
         );
         this.addDialogue( //31
             `${this.firedog}`,
             `But at least now I know this place will be alright.`,
             this.addImage(this.setfiredogSmile(), LEFT),
-            this.addImage('aurelliaSad', RIGHT),
+            this.addImage('aurelliaSurprised', RIGHT),
         );
         this.addDialogue( //32
             `${this.aurellia}`,
             `Then please travel safely, ${this.firedog}.`,
             this.addImage(this.setfiredogSmile(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaHappy', RIGHT),
         );
         this.addDialogue( //33
             `${this.aurellia}`,
@@ -7583,7 +7658,7 @@ export class BonusMap1EndCutscene extends StoryCutscene {
             `${this.firedog}`,
             `Alright... time for me to head back.`,
             this.addImage(this.setfiredogHappy(), LEFT),
-            this.addImage('aurelliaNormal', RIGHT),
+            this.addImage('aurelliaHappy', RIGHT),
         );
 
         this.game.glacikalDefeated = true;
@@ -7678,238 +7753,263 @@ export class BonusMap2StartCutscene extends StoryCutscene {
             `${this.threeDots}`,
             `My name is ${this.orialis}. Sorry for stopping you so suddenly...`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orialisWorried', RIGHT),
         );
         this.addDialogue( //14
             `${this.firedog}`,
             `Oh, hi. I'm ${this.firedog}. Do you happen to know where ${this.springlyLemony} is? I think I'm lost.`,
             this.addImage(this.setfiredogPhew(), LEFT),
+            this.addImage('orialisWorried', RIGHT),
         );
         this.addDialogue( //15
             `${this.orialis}`,
             `We aren't near ${this.springlyLemony} at all...`,
             this.addImage(this.setfiredogPhew(), LEFT),
+            this.addImage('orialisWorried', RIGHT),
         );
         this.addDialogue( //16
             `${this.firedog}`,
             `Oh great... I had a feeling something wasn't right... Can you tell me how to get back onto the right path?`,
             this.addImage(this.setfiredogSigh(), LEFT),
+            this.addImage('orialisWorried', RIGHT),
         );
         this.addDialogue( //17
             `${this.orialis}`,
             `I can... but...`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orialisSad', RIGHT),
         );
         this.addDialogue( //18
             `${this.firedog}`,
             `Uh? You seem nervous. Is everything alright?`,
             this.addImage(this.setfiredogCurious(), LEFT),
+            this.addImage('orialisSad', RIGHT),
         );
         this.addDialogue( //19
             `${this.orialis}`,
             `Yeah... I mean, no... I need... I need help...`,
             this.addImage(this.setfiredogCurious(), LEFT),
+            this.addImage('orialisSad', RIGHT),
         );
         this.addDialogue( //20
             `${this.orialis}`,
             `I've been looking for days for anyone around this area. The few travelers I encountered didn't want to help me...`,
             this.addImage(this.setfiredogCurious(), LEFT),
+            this.addImage('orialisSad', RIGHT),
         );
         this.addDialogue( //21
             `${this.firedog}`,
             `What happened?`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orialisSad', RIGHT),
         );
         this.addDialogue( //22
             `${this.orialis}`,
             `It's my brother, ${this.orelian}. He went toward ${this.crimsonFissure} and never came back.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orialisWorried', RIGHT),
         );
         this.addDialogue( //23
             `${this.firedog}`,
             `${this.crimsonFissure}?`,
             this.addImage(this.setfiredogCurious(), LEFT),
+            this.addImage('orialisWorried', RIGHT),
         );
         this.addDialogue( //24
             `${this.firedog}`,
             `I've never heard of that place before.`,
             this.addImage(this.setfiredogCurious(), LEFT),
+            this.addImage('orialisWorried', RIGHT),
         );
         this.addDialogue( //25
             `${this.orialis}`,
             `Most travelers haven't. It lies far to the southeast.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisExplaining', RIGHT),
+            this.addImage('orialisWorried', RIGHT),
         );
         this.addDialogue( //26
             `${this.orialis}`,
             `The land there is scarred by massive fissures and surrounded by mysterious dark crimson waters.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisExplaining', RIGHT),
+            this.addImage('orialisWorried', RIGHT),
         );
         this.addDialogue( //27
             `${this.orialis}`,
             `It was always considered dangerous, but recently it has become much worse.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisExplaining', RIGHT),
+            this.addImage('orialisWorried', RIGHT),
         );
         this.addDialogue( //28
             `${this.firedog}`,
             `Worse how?`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('orialisExplaining', RIGHT),
+            this.addImage('orialisWorried', RIGHT),
         );
         this.addDialogue( //29
             `${this.orialis}`,
             `The ground has been shaking almost every day.`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('orialisSerious', RIGHT),
+            this.addImage('orialisSad', RIGHT),
         );
         this.addDialogue( //30
             `${this.orialis}`,
             `Old cracks have widened, and new ones keep opening without warning.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisSerious', RIGHT),
+            this.addImage('orialisSad', RIGHT),
         );
         this.addDialogue( //31
             `${this.orialis}`,
             `In fact, one enormous crack has torn its way all the way up north from the fissure itself, splitting the land as it spread.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisSerious', RIGHT),
+            this.addImage('orialisSad', RIGHT),
         );
         this.addDialogue( //32
             `${this.orialis}`,
             `Even from a distance, you can feel the tremors beneath your feet.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisSerious', RIGHT),
+            this.addImage('orialisSad', RIGHT),
         );
         this.addDialogue( //33
             `${this.firedog}`,
             `That sounds really bad...`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('orialisSerious', RIGHT),
+            this.addImage('orialisSad', RIGHT),
         );
         this.addDialogue( //34
             `${this.orialis}`,
             `${this.orelian} studies ancient ruins and old writings.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisExplaining', RIGHT),
+            this.addImage('orialisWorried', RIGHT),
         );
         this.addDialogue( //35
             `${this.orialis}`,
             `When the tremors started, he became convinced there was more to this than a natural disaster.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisExplaining', RIGHT),
+            this.addImage('orialisWorried', RIGHT),
         );
         this.addDialogue( //36
             `${this.orialis}`,
             `He said there were old remains hidden near the deepest fissures, and that whatever caused the shaking might be connected to them.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisExplaining', RIGHT),
+            this.addImage('orialisWorried', RIGHT),
         );
         this.addDialogue( //37
             `${this.firedog}`,
             `So he went to investigate by himself...?`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('orialisExplaining', RIGHT),
+            this.addImage('orialisWorried', RIGHT),
         );
         this.addDialogue( //38
             `${this.orialis}`,
             `Yes...`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orialisWorried', RIGHT),
         );
         this.addDialogue( //39
             `${this.orialis}`,
             `He told me that if he was right, then waiting any longer could make things worse.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orialisWorried', RIGHT),
         );
         this.addDialogue( //40
             `${this.orialis}`,
             `I tried to follow him after he didn't return, but I couldn't get very far.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orialisSad', RIGHT),
         );
         this.addDialogue( //41
             `${this.orialis}`,
             `The tremors became so violent that the ground started breaking apart beneath me.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orialisSad', RIGHT),
         );
         this.addDialogue( //42
             `${this.orialis}`,
             `I barely managed to escape.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orialisSad', RIGHT),
         );
         this.addDialogue( //43
             `${this.orialis}`,
             `Please... if there is any chance that he's still alive, I need to know.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orialisSad', RIGHT),
         );
         this.addDialogue( //44
             `${this.firedog}`,
             `(I'm meant to go toward ${this.infernalCraterPeak}... I don't have time for this...)`,
             { whisper: true },
             this.addImage(this.setfiredogPhew(), LEFT),
+            this.addImage('orialisSad', RIGHT),
         );
         this.addDialogue( //45
             `${this.firedog}`,
             `I'm sorry... I really need to be somewhere els-`,
             this.addImage(this.setfiredogPhew(), LEFT),
+            this.addImage('orialisSad', RIGHT),
         );
         this.addDialogue( //46
             `${this.orialis}`,
             `Please... I have lost all hope... I've tried going there myself, but I wasn't strong enough to endure the tremors and the fissures...`,
             this.addImage(this.setfiredogDiscomfort(), LEFT),
+            this.addImage('orialisTear', RIGHT),
         );
         this.addDialogue( //47
             `${this.orialis}`,
             `I have no one else to ask for help... I beg you to help me!`,
             this.addImage(this.setfiredogDiscomfort(), LEFT),
+            this.addImage('orialisTear', RIGHT),
         );
         this.addDialogue( //48
             `${this.firedog}`,
             `(What have I gotten myself into...)`,
             { whisper: true },
             this.addImage(this.setfiredogDiscomfort(), LEFT),
+            this.addImage('orialisTear', RIGHT),
         );
         this.addDialogue( //49
             `${this.firedog}`,
             `(I guess I can't ignore this...)`,
             { whisper: true },
             this.addImage(this.setfiredogHeadache(), LEFT),
+            this.addImage('orialisTear', RIGHT),
         );
         this.addDialogue( //50
             `${this.firedog}`,
             `(Okay... I'll find ${this.orialis}'s brother quickly, then get back to the main mission.)`,
             { whisper: true },
             this.addImage(this.setfiredogHeadache(), LEFT),
+            this.addImage('orialisTear', RIGHT),
         );
         this.addDialogue( //51
             `${this.firedog}`,
             `Alright, fine... I'll help you.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisSurprised', RIGHT),
+            this.addImage('orialisTear', RIGHT),
         );
         this.addDialogue( //52
             `${this.orialis}`,
             `Really!?`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisSurprised', RIGHT),
+            this.addImage('orialisHappy', RIGHT),
         );
         this.addDialogue( //53
             `${this.firedog}`,
             `Yeah. I can't promise what I'll find, but I can at least look for your brother.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisRelieved', RIGHT),
+            this.addImage('orialisHappy', RIGHT),
         );
         this.addDialogue( //54
             `${this.orialis}`,
             `Thank you... truly.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisRelieved', RIGHT),
+            this.addImage('orialisHappy', RIGHT),
         );
         this.addDialogue( //55
             `${this.orialis}`,
             `Come with me. I'll take you to the edge of ${this.crimsonFissure}.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisNormal', RIGHT),
+            this.addImage('orialisSurprised', RIGHT),
         );
         this.addDialogue( //56
             `${this.firedog}`,
@@ -7926,7 +8026,7 @@ export class BonusMap2StartCutscene extends StoryCutscene {
                 }),
             },
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisNormal', RIGHT),
+            this.addImage('orialisSurprised', RIGHT),
         );
         this.addDialogue( //57
             `${this.orialis}`,
@@ -7934,11 +8034,11 @@ export class BonusMap2StartCutscene extends StoryCutscene {
             {
                 onAdvance: () => {
                     this.playSFX('tremorSound', true);
-                    this.game.startShake(2000);
+                    this.game.startShake(0);
                 },
             },
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisSerious', RIGHT),
+            this.addImage('orialisSurprised', RIGHT),
         );
         this.addDialogue( //58
             `${this.orialis}`,
@@ -7950,13 +8050,13 @@ export class BonusMap2StartCutscene extends StoryCutscene {
                 },
             },
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisSerious', RIGHT),
+            this.addImage('orialisSurprised', RIGHT),
         );
         this.addDialogue( //59
             `${this.firedog}`,
             `Wow, the ground is shaking!`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('orialisSerious', RIGHT),
+            this.addImage('orialisSurprised', RIGHT),
         );
         this.addDialogue( //60
             `${this.orialis}`,
@@ -7964,11 +8064,11 @@ export class BonusMap2StartCutscene extends StoryCutscene {
             {
                 onAdvance: () => {
                     this.playSFX('tremorSound', true);
-                    this.game.startShake(2000);
+                    this.game.startShake(0);
                 },
             },
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('orialisSerious', RIGHT),
+            this.addImage('orialisSurprised', RIGHT),
         );
         this.addDialogue( //61
             `${this.firedog}`,
@@ -7980,56 +8080,62 @@ export class BonusMap2StartCutscene extends StoryCutscene {
                 },
             },
             this.addImage(this.setfiredogHeadache(), LEFT),
-            this.addImage('orialisSerious', RIGHT),
+            this.addImage('orialisSurprised', RIGHT),
         );
         this.addDialogue( //62
             `${this.orialis}`,
             `Yeah.. the tremors keep getting worse each day...`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisExplaining', RIGHT),
+            this.addImage('orialisSurprised', RIGHT),
         );
         this.addDialogue( //63
             `${this.orialis}`,
             `This is the outer boundary of ${this.crimsonFissure}.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisExplaining', RIGHT),
+            this.addImage('orialisSurprised', RIGHT),
         );
         this.addDialogue( //64
             `${this.orialis}`,
             `The farther you go, the worse it becomes.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisExplaining', RIGHT),
+            this.addImage('orialisSurprised', RIGHT),
         );
         this.addDialogue( //65
             `${this.orialis}`,
             `This is as far as I can take you.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orialisSurprised', RIGHT),
         );
         this.addDialogue( //66
             `${this.firedog}`,
             `Alright... I'll go from here.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orialisSurprised', RIGHT),
         );
         this.addDialogue( //67
             `${this.orialis}`,
             `Please be careful, ${this.firedog}.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orialisSad', RIGHT),
         );
         this.addDialogue( //68
             `${this.orialis}`,
             `And please bring ${this.orelian} back.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orialisSad', RIGHT),
         );
         this.addDialogue( //69
             `${this.firedog}`,
             `I'll do what I can.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orialisSad', RIGHT),
         );
         this.addDialogue( //70
             `${this.firedog}`,
             `(Alright... let's see what kind of place ${this.crimsonFissure} really is.)`,
             { whisper: true },
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orialisSad', RIGHT),
         );
     }
 }
@@ -8071,65 +8177,78 @@ export class BonusMap2EndCutscene extends StoryCutscene {
             `${this.threeDots}`,
             `...Ouch...`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orelianHurt', RIGHT),
         );
         this.addDialogue( //6
             `${this.firedog}`,
             `Hey! Are you alright!?`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orelianHurt', RIGHT),
         );
         this.addDialogue( //7
             `${this.threeDots}`,
             `Barely...`,
+            this.addImage('orelianHurt', RIGHT),
         );
         this.addDialogue( //8
             `${this.firedog}`,
             `Wait... are you... are you ${this.orelian}?`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orelianHurt', RIGHT),
         );
         this.addDialogue( //9
             `${this.orelian}`,
             `How do you know my name?`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //10
             `${this.firedog}`,
             `I ran into your brother ${this.orialis} when I got lost on my way to ${this.springlyLemony}. He asked me to help find you.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //11
             `${this.orelian}`,
             `I see... then you came here to save me?`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //12
             `${this.firedog}`,
             `Indeed I did! I'm ${this.firedog}.`,
             this.addImage(this.setfiredogHappy(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //13
             `${this.firedog}`,
             `Can you move?`,
             this.addImage(this.setfiredogCurious(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //14
             `${this.orelian}`,
             `A little... but not much.`,
             this.addImage(this.setfiredogCurious(), LEFT),
+            this.addImage('orelianHurt', RIGHT),
         );
         this.addDialogue( //15
             `${this.orelian}`,
             `I was lucky to make it back here at all.`,
             this.addImage(this.setfiredogCurious(), LEFT),
+            this.addImage('orelianHurt', RIGHT),
         );
         this.addDialogue( //16
             `${this.firedog}`,
             `What happened?`,
             this.addImage(this.setfiredogCurious(), LEFT),
+            this.addImage('orelianHurt', RIGHT),
         );
         this.addDialogue( //17
             `${this.orelian}`,
             `While I was investigating, the fissures grew more violent.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //18
             `${this.orelian}`,
@@ -8141,61 +8260,73 @@ export class BonusMap2EndCutscene extends StoryCutscene {
                 }),
             },
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //19
             `${this.orelian}`,
             `The fall left me in immense pain... but when I landed, I discovered ancient ruins hidden deep below.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianHurt', RIGHT),
         );
         this.addDialogue( //20
             `${this.orelian}`,
             `There were old stone pillars, collapsed arches, and inscriptions carved into the rock itself.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //21
             `${this.firedog}`,
             `I saw some small inscriptions on the rocks on my way here, but it all just looks like gibberish to me.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //22
             `${this.orelian}`,
             `I can understand them.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //23
             `${this.firedog}`,
             `Wait, really!? How?`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //24
             `${this.orelian}`,
             `That is what I do. I study ancient ruins, dead civilizations, and forgotten languages.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //25
             `${this.orelian}`,
             `Most people just see strange markings on old stone. I try to understand what they were meant to say.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //26
             `${this.orelian}`,
             `The inscriptions above the surface have little to no useful information.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //27
             `${this.orelian}`,
             `However, when I fell into the fissure, the inscriptions were richer, clearer, and far more detailed. I couldn't believe it!`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //28
             `${this.orelian}`,
             `Some of the symbols were damaged, but there was enough left for me to piece the meaning together.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //29
             `${this.orelian}`,
             `And one name appeared again and again.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //30
             `${this.firedog}`,
@@ -8210,31 +8341,37 @@ export class BonusMap2EndCutscene extends StoryCutscene {
                 }),
             },
             this.addImage(this.setfiredogCurious(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //31
             `${this.orelian}`,
             `${this.ntharax}.`,
             this.addImage(this.setfiredogCurious(), LEFT),
+            this.addImage('orelianWorried', RIGHT),
         );
         this.addDialogue( //32
             `${this.firedog}`,
             `${this.ntharax}...?`,
             this.addImage(this.setfiredogCurious(), LEFT),
+            this.addImage('orelianWorried', RIGHT),
         );
         this.addDialogue( //33
             `${this.orelian}`,
             `Yes. One of the inscriptions read:`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianWorried', RIGHT),
         );
         this.addDialogue( //34
             `${this.orelian}`,
             `"Here lies bound ${this.ntharax}, the Celestial Tyrant, cast from the starless void, unworthy of the living sky."`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianWorried', RIGHT),
         );
         this.addDialogue( //35
             `${this.orelian}`,
             `Another said:`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianWorried', RIGHT),
         );
         this.addDialogue( //36
             `${this.orelian}`,
@@ -8246,86 +8383,103 @@ export class BonusMap2EndCutscene extends StoryCutscene {
                 }),
             },
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianWorried', RIGHT),
         );
         this.addDialogue( //37
             `${this.firedog}`,
             `So... this ${this.ntharax} is some kind of ancient celestial tyrant?`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //38
             `${this.orelian}`,
             `That is what the inscriptions suggest.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //39
             `${this.orelian}`,
             `A being that did not belong to our world.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //40
             `${this.orelian}`,
             `From what I could piece together, ${this.ntharax} was banished to another realm long ago in this very place.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //41
             `${this.orelian}`,
             `The ancient civilizations feared that one day he would try to force his way back into our world.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //42
             `${this.firedog}`,
             `So what role does ${this.crimsonFissure} play in here exactly?`,
             this.addImage(this.setfiredogCurious(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //43
             `${this.orelian}`,
             `${this.crimsonFissure} is the location of the ancient seal created to stop ${this.ntharax} from reopening a gateway to our world.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //44
             `${this.orelian}`,
             `All the strange sigils carved into the stones of ${this.crimsonFissure} are part of that seal.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //45
             `${this.orelian}`,
             `Even the red glow of the lake makes sense now. There must be enormous glowing seal markings buried beneath it.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //46
             `${this.orelian}`,
             `The fissures are not just part of the landscape. They are wounds left behind as the seal starts to fail.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //47
             `${this.firedog}`,
             `So the shaking means the seal is weakening?`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //48
             `${this.orelian}`,
             `Exactly.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //49
             `${this.orelian}`,
             `That is why the tremors keep getting worse, and why the cracks keep widening.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //50
             `${this.firedog}`,
             `That's already bad enough...`,
             this.addImage(this.setfiredogPhew(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //51
             `${this.orelian}`,
             `It gets worse.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //52
             `${this.orelian}`,
             `The inscriptions also spoke of what happens when the seal begins to fail.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //53
             `${this.orelian}`,
@@ -8337,31 +8491,37 @@ export class BonusMap2EndCutscene extends StoryCutscene {
                 }),
             },
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //54
             `${this.orelian}`,
             `"When the red prison cracks, its fire shall flee, and the wound above shall answer."`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //55
             `${this.orelian}`,
             `Another said:`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //56
             `${this.orelian}`,
             `"Follow the escaping energy, for where the seal exhales, the breach shall awaken."`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //57
             `${this.firedog}`,
             `Escaping energy...?`,
             this.addImage(this.setfiredogCurious(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //58
             `${this.orelian}`,
             `Yes.`,
             this.addImage(this.setfiredogCurious(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //59
             `${this.orelian}`,
@@ -8373,36 +8533,43 @@ export class BonusMap2EndCutscene extends StoryCutscene {
                 }),
             },
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //60
             `${this.orelian}`,
             `That escaping energy does not just vanish. It gathers and forms a breach point.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //61
             `${this.orelian}`,
             `A place where a portal can begin to open.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //62
             `${this.orelian}`,
             `And the deeper inscriptions made it even clearer.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //63
             `${this.orelian}`,
             `One of them read:`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //64
             `${this.orelian}`,
             `"When the fleeing fire finds the thinned sky, the gate of the banished realm shall open once more."`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //65
             `${this.firedog}`,
             `A portal... a portal to his dimension?`,
             this.addImage(this.setfiredogCurious(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //66
             `${this.orelian}`,
@@ -8414,36 +8581,43 @@ export class BonusMap2EndCutscene extends StoryCutscene {
                 }),
             },
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //67
             `${this.orelian}`,
             `If I understood the inscriptions correctly, the escaping energy leads to the place where that portal is beginning to form.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //68
             `${this.orelian}`,
             `And once that breach forms, ${this.ntharax} pushes against it from the other side.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //69
             `${this.orelian}`,
             `${this.crimsonFissure}'s seals are what is stopping him from creating a path back.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //70
             `${this.orelian}`,
             `But if the seal weakens enough, the breach answers him... and he can force that opening wider from his side.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //71
             `${this.firedog}`,
             `That's really bad...`,
             this.addImage(this.setfiredogHeadache(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //72
             `${this.orelian}`,
             `There was more.`,
             this.addImage(this.setfiredogHeadache(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //73
             `${this.orelian}`,
@@ -8455,36 +8629,43 @@ export class BonusMap2EndCutscene extends StoryCutscene {
                 }),
             },
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //74
             `${this.orelian}`,
             `"Should the breach stand whole, the sealed red sea shall rise in wrath, and tides without end shall swallow every land beneath the broken heavens."`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //75
             `${this.firedog}`,
             `And if the breach fully opens...`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //76
             `${this.orelian}`,
             `Then ${this.ntharax}'s realm will connect completely to ours.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //77
             `${this.orelian}`,
             `And if those ancient warnings are true, massive tides and endless waves will flood every single land.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //78
             `${this.orelian}`,
             `Not just ${this.crimsonFissure}. Everything.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //79
             `${this.firedog}`,
             `So if that breach fully opens, the whole world could be drowned...`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //80
             `${this.orelian}`,
@@ -8496,6 +8677,7 @@ export class BonusMap2EndCutscene extends StoryCutscene {
                 }),
             },
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //81
             `${this.orelian}`,
@@ -8507,21 +8689,25 @@ export class BonusMap2EndCutscene extends StoryCutscene {
                 }),
             },
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //82
             `${this.firedog}`,
             `That light... is that the energy mentioned in the passages? The energy that is fleeing toward the portal?`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //83
             `${this.orelian}`,
             `It appears to be.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //84
             `${this.orelian}`,
             `The breach point has started to open.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //85
             `${this.firedog}`,
@@ -8533,86 +8719,103 @@ export class BonusMap2EndCutscene extends StoryCutscene {
                 }),
             },
             this.addImage(this.setfiredogHeadache(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //86
             `${this.firedog}`,
             `Stay here and rest, ${this.orelian}.`,
             this.addImage(this.setfiredogUpset(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //87
             `${this.firedog}`,
             `I'm going to follow the escaping energy.`,
             this.addImage(this.setfiredogUpset(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //88
             `${this.firedog}`,
             `If that portal is where ${this.ntharax} is trying to break through, then that's where I need to be.`,
             this.addImage(this.setfiredogUpset(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //89
             `${this.orelian}`,
             `Be careful... I do not know what waits beyond that breach.`,
             this.addImage(this.setfiredogUpset(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //90
             `${this.orelian}`,
             `But what I do know for sure is that it is extremely dangerous. You may never come back.`,
             this.addImage(this.setfiredogUpset(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //91
             `${this.orelian}`,
             `Are you sure you want to take that risk?`,
             this.addImage(this.setfiredogUpset(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //92
             `${this.firedog}`,
             `It seems the situation has become far more serious than simply rescuing you, which is what I first came here for.`,
             this.addImage(this.setfiredogUpset(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //93
             `${this.firedog}`,
             `But if what you're saying is true, and there is a portal... and there is a celestial tyrant trying to force his way back through it...`,
             this.addImage(this.setfiredogUpset(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //94
             `${this.firedog}`,
             `Then I have to make sure that stops here.`,
             this.addImage(this.setfiredogUpset(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //95
             `${this.firedog}`,
             `Stay here, ${this.orelian}, and rest. I'll investigate this for you.`,
             this.addImage(this.setfiredogUpset(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //96
             `${this.orelian}`,
             `I appreciate your bravery.`,
             this.addImage(this.setfiredogUpset(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //97
             `${this.orelian}`,
             `Thank you for going this far to check on my safety, and thank you for investigating further.`,
             this.addImage(this.setfiredogUpset(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //98
             `${this.firedog}`,
             `Of course!`,
             this.addImage(this.setfiredogHappy(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //99
             `${this.firedog}`,
             `I'll be leaving now then. There's no time to waste!`,
             this.addImage(this.setfiredogUpset(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //100
             `${this.orelian}`,
             `Good luck, ${this.firedog}.`,
             this.addImage(this.setfiredogUpset(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
         this.addDialogue( //101
             `${this.firedog}`,
             `Alright, let's go!`,
             this.addImage(this.setfiredogUpset(), LEFT),
+            this.addImage('orelianTalking', RIGHT),
         );
 
         this.game.bonusMap3Unlocked = true;
@@ -8702,49 +8905,49 @@ export class BonusMap3StartCutscene extends StoryCutscene {
             `${this.threeDots}`,
             `So you made it here too, ${this.firedog}.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionNormal', RIGHT),
+            this.addImage('zephyrionEyesClosed', RIGHT),
         );
         this.addDialogue( //12
             `${this.firedog}`,
             `${this.zephyrion}!?`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionNormal', RIGHT),
+            this.addImage('zephyrionEyesClosed', RIGHT),
         );
         this.addDialogue( //13
             `${this.firedog}`,
             `What are you doing all the way out here?`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('zephyrionNormal', RIGHT),
+            this.addImage('zephyrionEyesClosed', RIGHT),
         );
         this.addDialogue( //14
             `${this.zephyrion}`,
             `Investigating the same disturbance you are.`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //15
             `${this.zephyrion}`,
             `After you left, I felt a disturbance far from ${this.coralAbyss}. I decided to investigate it myself.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //16
             `${this.zephyrion}`,
             `Not long ago, I felt a violent rupture in the surrounding energies.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //17
             `${this.zephyrion}`,
             `It was unnatural. Ancient. The kind of disturbance no sorcerer should ignore.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //18
             `${this.firedog}`,
             `So you tracked it all the way here?`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //19
             `${this.zephyrion}`,
@@ -8756,37 +8959,37 @@ export class BonusMap3StartCutscene extends StoryCutscene {
             `${this.zephyrion}`,
             `I followed the energy trail from ${this.crimsonFissure}. The farther north it flowed, the more unstable the air became, until it led me here.`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //21
             `${this.firedog}`,
             `Wait... you can read those inscriptions too!?`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //22
             `${this.zephyrion}`,
             `Of course.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionHappy', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //23
             `${this.zephyrion}`,
             `Sorcery is not merely spells and robes, ${this.firedog}.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionHappy', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //24
             `${this.zephyrion}`,
             `Ancient languages, dead civilizations, and forgotten seals... they all matter.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //25
             `${this.firedog}`,
             `I just thought you were a water-breathing spell guy...`,
             this.addImage(this.setfiredogLaugh(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //26
             `${this.zephyrion}`,
@@ -8816,91 +9019,91 @@ export class BonusMap3StartCutscene extends StoryCutscene {
             `${this.zephyrion}`,
             `Then our findings match.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //31
             `${this.zephyrion}`,
             `The inscriptions here speak of the same being, and they name his realm as ${this.cosmicRift}.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //32
             `${this.zephyrion}`,
             `${this.crimsonFissure} was not just a prison. It was the original gateway ${this.ntharax} used to enter our world long ago.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //33
             `${this.zephyrion}`,
             `After he was driven back, the ancients sealed that gateway so he could never force his way through it again.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //34
             `${this.zephyrion}`,
             `That is why ${this.crimsonFissure} matters so much. It was the wound through which he first entered.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //35
             `${this.firedog}`,
             `So ${this.orelian} was right...`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //36
             `${this.firedog}`,
             `The seal is weakening...`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //37
             `${this.zephyrion}`,
             `Yes, but the seal did more than weaken.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //38
             `${this.zephyrion}`,
             `Because the original gateway at ${this.crimsonFissure} remains sealed, the escaping power could not fully reopen it there.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //39
             `${this.zephyrion}`,
             `Instead, that energy fled north, searching for a weaker point in the world.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //40
             `${this.zephyrion}`,
             `That is why both of us were led here. We were following the energy that escaped from ${this.crimsonFissure}.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //41
             `${this.firedog}`,
             `So this isn't the original gateway...?`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //42
             `${this.zephyrion}`,
             `No.`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //43
             `${this.zephyrion}`,
             `This is a new portal. A second opening.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //44
             `${this.zephyrion}`,
             `Since ${this.crimsonFissure} can no longer serve as his gateway, ${this.ntharax} is trying to force his way back into our world through here instead.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //45
             `${this.zephyrion}`,
@@ -8917,187 +9120,187 @@ export class BonusMap3StartCutscene extends StoryCutscene {
                 }),
             },
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //46
             `${this.firedog}`,
             `What... is that!?`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //47
             `${this.zephyrion}`,
             `The portal.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //48
             `${this.zephyrion}`,
             `It has already opened far enough for his realm to begin touching ours.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //49
             `${this.firedog}`,
             `So if we destroy it from here, that's it, right?`,
             this.addImage(this.setfiredogHappy(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //50
             `${this.zephyrion}`,
             `No. That is the problem.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //51
             `${this.zephyrion}`,
             `The inscriptions describe this portal as an anchored gate to ${this.cosmicRift}.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //52
             `${this.zephyrion}`,
             `It is being forced open from the other side.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //53
             `${this.zephyrion}`,
             `As long as ${this.ntharax} can keep pressing his power against it, the portal will keep forcing itself back open.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //54
             `${this.firedog}`,
             `So even if we try to shut it from here... it won't matter?`,
             this.addImage(this.setfiredogDiscomfort(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //55
             `${this.zephyrion}`,
             `Exactly.`,
             this.addImage(this.setfiredogDiscomfort(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //56
             `${this.zephyrion}`,
             `And there is more. ${this.ntharax} is not a being that dies as ordinary creatures do.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //57
             `${this.firedog}`,
             `What do you mean...?`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //58
             `${this.zephyrion}`,
             `If his form is destroyed, his essence does not perish. It scatters, sleeps, and slowly gathers itself again.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //59
             `${this.zephyrion}`,
             `That rebirth does not happen quickly. It takes millennia for a being like him to become whole again.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //60
             `${this.firedog}`,
             `So even if I defeat him... that still won't truly be the end?`,
             this.addImage(this.setfiredogHeadache(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //61
             `${this.zephyrion}`,
             `No. But it would still save our world, and buy us enough time to come up with a stronger seal to ensure he never breaks through our world.`,
             this.addImage(this.setfiredogHeadache(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionEyesClosed', RIGHT),
         );
         this.addDialogue( //62
             `${this.zephyrion}`,
             `To cast him down now would deny him his return and buy the world ages of peace.`,
             this.addImage(this.setfiredogHeadache(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionEyesClosed', RIGHT),
         );
         this.addDialogue( //63
             `${this.firedog}`,
             `So that's why we have to go inside...`,
             this.addImage(this.setfiredogHeadache(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionEyesClosed', RIGHT),
         );
         this.addDialogue( //64
             `${this.zephyrion}`,
             `Yes.`,
             this.addImage(this.setfiredogHeadache(), LEFT),
-            this.addImage('zephyrionNormal', RIGHT),
+            this.addImage('zephyrionEyesClosed', RIGHT),
         );
         this.addDialogue( //65
             `${this.zephyrion}`,
             `If ${this.ntharax} manages to force himself fully back into our world, stopping him here may already be too late.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //66
             `${this.zephyrion}`,
             `However, the portal has a weakness. It is unstable, narrow, and incomplete.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //67
             `${this.zephyrion}`,
             `Beings like us may pass through it while it flickers, but it is not yet strong enough to bear ${this.ntharax}'s full form into our world.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //68
             `${this.zephyrion}`,
             `If you go now, before the portal stabilizes any further, you may be able to strike first and stop him before he can break through.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //69
             `${this.firedog}`,
             `Me? What about you?`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //70
             `${this.zephyrion}`,
             `I must remain here.`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //71
             `${this.zephyrion}`,
             `If I let the portal gather all the energy without interference, ${this.ntharax} may be able to enter our world before you find him.`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //72
             `${this.zephyrion}`,
             `What I can do here is disrupt the energy, which will keep the portal unstable for a little longer.`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //73
             `${this.zephyrion}`,
             `But every second counts... I will only be delaying the inevitable. That is why you have to enter alone.`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //74
             `${this.firedog}`,
             `So I have to go in alone and defeat this celestial tyrant by myself?`,
             this.addImage(this.setfiredogSigh(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //75
             `${this.zephyrion}`,
             `Yes.`,
             this.addImage(this.setfiredogSigh(), LEFT),
-            this.addImage('zephyrionNormal', RIGHT),
+            this.addImage('zephyrionHappy', RIGHT),
         );
         this.addDialogue( //76
             `${this.firedog}`,
@@ -9109,13 +9312,13 @@ export class BonusMap3StartCutscene extends StoryCutscene {
             `${this.zephyrion}`,
             `There is no time to dwell on it, ${this.firedog}. This is the best plan I could come up with in the short time we have.`,
             this.addImage(this.setfiredogSigh(), LEFT),
-            this.addImage('zephyrionHappy', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //78
             `${this.firedog}`,
             `...Yeah.`,
             this.addImage(this.setfiredogPhew(), LEFT),
-            this.addImage('zephyrionHappy', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //79
             `${this.firedog}`,
@@ -9127,43 +9330,43 @@ export class BonusMap3StartCutscene extends StoryCutscene {
             `${this.zephyrion}`,
             `Good.`,
             this.addImage(this.setfiredogUpset(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //81
             `${this.zephyrion}`,
             `One last warning, ${this.firedog}.`,
             this.addImage(this.setfiredogUpset(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //82
             `${this.zephyrion}`,
             `A realm shaped by a being like ${this.ntharax} will not obey the rules of our world.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //83
             `${this.zephyrion}`,
             `Do not expect gravity to work the same way as it does in our world.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //84
             `${this.zephyrion}`,
             `You will need every bit of help possible. Let me cast a double jump spell on you.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //85
             `${this.firedog}`,
             `Double jump?`,
             this.addImage(this.setfiredogCurious(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //86
             `${this.zephyrion}`,
             `Yes. You will be able to jump twice while in the air. It may come in handy.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //87
             `${this.zephyrion}`,
@@ -9172,49 +9375,49 @@ export class BonusMap3StartCutscene extends StoryCutscene {
                 onAdvance: () => this.playSFX('sorcererDoubleJumpSpellSound'),
             },
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionCastingSpell', RIGHT),
         );
         this.addDialogue( //88
             `${this.zephyrion}`,
             `Duplicatus Saltus: Aerial Echo!`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionCastingSpell', RIGHT),
         );
         this.addDialogue( //89
             `${this.zephyrion}`,
             `The spell has been cast.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //90
             `${this.firedog}`,
             `Alright, thank you, ${this.zephyrion}. Got it.`,
             this.addImage(this.setfiredogHappy(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //91
             `${this.firedog}`,
             `Alright then... no more wasting time.`,
             this.addImage(this.setfiredogUpset(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //92
             `${this.firedog}`,
             `I'll go inside, stop this celestial tyrant, and hopefully make it back to our world.`,
             this.addImage(this.setfiredogUpset(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //93
             `${this.zephyrion}`,
             `I will keep the portal from fully stabilizing for as long as I can with my dark spells.`,
             this.addImage(this.setfiredogUpset(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionStrugglingSpell', RIGHT),
         );
         this.addDialogue( //94
             `${this.zephyrion}`,
             `Now go, ${this.firedog}.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionStrugglingSpell', RIGHT),
         );
         this.addDialogue( //95
             `${this.firedog}`,
@@ -9230,10 +9433,13 @@ export class BonusMap3StartCutscene extends StoryCutscene {
                         this.playSFX('touchingPortalSound');
                         this.playSFX('insidePortalSound', true);
                     },
+                    onBlack: () => {
+                        this.game.startShake(0);
+                    },
                 }),
             },
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionStrugglingSpell', RIGHT),
         );
         this.addDialogue( //96
             `${this.firedog}`,
@@ -9250,34 +9456,32 @@ export class BonusMap3StartCutscene extends StoryCutscene {
                             this.playSFX('fallingOutOfPortalSound');
                         }, 3000);
                     },
+                    onBlack: () => {
+                        this.game.stopShake();
+                    },
                 }),
             },
             this.addImage(this.setfiredogHeadache(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
         );
         this.addDialogue( //97
             `${this.firedog}`,
             `Ouch... That was quite the fall...`,
             this.addImage(this.setfiredogHeadache(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
         );
         this.addDialogue( //98
             `${this.firedog}`,
             `Where am I?`,
             this.addImage(this.setfiredogHeadache(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
         );
         this.addDialogue( //99
             `${this.firedog}`,
             `Right... I jumped through the portal. It appears I'm in ${this.cosmicRift}.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
         );
         this.addDialogue( //100
             `${this.firedog}`,
             `Alright, time to find ${this.ntharax} and stop him. Let's go!`,
             this.addImage(this.setfiredogUpset(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
         );
 
         this.game.bonusMap3Unlocked = true;
@@ -9353,19 +9557,17 @@ export class BonusMap3EndCutscene extends StoryCutscene {
             `${this.firedog}`,
             `There it is! The portal!`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
         );
         this.addDialogue( //10
             `${this.zephyrion}`,
             `${this.firedog}! Quickly! I can't contain the portal for much longer!`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionStrugglingSpell', RIGHT),
         );
         this.addDialogue( //11
             `${this.firedog}`,
             `What!? I can hear ${this.zephyrion} from the other side.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
         );
         this.addDialogue( //12
             `${this.firedog}`,
@@ -9382,7 +9584,6 @@ export class BonusMap3EndCutscene extends StoryCutscene {
                 }),
             },
             this.addImage(this.setfiredogHeadache(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
         );
         this.addDialogue( //13
             `${this.firedog}`,
@@ -9407,49 +9608,47 @@ export class BonusMap3EndCutscene extends StoryCutscene {
                 }),
             },
             this.addImage(this.setfiredogHeadache(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
         );
         this.addDialogue( //14
             `${this.firedog}`,
             `Am I... am I back in our world?`,
             this.addImage(this.setfiredogHeadache(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
         );
         this.addDialogue( //15
             `${this.zephyrion}`,
             `You are, ${this.firedog}. You made it.`,
             this.addImage(this.setfiredogHeadache(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionExhausted', RIGHT),
         );
         this.addDialogue( //16
             `${this.zephyrion}`,
             `The portal began weakening not long ago...`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionExhausted', RIGHT),
         );
         this.addDialogue( //17
             `${this.zephyrion}`,
             `It started to collapse. I had to do everything in my power to ensure it remained open until you came back.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionExhausted', RIGHT),
         );
         this.addDialogue( //18
             `${this.zephyrion}`,
             `You made it just in time... any longer and I don't think I could have kept the portal open.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionExhausted', RIGHT),
         );
         this.addDialogue( //19
             `${this.firedog}`,
             `Wow, ${this.zephyrion}... you saved my life...`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionExhausted', RIGHT),
         );
         this.addDialogue( //20
             `${this.zephyrion}`,
             `And you saved the world. I assume you defeated ${this.ntharax}, given how unstable the portal became at a certain point.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //21
             `${this.zephyrion}`,
@@ -9467,61 +9666,61 @@ export class BonusMap3EndCutscene extends StoryCutscene {
             `${this.firedog}`,
             `The whole realm felt twisted... like it had been shaped entirely by ${this.ntharax}'s presence.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //24
             `${this.firedog}`,
             `And he really was there, plotting for his return.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //25
             `${this.firedog}`,
             `We fought... He was the most formidable opponent I have ever fought. I couldn't believe anyone could be that strong.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //26
             `${this.firedog}`,
             `But I somehow managed to bring him down before he could fully break through into our world.`,
             this.addImage(this.setfiredogUpset(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //27
             `${this.zephyrion}`,
             `You have done more than win a battle.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionHappy', RIGHT),
         );
         this.addDialogue( //28
             `${this.zephyrion}`,
             `You have prevented a catastrophe.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionHappy', RIGHT),
         );
         this.addDialogue( //29
             `${this.firedog}`,
             `It still didn't feel like the end of him...`,
             this.addImage(this.setfiredogHeadache(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionHappy', RIGHT),
         );
         this.addDialogue( //30
             `${this.firedog}`,
             `More like I had forced something ancient back into the dark.`,
             this.addImage(this.setfiredogHeadache(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //31
             `${this.zephyrion}`,
             `That is because beings like ${this.ntharax} are not so easily erased.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionSerious', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //32
             `${this.zephyrion}`,
             `But what you did here matters greatly.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('zephyrionExplaining', RIGHT),
+            this.addImage('zephyrionNormal', RIGHT),
         );
         this.addDialogue( //33
             `${this.firedog}`,
@@ -9563,13 +9762,13 @@ export class BonusMap3EndCutscene extends StoryCutscene {
             `${this.zephyrion}`,
             `Farewell, ${this.firedog}. I'm sure this won't be the last time we see each other!`,
             this.addImage(this.setfiredogSmile(), LEFT),
-            this.addImage('zephyrionNormal', RIGHT),
+            this.addImage('zephyrionHappy', RIGHT),
         );
         this.addDialogue( //40
             `${this.firedog}`,
             `I have a feeling you're right!`,
             this.addImage(this.setfiredogLaugh(), LEFT),
-            this.addImage('zephyrionNormal', RIGHT),
+            this.addImage('zephyrionHappy', RIGHT),
         );
         this.addDialogue( //41
             `${this.firedog}`,
@@ -9587,32 +9786,36 @@ export class BonusMap3EndCutscene extends StoryCutscene {
                 }),
             },
             this.addImage(this.setfiredogSmile(), LEFT),
-            this.addImage('zephyrionNormal', RIGHT),
+            this.addImage('zephyrionHappy', RIGHT),
         );
         this.addDialogue( //42
             `${this.orialis}`,
             `That's... ${this.orelian}! I can't believe it, you're alive!`,
-            this.addImage(this.setfiredogSmile(), LEFT),
+            this.addImage('orialisTear', LEFT),
         );
         this.addDialogue( //43
             `${this.orelian}`,
             `I am. I got lucky... I'm happy to see you again, ${this.orialis}!`,
-            this.addImage(this.setfiredogSmile(), LEFT),
+            this.addImage('orialisTear', LEFT),
+            this.addImage('orelianHappy', RIGHT),
         );
         this.addDialogue( //44
             `${this.orialis}`,
             `Thank you so much for saving my brother, ${this.firedog}! You have my thanks!`,
-            this.addImage(this.setfiredogSmile(), LEFT),
+            this.addImage('orialisHappy', LEFT),
+            this.addImage('orelianHappy', RIGHT),
         );
         this.addDialogue( //45
             `${this.firedog}`,
             `No worries! Although, thanks to ${this.orelian}, I managed to find the source of the problems that have been happening around ${this.crimsonFissure}!`,
             this.addImage(this.setfiredogSmile(), LEFT),
+            this.addImage('orialisHappy', RIGHT),
         );
         this.addDialogue( //46
             `${this.orialis}`,
             `Oh... how so? What happened?`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orialisSurprised', RIGHT),
         );
         this.addDialogue( //47
             `${this.firedog}`,
@@ -9623,105 +9826,125 @@ export class BonusMap3EndCutscene extends StoryCutscene {
                 },
             },
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orialisSurprised', RIGHT),
         );
         this.addDialogue( //48
             `${this.orelian}`,
             `Unbelievable. So ${this.ntharax}, the celestial tyrant, does indeed exist? And not only that, you defeated him?`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //49
             `${this.firedog}`,
             `Yep. The only way to beat him was to enter his realm, ${this.cosmicRift}.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianSurprised', RIGHT),
         );
         this.addDialogue( //50
             `${this.orialis}`,
             `So the tremors will stop?`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orialisSurprised', RIGHT),
         );
         this.addDialogue( //51
             `${this.firedog}`,
             `Indeed they will! Everything is going back to normal!`,
             this.addImage(this.setfiredogLaugh(), LEFT),
+            this.addImage('orialisSurprised', RIGHT),
         );
         this.addDialogue( //52
             `${this.orialis}`,
             `Then my brother was right all along... the ruins really were warning of something far worse beneath the fissure...`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orialisTalking', RIGHT),
         );
         this.addDialogue( //53
             `${this.orialis}`,
             `And you put a stop to it...`,
             this.addImage(this.setfiredogNormal(), LEFT),
             this.addImage('orialisRelieved', RIGHT),
+            this.addImage('orialisTalking', RIGHT),
         );
         this.addDialogue( //54
             `${this.orelian}`,
             `You have my deepest thanks, ${this.firedog}.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianHappy', RIGHT),
         );
         this.addDialogue( //55
             `${this.orelian}`,
             `Without you, none of us would be standing here now.`,
             this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('orelianHappy', RIGHT),
         );
         this.addDialogue( //56
             `${this.firedog}`,
             `At least everyone is safe now. That's what matters.`,
             this.addImage(this.setfiredogLaugh(), LEFT),
-            this.addImage('orialisRelieved', RIGHT),
+            this.addImage('orelianHappy', RIGHT),
         );
         this.addDialogue( //57
             `${this.orialis}`,
             `We will never forget what you did for us.`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisRelieved', RIGHT),
+            this.addImage('orialisHappy', RIGHT),
         );
         this.addDialogue( //58
             `${this.firedog}`,
             `(Good... that's taken care of.)`,
             { whisper: true },
             this.addImage(this.setfiredogPhew(), LEFT),
-            this.addImage('orialisRelieved', RIGHT),
+            this.addImage('orialisHappy', RIGHT),
         );
         this.addDialogue( //59
             `${this.firedog}`,
             `(I should go back now. What a ride this has been!)`,
             { whisper: true },
             this.addImage(this.setfiredogLaugh(), LEFT),
-            this.addImage('orialisRelieved', RIGHT),
+            this.addImage('orialisHappy', RIGHT),
         );
         this.addDialogue( //60
             `${this.firedog}`,
             `Alright... I should get moving again.`,
             this.addImage(this.setfiredogSmile(), LEFT),
-            this.addImage('orialisRelieved', RIGHT),
+            this.addImage('orialisHappy', RIGHT),
         );
         this.addDialogue( //61
             `${this.orialis}`,
             `Then please, travel safely, ${this.firedog}.`,
+            this.addImage('orialisHappy', RIGHT),
             this.addImage(this.setfiredogSmile(), LEFT),
         );
         this.addDialogue( //62
-            `${this.orelian}`,
+            `${this.orialis}`,
             `And thank you once again... for saving my brother, and the world.`,
             this.addImage(this.setfiredogSmile(), LEFT),
+            this.addImage('orialisHappy', RIGHT),
         );
         this.addDialogue( //63
+            `${this.orelian}`,
+            `Thank you, ${this.firedog}. We will be forever grateful for your bravery.`,
+            this.addImage(this.setfiredogSmile(), LEFT),
+            this.addImage('orelianHappy', RIGHT),
+        );
+        this.addDialogue( //64
             `${this.firedog}`,
             `Of course.`,
             this.addImage(this.setfiredogSmile(), LEFT),
+            this.addImage('orelianHappy', RIGHT),
         );
-        this.addDialogue( //64
+        this.addDialogue( //65
             `${this.firedog}`,
             `(What a journey this has been!)`,
             { whisper: true },
             this.addImage(this.setfiredogSmile(), LEFT),
+            this.addImage('orelianHappy', RIGHT),
         );
-        this.addDialogue( //65
+        this.addDialogue( //66
             `${this.firedog}`,
             `Let's go back now!`,
             this.addImage(this.setfiredogHappy(), LEFT),
+            this.addImage('orelianHappy', RIGHT),
         );
 
         this.game.ntharaxDefeated = true;

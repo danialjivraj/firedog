@@ -290,6 +290,7 @@ export class CutsceneMusicAudioHandler extends AudioHandler {
       portalTremorSound: 'portalTremorSound',
       hidingInTheDarkSuspense: 'hidingInTheDarkSuspense',
       portalHummingSound: 'portalHummingSound',
+      insideGlassChamberBubbleSound: 'insideGlassChamberBubbleSound',
     };
     this.initializeSounds();
   }

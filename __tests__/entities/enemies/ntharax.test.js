@@ -625,25 +625,6 @@ describe("NTharax", () => {
       );
     });
 
-    test("updateDistortionEffect turns off distortion after 15s duration and plays end SFX", () => {
-      const { game, boss } = createBoss();
-
-      game.distortionActive = true;
-      boss.mode2 = true;
-      boss.distortionMode2Duration = 15;
-      boss.distortionEffectTimer = 14;
-
-      boss.updateDistortionEffect(2);
-
-      expect(game.distortionActive).toBe(false);
-
-      expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith(
-        "distortionEndSound",
-        false,
-        true
-      );
-    });
-
     test("updateDistortionEffect resets timer when inactive and effect is fully faded out", () => {
       const { game, boss } = createBoss();
 
