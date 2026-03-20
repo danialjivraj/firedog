@@ -2306,6 +2306,7 @@ export class CollisionLogic {
 
             if (enemy instanceof Elyvorg && enemy.isBarrierActive) return;
             if (enemy instanceof NTharax && enemy.isBarrierActive) return;
+            if (enemy instanceof NTharax && (enemy.isTransforming || enemy.state === "transform")) return;
 
             if (enemy._lastDashHitId !== dashId) {
                 enemy._lastDashHitId = dashId;

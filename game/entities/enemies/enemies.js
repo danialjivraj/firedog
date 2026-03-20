@@ -320,7 +320,12 @@ export class EnemyBoss extends Enemy {
             this.game.behindPlayerParticles = [];
 
             this.x = this.game.width / 2;
+            this.y = this.originalY;
+            this.speedX = 0;
+            this.speedY = 0;
             this.state = "idle";
+            this.frameX = 0;
+            this.frameY = 0;
 
             this.game.player.setState(8, 0);
             this.game.player.x = 1;

@@ -34,6 +34,7 @@ function buildGameState(game) {
             [COSMETIC_SLOTS.NOSE]: game.menu.wardrobe.getCurrentCosmeticKey(COSMETIC_SLOTS.NOSE),
         },
         currentCosmeticsChroma: game.menu.wardrobe.getCurrentCosmeticsChromaState?.() ?? {},
+        outfitSlots: game.menu.wardrobe.outfitSlots ?? Array(4).fill(null),
 
         creditCoins: game.creditCoins ?? 0,
         ownedSkins: game.ownedSkins ?? {},
@@ -104,6 +105,10 @@ export function loadGameState(game) {
         const chromaState = gameState.currentCosmeticsChroma || {};
         game.menu.wardrobe.setCurrentCosmeticsChromaState(chromaState);
 
+        if (Array.isArray(gameState.outfitSlots)) {
+            game.menu.wardrobe.outfitSlots = gameState.outfitSlots;
+        }
+
         if (gameState.selectedDifficulty) {
             game.menu.levelDifficulty.setDifficulty(gameState.selectedDifficulty);
             game.selectedDifficulty = gameState.selectedDifficulty;
@@ -161,6 +166,7 @@ export function clearSavedData(game) {
     game.menu.wardrobe.setCurrentCosmeticByKey(COSMETIC_SLOTS.EYES, "none");
     game.menu.wardrobe.setCurrentCosmeticByKey(COSMETIC_SLOTS.NOSE, "none");
     game.menu.wardrobe.setCurrentCosmeticsChromaState({});
+    game.menu.wardrobe.outfitSlots = Array(4).fill(null);
 
     game.menu.audioSettings.setState({
         tabData: {

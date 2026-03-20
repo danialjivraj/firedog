@@ -136,6 +136,7 @@ describe('Wardrobe menu', () => {
             closePath: jest.fn(),
             arc: jest.fn(),
             arcTo: jest.fn(),
+            roundRect: jest.fn(),
             quadraticCurveTo: jest.fn(),
 
             font: '',
@@ -846,6 +847,244 @@ describe('Wardrobe menu', () => {
             const e = { preventDefault: jest.fn(), clientX: 10, clientY: 10 };
             menu.handleRightClick(e);
             expect(mockGame.input.handleEscapeKey).toHaveBeenCalled();
+        });
+    });
+
+    describe('outfit slots', () => {
+
+        beforeEach(() => {
+            menu.outfitSlots = Array(4).fill(null);
+            menu.outfitSlotFocusedBtn = null;
+            menu.activeTabIndex = 0;
+            menu.selectedOption = 0;
+            mockGame.saveGameState.mockClear();
+            mockGame.audioHandler.menu.playSound.mockClear();
+        });
+
+        describe('_saveOutfitToSlot', () => {
+            it('stores current skin, cosmetics, and chroma in the slot', () => {
+                menu._saveOutfitToSlot(0);
+
+                expect(menu.outfitSlots[0]).not.toBeNull();
+                expect(menu.outfitSlots[0].skinKey).toBe(menu.currentSkinKey);
+                expect(menu.outfitSlots[0].cosmetics).toEqual(menu.currentCosmetics);
+                expect(menu.outfitSlots[0].cosmeticsChroma).toBeDefined();
+            });
+
+            it('calls _save after storing', () => {
+                menu._saveOutfitToSlot(1);
+                expect(mockGame.saveGameState).toHaveBeenCalled();
+            });
+
+            it('saves independently to each of the four slots', () => {
+                menu._saveOutfitToSlot(0);
+                const key0 = menu.outfitSlots[0].skinKey;
+
+                menu.currentSkinKey = SKIN_MENU_ORDER.find((k) => k !== key0) ?? key0;
+                menu._saveOutfitToSlot(1);
+                const key1 = menu.outfitSlots[1].skinKey;
+
+                expect(menu.outfitSlots[0].skinKey).toBe(key0);
+                expect(menu.outfitSlots[1].skinKey).toBe(key1);
+                expect(key0).not.toBe(key1);
+            });
+        });
+
+        describe('_loadOutfitFromSlot', () => {
+            it('does nothing when the slot is empty', () => {
+                const before = menu.currentSkinKey;
+                menu._loadOutfitFromSlot(2);
+                expect(menu.currentSkinKey).toBe(before);
+                expect(mockGame.saveGameState).not.toHaveBeenCalled();
+            });
+
+            it('restores skin and calls _save', () => {
+                menu._saveOutfitToSlot(0);
+                const savedSkinKey = menu.outfitSlots[0].skinKey;
+
+                const otherKey = SKIN_MENU_ORDER.find((k) => k !== savedSkinKey) ?? savedSkinKey;
+                menu.currentSkinKey = otherKey;
+                mockGame.saveGameState.mockClear();
+
+                menu._loadOutfitFromSlot(0);
+                expect(menu.currentSkinKey).toBe(savedSkinKey);
+                expect(mockGame.saveGameState).toHaveBeenCalled();
+            });
+
+            it('preserves selectedOption after loading', () => {
+                menu._saveOutfitToSlot(0);
+                const outfitStart = menu._getOutfitSlotsStartIndex();
+                menu.selectedOption = outfitStart;
+
+                menu._loadOutfitFromSlot(0);
+                expect(menu.selectedOption).toBe(outfitStart);
+            });
+        });
+
+        describe('_clearOutfitSlot', () => {
+            it('sets the slot to null and calls _save', () => {
+                menu._saveOutfitToSlot(3);
+                expect(menu.outfitSlots[3]).not.toBeNull();
+
+                mockGame.saveGameState.mockClear();
+                menu._clearOutfitSlot(3);
+
+                expect(menu.outfitSlots[3]).toBeNull();
+                expect(mockGame.saveGameState).toHaveBeenCalled();
+            });
+        });
+
+        describe('_getOutfitSlotsStartIndex / _getGoBackIndex', () => {
+            it('outfitStart equals the number of keys in the active tab', () => {
+                const tab = menu._getActiveTab();
+                const keys = menu._getActiveKeysForTab(tab);
+                expect(menu._getOutfitSlotsStartIndex()).toBe(keys.length);
+            });
+
+            it('goBackIndex is outfitStart + 4', () => {
+                expect(menu._getGoBackIndex()).toBe(menu._getOutfitSlotsStartIndex() + 4);
+            });
+        });
+
+        describe('_handleOutfitSlotEnter', () => {
+            it('btn=save: saves outfit to slot and plays sound', () => {
+                menu.outfitSlotFocusedBtn = 'save';
+                menu._handleOutfitSlotEnter(0);
+
+                expect(menu.outfitSlots[0]).not.toBeNull();
+                expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('optionSelectedSound', false, true);
+            });
+
+            it('btn=delete with outfit: clears slot and plays sound', () => {
+                menu._saveOutfitToSlot(0);
+                mockGame.audioHandler.menu.playSound.mockClear();
+
+                menu.outfitSlotFocusedBtn = 'delete';
+                menu._handleOutfitSlotEnter(0);
+
+                expect(menu.outfitSlots[0]).toBeNull();
+                expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('optionSelectedSound', false, true);
+            });
+
+            it('btn=delete with empty slot: does nothing', () => {
+                menu.outfitSlotFocusedBtn = 'delete';
+                menu._handleOutfitSlotEnter(0);
+
+                expect(menu.outfitSlots[0]).toBeNull();
+                expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalled();
+            });
+
+            it('btn=null with outfit: loads outfit and plays sound', () => {
+                menu._saveOutfitToSlot(0);
+                const savedSkinKey = menu.outfitSlots[0].skinKey;
+
+                const otherKey = SKIN_MENU_ORDER.find((k) => k !== savedSkinKey) ?? savedSkinKey;
+                menu.currentSkinKey = otherKey;
+
+                menu.outfitSlotFocusedBtn = null;
+                mockGame.audioHandler.menu.playSound.mockClear();
+                menu._handleOutfitSlotEnter(0);
+
+                expect(menu.currentSkinKey).toBe(savedSkinKey);
+                expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('optionSelectedSound', false, true);
+            });
+
+            it('btn=null with empty slot: does nothing', () => {
+                menu.outfitSlotFocusedBtn = null;
+                menu._handleOutfitSlotEnter(0);
+
+                expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalled();
+            });
+        });
+
+        describe('keyboard navigation in outfit slot zone', () => {
+            function navigateToOutfitSlot(slotIdx) {
+                const outfitStart = menu._getOutfitSlotsStartIndex();
+                menu.selectedOption = outfitStart + slotIdx;
+                menu.outfitSlotFocusedBtn = null;
+            }
+
+            it('ArrowDown cycles outfitSlotFocusedBtn: null → save (empty slot)', () => {
+                navigateToOutfitSlot(0);
+                menu.handleKeyDown({ key: 'ArrowDown' });
+                expect(menu.outfitSlotFocusedBtn).toBe('save');
+            });
+
+            it('ArrowDown wraps save → null on empty slot', () => {
+                navigateToOutfitSlot(0);
+                menu.outfitSlotFocusedBtn = 'save';
+                menu.handleKeyDown({ key: 'ArrowDown' });
+                expect(menu.outfitSlotFocusedBtn).toBeNull();
+            });
+
+            it('ArrowDown cycles null → save → delete → null when slot has outfit', () => {
+                menu._saveOutfitToSlot(0);
+                navigateToOutfitSlot(0);
+
+                menu.handleKeyDown({ key: 'ArrowDown' });
+                expect(menu.outfitSlotFocusedBtn).toBe('save');
+
+                menu.handleKeyDown({ key: 'ArrowDown' });
+                expect(menu.outfitSlotFocusedBtn).toBe('delete');
+
+                menu.handleKeyDown({ key: 'ArrowDown' });
+                expect(menu.outfitSlotFocusedBtn).toBeNull();
+            });
+
+            it('ArrowUp cycles in reverse when slot has outfit', () => {
+                menu._saveOutfitToSlot(0);
+                navigateToOutfitSlot(0);
+
+                menu.handleKeyDown({ key: 'ArrowUp' });
+                expect(menu.outfitSlotFocusedBtn).toBe('delete');
+            });
+
+            it('ArrowUp/ArrowDown plays optionHoveredSound', () => {
+                navigateToOutfitSlot(0);
+                menu.handleKeyDown({ key: 'ArrowDown' });
+                expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
+
+                mockGame.audioHandler.menu.playSound.mockClear();
+                menu.handleKeyDown({ key: 'ArrowUp' });
+                expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
+            });
+
+            it('ArrowLeft resets outfitSlotFocusedBtn to null', () => {
+                navigateToOutfitSlot(0);
+                menu.outfitSlotFocusedBtn = 'save';
+                menu.handleKeyDown({ key: 'ArrowLeft' });
+                expect(menu.outfitSlotFocusedBtn).toBeNull();
+            });
+
+            it('ArrowRight resets outfitSlotFocusedBtn to null', () => {
+                navigateToOutfitSlot(0);
+                menu.outfitSlotFocusedBtn = 'save';
+                menu.handleKeyDown({ key: 'ArrowRight' });
+                expect(menu.outfitSlotFocusedBtn).toBeNull();
+            });
+        });
+
+        describe('_selectCurrent routing', () => {
+            it('routes Enter to _handleOutfitSlotEnter when in outfit slot zone', () => {
+                const spy = jest.spyOn(menu, '_handleOutfitSlotEnter').mockImplementation(() => {});
+                const outfitStart = menu._getOutfitSlotsStartIndex();
+                menu.selectedOption = outfitStart + 2;
+
+                menu._selectCurrent();
+
+                expect(spy).toHaveBeenCalledWith(2);
+                spy.mockRestore();
+            });
+
+            it('calls onGoBack when selectedOption === goBackIndex', () => {
+                const spy = jest.spyOn(menu, 'onGoBack').mockImplementation(() => {});
+                menu.selectedOption = menu._getGoBackIndex();
+
+                menu._selectCurrent();
+
+                expect(spy).toHaveBeenCalled();
+                spy.mockRestore();
+            });
         });
     });
 

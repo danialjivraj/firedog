@@ -228,6 +228,17 @@ export class Wardrobe extends BaseMenu {
                 padRightForCaret: 30,
             },
 
+            randomizerBtn: {
+                size: 38,
+                radius: 10,
+                fill: 'rgba(0,0,0,0.00)',
+                fillHover: 'rgba(255,255,255,0.10)',
+                stroke: 'rgba(255,255,255,0.28)',
+                strokeHover: 'rgba(255,255,0,0.90)',
+                iconFill: 'rgba(255,255,255,0.85)',
+                iconFillHover: 'rgba(255,255,0,0.95)',
+            },
+
             modal: {
                 overlay: 'rgba(0,0,0,0.45)',
 
@@ -283,6 +294,44 @@ export class Wardrobe extends BaseMenu {
                     glowEnabled: true,
                     glowAlpha: 0.20,
                 },
+            },
+
+            outfitSlots: {
+                panelX: 1558,
+                panelW: 260,
+                panelFill: 'rgba(0, 0, 0, 0.35)',
+                panelStroke: 'rgba(255,255,255,0.35)',
+                panelRadius: 14,
+                titleFont: 'bold 14px Arial',
+                titleFill: 'rgba(255,255,255,0.72)',
+                titleH: 34,
+                padX: 8,
+                cellGap: 8,
+                cellH: 108,
+                stripH: 24,
+                cellFill: 'rgba(0,0,0,0.35)',
+                cellFillHover: 'rgba(255,255,255,0.05)',
+                cellStroke: 'rgba(255,255,255,0.14)',
+                cellStrokeHover: 'rgba(255,255,255,0.28)',
+                cellStrokeThumbHover: 'rgba(255,255,0,0.95)',
+                cellRadius: 9,
+                thumbFill: 'rgba(32, 32, 36, 0.78)',
+                stripFill: 'rgba(15, 15, 15, 0.92)',
+                stripStroke: 'rgba(255,255,255,0.10)',
+                iconSize: 18,
+                iconGap: 5,
+                iconPadRight: 5,
+                iconRadius: 5,
+                saveFill: 'rgba(255,200,0,0.10)',
+                saveFillHover: 'rgba(255,200,0,0.32)',
+                saveStroke: 'rgba(255,200,0,0.45)',
+                saveStrokeHover: 'rgba(255,220,0,0.88)',
+                saveIconFill: 'rgba(255,220,0,0.90)',
+                deleteFill: 'rgba(255,60,60,0.10)',
+                deleteFillHover: 'rgba(255,60,60,0.32)',
+                deleteStroke: 'rgba(255,80,80,0.40)',
+                deleteStrokeHover: 'rgba(255,100,100,0.88)',
+                deleteIconFill: 'rgba(255,120,120,0.90)',
             },
         };
 
@@ -351,6 +400,7 @@ export class Wardrobe extends BaseMenu {
         this.filterOpen = false;
         this.filterHoverIndex = -1;
         this.filterHoverBtn = false;
+        this.randomizerHoverBtn = false;
 
         this._uiCtx = null;
         this.modal = null;
@@ -371,6 +421,12 @@ export class Wardrobe extends BaseMenu {
         this.dragStartMouseY = 0;
         this.dragStartScrollY = 0;
         this.barRect = null;
+
+        // outfit slots
+        this.outfitSlots = Array(4).fill(null);
+        this.outfitSlotsHoverSlot = -1;
+        this.outfitSlotsHoverBtn = null;
+        this.outfitSlotFocusedBtn = null;
     }
 
     activateMenu(selectedOption = 0) {
@@ -382,6 +438,7 @@ export class Wardrobe extends BaseMenu {
         this.filterOpen = false;
         this.filterHoverIndex = -1;
         this.filterHoverBtn = false;
+        this.randomizerHoverBtn = false;
 
         this.modal = null;
 
@@ -389,6 +446,7 @@ export class Wardrobe extends BaseMenu {
         if (Array.isArray(this.targetScrollYByTab)) this.targetScrollYByTab[0] = 0;
 
         this.selectedOption = 0;
+        this.outfitSlotFocusedBtn = null;
         this._syncSelectionToEquipped();
         this._ensureSelectedVisible();
     }
@@ -918,6 +976,268 @@ export class Wardrobe extends BaseMenu {
         }
     }
 
+    // outfit slots
+    _saveOutfitToSlot(i) {
+        this.outfitSlots[i] = {
+            skinKey: this.currentSkinKey,
+            cosmetics: { ...this.currentCosmetics },
+            cosmeticsChroma: JSON.parse(JSON.stringify(this.currentCosmeticsChroma || {})),
+        };
+        this._save();
+    }
+
+    _loadOutfitFromSlot(i) {
+        const saved = this.outfitSlots[i];
+        if (!saved) return;
+        const preservedSelection = this.selectedOption;
+        if (saved.skinKey) this.setCurrentSkinByKey(saved.skinKey, { forceExact: true });
+        for (const slot of Object.values(COSMETIC_SLOTS)) {
+            const key = saved.cosmetics?.[slot] || 'none';
+            this.setCurrentCosmeticByKey(slot, key);
+        }
+        if (saved.cosmeticsChroma) this.setCurrentCosmeticsChromaState(saved.cosmeticsChroma);
+        this.selectedOption = preservedSelection;
+        this._save();
+    }
+
+    _clearOutfitSlot(i) {
+        this.outfitSlots[i] = null;
+        this._save();
+    }
+
+    _getOutfitPanelLayout() {
+        const s = this.UI.outfitSlots;
+        const sidebar = this._getSidebarLayout();
+        const y = sidebar.sidebarTopY + 34;
+        const cellW = Math.floor((s.panelW - s.padX * 2 - s.cellGap) / 2);
+        const panelH = s.titleH + s.padX + 2 * s.cellH + s.cellGap + s.padX;
+        return { x: s.panelX, y, w: s.panelW, h: panelH, titleH: s.titleH, cellW };
+    }
+
+    _getOutfitCellRects() {
+        const s = this.UI.outfitSlots;
+        const layout = this._getOutfitPanelLayout();
+        const rects = [];
+        for (let i = 0; i < 4; i++) {
+            const col = i % 2;
+            const row = Math.floor(i / 2);
+            const cellX = layout.x + s.padX + col * (layout.cellW + s.cellGap);
+            const cellY = layout.y + layout.titleH + s.padX + row * (s.cellH + s.cellGap);
+            const thumbH = s.cellH - s.stripH;
+            const stripY = cellY + thumbH;
+            const iconsRight = cellX + layout.cellW - s.iconPadRight;
+            const iconY = stripY + Math.floor((s.stripH - s.iconSize) / 2);
+            rects.push({
+                cellX, cellW: layout.cellW, cellY, cellH: s.cellH,
+                thumbH, stripY,
+                saveBtn: { x: iconsRight - s.iconSize * 2 - s.iconGap, y: iconY, w: s.iconSize, h: s.iconSize },
+                deleteBtn: { x: iconsRight - s.iconSize, y: iconY, w: s.iconSize, h: s.iconSize },
+            });
+        }
+        return rects;
+    }
+
+    _hitTestOutfitPanel(mx, my) {
+        const rects = this._getOutfitCellRects();
+        for (let i = 0; i < rects.length; i++) {
+            const r = rects[i];
+            if (mx < r.cellX || mx > r.cellX + r.cellW || my < r.cellY || my > r.cellY + r.cellH) continue;
+            const inSave = mx >= r.saveBtn.x && mx <= r.saveBtn.x + r.saveBtn.w && my >= r.saveBtn.y && my <= r.saveBtn.y + r.saveBtn.h;
+            if (inSave) return { slot: i, btn: 'save' };
+            const inDelete = mx >= r.deleteBtn.x && mx <= r.deleteBtn.x + r.deleteBtn.w && my >= r.deleteBtn.y && my <= r.deleteBtn.y + r.deleteBtn.h;
+            if (inDelete) return { slot: i, btn: 'delete' };
+            return { slot: i, btn: null };
+        }
+        return null;
+    }
+
+    _drawSaveIcon(ctx, cx, cy, color) {
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.8;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - 5);
+        ctx.lineTo(cx, cy + 1);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(cx - 3.5, cy - 1.5);
+        ctx.lineTo(cx, cy + 2.5);
+        ctx.lineTo(cx + 3.5, cy - 1.5);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(cx - 4.5, cy + 4.5);
+        ctx.lineTo(cx + 4.5, cy + 4.5);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    _drawDeleteIcon(ctx, cx, cy, color) {
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.8;
+        ctx.lineCap = 'round';
+        const d = 3.5;
+        ctx.beginPath();
+        ctx.moveTo(cx - d, cy - d);
+        ctx.lineTo(cx + d, cy + d);
+        ctx.moveTo(cx + d, cy - d);
+        ctx.lineTo(cx - d, cy + d);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    _drawOutfitSlots(ctx) {
+        const s = this.UI.outfitSlots;
+        const layout = this._getOutfitPanelLayout();
+        const rects = this._getOutfitCellRects();
+
+        ctx.save();
+
+        // panel background
+        ctx.fillStyle = s.panelFill;
+        ctx.strokeStyle = s.panelStroke;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(layout.x, layout.y, layout.w, layout.h, s.panelRadius);
+        ctx.fill();
+        ctx.stroke();
+
+        // title
+        ctx.fillStyle = s.titleFill;
+        ctx.font = s.titleFont;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Saved Outfits', layout.x + layout.w / 2, layout.y + layout.titleH / 2 + 3);
+
+        // title divider
+        ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(layout.x + 12, layout.y + layout.titleH);
+        ctx.lineTo(layout.x + layout.w - 12, layout.y + layout.titleH);
+        ctx.stroke();
+
+        const outfitStart = this._getOutfitSlotsStartIndex();
+
+        for (let i = 0; i < 4; i++) {
+            const r = rects[i];
+            const saved = this.outfitSlots[i];
+            const isMouseOnSlot = this.outfitSlotsHoverSlot === i;
+            const isFocused = this.selectedOption >= outfitStart && this.selectedOption < outfitStart + 4 && (this.selectedOption - outfitStart) === i;
+            const activeBtn = isMouseOnSlot ? this.outfitSlotsHoverBtn : this.outfitSlotFocusedBtn;
+
+            // cell background fill
+            ctx.fillStyle = isFocused ? s.cellFillHover : s.cellFill;
+            ctx.beginPath();
+            ctx.roundRect(r.cellX, r.cellY, r.cellW, r.cellH, s.cellRadius);
+            ctx.fill();
+
+            // thumbnail area
+            ctx.save();
+            ctx.beginPath();
+            ctx.roundRect(r.cellX, r.cellY, r.cellW, r.thumbH, [s.cellRadius, s.cellRadius, 0, 0]);
+            ctx.clip();
+
+            ctx.fillStyle = s.thumbFill;
+            ctx.fillRect(r.cellX, r.cellY, r.cellW, r.thumbH);
+
+            if (isFocused && saved) {
+                ctx.fillStyle = 'rgba(255,255,255,0.07)';
+                ctx.fillRect(r.cellX, r.cellY, r.cellW, r.thumbH);
+            }
+
+            if (saved) {
+                const fw = this.width;
+                const fh = this.height;
+                const scale = Math.min(r.cellW / fw, r.thumbH / fh);
+                const dw = fw * scale;
+                const dh = fh * scale;
+                const dx = r.cellX + (r.cellW - dw) / 2;
+                const dy = r.cellY + (r.thumbH - dh) / 2;
+
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+
+                const skinImg = getSkinElement(saved.skinKey);
+                if (skinImg) ctx.drawImage(skinImg, 0, 0, fw, fh, dx, dy, dw, dh);
+
+                for (const slot of COSMETIC_LAYER_ORDER) {
+                    const cosKey = saved.cosmetics?.[slot] || 'none';
+                    if (cosKey === 'none') continue;
+                    const img = getCosmeticElement(slot, cosKey);
+                    if (!img) continue;
+                    const hueDeg = getCosmeticChromaDegFromState(slot, cosKey, saved.cosmeticsChroma || {});
+                    this._drawImageWithOptionalHue(ctx, img, 0, 0, fw, fh, dx, dy, dw, dh, hueDeg);
+                }
+            }
+
+            ctx.restore();
+
+            // slot number badge
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            ctx.fillStyle = 'rgba(255,255,255,0.70)';
+            ctx.font = 'bold 13px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`${i + 1}`, r.cellX + 12, r.cellY + 12);
+
+            // strip background
+            ctx.fillStyle = s.stripFill;
+            ctx.beginPath();
+            ctx.roundRect(r.cellX, r.stripY, r.cellW, s.stripH, [0, 0, s.cellRadius, s.cellRadius]);
+            ctx.fill();
+
+            // strip top separator
+            ctx.strokeStyle = s.stripStroke;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(r.cellX, r.stripY);
+            ctx.lineTo(r.cellX + r.cellW, r.stripY);
+            ctx.stroke();
+
+            // save icon button
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            const saveHover = isFocused && activeBtn === 'save';
+            ctx.fillStyle = saveHover ? s.saveFillHover : s.saveFill;
+            ctx.strokeStyle = saveHover ? s.saveStrokeHover : s.saveStroke;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(r.saveBtn.x, r.saveBtn.y, r.saveBtn.w, r.saveBtn.h, s.iconRadius);
+            ctx.fill();
+            ctx.stroke();
+            this._drawSaveIcon(ctx, r.saveBtn.x + r.saveBtn.w / 2, r.saveBtn.y + r.saveBtn.h / 2, s.saveIconFill);
+
+            // delete icon button
+            const deleteHover = isFocused && activeBtn === 'delete';
+            ctx.globalAlpha = saved ? 1 : 0.18;
+            ctx.fillStyle = deleteHover && saved ? s.deleteFillHover : s.deleteFill;
+            ctx.strokeStyle = deleteHover && saved ? s.deleteStrokeHover : s.deleteStroke;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(r.deleteBtn.x, r.deleteBtn.y, r.deleteBtn.w, r.deleteBtn.h, s.iconRadius);
+            ctx.fill();
+            ctx.stroke();
+            this._drawDeleteIcon(ctx, r.deleteBtn.x + r.deleteBtn.w / 2, r.deleteBtn.y + r.deleteBtn.h / 2, s.deleteIconFill);
+            ctx.globalAlpha = 1;
+
+            ctx.strokeStyle = isFocused ? s.cellStrokeThumbHover : s.cellStroke;
+            ctx.lineWidth = isFocused ? 2 : 1;
+            ctx.beginPath();
+            ctx.roundRect(r.cellX, r.cellY, r.cellW, r.cellH, s.cellRadius);
+            ctx.stroke();
+        }
+
+        ctx.restore();
+    }
+
     // filter + tab / grid model
     _getActiveTab() {
         return this.tabs[this.activeTabIndex] || this.tabs[0];
@@ -991,9 +1311,13 @@ export class Wardrobe extends BaseMenu {
         return ownedKeys.concat(unownedKeys);
     }
 
-    _getGoBackIndex() {
+    _getOutfitSlotsStartIndex() {
         const tab = this._getActiveTab();
         return this._getActiveKeysForTab(tab).length;
+    }
+
+    _getGoBackIndex() {
+        return this._getOutfitSlotsStartIndex() + 4;
     }
 
     _buildLabelsForTab(tab) {
@@ -1123,9 +1447,8 @@ export class Wardrobe extends BaseMenu {
     _ensureSelectedVisible() {
         const tabIndex = this.activeTabIndex;
         const layout = this._getGridLayout();
-        const goBackIndex = this._getGoBackIndex();
 
-        if (this.selectedOption === goBackIndex) return;
+        if (this.selectedOption >= this._getOutfitSlotsStartIndex()) return;
 
         const step = layout.card + layout.gap;
         const row = Math.floor((this.selectedOption ?? 0) / layout.cols);
@@ -1198,6 +1521,103 @@ export class Wardrobe extends BaseMenu {
 
     _hitTestFilterButton(ctx, mx, my) {
         return this._hitTestRect(mx, my, this._getFilterButtonRect(ctx));
+    }
+
+    _getRandomizerButtonRect() {
+        const cfg = this.UI.randomizerBtn;
+        const filterCfg = this.UI.filterDropdown;
+        const grid = this._getGridLayout();
+        const y = Math.max(filterCfg.minTopY, grid.gridTopY - cfg.size - filterCfg.aboveGridGap);
+        const x = grid.gridLeftX + grid.gridW - cfg.size;
+        return { x, y, w: cfg.size, h: cfg.size };
+    }
+
+    _hitTestRandomizerButton(mx, my) {
+        return this._hitTestRect(mx, my, this._getRandomizerButtonRect());
+    }
+
+    _drawRandomizerButton(ctx) {
+        const cfg = this.UI.randomizerBtn;
+        const btn = this._getRandomizerButtonRect();
+        const hovered = this.randomizerHoverBtn;
+        const iconFill = hovered ? cfg.iconFillHover : cfg.iconFill;
+
+        ctx.save();
+        ctx.shadowColor = 'transparent';
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+
+        // button background + border
+        ctx.fillStyle = hovered ? cfg.fillHover : cfg.fill;
+        ctx.strokeStyle = hovered ? cfg.strokeHover : cfg.stroke;
+        ctx.lineWidth = 2;
+        this._roundRect(ctx, btn.x, btn.y, btn.w, btn.h, cfg.radius);
+        if (hovered) ctx.fill();
+        ctx.stroke();
+
+        // dice icon: outer rounded square
+        const pad = 8;
+        const dx = btn.x + pad;
+        const dy = btn.y + pad;
+        const dw = btn.w - pad * 2;
+        const dh = btn.h - pad * 2;
+
+        ctx.strokeStyle = iconFill;
+        ctx.lineWidth = 1.5;
+        this._roundRect(ctx, dx, dy, dw, dh, 4);
+        ctx.stroke();
+
+        // dice dots
+        const dotR = 2.2;
+        ctx.fillStyle = iconFill;
+
+        const dots = [
+            { x: dx + dw * 0.28, y: dy + dh * 0.28 },
+            { x: dx + dw * 0.50, y: dy + dh * 0.50 },
+            { x: dx + dw * 0.72, y: dy + dh * 0.72 },
+        ];
+
+        for (const p of dots) {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, dotR, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.restore();
+    }
+
+    _randomizeOutfit() {
+        const preservedSelection = this.selectedOption;
+
+        // random owned skin
+        const giftSkins = this._getUnlockedGiftSkinKeys();
+        const skinPool = [
+            ...SKIN_MENU_ORDER.filter(k => this._isSkinOwned(k)),
+            ...giftSkins.filter(k => !SKIN_MENU_ORDER.includes(k)),
+        ];
+        if (skinPool.length > 0) {
+            const skinKey = skinPool[Math.floor(Math.random() * skinPool.length)];
+            this.setCurrentSkinByKey(skinKey, { forceExact: skinKey !== 'defaultSkin' });
+        }
+
+        // random owned cosmetic per slot
+        for (const slot of Object.values(COSMETIC_SLOTS)) {
+            const slotKeys = COSMETIC_MENU_ORDER[slot] || [];
+            const pool = ['none', ...slotKeys.filter(k => this._isCosmeticOwned(slot, k))];
+            const cosKey = pool[Math.floor(Math.random() * pool.length)];
+            this.setCurrentCosmeticByKey(slot, cosKey);
+
+            if (cosKey !== 'none') {
+                const chromaCfg = getCosmeticChromaConfig(slot, cosKey);
+                if (chromaCfg && Array.isArray(chromaCfg.variants) && chromaCfg.variants.length > 1) {
+                    const variant = chromaCfg.variants[Math.floor(Math.random() * chromaCfg.variants.length)];
+                    this._setCosmeticChromaVariantId(slot, cosKey, variant.id);
+                }
+            }
+        }
+
+        this.selectedOption = preservedSelection;
+        this._save();
     }
 
     _hitTestFilterOption(ctx, mx, my) {
@@ -1656,14 +2076,37 @@ export class Wardrobe extends BaseMenu {
         return [];
     }
 
+    _handleOutfitSlotEnter(slotIdx) {
+        const btn = this.outfitSlotFocusedBtn;
+        if (btn === 'save') {
+            this._saveOutfitToSlot(slotIdx);
+            this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
+        } else if (btn === 'delete') {
+            if (this.outfitSlots[slotIdx]) {
+                this._clearOutfitSlot(slotIdx);
+                this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
+            }
+        } else {
+            if (this.outfitSlots[slotIdx]) {
+                this._loadOutfitFromSlot(slotIdx);
+                this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
+            }
+        }
+    }
+
     // selection actions
     _selectCurrent() {
         const tab = this._getActiveTab();
         const keys = this._getActiveKeysForTab(tab);
-        const goBackIndex = keys.length;
+        const outfitStart = keys.length;
+        const goBackIndex = outfitStart + 4;
         const idx = this.selectedOption ?? 0;
 
         if (idx === goBackIndex) return this.onGoBack();
+        if (idx >= outfitStart && idx < goBackIndex) {
+            this._handleOutfitSlotEnter(idx - outfitStart);
+            return;
+        }
         if (!tab || idx < 0 || idx >= keys.length) return;
 
         const key = keys[idx];
@@ -1798,14 +2241,35 @@ export class Wardrobe extends BaseMenu {
 
         const tab = this._getActiveTab();
         const keys = this._getActiveKeysForTab(tab);
-        const goBackIndex = keys.length;
+        const outfitStart = keys.length;
+        const goBackIndex = outfitStart + 4;
         const maxIndex = goBackIndex;
 
+        const isInOutfitSlot = this.selectedOption >= outfitStart && this.selectedOption < outfitStart + 4;
+
         if (event.key === 'ArrowUp') {
+            if (isInOutfitSlot) {
+                const slotIdx = this.selectedOption - outfitStart;
+                const hasOutfit = !!this.outfitSlots[slotIdx];
+                const order = hasOutfit ? [null, 'save', 'delete'] : [null, 'save'];
+                const ci = Math.max(0, order.indexOf(this.outfitSlotFocusedBtn));
+                this.outfitSlotFocusedBtn = order[(ci - 1 + order.length) % order.length];
+                this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
+                return;
+            }
             this._setActiveTab(this.activeTabIndex - 1);
             return;
         }
         if (event.key === 'ArrowDown') {
+            if (isInOutfitSlot) {
+                const slotIdx = this.selectedOption - outfitStart;
+                const hasOutfit = !!this.outfitSlots[slotIdx];
+                const order = hasOutfit ? [null, 'save', 'delete'] : [null, 'save'];
+                const ci = Math.max(0, order.indexOf(this.outfitSlotFocusedBtn));
+                this.outfitSlotFocusedBtn = order[(ci + 1) % order.length];
+                this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
+                return;
+            }
             this._setActiveTab(this.activeTabIndex + 1);
             return;
         }
@@ -1817,6 +2281,7 @@ export class Wardrobe extends BaseMenu {
 
         if (event.key === 'ArrowLeft') {
             this.selectedOption = wrap((this.selectedOption ?? 0) - 1);
+            this.outfitSlotFocusedBtn = null;
             this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
             this._ensureSelectedVisible();
             return;
@@ -1824,6 +2289,7 @@ export class Wardrobe extends BaseMenu {
 
         if (event.key === 'ArrowRight') {
             this.selectedOption = wrap((this.selectedOption ?? 0) + 1);
+            this.outfitSlotFocusedBtn = null;
             this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
             this._ensureSelectedVisible();
             return;
@@ -1954,6 +2420,12 @@ export class Wardrobe extends BaseMenu {
                 if (btnHovered) this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
             }
 
+            const randHovered = this._hitTestRandomizerButton(mouseX, mouseY);
+            if (randHovered !== this.randomizerHoverBtn) {
+                this.randomizerHoverBtn = randHovered;
+                if (randHovered) this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
+            }
+
             if (this.filterOpen) {
                 const opt = this._hitTestFilterOption(ctx, mouseX, mouseY);
                 if (opt !== this.filterHoverIndex) {
@@ -1965,10 +2437,29 @@ export class Wardrobe extends BaseMenu {
             }
         }
 
+        // outfit slot hover
+        const outfitHit = this._hitTestOutfitPanel(mouseX, mouseY);
+        const newSlot = outfitHit ? outfitHit.slot : -1;
+        const newBtn = outfitHit ? outfitHit.btn : null;
+        if (newSlot !== this.outfitSlotsHoverSlot || newBtn !== this.outfitSlotsHoverBtn) {
+            if (newSlot >= 0 && newSlot !== this.outfitSlotsHoverSlot) {
+                this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
+            }
+            this.outfitSlotsHoverSlot = newSlot;
+            this.outfitSlotsHoverBtn = newBtn;
+        }
+        if (outfitHit) {
+            const outfitStart = this._getOutfitSlotsStartIndex();
+            const targetIdx = outfitStart + outfitHit.slot;
+            if (this.selectedOption !== targetIdx) {
+                this.selectedOption = targetIdx;
+                this.outfitSlotFocusedBtn = null;
+            }
+            return;
+        }
+
         const gb = this._getGoBackLayout();
-        const tab = this._getActiveTab();
-        const keys = this._getActiveKeysForTab(tab);
-        const goBackIndex = keys.length;
+        const goBackIndex = this._getGoBackIndex();
 
         const inGoBack =
             mouseX >= (gb.x - gb.w) &&
@@ -1984,6 +2475,7 @@ export class Wardrobe extends BaseMenu {
             return;
         }
 
+        const tab = this._getActiveTab();
         const labels = this._buildLabelsForTab(tab);
         const layout = this._getGridLayout();
         const scroll = this.scrollYByTab[this.activeTabIndex] || 0;
@@ -2022,6 +2514,22 @@ export class Wardrobe extends BaseMenu {
 
         if (this._tryClickChromaSwatch(mouseX, mouseY)) return;
 
+        // outfit slots click
+        const outfitHit = this._hitTestOutfitPanel(mouseX, mouseY);
+        if (outfitHit) {
+            if (outfitHit.btn === 'save') {
+                this._saveOutfitToSlot(outfitHit.slot);
+                this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
+            } else if (outfitHit.btn === 'delete' && this.outfitSlots[outfitHit.slot]) {
+                this._clearOutfitSlot(outfitHit.slot);
+                this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
+            } else if (outfitHit.btn === null && this.outfitSlots[outfitHit.slot]) {
+                this._loadOutfitFromSlot(outfitHit.slot);
+                this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
+            }
+            return;
+        }
+
         if (ctx) {
             const btnRect = this._getFilterButtonRect(ctx);
             const menuRect = this._getFilterMenuRect(ctx);
@@ -2046,6 +2554,12 @@ export class Wardrobe extends BaseMenu {
             if (this.filterOpen && !hitMenu) {
                 this._closeFilterDropdown();
             }
+
+            if (this._hitTestRandomizerButton(mouseX, mouseY)) {
+                this._randomizeOutfit();
+                this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
+                return;
+            }
         }
 
         const s = this._getSidebarLayout();
@@ -2069,6 +2583,7 @@ export class Wardrobe extends BaseMenu {
             mouseY <= gb.y;
 
         if (inGoBack) {
+            this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
             this.onGoBack();
             return;
         }
@@ -2140,6 +2655,8 @@ export class Wardrobe extends BaseMenu {
         this._drawAnimatedPreview(context);
 
         this._drawFilterDropdown(context);
+        this._drawRandomizerButton(context);
+        this._drawOutfitSlots(context);
 
         if (this.modal) this._drawModal(context);
 
@@ -2650,9 +3167,7 @@ export class Wardrobe extends BaseMenu {
     }
 
     _drawGoBackText(context) {
-        const tab = this._getActiveTab();
-        const keys = this._getActiveKeysForTab(tab);
-        const goBackIndex = keys.length;
+        const goBackIndex = this._getGoBackIndex();
         const isSelected = this.selectedOption === goBackIndex;
 
         const gb = this._getGoBackLayout();
