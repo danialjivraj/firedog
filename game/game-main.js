@@ -1284,6 +1284,7 @@ window.addEventListener("load", function () {
 
     const game = new Game(canvas, canvas.width, canvas.height);
     let lastTime = 0;
+    let fadingInInitiated = false;
 
     function animate(timeStamp) {
         const deltaTime = timeStamp - lastTime;
@@ -1298,13 +1299,19 @@ window.addEventListener("load", function () {
             !(game.boss && game.boss.talkToBoss)
         ) {
             if (game.fadingIn) {
-                game.waitForFadeInOpacity = true;
-                fadeIn(canvas, 1300, () => {
-                    game.fadingIn = false;
-                });
-                setTimeout(() => {
-                    game.waitForFadeInOpacity = false;
-                }, 2200);
+                if (!fadingInInitiated) {
+                    fadingInInitiated = true;
+                    game.waitForFadeInOpacity = true;
+                    canvas.style.opacity = 0;
+                    setTimeout(() => {
+                        game.fadingIn = false;
+                        fadingInInitiated = false;
+                        fadeIn(canvas, 1300, () => {});
+                    }, 1300);
+                    setTimeout(() => {
+                        game.waitForFadeInOpacity = false;
+                    }, 2700);
+                }
             } else {
                 game.currentCutscene.draw(ctx);
                 game.metaToasts.forEach((t) => t.draw(ctx));
