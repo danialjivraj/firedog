@@ -1088,6 +1088,106 @@ describe('Wardrobe menu', () => {
         });
     });
 
+    describe('reset to default button', () => {
+        describe('_getResetButtonRect', () => {
+            it('is positioned directly to the left of the randomizer button with the configured gap', () => {
+                const rand = menu._getRandomizerButtonRect();
+                const reset = menu._getResetButtonRect();
+                const gap = menu.UI.resetBtn.gap;
+                const size = menu.UI.resetBtn.size;
+                expect(reset.x).toBe(rand.x - size - gap);
+                expect(reset.y).toBe(rand.y);
+                expect(reset.w).toBe(size);
+                expect(reset.h).toBe(size);
+            });
+        });
+
+        describe('_hitTestResetButton', () => {
+            it('returns true when cursor is inside the button rect', () => {
+                const btn = menu._getResetButtonRect();
+                expect(menu._hitTestResetButton(btn.x + btn.w / 2, btn.y + btn.h / 2)).toBe(true);
+            });
+
+            it('returns false when cursor is outside the button rect', () => {
+                const btn = menu._getResetButtonRect();
+                expect(menu._hitTestResetButton(btn.x - 1, btn.y + btn.h / 2)).toBe(false);
+                expect(menu._hitTestResetButton(btn.x + btn.w / 2, btn.y - 1)).toBe(false);
+            });
+        });
+
+        describe('_resetToDefault', () => {
+            it('sets skin to defaultSkin', () => {
+                menu.setCurrentSkinByKey('shinySkin', { forceExact: true });
+                menu._resetToDefault();
+                expect(menu.currentSkinKey).toBe('defaultSkin');
+            });
+
+            it('sets all cosmetic slots to none', () => {
+                const headKey = (COSMETIC_MENU_ORDER[COSMETIC_SLOTS.HEAD] || []).find(k => k !== 'none');
+                if (headKey) {
+                    mockGame.ownedCosmetics[COSMETIC_SLOTS.HEAD][headKey] = true;
+                    menu.setCurrentCosmeticByKey(COSMETIC_SLOTS.HEAD, headKey);
+                }
+                menu._resetToDefault();
+                for (const slot of Object.values(COSMETIC_SLOTS)) {
+                    expect(menu.currentCosmetics[slot]).toBe('none');
+                }
+            });
+
+            it('preserves selectedOption after reset', () => {
+                menu.selectedOption = 3;
+                menu._resetToDefault();
+                expect(menu.selectedOption).toBe(3);
+            });
+
+            it('calls _save after reset', () => {
+                menu._resetToDefault();
+                expect(mockGame.saveGameState).toHaveBeenCalled();
+            });
+        });
+
+        describe('hover', () => {
+            beforeEach(() => { menu._uiCtx = ctx; });
+
+            it('sets resetHoverBtn to true when mouse enters the button', () => {
+                const btn = menu._getResetButtonRect();
+                menu.handleMouseMove({ clientX: btn.x + btn.w / 2, clientY: btn.y + btn.h / 2 });
+                expect(menu.resetHoverBtn).toBe(true);
+            });
+
+            it('sets resetHoverBtn to false when mouse leaves the button', () => {
+                menu.resetHoverBtn = true;
+                const btn = menu._getResetButtonRect();
+                menu.handleMouseMove({ clientX: btn.x - 5, clientY: btn.y + btn.h / 2 });
+                expect(menu.resetHoverBtn).toBe(false);
+            });
+
+            it('plays optionHoveredSound on first hover', () => {
+                const btn = menu._getResetButtonRect();
+                menu.handleMouseMove({ clientX: btn.x + btn.w / 2, clientY: btn.y + btn.h / 2 });
+                expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
+            });
+        });
+
+        describe('click', () => {
+            beforeEach(() => { menu._uiCtx = ctx; });
+
+            it('calls _resetToDefault when clicking the button', () => {
+                const spy = jest.spyOn(menu, '_resetToDefault');
+                const btn = menu._getResetButtonRect();
+                menu.handleMouseClick({ clientX: btn.x + btn.w / 2, clientY: btn.y + btn.h / 2, button: 0 });
+                expect(spy).toHaveBeenCalled();
+                spy.mockRestore();
+            });
+
+            it('plays optionSelectedSound on click', () => {
+                const btn = menu._getResetButtonRect();
+                menu.handleMouseClick({ clientX: btn.x + btn.w / 2, clientY: btn.y + btn.h / 2, button: 0 });
+                expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('optionSelectedSound', false, true);
+            });
+        });
+    });
+
     describe('draw', () => {
         it('does nothing when menuActive is false', () => {
             menu.menuActive = false;

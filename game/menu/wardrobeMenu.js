@@ -239,6 +239,18 @@ export class Wardrobe extends BaseMenu {
                 iconFillHover: 'rgba(255,255,0,0.95)',
             },
 
+            resetBtn: {
+                size: 38,
+                gap: 6,
+                radius: 10,
+                fill: 'rgba(0,0,0,0.00)',
+                fillHover: 'rgba(255,255,255,0.10)',
+                stroke: 'rgba(255,255,255,0.28)',
+                strokeHover: 'rgba(255,255,0,0.90)',
+                iconFill: 'rgba(255,255,255,0.85)',
+                iconFillHover: 'rgba(255,255,0,0.95)',
+            },
+
             modal: {
                 overlay: 'rgba(0,0,0,0.45)',
 
@@ -401,6 +413,7 @@ export class Wardrobe extends BaseMenu {
         this.filterHoverIndex = -1;
         this.filterHoverBtn = false;
         this.randomizerHoverBtn = false;
+        this.resetHoverBtn = false;
 
         this._uiCtx = null;
         this.modal = null;
@@ -439,6 +452,7 @@ export class Wardrobe extends BaseMenu {
         this.filterHoverIndex = -1;
         this.filterHoverBtn = false;
         this.randomizerHoverBtn = false;
+        this.resetHoverBtn = false;
 
         this.modal = null;
 
@@ -1537,6 +1551,78 @@ export class Wardrobe extends BaseMenu {
         return this._hitTestRect(mx, my, this._getRandomizerButtonRect());
     }
 
+    _getResetButtonRect() {
+        const cfg = this.UI.resetBtn;
+        const randRect = this._getRandomizerButtonRect();
+        return { x: randRect.x - cfg.size - cfg.gap, y: randRect.y, w: cfg.size, h: cfg.size };
+    }
+
+    _hitTestResetButton(mx, my) {
+        return this._hitTestRect(mx, my, this._getResetButtonRect());
+    }
+
+    _drawResetButton(ctx) {
+        const cfg = this.UI.resetBtn;
+        const btn = this._getResetButtonRect();
+        const hovered = this.resetHoverBtn;
+        const iconFill = hovered ? cfg.iconFillHover : cfg.iconFill;
+
+        ctx.save();
+        ctx.shadowColor = 'transparent';
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+
+        ctx.fillStyle = hovered ? cfg.fillHover : cfg.fill;
+        ctx.strokeStyle = hovered ? cfg.strokeHover : cfg.stroke;
+        ctx.lineWidth = 2;
+        this._roundRect(ctx, btn.x, btn.y, btn.w, btn.h, cfg.radius);
+        if (hovered) ctx.fill();
+        ctx.stroke();
+
+        const cx = btn.x + btn.w / 2;
+        const cy = btn.y + btn.h / 2;
+        const r = 8.5;
+
+        ctx.strokeStyle = iconFill;
+        ctx.fillStyle = iconFill;
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, Math.PI * 0.15, Math.PI * 2.0, false);
+        ctx.stroke();
+
+        const arrowAngle = Math.PI * 0.15;
+        const ax = cx + r * Math.cos(arrowAngle);
+        const ay = cy + r * Math.sin(arrowAngle);
+        const tangentAngle = arrowAngle + Math.PI / 2;
+        const arrowSize = 4.5;
+        ctx.beginPath();
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(
+            ax + arrowSize * Math.cos(tangentAngle - 0.5),
+            ay + arrowSize * Math.sin(tangentAngle - 0.5)
+        );
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(
+            ax + arrowSize * Math.cos(tangentAngle + 0.6),
+            ay + arrowSize * Math.sin(tangentAngle + 0.6)
+        );
+        ctx.stroke();
+
+        ctx.restore();
+    }
+
+    _resetToDefault() {
+        const preservedSelection = this.selectedOption;
+        this.setCurrentSkinByKey('defaultSkin', { forceExact: true });
+        for (const slot of Object.values(COSMETIC_SLOTS)) {
+            this.setCurrentCosmeticByKey(slot, 'none');
+        }
+        this.selectedOption = preservedSelection;
+        this._save();
+    }
+
     _drawRandomizerButton(ctx) {
         const cfg = this.UI.randomizerBtn;
         const btn = this._getRandomizerButtonRect();
@@ -2427,6 +2513,12 @@ export class Wardrobe extends BaseMenu {
                 if (randHovered) this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
             }
 
+            const resetHovered = this._hitTestResetButton(mouseX, mouseY);
+            if (resetHovered !== this.resetHoverBtn) {
+                this.resetHoverBtn = resetHovered;
+                if (resetHovered) this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
+            }
+
             if (this.filterOpen) {
                 const opt = this._hitTestFilterOption(ctx, mouseX, mouseY);
                 if (opt !== this.filterHoverIndex) {
@@ -2561,6 +2653,12 @@ export class Wardrobe extends BaseMenu {
                 this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
                 return;
             }
+
+            if (this._hitTestResetButton(mouseX, mouseY)) {
+                this._resetToDefault();
+                this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
+                return;
+            }
         }
 
         const s = this._getSidebarLayout();
@@ -2657,6 +2755,7 @@ export class Wardrobe extends BaseMenu {
 
         this._drawFilterDropdown(context);
         this._drawRandomizerButton(context);
+        this._drawResetButton(context);
         this._drawOutfitSlots(context);
 
         if (this.modal) this._drawModal(context);
