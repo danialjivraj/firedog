@@ -1042,9 +1042,10 @@ export class Wardrobe extends BaseMenu {
         for (let i = 0; i < rects.length; i++) {
             const r = rects[i];
             if (mx < r.cellX || mx > r.cellX + r.cellW || my < r.cellY || my > r.cellY + r.cellH) continue;
-            const inSave = mx >= r.saveBtn.x && mx <= r.saveBtn.x + r.saveBtn.w && my >= r.saveBtn.y && my <= r.saveBtn.y + r.saveBtn.h;
+            const inStrip = my >= r.stripY;
+            const inSave = inStrip && mx >= r.saveBtn.x - 5 && mx <= r.saveBtn.x + r.saveBtn.w;
             if (inSave) return { slot: i, btn: 'save' };
-            const inDelete = mx >= r.deleteBtn.x && mx <= r.deleteBtn.x + r.deleteBtn.w && my >= r.deleteBtn.y && my <= r.deleteBtn.y + r.deleteBtn.h;
+            const inDelete = inStrip && mx > r.saveBtn.x + r.saveBtn.w && mx <= r.deleteBtn.x + r.deleteBtn.w;
             if (inDelete) return { slot: i, btn: 'delete' };
             return { slot: i, btn: null };
         }
