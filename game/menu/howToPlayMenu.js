@@ -26,6 +26,9 @@ export class HowToPlayMenu extends BaseMenu {
         this._demoDash = this._createDashDemoState();
 
         this._demoInvisibleColourOpacity = 0;
+        this._demoRollingSeq = null;
+        this._demoDivingSeq = null;
+        this._demoEnergyFireSeq = null;
 
         this._menuParticles = [];
         this._menuParticleTimers = { poison: 0, slow: 0 };
@@ -37,9 +40,16 @@ export class HowToPlayMenu extends BaseMenu {
         this._tintCache = new Map();
     }
 
-    // ---------------- Small utilities ----------------
+    // ---------------- small utilities ----------------
+    update(deltaTime) {
+        this._lastDt = deltaTime;
+        super.update(deltaTime);
+    }
+
     _dt() {
-        return (typeof this.game.deltaTime === 'number' ? this.game.deltaTime : 16);
+        if (typeof this._lastDt === 'number') return this._lastDt;
+        if (typeof this.game.deltaTime === 'number') return this.game.deltaTime;
+        return 16;
     }
 
     _num(v, fallback) {
@@ -51,13 +61,24 @@ export class HowToPlayMenu extends BaseMenu {
         return Math.max(a, Math.min(b, v));
     }
 
+    _stepFireArcs(arcs, dtScale, gameSpeed = 0) {
+        for (const arc of arcs) {
+            arc.x -= (arc.speedX + gameSpeed) * dtScale;
+            arc.y -= arc.speedY * dtScale;
+            arc.size *= Math.pow(0.97, dtScale);
+            arc.angle += arc.va * dtScale;
+            arc.x += Math.sin(arc.angle * 5) * dtScale;
+        }
+        return arcs.filter(a => a.size >= 0.5);
+    }
+
     _getTutorialProgressPercentage() {
-        const total = Math.max(1, (this.pages?.length ?? 1) - 1); // last index
+        const total = Math.max(1, (this.pages?.length ?? 1) - 1);
         const idx = this._clamp(this.currentPage ?? 0, 0, total);
         return (idx / total) * 100;
     }
 
-    // ---------------- Navigation ----------------
+    // ---------------- navigation ----------------
     nextPage() {
         if (this.currentPage < this.pages.length - 1) {
             this.currentPage++;
@@ -100,20 +121,10 @@ export class HowToPlayMenu extends BaseMenu {
         }
     }
 
-    // ---------------- Assets / Pages ----------------
+    // ---------------- assets / pages ----------------
     _buildAssets() {
         const id = (x) => document.getElementById(x);
         return {
-            firedogSitting: id('firedogSitting'),
-            firedogStanding: id('firedogStanding'),
-            firedogRunning: id('firedogRunning'),
-            firedogJumping: id('firedogJumping'),
-            firedogRolling: id('firedogRolling'),
-            firedogDiving: id('firedogDiving'),
-            firedogDashing1: id('firedogDashing1'),
-            firedogStunned: id('firedogStunned'),
-            firedogHit: id('firedogHit'),
-            firedogFrozen: id('firedogFrozen'),
             fireball: id('fireball'),
 
             keycap: id('keycap'),
@@ -129,6 +140,47 @@ export class HowToPlayMenu extends BaseMenu {
             gloomlet: id('gloomlet'),
             duskPlant: id('duskPlant'),
             iceSilknoir: id('iceSilknoir'),
+
+            defaultSkin: id('defaultSkin'),
+            frozenIce: id('frozenIce'),
+        };
+    }
+
+    _createEnergyExhaustedDisabledUI() {
+        return {
+            draw: (ctx) => {
+                if (!this._demoEnergy?.active || !this._demoEnergy.exhausted) return;
+
+                const fireballIconX = 110;
+                const dashIconX = 230;
+                const arrowY = 250;
+                const textY = 285;
+
+                const drawDownArrow = (x) =>
+                    this.drawArrowImpl(ctx, {
+                        x,
+                        y: arrowY,
+                        length: 34,
+                        head: 10,
+                        rotation: Math.PI / 2,
+                        anchor: 'center',
+                        lineW: 6,
+                        outlineW: 10,
+                    });
+
+                drawDownArrow(fireballIconX);
+                drawDownArrow(dashIconX);
+
+                this.drawTextBlockImpl(ctx, {
+                    text: 'Disabled due to exhaust!',
+                    x: (fireballIconX + dashIconX) / 2,
+                    y: textY,
+                    maxW: 280,
+                    lineH: 26,
+                    font: 'bold 22px "Gloria Hallelujah"',
+                    align: 'center',
+                });
+            },
         };
     }
 
@@ -286,7 +338,7 @@ export class HowToPlayMenu extends BaseMenu {
 
         return [
             this.createPage('User Interface: Coins (1)', [
-                this.createImage({ image: 'firedogStanding', x: cx, y: groundY, anchor: 'bottomCenter' }),
+                this.createPlayerAnimation({ state: 'STANDING', x: cx, y: groundY }),
                 ...infoArrowText({
                     startX: 155, startY: 30,
                     textX: 460, textY: 60,
@@ -297,7 +349,7 @@ export class HowToPlayMenu extends BaseMenu {
             ]),
 
             this.createPage('User Interface: Time (2)', [
-                this.createImage({ image: 'firedogStanding', x: cx, y: groundY, anchor: 'bottomCenter' }),
+                this.createPlayerAnimation({ state: 'STANDING', x: cx, y: groundY }),
                 ...infoArrowText({
                     startX: 165, startY: 70,
                     textX: 460, textY: 60,
@@ -308,7 +360,7 @@ export class HowToPlayMenu extends BaseMenu {
             ]),
 
             this.createPage('User Interface: Energy (3)', [
-                this.createImage({ image: 'firedogStanding', x: cx, y: groundY, anchor: 'bottomCenter' }),
+                this.createPlayerAnimation({ state: 'STANDING', x: cx, y: groundY }),
                 ...infoArrowText({
                     startX: 275, startY: 106,
                     textX: 460, textY: 100,
@@ -319,7 +371,7 @@ export class HowToPlayMenu extends BaseMenu {
             ]),
 
             this.createPage('User Interface: Lives (4)', [
-                this.createImage({ image: 'firedogStanding', x: cx, y: groundY, anchor: 'bottomCenter' }),
+                this.createPlayerAnimation({ state: 'STANDING', x: cx, y: groundY }),
                 ...infoArrowText({
                     startX: 160, startY: 145,
                     textX: 460, textY: 140,
@@ -330,7 +382,7 @@ export class HowToPlayMenu extends BaseMenu {
             ]),
 
             this.createPage('User Interface: Abilities (5)', [
-                this.createImage({ image: 'firedogStanding', x: cx, y: groundY, anchor: 'bottomCenter' }),
+                this.createPlayerAnimation({ state: 'STANDING', x: cx, y: groundY }),
 
                 ...(() => {
                     const textX = 30;
@@ -357,7 +409,7 @@ export class HowToPlayMenu extends BaseMenu {
             ]),
 
             this.createPage('User Interface: Progress Bar (6)', [
-                this.createImage({ image: 'firedogStanding', x: cx, y: groundY, anchor: 'bottomCenter' }),
+                this.createPlayerAnimation({ state: 'STANDING', x: cx, y: groundY }),
 
                 ...(() => {
                     const startX = cx;
@@ -386,22 +438,22 @@ export class HowToPlayMenu extends BaseMenu {
                 label('Sit down', cx + 10, groundY - 150 - 34),
                 arrow(cx + 70, groundY - 20, Math.PI / 2),
                 this.createKey({ key: 'S', x: cx + 10, y: groundY - 150, w: 57, h: 55, image: 'keycap' }),
-                this.createImage({ image: 'firedogSitting', x: cx, y: groundY, anchor: 'bottomCenter' }),
+                this.createPlayerAnimation({ state: 'SITTING', x: cx, y: groundY, fps: 20 }),
 
                 label('Jump', cx + 10, groundY - 450 - 34),
                 arrow(cx + 70, groundY - 340, -Math.PI / 2),
                 this.createKey({ key: 'W', x: cx + 10, y: groundY - 450, w: 57, h: 55, image: 'keycap' }),
-                this.createImage({ image: 'firedogJumping', x: cx, y: groundY - 300, anchor: 'bottomCenter' }),
+                this.createPlayerAnimation({ state: 'JUMPING', x: cx, y: groundY - 300, fps: 20 }),
 
                 label('Move left', cx - 390, groundY - 150 - 34),
                 arrow(cx - 470, groundY - 20, Math.PI),
                 this.createKey({ key: 'A', x: cx - 390, y: groundY - 150, w: 57, h: 55, image: 'keycap' }),
-                this.createImage({ image: 'firedogRunning', x: cx - 400, y: groundY, anchor: 'bottomCenter' }),
+                this.createPlayerAnimation({ state: 'RUNNING', x: cx - 400, y: groundY, fps: 20 }),
 
                 label('Move right', cx + 410, groundY - 150 - 34),
                 arrow(cx + 470, groundY - 20, 0),
                 this.createKey({ key: 'D', x: cx + 410, y: groundY - 150, w: 57, h: 55, image: 'keycap' }),
-                this.createImage({ image: 'firedogRunning', x: cx + 400, y: groundY, anchor: 'bottomCenter' }),
+                this.createPlayerAnimation({ state: 'RUNNING', x: cx + 400, y: groundY, fps: 20 }),
             ], { ...baseUI }),
 
             this.createPage('Abilities: Rolling (1)', [
@@ -419,7 +471,7 @@ export class HowToPlayMenu extends BaseMenu {
                 }),
                 this.createImage({ image: 'rightClick', x: cx + 83, y: 395, anchor: 'center', scale: 1 }),
 
-                this.createImage({ image: 'firedogRolling', x: cx - 10, y: groundY + 20, anchor: 'bottomCenter' }),
+                this.createRollingDemo(),
 
                 ...infoArrowText({
                     startX: 275,
@@ -447,7 +499,7 @@ export class HowToPlayMenu extends BaseMenu {
                 titleBlock('Diving key\n(while in the air)', 70),
 
                 this.createKey({ key: 'S', x: cx, y: 180, w: 57, h: 55, image: 'keycap' }),
-                this.createImage({ image: 'firedogDiving', x: cx - 10, y: groundY - 220, anchor: 'bottomCenter' }),
+                this.createDivingSequenceDemo(),
 
                 ...threeLineLeftArrowText({
                     startX: 50,
@@ -497,7 +549,7 @@ export class HowToPlayMenu extends BaseMenu {
                     align: 'center',
                 }),
                 this.createImage({ image: 'leftClick', x: cx + 70, y: 395, anchor: 'center' }),
-                this.createImage({ image: 'firedogStanding', x: cx, y: groundY, anchor: 'bottomCenter' }),
+                this.createPlayerAnimation({ state: 'STANDING', x: cx, y: groundY, fps: 20 }),
 
                 ...infoArrowText({
                     startX: 275,
@@ -555,7 +607,7 @@ export class HowToPlayMenu extends BaseMenu {
                 this.createImage({ image: 'scrollWheelClick', x: cx + 76, y: 403, anchor: 'center' }),
 
                 this.createInvisibleDemoPlayerImage({
-                    image: 'firedogStanding',
+                    state: 'STANDING',
                     x: cx,
                     y: groundY,
                     anchor: 'bottomCenter',
@@ -597,9 +649,9 @@ export class HowToPlayMenu extends BaseMenu {
                     font: 'bold 26px "Gloria Hallelujah"',
                     align: 'center',
                 }),
-                this.createImage({ image: 'mouseButton4Click', x: cx + 70, y: 403, anchor: 'center' }),
+                this.createImage({ image: 'mouseButton4Click', x: cx + 80, y: 403, anchor: 'center' }),
 
-                this.createImage({ image: 'firedogDashing1', x: cx, y: groundY + 100, anchor: 'bottomCenter' }),
+                this.createDashSequenceDemo(),
 
                 ...infoArrowText({
                     startX: 275,
@@ -649,48 +701,13 @@ export class HowToPlayMenu extends BaseMenu {
                     maxW: 600,
                 }),
 
-                {
-                    draw: (ctx) => {
-                        if (!this._demoEnergy?.active || !this._demoEnergy.exhausted) return;
-
-                        const fireballIconX = 110;
-                        const dashIconX = 230;
-
-                        const arrowY = 250;
-                        const textY = 285;
-
-                        const drawDownArrow = (x) =>
-                            this.drawArrowImpl(ctx, {
-                                x,
-                                y: arrowY,
-                                length: 34,
-                                head: 10,
-                                rotation: Math.PI / 2,
-                                anchor: 'center',
-                                lineW: 6,
-                                outlineW: 10,
-                            });
-
-                        drawDownArrow(fireballIconX);
-                        drawDownArrow(dashIconX);
-
-                        this.drawTextBlockImpl(ctx, {
-                            text: 'Disabled due to exhaust!',
-                            x: (fireballIconX + dashIconX) / 2,
-                            y: textY,
-                            maxW: 280,
-                            lineH: 26,
-                            font: 'bold 22px "Gloria Hallelujah"',
-                            align: 'center',
-                        });
-                    },
-                },
+                this._createEnergyExhaustedDisabledUI(),
 
                 this.createEnergyDemoPlayerImage({
-                    downImage: 'firedogRolling',
-                    upImage: 'firedogStanding',
+                    downState: 'ROLLING',
+                    upState: 'STANDING',
                     x: cx,
-                    downY: groundY + 20,
+                    downY: groundY,
                     upY: groundY,
                     anchor: 'bottomCenter',
                 }),
@@ -722,7 +739,7 @@ export class HowToPlayMenu extends BaseMenu {
 
                     return [
                         this.createInvisibleDemoPlayerImage({
-                            image: 'firedogStanding',
+                            state: 'STANDING',
                             x: cx,
                             y: groundY,
                             anchor: 'bottomCenter',
@@ -760,7 +777,7 @@ export class HowToPlayMenu extends BaseMenu {
             ], { ...baseUI }),
 
             this.createPage('Enemy types', [
-                this.createImage({ image: 'firedogStanding', x: cx - 200, y: groundY, anchor: 'bottomCenter' }),
+                this.createPlayerAnimation({ state: 'STANDING', x: cx - 200, y: groundY, fps: 20 }),
                 this.createTextBlock({
                     text: 'There are 5 different types of enemies with special interactions!',
                     x: cx,
@@ -774,9 +791,9 @@ export class HowToPlayMenu extends BaseMenu {
             ]),
 
             this.createPage('Enemy types: Yellow (1)', [
-                this.createImage({ image: 'firedogStunned', x: cx - 200, y: groundY, anchor: 'bottomCenter' }),
+                this.createPlayerAnimation({ state: 'STUNNED', x: cx - 200, y: groundY, fps: 20 }),
                 this.createTextBlock({
-                    text: 'Yellow enemies have a yellow glow!',
+                    text: 'Yellow enemies have a yellowish glow!',
                     x: cx,
                     y: 100,
                     maxW: 600,
@@ -801,9 +818,9 @@ export class HowToPlayMenu extends BaseMenu {
             ]),
 
             this.createPage('Enemy types: Red (2)', [
-                this.createImage({ image: 'firedogHit', x: cx - 200, y: groundY, anchor: 'bottomCenter' }),
+                this.createHitLoopAnimation({ x: cx - 200, y: groundY, fps: 20, cooldownMs: 2000 }),
                 this.createTextBlock({
-                    text: 'Red enemies have a red glow!',
+                    text: 'Red enemies have a reddish glow!',
                     x: cx,
                     y: 100,
                     maxW: 600,
@@ -837,13 +854,13 @@ export class HowToPlayMenu extends BaseMenu {
                     maxW: 400,
                 }),
 
-                this.createStatusTintedImage({
-                    image: 'firedogStanding',
+                this.createAnimatedStatusTintedPlayer({
+                    state: 'STANDING',
                     x: cx - 200,
                     y: groundY,
                     anchor: 'bottomCenter',
                     poisoned: true,
-                    slowed: false,
+                    fps: 20,
                 }),
 
                 this.createStatusParticlesOverlay({
@@ -854,7 +871,7 @@ export class HowToPlayMenu extends BaseMenu {
                 }),
 
                 this.createTextBlock({
-                    text: 'Poison enemies have a green glow!',
+                    text: 'Poison enemies have a greenish glow!',
                     x: cx,
                     y: 100,
                     maxW: 600,
@@ -907,13 +924,13 @@ export class HowToPlayMenu extends BaseMenu {
                     arrowToY: (ty) => ty + 60,
                 }),
 
-                this.createStatusTintedImage({
-                    image: 'firedogStanding',
+                this.createAnimatedStatusTintedPlayer({
+                    state: 'STANDING',
                     x: cx - 200,
                     y: groundY,
                     anchor: 'bottomCenter',
-                    poisoned: false,
                     slowed: true,
+                    fps: 20,
                 }),
 
                 this.createStatusParticlesOverlay({
@@ -924,7 +941,7 @@ export class HowToPlayMenu extends BaseMenu {
                 }),
 
                 this.createTextBlock({
-                    text: 'Slow enemies have a blue glow!',
+                    text: 'Slow enemies have a bluish glow!',
                     x: cx,
                     y: 100,
                     maxW: 600,
@@ -949,10 +966,10 @@ export class HowToPlayMenu extends BaseMenu {
                     arrowToY: (ty) => ty + 80,
                 }),
 
-                this.createImage({ image: 'firedogFrozen', x: cx - 200, y: groundY, anchor: 'bottomCenter' }),
+                this.createFrozenPlayerAnimation({ x: cx - 200, y: groundY }),
 
                 this.createTextBlock({
-                    text: 'Frozen enemies have a cyan glow!',
+                    text: 'Frozen enemies have a cyanish glow!',
                     x: cx,
                     y: 100,
                     maxW: 600,
@@ -969,7 +986,7 @@ export class HowToPlayMenu extends BaseMenu {
         ];
     }
 
-    // ---------------- Enemy showcase ----------------
+    // ---------------- enemy showcase ----------------
     createClimbThread({ x, yTop = 0, yEnd, lineW = 0.4, alpha = 1 }) {
         return {
             draw: (ctx) => {
@@ -1118,7 +1135,7 @@ export class HowToPlayMenu extends BaseMenu {
         return out;
     }
 
-    // ---------------- Page helpers ----------------
+    // ---------------- page helpers ----------------
     _flattenDrawables(drawables) {
         const out = [];
         const push = (v) => {
@@ -1146,7 +1163,7 @@ export class HowToPlayMenu extends BaseMenu {
         return this.getCurrentPage()?.ui || null;
     }
 
-    // ---------------- Demo State Factories ----------------
+    // ---------------- demo State Factories ----------------
     _createEnergyDemoState() {
         return { active: false, timer: 0, value: 35, dir: 'down', exhausted: false };
     }
@@ -1195,9 +1212,10 @@ export class HowToPlayMenu extends BaseMenu {
     _createDashDemoState() {
         return {
             active: false,
-            phase: 'wait',
+            phase: 'wait',   // 'wait' | 'dashing1' | 'afterFirst' | 'dashing2' | 'cooldown'
             timer: 0,
             waitMs: 1000,
+            dashDuration: 180,
             betweenMs: 500,
             secondWindowMs: 7000,
             simulateSecondAtMs: 5000,
@@ -1206,10 +1224,19 @@ export class HowToPlayMenu extends BaseMenu {
             secondWindowRemainingMs: 0,
             energy: 100,
             maxEnergy: 100,
+            // visual
+            playerX: 120,
+            startX: 120,
+            spriteFrameX: 0,
+            spriteFrameTimer: 0,
+            fireArcs: [],
+            fireTimer: 0,
+            ghosts: [],
+            ghostTimer: 0,
         };
     }
 
-    // ---------------- Animated glow sprites ----------------
+    // ---------------- animated glow sprites ----------------
     _createOrGetSpriteDemoState(key, fps = 4, maxFrame = 0) {
         if (!this._spriteDemos) this._spriteDemos = new Map();
 
@@ -1272,6 +1299,13 @@ export class HowToPlayMenu extends BaseMenu {
             ctx.translate(-ccx, -ccy);
         }
 
+        if (o.flip) {
+            const midX = Math.round(dx + w / 2);
+            ctx.translate(midX, 0);
+            ctx.scale(-1, 1);
+            ctx.translate(-midX, 0);
+        }
+
         ctx.drawImage(
             img,
             s.frameX * frameW,
@@ -1303,7 +1337,475 @@ export class HowToPlayMenu extends BaseMenu {
         return { draw: (ctx) => this._drawAnimatedGlowSpriteWithAlpha(ctx, o) };
     }
 
-    // ---------------- Real power entities preview ----------------
+    // ---------------- animated player sprite ----------------
+    static get _PLAYER_ANIM() {
+        return {
+            STANDING: { frameY: 0, maxFrame: 6 },
+            JUMPING: { frameY: 1, maxFrame: 6 },
+            FALLING: { frameY: 2, maxFrame: 6 },
+            RUNNING: { frameY: 3, maxFrame: 8 },
+            DASHING: { frameY: 3, maxFrame: 8 },
+            SITTING: { frameY: 5, maxFrame: 4 },
+            ROLLING: { frameY: 6, maxFrame: 6 },
+            DIVING: { frameY: 6, maxFrame: 6 },
+            STUNNED: { frameY: 4, maxFrame: 10 },
+            HIT: { frameY: 9, maxFrame: 3 },
+        };
+    }
+
+    createPlayerAnimation({ state = 'STANDING', x, y, anchor = 'bottomCenter', fps = 20, flip = false, scale = 1 } = {}) {
+        const cfg = HowToPlayMenu._PLAYER_ANIM[state] ?? HowToPlayMenu._PLAYER_ANIM.STANDING;
+        return this.createAnimatedGlowSprite({
+            image: 'defaultSkin',
+            key: `player_${state}${flip ? '_flip' : ''}_${Math.round(x)}_${Math.round(y)}`,
+            frameW: 100,
+            frameH: 91.3,
+            frameY: cfg.frameY,
+            maxFrame: cfg.maxFrame,
+            fps,
+            w: 100 * scale,
+            h: 91.3 * scale,
+            x,
+            y,
+            anchor,
+            shadowBlur: 0,
+            flip,
+        });
+    }
+
+    createFrozenPlayerAnimation({ x, y, anchor = 'bottomCenter' } = {}) {
+        const FW = 100, FH = 91.3;
+        const hitCfg = HowToPlayMenu._PLAYER_ANIM.HIT;
+        let pulseTimer = 0;
+
+        return {
+            draw: (ctx) => {
+                const dt = Math.max(0, this._dt());
+                pulseTimer += dt;
+
+                const phase = pulseTimer * 0.009;
+                const dip = 0.5 * (1 - Math.cos(phase));
+                let opacity = 0.5 - 0.2 * dip;
+                if (opacity < 0.05) opacity = 0.05;
+                if (opacity > 0.5) opacity = 0.5;
+
+                let dx = this._num(x, 0);
+                let dy = this._num(y, 0);
+                if (anchor === 'bottomCenter') { dx -= FW / 2; dy -= FH; }
+
+                const sprite = this.getAsset('defaultSkin');
+                if (sprite) {
+                    ctx.save();
+                    ctx.shadowBlur = 0;
+                    ctx.drawImage(sprite, 0, hitCfg.frameY * FH, FW, FH, Math.round(dx), Math.round(dy), FW, FH);
+                    ctx.restore();
+                }
+
+                const iceImg = this.getAsset('frozenIce');
+                if (iceImg) {
+                    const iceScale = 1.1;
+                    const iceW = FW * iceScale;
+                    const iceH = FH * iceScale;
+                    const iceX = dx + FW / 2 - iceW / 2;
+                    const iceY = dy + FH / 2 - iceH / 2 + 10;
+                    ctx.save();
+                    ctx.globalAlpha = opacity;
+                    ctx.drawImage(iceImg, Math.round(iceX), Math.round(iceY), Math.round(iceW), Math.round(iceH));
+                    ctx.restore();
+                }
+            },
+        };
+    }
+
+    createHitLoopAnimation({ x, y, anchor = 'bottomCenter', fps = 20, cooldownMs = 2000 } = {}) {
+        const FW = 100, FH = 91.3;
+        const hitCfg = HowToPlayMenu._PLAYER_ANIM.HIT;
+        const standCfg = HowToPlayMenu._PLAYER_ANIM.STANDING;
+        const frameInterval = 1000 / fps;
+
+        let phase = 'hit';
+        let frameX = 0;
+        let frameTimer = 0;
+        let cooldownTimer = 0;
+
+        return {
+            draw: (ctx) => {
+                const dt = Math.max(0, this._dt());
+
+                if (phase === 'hit') {
+                    frameTimer += dt;
+                    while (frameTimer >= frameInterval) {
+                        frameTimer -= frameInterval;
+                        if (frameX < hitCfg.maxFrame) {
+                            frameX++;
+                        } else {
+                            phase = 'standing';
+                            frameX = 0;
+                            frameTimer = 0;
+                            cooldownTimer = 0;
+                            break;
+                        }
+                    }
+                } else {
+                    frameTimer += dt;
+                    while (frameTimer >= frameInterval) {
+                        frameTimer -= frameInterval;
+                        frameX = (frameX < standCfg.maxFrame) ? frameX + 1 : 0;
+                    }
+                    cooldownTimer += dt;
+                    if (cooldownTimer >= cooldownMs) {
+                        phase = 'hit';
+                        frameX = 0;
+                        frameTimer = 0;
+                    }
+                }
+
+                const cfg = phase === 'hit' ? hitCfg : standCfg;
+                let dx = this._num(x, 0);
+                let dy = this._num(y, 0);
+                if (anchor === 'bottomCenter') { dx -= FW / 2; dy -= FH; }
+
+                const sprite = this.getAsset('defaultSkin');
+                if (!sprite) return;
+
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.drawImage(sprite, frameX * FW, cfg.frameY * FH, FW, FH, Math.round(dx), Math.round(dy), FW, FH);
+                ctx.restore();
+            },
+        };
+    }
+
+    _drawAnimatedStatusTintedPlayer(ctx, o) {
+        const img = this.assets?.defaultSkin;
+        if (!img) return;
+
+        const cfg = HowToPlayMenu._PLAYER_ANIM[o.state ?? 'STANDING'] ?? HowToPlayMenu._PLAYER_ANIM.STANDING;
+        const key = `player_tinted_${o.state ?? 'STANDING'}_${Math.round(o.x ?? 0)}_${Math.round(o.y ?? 0)}`;
+        const s = this._createOrGetSpriteDemoState(key, o.fps ?? 20, cfg.maxFrame);
+
+        s.timer += Math.max(0, this._dt());
+        while (s.timer >= s.frameInterval) {
+            s.timer -= s.frameInterval;
+            s.frameX = s.frameX < s.maxFrame ? s.frameX + 1 : 0;
+        }
+
+        const fw = 100, fh = 91.3;
+        const sx = s.frameX * fw;
+        const sy = cfg.frameY * fh;
+        const w = o.w ?? fw, h = o.h ?? fh;
+        let dx = o.x ?? 0, dy = o.y ?? 0;
+        const anchor = o.anchor ?? 'bottomCenter';
+        if (anchor === 'center') { dx -= w / 2; dy -= h / 2; }
+        else if (anchor === 'bottomCenter') { dx -= w / 2; dy -= h; }
+        else if (anchor === 'bottomLeft') { dy -= h; }
+
+        if (!this._playerFrameCanvas) {
+            this._playerFrameCanvas = document.createElement('canvas');
+            this._playerFrameCanvas.width = 100;
+            this._playerFrameCanvas.height = 92;
+        }
+        const fc = this._playerFrameCanvas;
+        const fctx = fc.getContext('2d');
+        fctx.clearRect(0, 0, fc.width, fc.height);
+        fctx.drawImage(img, sx, sy, fw, fh, 0, 0, fc.width, fc.height);
+
+        if (o.poisoned || o.slowed) {
+            fctx.globalCompositeOperation = 'source-atop';
+            fctx.fillStyle = o.poisoned ? 'rgba(0,100,0,0.40)' : 'rgba(0,120,255,0.35)';
+            fctx.fillRect(0, 0, fc.width, fc.height);
+            fctx.globalCompositeOperation = 'source-over';
+        }
+
+        ctx.save();
+        if (o.poisoned) { ctx.shadowColor = 'rgba(0,130,0,1)'; ctx.shadowBlur = 6; }
+        else if (o.slowed) { ctx.shadowColor = 'rgba(0,160,255,1)'; ctx.shadowBlur = 6; }
+        ctx.drawImage(fc, Math.round(dx), Math.round(dy), Math.round(w), Math.round(h));
+        ctx.restore();
+    }
+
+    createAnimatedStatusTintedPlayer(o) {
+        return { draw: (ctx) => this._drawAnimatedStatusTintedPlayer(ctx, o) };
+    }
+
+    // ---------------- sequence demos (rolling / diving / dash) ----------------
+    _spawnDemoFireArc(mouthX, mouthY, playerX) {
+        const forward = 18 + Math.random() * 50;
+        let spawnX = mouthX + forward;
+        if (spawnX > this.game.width) spawnX = mouthX - (8 + Math.random() * 24);
+
+        const trail = 1.6 + Math.random() * 2.2;
+        const spread = (Math.random() * 24 - 12) * (Math.PI / 180);
+
+        return {
+            x: spawnX,
+            y: mouthY + (Math.random() * 16 - 8),
+            size: 45 + Math.random() * 40,
+            speedX: Math.cos(spread) * trail,
+            speedY: (1.4 + Math.random() * 2.4) * (Math.random() < 0.5 ? 1 : -1),
+            drag: 0.985 + Math.random() * 0.01,
+            damp: 0.985 + Math.random() * 0.01,
+            angle: Math.random() * Math.PI * 2,
+            va: Math.random() * 0.14 - 0.07,
+            wobbleAmp: 0.4 + Math.random() * 0.7,
+            age: 0,
+            followMs: 130 + Math.random() * 90,
+            followFactor: 0.95,
+            lastPlayerX: playerX,
+        };
+    }
+
+    createDashSequenceDemo() {
+        const FW = 100, FH = 91.3;
+        const ROW_RUNNING = 3, ROW_STANDING = 0;
+
+        return {
+            draw: (ctx) => {
+                const d = this._demoDash;
+                if (!d || !d.active) return;
+
+                const groundY = this.game.height - this.game.groundMargin;
+                const img = this.assets?.defaultSkin;
+                if (!img) return;
+
+                const isDashing = d.phase === 'dashing1' || d.phase === 'dashing2';
+                const spriteRow = isDashing ? ROW_RUNNING : ROW_STANDING;
+
+                for (const g of [...(d.ghosts || [])].reverse()) {
+                    ctx.save();
+                    ctx.globalAlpha = g.alpha;
+                    ctx.drawImage(img, g.frameX * FW, g.frameY * FH, FW, FH,
+                        Math.round(g.x - FW / 2), Math.round(groundY - FH), FW, FH);
+                    ctx.restore();
+                }
+
+                const sx = (d.spriteFrameX || 0) * FW;
+                const sy = spriteRow * FH;
+                ctx.drawImage(img, sx, sy, FW, FH,
+                    Math.round(d.playerX - FW / 2), Math.round(groundY - FH), FW, FH);
+
+                const fireImg = document.getElementById('fire');
+                if (fireImg) {
+                    for (const arc of (d.fireArcs || [])) {
+                        ctx.save();
+                        ctx.translate(arc.x, arc.y);
+                        ctx.rotate(arc.angle);
+                        ctx.drawImage(fireImg, -arc.size * 0.5, -arc.size * 0.5, arc.size, arc.size);
+                        ctx.restore();
+                    }
+                }
+            },
+        };
+    }
+
+    createRollingDemo() {
+        const FW = 100, FH = 91.3;
+        const ROW_ROLLING = 6, MAX_FRAME = 6;
+        const FRAME_INTERVAL = 1000 / 20;
+        const FIRE_INTERVAL_MS = 1000 / 31;
+
+        return {
+            draw: (ctx) => {
+                if (!this._demoRollingSeq) {
+                    this._demoRollingSeq = { fireArcs: [], fireTimer: 0, spriteFrameX: 0, spriteFrameTimer: 0 };
+                }
+                const s = this._demoRollingSeq;
+                const dt = Math.max(0, this._dt());
+                const dtScale = dt / 16;
+                const groundY = this.game.height - this.game.groundMargin;
+                const playerCX = this.game.width / 2 - 10;
+                const playerTopY = groundY - FH;
+                const fireCX = playerCX;
+                const fireCY = playerTopY + FH * 0.5;
+
+                s.spriteFrameTimer += dt;
+                while (s.spriteFrameTimer >= FRAME_INTERVAL) {
+                    s.spriteFrameTimer -= FRAME_INTERVAL;
+                    s.spriteFrameX = (s.spriteFrameX + 1) % (MAX_FRAME + 1);
+                }
+
+                const GAME_SPEED = this.game.normalSpeed ?? 6;
+
+                s.fireTimer += dt;
+                while (s.fireTimer >= FIRE_INTERVAL_MS) {
+                    s.fireTimer -= FIRE_INTERVAL_MS;
+                    s.fireArcs.push({
+                        x: fireCX,
+                        y: fireCY,
+                        size: Math.random() * 100 + 50,
+                        speedX: 1,
+                        speedY: 1,
+                        angle: 0,
+                        va: Math.random() * 0.2 - 0.1,
+                    });
+                }
+
+                s.fireArcs = this._stepFireArcs(s.fireArcs, dtScale, GAME_SPEED);
+
+                const img = this.assets?.defaultSkin;
+                if (!img) return;
+
+                ctx.drawImage(img,
+                    s.spriteFrameX * FW, ROW_ROLLING * FH, FW, FH,
+                    Math.round(playerCX - FW / 2), Math.round(playerTopY), FW, FH);
+
+                const fireImg = document.getElementById('fire');
+                if (fireImg) {
+                    for (const arc of s.fireArcs) {
+                        ctx.save();
+                        ctx.translate(arc.x, arc.y);
+                        ctx.rotate(arc.angle);
+                        ctx.drawImage(fireImg, -arc.size * 0.5, -arc.size * 0.5, arc.size, arc.size);
+                        ctx.restore();
+                    }
+                }
+            },
+        };
+    }
+
+    createDivingSequenceDemo() {
+        const FW = 100, FH = 91.3;
+        const ROW_STANDING = 0, ROW_JUMPING = 1, ROW_DIVING = 6;
+        const MAX_FRAME_STAND = 6, MAX_FRAME_JUMP = 6, MAX_FRAME_DIVE = 6;
+        const FRAME_INTERVAL = 1000 / 20;
+        const FIRE_INTERVAL_MS = 1000 / 31;
+        const STAND_MS = 1200, SETTLE_MS = 900;
+
+        return {
+            draw: (ctx) => {
+                if (!this._demoDivingSeq) {
+                    const groundY = this.game.height - this.game.groundMargin;
+                    this._demoDivingSeq = {
+                        phase: 'stand',   // 'stand' | 'jump' | 'dive' | 'settle'
+                        timer: 0,
+                        playerTopY: groundY - FH,
+                        vy: 0,
+                        fireArcs: [],
+                        fireTimer: 0,
+                        splashArcs: [],
+                        spriteFrameX: 0,
+                        spriteFrameTimer: 0,
+                    };
+                }
+                const s = this._demoDivingSeq;
+                const dt = Math.max(0, this._dt());
+                const dtScale = dt / 16;
+                const groundY = this.game.height - this.game.groundMargin;
+                const groundTopY = groundY - FH;
+                const playerCX = this.game.width / 2;
+
+                s.timer += dt;
+
+                if (s.phase === 'stand') {
+                    s.playerTopY = groundTopY;
+                    s.vy = 0;
+                    if (s.timer >= STAND_MS) {
+                        s.phase = 'jump';
+                        s.timer = 0;
+                        s.vy = -27;
+                        s.spriteFrameX = 0;
+                        s.fireArcs = [];
+                    }
+                } else if (s.phase === 'jump') {
+                    s.playerTopY += s.vy * dtScale;
+                    s.vy += 1 * dtScale;
+                    if (s.vy > 1) {
+                        s.phase = 'dive';
+                        s.vy = 15;
+                        s.timer = 0;
+                        s.fireTimer = 0;
+                        s.spriteFrameX = 0;
+                    }
+                } else if (s.phase === 'dive') {
+                    s.playerTopY += s.vy * dtScale;
+                    s.vy += 1 * dtScale;
+
+                    s.fireTimer += dt;
+                    while (s.fireTimer >= FIRE_INTERVAL_MS) {
+                        s.fireTimer -= FIRE_INTERVAL_MS;
+                        s.fireArcs.push({
+                            x: playerCX,
+                            y: s.playerTopY + FH * 0.5,
+                            size: Math.random() * 100 + 50,
+                            speedX: 1, speedY: 1, angle: 0,
+                            va: Math.random() * 0.2 - 0.1,
+                        });
+                    }
+
+                    if (s.playerTopY >= groundTopY) {
+                        s.playerTopY = groundTopY;
+                        s.phase = 'settle';
+                        s.timer = 0;
+                        s.fireTimer = 0;
+                        const spawnX = playerCX - FW / 2 - 10;
+                        const spawnY = groundTopY;
+                        for (let i = 0; i < 30; i++) {
+                            const size = Math.random() * 40 + 60;
+                            s.splashArcs.push({
+                                x: spawnX + size * 0.4,
+                                y: spawnY + size * 0.5,
+                                size,
+                                speedX: Math.random() * 6 - 4,
+                                speedY: Math.random() * 2 + 2,
+                                gravity: 0,
+                            });
+                        }
+                    }
+                } else if (s.phase === 'settle') {
+                    s.playerTopY = groundTopY;
+                    if (s.timer >= SETTLE_MS) {
+                        s.phase = 'stand';
+                        s.timer = 0;
+                        s.spriteFrameX = 0;
+                    }
+                }
+
+                s.fireArcs = this._stepFireArcs(s.fireArcs, dtScale);
+
+                for (const arc of s.splashArcs) {
+                    arc.x -= arc.speedX * dtScale;
+                    arc.y -= arc.speedY * dtScale;
+                    arc.size *= Math.pow(0.97, dtScale);
+                    arc.y += arc.gravity * dtScale;
+                    arc.gravity += 0.1 * dtScale;
+                }
+                s.splashArcs = s.splashArcs.filter(a => a.size >= 0.5);
+
+                const spriteRow = s.phase === 'jump' ? ROW_JUMPING :
+                    s.phase === 'dive' ? ROW_DIVING : ROW_STANDING;
+                const maxFrame = s.phase === 'jump' ? MAX_FRAME_JUMP :
+                    s.phase === 'dive' ? MAX_FRAME_DIVE : MAX_FRAME_STAND;
+                s.spriteFrameTimer += dt;
+                while (s.spriteFrameTimer >= FRAME_INTERVAL) {
+                    s.spriteFrameTimer -= FRAME_INTERVAL;
+                    s.spriteFrameX = (s.spriteFrameX + 1) % (maxFrame + 1);
+                }
+
+                const img = this.assets?.defaultSkin;
+                if (!img) return;
+
+                ctx.drawImage(img,
+                    s.spriteFrameX * FW, spriteRow * FH, FW, FH,
+                    Math.round(playerCX - FW / 2), Math.round(s.playerTopY), FW, FH);
+
+                const fireImg = document.getElementById('fire');
+                if (fireImg) {
+                    for (const arc of s.splashArcs) {
+                        ctx.drawImage(fireImg, arc.x, arc.y, arc.size, arc.size);
+                    }
+                    for (const arc of s.fireArcs) {
+                        ctx.save();
+                        ctx.translate(arc.x, arc.y);
+                        ctx.rotate(arc.angle);
+                        ctx.drawImage(fireImg, -arc.size * 0.5, -arc.size * 0.5, arc.size, arc.size);
+                        ctx.restore();
+                    }
+                }
+            },
+        };
+    }
+
+    // ---------------- real power entities preview ----------------
     _createPowerPreviewIfNeeded() {
         if (this._powerPreview) return;
 
@@ -1350,7 +1852,7 @@ export class HowToPlayMenu extends BaseMenu {
         };
     }
 
-    // ---------------- Energy demo UI-only ----------------
+    // ---------------- energy demo UI-only ----------------
     _resetEnergyDemo(cfg) {
         const safeStart = Number.isFinite(Number(cfg?.start)) ? Number(cfg.start) : 35;
         const e = this._demoEnergy;
@@ -1413,7 +1915,7 @@ export class HowToPlayMenu extends BaseMenu {
         return { maxEnergy: 100, energy: value, isEnergyExhausted: e.exhausted };
     }
 
-    // ---------------- Fireball demo UI-only ----------------
+    // ---------------- fireball demo UI-only ----------------
     _resetFireballDemo(cfg) {
         const maxEnergy = Number.isFinite(Number(cfg?.maxEnergy)) ? Number(cfg.maxEnergy) : 100;
         const startEnergy = Number.isFinite(Number(cfg?.startEnergy)) ? Number(cfg.startEnergy) : maxEnergy;
@@ -1529,7 +2031,7 @@ export class HowToPlayMenu extends BaseMenu {
         };
     }
 
-    // ---------------- Timed phase helpers (Invisible/Diving) ----------------
+    // ---------------- timed phase helpers (invisible/diving) ----------------
     _resetTimedPhases(state, cfg, defaults) {
         const waitMs = Math.max(0, this._num(cfg?.waitMs, defaults.waitMs));
         const activeMs = Math.max(0, this._num(cfg?.activeMs, defaults.activeMs));
@@ -1579,7 +2081,7 @@ export class HowToPlayMenu extends BaseMenu {
         return dt;
     }
 
-    // ---------------- Invisible demo UI-only ----------------
+    // ---------------- invisible demo UI-only ----------------
     _resetInvisibleDemo(cfg) {
         this._resetTimedPhases(this._demoInvisible, cfg, { waitMs: 1000, activeMs: 5000, cooldownMs: 35000 });
         this._demoInvisibleColourOpacity = 0;
@@ -1594,6 +2096,10 @@ export class HowToPlayMenu extends BaseMenu {
 
         const i = this._demoInvisible;
         this._updateTimedPhases(i, deltaTime, cfg, { waitMs: 1000, activeMs: 5000, cooldownMs: 35000 });
+
+        if (i.phase === 'cooldown' && i.cooldownElapsedMs >= 10000) {
+            this._resetInvisibleDemo(cfg);
+        }
 
         const isActive = i.phase === 'active';
         this._drawInvisibleTintInternal(isActive);
@@ -1619,152 +2125,6 @@ export class HowToPlayMenu extends BaseMenu {
         };
     }
 
-    // ---------------- Diving demo UI-only ----------------
-    _resetDivingDemo(cfg) {
-        this._resetTimedPhases(this._demoDiving, cfg, { waitMs: 2000, activeMs: 500, cooldownMs: 300 });
-    }
-
-    _updateDivingDemo(deltaTime, cfg) {
-        if (!cfg || cfg.enabled !== true) return null;
-
-        if (this._lastPageIndex !== this.currentPage || !this._demoDiving.active) {
-            this._resetDivingDemo(cfg);
-        }
-
-        const d = this._demoDiving;
-        this._updateTimedPhases(d, deltaTime, cfg, { waitMs: 2000, activeMs: 500, cooldownMs: 300 });
-
-        const divingState = this.game.player?.states?.[5];
-        const isActive = d.phase === 'active';
-        const inCooldown = d.phase === 'cooldown';
-
-        return {
-            currentState: isActive && divingState
-                ? divingState
-                : (this.game.player?.states?.[8] ?? this.game.player?.currentState),
-            divingCooldown: d.cooldownMs,
-            divingTimer: inCooldown ? d.cooldownElapsedMs : d.cooldownMs,
-        };
-    }
-
-    // ---------------- Dash demo UI-only ----------------
-    _resetDashDemo(cfg) {
-        const d = this._demoDash;
-
-        d.active = true;
-        d.phase = 'wait';
-        d.timer = 0;
-
-        d.waitMs = Math.max(0, this._num(cfg?.waitMs, 1000));
-        d.betweenMs = Math.max(0, this._num(cfg?.betweenMs, 500));
-        d.secondWindowMs = Math.max(0, this._num(cfg?.secondWindowMs, 7000));
-        d.simulateSecondAtMs = Math.max(0, this._num(cfg?.simulateSecondAtMs, 2000));
-        d.cooldownMs = Math.max(0, this._num(cfg?.cooldownMs, 60000));
-
-        d.betweenElapsedMs = d.betweenMs;
-        d.secondWindowRemainingMs = 0;
-
-        const maxEnergy = Number.isFinite(Number(cfg?.maxEnergy)) ? Number(cfg.maxEnergy) : 100;
-        const startEnergy = Number.isFinite(Number(cfg?.startEnergy)) ? Number(cfg.startEnergy) : maxEnergy;
-
-        d.maxEnergy = maxEnergy;
-        d.energy = Math.min(maxEnergy, Math.max(0, startEnergy));
-    }
-
-    _updateDashDemo(deltaTime, cfg) {
-        if (!cfg || cfg.enabled !== true) return null;
-
-        if (this._lastPageIndex !== this.currentPage || !this._demoDash.active) {
-            this._resetDashDemo(cfg);
-        }
-
-        const d = this._demoDash;
-        const dt = Math.max(0, Number(deltaTime) || 0);
-        const dtSec = dt / 1000;
-
-        d.waitMs = Math.max(0, this._num(cfg?.waitMs, d.waitMs || 1000));
-        d.betweenMs = Math.max(0, this._num(cfg?.betweenMs, d.betweenMs || 500));
-        d.secondWindowMs = Math.max(0, this._num(cfg?.secondWindowMs, d.secondWindowMs || 7000));
-        d.simulateSecondAtMs = Math.max(0, this._num(cfg?.simulateSecondAtMs, d.simulateSecondAtMs || 2000));
-        d.cooldownMs = Math.max(0, this._num(cfg?.cooldownMs, d.cooldownMs || 60000));
-
-        const maxEnergy = this._num(cfg?.maxEnergy, d.maxEnergy ?? 100);
-        d.maxEnergy = maxEnergy;
-
-        const energyCost = this._num(cfg?.energyCost, 10);
-        const regenPerSec = this._num(cfg?.regenPerSec, 5.7);
-
-        d.energy = Math.min(
-            maxEnergy,
-            (Number.isFinite(Number(d.energy)) ? d.energy : maxEnergy) + Math.max(0, regenPerSec) * dtSec,
-        );
-
-        const canSpend = () => d.energy >= (energyCost - 1e-6);
-        const spend = () => { d.energy = Math.max(0, d.energy - energyCost); };
-
-        if (d.phase === 'wait') {
-            d.timer += dt;
-
-            if (d.timer >= d.waitMs) {
-                if (canSpend()) spend();
-
-                d.phase = 'afterFirst';
-                d.timer = 0;
-                d.betweenElapsedMs = 0;
-                d.secondWindowRemainingMs = d.secondWindowMs;
-            }
-        } else if (d.phase === 'afterFirst') {
-            d.betweenElapsedMs = Math.min(d.betweenMs, d.betweenElapsedMs + dt);
-            d.secondWindowRemainingMs = Math.max(0, d.secondWindowRemainingMs - dt);
-            d.timer += dt;
-
-            if (d.secondWindowRemainingMs <= 0) {
-                d.phase = 'cooldown';
-                d.timer = 0;
-                d.secondWindowRemainingMs = 0;
-            } else {
-                const betweenReady = d.betweenElapsedMs >= (d.betweenMs - 1e-6);
-                if (betweenReady && d.timer >= d.simulateSecondAtMs) {
-                    if (canSpend()) spend();
-                    d.phase = 'cooldown';
-                    d.timer = 0;
-                    d.secondWindowRemainingMs = 0;
-                    d.betweenElapsedMs = 0;
-                }
-            }
-        } else if (d.phase === 'cooldown') {
-            d.timer += dt;
-            if (d.timer >= d.cooldownMs) {
-                d.phase = 'wait';
-                d.timer = 0;
-                d.betweenElapsedMs = d.betweenMs;
-                d.secondWindowRemainingMs = 0;
-            }
-        }
-
-        const awaitingSecond = d.phase === 'afterFirst';
-        const inCooldown = d.phase === 'cooldown';
-
-        const dashCharges = inCooldown ? 0 : (awaitingSecond ? 1 : 2);
-        const dashTimer = inCooldown ? d.timer : d.cooldownMs;
-        const dashBetweenTimer = awaitingSecond ? d.betweenElapsedMs : d.betweenMs;
-
-        return {
-            maxEnergy: d.maxEnergy ?? 100,
-            energy: d.energy ?? (d.maxEnergy ?? 100),
-            isEnergyExhausted: false,
-
-            dashCharges,
-            dashAwaitingSecond: awaitingSecond,
-            dashCooldown: d.cooldownMs,
-            dashTimer,
-            dashBetweenCooldown: d.betweenMs,
-            dashBetweenTimer,
-            dashSecondWindowTimer: awaitingSecond ? d.secondWindowRemainingMs : 0,
-        };
-    }
-
-    // ---------------- Invisible tint (menu overlay) ----------------
     _drawInvisibleTintInternal(isInvisible) {
         if (isInvisible) {
             this._demoInvisibleColourOpacity = screenColourFadeIn(this._demoInvisibleColourOpacity, 0.014);
@@ -1784,7 +2144,269 @@ export class HowToPlayMenu extends BaseMenu {
         ctx.restore();
     }
 
-    // ---------------- Player patching ----------------
+    // ---------------- diving demo UI-only ----------------
+    _resetDivingDemo(cfg) {
+        this._resetTimedPhases(this._demoDiving, cfg, { waitMs: 2000, activeMs: 500, cooldownMs: 300 });
+    }
+
+    _updateDivingDemo(_deltaTime, cfg) {
+        if (!cfg || cfg.enabled !== true) return null;
+
+        const COOLDOWN_MS = this._num(cfg?.cooldownMs, 300);
+        const seq = this._demoDivingSeq;
+        const divingState = this.game.player?.states?.[5];
+
+        const isActive = seq?.phase === 'dive';
+        const inCooldown = seq?.phase === 'settle';
+        const cooldownElapsed = inCooldown ? Math.min(seq.timer, COOLDOWN_MS) : COOLDOWN_MS;
+
+        return {
+            currentState: isActive && divingState
+                ? divingState
+                : (this.game.player?.states?.[8] ?? this.game.player?.currentState),
+            divingCooldown: COOLDOWN_MS,
+            divingTimer: cooldownElapsed,
+        };
+    }
+
+    // ---------------- dash demo UI-only ----------------
+    _resetDashDemo(cfg) {
+        const d = this._demoDash;
+
+        d.active = true;
+        d.phase = 'wait';
+        d.timer = 0;
+
+        d.waitMs = Math.max(0, this._num(cfg?.waitMs, 1000));
+        d.betweenMs = Math.max(0, this._num(cfg?.betweenMs, 500));
+        d.secondWindowMs = Math.max(0, this._num(cfg?.secondWindowMs, 7000));
+        d.simulateSecondAtMs = Math.max(0, this._num(cfg?.simulateSecondAtMs, 2000));
+        d.cooldownMs = Math.max(0, this._num(cfg?.cooldownMs, 60000));
+
+        d.betweenElapsedMs = d.betweenMs;
+        d.secondWindowRemainingMs = 0;
+        d.dashCooldownElapsedMs = d.cooldownMs;
+
+        d.playerX = d.startX;
+        d.spriteFrameX = 0;
+        d.spriteFrameTimer = 0;
+        d.fireArcs = [];
+        d.fireTimer = 0;
+        d.ghosts = [];
+        d.ghostTimer = 0;
+
+        const maxEnergy = Number.isFinite(Number(cfg?.maxEnergy)) ? Number(cfg.maxEnergy) : 100;
+        const startEnergy = Number.isFinite(Number(cfg?.startEnergy)) ? Number(cfg.startEnergy) : maxEnergy;
+
+        d.maxEnergy = maxEnergy;
+        d.energy = Math.min(maxEnergy, Math.max(0, startEnergy));
+    }
+
+    _updateDashDemo(deltaTime, cfg) {
+        if (!cfg || cfg.enabled !== true) return null;
+
+        if (this._lastPageIndex !== this.currentPage || !this._demoDash.active) {
+            this._resetDashDemo(cfg);
+        }
+
+        const d = this._demoDash;
+        const dt = Math.max(0, Number(deltaTime) || 0);
+        const dtSec = dt / 1000;
+        const dtScale = dt / 16;
+
+        d.waitMs = Math.max(0, this._num(cfg?.waitMs, d.waitMs || 1000));
+        d.betweenMs = Math.max(0, this._num(cfg?.betweenMs, d.betweenMs || 500));
+        d.secondWindowMs = Math.max(0, this._num(cfg?.secondWindowMs, d.secondWindowMs || 7000));
+        d.simulateSecondAtMs = Math.max(0, this._num(cfg?.simulateSecondAtMs, d.simulateSecondAtMs || 5000));
+        d.cooldownMs = Math.max(0, this._num(cfg?.cooldownMs, d.cooldownMs || 60000));
+
+        const maxEnergy = this._num(cfg?.maxEnergy, d.maxEnergy ?? 100);
+        d.maxEnergy = maxEnergy;
+        const energyCost = this._num(cfg?.energyCost, 15);
+        const regenPerSec = this._num(cfg?.regenPerSec, 5.7);
+
+        d.energy = Math.min(maxEnergy,
+            (Number.isFinite(Number(d.energy)) ? d.energy : maxEnergy) + Math.max(0, regenPerSec) * dtSec);
+
+        const canSpend = () => d.energy >= (energyCost - 1e-6);
+        const spend = () => { d.energy = Math.max(0, d.energy - energyCost); };
+
+        const DASH1_VX = 1.8;
+        const DASH2_VX = 3.15;
+        const DASH_DURATION = 180;
+        const FIRE_INTERVAL_MS = 16;
+        const GHOST_INTERVAL_MS = 20;
+        const MAX_GHOSTS = 4;
+        const FH = 91.3;
+        const ROW_RUNNING = 3;
+        const FRAME_INTERVAL_DASH = 1000 / 20;
+        const FRAME_INTERVAL_IDLE = 1000 / 20;
+        const MAX_FRAME_RUNNING = 8;
+        const MAX_FRAME_STANDING = 6;
+        const ROW_STANDING = 0;
+
+        const isDashing = d.phase === 'dashing1' || d.phase === 'dashing2';
+        const groundY = this.game.height - this.game.groundMargin;
+        const mouthX = d.playerX + 48;
+        const mouthY = groundY - FH + FH * 0.52;
+
+        // ---- sprite frame ----
+        const spriteRow = isDashing ? ROW_RUNNING : ROW_STANDING;
+        const maxFrame = isDashing ? MAX_FRAME_RUNNING : MAX_FRAME_STANDING;
+        const frameInterval = isDashing ? FRAME_INTERVAL_DASH : FRAME_INTERVAL_IDLE;
+        if (!Array.isArray(d.fireArcs)) d.fireArcs = [];
+        if (!Array.isArray(d.ghosts)) d.ghosts = [];
+        d.spriteFrameTimer = (d.spriteFrameTimer || 0) + dt;
+        while (d.spriteFrameTimer >= frameInterval) {
+            d.spriteFrameTimer -= frameInterval;
+            d.spriteFrameX = ((d.spriteFrameX || 0) + 1) % (maxFrame + 1);
+        }
+
+        // ---- fire and ghost spawning during dash phases ----
+        if (isDashing) {
+            d.fireTimer = (d.fireTimer || 0) + dt;
+            while (d.fireTimer >= FIRE_INTERVAL_MS) {
+                d.fireTimer -= FIRE_INTERVAL_MS;
+                d.fireArcs.push(this._spawnDemoFireArc(mouthX, mouthY, d.playerX));
+                d.fireArcs.push(this._spawnDemoFireArc(mouthX, mouthY, d.playerX));
+                if (Math.random() < 0.35) {
+                    d.fireArcs.push(this._spawnDemoFireArc(mouthX, mouthY, d.playerX));
+                    d.fireArcs.push(this._spawnDemoFireArc(mouthX, mouthY, d.playerX));
+                }
+            }
+            d.ghostTimer = (d.ghostTimer || 0) + dt;
+            while (d.ghostTimer >= GHOST_INTERVAL_MS) {
+                d.ghostTimer -= GHOST_INTERVAL_MS;
+                d.ghosts.unshift({ x: d.playerX, frameX: d.spriteFrameX, frameY: spriteRow, alpha: 0.55 });
+                if (d.ghosts.length > MAX_GHOSTS) d.ghosts.pop();
+            }
+        }
+
+        const GAME_SPEED = this.game.normalSpeed ?? 6;
+
+        // ---- update fire arcs ----
+        for (const arc of d.fireArcs) {
+            arc.age += dt;
+            if (arc.age < arc.followMs) {
+                arc.x += (d.playerX - arc.lastPlayerX) * arc.followFactor;
+                arc.lastPlayerX = d.playerX;
+            }
+            arc.speedX *= Math.pow(arc.drag, dtScale);
+            arc.speedY *= Math.pow(arc.damp, dtScale);
+            arc.x -= (arc.speedX + GAME_SPEED) * dtScale;
+            arc.y -= arc.speedY * dtScale;
+            arc.size *= Math.pow(0.97, dtScale);
+            arc.angle += arc.va * dtScale;
+            arc.x += Math.sin(arc.angle * 4) * arc.wobbleAmp;
+        }
+        d.fireArcs = d.fireArcs.filter(a => a.size >= 0.5);
+
+        // ---- update ghosts ----
+        for (const g of d.ghosts) g.alpha = Math.max(0, g.alpha - 0.06 * dtScale);
+        d.ghosts = d.ghosts.filter(g => g.alpha > 0.02);
+
+        // ---- phase transitions ----
+        d.timer += dt;
+
+        if (d.phase === 'wait') {
+            if (d.timer >= d.waitMs) {
+                if (canSpend()) spend();
+                d.phase = 'dashing1';
+                d.timer = 0;
+                d.fireTimer = 0;
+                d.ghostTimer = 0;
+                d.spriteFrameX = 0;
+                d.playerX = d.startX;
+                d.betweenElapsedMs = 0;
+            }
+        } else if (d.phase === 'dashing1') {
+            d.playerX += DASH1_VX * dt;
+            d.betweenElapsedMs = Math.min(d.betweenMs, d.betweenElapsedMs + dt);
+            if (d.timer >= DASH_DURATION) {
+                d.phase = 'afterFirst';
+                d.timer = 0;
+                d.secondWindowRemainingMs = d.secondWindowMs;
+            }
+        } else if (d.phase === 'afterFirst') {
+            d.betweenElapsedMs = Math.min(d.betweenMs, d.betweenElapsedMs + dt);
+            d.secondWindowRemainingMs = Math.max(0, d.secondWindowRemainingMs - dt);
+
+            if (d.secondWindowRemainingMs <= 0) {
+                d.phase = 'cooldown';
+                d.timer = 0;
+                d.playerX = d.startX;
+            } else {
+                const betweenReady = d.betweenElapsedMs >= (d.betweenMs - 1e-6);
+                if (betweenReady && d.timer >= d.simulateSecondAtMs) {
+                    if (canSpend()) spend();
+                    d.phase = 'dashing2';
+                    d.timer = 0;
+                    d.dashCooldownElapsedMs = 0;
+                    d.fireTimer = 0;
+                    d.ghostTimer = 0;
+                    d.spriteFrameX = 0;
+                }
+            }
+        } else if (d.phase === 'dashing2') {
+            d.playerX += DASH2_VX * dt;
+            d.dashCooldownElapsedMs = Math.min(d.cooldownMs, d.dashCooldownElapsedMs + dt);
+            if (d.timer >= DASH_DURATION) {
+                d.phase = 'stopped';
+                d.timer = 0;
+                d.betweenElapsedMs = 0;
+                d.secondWindowRemainingMs = 0;
+                d.spriteFrameX = 0;
+            }
+        } else if (d.phase === 'stopped') {
+            d.dashCooldownElapsedMs = Math.min(d.cooldownMs, d.dashCooldownElapsedMs + dt);
+            if (d.timer >= 10000) {
+                d.phase = 'wait';
+                d.timer = 0;
+                d.betweenElapsedMs = d.betweenMs;
+                d.dashCooldownElapsedMs = d.cooldownMs;
+                d.secondWindowRemainingMs = 0;
+                d.playerX = d.startX;
+                d.energy = d.maxEnergy;
+                d.fireArcs = [];
+                d.ghosts = [];
+            }
+        } else if (d.phase === 'cooldown') {
+            if (d.timer >= d.cooldownMs) {
+                d.phase = 'wait';
+                d.timer = 0;
+                d.betweenElapsedMs = d.betweenMs;
+                d.secondWindowRemainingMs = 0;
+                d.playerX = d.startX;
+                d.fireArcs = [];
+                d.ghosts = [];
+            }
+        }
+
+        const awaitingSecond = d.phase === 'afterFirst';
+        const inCooldown = d.phase === 'cooldown';
+        const inDashing1 = d.phase === 'dashing1';
+        const inDashing2 = d.phase === 'dashing2';
+        const inStopped = d.phase === 'stopped';
+
+        const dashCharges = (inCooldown || inDashing2 || inStopped) ? 0 : (awaitingSecond || inDashing1) ? 1 : 2;
+        const dashTimer = inCooldown ? d.timer : (inDashing2 || inStopped) ? d.dashCooldownElapsedMs : d.cooldownMs;
+        const dashBetweenTimer = (awaitingSecond || inDashing1) ? d.betweenElapsedMs : d.betweenMs;
+
+        return {
+            maxEnergy: d.maxEnergy ?? 100,
+            energy: d.energy ?? (d.maxEnergy ?? 100),
+            isEnergyExhausted: false,
+            dashCharges,
+            dashAwaitingSecond: awaitingSecond,
+            dashCooldown: d.cooldownMs,
+            dashTimer,
+            dashBetweenCooldown: d.betweenMs,
+            dashBetweenTimer,
+            dashSecondWindowTimer: awaitingSecond ? d.secondWindowRemainingMs : 0,
+        };
+    }
+
+    // ---------------- player patching ----------------
     _applyPatchToPlayer(patch) {
         const player = this.game.player;
         if (!player || !patch || typeof patch !== 'object') return null;
@@ -1865,7 +2487,7 @@ export class HowToPlayMenu extends BaseMenu {
         };
     }
 
-    // ---------------- Draw primitives + factories ----------------
+    // ---------------- draw primitives + factories ----------------
     drawImage(ctx, img, x, y, opts = {}) {
         if (!img) return;
 
@@ -2162,49 +2784,104 @@ export class HowToPlayMenu extends BaseMenu {
     }
 
     createInvisibleDemoPlayerImage(o) {
+        const cfg = HowToPlayMenu._PLAYER_ANIM[o.state ?? 'STANDING'] ?? HowToPlayMenu._PLAYER_ANIM.STANDING;
+        const spriteOpts = {
+            image: 'defaultSkin',
+            key: `player_invisible_${o.state ?? 'STANDING'}_${Math.round(o.x ?? 0)}_${Math.round(o.y ?? 0)}`,
+            frameW: 100, frameH: 91.3,
+            frameY: cfg.frameY, maxFrame: cfg.maxFrame,
+            fps: o.fps ?? 20,
+            w: 100 * (o.scale ?? 1), h: 91.3 * (o.scale ?? 1),
+            x: o.x, y: o.y,
+            anchor: o.anchor ?? 'bottomCenter',
+            shadowBlur: 0,
+        };
         return {
             draw: (ctx) => {
-                const img = this.getAsset(o.image);
-                if (!img) return;
-
                 const active = this._demoInvisible?.phase === 'active';
                 const alpha = active ? (Number.isFinite(Number(o.activeAlpha)) ? Number(o.activeAlpha) : 0.5) : 1;
-
                 ctx.save();
                 ctx.globalAlpha = alpha;
-                this.drawImage(ctx, img, o.x, o.y, o);
+                this._drawAnimatedGlowSprite(ctx, spriteOpts);
                 ctx.restore();
             },
         };
     }
 
     createEnergyDemoPlayerImage(o) {
+        const FW = 100, FH = 91.3;
+        const FIRE_INTERVAL_MS = 1000 / 31;
+
         return {
             draw: (ctx) => {
                 const e = this._demoEnergy;
                 if (!e || !e.active) return;
 
                 const goingDown = (e.dir || 'down') === 'down';
-                const pick = (k) => (goingDown ? o[`down${k}`] : o[`up${k}`]);
+                const state = goingDown ? (o.downState ?? 'ROLLING') : (o.upState ?? 'STANDING');
+                const cfg = HowToPlayMenu._PLAYER_ANIM[state] ?? HowToPlayMenu._PLAYER_ANIM.STANDING;
+                const x = goingDown ? (o.downX ?? o.x ?? 0) : (o.upX ?? o.x ?? 0);
+                const y = goingDown ? (o.downY ?? o.y ?? 0) : (o.upY ?? o.y ?? 0);
 
-                const imgName = goingDown ? (o.downImage || o.image) : (o.upImage || o.image);
-                const img = this.getAsset(imgName);
-                if (!img) return;
+                const dt = Math.max(0, this._dt());
+                const dtScale = dt / 16;
+                const GAME_SPEED = this.game.normalSpeed ?? 6;
 
-                const x = Number.isFinite(Number(pick('X'))) ? Number(pick('X')) : (Number(o.x) || 0);
-                const y = Number.isFinite(Number(pick('Y'))) ? Number(pick('Y')) : (Number(o.y) || 0);
+                const isRolling = state === 'ROLLING';
+                if (isRolling) {
+                    if (!this._demoEnergyFireSeq) {
+                        this._demoEnergyFireSeq = { fireArcs: [], fireTimer: 0 };
+                    }
+                    const fs = this._demoEnergyFireSeq;
 
-                const offsetX = Number.isFinite(Number(pick('OffsetX'))) ? Number(pick('OffsetX')) : (o.offsetX ?? 0);
-                const offsetY = Number.isFinite(Number(pick('OffsetY'))) ? Number(pick('OffsetY')) : (o.offsetY ?? 0);
+                    const anchor = o.anchor ?? 'bottomCenter';
+                    let px = x, py = y;
+                    if (anchor === 'bottomCenter') { px -= FW / 2; py -= FH; }
+                    else if (anchor === 'center') { px -= FW / 2; py -= FH / 2; }
+                    const fireCX = px + FW * 0.5;
+                    const fireCY = py + FH * 0.5;
 
-                this.drawImage(ctx, img, x, y, {
-                    w: pick('W') ?? o.w,
-                    h: pick('H') ?? o.h,
-                    scale: pick('Scale') ?? o.scale,
-                    anchor: pick('Anchor') ?? o.anchor,
-                    offsetX,
-                    offsetY,
+                    fs.fireTimer += dt;
+                    while (fs.fireTimer >= FIRE_INTERVAL_MS) {
+                        fs.fireTimer -= FIRE_INTERVAL_MS;
+                        fs.fireArcs.push({
+                            x: fireCX, y: fireCY,
+                            size: Math.random() * 100 + 50,
+                            speedX: 1, speedY: 1,
+                            angle: 0, va: Math.random() * 0.2 - 0.1,
+                        });
+                    }
+
+                    fs.fireArcs = this._stepFireArcs(fs.fireArcs, dtScale, GAME_SPEED);
+                } else if (this._demoEnergyFireSeq?.fireArcs.length) {
+                    const fs = this._demoEnergyFireSeq;
+                    fs.fireArcs = this._stepFireArcs(fs.fireArcs, dtScale, GAME_SPEED);
+                }
+
+                this._drawAnimatedGlowSprite(ctx, {
+                    image: 'defaultSkin',
+                    key: `player_energy_${state}_${Math.round(x ?? 0)}_${Math.round(y ?? 0)}`,
+                    frameW: FW, frameH: FH,
+                    frameY: cfg.frameY, maxFrame: cfg.maxFrame,
+                    fps: o.fps ?? 20,
+                    w: FW, h: FH,
+                    x, y,
+                    anchor: o.anchor ?? 'bottomCenter',
+                    shadowBlur: 0,
                 });
+
+                if (this._demoEnergyFireSeq?.fireArcs.length) {
+                    const fireImg = document.getElementById('fire');
+                    if (fireImg) {
+                        for (const arc of this._demoEnergyFireSeq.fireArcs) {
+                            ctx.save();
+                            ctx.translate(arc.x, arc.y);
+                            ctx.rotate(arc.angle);
+                            ctx.drawImage(fireImg, -arc.size * 0.5, -arc.size * 0.5, arc.size, arc.size);
+                            ctx.restore();
+                        }
+                    }
+                }
             },
         };
     }
@@ -2243,7 +2920,7 @@ export class HowToPlayMenu extends BaseMenu {
         };
     }
 
-    // ---------------- Particles overlay (menu-only) ----------------
+    // ---------------- particles overlay (menu-only) ----------------
     createStatusParticlesOverlay({
         type,          // 'poison' | 'slow'
         x, y,
@@ -2279,7 +2956,10 @@ export class HowToPlayMenu extends BaseMenu {
 
                 if (!paused) {
                     const key = type === 'poison' ? 'poison' : 'slow';
-                    this._menuParticleTimers[key] = (this._menuParticleTimers[key] || 0) + Math.max(0, dt);
+                    this._menuParticleTimers[key] = Math.min(
+                        (this._menuParticleTimers[key] || 0) + Math.max(0, dt),
+                        spawnRate
+                    );
 
                     while (this._menuParticleTimers[key] >= spawnRate) {
                         this._menuParticleTimers[key] -= spawnRate;
@@ -2312,7 +2992,7 @@ export class HowToPlayMenu extends BaseMenu {
         };
     }
 
-    // ---------------- Status tinted image ----------------
+    // ---------------- status tinted image ----------------
     _getTintedCanvas(img, sw, sh, tintKey, paintFn) {
         const key = `${img.id || img.src || 'img'}|${sw}x${sh}|${tintKey}`;
         const cached = this._tintCache.get(key);
@@ -2418,7 +3098,7 @@ export class HowToPlayMenu extends BaseMenu {
         ctx.drawImage(oc, dx, dy, dw, dh);
     }
 
-    // ---------------- Drawing ----------------
+    // ---------------- drawing ----------------
     drawCurrentPage(ctx) {
         const page = this.pages[this.currentPage];
         if (!page) return;
@@ -2459,6 +3139,9 @@ export class HowToPlayMenu extends BaseMenu {
 
         this._spriteDemos?.clear?.();
         this._powerPreview = null;
+        this._demoRollingSeq = null;
+        this._demoDivingSeq = null;
+        this._demoEnergyFireSeq = null;
 
         this._menuParticles.length = 0;
         this._menuParticleTimers.poison = 0;

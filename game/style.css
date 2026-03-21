@@ -33,7 +33,6 @@ body {
     #savingAnimation, #savingBookAnimation, #deleteProgressAnimation, #deleteProgressBookAnimation,  
 /* how to play */ 
 #keycap, #enterKeycap, #shiftKeycap, #leftClick, #rightClick, #scrollWheelClick, #mouseButton4Click, 
-#firedogSitting,  #firedogRolling, #firedogStanding, #firedogDiving, #firedogRunning, #firedogJumping, #firedogDashing1, #firedogStunned, #firedogHit, #firedogFrozen,
 /* ability UI */
 #fireballUI, #fireballRedPotionUI, #divingUI, #dashingUI, #invisibleUI,
 /* entities */

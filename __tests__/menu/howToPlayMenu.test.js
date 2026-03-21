@@ -105,18 +105,7 @@ function installDomAssets() {
 
     const ids = [
         'mainmenubackgroundhowtoplay',
-
-        // firedog sprites
-        'firedogSitting',
-        'firedogStanding',
-        'firedogRunning',
-        'firedogJumping',
-        'firedogRolling',
-        'firedogDiving',
-        'firedogDashing1',
-        'firedogStunned',
-        'firedogHit',
-        'firedogFrozen',
+        // ability
         'fireball',
 
         // keycaps
@@ -493,6 +482,188 @@ describe('HowToPlayMenu (new logic)', () => {
             expect(game.UI.drawTutorialProgressBar).toHaveBeenCalled();
 
             expect(BaseMenu.prototype.draw).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('_stepFireArcs()', () => {
+        const makeArc = (size, speedX = 0, speedY = 0) => ({
+            x: 100, y: 100, size, speedX, speedY, angle: 0, va: 0,
+        });
+
+        it('shrinks arc size each step', () => {
+            const arcs = [makeArc(10)];
+            const result = menu._stepFireArcs(arcs, 1, 0);
+            expect(result[0].size).toBeLessThan(10);
+        });
+
+        it('filters arcs whose size drops below 0.5', () => {
+            const arcs = [makeArc(10), makeArc(0.4)];
+            const result = menu._stepFireArcs(arcs, 1, 0);
+            expect(result).toHaveLength(1);
+        });
+
+        it('returns empty array when all arcs are too small', () => {
+            const arcs = [makeArc(0.3), makeArc(0.1)];
+            expect(menu._stepFireArcs(arcs, 1, 0)).toHaveLength(0);
+        });
+
+        it('moves arc left by gameSpeed (world scroll drift)', () => {
+            const arcs = [makeArc(10, 0, 0)];
+            const before = arcs[0].x;
+            const result = menu._stepFireArcs(arcs, 1, 6);
+            expect(result[0].x).toBeLessThan(before);
+        });
+
+        it('with gameSpeed=0 arc only moves by its own speedX', () => {
+            const arcs = [makeArc(10, 2, 0)];
+            const result = menu._stepFireArcs(arcs, 1, 0);
+            expect(result[0].x).toBeCloseTo(100 - 2, 5);
+        });
+
+        it('does not mutate the original array reference', () => {
+            const arcs = [makeArc(10)];
+            const result = menu._stepFireArcs(arcs, 1, 0);
+            expect(result).not.toBe(arcs);
+        });
+    });
+
+    describe('_createEnergyExhaustedDisabledUI()', () => {
+        it('returns a drawable with a draw function', () => {
+            const drawable = menu._createEnergyExhaustedDisabledUI();
+            expect(typeof drawable.draw).toBe('function');
+        });
+
+        it('does nothing when energy demo is inactive', () => {
+            menu._demoEnergy.active = false;
+            menu._demoEnergy.exhausted = true;
+            const drawable = menu._createEnergyExhaustedDisabledUI();
+            drawable.draw(ctx);
+            expect(ctx.strokeText).not.toHaveBeenCalled();
+        });
+
+        it('does nothing when not exhausted', () => {
+            menu._demoEnergy.active = true;
+            menu._demoEnergy.exhausted = false;
+            const drawable = menu._createEnergyExhaustedDisabledUI();
+            drawable.draw(ctx);
+            expect(ctx.strokeText).not.toHaveBeenCalled();
+        });
+
+        it('draws two arrows and one text block when exhausted', () => {
+            menu._demoEnergy.active = true;
+            menu._demoEnergy.exhausted = true;
+
+            const arrowSpy = jest.spyOn(menu, 'drawArrowImpl');
+            const textSpy = jest.spyOn(menu, 'drawTextBlockImpl');
+
+            const drawable = menu._createEnergyExhaustedDisabledUI();
+            drawable.draw(ctx);
+
+            expect(arrowSpy).toHaveBeenCalledTimes(2);
+            expect(textSpy).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('dash between-timer starts immediately on dashing1', () => {
+        const dashCfg = {
+            enabled: true,
+            waitMs: 0,
+            betweenMs: 500,
+            secondWindowMs: 7000,
+            simulateSecondAtMs: 99999,
+            cooldownMs: 60000,
+            maxEnergy: 100,
+            startEnergy: 100,
+            energyCost: 0,
+            regenPerSec: 0,
+        };
+
+        beforeEach(() => {
+            menu._updateDashDemo(0, dashCfg);
+            menu._lastPageIndex = menu.currentPage;
+        });
+
+        it('enters dashing1 immediately when waitMs=0', () => {
+            expect(menu._demoDash.phase).toBe('dashing1');
+        });
+
+        it('betweenElapsedMs is 0 at the start of dashing1', () => {
+            expect(menu._demoDash.betweenElapsedMs).toBe(0);
+        });
+
+        it('betweenElapsedMs increments during dashing1', () => {
+            menu._updateDashDemo(50, dashCfg);
+            expect(menu._demoDash.betweenElapsedMs).toBe(50);
+        });
+
+        it('betweenElapsedMs carries over when entering afterFirst', () => {
+            menu._updateDashDemo(200, dashCfg);
+            expect(menu._demoDash.phase).toBe('afterFirst');
+            expect(menu._demoDash.betweenElapsedMs).toBeGreaterThanOrEqual(180);
+        });
+
+        it('dashBetweenTimer in the return value equals betweenElapsedMs during dashing1', () => {
+            menu._updateDashDemo(75, dashCfg);
+            const result = menu._updateDashDemo(0, dashCfg);
+            expect(result.dashBetweenTimer).toBeCloseTo(menu._demoDash.betweenElapsedMs, 5);
+        });
+    });
+
+    describe('60s cooldown timer starts immediately when dashing2 begins', () => {
+        const dashCfg = {
+            enabled: true,
+            waitMs: 0,
+            betweenMs: 0,
+            secondWindowMs: 7000,
+            simulateSecondAtMs: 0,
+            cooldownMs: 60000,
+            maxEnergy: 100,
+            startEnergy: 100,
+            energyCost: 0,
+            regenPerSec: 0,
+        };
+
+        function advanceToDashing2(m) {
+            m._updateDashDemo(0, dashCfg);
+            m._lastPageIndex = m.currentPage;
+            m._updateDashDemo(200, dashCfg);
+            m._updateDashDemo(1, dashCfg);
+        }
+
+        it('enters dashing2 after first dash completes with betweenMs=0', () => {
+            advanceToDashing2(menu);
+            expect(menu._demoDash.phase).toBe('dashing2');
+        });
+
+        it('dashCooldownElapsedMs is 0 at the start of dashing2', () => {
+            advanceToDashing2(menu);
+            expect(menu._demoDash.dashCooldownElapsedMs).toBe(0);
+        });
+
+        it('dashTimer returns 0 at the moment dashing2 begins', () => {
+            advanceToDashing2(menu);
+            const result = menu._updateDashDemo(0, dashCfg);
+            expect(result.dashTimer).toBe(0);
+        });
+
+        it('dashCooldownElapsedMs increments during dashing2', () => {
+            advanceToDashing2(menu);
+            menu._updateDashDemo(100, dashCfg);
+            expect(menu._demoDash.dashCooldownElapsedMs).toBe(100);
+        });
+
+        it('dashTimer accumulates through dashing2 into stopped', () => {
+            advanceToDashing2(menu);
+            menu._updateDashDemo(200, dashCfg);
+            expect(menu._demoDash.phase).toBe('stopped');
+            expect(menu._demoDash.dashCooldownElapsedMs).toBeGreaterThan(0);
+        });
+
+        it('dashTimer is not reset to 0 when transitioning from dashing2 to stopped', () => {
+            advanceToDashing2(menu);
+            menu._updateDashDemo(200, dashCfg);
+            const result = menu._updateDashDemo(0, dashCfg);
+            expect(result.dashTimer).toBeGreaterThan(0);
         });
     });
 });
