@@ -26,6 +26,7 @@ jest.mock('../../game/config/skinsAndCosmetics', () => {
     const makeImg = (id) => ({ id, tagName: 'IMG' });
 
     return {
+        FIREDOG_FRAME: { width: 100, height: 91.6 },
         getSkinElement: jest.fn((id) => makeImg(id)),
         getCosmeticElement: jest.fn((slot, key) => makeImg(`${slot}:${key}`)),
         COSMETIC_LAYER_ORDER: ['neck', 'eyes', 'face', 'head'],
@@ -255,7 +256,7 @@ describe('Player', () => {
 
     test('constructs with expected defaults', () => {
         expect(player.width).toBe(100);
-        expect(player.height).toBeCloseTo(91.3);
+        expect(player.height).toBeCloseTo(91.6);
         expect(player.x).toBe(0);
         expect(player.y).toBe(game.height - player.height - game.groundMargin);
         expect(player.energy).toBe(100);

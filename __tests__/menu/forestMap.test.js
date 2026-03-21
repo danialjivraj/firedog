@@ -24,7 +24,7 @@ jest.mock('../../game/config/timeOfDay.js', () => ({
 }));
 
 jest.mock('../../game/config/skinsAndCosmetics.js', () => ({
-    FIREDOG_FRAME: { width: 100, height: 91.3 },
+    FIREDOG_FRAME: { width: 100, height: 91.6 },
 
     getSkinElement: jest.fn((skinKey) => {
         if (!skinKey) return null;

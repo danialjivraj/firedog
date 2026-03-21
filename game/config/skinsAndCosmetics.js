@@ -1,6 +1,6 @@
 export const FIREDOG_FRAME = {
     width: 100,
-    height: 91.3,
+    height: 91.6,
 };
 
 export const SKINS = {

@@ -1,5 +1,6 @@
 import { Tutorial } from '../../game/interface/tutorial';
 import { fadeInAndOut } from '../../game/animations/fading';
+import { FIREDOG_FRAME } from '../../game/config/skinsAndCosmetics.js';
 
 jest.mock('../../game/animations/fading', () => ({
     fadeInAndOut: jest.fn(),
@@ -28,7 +29,7 @@ describe('Tutorial', () => {
                 vy: 0,
                 vx: 0,
                 speed: 0,
-                height: 91.3,
+                height: FIREDOG_FRAME.height,
                 isEnergyExhausted: false,
                 fireballTimer: 0,
                 fireballCooldown: 0,

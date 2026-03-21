@@ -2,6 +2,7 @@ import { BaseMenu } from './baseMenu.js';
 import { screenColourFadeIn, screenColourFadeOut } from '../animations/screenColourFade.js';
 import { BluePotion, HealthLive, Cauldron, BlackHole, IceDrink, RedPotion } from '../entities/powerUpAndDown.js';
 import { PoisonBubbles, IceCrystalBubbles } from '../animations/particles.js';
+import { FIREDOG_FRAME } from '../config/skinsAndCosmetics.js';
 
 export class HowToPlayMenu extends BaseMenu {
     constructor(game) {
@@ -791,7 +792,7 @@ export class HowToPlayMenu extends BaseMenu {
             ]),
 
             this.createPage('Enemy types: Yellow (1)', [
-                this.createPlayerAnimation({ state: 'STUNNED', x: cx - 200, y: groundY, fps: 20 }),
+                this.createHitLoopAnimation({ state: 'STUNNED', x: cx - 200, y: groundY, fps: 20, cooldownMs: 2000 }),
                 this.createTextBlock({
                     text: 'Yellow enemies have a yellowish glow!',
                     x: cx,
@@ -1358,13 +1359,13 @@ export class HowToPlayMenu extends BaseMenu {
         return this.createAnimatedGlowSprite({
             image: 'defaultSkin',
             key: `player_${state}${flip ? '_flip' : ''}_${Math.round(x)}_${Math.round(y)}`,
-            frameW: 100,
-            frameH: 91.3,
+            frameW: FIREDOG_FRAME.width,
+            frameH: FIREDOG_FRAME.height,
             frameY: cfg.frameY,
             maxFrame: cfg.maxFrame,
             fps,
-            w: 100 * scale,
-            h: 91.3 * scale,
+            w: FIREDOG_FRAME.width * scale,
+            h: FIREDOG_FRAME.height * scale,
             x,
             y,
             anchor,
@@ -1374,7 +1375,7 @@ export class HowToPlayMenu extends BaseMenu {
     }
 
     createFrozenPlayerAnimation({ x, y, anchor = 'bottomCenter' } = {}) {
-        const FW = 100, FH = 91.3;
+        const { width: FW, height: FH } = FIREDOG_FRAME;
         const hitCfg = HowToPlayMenu._PLAYER_ANIM.HIT;
         let pulseTimer = 0;
 
@@ -1417,9 +1418,9 @@ export class HowToPlayMenu extends BaseMenu {
         };
     }
 
-    createHitLoopAnimation({ x, y, anchor = 'bottomCenter', fps = 20, cooldownMs = 2000 } = {}) {
-        const FW = 100, FH = 91.3;
-        const hitCfg = HowToPlayMenu._PLAYER_ANIM.HIT;
+    createHitLoopAnimation({ x, y, anchor = 'bottomCenter', fps = 20, cooldownMs = 2000, state = 'HIT' } = {}) {
+        const { width: FW, height: FH } = FIREDOG_FRAME;
+        const hitCfg = HowToPlayMenu._PLAYER_ANIM[state] ?? HowToPlayMenu._PLAYER_ANIM.HIT;
         const standCfg = HowToPlayMenu._PLAYER_ANIM.STANDING;
         const frameInterval = 1000 / fps;
 
@@ -1490,7 +1491,7 @@ export class HowToPlayMenu extends BaseMenu {
             s.frameX = s.frameX < s.maxFrame ? s.frameX + 1 : 0;
         }
 
-        const fw = 100, fh = 91.3;
+        const { width: fw, height: fh } = FIREDOG_FRAME;
         const sx = s.frameX * fw;
         const sy = cfg.frameY * fh;
         const w = o.w ?? fw, h = o.h ?? fh;
@@ -1502,7 +1503,7 @@ export class HowToPlayMenu extends BaseMenu {
 
         if (!this._playerFrameCanvas) {
             this._playerFrameCanvas = document.createElement('canvas');
-            this._playerFrameCanvas.width = 100;
+            this._playerFrameCanvas.width = FIREDOG_FRAME.width;
             this._playerFrameCanvas.height = 92;
         }
         const fc = this._playerFrameCanvas;
@@ -1556,7 +1557,7 @@ export class HowToPlayMenu extends BaseMenu {
     }
 
     createDashSequenceDemo() {
-        const FW = 100, FH = 91.3;
+        const { width: FW, height: FH } = FIREDOG_FRAME;
         const ROW_RUNNING = 3, ROW_STANDING = 0;
 
         return {
@@ -1599,7 +1600,7 @@ export class HowToPlayMenu extends BaseMenu {
     }
 
     createRollingDemo() {
-        const FW = 100, FH = 91.3;
+        const { width: FW, height: FH } = FIREDOG_FRAME;
         const ROW_ROLLING = 6, MAX_FRAME = 6;
         const FRAME_INTERVAL = 1000 / 20;
         const FIRE_INTERVAL_MS = 1000 / 31;
@@ -1664,7 +1665,7 @@ export class HowToPlayMenu extends BaseMenu {
     }
 
     createDivingSequenceDemo() {
-        const FW = 100, FH = 91.3;
+        const { width: FW, height: FH } = FIREDOG_FRAME;
         const ROW_STANDING = 0, ROW_JUMPING = 1, ROW_DIVING = 6;
         const MAX_FRAME_STAND = 6, MAX_FRAME_JUMP = 6, MAX_FRAME_DIVE = 6;
         const FRAME_INTERVAL = 1000 / 20;
@@ -2237,7 +2238,7 @@ export class HowToPlayMenu extends BaseMenu {
         const FIRE_INTERVAL_MS = 16;
         const GHOST_INTERVAL_MS = 20;
         const MAX_GHOSTS = 4;
-        const FH = 91.3;
+        const { height: FH } = FIREDOG_FRAME;
         const ROW_RUNNING = 3;
         const FRAME_INTERVAL_DASH = 1000 / 20;
         const FRAME_INTERVAL_IDLE = 1000 / 20;
@@ -2788,10 +2789,10 @@ export class HowToPlayMenu extends BaseMenu {
         const spriteOpts = {
             image: 'defaultSkin',
             key: `player_invisible_${o.state ?? 'STANDING'}_${Math.round(o.x ?? 0)}_${Math.round(o.y ?? 0)}`,
-            frameW: 100, frameH: 91.3,
+            frameW: FIREDOG_FRAME.width, frameH: FIREDOG_FRAME.height,
             frameY: cfg.frameY, maxFrame: cfg.maxFrame,
             fps: o.fps ?? 20,
-            w: 100 * (o.scale ?? 1), h: 91.3 * (o.scale ?? 1),
+            w: FIREDOG_FRAME.width * (o.scale ?? 1), h: FIREDOG_FRAME.height * (o.scale ?? 1),
             x: o.x, y: o.y,
             anchor: o.anchor ?? 'bottomCenter',
             shadowBlur: 0,
@@ -2809,7 +2810,7 @@ export class HowToPlayMenu extends BaseMenu {
     }
 
     createEnergyDemoPlayerImage(o) {
-        const FW = 100, FH = 91.3;
+        const { width: FW, height: FH } = FIREDOG_FRAME;
         const FIRE_INTERVAL_MS = 1000 / 31;
 
         return {

@@ -5,6 +5,7 @@ import {
     COSMETIC_LAYER_ORDER,
     getCosmeticChromaDegFromState,
     drawWithOptionalHue,
+    FIREDOG_FRAME,
 } from '../config/skinsAndCosmetics.js';
 import { Sitting, Running, Jumping, Falling, Rolling, Diving, Stunned, Hit, Standing, Dying, Dashing } from '../animations/playerStates.js';
 import {
@@ -40,8 +41,8 @@ export class Player {
         // sprite
         this.defaultSkinImage = getSkinElement('defaultSkin');
         // firedog vars
-        this.width = 100;
-        this.height = 91.3;
+        this.width = FIREDOG_FRAME.width;
+        this.height = FIREDOG_FRAME.height;
         this.x = 0;
         this.y = this.game.height - this.height - this.game.groundMargin;
         this.frameX = 0;
