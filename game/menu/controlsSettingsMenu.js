@@ -25,7 +25,7 @@ export class ControlsSettingsMenu extends BaseMenu {
 
         this.actionNames = {
             jump: 'Jump',
-            moveBackward: 'Move Backwards',
+            moveBackward: 'Move Backward',
             sit: 'Sit',
             moveForward: 'Move Forward',
             rollAttack: 'Roll Attack',
