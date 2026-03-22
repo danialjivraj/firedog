@@ -45,7 +45,7 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 - **Gameplay**
   - **Movement:**
     - W: Jump
-    - A: Move Backwards
+    - A: Move Backward
     - S: Sit
     - D: Move Forward
 
