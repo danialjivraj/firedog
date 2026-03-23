@@ -130,8 +130,8 @@ describe('BossManager', () => {
             expect(cfg.id).toBe('glacikal');
             expect(cfg.gate).toEqual({
                 mode: 'coinsAndDistance',
-                minCoins: 100,
-                minDistance: 100,
+                minCoins: 200,
+                minDistance: 250,
             });
         });
 

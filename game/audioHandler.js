@@ -397,6 +397,7 @@ export class CollisionSFXAudioHandler extends AudioHandler {
       elyvorg_electricity_wheel_collision_sound: 'elyvorg_electricity_wheel_collision_sound',
       breakingIceNoDamageSound: 'breakingIceNoDamageSound',
       elyvorg_ghost_hit_sound_effect: 'elyvorg_ghost_hit_sound_effect',
+      elyvorg_purple_laser_destroyed_sound: 'elyvorg_purple_laser_destroyed_sound',
     };
     this.initializeSounds();
   }
@@ -550,8 +551,6 @@ export class EnemySFXAudioHandler extends AudioHandler {
       rocketLauncherSound: 'rocketLauncherSound',
       //spearFish
       stepWaterSound: 'stepWaterSound',
-      //tauro
-      stomp: 'stomp',
       //karateCroco
       ahhhSound: 'ahhhSound',
       //purpleFlyer
@@ -562,8 +561,6 @@ export class EnemySFXAudioHandler extends AudioHandler {
       extendingSound: 'extendingSound',
       //theRock
       theRockStomp: 'theRockStomp',
-      //rollhog
-      rollhogRollSound: 'rollhogRollSound',
     };
     this.initializeSounds();
   }

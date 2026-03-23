@@ -60,7 +60,6 @@ import {
   LeafSlug,
   Sunflora,
   Eggry,
-  Tauro,
   Bee,
   AngryBee,
   HangingSpidoLazer,
@@ -71,7 +70,6 @@ import {
   Volcanurtle,
   TheRock,
   VolcanoWasp,
-  Rollhog,
   Dragon,
 } from '../../../game/entities/enemies/enemies';
 
@@ -1430,16 +1428,6 @@ describe('Map 5 Enemies', () => {
     expect(eg.x).not.toBe(startX);
   });
 
-  it('Tauro is red and moves left on update', () => {
-    const t = new Tauro(game);
-    expect(t.isRedEnemy).toBe(true);
-
-    const ox = t.x;
-    t.update(16);
-
-    expect(t.x).toBeLessThan(ox);
-  });
-
   it('Bee and AngryBee set correct soundIds', () => {
     const b = new Bee(game);
     const ab = new AngryBee(game);
@@ -1515,15 +1503,6 @@ describe('Map 6 Enemies', () => {
     vt.update(16);
 
     expect(vt.x).toBeLessThan(ox);
-  });
-
-  it('Rollhog enters roll state when player is close', () => {
-    const rh = new Rollhog(game);
-    rh.x = game.player.x + 100;
-
-    rh.update(16);
-
-    expect(rh.state).toBe('roll');
   });
 
   it('TheRock enters smash state when player is very close', () => {

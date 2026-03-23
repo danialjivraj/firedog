@@ -7,16 +7,15 @@ import { formatTimeMs } from "./config/formatTime.js";
 import {
     Goblin,
     Dotter, Vertibat, Ghobat, Ravengloom, MeatSoldier, Skulnap, Abyssaw, GlidoSpike,
-    DuskPlant, Silknoir, WalterTheGhost, Ben, Gloomlet, Dolly, Aura,
+    DuskPlant, Silknoir, Skelly, WalterTheGhost, Ben, Gloomlet, Dolly,
     Piranha, SkeletonFish, SpearFish, JetFish, Piper, Voltzeel, Garry,
     Sluggie, BigGreener, Chiquita, LilHornet, KarateCroco, Zabkous, SpidoLazer, Jerry,
-    Snailey, RedFlyer, PurpleFlyer, LazyMosquito, LeafSlug, Sunflora, Eggry, Tauro, AngryBee, Bee, HangingSpidoLazer,
-    Cactus, PetroPlant, Plazer, Veynoculus, Volcanurtle, TheRock, VolcanoWasp, Rollhog, Dragon,
-    IceSilknoir,
-    WindAttack,
+    Snailey, RedFlyer, PurpleFlyer, LazyMosquito, LeafSlug, Sunflora, Eggry, AngryBee, Bee, HangingSpidoLazer,
+    Cactus, PetroPlant, Plazer, Veynoculus, Volcanurtle, TheRock, VolcanoWasp, Dragon,
+    IceSilknoir, CrystalWasp, IcePlant, Globby, IceCentipede, DrillIce, IceGlider,
+    SpaceCrab, Johnny,
     ImmobileGroundEnemy,
 } from "./entities/enemies/enemies.js";
-import { InkBomb, MeteorAttack } from "./entities/enemies/elyvorg.js";
 import {
     RedPotion, BluePotion, Hourglass, HealthLive, Coin, OxygenTank,
     BlackHole, Cauldron, IceDrink, IceCube, Confuse, DeadSkull, CarbonDioxideTank,
@@ -655,37 +654,6 @@ export class Game {
             this.player.update(this.input.keys, deltaTime);
             this.coins = Math.max(0, this.coins);
 
-            // handles certain audios where the sound doesn't stop until that type of enemy is not in enemy list
-            const enemyAudioMapping = [
-                { enemyType: WindAttack, audio: "tornadoAudio" },
-                { enemyType: Skulnap, audio: "fuseSound" },
-                { enemyType: SpidoLazer, audio: "spidoLazerWalking" },
-                { enemyType: Goblin, audio: "goblinRunSound" },
-                { enemyType: Ben, audio: "verticalGhostSound" },
-                { enemyType: JetFish, audio: "rocketLauncherSound" },
-                { enemyType: SpearFish, audio: "stepWaterSound" },
-                { enemyType: Dolly, audio: "dollHumming" },
-                { enemyType: Aura, audio: "auraSoundEffect" },
-                { enemyType: InkBomb, audio: "elyvorg_ink_bomb_sound" },
-                { enemyType: MeteorAttack, audio: "elyvorg_meteor_falling_sound" },
-            ];
-            enemyAudioMapping.forEach(({ enemyType, audio }) => {
-                if (
-                    enemyType === MeteorAttack &&
-                    !this.enemies.some((enemy) => enemy instanceof enemyType)
-                ) {
-                    if (this.audioHandler.enemySFX.isPlaying(audio)) {
-                        this.audioHandler.enemySFX.fadeOutAndStop(audio, 2000);
-                    }
-                } else {
-                    if (
-                        !this.enemies.some((enemy) => enemy instanceof enemyType)
-                    ) {
-                        this.audioHandler.enemySFX.stopSound(audio);
-                    }
-                }
-            });
-
             // handle power up
             this.powerUps.forEach((powerUp) => {
                 powerUp.update(deltaTime);
@@ -736,10 +704,20 @@ export class Game {
             this.collisions.forEach((collision) => {
                 collision.update(deltaTime);
             });
-            // removes marked entities
-            this.enemies = this.enemies.filter(
-                (enemy) => !enemy.markedForDeletion
-            );
+            // removes marked entities, stops looping sounds for enemy types no longer present
+            const removedEnemies = this.enemies.filter((e) => e.markedForDeletion);
+            this.enemies = this.enemies.filter((e) => !e.markedForDeletion);
+            for (const enemy of removedEnemies) {
+                if (!enemy.loopingSoundId) continue;
+                if (this.enemies.some((e) => e.loopingSoundId === enemy.loopingSoundId)) continue;
+                if (enemy.loopingSoundFadeOut) {
+                    if (this.audioHandler.enemySFX.isPlaying(enemy.loopingSoundId)) {
+                        this.audioHandler.enemySFX.fadeOutAndStop(enemy.loopingSoundId, 2000);
+                    }
+                } else {
+                    this.audioHandler.enemySFX.stopSound(enemy.loopingSoundId);
+                }
+            }
             this.powerUps = this.powerUps.filter(
                 (powerUp) => !powerUp.markedForDeletion
             );
@@ -1043,7 +1021,6 @@ export class Game {
             Map1: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
                 { type: Dotter, probability: 0.35, spawningDistance: 0 },
-                { type: Vertibat, probability: 0.35, spawningDistance: 0 },
                 { type: Ghobat, probability: 0.3, spawningDistance: 0 },
                 { type: Ravengloom, probability: 0.3, spawningDistance: 0 },
                 { type: MeatSoldier, probability: 0.1, spawningDistance: 0 },
@@ -1058,6 +1035,7 @@ export class Game {
                 { type: Silknoir, probability: 0.4, spawningDistance: 0 },
                 { type: WalterTheGhost, probability: 0.2, spawningDistance: 0 },
                 { type: Ben, probability: 0.2, spawningDistance: 0 },
+                { type: Skelly, probability: 0.07, spawningDistance: 50 },
                 { type: Gloomlet, probability: 0.08, spawningDistance: 50 },
                 { type: Dolly, probability: 0.01, spawningDistance: 100 },
             ],
@@ -1090,7 +1068,6 @@ export class Game {
                 { type: LeafSlug, probability: 0.15, spawningDistance: 0 },
                 { type: Sunflora, probability: 0.1, spawningDistance: 0 },
                 { type: Eggry, probability: 0.3, spawningDistance: 0 },
-                { type: Tauro, probability: 0.05, spawningDistance: 0 },
                 { type: this.background && this.background.isRaining ? AngryBee : Bee, probability: this.background && this.background.isRaining ? 0.06 : 0.07, spawningDistance: 0 },
                 { type: HangingSpidoLazer, probability: 0.05, spawningDistance: 0 },
             ],
@@ -1100,26 +1077,32 @@ export class Game {
             ],
             Map7: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: Cactus, probability: 0.1, spawningDistance: 0 },
                 { type: PetroPlant, probability: 0.1, spawningDistance: 0 },
+                { type: Cactus, probability: 0.1, spawningDistance: 0 },
                 { type: Volcanurtle, probability: 0.1, spawningDistance: 0 },
                 { type: TheRock, probability: 0.05, spawningDistance: 0 },
                 { type: VolcanoWasp, probability: 0.03, spawningDistance: 0 },
-                { type: Rollhog, probability: 0.1, spawningDistance: 0 },
-                { type: Dragon, probability: 0.05, spawningDistance: 0 },
             ],
             BonusMap1: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: IceSilknoir, probability: 1, spawningDistance: 0 },
+                { type: IceSilknoir, probability: 0.4, spawningDistance: 0 },
+                { type: CrystalWasp, probability: 0.06, spawningDistance: 0 },
+                { type: IcePlant, probability: 0.2, spawningDistance: 0 },
+                { type: Globby, probability: 0.1, spawningDistance: 100 },
+                { type: IceCentipede, probability: 0.3, spawningDistance: 0 },
+                { type: IceGlider, probability: 0.1, spawningDistance: 0 },
+                { type: DrillIce, probability: 0.07, spawningDistance: 100 },
             ],
             BonusMap2: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: Silknoir, probability: 0.4, spawningDistance: 0 },
+                { type: Dragon, probability: 0.05, spawningDistance: 0 },
             ],
             BonusMap3: [
-                { type: Goblin, probability: 1, spawningDistance: 0 },
+                { type: Goblin, probability: 0.05, spawningDistance: 0 },
                 { type: Veynoculus, probability: 0.5, spawningDistance: 0 },
                 { type: Plazer, probability: 0.05, spawningDistance: 0 },
+                { type: SpaceCrab, probability: 0.1, spawningDistance: 0 },
+                { type: Johnny, probability: 0.1, spawningDistance: 0 },
             ],
         };
 

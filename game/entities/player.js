@@ -19,8 +19,9 @@ import {
 import { FloatingMessage } from '../animations/floatingMessages.js';
 import { Fireball, CoinLoss, PoisonBubbles, IceCrystalBubbles, SpinningChicks } from '../animations/particles.js';
 import {
-    AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Tauro, Gloomlet, EnemyBoss, Barrier,
-    Aura, KarateCroco, SpearFish, TheRock, LilHornet, Cactus, IceBall, Garry, InkBeam, RockProjectile, VolcanoWasp, Volcanurtle
+    AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Gloomlet, EnemyBoss, Barrier,
+    Aura, KarateCroco, SpearFish, TheRock, LilHornet, Cactus, IceBall, Garry, InkBeam, RockProjectile, VolcanoWasp, Volcanurtle,
+    CrystalWasp, DrillIce, FrozenShard
 } from './enemies/enemies.js';
 import { InkSplash } from '../animations/ink.js';
 import { DamageIndicator } from '../animations/damageIndicator.js';
@@ -1894,6 +1895,7 @@ export class CollisionLogic {
 
             // slow
             case enemy instanceof IceBall:
+            case enemy instanceof FrozenShard:
             case enemy instanceof SpinningIceBalls:
             case enemy instanceof PointyIcicleShard:
             case enemy instanceof UndergroundIcicle:
@@ -1908,7 +1910,7 @@ export class CollisionLogic {
                     this.game.collisions.push(new PointyIcicleShardCollision(this.game, ex, ey, enemy.id));
                 } else if (enemy instanceof IceTrail) {
                     this.game.collisions.push(new IceTrailCollision(this.game, ex, ey, enemy.id));
-                } else if (enemy instanceof BlueArrow) {
+                } else if (enemy instanceof BlueArrow || enemy instanceof FrozenShard) {
                     this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
                 } else if (enemy instanceof IcyStormBall) {
                     this.game.collisions.push(new IcyStormBallCollision(this.game, ex, ey, enemy.id));
@@ -1968,7 +1970,7 @@ export class CollisionLogic {
 
             case enemy instanceof PurpleLaserBeam: {
                 this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
-                this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
+                this.game.audioHandler.collisionSFX.playSound('elyvorg_purple_laser_destroyed_sound', false, true);
                 return true;
             }
 
@@ -2347,6 +2349,7 @@ export class CollisionLogic {
         const bossInvulnerable =
             isBoss &&
             (
+                this.game.gameOver ||
                 !this.game.bossInFight ||
                 this.game.cutsceneActive ||
                 (this.game.boss && this.game.boss.talkToBoss) ||
@@ -2553,7 +2556,6 @@ export class CollisionLogic {
             // red
             case enemy instanceof Gloomlet:
             case enemy instanceof KarateCroco:
-            case enemy instanceof Tauro:
             case enemy instanceof SpearFish:
             case enemy instanceof TheRock:
             case enemy instanceof Volcanurtle:
@@ -2564,6 +2566,8 @@ export class CollisionLogic {
                 break;
 
             // slow
+            case enemy instanceof DrillIce:
+            case enemy instanceof FrozenShard:
             case enemy instanceof IceBall:
             case enemy instanceof IceTrail:
             case enemy instanceof IcyStormBall:
@@ -2586,6 +2590,7 @@ export class CollisionLogic {
             }
 
             // frozen
+            case enemy instanceof CrystalWasp:
             case enemy instanceof IceSlash:
             case enemy instanceof BlueAsteroid:
             case enemy instanceof CyanArrow: {
@@ -2834,7 +2839,6 @@ export class CollisionLogic {
 
             // red
             case enemy instanceof Gloomlet:
-            case enemy instanceof Tauro:
             case enemy instanceof KarateCroco:
             case enemy instanceof SpearFish:
             case enemy instanceof TheRock:
@@ -2844,6 +2848,8 @@ export class CollisionLogic {
                 break;
 
             // slow
+            case enemy instanceof DrillIce:
+            case enemy instanceof FrozenShard:
             case enemy instanceof IceBall:
             case enemy instanceof IceTrail:
             case enemy instanceof IcyStormBall:
@@ -2859,6 +2865,7 @@ export class CollisionLogic {
             }
 
             // frozen
+            case enemy instanceof CrystalWasp:
             case enemy instanceof IceSlash:
             case enemy instanceof BlueAsteroid:
             case enemy instanceof CyanArrow: {

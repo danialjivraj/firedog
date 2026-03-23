@@ -49,12 +49,16 @@ export class Enemy {
         this.isPoisonEnemy = false;
         this.isSlowEnemy = false;
         this.isFrozenEnemy = false;
+
+        this.loopingSoundId = null;
+        this.loopingSoundFadeOut = false;
     }
 
     setFps(fps) {
         this.fps = fps;
         this.frameInterval = 1000 / this.fps;
     }
+
     advanceFrame(deltaTime) {
         if (this.frameTimer > this.frameInterval) {
             this.frameTimer = 0;
@@ -72,17 +76,38 @@ export class Enemy {
             this.y + this.height / 2 <= this.game.height
         );
     }
+
     playIfOnScreen(soundId, ...args) {
         if (this.isOnScreen()) this.game.audioHandler.enemySFX.playSound(soundId, ...args);
+    }
+
+    playSoundOnce(soundId, ...args) {
+        if (this.playsOnce && this.isOnScreen()) {
+            this.playsOnce = false;
+            this.game.audioHandler.enemySFX.playSound(soundId, ...args);
+        }
     }
 
     getDistanceToPlayer() {
         const p = this.game.player;
         return dist(this.x, this.y, p.x, p.y);
     }
+
     getAngleToPlayer() {
         const p = this.game.player;
         return angleTo(this.x, this.y, p.x, p.y);
+    }
+
+    applyGlow(context) {
+        if (this.isStunEnemy) setShadow(context, 'yellow', 10);
+        else if (this.isRedEnemy) setShadow(context, 'red', 10);
+        else if (this.isPoisonEnemy) setShadow(context, 'green', 10);
+        else if (this.isSlowEnemy) setShadow(context, 'blue', 10);
+        else if (this.isFrozenEnemy) setShadow(context, '#00eaff', 18);
+    }
+
+    clearGlow(context) {
+        setShadow(context, 'transparent', 0);
     }
 
     update(deltaTime) {
@@ -111,27 +136,14 @@ export class Enemy {
 
     draw(context) {
         if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
-
-        if (this.isStunEnemy) {
-            setShadow(context, 'yellow', 10);
-        } else if (this.isRedEnemy) {
-            setShadow(context, 'red', 10);
-        } else if (this.isPoisonEnemy) {
-            setShadow(context, 'green', 10);
-        } else if (this.isSlowEnemy) {
-            setShadow(context, 'blue', 10);
-        } else if (this.isFrozenEnemy) {
-            setShadow(context, '#00eaff', 18);
-        }
-
+        this.applyGlow(context);
         drawSprite(
             context,
             this.image,
             this.frameX * this.width, 0, this.width, this.height,
             this.x, this.y, this.width, this.height
         );
-
-        setShadow(context, 'transparent', 0);
+        this.clearGlow(context);
     }
 }
 
@@ -994,6 +1006,7 @@ export class BurrowingGroundEnemy extends ImmobileGroundEnemy {
         context.translate(cx, cy);
         context.scale(this.flipHorizontal ? -1 : 1, 1);
 
+        this.applyGlow(context);
         context.drawImage(
             this.image,
             (this.frameX || 0) * this.width,
@@ -1005,6 +1018,7 @@ export class BurrowingGroundEnemy extends ImmobileGroundEnemy {
             drawW,
             drawH
         );
+        this.clearGlow(context);
 
         context.restore();
     }
@@ -1019,6 +1033,67 @@ export class BurrowingGroundEnemy extends ImmobileGroundEnemy {
 
         if (this.phase === "emerge" || this.phase === "hold" || this.phase === "retract") {
             this.drawActivePhase(context);
+        }
+    }
+}
+
+export class UndergroundEnemy extends BurrowingGroundEnemy {
+    constructor(game, width, height, maxFrame, imageId, options = {}) {
+        const halfW = width / 2;
+        super(game, width, height, maxFrame, imageId, game.width + halfW, {
+            baseWarningDuration: options.warningDuration ?? 1500,
+            baseRiseDuration: options.riseDuration ?? 550,
+            baseHoldDuration: options.holdDuration ?? 800,
+            baseRetractDuration: options.retractDuration ?? 750,
+            randomiseDurations: false,
+            cyclesMax: 1,
+            moveBetweenCycles: false,
+            soundIds: options.soundIds ?? {},
+        });
+
+        this.centerX = game.width + halfW;
+        this.x = game.width;
+        this.y = this.hiddenY;
+
+        this.triggerDistance = options.triggerDistance ?? 1000;
+        this.phase = 'dormant';
+        this.flipHorizontal = false;
+    }
+
+    onEmergeStart() {
+        super.onEmergeStart();
+        this.flipHorizontal = false;
+    }
+
+    update(deltaTime) {
+        if (!this.game.cabin.isFullyVisible) {
+            this.x -= this.game.speed;
+            this.centerX -= this.game.speed;
+        }
+
+        if (this.autoRemoveOnZeroLives && this.lives <= 0) {
+            this.markedForDeletion = true;
+            return;
+        }
+
+        if (this.x + this.width < 0) {
+            this.markedForDeletion = true;
+            return;
+        }
+
+        if (this.phase === 'dormant') {
+            const playerCenterX = this.game.player.x + this.game.player.width / 2;
+            if (Math.abs(playerCenterX - this.centerX) <= this.triggerDistance) {
+                this.phase = 'warning';
+                this.timer = 0;
+            }
+            return;
+        }
+
+        super.update(deltaTime);
+
+        if (this.phase === 'emerge' || this.phase === 'hold' || this.phase === 'retract') {
+            this.advanceFrame(deltaTime);
         }
     }
 }
@@ -1048,6 +1123,7 @@ export class WindAttack extends Projectile {
     constructor(game, x, y, width, height, maxFrame, imageId, speedX, player) {
         super(game, x, y, width, height, maxFrame, imageId, speedX, 30);
         this.player = player;
+        this.loopingSoundId = 'tornadoAudio';
     }
     update(deltaTime) {
         super.update(deltaTime);
@@ -1132,6 +1208,13 @@ export class PoisonSpit extends Projectile {
 export class LaserBeam extends Projectile {
     constructor(game, x, y, width, height, maxFrame, imageId, speedX) {
         super(game, x, y, width, height, maxFrame, imageId, speedX, 30);
+    }
+}
+
+export class FrozenShard extends Projectile {
+    constructor(game, x, y, speedX) {
+        super(game, x, y, 55.5, 40, 1, 'frozenShard', speedX, 20);
+        this.isSlowEnemy = true;
     }
 }
 
@@ -1248,6 +1331,7 @@ export class Goblin extends MovingGroundEnemy {
         super(game, 60.083, 80, 11, 'goblinRun');
         this.lives = 1;
         this.dealsDirectHitDamage = false;
+        this.loopingSoundId = 'goblinRunSound';
 
         this.walkFps = 60;
         this.attackFps = 60;
@@ -1383,10 +1467,7 @@ export class Dotter extends FlyingEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        if (this.playsOnce && this.isOnScreen()) {
-            this.playsOnce = false;
-            this.game.audioHandler.enemySFX.playSound('buzzingFly');
-        }
+        this.playSoundOnce('buzzingFly');
     }
 }
 
@@ -1404,10 +1485,7 @@ export class Vertibat extends VerticalEnemy {
         this.x += this.speedX;
         this.x += this.amplitude * Math.sin(this.angle);
         this.angle += this.va;
-        if (this.playsOnce && this.isOnScreen()) {
-            this.playsOnce = false;
-            this.game.audioHandler.enemySFX.playSound('batPitch');
-        }
+        this.playSoundOnce('batPitch');
         if (this.frameX === 3 && this.isOnScreen()) this.game.audioHandler.enemySFX.playSound('wooshBat');
     }
 }
@@ -1429,10 +1507,7 @@ export class Ravengloom extends FlyingEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        if (this.playsOnce && this.isOnScreen()) {
-            this.playsOnce = false;
-            this.game.audioHandler.enemySFX.playSound('ravenCallAudio');
-        }
+        this.playSoundOnce('ravenCallAudio');
         if (this.frameX === 2 && this.isOnScreen()) this.game.audioHandler.enemySFX.playSound('ravenSingleFlap');
     }
 }
@@ -1467,6 +1542,7 @@ export class Skulnap extends MovingGroundEnemy {
         this.sleepingAnimation.frameY = 0;
 
         this.soundId = undefined;
+        this.loopingSoundId = 'fuseSound';
     }
 
     update(deltaTime) {
@@ -1480,6 +1556,7 @@ export class Skulnap extends MovingGroundEnemy {
             const playerDistance = Math.abs(this.game.player.x - this.x);
             if (playerDistance < 900 && this.y >= this.game.height - this.height - this.game.groundMargin) {
                 this.soundId = 'skeletonRattlingSound';
+                this.loopingSoundId = 'skeletonRattlingSound';
                 this.state = 'running';
                 this.frameX = 0;
                 this.runningSpeed = 3;
@@ -1528,6 +1605,7 @@ export class Abyssaw extends FlyingEnemy {
     constructor(game) {
         super(game, 100.44, 100, 8, 'abyssaw');
         this.soundId = 'spinningChainsaw';
+        this.loopingSoundId = 'spinningChainsaw';
         this.radius = Math.random() * 2 + 6;
     }
     update(deltaTime) {
@@ -1687,6 +1765,51 @@ export class DuskPlant extends ImmobileGroundEnemy {
     }
 }
 
+export class Skelly extends MovingGroundEnemy {
+    constructor(game) {
+        super(game, 57.5, 60, 11, 'skelly');
+        this.setFps(60);
+        this.isJumping = false;
+        this.jumpStartTime = 0;
+        this.jumpHeight = 240 + Math.random() * 40;
+        this.jumpDuration = 0.5 + Math.random() * 0.1;
+        this.horizontalSpeed = 10 + Math.random() * 2;
+        this.groundY = this.game.height - this.height - this.game.groundMargin;
+        this.jumpTimer = 1000;
+        this.jumpInterval = 1000 + Math.random() * 500;
+    }
+
+    startJump() {
+        this.isJumping = true;
+        this.jumpStartTime = this.game.hiddenTime;
+        this.groundY = this.game.height - this.height - this.game.groundMargin;
+        this.jumpDir = -1;
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime);
+
+        if (!this.isJumping) {
+            this.jumpTimer += deltaTime;
+            if (this.jumpTimer >= this.jumpInterval) {
+                this.startJump();
+                this.jumpTimer = 0;
+            }
+        }
+
+        if (this.isJumping) {
+            const progress = (this.game.hiddenTime - this.jumpStartTime) / (this.jumpDuration * 1000);
+            if (progress < 1) {
+                this.y = this.groundY - this.jumpHeight * Math.sin(progress * Math.PI);
+                this.x += this.jumpDir * this.horizontalSpeed;
+            } else {
+                this.y = this.groundY;
+                this.isJumping = false;
+            }
+        }
+    }
+}
+
 export class Silknoir extends ClimbingEnemy {
     constructor(game) {
         super(game, 120, 144, 5, 'silknoir');
@@ -1753,6 +1876,7 @@ export class Ben extends VerticalEnemy {
         this.initialSpeed = 3;
         this.currentSpeed = 4;
         this.chaseDistance = this.game.width;
+        this.loopingSoundId = 'verticalGhostSound';
     }
 
     update(deltaTime) {
@@ -1786,6 +1910,7 @@ export class Aura extends FlyingEnemy {
     constructor(game) {
         super(game, 52, 50, 0, 'aura');
         this.isStunEnemy = true;
+        this.loopingSoundId = 'auraSoundEffect';
         this.currentSpeed = 5;
         this.chaseDistance = this.game.width;
         this.passedPlayer = false;
@@ -1833,6 +1958,7 @@ export class Dolly extends FlyingEnemy {
     constructor(game) {
         super(game, 88.2, 120, 29, 'dolly');
         this.auraTimer = 0;
+        this.loopingSoundId = 'dollHumming';
     }
 
     update(deltaTime) {
@@ -2000,6 +2126,7 @@ export class SpearFish extends MovingGroundEnemy {
         this.isRedEnemy = true;
         this.lives = 2;
         this.setFps(60);
+        this.loopingSoundId = 'stepWaterSound';
     }
     update(deltaTime) {
         super.update(deltaTime);
@@ -2014,6 +2141,7 @@ export class JetFish extends UnderwaterEnemy {
         this.y = this.game.player.y;
         this.va = Math.random() * 0.001 + 0.1;
         this.setFps(60);
+        this.loopingSoundId = 'rocketLauncherSound';
     }
     update(deltaTime) {
         super.update(deltaTime);
@@ -2223,10 +2351,7 @@ export class Chiquita extends FlyingEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        if (this.playsOnce && this.isOnScreen()) {
-            this.playsOnce = false;
-            this.game.audioHandler.enemySFX.playSound('ravenCallAudio');
-        }
+        this.playSoundOnce('ravenCallAudio');
         if (this.frameX === 7 && this.isOnScreen()) this.game.audioHandler.enemySFX.playSound('ravenSingleFlap');
     }
 }
@@ -2251,10 +2376,7 @@ export class LilHornet extends FlyingEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        if (this.playsOnce && this.isOnScreen()) {
-            this.playsOnce = false;
-            this.game.audioHandler.enemySFX.playSound('buzzingFly');
-        }
+        this.playSoundOnce('buzzingFly');
     }
 }
 
@@ -2277,10 +2399,7 @@ export class KarateCroco extends MovingGroundEnemy {
         }
 
         if (this.state === 'flykick') {
-            if (this.playsOnce && this.isOnScreen()) {
-                this.playsOnce = false;
-                this.game.audioHandler.enemySFX.playSound('ahhhSound', false, true);
-            }
+            this.playSoundOnce('ahhhSound', false, true);
             if (this.flyKickAnimation.frameX < 3) {
                 this.flyKickAnimation.update(deltaTime);
                 this.x -= 14;
@@ -2448,10 +2567,7 @@ export class Zabkous extends MovingGroundEnemy {
     update(deltaTime) {
         super.update(deltaTime);
 
-        if (this.playsOnce && this.isOnScreen()) {
-            this.playsOnce = false;
-            this.game.audioHandler.enemySFX.playSound('frogSound', false, true);
-        }
+        this.playSoundOnce('frogSound', false, true);
 
         if (this.state === 'run') this.frogRun();
         else if (this.state === 'attack') this.frogAttack();
@@ -2488,6 +2604,7 @@ export class SpidoLazer extends MovingGroundEnemy {
         this.lives = 2;
         this.state = 'walk';
         this.canAttack = true;
+        this.loopingSoundId = 'spidoLazerWalking';
 
         this.laserBeamConfig = {
             width: 300,
@@ -2674,10 +2791,7 @@ export class RedFlyer extends FlyingEnemy {
                 }
             }
         }
-        if (this.playsOnce && this.isOnScreen()) {
-            this.playsOnce = false;
-            this.game.audioHandler.enemySFX.playSound('buzzingFly');
-        }
+        this.playSoundOnce('buzzingFly');
     }
 }
 
@@ -2702,10 +2816,7 @@ export class PurpleFlyer extends FlyingEnemy {
     update(deltaTime) {
         super.update(deltaTime);
 
-        if (this.playsOnce && this.isOnScreen()) {
-            this.playsOnce = false;
-            this.game.audioHandler.enemySFX.playSound('buzzingFly');
-        }
+        this.playSoundOnce('buzzingFly');
 
         if (this.game.background.isRaining) {
             this.iceballTimer += deltaTime;
@@ -2727,10 +2838,7 @@ export class LazyMosquito extends FlyingEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        if (this.playsOnce && this.isOnScreen()) {
-            this.playsOnce = false;
-            this.game.audioHandler.enemySFX.playSound('buzzingFly');
-        }
+        this.playSoundOnce('buzzingFly');
     }
 }
 
@@ -2795,10 +2903,7 @@ export class Eggry extends ImmobileGroundEnemy {
             this.baseHorizontalSpeed = 7 + Math.random() * 2;
             this.horizontalSpeed = this.baseHorizontalSpeed;
 
-            this.minHSpeed = 5;
-            this.maxHSpeed = 11;
 
-            this.jumpTickFpsEstimate = 60;
         }
     }
 
@@ -2807,26 +2912,8 @@ export class Eggry extends ImmobileGroundEnemy {
         this.jumpStartTime = this.game.hiddenTime;
         this.groundY = this.game.height - this.height - this.game.groundMargin;
 
-        if (this.game.gameOver) {
-            this.jumpDir = -1;
-            if (this.jumpStyle === 'smart') this.horizontalSpeed = this.baseHorizontalSpeed;
-            return;
-        }
-
-        if (this.jumpStyle === 'low') {
-            this.jumpDir = this.game.player.x >= this.x ? 1 : -1;
-        } else {
-            const playerCenterX = this.game.player.x + (this.game.player.width ? this.game.player.width / 2 : 0);
-            const myCenterX = this.x + this.width / 2;
-            const deltaX = playerCenterX - myCenterX;
-
-            this.jumpDir = deltaX >= 0 ? 1 : -1;
-
-            const expectedTicks = Math.max(1, Math.round(this.jumpDuration * this.jumpTickFpsEstimate));
-            const neededSpeed = Math.abs(deltaX) / expectedTicks;
-
-            this.horizontalSpeed = clamp(neededSpeed, this.minHSpeed, this.maxHSpeed);
-        }
+        this.jumpDir = -1;
+        if (this.jumpStyle === 'smart') this.horizontalSpeed = this.baseHorizontalSpeed;
     }
 
     update(deltaTime) {
@@ -2855,20 +2942,6 @@ export class Eggry extends ImmobileGroundEnemy {
                 this.isJumping = false;
             }
         }
-    }
-}
-
-export class Tauro extends MovingGroundEnemy {
-    constructor(game) {
-        super(game, 151, 132, 2, 'tauro');
-        this.isRedEnemy = true;
-        this.lives = 2;
-        this.setFps(15);
-        this.soundId = 'stomp';
-    }
-    update(deltaTime) {
-        super.update(deltaTime);
-        this.x -= 8;
     }
 }
 
@@ -3116,46 +3189,6 @@ export class VolcanoWasp extends BeeInstances {
     }
 }
 
-export class Rollhog extends MovingGroundEnemy {
-    constructor(game) {
-        super(game, 125, 85, 2, 'rollhogWalk');
-        this.lives = 2;
-        this.state = 'idle';
-        this.setFps(3);
-        this.image = getImg('rollhogWalk');
-        this.playOnce = true;
-    }
-
-    update(deltaTime) {
-        super.update(deltaTime);
-
-        if (this.state === 'idle') this.x -= 1;
-        else this.x -= 10;
-
-        const playerDistance = Math.abs(this.game.player.x - this.x);
-        if (playerDistance < 1100) {
-            this.state = 'roll';
-            this.image = getImg('rollhogRoll');
-            this.width = 97;
-            this.height = 92;
-            this.y = this.game.height - this.height - this.game.groundMargin;
-        }
-
-        if (this.state === 'roll') {
-            this.setFps(15);
-            if (this.playOnce) {
-                this.playOnce = false;
-                this.game.audioHandler.enemySFX.playSound('rollhogRollSound', false, true);
-            }
-            if (this.frameX === 10) this.frameX = 9;
-        }
-
-        if (this.x + this.width < 0 || this.lives <= 0) {
-            this.game.audioHandler.enemySFX.stopSound('rollhogRollSound');
-        }
-    }
-}
-
 export class Dragon extends FlyingEnemy {
     constructor(game) {
         super(game, 182, 172, 11, 'dragon');
@@ -3220,5 +3253,129 @@ export class IceSilknoir extends ClimbingEnemy {
         super.update(deltaTime);
         this.y += this.speedY * Math.sin(this.angle);
         this.angle += this.va;
+    }
+}
+
+export class CrystalWasp extends FlyingEnemy {
+    constructor(game) {
+        super(game, 111.8333333333333, 110, 5, 'crystalWasp');
+        this.playsOnce = true;
+        this.setFps(30);
+        this.isFrozenEnemy = true;
+        this.currentSpeed = 1.5;
+        this.chaseDistance = this.game.width;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.playSoundOnce('buzzingFly');
+
+        if (this.x >= this.game.player.x && this.getDistanceToPlayer() <= this.chaseDistance) {
+            moveAlongAngle(this, this.getAngleToPlayer(), this.currentSpeed);
+        } else {
+            this.x -= this.currentSpeed;
+        }
+    }
+}
+
+export class IcePlant extends ImmobileGroundEnemy {
+    constructor(game) {
+        super(game, 78.42857142857143, 115, 6, 'icePlant');
+        this.soundId = 'teethChatteringSound';
+        this.shardCooldown = 4000;
+        this.lastShardTime = 3999;
+    }
+
+    throwShard() {
+        const shard = new FrozenShard(
+            this.game,
+            this.x - 10,
+            this.y + this.height / 2 - 30,
+            8
+        );
+        this.game.enemies.push(shard);
+        this.lastShardTime = 0;
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.lastShardTime += deltaTime;
+        if (this.lastShardTime >= this.shardCooldown && this.x < this.game.width - this.width) {
+            this.throwShard();
+        }
+    }
+}
+
+export class Globby extends MovingGroundEnemy {
+    constructor(game) {
+        super(game, 115, 110, 5, 'globby');
+        this.setFps(12);
+        this.xSpeed = Math.floor(Math.random() * 6) + 2;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.x -= this.xSpeed;
+    }
+}
+
+export class IceCentipede extends MovingGroundEnemy {
+    constructor(game) {
+        super(game, 126, 80, 5, 'iceCentipede');
+        this.setFps(12);
+        this.xSpeed = Math.floor(Math.random() * 2) + 2;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.x -= this.xSpeed;
+    }
+}
+
+export class DrillIce extends UndergroundEnemy {
+    constructor(game) {
+        super(game, 197, 115, 3, 'drillice', {
+            warningDuration: 800,
+            riseDuration: 300,
+            holdDuration: 1200,
+            triggerDistance: 700
+        });
+        this.isSlowEnemy = true;
+    }
+}
+
+export class IceGlider extends FallingEnemy {
+    constructor(game) {
+        super(game, 138, 150, 1, 'iceGlider');
+        this.speedY = Math.random() * 4 + 4;
+        this.setFps(10);
+    }
+}
+
+// Bonus Map 2 --------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+// Bonus Map 3 --------------------------------------------------------------------------------------------------------------------------------------
+export class SpaceCrab extends FallingEnemy {
+    constructor(game) {
+        super(game, 125.6666666666667, 130, 2, 'spaceCrab');
+        this.speedY = Math.random() * 6 + 5;
+        this.setFps(10);
+    }
+}
+
+export class Johnny extends FlyingEnemy {
+    constructor(game) {
+        super(game, 98, 80, 0, 'johnny');
+        this.setFps(0);
+        this.currentSpeed = 7;
+        this.chaseDistance = this.game.width;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+
+        if (this.x >= this.game.player.x && this.getDistanceToPlayer() <= this.chaseDistance) {
+            moveAlongAngle(this, this.getAngleToPlayer(), this.currentSpeed);
+        } else {
+            this.x -= this.currentSpeed;
+        }
     }
 }

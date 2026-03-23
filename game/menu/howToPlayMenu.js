@@ -1812,6 +1812,9 @@ export class HowToPlayMenu extends BaseMenu {
 
         const make = (Cls) => {
             const o = new Cls(this.game);
+            const isolatedGame = Object.create(this.game);
+            isolatedGame.player = { x: 0, y: 0, isSlowed: false };
+            o.game = isolatedGame;
             o.markedForDeletion = false;
             o.isMenuPreview = true;
             return o;

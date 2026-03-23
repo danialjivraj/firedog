@@ -36,7 +36,7 @@ jest.mock('../../game/entities/enemies/enemies.js', () => ({
     constructor() { this.id = null; this.x = 0; this.y = 0; this.width = 0; this.height = 0; }
   },
   Abyssaw: class Abyssaw {
-    constructor() { this.x = 0; this.y = 0; this.width = 0; this.height = 0; }
+    constructor() { this.x = 0; this.y = 0; this.width = 0; this.height = 0; this.loopingSoundId = 'spinningChainsaw'; }
   }
 }));
 
@@ -284,9 +284,9 @@ describe('ExplosionCollisionAnimation', () => {
     eca.update(0);
 
     expect(skul.markedForDeletion).toBe(true);
-    expect(game.audioHandler.enemySFX.stopSound).toHaveBeenCalledWith('skeletonRattlingSound');
     expect(game.audioHandler.collisionSFX.playSound).toHaveBeenCalledWith('explosionCollision', false, true);
     expect(game.collisions[0]).toBeInstanceOf(ExplosionCollisionAnimation);
+    expect(game.audioHandler.enemySFX.stopSound).not.toHaveBeenCalledWith('skeletonRattlingSound');
   });
 
   test('does not chain explosion when Skulnap id matches, but still deletes the enemy', () => {
@@ -304,7 +304,7 @@ describe('ExplosionCollisionAnimation', () => {
     expect(game.audioHandler.collisionSFX.playSound).not.toHaveBeenCalled();
   });
 
-  test('stops chainsaw sound when enemy is Abyssaw', () => {
+  test('marks Abyssaw for deletion and it carries loopingSoundId for cleanup by the game loop filter', () => {
     const game = makeExplosionGame();
     const ab = new Abyssaw();
     ab.x = 70; ab.y = 70; ab.width = 10; ab.height = 10; ab.markedForDeletion = false;
@@ -314,7 +314,8 @@ describe('ExplosionCollisionAnimation', () => {
     eca.update(0);
 
     expect(ab.markedForDeletion).toBe(true);
-    expect(game.audioHandler.enemySFX.stopSound).toHaveBeenCalledWith('spinningChainsaw');
+    expect(ab.loopingSoundId).toBe('spinningChainsaw');
+    expect(game.audioHandler.enemySFX.stopSound).not.toHaveBeenCalledWith('spinningChainsaw');
   });
 
   test('removes overlapping powerUps and spawns poof collision', () => {

@@ -8,8 +8,8 @@ const BOSS_CONFIG = {
         type: Glacikal,
         gate: {
             mode: "coinsAndDistance",
-            minDistance: 100,
-            minCoins: 100,
+            minDistance: 250,
+            minCoins: 200,
         },
     },
     BonusMap3: {

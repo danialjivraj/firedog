@@ -135,9 +135,9 @@ import {
 
 import {
     MeatSoldier,
-    AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Tauro, Gloomlet, EnemyBoss, Barrier,
+    AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Gloomlet, EnemyBoss, Barrier,
     Aura, KarateCroco, SpearFish, TheRock, LilHornet, Cactus, IceBall, Garry, InkBeam, RockProjectile,
-    VolcanoWasp, Volcanurtle,
+    VolcanoWasp, Volcanurtle, FrozenShard, CrystalWasp,
 } from '../../game/entities/enemies/enemies.js';
 
 import {
@@ -722,7 +722,6 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
     describe.each([
         ['Gloomlet', Gloomlet, 1],
         ['KarateCroco', KarateCroco, 2],
-        ['Tauro', Tauro, 2],
         ['SpearFish', SpearFish, 2],
         ['TheRock', TheRock, 2],
         ['Volcanurtle', Volcanurtle, 1],
@@ -758,6 +757,7 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
         ['SpinningIceBalls', SpinningIceBalls, SpinningIceBallsCollision, null],
         ['PointyIcicleShard', PointyIcicleShard, PointyIcicleShardCollision, null],
         ['BlueArrow', BlueArrow, DisintegrateCollision, null],
+        ['FrozenShard', FrozenShard, DisintegrateCollision, null],
     ])('Slow enemy: %s', (_name, EnemyClass, Expected, livesOverride) => {
         test.each(normalScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();
@@ -797,6 +797,7 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
     });
 
     describe.each([
+        ['CrystalWasp', CrystalWasp, 'fallback'],
         ['IceSlash', IceSlash, IceSlashCollision],
         ['BlueAsteroid', BlueAsteroid, DisintegrateCollision],
         ['CyanArrow', CyanArrow, DisintegrateCollision],
@@ -814,7 +815,12 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
                 return;
             }
 
-            expectCollisionCounts(ctx, [[ExpectedCollisionClass, 1]]);
+            if (ExpectedCollisionClass === 'fallback') {
+                const Cls = expectBloodOrPoofForNormalEnemy(enemy.lives);
+                expectCollisionCounts(ctx, [[Cls, 1]]);
+            } else {
+                expectCollisionCounts(ctx, [[ExpectedCollisionClass, 1]]);
+            }
 
             if (!s.isInvisible && !s.isDashing) {
                 expect(ctx.logic.startFrozen).toHaveBeenCalledWith(ctx.player, 2000);
@@ -1300,7 +1306,6 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
 
     describe.each([
         ['Gloomlet', Gloomlet, 1],
-        ['Tauro', Tauro, 2],
         ['KarateCroco', KarateCroco, 2],
         ['SpearFish', SpearFish, 2],
         ['TheRock', TheRock, 2],
@@ -1331,6 +1336,7 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
         ['SpinningIceBalls', SpinningIceBalls, SpinningIceBallsCollision, null],
         ['PointyIcicleShard', PointyIcicleShard, PointyIcicleShardCollision, null],
         ['BlueArrow', BlueArrow, DisintegrateCollision, null],
+        ['FrozenShard', FrozenShard, DisintegrateCollision, null],
     ])('Slow enemy: %s', (_name, EnemyClass, Expected, livesOverride) => {
         test.each(rollDiveScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();
@@ -1358,6 +1364,7 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
     });
 
     describe.each([
+        ['CrystalWasp', CrystalWasp, 'fallback'],
         ['IceSlash', IceSlash, IceSlashCollision],
         ['BlueAsteroid', BlueAsteroid, DisintegrateCollision],
         ['CyanArrow', CyanArrow, DisintegrateCollision],
@@ -1368,7 +1375,12 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
 
             runRollDiveScenario(ctx, enemy, s);
 
-            expectCollisionCounts(ctx, [[ExpectedCollisionClass, 1]]);
+            if (ExpectedCollisionClass === 'fallback') {
+                const Cls = expectBloodOrPoofForNormalEnemy(enemy.lives);
+                expectCollisionCounts(ctx, [[Cls, 1]]);
+            } else {
+                expectCollisionCounts(ctx, [[ExpectedCollisionClass, 1]]);
+            }
 
             if (!s.isInvisible) {
                 expect(ctx.game.lives).toBe(2);
@@ -1592,6 +1604,7 @@ describe('CollisionLogic.fireball vs enemy', () => {
         [PurpleThunder, PurpleThunderCollision],
         [PurpleAsteroid, AsteroidExplosionCollision],
         [BlueAsteroid, DisintegrateCollision],
+        [CrystalWasp, CollisionAnimation],
 
         [BlueArrow, DisintegrateCollision],
         [YellowArrow, DisintegrateCollision],
@@ -1611,6 +1624,7 @@ describe('CollisionLogic.fireball vs enemy', () => {
         [SpinningIceBalls, SpinningIceBallsCollision],
         [PointyIcicleShard, PointyIcicleShardCollision],
         [IceSlash, IceSlashCollision],
+        [FrozenShard, DisintegrateCollision],
     ];
 
     test.each([
@@ -2419,7 +2433,7 @@ describe('FloatingMessage', () => {
             ctx.player.isDashing = false;
             ctx.player.previousLives = ctx.game.lives;
 
-            const enemy = makeEnemy(Tauro, { x: 110, y: 110, lives: 2 });
+            const enemy = makeEnemy(KarateCroco, { x: 110, y: 110, lives: 2 });
             const before = snapshot(ctx);
 
             ctx.logic.handleFiredogCollisionWithEnemy(enemy);

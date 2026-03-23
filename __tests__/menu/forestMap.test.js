@@ -870,7 +870,7 @@ describe('ForestMapMenu', () => {
             expect(mockGame.player.isSpace).toBe(false);
 
             expect(mockGame.maxDistance).toBe(9999999);
-            expect(mockGame.winningCoins).toBe(0);
+            expect(mockGame.winningCoins).toBe(200);
 
             expect(BonusMap1StartCutscene).toHaveBeenCalledWith(mockGame);
             const cutsceneInstance = BonusMap1StartCutscene.mock.results[0].value;

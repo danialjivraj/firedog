@@ -647,21 +647,6 @@ export class EnemyLore extends BaseMenu {
             mapKey: "map5",
         });
 
-        // 37
-        this.createPage({
-            name: "TAURO",
-            type: "GROUND & RED",
-            foundAt: "SPRINGLY LEMONY",
-            description:
-                "TAURO IS AN ANGRY CREATURE WHO STOMPS LOUDLY AS HE MOVES FORWARD, KNOCKING EVERYTHING IN HIS PATH DOWN!\n"
-                + "LEGENDS SAY HE USED TO LIVE NEAR ACTIVE VOLCANOES, BUT ONCE HIS HABITAT WAS DESTROYED BY THE ERUPTION OF A MASSIVE VOLCANO, HE WAS FORCED TO COME TO SPRINGLY LEMONY.\n"
-                + "NOW, HE RESIDES HERE, HIS RAGE FUELED BY THE MEMORY OF HIS LOST HOME AND THE DESTRUCTION CAUSED BY THE ERUPTION!",
-            images: [
-                this.createImage('tauro', 151, 132, 0, this.pageWidth - 210, this.pageHeight - 150, 1, 'red'),
-            ],
-            mapKey: "map5",
-        });
-
         // 38
         this.createPage({
             name: "BEE",
@@ -840,22 +825,6 @@ export class EnemyLore extends BaseMenu {
                 + "LITTLE IS KNOWN ABOUT THEM EXCEPT THAT THEY ONCE INHABITED THE LUSH ENVIRONMENT OF VERDANT VINE, BUT SOMETHING FORCED THEM TO MIGRATE TO VOLCANIC AREAS...",
             images: [
                 this.createImage('volcanoWasp', 113, 125, 0, this.pageWidth - 170, 70, 1, 'stun'),
-            ],
-            mapKey: "map7",
-        });
-
-        // 48
-        this.createPage({
-            name: "ROLLHOG",
-            type: "GROUND & NORMAL",
-            foundAt: "INFERNAL CRATER PEAK",
-            description:
-                "ROLLHOGS USED TO LIVE UNDERNEATH THE SOIL OF THIS AREA UNTIL THE BIG ERUPTION OCCURRED.\n"
-                + "NOW, THE GROUND HAS BECOME TOO HOT FOR ROLLHOG TO HIDE UNDERNEATH.\nTO SURVIVE, HE HAD TO LEARN AN ATTACK... AND SO HE LEARNED TO ROLL HIMSELF FORWARD, KNOCKING OUT "
-                + "ANY ENEMY THAT DARES TO STAND IN HIS WAY!",
-            images: [
-                this.createImage('rollhogWalk', 125, 85, 0, this.pageWidth - 210, this.pageHeight - 110, 1),
-                this.createImage('rollhogRoll', 97, 92, 0, this.pageWidth - 510, this.pageHeight - 110, 1),
             ],
             mapKey: "map7",
         });

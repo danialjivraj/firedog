@@ -1,4 +1,4 @@
-import { Skulnap, Abyssaw } from "../entities/enemies/enemies.js";
+import { Skulnap } from "../entities/enemies/enemies.js";
 import { FloatingMessage } from "./floatingMessages.js";
 
 export class Collision {
@@ -114,11 +114,7 @@ export class ExplosionCollisionAnimation extends Collision {
                     this.game.coins++;
                 } else if (enemy instanceof Skulnap && enemy.id !== this.enemyId) {
                     this.game.collisions.push(new ExplosionCollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5, this.enemyId));
-                    this.game.audioHandler.enemySFX.stopSound('skeletonRattlingSound');
                     this.game.audioHandler.collisionSFX.playSound('explosionCollision', false, true);
-                }
-                if (enemy instanceof Abyssaw) {
-                    this.game.audioHandler.enemySFX.stopSound('spinningChainsaw');
                 }
             }
         });

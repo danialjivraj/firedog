@@ -2879,10 +2879,18 @@ describe('Game class (game-main.js)', () => {
       game.enemies = [];
     });
 
-    it('fades out "elyvorg_meteor_falling_sound" when no MeteorAttack is present', () => {
+    it('fades out "elyvorg_meteor_falling_sound" when the last MeteorAttack is removed', () => {
       game.audioHandler.enemySFX.isPlaying = jest.fn(name => name === 'elyvorg_meteor_falling_sound');
       game.audioHandler.enemySFX.fadeOutAndStop = jest.fn();
       game.audioHandler.enemySFX.stopSound = jest.fn();
+
+      game.enemies = [{
+        markedForDeletion: true,
+        loopingSoundId: 'elyvorg_meteor_falling_sound',
+        loopingSoundFadeOut: true,
+        update: jest.fn(),
+        draw: jest.fn(),
+      }];
 
       game.update(1);
 
@@ -2890,10 +2898,18 @@ describe('Game class (game-main.js)', () => {
         .toHaveBeenCalledWith('elyvorg_meteor_falling_sound', 2000);
     });
 
-    it('stops goblinRunSound when no Goblin is present', () => {
+    it('stops goblinRunSound when the last Goblin is removed', () => {
       game.audioHandler.enemySFX.isPlaying = jest.fn(() => true);
       game.audioHandler.enemySFX.stopSound = jest.fn();
       game.audioHandler.enemySFX.fadeOutAndStop = jest.fn();
+
+      game.enemies = [{
+        markedForDeletion: true,
+        loopingSoundId: 'goblinRunSound',
+        loopingSoundFadeOut: false,
+        update: jest.fn(),
+        draw: jest.fn(),
+      }];
 
       game.update(1);
 

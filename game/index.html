@@ -192,6 +192,7 @@
     <audio id="elyvorg_arrow_attack_sound" src="assets/audio/enemies/0elyvorg/elyvorg_arrow_attack_sound.mp3" preload="auto"></audio>
     <audio id="elyvorg_teleport_sound_effect" src="assets/audio/enemies/0elyvorg/elyvorg_teleport_sound_effect.mp3" preload="auto"></audio>
     <audio id="elyvorg_ghost_hit_sound_effect" src="assets/audio/enemies/0elyvorg/elyvorg_ghost_hit_sound_effect.mp3" preload="auto"></audio>
+    <audio id="elyvorg_purple_laser_destroyed_sound" src="assets/audio/enemies/0elyvorg/elyvorg_purple_laser_destroyed_sound.mp3" preload="auto"></audio>
     <!-- glacikal audio -->
     <audio id="iceTrailSound" src="assets/audio/enemies/0glacikal/iceTrailSound.mp3" preload="auto"></audio>
     <audio id="iceSlashSound" src="assets/audio/enemies/0glacikal/iceSlashSound.mp3" preload="auto"></audio>
@@ -308,8 +309,6 @@
     <audio id="rocketLauncherSound" src="assets/audio/enemies/jetFish/rocketLauncherSound.mp3" preload="auto"></audio>
     <!-- spearFish audio -->
     <audio id="stepWaterSound" src="assets/audio/enemies/spearFish/stepWaterSound.mp3" preload="auto"></audio>
-    <!-- tauro audio -->
-    <audio id="stomp" src="assets/audio/enemies/tauro/stomp.mp3" preload="auto"></audio>
     <!-- karateCroco audio -->
     <audio id="ahhhSound" src="assets/audio/enemies/karateCroco/ahhhSound.mp3" preload="auto"></audio>
     <!-- purpleFlyer audio -->
@@ -322,8 +321,6 @@
     <audio id="inkSpit" src="assets/audio/enemies/garry/inkSpit.mp3" preload="auto"></audio>
     <!-- theRock audio -->
     <audio id="theRockStomp" src="assets/audio/enemies/theRock/theRockStomp.mp3" preload="auto"></audio>
-    <!-- rollhog audio -->
-    <audio id="rollhogRollSound" src="assets/audio/enemies/rollhog/rollhogRollSound.mp3" preload="auto"></audio>
 <!-- icon image -->
 <img id="firedogHead" src="assets/icons/firedogHead.png">
 <!-- menu images -->
@@ -457,86 +454,87 @@
         <img id="rockProjectile" src="assets/entities/enemies/projectiles/rockProjectile.png">
         <img id="purpleLaser" src="assets/entities/enemies/projectiles/purpleLaser.png">
         <img id="inkBeam" src="assets/entities/enemies/projectiles/inkBeam.png">
+        <img id="frozenShard" src="assets/entities/enemies/projectiles/frozenShard.png">
         <!-- elyvorg -->
-        <img id="elyvorgIdle" src="assets/entities/enemies/Elyvorg/elyvorgIdle.png">
-        <img id="elyvorgLaserIdle" src="assets/entities/enemies/Elyvorg/elyvorgLaserIdle.png">
-        <img id="elyvorgGravityIdle" src="assets/entities/enemies/Elyvorg/elyvorgGravityIdle.png">
-        <img id="elyvorgMeteorIdle" src="assets/entities/enemies/Elyvorg/elyvorgMeteorIdle.png">
-        <img id="elyvorgPoisonIdle" src="assets/entities/enemies/Elyvorg/elyvorgPoisonIdle.png">
-        <img id="elyvorgPistolIdle" src="assets/entities/enemies/Elyvorg/elyvorgPistolIdle.png">
-        <img id="elyvorgGhostIdle" src="assets/entities/enemies/Elyvorg/elyvorgGhostIdle.png">
-        <img id="elyvorgInkIdle" src="assets/entities/enemies/Elyvorg/elyvorgInkIdle.png">
-        <img id="elyvorgIdleFireball" src="assets/entities/enemies/Elyvorg/elyvorgIdleFireball.png">
-        <img id="elyvorgRechargeIdle" src="assets/entities/enemies/Elyvorg/elyvorgRechargeIdle.png">
-        <img id="elyvorgRun" src="assets/entities/enemies/Elyvorg/elyvorgRun.png">
-        <img id="elyvorgJump" src="assets/entities/enemies/Elyvorg/elyvorgJump.png">
-        <img id="elyvorgThunderIdle" src="assets/entities/enemies/Elyvorg/elyvorgThunderIdle.png">
+        <img id="elyvorgIdle" src="assets/entities/enemies/Bosses/Elyvorg/elyvorgIdle.png">
+        <img id="elyvorgLaserIdle" src="assets/entities/enemies/Bosses/Elyvorg/elyvorgLaserIdle.png">
+        <img id="elyvorgGravityIdle" src="assets/entities/enemies/Bosses/Elyvorg/elyvorgGravityIdle.png">
+        <img id="elyvorgMeteorIdle" src="assets/entities/enemies/Bosses/Elyvorg/elyvorgMeteorIdle.png">
+        <img id="elyvorgPoisonIdle" src="assets/entities/enemies/Bosses/Elyvorg/elyvorgPoisonIdle.png">
+        <img id="elyvorgPistolIdle" src="assets/entities/enemies/Bosses/Elyvorg/elyvorgPistolIdle.png">
+        <img id="elyvorgGhostIdle" src="assets/entities/enemies/Bosses/Elyvorg/elyvorgGhostIdle.png">
+        <img id="elyvorgInkIdle" src="assets/entities/enemies/Bosses/Elyvorg/elyvorgInkIdle.png">
+        <img id="elyvorgIdleFireball" src="assets/entities/enemies/Bosses/Elyvorg/elyvorgIdleFireball.png">
+        <img id="elyvorgRechargeIdle" src="assets/entities/enemies/Bosses/Elyvorg/elyvorgRechargeIdle.png">
+        <img id="elyvorgRun" src="assets/entities/enemies/Bosses/Elyvorg/elyvorgRun.png">
+        <img id="elyvorgJump" src="assets/entities/enemies/Bosses/Elyvorg/elyvorgJump.png">
+        <img id="elyvorgThunderIdle" src="assets/entities/enemies/Bosses/Elyvorg/elyvorgThunderIdle.png">
             <!-- abilities -->
-            <img id="barrier" src="assets/entities/enemies/Elyvorg/abilities/barrier.png">
-            <img id="barrier1" src="assets/entities/enemies/Elyvorg/abilities/barrier1.png">
-            <img id="barrier2" src="assets/entities/enemies/Elyvorg/abilities/barrier2.png">
-            <img id="elyvorgGhostRun" src="assets/entities/enemies/Elyvorg/abilities/elyvorgGhostRun.png">
-            <img id="elyvorg_laser_beam" src="assets/entities/enemies/Elyvorg/abilities/elyvorg_laser_beam.png">
-            <img id="meteorAttack" src="assets/entities/enemies/Elyvorg/abilities/meteorAttack.png">
-            <img id="poisonDrop" src="assets/entities/enemies/Elyvorg/abilities/poisonDrop.png">
-            <img id="electricWheel" src="assets/entities/enemies/Elyvorg/abilities/electricWheel.png">
-            <img id="gravitationalAura" src="assets/entities/enemies/Elyvorg/abilities/gravitationalAura.png">
-            <img id="inkBomb" src="assets/entities/enemies/Elyvorg/abilities/inkBomb.png">
-            <img id="purpleFireball" src="assets/entities/enemies/Elyvorg/abilities/purpleFireball.png">
-            <img id="purpleSlash" src="assets/entities/enemies/Elyvorg/abilities/purpleSlash.png">
-            <img id="purpleThunder" src="assets/entities/enemies/Elyvorg/abilities/purpleThunder.png">
-            <img id="blueArrow" src="assets/entities/enemies/Elyvorg/abilities/blueArrow.png">
-            <img id="yellowArrow" src="assets/entities/enemies/Elyvorg/abilities/yellowArrow.png">
-            <img id="greenArrow" src="assets/entities/enemies/Elyvorg/abilities/greenArrow.png">
-            <img id="cyanArrow" src="assets/entities/enemies/Elyvorg/abilities/cyanArrow.png">
+            <img id="barrier" src="assets/entities/enemies/Bosses/Elyvorg/abilities/barrier.png">
+            <img id="barrier1" src="assets/entities/enemies/Bosses/Elyvorg/abilities/barrier1.png">
+            <img id="barrier2" src="assets/entities/enemies/Bosses/Elyvorg/abilities/barrier2.png">
+            <img id="elyvorgGhostRun" src="assets/entities/enemies/Bosses/Elyvorg/abilities/elyvorgGhostRun.png">
+            <img id="elyvorg_laser_beam" src="assets/entities/enemies/Bosses/Elyvorg/abilities/elyvorg_laser_beam.png">
+            <img id="meteorAttack" src="assets/entities/enemies/Bosses/Elyvorg/abilities/meteorAttack.png">
+            <img id="poisonDrop" src="assets/entities/enemies/Bosses/Elyvorg/abilities/poisonDrop.png">
+            <img id="electricWheel" src="assets/entities/enemies/Bosses/Elyvorg/abilities/electricWheel.png">
+            <img id="gravitationalAura" src="assets/entities/enemies/Bosses/Elyvorg/abilities/gravitationalAura.png">
+            <img id="inkBomb" src="assets/entities/enemies/Bosses/Elyvorg/abilities/inkBomb.png">
+            <img id="purpleFireball" src="assets/entities/enemies/Bosses/Elyvorg/abilities/purpleFireball.png">
+            <img id="purpleSlash" src="assets/entities/enemies/Bosses/Elyvorg/abilities/purpleSlash.png">
+            <img id="purpleThunder" src="assets/entities/enemies/Bosses/Elyvorg/abilities/purpleThunder.png">
+            <img id="blueArrow" src="assets/entities/enemies/Bosses/Elyvorg/abilities/blueArrow.png">
+            <img id="yellowArrow" src="assets/entities/enemies/Bosses/Elyvorg/abilities/yellowArrow.png">
+            <img id="greenArrow" src="assets/entities/enemies/Bosses/Elyvorg/abilities/greenArrow.png">
+            <img id="cyanArrow" src="assets/entities/enemies/Bosses/Elyvorg/abilities/cyanArrow.png">
         <!-- glacikal -->
-        <img id="glacikalIdle" src="assets/entities/enemies/Glacikal/glacikalIdle.png">
-        <img id="glacikalRunning" src="assets/entities/enemies/Glacikal/glacikalRunning.png">
-        <img id="glacikalJumping" src="assets/entities/enemies/Glacikal/glacikalJumping.png">
-        <img id="glacikalAttacking" src="assets/entities/enemies/Glacikal/glacikalAttacking.png">
-        <img id="glacikalIcyStorm" src="assets/entities/enemies/Glacikal/glacikalIcyStorm.png">
-        <img id="glacikalKneelDown" src="assets/entities/enemies/Glacikal/glacikalKneelDown.png">
-        <img id="glacikalExtendedArm" src="assets/entities/enemies/Glacikal/glacikalExtendedArm.png">
-        <img id="glacikalRecharge" src="assets/entities/enemies/Glacikal/glacikalRecharge.png">
+        <img id="glacikalIdle" src="assets/entities/enemies/Bosses/Glacikal/glacikalIdle.png">
+        <img id="glacikalRunning" src="assets/entities/enemies/Bosses/Glacikal/glacikalRunning.png">
+        <img id="glacikalJumping" src="assets/entities/enemies/Bosses/Glacikal/glacikalJumping.png">
+        <img id="glacikalAttacking" src="assets/entities/enemies/Bosses/Glacikal/glacikalAttacking.png">
+        <img id="glacikalIcyStorm" src="assets/entities/enemies/Bosses/Glacikal/glacikalIcyStorm.png">
+        <img id="glacikalKneelDown" src="assets/entities/enemies/Bosses/Glacikal/glacikalKneelDown.png">
+        <img id="glacikalExtendedArm" src="assets/entities/enemies/Bosses/Glacikal/glacikalExtendedArm.png">
+        <img id="glacikalRecharge" src="assets/entities/enemies/Bosses/Glacikal/glacikalRecharge.png">
             <!-- abilities -->
-            <img id="iceTrail" src="assets/entities/enemies/Glacikal/abilities/iceTrail.png">
-            <img id="icyStormBall" src="assets/entities/enemies/Glacikal/abilities/icyStormBall.png">
-            <img id="iceSlash" src="assets/entities/enemies/Glacikal/abilities/iceSlash.png">
-            <img id="spinningIceBalls" src="assets/entities/enemies/Glacikal/abilities/spinningIceBalls.png">
-            <img id="pointyIcicleShard" src="assets/entities/enemies/Glacikal/abilities/pointyIcicleShard.png">
-            <img id="iceSpider" src="assets/entities/enemies/Glacikal/abilities/iceSpider.png">
-            <img id="undergroundIcicle" src="assets/entities/enemies/Glacikal/abilities/undergroundIcicle.png">
+            <img id="iceTrail" src="assets/entities/enemies/Bosses/Glacikal/abilities/iceTrail.png">
+            <img id="icyStormBall" src="assets/entities/enemies/Bosses/Glacikal/abilities/icyStormBall.png">
+            <img id="iceSlash" src="assets/entities/enemies/Bosses/Glacikal/abilities/iceSlash.png">
+            <img id="spinningIceBalls" src="assets/entities/enemies/Bosses/Glacikal/abilities/spinningIceBalls.png">
+            <img id="pointyIcicleShard" src="assets/entities/enemies/Bosses/Glacikal/abilities/pointyIcicleShard.png">
+            <img id="iceSpider" src="assets/entities/enemies/Bosses/Glacikal/abilities/iceSpider.png">
+            <img id="undergroundIcicle" src="assets/entities/enemies/Bosses/Glacikal/abilities/undergroundIcicle.png">
         <!-- ntharax -->
-        <img id="ntharaxIdle" src="assets/entities/enemies/NTharax/ntharaxIdle.png">
-        <img id="ntharaxRun" src="assets/entities/enemies/NTharax/ntharaxRun.png">
-        <img id="ntharaxJump" src="assets/entities/enemies/NTharax/ntharaxJump.png">
-        <img id="ntharaxDive" src="assets/entities/enemies/NTharax/ntharaxDive.png">
-        <img id="ntharaxBall" src="assets/entities/enemies/NTharax/ntharaxBall.png">
-        <img id="ntharaxWing" src="assets/entities/enemies/NTharax/ntharaxWing.png">
-        <img id="ntharaxKneel" src="assets/entities/enemies/NTharax/ntharaxKneel.png">
-        <img id="ntharaxYellow" src="assets/entities/enemies/NTharax/ntharaxYellow.png">
-        <img id="ntharaxAsteroid" src="assets/entities/enemies/NTharax/ntharaxAsteroid.png">
-        <img id="ntharaxBlack" src="assets/entities/enemies/NTharax/ntharaxBlack.png">
-        <img id="ntharaxPurple" src="assets/entities/enemies/NTharax/ntharaxPurple.png">
-        <img id="ntharaxDistortion" src="assets/entities/enemies/NTharax/ntharaxDistortion.png">
-        <img id="ntharaxSlap" src="assets/entities/enemies/NTharax/ntharaxSlap.png">
-        <img id="ntharaxHealing" src="assets/entities/enemies/NTharax/ntharaxHealing.png">
-        <img id="ntharaxTentacle" src="assets/entities/enemies/NTharax/ntharaxTentacle.png">
-        <img id="ntharaxFly" src="assets/entities/enemies/NTharax/ntharaxFly.png">
-        <img id="ntharaxLaser" src="assets/entities/enemies/NTharax/ntharaxLaser.png">
+        <img id="ntharaxIdle" src="assets/entities/enemies/Bosses/NTharax/ntharaxIdle.png">
+        <img id="ntharaxRun" src="assets/entities/enemies/Bosses/NTharax/ntharaxRun.png">
+        <img id="ntharaxJump" src="assets/entities/enemies/Bosses/NTharax/ntharaxJump.png">
+        <img id="ntharaxDive" src="assets/entities/enemies/Bosses/NTharax/ntharaxDive.png">
+        <img id="ntharaxBall" src="assets/entities/enemies/Bosses/NTharax/ntharaxBall.png">
+        <img id="ntharaxWing" src="assets/entities/enemies/Bosses/NTharax/ntharaxWing.png">
+        <img id="ntharaxKneel" src="assets/entities/enemies/Bosses/NTharax/ntharaxKneel.png">
+        <img id="ntharaxYellow" src="assets/entities/enemies/Bosses/NTharax/ntharaxYellow.png">
+        <img id="ntharaxAsteroid" src="assets/entities/enemies/Bosses/NTharax/ntharaxAsteroid.png">
+        <img id="ntharaxBlack" src="assets/entities/enemies/Bosses/NTharax/ntharaxBlack.png">
+        <img id="ntharaxPurple" src="assets/entities/enemies/Bosses/NTharax/ntharaxPurple.png">
+        <img id="ntharaxDistortion" src="assets/entities/enemies/Bosses/NTharax/ntharaxDistortion.png">
+        <img id="ntharaxSlap" src="assets/entities/enemies/Bosses/NTharax/ntharaxSlap.png">
+        <img id="ntharaxHealing" src="assets/entities/enemies/Bosses/NTharax/ntharaxHealing.png">
+        <img id="ntharaxTentacle" src="assets/entities/enemies/Bosses/NTharax/ntharaxTentacle.png">
+        <img id="ntharaxFly" src="assets/entities/enemies/Bosses/NTharax/ntharaxFly.png">
+        <img id="ntharaxLaser" src="assets/entities/enemies/Bosses/NTharax/ntharaxLaser.png">
             <!-- abilities -->
-            <img id="healingStar" src="assets/entities/enemies/NTharax/abilities/healingStar.png">
-            <img id="galacticSpike" src="assets/entities/enemies/NTharax/abilities/galacticSpike.png">
-            <img id="antennaeTentacleUpward" src="assets/entities/enemies/NTharax/abilities/antennaeTentacleUpward.png">
-            <img id="laserBall" src="assets/entities/enemies/NTharax/abilities/laserBall.png">
-            <img id="laserBallMode2" src="assets/entities/enemies/NTharax/abilities/laserBallMode2.png">
-            <img id="purpleAsteroid" src="assets/entities/enemies/NTharax/abilities/purpleAsteroid.png">
-            <img id="blueAsteroid" src="assets/entities/enemies/NTharax/abilities/blueAsteroid.png">
-            <img id="healingBarrier" src="assets/entities/enemies/NTharax/abilities/healingBarrier.png">
-            <img id="healingBarrier1" src="assets/entities/enemies/NTharax/abilities/healingBarrier1.png">
-            <img id="healingBarrier2" src="assets/entities/enemies/NTharax/abilities/healingBarrier2.png">
-            <img id="healingBarrier3" src="assets/entities/enemies/NTharax/abilities/healingBarrier3.png">
-            <img id="healingBarrier4" src="assets/entities/enemies/NTharax/abilities/healingBarrier4.png">
+            <img id="healingStar" src="assets/entities/enemies/Bosses/NTharax/abilities/healingStar.png">
+            <img id="galacticSpike" src="assets/entities/enemies/Bosses/NTharax/abilities/galacticSpike.png">
+            <img id="antennaeTentacleUpward" src="assets/entities/enemies/Bosses/NTharax/abilities/antennaeTentacleUpward.png">
+            <img id="laserBall" src="assets/entities/enemies/Bosses/NTharax/abilities/laserBall.png">
+            <img id="laserBallMode2" src="assets/entities/enemies/Bosses/NTharax/abilities/laserBallMode2.png">
+            <img id="purpleAsteroid" src="assets/entities/enemies/Bosses/NTharax/abilities/purpleAsteroid.png">
+            <img id="blueAsteroid" src="assets/entities/enemies/Bosses/NTharax/abilities/blueAsteroid.png">
+            <img id="healingBarrier" src="assets/entities/enemies/Bosses/NTharax/abilities/healingBarrier.png">
+            <img id="healingBarrier1" src="assets/entities/enemies/Bosses/NTharax/abilities/healingBarrier1.png">
+            <img id="healingBarrier2" src="assets/entities/enemies/Bosses/NTharax/abilities/healingBarrier2.png">
+            <img id="healingBarrier3" src="assets/entities/enemies/Bosses/NTharax/abilities/healingBarrier3.png">
+            <img id="healingBarrier4" src="assets/entities/enemies/Bosses/NTharax/abilities/healingBarrier4.png">
         <!-- goblin -->
         <img id="goblinRun" src="assets/entities/enemies/Goblito/goblinRun.png">
         <img id="goblinSteal" src="assets/entities/enemies/Goblito/goblinSteal.png">
@@ -555,6 +553,7 @@
         <!-- map2 -->
         <img id="duskPlant" src="assets/entities/enemies/Map2/duskPlant.png">
         <img id="silknoir" src="assets/entities/enemies/Map2/silknoir.png">
+        <img id="skelly" src="assets/entities/enemies/Map2/skelly.png">
         <img id="walterTheGhost" src="assets/entities/enemies/Map2/walterTheGhost.png">
         <img id="gloomlet" src="assets/entities/enemies/Map2/gloomlet.png">
         <img id="dolly" src="assets/entities/enemies/Map2/dolly.png">
@@ -579,13 +578,10 @@
         <img id="lilHornet" src="assets/entities/enemies/Map4/lilHornet.png">
         <img id="karateCrocoIdle" src="assets/entities/enemies/Map4/karateCrocoIdle.png">
         <img id="karateCrocoFlyKick" src="assets/entities/enemies/Map4/karateCrocoFlyKick.png">
-        <img id="zabkousJump" src="assets/entities/enemies/Map4/zabkousJump.png">
-        <img id="zabkousAttack" src="assets/entities/enemies/Map4/zabkousAttack.png">
         <!-- map5 -->
         <img id="bee" src="assets/entities/enemies/Map5/bee.png">
         <img id="angryBee" src="assets/entities/enemies/Map5/angryBee.png">
         <img id="hangingSpidoLazer" src="assets/entities/enemies/Map5/hangingSpidoLazer.png">
-        <img id="tauro" src="assets/entities/enemies/Map5/tauro.png">
         <img id="snailey" src="assets/entities/enemies/Map5/snailey.png">
         <img id="redFlyer" src="assets/entities/enemies/Map5/redFlyer.png">
         <img id="purpleFlyer" src="assets/entities/enemies/Map5/purpleFlyer.png">
@@ -594,19 +590,30 @@
         <img id="sunflora" src="assets/entities/enemies/Map5/sunflora.png">
         <img id="eggry" src="assets/entities/enemies/Map5/eggry.png">
         <!-- map6 -->
-        <img id="theRock" src="assets/entities/enemies/Map6/theRock.png">
-        <img id="theRockSmash" src="assets/entities/enemies/Map6/theRockSmash.png">
-        <img id="dragon" src="assets/entities/enemies/Map6/dragon.png">
-        <img id="cactus" src="assets/entities/enemies/Map6/cactus.png">
-        <img id="petroPlant" src="assets/entities/enemies/Map6/petroPlant.png">
-        <img id="plazer" src="assets/entities/enemies/Map6/plazer.png">
-        <img id="veynoculus" src="assets/entities/enemies/Map6/veynoculus.png">
-        <img id="volcanurtle" src="assets/entities/enemies/Map6/volcanurtle.png">
-        <img id="rollhogWalk" src="assets/entities/enemies/Map6/rollhogWalk.png">
-        <img id="rollhogRoll" src="assets/entities/enemies/Map6/rollhogRoll.png">
-        <img id="volcanoWasp" src="assets/entities/enemies/Map6/volcanoWasp.png">
+        <img id="zabkousJump" src="assets/entities/enemies/Map6/zabkousJump.png">
+        <img id="zabkousAttack" src="assets/entities/enemies/Map6/zabkousAttack.png">
+        <!-- map7 -->
+        <img id="theRock" src="assets/entities/enemies/Map7/theRock.png">
+        <img id="theRockSmash" src="assets/entities/enemies/Map7/theRockSmash.png">
+        <img id="cactus" src="assets/entities/enemies/Map7/cactus.png">
+        <img id="petroPlant" src="assets/entities/enemies/Map7/petroPlant.png">
+        <img id="volcanurtle" src="assets/entities/enemies/Map7/volcanurtle.png">
+        <img id="volcanoWasp" src="assets/entities/enemies/Map7/volcanoWasp.png">
         <!-- bonusmap1 -->
         <img id="iceSilknoir" src="assets/entities/enemies/BonusMap1/iceSilknoir.png">
+        <img id="crystalWasp" src="assets/entities/enemies/BonusMap1/crystalWasp.png">
+        <img id="icePlant" src="assets/entities/enemies/BonusMap1/icePlant.png">
+        <img id="globby" src="assets/entities/enemies/BonusMap1/globby.png">
+        <img id="iceCentipede" src="assets/entities/enemies/BonusMap1/iceCentipede.png">
+        <img id="drillice" src="assets/entities/enemies/BonusMap1/drillice.png">
+        <img id="iceGlider" src="assets/entities/enemies/BonusMap1/iceGlider.png">
+        <!-- bonusmap2 -->
+        <img id="dragon" src="assets/entities/enemies/BonusMap2/dragon.png">
+        <!-- bonusmap3 -->
+        <img id="plazer" src="assets/entities/enemies/BonusMap3/plazer.png">
+        <img id="veynoculus" src="assets/entities/enemies/BonusMap3/veynoculus.png">
+        <img id="spaceCrab" src="assets/entities/enemies/BonusMap3/spaceCrab.png">
+        <img id="johnny" src="assets/entities/enemies/BonusMap3/johnny.png">
     <!-- cabin -->
     <img id="map1cabin" src="assets/entities/cabin/map1cabin.png">
     <img id="map2cabin" src="assets/entities/cabin/map2cabin.png">

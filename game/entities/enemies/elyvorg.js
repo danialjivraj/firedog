@@ -346,7 +346,7 @@ export class PurpleFireball extends Projectile {
 
 export class Arrow extends Projectile {
     constructor(game, x, y, speedX, speedY, direction, imageId, shadowColor = null) {
-        super(game, x, y, 103.5, 40, 1, imageId, speedX, speedY);
+        super(game, x, y, 155.625, 75, 7, imageId, speedX, speedY);
 
         this.initialSize = 10;
         this.size = this.initialSize;
@@ -361,7 +361,7 @@ export class Arrow extends Projectile {
 
         this.shadowColor = shadowColor;
 
-        this.setFps(7);
+        this.setFps(15);
 
         this.collisionDrawInfo = {
             angle: 0,
@@ -474,8 +474,8 @@ export class ChargeIndicatorBalls {
         const dir = facingLeft ? -1 : 1;
 
         const cx = this.boss.x + this.boss.width * 0.5
-        + this.anchorOffsetX
-        + dir * this.facingOffsetX;
+            + this.anchorOffsetX
+            + dir * this.facingOffsetX;
         const cy = this.boss.y + this.boss.height * 0.35;
 
         const p = {
@@ -512,8 +512,8 @@ export class ChargeIndicatorBalls {
         const dir = facingLeft ? -1 : 1;
 
         const bossCx = this.boss
-        ? (this.boss.x + this.boss.width * 0.5 + this.anchorOffsetX + dir * this.facingOffsetX)
-        : 0;
+            ? (this.boss.x + this.boss.width * 0.5 + this.anchorOffsetX + dir * this.facingOffsetX)
+            : 0;
         const bossCy = this.boss ? (this.boss.y + this.boss.height * 0.35) : 0;
 
         if (!this.stopping && this.spawnRate > 0) {

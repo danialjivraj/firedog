@@ -155,7 +155,7 @@ export class BonusMap1GlacikalIngameCutsceneAfterFight extends GlacikalCutscene 
         this.addDialogue( //0
             `${this.glacikal}`,
             `Aaarrgh...`,
-            this.addImage(this.setfiredogNormalBorder(), FIREDOG),
+            this.addImage(this.setfiredogHeadacheBorder(), FIREDOG),
             this.addImage('glacikalBorder', GLACIKAL, { talking: true }),
         );
         this.addDialogue( //1
