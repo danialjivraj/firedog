@@ -26,7 +26,7 @@ body {
 /* stars sticker */ 
 #greenBand, #blankStarLeft, #blankStarMiddle, #blankStarRight, #filledStarLeft, #filledStarMiddle, #filledStarRight, #storyCompleteText,
 /* enemy lore images */ 
-#enemyLoreBookBackground, #enemyLoreLeftPageBackground, #enemyLoreRightPageBackground, #blackLine, #map1Cover, #map2Cover, #map3Cover, #map4Cover, #map5Cover, #map6Cover, #map7Cover, #bonusMap1Cover, #bonusMap2Cover, #bonusMap3Cover,
+#enemyLoreBookBackground, #blackLine, #map1Cover, #map2Cover, #map3Cover, #map4Cover, #map5Cover, #map6Cover, #map7Cover, #bonusMap1Cover, #bonusMap2Cover, #bonusMap3Cover,
     /* forest images */ 
     #forestmap, #forestmapNight, #forestmapFiredogDefault, #forestmapFiredogShinySkin, 
     /* saving images */ 
@@ -67,7 +67,7 @@ body {
             /* abilities */
             #healingStar, #galacticSpike, #antennaeTentacleUpward, #laserBall, #laserBallMode2, #purpleAsteroid, #blueAsteroid, #healingBarrier, #healingBarrier1, #healingBarrier2, #healingBarrier3, #healingBarrier4,
         /* projectiles */ 
-        #leafAttack, #darkLeafAttack, #windAttack, #poison_spit,  #laser_beam, #iceBall, #darkLaser, #yellowBeam, #rockProjectile, #purpleLaser, #inkBeam, #frozenShard,
+        #leafAttack, #darkLeafAttack, #windAttack, #poison_spit,  #laser_beam, #iceBall, #darkLaser, #yellowBeam, #rockProjectile, #purpleLaser, #inkBeam, #frozenShard, #lavaBall,
         /* goblin */
         #goblinRun, #goblinSteal, #goblinJump, 
         /* map1 */
@@ -83,13 +83,13 @@ body {
         /* map6 */
         #zabkousJump, #zabkousAttack, 
         /* map7 */
-        #theRock, #theRockSmash, #cactus, #petroPlant, #volcanurtle, #volcanoWasp,  
+        #cactus, #volcanurtle, #volcanoWasp, #volcanicPlant, #volcanoScorpion, #volcanoFly, #bloburn, #volcanoBeetle, #lavaCobra,
         /* bonusmap1 */
-        #iceSilknoir, #crystalWasp, #icePlant, #globby, #iceCentipede, #drillice, #iceGlider,
+        #iceSilknoir, #crystalWasp, #icePlant, #globby, #iceCentipede, #drillice, #iceGlider, #iceBat,
         /* bonusmap2 */
-         #dragon, 
+         #dragon, #petroPlant, #crypticFly,
         /* bonusmap3 */
-         #plazer, #veynoculus, #spaceCrab, #johnny,
+         #plazer, #veynoculus, #spaceCrab, #johnny, #spindle,
     /* cabin */
     #map1cabin, #map2cabin, #map3submarine, #map4cabin, #map5cabin, #map6cabin, #map7cave, #bonusmap1cabin, #bonusmap2cabin, #bonusmap3cabin,
     /* power up */ 

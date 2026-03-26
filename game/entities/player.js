@@ -20,8 +20,8 @@ import { FloatingMessage } from '../animations/floatingMessages.js';
 import { Fireball, CoinLoss, PoisonBubbles, IceCrystalBubbles, SpinningChicks } from '../animations/particles.js';
 import {
     AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Gloomlet, EnemyBoss, Barrier,
-    Aura, KarateCroco, SpearFish, TheRock, LilHornet, Cactus, IceBall, Garry, InkBeam, RockProjectile, VolcanoWasp, Volcanurtle,
-    CrystalWasp, DrillIce, FrozenShard
+    Aura, KarateCroco, SpearFish, LilHornet, Cactus, IceBall, Garry, InkBeam, RockProjectile, VolcanoWasp, VolcanicBubble,
+    CrystalWasp, DrillIce, FrozenShard, VolcanicPlant, ScorpionPoison, LavaBall, CrypticFly,
 } from './enemies/enemies.js';
 import { InkSplash } from '../animations/ink.js';
 import { DamageIndicator } from '../animations/damageIndicator.js';
@@ -1941,10 +1941,13 @@ export class CollisionLogic {
             // poison
             case enemy instanceof PoisonSpit:
             case enemy instanceof PoisonDrop:
-            case enemy instanceof GreenArrow: {
+            case enemy instanceof GreenArrow:
+            case enemy instanceof ScorpionPoison: {
                 this.game.audioHandler.collisionSFX.playSound('poisonDropCollisionSound', false, true);
 
-                if (enemy instanceof PoisonSpit) {
+                if (enemy instanceof ScorpionPoison) {
+                    this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
+                } else if (enemy instanceof PoisonSpit) {
                     this.game.collisions.push(new PoisonSpitSplash(this.game, ex, ey));
                 } else if (enemy instanceof PoisonDrop) {
                     this.game.collisions.push(new PoisonDropCollision(this.game, ex, ey));
@@ -1960,6 +1963,15 @@ export class CollisionLogic {
                 this.game.collisions.push(new PurpleFireballCollision(this.game, ex, ey));
                 return true;
             }
+
+            // red
+            case enemy instanceof VolcanicBubble:
+                this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
+                return true;
+
+            case enemy instanceof LavaBall:
+                this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
+                return true;
 
             // special Y = attacker center Y
             case enemy instanceof PurpleThunder: {
@@ -2329,6 +2341,8 @@ export class CollisionLogic {
 
     // fireball vs enemy
     handleFireballCollisionWithEnemy(enemy, enemiesHit) {
+        if (enemy.x >= this.game.width) return;
+
         this.game.behindPlayerParticles.forEach(fireball => {
             if (!(fireball instanceof Fireball)) return;
 
@@ -2432,6 +2446,7 @@ export class CollisionLogic {
             case enemy instanceof PurpleAsteroid:
             case enemy instanceof GroundShockwaveRing:
             case enemy instanceof LaserBall:
+            case enemy instanceof LavaBall:
                 if (canPlayCollisionFx) {
                     this.playCollisionFx(enemy);
                 }
@@ -2537,7 +2552,8 @@ export class CollisionLogic {
             // poison
             case enemy instanceof PoisonSpit:
             case enemy instanceof PoisonDrop:
-            case enemy instanceof GreenArrow: {
+            case enemy instanceof GreenArrow:
+            case enemy instanceof ScorpionPoison: {
                 if (canPlayCollisionFx) {
                     this.playCollisionFx(enemy);
                 }
@@ -2557,11 +2573,12 @@ export class CollisionLogic {
             case enemy instanceof Gloomlet:
             case enemy instanceof KarateCroco:
             case enemy instanceof SpearFish:
-            case enemy instanceof TheRock:
-            case enemy instanceof Volcanurtle:
+            case enemy instanceof VolcanicPlant:
+            case enemy instanceof VolcanicBubble:
+            case enemy instanceof CrypticFly:
                 this.hit(enemy, player);
                 if (canPlayCollisionFx) {
-                    this.bloodOrPoof(enemy, player);
+                    this.playCollisionFx(enemy, { fallbackToDefault: true });
                 }
                 break;
 
@@ -2751,6 +2768,7 @@ export class CollisionLogic {
             case enemy instanceof GravitationalAura:
             case enemy instanceof PurpleBeamOrb:
             case enemy instanceof PurpleAsteroid:
+            case enemy instanceof LavaBall:
                 this.playCollisionFx(enemy);
                 break;
 
@@ -2822,7 +2840,8 @@ export class CollisionLogic {
             // poison
             case enemy instanceof PoisonSpit:
             case enemy instanceof PoisonDrop:
-            case enemy instanceof GreenArrow: {
+            case enemy instanceof GreenArrow:
+            case enemy instanceof ScorpionPoison: {
                 const applied = this.tryApplyPoison(player, 2500);
 
                 if (!player.isInvisible) {
@@ -2841,10 +2860,11 @@ export class CollisionLogic {
             case enemy instanceof Gloomlet:
             case enemy instanceof KarateCroco:
             case enemy instanceof SpearFish:
-            case enemy instanceof TheRock:
-            case enemy instanceof Volcanurtle:
+            case enemy instanceof VolcanicPlant:
+            case enemy instanceof VolcanicBubble:
+            case enemy instanceof CrypticFly:
                 if (player.currentState === player.states[4]) this.hit(enemy, player);
-                this.bloodOrPoof(enemy, player);
+                this.playCollisionFx(enemy, { fallbackToDefault: true });
                 break;
 
             // slow

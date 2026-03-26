@@ -1205,6 +1205,57 @@ export class PoisonSpit extends Projectile {
     }
 }
 
+export class ScorpionPoison extends Projectile {
+    constructor(game, x, y) {
+        super(game, x, y, 50, 50, 0, null, 9, 0);
+        this.dealsDirectHitDamage = false;
+        this.isPoisonEnemy = true;
+        this.r = 25;
+        this.age = 0;
+        this.growDuration = 300;
+        this.pulsePhase = Math.random() * Math.PI * 2;
+        this.velY = 1.0;
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.age += deltaTime;
+        this.y += this.velY;
+    }
+
+    draw(context) {
+        context.save();
+        const growScale = Math.min(this.age / this.growDuration, 1);
+        const pulse = 0.9 + 0.1 * Math.sin(this.age * 0.01 + this.pulsePhase);
+        const cx = this.x + this.r;
+        const cy = this.y + this.r;
+        const r = this.r * growScale * pulse;
+
+        this.applyGlow(context);
+
+        context.translate(cx, cy);
+        context.rotate(Math.atan2(this.velY, -9) - Math.PI);
+        context.scale(-1, 1);
+
+        context.beginPath();
+        context.moveTo(-r * 1.5, 0);
+        context.bezierCurveTo(-r * 0.4, -r, r, -r * 0.9, r, 0);
+        context.bezierCurveTo(r, r * 0.9, -r * 0.4, r, -r * 1.5, 0);
+        context.closePath();
+
+        const grad = context.createRadialGradient(r * 0.2, 0, 0, 0, 0, r * 1.4);
+        grad.addColorStop(0, 'rgba(200, 255, 60, 1)');
+        grad.addColorStop(0.35, 'rgba(255, 130, 20, 0.95)');
+        grad.addColorStop(0.7, 'rgba(30, 140, 20, 0.95)');
+        grad.addColorStop(1, 'rgba(10, 60, 5, 0.9)');
+        context.fillStyle = grad;
+        context.fill();
+
+        context.restore();
+        if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
+    }
+}
+
 export class LaserBeam extends Projectile {
     constructor(game, x, y, width, height, maxFrame, imageId, speedX) {
         super(game, x, y, width, height, maxFrame, imageId, speedX, 30);
@@ -1322,6 +1373,39 @@ export class RockProjectile extends Projectile {
             );
         });
         if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
+    }
+}
+
+export class LavaBall extends Projectile {
+    constructor(game, x, y, speedX = 6, speedY = 0) {
+        super(game, x, y, 40, 40, 7, 'lavaBall', speedX, 12);
+        this.speedY = speedY;
+        this.size = 8;
+        this.width = this.size;
+        this.height = this.size;
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime);
+        if (this.speedX < 0 && this.x > this.game.width) this.markedForDeletion = true;
+        if (this.size < 40) {
+            const grow = Math.min(2, 40 - this.size);
+            this.x -= grow / 2;
+            this.y -= grow / 2;
+            this.size += grow;
+            this.width = this.size;
+            this.height = this.size;
+        }
+    }
+
+    draw(context) {
+        withCtx(context, () => {
+            context.translate(this.x + this.size / 2, this.y + this.size / 2);
+            if (this.speedX < 0) context.scale(-1, 1);
+            drawSprite(context, this.image, this.frameX * 40, 0, 40, 40,
+                -this.size / 2, -this.size / 2, this.size, this.size);
+        });
+        if (this.game.debug) context.strokeRect(this.x, this.y, this.size, this.size);
     }
 }
 
@@ -2425,155 +2509,6 @@ export class KarateCroco extends MovingGroundEnemy {
     }
 }
 
-export class Zabkous extends MovingGroundEnemy {
-    static STATES = {
-        run: {
-            imageId: 'zabkousJump',
-            width: 234.6470588235294,
-            height: 150,
-            xOffset: 0,
-            yOffset: 0,
-        },
-        attack: {
-            imageId: 'zabkousAttack',
-            width: 134.0588235294118,
-            height: 100,
-            xOffset: 45,
-            yOffset: 0,
-        },
-    };
-
-    constructor(game) {
-        super(game, 316, 202, 16, 'zabkousJump');
-
-        this.game = game;
-        this.lives = 2;
-        this.setFps(60);
-
-        this.state = 'run';
-        this.jumpHeight = 160;
-        this.jumpDuration = 0.5;
-        this.jumpStartTime = 0;
-        this.originalY = this.y;
-        this.jumpedBeforeDistanceLogic = false;
-
-        this.poisonSpitConfig = {
-            width: 59,
-            height: 22,
-            maxFrame: 11,
-            imageId: 'poison_spit',
-            speedX: 18,
-        };
-        this.poisonSpitThrown = false;
-        this.playsOnce = true;
-
-        this.applyState('run', { resetJumpFlags: true });
-    }
-
-    applyState(newState, { resetJumpFlags = false } = {}) {
-        const cfg = Zabkous.STATES[newState];
-        if (!cfg) return;
-
-        this.state = newState;
-
-        this.image = getImg(cfg.imageId);
-        this.width = cfg.width;
-        this.height = cfg.height;
-        this.frameX = 0;
-
-        const groundY = this.game.height - this.height - this.game.groundMargin;
-
-        this.x += cfg.xOffset;
-        this.y = groundY + cfg.yOffset;
-
-        if (resetJumpFlags) {
-            this.jumpedBeforeDistanceLogic = false;
-        }
-    }
-
-    throwPoisonSpit() {
-        if (!this.poisonSpitThrown) {
-            const { x, y, height } = this;
-            const {
-                width,
-                height: spitHeight,
-                maxFrame,
-                imageId,
-                speedX,
-            } = this.poisonSpitConfig;
-
-            const spit = new PoisonSpit(
-                this.game,
-                x + 20,
-                y + 15 + height / 2 - spitHeight / 2,
-                width,
-                spitHeight,
-                maxFrame,
-                imageId,
-                speedX
-            );
-
-            this.game.enemies.push(spit);
-            this.poisonSpitThrown = true;
-        }
-    }
-
-    frogRun() {
-        const playerDistance = Math.abs(this.game.player.x - this.x);
-        this.x -= 2;
-
-        if (this.state === 'run' && this.frameX === 0 && !this.jumpedBeforeDistanceLogic) {
-            this.jumpStartTime = this.game.hiddenTime;
-            this.jumpedBeforeDistanceLogic = true;
-            this.originalY = this.y;
-        }
-
-        const jumpProgress =
-            (this.game.hiddenTime - this.jumpStartTime) / (this.jumpDuration * 1000);
-
-        if (jumpProgress < 1) {
-            this.y = this.originalY - this.jumpHeight * Math.sin(jumpProgress * Math.PI);
-            this.x -= 5;
-        } else {
-            this.y = this.originalY;
-            this.game.audioHandler.enemySFX.playSound('landingJumpSound', false, true);
-
-            if (this.game.gameOver) {
-                this.applyState('run', { resetJumpFlags: true });
-            } else if (playerDistance <= 1500) {
-                this.poisonSpitThrown = false;
-                this.applyState('attack');
-            } else {
-                this.applyState('run', { resetJumpFlags: true });
-            }
-        }
-    }
-
-    frogAttack() {
-        if (this.state === 'attack' && this.frameX === 13) {
-            this.throwPoisonSpit();
-            this.game.audioHandler.enemySFX.playSound('spitSound', false, true);
-        }
-
-        if (this.state === 'attack' && this.frameX >= this.maxFrame) {
-            this.applyState('run', { resetJumpFlags: true });
-
-            this.x -= 90;
-
-            this.jumpStartTime = this.game.hiddenTime;
-        }
-    }
-
-    update(deltaTime) {
-        super.update(deltaTime);
-
-        this.playSoundOnce('frogSound', false, true);
-
-        if (this.state === 'run') this.frogRun();
-        else if (this.state === 'attack') this.frogAttack();
-    }
-}
-
 export class SpidoLazer extends MovingGroundEnemy {
     static STATES = {
         walk: {
@@ -3016,117 +2951,174 @@ export class HangingSpidoLazer extends ClimbingEnemy {
 }
 
 // Map 6 --------------------------------------------------------------------------------------------------------------------------------------
-export class Cactus extends ImmobileGroundEnemy {
-    constructor(game) {
-        super(game, 71, 90, 0, 'cactus');
-        this.isStunEnemy = true;
-    }
-}
+export class Zabkous extends MovingGroundEnemy {
+    static STATES = {
+        run: {
+            imageId: 'zabkousJump',
+            width: 234.6470588235294,
+            height: 150,
+            xOffset: 0,
+            yOffset: 0,
+        },
+        attack: {
+            imageId: 'zabkousAttack',
+            width: 134.0588235294118,
+            height: 100,
+            xOffset: 45,
+            yOffset: 0,
+        },
+    };
 
-export class PetroPlant extends ImmobileGroundEnemy {
     constructor(game) {
-        super(game, 91.555555555555555555555555555556, 100, 1, 'petroPlant');
-        this.rockAttackConfig = {
-            width: 37,
-            height: 40,
-            maxFrame: 0,
-            imageId: 'rockProjectile',
-            cooldown: 5000,
-            speedX: 5
+        super(game, 316, 202, 16, 'zabkousJump');
+
+        this.game = game;
+        this.lives = 2;
+        this.setFps(60);
+
+        this.state = 'run';
+        this.jumpHeight = 160;
+        this.jumpDuration = 0.5;
+        this.jumpStartTime = 0;
+        this.originalY = this.y;
+        this.jumpedBeforeDistanceLogic = false;
+
+        this.poisonSpitConfig = {
+            width: 59,
+            height: 22,
+            maxFrame: 11,
+            imageId: 'poison_spit',
+            speedX: 18,
         };
-        this.lastRockAttackTime = 4999;
-        this.soundId = 'teethChatteringSound';
+        this.poisonSpitThrown = false;
+        this.playsOnce = true;
+
+        this.applyState('run', { resetJumpFlags: true });
     }
 
-    throwRockProjectile() {
-        const {
-            x,
-            y,
-            height
-        } = this;
-        const {
-            width,
-            height: leafHeight,
-            maxFrame,
-            imageId
-        } = this.rockAttackConfig;
+    applyState(newState, { resetJumpFlags = false } = {}) {
+        const cfg = Zabkous.STATES[newState];
+        if (!cfg) return;
 
-        const rockProjectile = new RockProjectile(
-            this.game,
-            x,
-            y + height / 2 - leafHeight / 2,
-            width,
-            leafHeight,
-            maxFrame,
-            imageId,
-            this.rockAttackConfig.speedX,
-            0.02 + Math.random() * (0.01 - 0.0002)
-        );
-        this.game.audioHandler.enemySFX.playSound('rockAttackSound');
-        this.game.enemies.push(rockProjectile);
+        this.state = newState;
 
-        const secondRockAttack = new RockProjectile(
-            this.game,
-            x,
-            y + height / 2 - leafHeight / 2,
-            width,
-            leafHeight,
-            maxFrame,
-            imageId,
-            this.rockAttackConfig.speedX * 1.5,
-            0.02 + Math.random() * (0.01 - 0.0002)
-        );
-        this.game.enemies.push(secondRockAttack);
+        this.image = getImg(cfg.imageId);
+        this.width = cfg.width;
+        this.height = cfg.height;
+        this.frameX = 0;
 
-        this.lastRockAttackTime = 0;
-    }
+        const groundY = this.game.height - this.height - this.game.groundMargin;
 
-    update(deltaTime) {
-        super.update(deltaTime);
-        this.lastRockAttackTime += deltaTime;
-        if (this.lastRockAttackTime >= this.rockAttackConfig.cooldown && this.x < this.game.width - this.width) {
-            this.throwRockProjectile();
+        this.x += cfg.xOffset;
+        this.y = groundY + cfg.yOffset;
+
+        if (resetJumpFlags) {
+            this.jumpedBeforeDistanceLogic = false;
         }
     }
-}
 
-export class Plazer extends ImmobileGroundEnemy {
-    constructor(game) {
-        super(game, 75, 89, 2, 'plazer');
-        this.setFps(6);
-        this.canAttack = true;
-    }
-    throwPurpleLaserAttack() {
-        const purpleLaser = new PurpleLaser(this.game, this.x - 40, this.y + 15);
-        this.game.enemies.push(purpleLaser);
-    }
-    update(deltaTime) {
-        super.update(deltaTime);
+    throwPoisonSpit() {
+        if (!this.poisonSpitThrown) {
+            const { x, y, height } = this;
+            const {
+                width,
+                height: spitHeight,
+                maxFrame,
+                imageId,
+                speedX,
+            } = this.poisonSpitConfig;
 
-        if (!this.game.gameOver && this.x >= this.game.player.x) {
-            if (this.frameX === 1 && this.canAttack && this.x + this.width / 2 < this.game.width) {
-                this.canAttack = false;
-                this.throwPurpleLaserAttack();
-                this.game.audioHandler.enemySFX.playSound('laserAttackAudio', false, true);
-                this.darkLaserTimer = 0;
+            const spit = new PoisonSpit(
+                this.game,
+                x + 20,
+                y + 15 + height / 2 - spitHeight / 2,
+                width,
+                spitHeight,
+                maxFrame,
+                imageId,
+                speedX
+            );
+
+            this.game.enemies.push(spit);
+            this.poisonSpitThrown = true;
+        }
+    }
+
+    frogRun() {
+        const playerDistance = Math.abs(this.game.player.x - this.x);
+        this.x -= 2;
+
+        if (this.state === 'run' && this.frameX === 0 && !this.jumpedBeforeDistanceLogic) {
+            this.jumpStartTime = this.game.hiddenTime;
+            this.jumpedBeforeDistanceLogic = true;
+            this.originalY = this.y;
+        }
+
+        const jumpProgress =
+            (this.game.hiddenTime - this.jumpStartTime) / (this.jumpDuration * 1000);
+
+        if (jumpProgress < 1) {
+            this.y = this.originalY - this.jumpHeight * Math.sin(jumpProgress * Math.PI);
+            this.x -= 5;
+        } else {
+            this.y = this.originalY;
+            this.game.audioHandler.enemySFX.playSound('landingJumpSound', false, true);
+
+            if (this.game.gameOver) {
+                this.applyState('run', { resetJumpFlags: true });
+            } else if (playerDistance <= 1500) {
+                this.poisonSpitThrown = false;
+                this.applyState('attack');
+            } else {
+                this.applyState('run', { resetJumpFlags: true });
             }
         }
-        if (this.frameX === 2) this.canAttack = true;
+    }
+
+    frogAttack() {
+        if (this.state === 'attack' && this.frameX === 13) {
+            this.throwPoisonSpit();
+            this.game.audioHandler.enemySFX.playSound('spitSound', false, true);
+        }
+
+        if (this.state === 'attack' && this.frameX >= this.maxFrame) {
+            this.applyState('run', { resetJumpFlags: true });
+
+            this.x -= 90;
+
+            this.jumpStartTime = this.game.hiddenTime;
+        }
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime);
+
+        this.playSoundOnce('frogSound', false, true);
+
+        if (this.state === 'run') this.frogRun();
+        else if (this.state === 'attack') this.frogAttack();
     }
 }
 
-export class Veynoculus extends FlyingEnemy {
+// Map 7 --------------------------------------------------------------------------------------------------------------------------------------
+export class Cactus extends MovingGroundEnemy {
     constructor(game) {
-        super(game, 57, 37, 4, 'veynoculus');
+        super(game, 115.3, 130, 9, 'cactus');
+        this.setFps(20);
+        this.isStunEnemy = true;
+        this.xSpeed = Math.floor(Math.random() * 2) + 3;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.x -= this.xSpeed;
     }
 }
 
 export class Volcanurtle extends MovingGroundEnemy {
     constructor(game) {
-        super(game, 177, 107, 5, 'volcanurtle');
-        this.isRedEnemy = true;
+        super(game, 152.25, 100, 7, 'volcanurtle');
         this.lives = 2;
-        this.setFps(5);
+        this.setFps(8);
         this.xSpeed = Math.floor(Math.random() * 1) + 1;
     }
     update(deltaTime) {
@@ -3135,108 +3127,283 @@ export class Volcanurtle extends MovingGroundEnemy {
     }
 }
 
-export class TheRock extends MovingGroundEnemy {
-    constructor(game) {
-        super(game, 132, 132, 11, 'theRock');
-        this.isRedEnemy = true;
-        this.state = 'idle';
-
-        this.playSmashOnce = true;
-        this.setFps(25);
-        this.lives = 2;
-    }
-
-    update(deltaTime) {
-        super.update(deltaTime);
-        if (this.state === 'idle') {
-            this.x -= 2;
-            if ((this.frameX === 0 || this.frameX === 7) && this.isOnScreen()) {
-                this.game.audioHandler.enemySFX.playSound('theRockStomp');
-            }
-        }
-        const playerDistance = Math.abs(this.game.player.x - this.x);
-        if (playerDistance < 100 && this.playSmashOnce) {
-            this.state = 'smash';
-            this.frameX = 0;
-            this.image = getImg('theRockSmash');
-            this.width = 182;
-            this.height = 162;
-            this.maxFrame = 6;
-            this.y = this.game.height - this.height - this.game.groundMargin;
-            this.x = this.x - 70;
-            this.setFps(11);
-            this.playSmashOnce = false;
-        }
-
-        if (this.state === 'smash' && this.frameX === this.maxFrame) {
-            this.state = 'idle';
-            this.frameX = 0;
-            this.image = getImg('theRock');
-            this.width = 132;
-            this.height = 132;
-            this.maxFrame = 11;
-            this.x = this.x + 70;
-            this.y = this.game.height - this.height - this.game.groundMargin;
-            this.setFps(25);
-        }
-    }
-}
-
 export class VolcanoWasp extends BeeInstances {
     constructor(game) {
-        super(game, 113, 125, 1, 'volcanoWasp', 1100, 3, 12, 140);
+        super(game, 93, 90, 5, 'volcanoWasp', 1100, 3, 12, 140);
         this.soundId = 'angryBeeBuzzing';
     }
 }
 
-export class Dragon extends FlyingEnemy {
-    constructor(game) {
-        super(game, 182, 172, 11, 'dragon');
-        this.lives = 2;
-        this.setFps(14);
-        this.canAttack = true;
-        this.windAttackConfig = {
-            width: 105,
-            height: 120,
-            maxFrame: 5,
-            imageId: 'windAttack',
-            speedX: 4,
-            fps: 20,
-            offsetX: 0,
-            offsetY: 0
-        };
-    }
-
-    throwWindAttack() {
-        const windAttack = new WindAttack(
-            this.game,
-            this.x + this.windAttackConfig.offsetX + 50,
-            this.y + this.windAttackConfig.offsetY + 20,
-            this.windAttackConfig.width,
-            this.windAttackConfig.height,
-            this.windAttackConfig.maxFrame,
-            this.windAttackConfig.imageId,
-            this.windAttackConfig.speedX,
-            this.game.player
-        );
-        this.game.enemies.push(windAttack);
+export class VolcanicBubble extends Projectile {
+    constructor(game, x, y) {
+        super(game, x, y, 34, 34, 0, null, 0, 60);
+        this.isRedEnemy = true;
+        this.r = 17;
+        this.spawnDuration = 450;
+        this.age = 0;
+        this.pulsePhase = Math.random() * Math.PI * 2;
+        this.wobblePhase = Math.random() * Math.PI * 2;
+        this.crackRotation = 0;
+        this.driftX = 0;
+        this.targetDriftX = (Math.random() - 0.5) * 2;
+        this.driftTimer = 0;
+        this.driftInterval = 400 + Math.random() * 400;
     }
 
     update(deltaTime) {
         super.update(deltaTime);
-        const playerDistance = Math.abs(this.game.player.x - this.x);
-
-        if (playerDistance <= 1600 && this.frameX == 7 && this.canAttack === true) {
-            this.canAttack = false;
-            if (!this.game.gameOver) {
-                this.throwWindAttack();
-                this.game.audioHandler.enemySFX.playSound('windAttackAudio', false, true);
-            }
+        this.age += deltaTime;
+        this.crackRotation += deltaTime * 0.0008;
+        this.driftTimer += deltaTime;
+        if (this.driftTimer >= this.driftInterval) {
+            const spread = Math.min(1 + this.age * 0.0005, 3.5);
+            this.targetDriftX = (Math.random() - 0.5) * 2.5 * spread;
+            this.driftInterval = 400 + Math.random() * 400;
+            this.driftTimer = 0;
         }
-        if (this.frameX === 10) this.canAttack = true;
-        if (this.frameX === 0 && this.isOnScreen()) {
-            this.game.audioHandler.enemySFX.playSound('ravenSingleFlap');
-            this.game.audioHandler.enemySFX.playSound('flyMonsterFlap');
+        this.driftX += (this.targetDriftX - this.driftX) * 0.035;
+        this.x += this.driftX;
+        this.y -= 1.7 + 0.4 * Math.abs(Math.sin(this.age * 0.0013 + this.pulsePhase));
+    }
+
+    draw(context) {
+        const spawnT = Math.min(1, this.age / this.spawnDuration);
+        const spawnScale = 1 - Math.pow(1 - spawnT, 2);
+        const pulse = 1 + 0.1 * Math.sin(this.age * 0.007 + this.pulsePhase);
+        const r = this.r * pulse * spawnScale;
+        const cx = this.x + this.r;
+        const cy = this.y + this.r;
+
+        withCtx(context, () => {
+            context.globalAlpha = 0.72 * spawnScale;
+            this.applyGlow(context);
+
+            const bodyGrad = context.createRadialGradient(cx - r * 0.35, cy - r * 0.38, r * 0.05, cx, cy, r);
+            bodyGrad.addColorStop(0, '#ffdd55');
+            bodyGrad.addColorStop(0.25, '#ff7700');
+            bodyGrad.addColorStop(0.6, '#bb1500');
+            bodyGrad.addColorStop(1, '#2a0000');
+
+            context.beginPath();
+            context.arc(cx, cy, r, 0, Math.PI * 2);
+            context.fillStyle = bodyGrad;
+            context.fill();
+
+            setShadow(context, 'transparent', 0);
+            context.translate(cx, cy);
+            context.rotate(this.crackRotation);
+
+            context.lineWidth = 1.3;
+            context.globalAlpha = 0.8;
+            const numCracks = 6;
+            for (let i = 0; i < numCracks; i++) {
+                const a = (i / numCracks) * Math.PI * 2;
+                const midA = a + 0.3;
+                const innerGlow = `hsl(${30 + i * 8}, 100%, ${60 - i * 3}%)`;
+                context.strokeStyle = innerGlow;
+                context.beginPath();
+                context.moveTo(0, 0);
+                context.quadraticCurveTo(
+                    Math.cos(midA) * r * 0.52,
+                    Math.sin(midA) * r * 0.52,
+                    Math.cos(a) * r * 0.87,
+                    Math.sin(a) * r * 0.87
+                );
+                context.stroke();
+            }
+
+            context.globalAlpha = 0.5;
+            const hiGrad = context.createRadialGradient(-r * 0.3, -r * 0.35, 0, -r * 0.22, -r * 0.28, r * 0.4);
+            hiGrad.addColorStop(0, 'rgba(255, 245, 180, 0.9)');
+            hiGrad.addColorStop(1, 'rgba(255, 160, 40, 0)');
+            context.beginPath();
+            context.arc(-r * 0.22, -r * 0.28, r * 0.4, 0, Math.PI * 2);
+            context.fillStyle = hiGrad;
+            context.fill();
+
+            context.globalAlpha = 0.22;
+            context.strokeStyle = 'rgba(255, 210, 80, 0.9)';
+            context.lineWidth = 2.5;
+            context.beginPath();
+            context.arc(0, 0, r * 0.87, Math.PI * 1.05, Math.PI * 1.75);
+            context.stroke();
+        });
+
+        if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
+    }
+}
+
+export class VolcanicPlant extends ImmobileGroundEnemy {
+    constructor(game) {
+        super(game, 167, 130, 1, 'volcanicPlant');
+        this.isRedEnemy = true;
+        this.lives = 3;
+        this.setFps(7);
+        this.bubbleCooldown = 1000;
+        this.bubbleTimer = 800;
+    }
+
+    throwBubble() {
+        const bx = this.x + 66;
+        const by = this.y + 8;
+        this.game.enemies.push(new VolcanicBubble(this.game, bx, by));
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.bubbleTimer += deltaTime;
+        if (!this.game.gameOver && this.bubbleTimer >= this.bubbleCooldown && this.x < this.game.width - this.width) {
+            this.throwBubble();
+            this.bubbleTimer = 0;
+        }
+    }
+}
+
+export class VolcanoScorpion extends ImmobileGroundEnemy {
+    constructor(game) {
+        super(game, 161, 150, 9, 'volcanoScorpion');
+        this.setFps(14);
+        this.prevFrameX = -1;
+        this.poisonCooldown = 0;
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime);
+        if (this.poisonCooldown > 0) this.poisonCooldown -= deltaTime;
+        const player = this.game.player;
+        const playerAhead = player.x < this.x;
+        if (this.frameX === 4 && this.prevFrameX !== 4 && this.poisonCooldown <= 0 && this.x + this.width / 2 < this.game.width && playerAhead) {
+            this.game.enemies.push(new ScorpionPoison(this.game, this.x + 35, this.y + 10));
+            this.poisonCooldown = 1300;
+        }
+        this.prevFrameX = this.frameX;
+    }
+}
+
+export class VolcanoFly extends FlyingEnemy {
+    constructor(game) {
+        super(game, 85.5, 100, 1, 'volcanoFly');
+        this.setFps(7);
+    }
+}
+
+export class Bloburn extends VerticalEnemy {
+    constructor(game) {
+        super(game, 52, 50, 0, 'bloburn');
+        this.initialSpeed = 3;
+        this.currentSpeed = 4;
+        this.chaseDistance = this.game.width;
+        this.loopingSoundId = 'verticalGhostSound';
+        this.rotation = 0;
+        this.rotationSpeed = 0.05;
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.playIfOnScreen('verticalGhostSound');
+        this.rotation += this.rotationSpeed;
+
+        const distanceToPlayer = this.getDistanceToPlayer();
+
+        if (!this.passedPlayer) {
+            if (distanceToPlayer <= this.chaseDistance) {
+                const a = this.getAngleToPlayer();
+                this.angleToPlayer = a;
+                moveAlongAngle(this, a, this.currentSpeed);
+            } else {
+                this.x -= this.currentSpeed;
+            }
+        } else {
+            moveAlongAngle(this, this.angleToPlayer, this.currentSpeed);
+        }
+
+        if (this.x < this.game.player.x) this.passedPlayer = true;
+    }
+
+    moveTowardsPlayer() {
+        const a = this.getAngleToPlayer();
+        moveAlongAngle(this, a, this.currentSpeed);
+    }
+
+    draw(context) {
+        withCtx(context, () => {
+            context.translate(this.x + this.width / 2, this.y + this.height / 2);
+            context.rotate(this.rotation);
+            this.applyGlow(context);
+            drawSprite(context, this.image, 0, 0, this.width, this.height,
+                -this.width / 2, -this.height / 2, this.width, this.height);
+            this.clearGlow(context);
+        });
+        if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
+    }
+}
+
+export class VolcanoBeetle extends MovingGroundEnemy {
+    constructor(game) {
+        super(game, 90.25, 60, 3, 'volcanoBeetle');
+        this.setFps(20);
+        this.xSpeed = Math.floor(Math.random() * 2) + 6;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.x -= this.xSpeed;
+    }
+}
+
+export class LavaCobra extends UndergroundEnemy {
+    constructor(game) {
+        super(game, 176.5, 160, 1, 'lavaCobra', {
+            warningDuration: 500,
+            riseDuration: 400,
+            holdDuration: 3200,
+            triggerDistance: 1600
+        });
+        this.lives = 2;
+        this.setFps(5);
+        this._lastFrameCount = 0;
+    }
+
+    onEmergeStart() {
+        super.onEmergeStart();
+        this._lastFrameCount = 0;
+    }
+
+    throwLavaBall() {
+        const mouthX = this.x + 70;
+        const mouthY = this.y + 32;
+        const player = this.game.player;
+        const playerCenterX = player.x + player.width / 2;
+        const playerCenterY = player.y + player.height / 2;
+        const speed = 12;
+        let speedX, speedY;
+        if (playerCenterX > mouthX) {
+            speedX = speed;
+            speedY = 0;
+        } else {
+            const dx = mouthX - playerCenterX;
+            const dy = playerCenterY - mouthY;
+            const dist = Math.hypot(dx, dy) || 1;
+            speedX = (dx / dist) * speed;
+            speedY = (dy / dist) * speed;
+        }
+        const ball = new LavaBall(
+            this.game,
+            mouthX,
+            mouthY,
+            speedX,
+            speedY
+        );
+        this.game.enemies.push(ball);
+    }
+
+    update(deltaTime) {
+        const prevFrameX = this.frameX;
+        super.update(deltaTime);
+        if (this.phase === 'hold' && this.frameX === this.maxFrame && prevFrameX !== this.maxFrame) {
+            this._lastFrameCount++;
+            if (this._lastFrameCount % 4 === 1) {
+                this.throwLavaBall();
+            }
         }
     }
 }
@@ -3349,11 +3516,178 @@ export class IceGlider extends FallingEnemy {
     }
 }
 
-// Bonus Map 2 --------------------------------------------------------------------------------------------------------------------------------------
+export class IceBat extends FlyingEnemy {
+    constructor(game) {
+        super(game, 156.75, 130, 3, 'iceBat');
+        this.setFps(15);
+    }
+}
 
+// Bonus Map 2 --------------------------------------------------------------------------------------------------------------------------------------
+export class CrypticFly extends FlyingEnemy {
+    constructor(game) {
+        super(game, 97.5, 100, 1, 'crypticFly');
+        this.playsOnce = true;
+        this.isRedEnemy = true;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.playSoundOnce('buzzingFly');
+    }
+}
+
+export class PetroPlant extends ImmobileGroundEnemy {
+    constructor(game) {
+        super(game, 91.555555555555555555555555555556, 100, 1, 'petroPlant');
+        this.rockAttackConfig = {
+            width: 37,
+            height: 40,
+            maxFrame: 0,
+            imageId: 'rockProjectile',
+            cooldown: 5000,
+            speedX: 5
+        };
+        this.lastRockAttackTime = 4999;
+        this.soundId = 'teethChatteringSound';
+    }
+
+    throwRockProjectile() {
+        const {
+            x,
+            y,
+            height
+        } = this;
+        const {
+            width,
+            height: leafHeight,
+            maxFrame,
+            imageId
+        } = this.rockAttackConfig;
+
+        const rockProjectile = new RockProjectile(
+            this.game,
+            x,
+            y + height / 2 - leafHeight / 2,
+            width,
+            leafHeight,
+            maxFrame,
+            imageId,
+            this.rockAttackConfig.speedX,
+            0.02 + Math.random() * (0.01 - 0.0002)
+        );
+        this.game.audioHandler.enemySFX.playSound('rockAttackSound');
+        this.game.enemies.push(rockProjectile);
+
+        const secondRockAttack = new RockProjectile(
+            this.game,
+            x,
+            y + height / 2 - leafHeight / 2,
+            width,
+            leafHeight,
+            maxFrame,
+            imageId,
+            this.rockAttackConfig.speedX * 1.5,
+            0.02 + Math.random() * (0.01 - 0.0002)
+        );
+        this.game.enemies.push(secondRockAttack);
+
+        this.lastRockAttackTime = 0;
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.lastRockAttackTime += deltaTime;
+        if (this.lastRockAttackTime >= this.rockAttackConfig.cooldown && this.x < this.game.width - this.width) {
+            this.throwRockProjectile();
+        }
+    }
+}
+
+export class Dragon extends FlyingEnemy {
+    constructor(game) {
+        super(game, 182, 172, 11, 'dragon');
+        this.lives = 2;
+        this.setFps(14);
+        this.canAttack = true;
+        this.windAttackConfig = {
+            width: 105,
+            height: 120,
+            maxFrame: 5,
+            imageId: 'windAttack',
+            speedX: 4,
+            fps: 20,
+            offsetX: 0,
+            offsetY: 0
+        };
+    }
+
+    throwWindAttack() {
+        const windAttack = new WindAttack(
+            this.game,
+            this.x + this.windAttackConfig.offsetX + 50,
+            this.y + this.windAttackConfig.offsetY + 20,
+            this.windAttackConfig.width,
+            this.windAttackConfig.height,
+            this.windAttackConfig.maxFrame,
+            this.windAttackConfig.imageId,
+            this.windAttackConfig.speedX,
+            this.game.player
+        );
+        this.game.enemies.push(windAttack);
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime);
+        const playerDistance = Math.abs(this.game.player.x - this.x);
+
+        if (playerDistance <= 1600 && this.frameX == 7 && this.canAttack === true) {
+            this.canAttack = false;
+            if (!this.game.gameOver) {
+                this.throwWindAttack();
+                this.game.audioHandler.enemySFX.playSound('windAttackAudio', false, true);
+            }
+        }
+        if (this.frameX === 10) this.canAttack = true;
+        if (this.frameX === 0 && this.isOnScreen()) {
+            this.game.audioHandler.enemySFX.playSound('ravenSingleFlap');
+            this.game.audioHandler.enemySFX.playSound('flyMonsterFlap');
+        }
+    }
+}
 
 
 // Bonus Map 3 --------------------------------------------------------------------------------------------------------------------------------------
+export class Plazer extends ImmobileGroundEnemy {
+    constructor(game) {
+        super(game, 75, 89, 2, 'plazer');
+        this.setFps(6);
+        this.canAttack = true;
+    }
+    throwPurpleLaserAttack() {
+        const purpleLaser = new PurpleLaser(this.game, this.x - 40, this.y + 15);
+        this.game.enemies.push(purpleLaser);
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+
+        if (!this.game.gameOver && this.x >= this.game.player.x) {
+            if (this.frameX === 1 && this.canAttack && this.x + this.width / 2 < this.game.width) {
+                this.canAttack = false;
+                this.throwPurpleLaserAttack();
+                this.game.audioHandler.enemySFX.playSound('laserAttackAudio', false, true);
+                this.darkLaserTimer = 0;
+            }
+        }
+        if (this.frameX === 2) this.canAttack = true;
+    }
+}
+
+export class Veynoculus extends FlyingEnemy {
+    constructor(game) {
+        super(game, 57, 37, 4, 'veynoculus');
+    }
+}
+
 export class SpaceCrab extends FallingEnemy {
     constructor(game) {
         super(game, 125.6666666666667, 130, 2, 'spaceCrab');
@@ -3377,5 +3711,17 @@ export class Johnny extends FlyingEnemy {
         } else {
             this.x -= this.currentSpeed;
         }
+    }
+}
+
+export class Spindle extends MovingGroundEnemy {
+    constructor(game) {
+        super(game, 99.69230769230769, 90, 12, 'spindle');
+        this.setFps(70);
+        this.xSpeed = Math.floor(Math.random() * 6) + 3;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.x -= this.xSpeed;
     }
 }

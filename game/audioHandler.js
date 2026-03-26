@@ -559,8 +559,6 @@ export class EnemySFXAudioHandler extends AudioHandler {
       yellowLaserBeamSound: 'yellowLaserBeamSound',
       //piper
       extendingSound: 'extendingSound',
-      //theRock
-      theRockStomp: 'theRockStomp',
     };
     this.initializeSounds();
   }

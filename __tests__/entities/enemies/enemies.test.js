@@ -68,7 +68,6 @@ import {
   Plazer,
   Veynoculus,
   Volcanurtle,
-  TheRock,
   VolcanoWasp,
   Dragon,
 } from '../../../game/entities/enemies/enemies';
@@ -1493,27 +1492,6 @@ describe('Map 6 Enemies', () => {
     pz.update(16);
 
     expect(game.enemies.some((e) => e instanceof PurpleLaser)).toBe(true);
-  });
-
-  it('Volcanurtle is red and moves left on update', () => {
-    const vt = new Volcanurtle(game);
-    expect(vt.isRedEnemy).toBe(true);
-
-    const ox = vt.x;
-    vt.update(16);
-
-    expect(vt.x).toBeLessThan(ox);
-  });
-
-  it('TheRock enters smash state when player is very close', () => {
-    const tr = new TheRock(game);
-    tr.x = game.player.x + 50;
-    tr.state = 'idle';
-    tr.playSmashOnce = true;
-
-    tr.update(16);
-
-    expect(tr.state).toBe('smash');
   });
 
   it('Veynoculus update/draw do not throw', () => {

@@ -9,11 +9,13 @@ import {
     Dotter, Vertibat, Ghobat, Ravengloom, MeatSoldier, Skulnap, Abyssaw, GlidoSpike,
     DuskPlant, Silknoir, Skelly, WalterTheGhost, Ben, Gloomlet, Dolly,
     Piranha, SkeletonFish, SpearFish, JetFish, Piper, Voltzeel, Garry,
-    Sluggie, BigGreener, Chiquita, LilHornet, KarateCroco, Zabkous, SpidoLazer, Jerry,
+    Sluggie, BigGreener, Chiquita, LilHornet, KarateCroco, SpidoLazer, Jerry,
     Snailey, RedFlyer, PurpleFlyer, LazyMosquito, LeafSlug, Sunflora, Eggry, AngryBee, Bee, HangingSpidoLazer,
-    Cactus, PetroPlant, Plazer, Veynoculus, Volcanurtle, TheRock, VolcanoWasp, Dragon,
-    IceSilknoir, CrystalWasp, IcePlant, Globby, IceCentipede, DrillIce, IceGlider,
-    SpaceCrab, Johnny,
+    Zabkous,
+    Cactus, VolcanicPlant, Volcanurtle, VolcanoWasp, VolcanoScorpion, VolcanoFly, Bloburn, VolcanoBeetle, LavaCobra,
+    IceSilknoir, CrystalWasp, IcePlant, Globby, IceCentipede, DrillIce, IceGlider, IceBat,
+    Dragon, CrypticFly, PetroPlant,
+    Plazer, Veynoculus, SpaceCrab, Johnny, Spindle,
     ImmobileGroundEnemy,
 } from "./entities/enemies/enemies.js";
 import {
@@ -1077,15 +1079,20 @@ export class Game {
             ],
             Map7: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: PetroPlant, probability: 0.1, spawningDistance: 0 },
+                { type: VolcanicPlant, probability: 0.1, spawningDistance: 0 },
                 { type: Cactus, probability: 0.1, spawningDistance: 0 },
-                { type: Volcanurtle, probability: 0.1, spawningDistance: 0 },
-                { type: TheRock, probability: 0.05, spawningDistance: 0 },
                 { type: VolcanoWasp, probability: 0.03, spawningDistance: 0 },
+                { type: Volcanurtle, probability: 0.1, spawningDistance: 0 },
+                { type: VolcanoScorpion, probability: 0.1, spawningDistance: 0 },
+                { type: VolcanoFly, probability: 0.1, spawningDistance: 0 },
+                { type: Bloburn, probability: 0.1, spawningDistance: 0 },
+                { type: VolcanoBeetle, probability: 0.1, spawningDistance: 0 },
+                { type: LavaCobra, probability: 0.1, spawningDistance: 0 },
             ],
             BonusMap1: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
                 { type: IceSilknoir, probability: 0.4, spawningDistance: 0 },
+                { type: IceBat, probability: 1, spawningDistance: 0 },
                 { type: CrystalWasp, probability: 0.06, spawningDistance: 0 },
                 { type: IcePlant, probability: 0.2, spawningDistance: 0 },
                 { type: Globby, probability: 0.1, spawningDistance: 100 },
@@ -1095,6 +1102,8 @@ export class Game {
             ],
             BonusMap2: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
+                { type: CrypticFly, probability: 1, spawningDistance: 0 },
+                { type: PetroPlant, probability: 0.1, spawningDistance: 0 },
                 { type: Dragon, probability: 0.05, spawningDistance: 0 },
             ],
             BonusMap3: [
@@ -1103,6 +1112,7 @@ export class Game {
                 { type: Plazer, probability: 0.05, spawningDistance: 0 },
                 { type: SpaceCrab, probability: 0.1, spawningDistance: 0 },
                 { type: Johnny, probability: 0.1, spawningDistance: 0 },
+                { type: Spindle, probability: 1, spawningDistance: 0 },
             ],
         };
 
@@ -1125,9 +1135,7 @@ export class Game {
                             (newEnemy instanceof ImmobileGroundEnemy &&
                                 existingEnemy instanceof ImmobileGroundEnemy &&
                                 Math.abs(newEnemy.x - existingEnemy.x) <
-                                (newEnemy.width + existingEnemy.width) / 2 &&
-                                Math.abs(newEnemy.y - existingEnemy.y) <
-                                (newEnemy.height + existingEnemy.height) / 2)
+                                (newEnemy.width + existingEnemy.width) / 2)
                         ) {
                             collision = true;
                             break;

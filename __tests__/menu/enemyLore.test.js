@@ -31,8 +31,6 @@ describe('EnemyLore', () => {
             <img id="forestmapNight" />
 
             <img id="enemyLoreBookBackground" width="400" height="300" />
-            <img id="enemyLoreLeftPageBackground" />
-            <img id="enemyLoreRightPageBackground" />
 
             <!-- Covers -->
             <img id="map1Cover" />
@@ -672,20 +670,6 @@ describe('EnemyLore', () => {
                 menu.enemyLoreBookBackground,
                 expect.any(Number),
                 expect.any(Number)
-            );
-            expect(ctx.drawImage).toHaveBeenCalledWith(
-                menu.leftPageBackground,
-                menu.bookX,
-                menu.bookY,
-                menu.pageWidth,
-                menu.pageHeight
-            );
-            expect(ctx.drawImage).toHaveBeenCalledWith(
-                menu.rightPageBackground,
-                menu.bookX + menu.pageWidth,
-                menu.bookY,
-                menu.pageWidth,
-                menu.pageHeight
             );
         });
 

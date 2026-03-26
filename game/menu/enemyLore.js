@@ -12,8 +12,6 @@ export class EnemyLore extends BaseMenu {
         this.currentPageBonus = 0;
 
         this.enemyLoreBookBackground = document.getElementById('enemyLoreBookBackground');
-        this.leftPageBackground = document.getElementById('enemyLoreLeftPageBackground');
-        this.rightPageBackground = document.getElementById('enemyLoreRightPageBackground');
 
         this.pageWidth = this.game.width * 0.43;
         this.pageHeight = this.game.height * 0.8;
@@ -709,7 +707,7 @@ export class EnemyLore extends BaseMenu {
             foundAt: "VENOMVEIL LAKE",
             description: "THERE'S QUITE A FEW CACTUSES AROUND THIS AREA.",
             images: [
-                this.createImage('cactus', 71, 90, 0, this.pageWidth - 180, this.pageHeight - 120, 1, 'stun'),
+                this.createImage('cactus', 115.3, 130, 0, this.pageWidth - 180, this.pageHeight - 120, 1, 'stun'),
             ],
             mapKey: "map6",
         });
@@ -732,7 +730,7 @@ export class EnemyLore extends BaseMenu {
             foundAt: "INFERNAL CRATER PEAK",
             description: "THERE'S QUITE A FEW CACTUSES AROUND THIS AREA.",
             images: [
-                this.createImage('cactus', 71, 90, 0, this.pageWidth - 180, this.pageHeight - 120, 1, 'stun'),
+                this.createImage('cactus', 115.3, 130, 0, this.pageWidth - 180, this.pageHeight - 120, 1, 'stun'),
             ],
             mapKey: "map7",
         });
@@ -800,20 +798,6 @@ export class EnemyLore extends BaseMenu {
             mapKey: "map7",
         });
 
-        // 46
-        this.createPage({
-            name: "THE ROCK",
-            type: "GROUND & RED",
-            foundAt: "INFERNAL CRATER PEAK",
-            description:
-                "THE ROCK FORMED FROM VOLCANIC CRATER MATERIAL AND IS SAID TO POSSESS UNIQUE MINERAL PROPERTIES.\n"
-                + "IT IS BELIEVED THAT THE ROCK HOLDS SECRETS OF THE REGION'S VOLCANIC HISTORY AND THAT IT WAS FORMED FROM THE ERUPTION OF MULTIPLE VOLCANOES AROUND THE AREA!",
-            images: [
-                this.createImage('theRock', 132, 132, 0, this.pageWidth - 210, this.pageHeight - 140, 1, 'red'),
-            ],
-            mapKey: "map7",
-        });
-
         // 47
         this.createPage({
             name: "VOLCANO WASP",
@@ -824,7 +808,7 @@ export class EnemyLore extends BaseMenu {
                 + "VOLCANO WASPS ARE DEVIOUS MENACES, LOATHING EVERYTHING THAT BREATHES AND STINGING ANY TARGET THEY SPOT!\n"
                 + "LITTLE IS KNOWN ABOUT THEM EXCEPT THAT THEY ONCE INHABITED THE LUSH ENVIRONMENT OF VERDANT VINE, BUT SOMETHING FORCED THEM TO MIGRATE TO VOLCANIC AREAS...",
             images: [
-                this.createImage('volcanoWasp', 113, 125, 0, this.pageWidth - 170, 70, 1, 'stun'),
+                this.createImage('volcanoWasp', 93, 90, 0, this.pageWidth - 170, 70, 1, 'stun'),
             ],
             mapKey: "map7",
         });
@@ -1611,8 +1595,6 @@ export class EnemyLore extends BaseMenu {
         const bookBackgroundY = (this.game.height - this.enemyLoreBookBackground.height) / 2 + 10;
 
         context.drawImage(this.enemyLoreBookBackground, bookBackgroundX, bookBackgroundY);
-        context.drawImage(this.leftPageBackground, this.bookX, this.bookY, this.pageWidth, this.pageHeight);
-        context.drawImage(this.rightPageBackground, this.bookX + this.pageWidth, this.bookY, this.pageWidth, this.pageHeight);
 
         this.drawPageContent(context, this.currentPage, this.bookX, this.bookY);
         if (this.currentPage + 1 < this.pages.length) {

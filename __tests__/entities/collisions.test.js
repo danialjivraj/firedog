@@ -136,8 +136,9 @@ import {
 import {
     MeatSoldier,
     AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Gloomlet, EnemyBoss, Barrier,
-    Aura, KarateCroco, SpearFish, TheRock, LilHornet, Cactus, IceBall, Garry, InkBeam, RockProjectile,
-    VolcanoWasp, Volcanurtle, FrozenShard, CrystalWasp,
+    Aura, KarateCroco, SpearFish, LilHornet, Cactus, IceBall, Garry, InkBeam, RockProjectile,
+    VolcanoWasp, FrozenShard, CrystalWasp, VolcanicPlant, VolcanicBubble, LavaBall, ScorpionPoison,
+    CrypticFly, DrillIce,
 } from '../../game/entities/enemies/enemies.js';
 
 import {
@@ -503,7 +504,7 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
         ['Garry', Garry, InkSplashCollision],
         ['InkBeam', InkBeam, InkSplashCollision],
         ['InkBomb', InkBomb, InkBombCollision],
-    ])('Ink enemy: %s', (_name, EnemyClass, FxCollisionClass) => {
+    ])('Ink enemy: %s', (_name, EnemyClass, ExpectedCollisionClass) => {
         test.each(normalScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();
             const enemy = makeEnemy(EnemyClass);
@@ -519,7 +520,7 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
             if (!s.isInvisible) {
                 expectCollisionCounts(ctx, [
                     [InkSplash, 1],
-                    [FxCollisionClass, 1],
+                    [ExpectedCollisionClass, 1],
                 ]);
 
                 if (!s.isDashing) {
@@ -531,12 +532,13 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
                 return;
             }
 
-            expectCollisionCounts(ctx, [[FxCollisionClass, 1]]);
+            expectCollisionCounts(ctx, [[ExpectedCollisionClass, 1]]);
             expectNoDamage(ctx);
         });
     });
 
     describe.each([
+        ['LavaBall', LavaBall, DisintegrateCollision, null],
         ['GhostElyvorg', GhostElyvorg, GhostFadeOut, null],
         ['PurpleFireball', PurpleFireball, PurpleFireballCollision, null],
         ['MeteorAttack', MeteorAttack, MeteorExplosionCollision, null],
@@ -685,6 +687,7 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
         ['PoisonSpit', PoisonSpit, PoisonSpitSplash],
         ['PoisonDrop', PoisonDrop, PoisonDropCollision],
         ['GreenArrow', GreenArrow, DisintegrateCollision],
+        ['ScorpionPoison', ScorpionPoison, DisintegrateCollision],
     ])('Poison enemy: %s', (_name, EnemyClass, ExpectedCollisionClass) => {
         test.each(normalScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();
@@ -720,12 +723,13 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
         });
     });
     describe.each([
-        ['Gloomlet', Gloomlet, 1],
-        ['KarateCroco', KarateCroco, 2],
-        ['SpearFish', SpearFish, 2],
-        ['TheRock', TheRock, 2],
-        ['Volcanurtle', Volcanurtle, 1],
-    ])('Red enemy: %s', (_name, EnemyClass, startingLives) => {
+        ['Gloomlet', Gloomlet, 1, 'fallback'],
+        ['KarateCroco', KarateCroco, 2, 'fallback'],
+        ['SpearFish', SpearFish, 2, 'fallback'],
+        ['VolcanicPlant', VolcanicPlant, 1, 'fallback'],
+        ['VolcanicBubble', VolcanicBubble, 1, DisintegrateCollision],
+        ['CrypticFly', CrypticFly, 1, 'fallback'],
+    ])('Red enemy: %s', (_name, EnemyClass, startingLives, Expected) => {
         test.each(normalScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();
             const enemy = makeEnemy(EnemyClass, { lives: startingLives });
@@ -738,8 +742,12 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
                 return;
             }
 
-            const Cls = expectBloodOrPoofForNormalEnemy(enemy.lives);
-            expectCollisionCounts(ctx, [[Cls, 1]]);
+            if (Expected === 'fallback') {
+                const Cls = expectBloodOrPoofForNormalEnemy(enemy.lives);
+                expectCollisionCounts(ctx, [[Cls, 1]]);
+            } else {
+                expectCollisionCounts(ctx, [[Expected, 1]]);
+            }
 
             if (!s.isInvisible && !s.isDashing) {
                 expect(ctx.game.lives).toBe(2);
@@ -752,6 +760,7 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
 
     describe.each([
         ['IceBall', IceBall, 'fallback', null],
+        ['Drillice', DrillIce, 'fallback', null],
         ['IceTrail', IceTrail, IceTrailCollision, null],
         ['IcyStormBall', IcyStormBall, IcyStormBallCollision, null],
         ['SpinningIceBalls', SpinningIceBalls, SpinningIceBallsCollision, null],
@@ -1119,7 +1128,7 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
         ['Garry', Garry, InkSplashCollision],
         ['InkBeam', InkBeam, InkSplashCollision],
         ['InkBomb', InkBomb, InkBombCollision],
-    ])('Ink enemy: %s', (_name, EnemyClass, FxCollisionClass) => {
+    ])('Ink enemy: %s', (_name, EnemyClass, ExpectedCollisionClass) => {
         test.each(rollDiveScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();
             const enemy = makeEnemy(EnemyClass);
@@ -1129,10 +1138,10 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
             if (!s.isInvisible) {
                 expectCollisionCounts(ctx, [
                     [InkSplash, 1],
-                    [FxCollisionClass, 1],
+                    [ExpectedCollisionClass, 1],
                 ]);
             } else {
-                expectCollisionCounts(ctx, [[FxCollisionClass, 1]]);
+                expectCollisionCounts(ctx, [[ExpectedCollisionClass, 1]]);
             }
 
             expectNoDamage(ctx);
@@ -1140,6 +1149,7 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
     });
 
     describe.each([
+        ['LavaBall', LavaBall, DisintegrateCollision, null],
         ['GhostElyvorg', GhostElyvorg, GhostFadeOut, null],
         ['MeteorAttack', MeteorAttack, MeteorExplosionCollision, null],
         ['PurpleLaserBeam', PurpleLaserBeam, DisintegrateCollision, null],
@@ -1279,23 +1289,24 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
     });
 
     describe.each([
-        { name: 'PoisonSpit', EnemyClass: PoisonSpit, Fx: PoisonSpitSplash, poisonTimer: 2500 },
-        { name: 'PoisonDrop', EnemyClass: PoisonDrop, Fx: PoisonDropCollision, poisonTimer: 2500 },
-        { name: 'GreenArrow', EnemyClass: GreenArrow, Fx: DisintegrateCollision, poisonTimer: 2500 },
-    ])('Poison enemy: $name', ({ EnemyClass, Fx, poisonTimer }) => {
+        ['PoisonSpit', PoisonSpit, PoisonSpitSplash],
+        ['PoisonDrop', PoisonDrop, PoisonDropCollision],
+        ['GreenArrow', GreenArrow, DisintegrateCollision],
+        ['ScorpionPoison', ScorpionPoison, DisintegrateCollision],
+    ])('Poison enemy: %s', (_name, EnemyClass, ExpectedCollisionClass) => {
         test.each(rollDiveScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();
             const enemy = makeEnemy(EnemyClass);
 
             runRollDiveScenario(ctx, enemy, s);
 
-            expectCollisionCounts(ctx, [[Fx, 1]]);
+            expectCollisionCounts(ctx, [[ExpectedCollisionClass, 1]]);
 
             if (!s.isInvisible) {
                 expect(ctx.game.lives).toBe(2);
                 expect(ctx.game.coins).toBe(49);
                 expect(ctx.player.isPoisonedActive).toBe(true);
-                expect(ctx.player.poisonTimer).toBe(poisonTimer);
+                expect(ctx.player.poisonTimer).toBe(2500);
             } else {
                 expectNoDamage(ctx);
                 expect(ctx.player.isPoisonedActive).toBe(false);
@@ -1305,20 +1316,25 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
     });
 
     describe.each([
-        ['Gloomlet', Gloomlet, 1],
-        ['KarateCroco', KarateCroco, 2],
-        ['SpearFish', SpearFish, 2],
-        ['TheRock', TheRock, 2],
-        ['Volcanurtle', Volcanurtle, 1],
-    ])('Red enemy: %s', (_name, EnemyClass, startingLives) => {
+        ['Gloomlet', Gloomlet, 1, 'fallback'],
+        ['KarateCroco', KarateCroco, 2, 'fallback'],
+        ['SpearFish', SpearFish, 2, 'fallback'],
+        ['VolcanicPlant', VolcanicPlant, 1, 'fallback'],
+        ['VolcanicBubble', VolcanicBubble, 1, DisintegrateCollision],
+        ['CrypticFly', CrypticFly, 1, 'fallback'],
+    ])('Red enemy: %s', (_name, EnemyClass, startingLives, Expected) => {
         test.each(rollDiveScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();
             const enemy = makeEnemy(EnemyClass, { lives: startingLives });
 
             runRollDiveScenario(ctx, enemy, s);
 
-            const Cls = expectBloodOrPoofForNormalEnemy(enemy.lives);
-            expectCollisionCounts(ctx, [[Cls, 1]]);
+            if (Expected === 'fallback') {
+                const Cls = expectBloodOrPoofForNormalEnemy(enemy.lives);
+                expectCollisionCounts(ctx, [[Cls, 1]]);
+            } else {
+                expectCollisionCounts(ctx, [[Expected, 1]]);
+            }
 
             if (!s.isInvisible && s.isRollOrDive) {
                 expect(ctx.game.lives).toBe(2);
@@ -1331,6 +1347,7 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
 
     describe.each([
         ['IceBall', IceBall, 'fallback', null],
+        ['Drillice', DrillIce, 'fallback', null],
         ['IceTrail', IceTrail, IceTrailCollision, null],
         ['IcyStormBall', IcyStormBall, IcyStormBallCollision, null],
         ['SpinningIceBalls', SpinningIceBalls, SpinningIceBallsCollision, null],
@@ -1599,6 +1616,8 @@ describe('CollisionLogic.fireball vs enemy', () => {
         [GravitationalAura, DarkExplosionCollision],
         [PoisonSpit, PoisonSpitSplash],
         [PoisonDrop, PoisonDropCollision],
+        [ScorpionPoison, DisintegrateCollision],
+        [LavaBall, DisintegrateCollision],
         [PurpleLaserBeam, DisintegrateCollision],
         [MeteorAttack, MeteorExplosionCollision],
         [PurpleThunder, PurpleThunderCollision],
@@ -1625,6 +1644,8 @@ describe('CollisionLogic.fireball vs enemy', () => {
         [PointyIcicleShard, PointyIcicleShardCollision],
         [IceSlash, IceSlashCollision],
         [FrozenShard, DisintegrateCollision],
+
+        [VolcanicBubble, DisintegrateCollision],
     ];
 
     test.each([
