@@ -14,7 +14,7 @@ import {
     Zabkous,
     Cactus, VolcanicPlant, Volcanurtle, VolcanoWasp, VolcanoScorpion, VolcanoFly, Bloburn, VolcanoBeetle, LavaCobra,
     IceSilknoir, CrystalWasp, IcePlant, Globby, IceCentipede, DrillIce, IceGlider, IceBat,
-    Dragon, CrypticFly, PetroPlant,
+    Dragon, CrypticFly, PetroPlant, CrypticRocky, OneEyeSnake, CrypticSlime, CrypticGecko, CrypticSpider,
     Plazer, Veynoculus, SpaceCrab, Johnny, Spindle,
     ImmobileGroundEnemy,
 } from "./entities/enemies/enemies.js";
@@ -1102,8 +1102,13 @@ export class Game {
             ],
             BonusMap2: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: CrypticFly, probability: 1, spawningDistance: 0 },
-                { type: PetroPlant, probability: 0.1, spawningDistance: 0 },
+                { type: CrypticSpider, probability: 0.1, spawningDistance: 0 },
+                { type: CrypticSlime, probability: 0.05, spawningDistance: 0 },
+                { type: CrypticFly, probability: 0.05, spawningDistance: 0 },
+                { type: CrypticRocky, probability: 0.05, spawningDistance: 0 },
+                { type: PetroPlant, probability: 0.05, spawningDistance: 0 },
+                { type: OneEyeSnake, probability: 0.05, spawningDistance: 0 },
+                { type: CrypticGecko, probability: 0.05, spawningDistance: 0 },
                 { type: Dragon, probability: 0.05, spawningDistance: 0 },
             ],
             BonusMap3: [

@@ -1615,15 +1615,14 @@ export class MeatSoldier extends MovingGroundEnemy {
 
 export class Skulnap extends MovingGroundEnemy {
     constructor(game, scale = 1) {
-        super(game, 104.23076923076923076923076923077 * scale, 70 * scale, 12, 'skulnapAwake');
+        super(game, 104.23076923076923076923076923077 * scale, 70 * scale, 12, 'skulnap');
         this.isStunEnemy = true;
         this.y = this.game.height - this.height - this.game.groundMargin + 15;
         this.state = 'sleeping';
         this.scale = scale;
 
-        this.sleepingAnimation = new GroundEnemy(game, 57 * scale, 57 * scale, 10, 'skulnapSleep');
-        this.sleepingAnimation.frameX = 0;
-        this.sleepingAnimation.frameY = 0;
+        this.sleepFrameX = 0;
+        this.sleepFrameTimer = 0;
 
         this.soundId = undefined;
         this.loopingSoundId = 'fuseSound';
@@ -1652,35 +1651,30 @@ export class Skulnap extends MovingGroundEnemy {
             this.y = this.game.height - this.height - this.game.groundMargin + 5;
             this.advanceFrame(deltaTime);
         } else {
-            this.sleepingAnimation.x = this.x + 13;
-            this.sleepingAnimation.y = this.y;
-            this.sleepingAnimation.update(deltaTime);
+            if (this.sleepFrameTimer > this.frameInterval) {
+                this.sleepFrameTimer = 0;
+                this.sleepFrameX = this.sleepFrameX < 10 ? this.sleepFrameX + 1 : 0;
+            } else {
+                this.sleepFrameTimer += deltaTime;
+            }
         }
     }
 
     draw(context) {
-        const drawImageWithScale = (image, frameX, x, y, width, height, scale) => {
+        const drawFromSheet = (srcY, frameX, srcW, srcH, x, y) => {
             withCtx(context, () => {
                 context.translate(x, y);
-                context.scale(scale, scale);
+                context.scale(this.scale, this.scale);
                 context.translate(-x, -y);
                 setShadow(context, 'yellow', 10);
-                context.drawImage(image, frameX * (width / scale), 0, width / scale, height / scale, x, y, width, height);
+                context.drawImage(this.image, frameX * srcW, srcY, srcW, srcH, x, y, srcW * this.scale, srcH * this.scale);
             });
         };
 
         if (this.state === 'running') {
-            drawImageWithScale(this.image, this.frameX, this.x, this.y, this.width, this.height, this.scale);
+            drawFromSheet(57, this.frameX, 104.23076923076923, 70, this.x, this.y);
         } else {
-            drawImageWithScale(
-                this.sleepingAnimation.image,
-                this.sleepingAnimation.frameX,
-                this.sleepingAnimation.x,
-                this.sleepingAnimation.y,
-                this.sleepingAnimation.width,
-                this.sleepingAnimation.height,
-                this.scale
-            );
+            drawFromSheet(0, this.sleepFrameX, 57, 57, this.x + 13, this.y);
         }
     }
 }
@@ -1705,15 +1699,15 @@ export class Abyssaw extends FlyingEnemy {
 
 export class GlidoSpike extends FlyingEnemy {
     constructor(game) {
-        super(game, 191.68, 130, 24, 'glidoSpikeFly');
+        super(game, 191.68, 130, 24, 'glidoSpike');
         this.walkFps = 120;
-        this.attackFps = 120;
         this.frameInterval = 1000 / this.walkFps;
         this.state = 'walk';
 
-        this.attackAnimation = new FlyingEnemy(game, 191.68, 130, 24, 'glidoSpikeAttack');
-        this.attackAnimation.setFps(this.attackFps);
-        this.attackAnimation.frameX = 0;
+        this.attackFrameX = 0;
+        this.attackFrameTimer = 0;
+        this.attackMaxFrame = 24;
+        this.attackFps = 120;
 
         this.canAttack = true;
         this.windAttackConfig = {
@@ -1752,29 +1746,35 @@ export class GlidoSpike extends FlyingEnemy {
             if (playerDistance <= 1200 && this.frameX == 24) {
                 if (!this.game.gameOver) {
                     this.state = 'attack';
-                    this.attackAnimation.x = this.x;
-                    this.attackAnimation.y = this.y;
-                    this.attackAnimation.frameX = 0;
+                    this.attackFrameX = 0;
+                    this.attackFrameTimer = 0;
                 }
             }
         } else if (this.state === 'attack') {
-            this.attackAnimation.update(deltaTime);
-            if (this.attackAnimation.frameX === 12 && this.canAttack === true) {
+            const attackInterval = 1000 / this.attackFps;
+            if (this.attackFrameTimer > attackInterval) {
+                this.attackFrameTimer = 0;
+                if (this.attackFrameX < this.attackMaxFrame) this.attackFrameX++;
+            } else {
+                this.attackFrameTimer += deltaTime;
+            }
+
+            if (this.attackFrameX === 12 && this.canAttack === true) {
                 this.throwWindAttack();
                 this.game.audioHandler.enemySFX.playSound('windAttackAudio', false, true);
                 this.canAttack = false;
             }
-            if (this.attackAnimation.frameX === 24) {
+            if (this.attackFrameX === 24) {
                 this.canAttack = true;
                 this.state = 'walk';
                 this.frameX = 0;
             }
-            if (playerDistance > 1200 && this.attackAnimation.frameX >= this.attackAnimation.maxFrame) {
+            if (playerDistance > 1200 && this.attackFrameX >= this.attackMaxFrame) {
                 this.state = 'walk';
             }
         }
 
-        if (this.game.gameOver && this.attackAnimation.frameX >= this.attackAnimation.maxFrame) {
+        if (this.game.gameOver && this.attackFrameX >= this.attackMaxFrame) {
             this.state = 'walk';
         }
         if (this.frameX === 11 && this.isOnScreen()) {
@@ -1783,12 +1783,11 @@ export class GlidoSpike extends FlyingEnemy {
     }
 
     draw(context) {
+        if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
         if (this.state === 'walk') {
-            super.draw(context);
+            drawSprite(context, this.image, this.frameX * 191.68, 0, 191.68, 130, this.x, this.y, this.width, this.height);
         } else if (this.state === 'attack') {
-            this.attackAnimation.x = this.x;
-            this.attackAnimation.y = this.y;
-            this.attackAnimation.draw(context);
+            drawSprite(context, this.image, this.attackFrameX * 191.68, 130, 191.68, 130, this.x, this.y, this.width, this.height);
         }
     }
 }
@@ -2236,23 +2235,22 @@ export class JetFish extends UnderwaterEnemy {
 
 export class Piper extends ImmobileGroundEnemy {
     constructor(game) {
-        super(game, 87, 67, 2, 'piperIdle');
+        super(game, 87, 67, 2, 'piper');
         this.state = 'idle';
         this.lives = 2;
         this.setFps(14);
-        this.image = getImg('piperIdle');
         this.playOnce = true;
     }
 
     update(deltaTime) {
         super.update(deltaTime);
         const playerDistance = Math.abs(this.game.player.x - this.x);
-        if (playerDistance < 100 || this.lives <= 1) {
+        if (this.state !== 'extended' && (playerDistance < 100 || this.lives <= 1)) {
             this.state = 'extended';
-            this.image = getImg('piperExtended');
             this.width = 82;
             this.height = 234;
             this.maxFrame = 10;
+            this.frameX = 0;
             this.y = this.game.height - this.height - this.game.groundMargin;
         }
 
@@ -2262,6 +2260,15 @@ export class Piper extends ImmobileGroundEnemy {
                 this.game.audioHandler.enemySFX.playSound('extendingSound', false, true);
             }
             if (this.frameX === 10) this.frameX = 9;
+        }
+    }
+
+    draw(context) {
+        if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
+        if (this.state === 'idle') {
+            drawSprite(context, this.image, this.frameX * 87, 0, 87, 67, this.x, this.y, this.width, this.height);
+        } else {
+            drawSprite(context, this.image, this.frameX * 82, 67, 82, 234, this.x, this.y, this.width, this.height);
         }
     }
 }
@@ -2466,13 +2473,14 @@ export class LilHornet extends FlyingEnemy {
 
 export class KarateCroco extends MovingGroundEnemy {
     constructor(game) {
-        super(game, 98.25, 140, 3, 'karateCrocoIdle');
+        super(game, 98.25, 140, 3, 'karateCroco');
         this.isRedEnemy = true;
         this.state = 'idle';
         this.setFps(10);
         this.lives = 2;
-        this.flyKickAnimation = new MovingGroundEnemy(game, 146, 140, 3, 'karateCrocoFlyKick');
         this.playsOnce = true;
+        this.flykickFrameX = 0;
+        this.flykickFrameTimer = 0;
     }
 
     update(deltaTime) {
@@ -2484,56 +2492,56 @@ export class KarateCroco extends MovingGroundEnemy {
 
         if (this.state === 'flykick') {
             this.playSoundOnce('ahhhSound', false, true);
-            if (this.flyKickAnimation.frameX < 3) {
-                this.flyKickAnimation.update(deltaTime);
-                this.x -= 14;
-            } else {
-                this.x -= 14;
-                this.flyKickAnimation.frameX = 3;
+            this.x -= 14;
+            if (this.flykickFrameX < 3) {
+                if (this.flykickFrameTimer > this.frameInterval) {
+                    this.flykickFrameTimer = 0;
+                    this.flykickFrameX++;
+                } else {
+                    this.flykickFrameTimer += deltaTime;
+                }
             }
         }
     }
 
     draw(context) {
         if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
-        if (this.state === 'idle') {
-            super.draw(context);
-        } else if (this.state === 'flykick') {
-            withCtx(context, () => {
-                setShadow(context, 'red', 10);
-                this.flyKickAnimation.x = this.x;
-                this.flyKickAnimation.y = this.y;
-                this.flyKickAnimation.draw(context);
-            });
-        }
+        withCtx(context, () => {
+            setShadow(context, 'red', 10);
+            if (this.state === 'idle') {
+                drawSprite(context, this.image, this.frameX * 98.25, 0, 98.25, 140, this.x, this.y, this.width, this.height);
+            } else {
+                drawSprite(context, this.image, this.flykickFrameX * 146, 140, 146, 140, this.x, this.y, 146, 140);
+            }
+        });
     }
 }
 
 export class SpidoLazer extends MovingGroundEnemy {
     static STATES = {
         walk: {
-            imageId: 'spidoLazerWalk',
             width: 134.4210526315789,
             height: 120,
             maxFrame: 18,
             fps: 260,
+            srcY: 0,
             xOffset: 0,
             yOffset: 0,
         },
         attack: {
-            imageId: 'spidoLazerAttack',
             width: 134.45,
             height: 120,
             maxFrame: 59,
             fps: 120,
+            srcY: 120,
             xOffset: 0,
             yOffset: 0,
         },
     };
 
     constructor(game) {
-        const { width, height, maxFrame, imageId } = SpidoLazer.STATES.walk;
-        super(game, width, height, maxFrame, imageId);
+        const { width, height, maxFrame } = SpidoLazer.STATES.walk;
+        super(game, width, height, maxFrame, 'spidoLazer');
 
         this.game = game;
         this.lives = 2;
@@ -2558,7 +2566,6 @@ export class SpidoLazer extends MovingGroundEnemy {
 
         this.state = newState;
 
-        this.image = getImg(cfg.imageId);
         this.width = cfg.width;
         this.height = cfg.height;
         this.maxFrame = cfg.maxFrame;
@@ -2568,6 +2575,12 @@ export class SpidoLazer extends MovingGroundEnemy {
         const groundY = this.game.height - this.height - this.game.groundMargin;
         this.y = groundY + cfg.yOffset;
         this.x += cfg.xOffset;
+    }
+
+    draw(context) {
+        if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
+        const srcY = SpidoLazer.STATES[this.state]?.srcY ?? 0;
+        drawSprite(context, this.image, this.frameX * this.width, srcY, this.width, this.height, this.x, this.y, this.width, this.height);
     }
 
     throwLaserBeam() {
@@ -2954,23 +2967,23 @@ export class HangingSpidoLazer extends ClimbingEnemy {
 export class Zabkous extends MovingGroundEnemy {
     static STATES = {
         run: {
-            imageId: 'zabkousJump',
             width: 234.6470588235294,
             height: 150,
+            srcY: 0,
             xOffset: 0,
             yOffset: 0,
         },
         attack: {
-            imageId: 'zabkousAttack',
             width: 134.0588235294118,
             height: 100,
+            srcY: 150,
             xOffset: 45,
             yOffset: 0,
         },
     };
 
     constructor(game) {
-        super(game, 316, 202, 16, 'zabkousJump');
+        super(game, 316, 202, 16, 'zabkous');
 
         this.game = game;
         this.lives = 2;
@@ -3002,7 +3015,6 @@ export class Zabkous extends MovingGroundEnemy {
 
         this.state = newState;
 
-        this.image = getImg(cfg.imageId);
         this.width = cfg.width;
         this.height = cfg.height;
         this.frameX = 0;
@@ -3015,6 +3027,12 @@ export class Zabkous extends MovingGroundEnemy {
         if (resetJumpFlags) {
             this.jumpedBeforeDistanceLogic = false;
         }
+    }
+
+    draw(context) {
+        if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
+        const srcY = Zabkous.STATES[this.state]?.srcY ?? 0;
+        drawSprite(context, this.image, this.frameX * this.width, srcY, this.width, this.height, this.x, this.y, this.width, this.height);
     }
 
     throwPoisonSpit() {
@@ -3524,9 +3542,103 @@ export class IceBat extends FlyingEnemy {
 }
 
 // Bonus Map 2 --------------------------------------------------------------------------------------------------------------------------------------
+export class CrypticRocky extends MovingGroundEnemy {
+    constructor(game) {
+        super(game, 152, 140, 1, 'crypticRocky');
+        this.lives = 2;
+        this.isRedEnemy = true;
+        this.setFps(6);
+        this.y = this.y + 17;
+        this.xSpeed = Math.floor(Math.random() * 2) + 3;
+        this.ySpeed = 3;
+        this._phase = 0;
+        this._distCovered = 0;
+        this._segmentDist = 200;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        switch (this._phase % 4) {
+            case 0:
+                this.x -= this.xSpeed;
+                this._distCovered += this.xSpeed;
+                break;
+            case 1:
+                this.y -= this.ySpeed;
+                this._distCovered += this.ySpeed;
+                break;
+            case 2:
+                this.x -= this.xSpeed;
+                this._distCovered += this.xSpeed;
+                break;
+            case 3:
+                this.y += this.ySpeed;
+                this._distCovered += this.ySpeed;
+                break;
+        }
+        if (this._distCovered >= this._segmentDist) {
+            this._distCovered = 0;
+            this._phase++;
+        }
+    }
+}
+
+export class CrypticSpider extends MovingGroundEnemy {
+    constructor(game) {
+        super(game, 98.66666666666667, 70, 2, 'crypticSpider');
+        this.setFps(12);
+        this.xSpeed = Math.floor(Math.random() * 2) + 2;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.x -= this.xSpeed;
+    }
+}
+
+
+export class CrypticSlime extends MovingGroundEnemy {
+    constructor(game) {
+        super(game, 124, 50, 3, 'crypticSlime');
+        this.setFps(8);
+        this.groundY = game.height - this.height - game.groundMargin;
+        this.y = -this.height;
+        const minX = Math.max(game.width / 2, game.player.x);
+        const maxX = game.width - this.width;
+        this.x = minX + Math.random() * (maxX - minX);
+        this.speedY = Math.random() * 2 + 3;
+        this.xSpeed = Math.floor(Math.random() * 2) + 3;
+        this.state = 'falling';
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        if (this.state === 'falling') {
+            this.y += this.speedY;
+            if (this.y >= this.groundY) {
+                this.y = this.groundY;
+                this.speedY = 0;
+                this.state = 'moving';
+            }
+        } else {
+            this.x -= this.xSpeed;
+        }
+    }
+}
+
+export class OneEyeSnake extends MovingGroundEnemy {
+    constructor(game) {
+        super(game, 217, 100, 1, 'oneEyeSnake');
+        this.lives = 2;
+        this.setFps(6);
+        this.xSpeed = Math.floor(Math.random() * 4) + 2;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.x -= this.xSpeed;
+    }
+}
+
 export class CrypticFly extends FlyingEnemy {
     constructor(game) {
-        super(game, 97.5, 100, 1, 'crypticFly');
+        super(game, 128, 100, 1, 'crypticFly');
         this.playsOnce = true;
         this.isRedEnemy = true;
     }
@@ -3599,6 +3711,71 @@ export class PetroPlant extends ImmobileGroundEnemy {
         this.lastRockAttackTime += deltaTime;
         if (this.lastRockAttackTime >= this.rockAttackConfig.cooldown && this.x < this.game.width - this.width) {
             this.throwRockProjectile();
+        }
+    }
+}
+
+export class CrypticGecko extends MovingGroundEnemy {
+    constructor(game) {
+        super(game, 124.5, 80, 1, 'crypticGecko');
+        this.state = 'idle';
+        this.setFps(7);
+        this.lives = 2;
+        this.playsOnce = true;
+        this.jumpGroundY = 0;
+        this.jumpTime = 0;
+        this.jumpDuration = 700;
+        this.arcHeight = 130;
+        this.jumping = false;
+        this.landTime = 0;
+        this.landDuration = 300;
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime);
+        const playerDistance = Math.abs(this.game.player.x - this.x);
+        if (this.state === 'idle' && ((playerDistance < 1300 && this.y >= this.game.height - this.height - this.game.groundMargin) || this.lives <= 1)) {
+            this.state = 'pounce';
+        }
+
+        if (this.state === 'pounce') {
+            this.playSoundOnce('ahhhSound', false, true);
+
+            if (!this.jumping) {
+                this.jumpGroundY = this.y;
+                this.jumpTime = 0;
+                this.jumping = true;
+            }
+
+            this.jumpTime += deltaTime;
+            const progress = this.jumpTime / this.jumpDuration;
+
+            if (progress < 1) {
+                this.y = this.jumpGroundY - this.arcHeight * Math.sin(progress * Math.PI);
+            } else {
+                this.y = this.jumpGroundY;
+                this.jumping = false;
+                this.state = 'land';
+                this.landTime = 0;
+            }
+
+            this.x -= 14;
+        } else if (this.state === 'land') {
+            this.landTime += deltaTime;
+            if (this.landTime >= this.landDuration) {
+                this.state = 'pounce';
+            }
+        }
+    }
+
+    draw(context) {
+        if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
+        if (this.state === 'idle') {
+            drawSprite(context, this.image, this.frameX * 124.5, 0, 124.5, 80, this.x, this.y, 124.5, 80);
+        } else if (this.state === 'pounce') {
+            drawSprite(context, this.image, 0, 80, 145, 85, this.x, this.y, 145, 85);
+        } else if (this.state === 'land') {
+            drawSprite(context, this.image, 0, 165, 122, 111, this.x, this.y - 20, 122, 111);
         }
     }
 }

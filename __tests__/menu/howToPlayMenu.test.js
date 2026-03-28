@@ -120,7 +120,7 @@ function installDomAssets() {
         'mouseButton4Click',
 
         // enemies
-        'skulnapSleep',
+        'skulnap',
         'gloomlet',
         'duskPlant',
         'iceSilknoir',

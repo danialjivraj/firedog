@@ -67,27 +67,27 @@ body {
             /* abilities */
             #healingStar, #galacticSpike, #antennaeTentacleUpward, #laserBall, #laserBallMode2, #purpleAsteroid, #blueAsteroid, #healingBarrier, #healingBarrier1, #healingBarrier2, #healingBarrier3, #healingBarrier4,
         /* projectiles */ 
-        #leafAttack, #darkLeafAttack, #windAttack, #poison_spit,  #laser_beam, #iceBall, #darkLaser, #yellowBeam, #rockProjectile, #purpleLaser, #inkBeam, #frozenShard, #lavaBall,
+        #leafAttack, #darkLeafAttack, #windAttack, #poison_spit, #aura, #laser_beam, #iceBall, #darkLaser, #yellowBeam, #rockProjectile, #purpleLaser, #inkBeam, #frozenShard, #lavaBall,
         /* goblin */
         #goblinRun, #goblinSteal, #goblinJump, 
         /* map1 */
-        #abyssaw, #dotter, #vertibat, #ghobat, #skulnapSleep, #meatSoldier, #skulnapAwake, #ravengloom, #glidoSpikeFly, #glidoSpikeAttack, 
+        #abyssaw, #dotter, #ghobat, #skulnap, #meatSoldier, #ravengloom, #glidoSpike, 
         /* map2 */
-        #duskPlant, #silknoir, #skelly, #walterTheGhost, #gloomlet, #dolly, #aura, #ben,
+        #duskPlant, #vertibat, #silknoir, #skelly, #walterTheGhost, #gloomlet, #dolly, #ben,
         /* map3 */
-        #piranha, #skeletonFish, #spearFish, #voltzeel, #jetFish, #piperIdle, #piperExtended, #garry, 
+        #piranha, #skeletonFish, #spearFish, #voltzeel, #jetFish, #piper, #garry, 
         /* map4 */
-        #sluggie, #bigGreener, #spidoLazerWalk, #spidoLazerAttack, #jerry, #chiquita, #lilHornet, #karateCrocoIdle, #karateCrocoFlyKick,
+        #sluggie, #bigGreener, #spidoLazer, #jerry, #chiquita, #lilHornet, #karateCroco,
         /* map5 */
         #bee, #angryBee, #hangingSpidoLazer, #snailey, #redFlyer, #purpleFlyer, #lazyMosquito, #leafSlug, #sunflora, #eggry, 
         /* map6 */
-        #zabkousJump, #zabkousAttack, 
+        #zabkous,
         /* map7 */
         #cactus, #volcanurtle, #volcanoWasp, #volcanicPlant, #volcanoScorpion, #volcanoFly, #bloburn, #volcanoBeetle, #lavaCobra,
         /* bonusmap1 */
         #iceSilknoir, #crystalWasp, #icePlant, #globby, #iceCentipede, #drillice, #iceGlider, #iceBat,
         /* bonusmap2 */
-         #dragon, #petroPlant, #crypticFly,
+         #dragon, #petroPlant, #crypticFly, #crypticRocky, #oneEyeSnake, #crypticSlime, #crypticGecko, #crypticSpider,
         /* bonusmap3 */
          #plazer, #veynoculus, #spaceCrab, #johnny, #spindle,
     /* cabin */

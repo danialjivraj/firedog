@@ -138,7 +138,7 @@ import {
     AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Gloomlet, EnemyBoss, Barrier,
     Aura, KarateCroco, SpearFish, LilHornet, Cactus, IceBall, Garry, InkBeam, RockProjectile,
     VolcanoWasp, FrozenShard, CrystalWasp, VolcanicPlant, VolcanicBubble, LavaBall, ScorpionPoison,
-    CrypticFly, DrillIce,
+    CrypticFly, CrypticRocky, DrillIce,
 } from '../../game/entities/enemies/enemies.js';
 
 import {
@@ -729,6 +729,7 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
         ['VolcanicPlant', VolcanicPlant, 1, 'fallback'],
         ['VolcanicBubble', VolcanicBubble, 1, DisintegrateCollision],
         ['CrypticFly', CrypticFly, 1, 'fallback'],
+        ['CrypticRocky', CrypticRocky, 2, 'fallback'],
     ])('Red enemy: %s', (_name, EnemyClass, startingLives, Expected) => {
         test.each(normalScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();
@@ -1322,6 +1323,7 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
         ['VolcanicPlant', VolcanicPlant, 1, 'fallback'],
         ['VolcanicBubble', VolcanicBubble, 1, DisintegrateCollision],
         ['CrypticFly', CrypticFly, 1, 'fallback'],
+        ['CrypticRocky', CrypticRocky, 2, 'fallback'],
     ])('Red enemy: %s', (_name, EnemyClass, startingLives, Expected) => {
         test.each(rollDiveScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();

@@ -21,7 +21,7 @@ import { Fireball, CoinLoss, PoisonBubbles, IceCrystalBubbles, SpinningChicks } 
 import {
     AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Gloomlet, EnemyBoss, Barrier,
     Aura, KarateCroco, SpearFish, LilHornet, Cactus, IceBall, Garry, InkBeam, RockProjectile, VolcanoWasp, VolcanicBubble,
-    CrystalWasp, DrillIce, FrozenShard, VolcanicPlant, ScorpionPoison, LavaBall, CrypticFly,
+    CrystalWasp, DrillIce, FrozenShard, VolcanicPlant, ScorpionPoison, LavaBall, CrypticFly, CrypticRocky,
 } from './enemies/enemies.js';
 import { InkSplash } from '../animations/ink.js';
 import { DamageIndicator } from '../animations/damageIndicator.js';
@@ -2576,6 +2576,7 @@ export class CollisionLogic {
             case enemy instanceof VolcanicPlant:
             case enemy instanceof VolcanicBubble:
             case enemy instanceof CrypticFly:
+            case enemy instanceof CrypticRocky:
                 this.hit(enemy, player);
                 if (canPlayCollisionFx) {
                     this.playCollisionFx(enemy, { fallbackToDefault: true });
@@ -2863,6 +2864,7 @@ export class CollisionLogic {
             case enemy instanceof VolcanicPlant:
             case enemy instanceof VolcanicBubble:
             case enemy instanceof CrypticFly:
+            case enemy instanceof CrypticRocky:
                 if (player.currentState === player.states[4]) this.hit(enemy, player);
                 this.playCollisionFx(enemy, { fallbackToDefault: true });
                 break;

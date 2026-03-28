@@ -51,8 +51,7 @@ describe('EnemyLore', () => {
             <img id="ghobat" />
             <img id="ravengloom" />
             <img id="meatSoldier" />
-            <img id="skulnapSleep" />
-            <img id="skulnapAwake" />
+            <img id="skulnap" />
             <img id="chiquita" />
             <img id="cactus" />
             <img id="duskPlant" />
@@ -599,7 +598,6 @@ describe('EnemyLore', () => {
             const rightKey = menu.pages[menu.currentPage + 1]?.mapKey;
 
             expect(rightKey).toBe('map2');
-            expect(leftKey).not.toBeNull();
             expect(leftKey).not.toBe(rightKey);
 
             expect(menu.getActiveMapKeyForSpread()).toBe('map2');
@@ -756,7 +754,7 @@ describe('EnemyLore', () => {
             const chiquita = menu.pages.find(p => p.pageKind === 'enemy' && p.name === 'CHIQUITA');
             expect(chiquita).toBeDefined();
             expect(chiquita).toMatchObject({
-                type: 'FLY & NORMAL',
+                type: 'NORMAL',
                 foundAt: 'VERDANT VINE',
             });
             expect(chiquita.images[0].enemyImage.id).toBe('chiquita');
@@ -856,8 +854,8 @@ describe('EnemyLore', () => {
             ['CORAL', 'PIRANHA', ['map3Unlocked'], 'darkblue', 5],
             ['VERDANT', 'CHIQUITA', ['map4Unlocked'], 'black', 15],
             ['SPRINGLY', 'SNAILEY', ['map5Unlocked'], 'orange', 5],
-            ['VENOMVEIL', 'CACTUS', ['map6Unlocked'], '#003b00', 10],
-            ['INFERNAL', 'PETROPLANT', ['map7Unlocked'], 'black', 10],
+            ['VENOMVEIL', 'ZABKOUS', ['map6Unlocked'], '#003b00', 10],
+            ['INFERNAL', 'CACTUS', ['map7Unlocked'], 'black', 10],
             ['RED', 'SPEAR FISH', ['map3Unlocked'], 'black', 1],
             ['STUN', 'SKULNAP', [], 'black', 1],
         ];
@@ -980,16 +978,15 @@ describe('EnemyLore', () => {
 
     describe('standalone words vs full phrases', () => {
         it('does not style standalone COSMIC but styles COSMIC as part of COSMIC RIFT', () => {
-            mockGame.bonusMap1Unlocked = true;
-            mockGame.bonusMap3Unlocked = true;
-            mockGame.glacikalDefeated = true;
-            mockGame.elyvorgDefeated = true;
-
-            menu = new EnemyLore(mockGame);
-            menu.activateMenu();
-            menu.setCategory('bonus');
-
-            const idx = getEnemyPageIndexByMapKey('bonusMap3');
+            const pageIndex = menu.pages.length;
+            menu.createPage({
+                name: 'TEST COSMIC PAGE',
+                type: 'NORMAL',
+                foundAt: 'EVERYWHERE',
+                description: 'A COSMIC BEING EMERGED FROM THE COSMIC RIFT.',
+                images: [],
+                mapKey: null,
+            });
 
             const records = [];
             ctx.strokeText = (text) => {
@@ -1000,7 +997,7 @@ describe('EnemyLore', () => {
                 });
             };
 
-            menu.drawPageContent(ctx, idx, 0, 0);
+            menu.drawPageContent(ctx, pageIndex, 0, 0);
 
             const cosmicEntries = records.filter(r => r.text === 'COSMIC');
             expect(cosmicEntries.length).toBeGreaterThan(0);

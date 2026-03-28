@@ -946,7 +946,7 @@ describe('Map 1 Enemies', () => {
     gs.x = 100;
     gs.state = 'attack';
     gs.canAttack = true;
-    gs.attackAnimation.frameX = 12;
+    gs.attackFrameX = 12;
 
     gs.update(16);
 

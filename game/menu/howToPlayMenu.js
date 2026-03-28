@@ -137,7 +137,7 @@ export class HowToPlayMenu extends BaseMenu {
             scrollWheelClick: id('scrollWheelClick'),
             mouseButton4Click: id('mouseButton4Click'),
 
-            skulnapSleep: id('skulnapSleep'),
+            skulnap: id('skulnap'),
             gloomlet: id('gloomlet'),
             duskPlant: id('duskPlant'),
             iceSilknoir: id('iceSilknoir'),
@@ -1027,9 +1027,9 @@ export class HowToPlayMenu extends BaseMenu {
             {
                 type: 'yellow',
                 label: 'Yellow',
-                image: 'skulnapSleep',
+                image: 'skulnap',
                 key: 'enemy_skulnap_sleep',
-                fps: 10,
+                fps: 20,
                 maxFrame: 10,
                 frameY: 0,
                 frameW: 57,
