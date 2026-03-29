@@ -22,6 +22,7 @@ import {
     AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Gloomlet, EnemyBoss, Barrier,
     Aura, KarateCroco, SpearFish, LilHornet, Cactus, IceBall, Garry, InkBeam, RockProjectile, VolcanoWasp, VolcanicBubble,
     CrystalWasp, DrillIce, Frostling, FrozenShard, VolcanicPlant, ScorpionPoison, LavaBall, CrypticFly, CrypticRocky,
+    GalacticSpiderOrb, Lancer,
 } from './enemies/enemies.js';
 import { InkSplash } from '../animations/ink.js';
 import { DamageIndicator } from '../animations/damageIndicator.js';
@@ -1928,7 +1929,8 @@ export class CollisionLogic {
             // frozen
             case enemy instanceof IceSlash:
             case enemy instanceof BlueAsteroid:
-            case enemy instanceof CyanArrow: {
+            case enemy instanceof CyanArrow:
+            case enemy instanceof GalacticSpiderOrb: {
                 if (enemy instanceof IceSlash) {
                     const shouldInvert = enemy.speedX > 0;
                     this.game.collisions.push(new IceSlashCollision(this.game, ex, ey, shouldInvert));
@@ -2516,6 +2518,7 @@ export class CollisionLogic {
             case enemy instanceof Aura:
             case enemy instanceof Cactus:
             case enemy instanceof RockProjectile:
+            case enemy instanceof Lancer:
             // special stun collision
             case enemy instanceof Skulnap:
             case enemy instanceof YellowArrow:
@@ -2614,7 +2617,8 @@ export class CollisionLogic {
             case enemy instanceof CrystalWasp:
             case enemy instanceof IceSlash:
             case enemy instanceof BlueAsteroid:
-            case enemy instanceof CyanArrow: {
+            case enemy instanceof CyanArrow:
+            case enemy instanceof GalacticSpiderOrb: {
                 if (canPlayCollisionFx) {
                     this.playCollisionFx(enemy, { fallbackToDefault: true });
                 }
@@ -2811,12 +2815,13 @@ export class CollisionLogic {
             case enemy instanceof LilHornet:
             case enemy instanceof Cactus:
             case enemy instanceof RockProjectile:
-            case enemy instanceof GalacticSpike:
+            case enemy instanceof Lancer:
             // special collision
             case enemy instanceof Skulnap:
             case enemy instanceof PurpleThunder:
             case enemy instanceof YellowArrow:
-            case enemy instanceof YellowBeamOrb: {
+            case enemy instanceof YellowBeamOrb:
+            case enemy instanceof GalacticSpike: {
                 this.playCollisionFx(enemy, { fallbackToDefault: true });
 
                 if (!player.isInvisible) {
@@ -2894,7 +2899,8 @@ export class CollisionLogic {
             case enemy instanceof CrystalWasp:
             case enemy instanceof IceSlash:
             case enemy instanceof BlueAsteroid:
-            case enemy instanceof CyanArrow: {
+            case enemy instanceof CyanArrow:
+            case enemy instanceof GalacticSpiderOrb: {
                 this.playCollisionFx(enemy, { fallbackToDefault: true });
 
                 if (!player.isInvisible) {

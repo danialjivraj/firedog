@@ -1146,7 +1146,7 @@ export class EnemyLore extends BaseMenu {
                 "THIS ODD-LOOKING PLANT CANNOT HELP ITSELF BUT SHOOT A LASER OUT OF ITS EYE WHEN IT BLINKS!\n"
                 + "BE CAREFUL NOT TO GET CAUGHT BY THE LASER RAYS!",
             images: [
-                this.createImage('plazer', 75, 89, 2, 'right', 'bottom'),
+                this.createImage('plazer', 61.33333333333333, 90, 2, 'right', 'bottom'),
             ],
             mapKey: "bonusMap3",
             category: "bonus",
@@ -1193,6 +1193,105 @@ export class EnemyLore extends BaseMenu {
             mapKey: "bonusMap3",
             category: "bonus",
         });
+
+        this.createPage({
+            name: "LANCER",
+            type: "STUN",
+            foundAt: "COSMIC RIFT",
+            description:
+                "LANCER IS ONE OF THE FASTEST THREATS IN THE RIFT, ROCKETING THROUGH THE WATERS AT BLISTERING SPEED.\n"
+                + "ITS STUNNING IMPACT LEAVES YOU MOMENTARILY HELPLESS — BLINK AND YOU WILL MISS IT.",
+            images: [
+                this.createImage('lancer', 181.25, 70, 0, 'right', 'top', 'stun'),
+            ],
+            mapKey: "bonusMap3",
+            category: "bonus",
+        });
+
+        this.createPage({
+            name: "VESPION",
+            type: "NORMAL",
+            foundAt: "COSMIC RIFT",
+            description:
+                "VESPION CUTS THROUGH THE RIFT IN A SHARP, RELENTLESS ZIGZAG — UP AND DOWN, UP AND DOWN.\n"
+                + "ITS ERRATIC FLIGHT PATH MAKES IT NEARLY IMPOSSIBLE TO DODGE WITHOUT CAREFUL TIMING.",
+            images: [
+                this.createImage('vespion', 117, 100, 0, 'right', 'top'),
+            ],
+            mapKey: "bonusMap3",
+            category: "bonus",
+        });
+
+        this.createPage({
+            name: "GALACTIC PLANT",
+            type: "NORMAL",
+            foundAt: "COSMIC RIFT",
+            description:
+                "ROOTED TO THE RIFT FLOOR, THE GALACTIC PLANT STANDS COMPLETELY STILL — UNTIL SOMETHING GETS TOO CLOSE.\n"
+                + "WHAT IT LACKS IN MOBILITY, IT MORE THAN MAKES UP FOR IN PATIENCE.",
+            images: [
+                this.createImage('galacticPlant', 95.75, 150, 3, 'right', 'bottom'),
+            ],
+            mapKey: "bonusMap3",
+            category: "bonus",
+        });
+
+        this.createPage({
+            name: "OCULITH",
+            type: "SLOW",
+            foundAt: "COSMIC RIFT",
+            description:
+                "OCULITH LURKS BENEATH THE RIFT FLOOR, WAITING IN SILENCE.\n"
+                + "WHEN IT SENSES A PRESENCE ABOVE, IT BURSTS UPWARD AND KEEPS RISING — NEVER RETREATING, NEVER STOPPING.",
+            images: [
+                this.createImage('oculith', 93, 80, 0, 'right', 'bottom', 'slow'),
+            ],
+            mapKey: "bonusMap3",
+            category: "bonus",
+        });
+
+        this.createPage({
+            name: "BORION",
+            type: "NORMAL",
+            foundAt: "COSMIC RIFT",
+            description:
+                "BORION IS A COLOSSAL BEAST THAT HIDES JUST BELOW THE SURFACE OF THE RIFT.\n"
+                + "WHEN TRIGGERED, IT ERUPTS FROM THE GROUND AND HOLDS ITS GROUND, BLOCKING EVERYTHING IN ITS PATH.",
+            images: [
+                this.createImage('borion', 228, 150, 0, 'right', 'bottom', null, 0, 0.75),
+            ],
+            mapKey: "bonusMap3",
+            category: "bonus",
+        });
+
+        this.createPage({
+            name: "GALACTIC SPIDER",
+            type: "NORMAL",
+            foundAt: "COSMIC RIFT",
+            description:
+                "THE GALACTIC SPIDER CRAWLS ACROSS THE RIFT FLOOR WITH UNSETTLING CONFIDENCE.\n"
+                + "IT TAKES MORE THAN ONE HIT TO BRING DOWN, AND IT FIRES GLOWING ORBS FROM ITS CRYSTAL EYE WITHOUT WARNING.",
+            images: [
+                this.createImage('galacticSpider', 160.5, 120, 0, 'right', 'bottom'),
+            ],
+            mapKey: "bonusMap3",
+            category: "bonus",
+        });
+
+        this.createPage({
+            name: "GALACTIC FROG",
+            type: "NORMAL",
+            foundAt: "COSMIC RIFT",
+            description:
+                "THE GALACTIC FROG WAITS ON THE RIFT FLOOR UNTIL IT SPOTS ITS TARGET — THEN IT LEAPS.\n"
+                + "IT JUMPS IN A PRECISE ARC TOWARD WHEREVER YOU ARE, AND WILL KEEP JUMPING UNTIL IT IS STOPPED.",
+            images: [
+                this.createImage('galacticFrog', 96.5, 100, 0, 'right', 'bottom'),
+            ],
+            mapKey: "bonusMap3",
+            category: "bonus",
+        });
+
 
         document.addEventListener('keydown', this.handleKeyDown.bind(this));
     }

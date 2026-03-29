@@ -15,7 +15,7 @@ import {
     Cactus, VolcanicPlant, Volcanurtle, VolcanoWasp, VolcanoScorpion, VolcanoFly, Bloburn, VolcanoBeetle, LavaCobra,
     IceSilknoir, CrystalWasp, IcePlant, Globby, IceCentipede, DrillIce, Frostling, IceBat,
     Dragon, CrypticFly, PetroPlant, CrypticRocky, OneEyeSnake, CrypticSlime, CrypticGecko, CrypticSpider,
-    Plazer, Veynoculus, SpaceCrab, Johnny, Spindle,
+    Plazer, Veynoculus, SpaceCrab, Johnny, Spindle, Borion, Vespion, GalacticPlant, Oculith, Lancer, GalacticSpider, GalacticFrog,
     ImmobileGroundEnemy,
 } from "./entities/enemies/enemies.js";
 import {
@@ -1116,11 +1116,18 @@ export class Game {
             ],
             BonusMap3: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: Veynoculus, probability: 0.5, spawningDistance: 0 },
+                { type: Veynoculus, probability: 0.05, spawningDistance: 0 },
                 { type: Plazer, probability: 0.05, spawningDistance: 0 },
-                { type: SpaceCrab, probability: 0.1, spawningDistance: 0 },
-                { type: Johnny, probability: 0.1, spawningDistance: 0 },
-                { type: Spindle, probability: 1, spawningDistance: 0 },
+                { type: SpaceCrab, probability: 0.05, spawningDistance: 0 },
+                { type: Johnny, probability: 0.05, spawningDistance: 0 },
+                { type: Spindle, probability: 0.05, spawningDistance: 0 },
+                { type: Borion, probability: 0.05, spawningDistance: 0 },
+                { type: Vespion, probability: 0.05, spawningDistance: 0 },
+                { type: GalacticPlant, probability: 0.05, spawningDistance: 0 },
+                { type: Oculith, probability: 0.05, spawningDistance: 0 },
+                { type: Lancer, probability: 0.05, spawningDistance: 0 },
+                { type: GalacticSpider, probability: 0.05, spawningDistance: 0 },
+                { type: GalacticFrog, probability: 0.05, spawningDistance: 0 },
             ],
         };
 

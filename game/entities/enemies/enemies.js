@@ -3871,7 +3871,7 @@ export class Dragon extends FlyingEnemy {
 // Bonus Map 3 --------------------------------------------------------------------------------------------------------------------------------------
 export class Plazer extends ImmobileGroundEnemy {
     constructor(game) {
-        super(game, 75, 89, 2, 'plazer');
+        super(game, 61.33333333333333, 90, 2, 'plazer');
         this.setFps(6);
         this.canAttack = true;
     }
@@ -3935,5 +3935,247 @@ export class Spindle extends MovingGroundEnemy {
     update(deltaTime) {
         super.update(deltaTime);
         this.x -= this.xSpeed;
+    }
+}
+
+export class Borion extends UndergroundEnemy {
+    constructor(game) {
+        super(game, 228, 150, 1, 'borion', {
+            warningDuration: 500,
+            riseDuration: 500,
+            holdDuration: 3000,
+            triggerDistance: 1300
+        });
+        this.setFps(10);
+        this.drawOffsetY = 30;
+    }
+    draw(context) {
+        if (this.phase === 'warning') {
+            this.drawWarning(context);
+            return;
+        }
+        if (this.phase === 'emerge' || this.phase === 'hold' || this.phase === 'retract') {
+            withCtx(context, () => {
+                context.beginPath();
+                context.rect(this.x, 0, this.width, this.groundBottom);
+                context.clip();
+                const cx = this.x + this.width / 2;
+                const cy = this.y + this.height / 2 + this.drawOffsetY;
+                context.translate(cx, cy);
+                context.scale(this.flipHorizontal ? -1 : 1, 1);
+                this.applyGlow(context);
+                context.drawImage(this.image, (this.frameX || 0) * this.width, 0, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
+                this.clearGlow(context);
+            });
+        }
+    }
+}
+
+export class Vespion extends FlyingEnemy {
+    constructor(game) {
+        super(game, 117, 100, 1, 'vespion');
+        this.playsOnce = true;
+        this.baseY = game.height * 0.5 - this.height * 0.5;
+        this.y = this.baseY;
+        this.va = 0.04;
+        this.amplitude = 230;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        const spike = (2 / Math.PI) * Math.asin(Math.sin(this.angle));
+        this.y = this.baseY + this.amplitude * spike;
+        this.playSoundOnce('buzzingFly');
+    }
+}
+
+export class GalacticPlant extends ImmobileGroundEnemy {
+    constructor(game) {
+        super(game, 95.75, 150, 3, 'galacticPlant');
+        this.setFps(15);
+    }
+}
+
+export class Oculith extends UndergroundEnemy {
+    constructor(game) {
+        super(game, 93, 80, 1, 'oculith', {
+            warningDuration: 800,
+            riseDuration: 300,
+            holdDuration: 0,
+            triggerDistance: 700
+        });
+        this.ascendSpeed = (this.hiddenY - this.visibleY) / this.riseDuration;
+    }
+
+    onEmergeComplete() {
+        this.phase = 'ascend';
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime);
+        if (this.phase === 'ascend') {
+            this.y -= this.ascendSpeed * deltaTime;
+            this.advanceFrame(deltaTime);
+            if (this.y + this.height < 0) this.markedForDeletion = true;
+        }
+    }
+
+    draw(context) {
+        if (this.phase === 'ascend') {
+            this.drawActivePhase(context);
+            return;
+        }
+        super.draw(context);
+    }
+}
+
+export class Lancer extends UnderwaterEnemy {
+    constructor(game) {
+        super(game, 181.25, 70, 3, 'lancer');
+        this.isStunEnemy = true;
+        this.y = this.game.player.y;
+        this.va = Math.random() * 0.001 + 0.2;
+        this.setFps(15);
+        this.loopingSoundId = 'rocketLauncherSound';
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.x -= 11;
+        this.playIfOnScreen('rocketLauncherSound');
+    }
+}
+
+export class GalacticSpiderOrb extends Projectile {
+    constructor(game, x, y) {
+        super(game, x, y, 40, 40, 0, null, 8, 60);
+        this.isFrozenEnemy = true;
+        this.pulseTimer = 0;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.pulseTimer += deltaTime;
+    }
+    draw(context) {
+        const cx = this.x + this.width / 2;
+        const cy = this.y + this.height / 2;
+        const growDuration = 600;
+        const grow = Math.min(1, this.pulseTimer / growDuration);
+        const pulse = 0.8 + 0.2 * Math.sin(this.pulseTimer * 0.008);
+        withCtx(context, () => {
+            context.shadowColor = '#00eaff';
+            context.shadowBlur = 20;
+            context.globalAlpha = 0.35;
+            context.fillStyle = '#00eaff';
+            context.beginPath();
+            context.arc(cx, cy, 28 * pulse * grow, 0, Math.PI * 2);
+            context.fill();
+
+            context.globalAlpha = 1;
+            context.shadowBlur = 10;
+            context.fillStyle = '#aaffff';
+            context.beginPath();
+            context.arc(cx, cy, 12 * grow, 0, Math.PI * 2);
+            context.fill();
+        });
+    }
+}
+
+export class GalacticSpider extends MovingGroundEnemy {
+    constructor(game) {
+        super(game, 160.5, 120, 3, 'galacticSpider');
+        this.setFps(15);
+        this.lives = 2;
+        this.xSpeed = Math.floor(Math.random() * 2) + 1;
+        this.shotCooldown = 3000;
+        this.shotTimer = 2500;
+    }
+    throwOrb() {
+        this.game.enemies.push(new GalacticSpiderOrb(this.game, this.x + 55, this.y + 48));
+        this.shotTimer = 0;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.x -= this.xSpeed;
+        this.shotTimer += deltaTime;
+        if (this.shotTimer >= this.shotCooldown && this.isOnScreen()) this.throwOrb();
+    }
+}
+
+export class GalacticFrog extends ImmobileGroundEnemy {
+    constructor(game) {
+        super(game, 96.5, 100, 1, 'galacticFrog');
+        this.state = 'idle';
+        this.setFps(10);
+        this.lives = 2;
+        this.playsOnce = true;
+        this.jumpFrameX = 0;
+        this.jumpFrameTimer = 0;
+        this.jumpFrameInterval = 1000 / 15;
+        this.jumpFrameW = 180;
+        this.jumpFrameH = 105;
+        this.jumpVX = 0;
+        this.jumpVY = 0;
+        this.jumpGravity = 0.35;
+        this.groundY = 0;
+        this.jumpInitialized = false;
+        this.landingTimer = 0;
+        this.landingCooldown = 1000;
+        this.autoRemoveOffTop = false;
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime);
+        const playerDistance = Math.abs(this.game.player.x - this.x);
+
+        if (this.state === 'idle') {
+            this.landingTimer += deltaTime;
+            if ((playerDistance < 1300 && this.landingTimer >= this.landingCooldown) || this.lives <= 1) {
+                this.state = 'jump';
+            }
+        }
+
+        if (this.state === 'jump') {
+            this.playSoundOnce('ahhhSound', false, true);
+
+            if (!this.jumpInitialized) {
+                this.jumpInitialized = true;
+                this.width = this.jumpFrameW;
+                this.groundY = this.y;
+                const dx = Math.max(300, this.x - this.game.player.x);
+                this.jumpVX = dx / 60;
+                const t = dx / this.jumpVX;
+                const playerTargetY = this.game.player.y + this.game.player.height / 2;
+                const dy = playerTargetY - this.groundY;
+                this.jumpVY = clamp((dy - 0.5 * this.jumpGravity * t * t) / t, -15, -3);
+            }
+
+            this.jumpFrameTimer += deltaTime;
+            if (this.jumpFrameTimer >= this.jumpFrameInterval && this.jumpFrameX < 3) {
+                this.jumpFrameX++;
+                this.jumpFrameTimer = 0;
+            }
+
+            this.jumpVY += this.jumpGravity;
+            this.x -= this.jumpVX;
+            this.y += this.jumpVY;
+
+            if (this.y >= this.groundY) {
+                this.y = this.groundY;
+                this.jumpVY = 0;
+                this.jumpVX = 0;
+                this.jumpInitialized = false;
+                this.width = 96.5;
+                this.jumpFrameX = 0;
+                this.jumpFrameTimer = 0;
+            }
+        }
+    }
+
+    draw(context) {
+        if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
+        if (this.state === 'idle') {
+            super.draw(context);
+        } else if (this.state === 'jump') {
+            drawSprite(context, this.image, this.jumpFrameX * this.jumpFrameW, this.height, this.jumpFrameW, this.jumpFrameH, this.x, this.y, this.jumpFrameW, this.jumpFrameH);
+        }
     }
 }
