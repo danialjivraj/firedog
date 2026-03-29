@@ -834,14 +834,14 @@ describe('EnemyLore', () => {
         it('returns an object with correct properties', () => {
             document.body.insertAdjacentHTML('beforeend', `<img id="goblin" />`);
 
-            const imgObj = menu.createImage('goblin', 16, 32, 2, 100, 150, 1.5, 'stun');
+            const imgObj = menu.createImage('goblin', 16, 32, 2, 100, 150, 'stun', 1.5);
             expect(imgObj.enemyImage).toBe(document.getElementById('goblin'));
             expect(imgObj.frameWidth).toBe(16);
             expect(imgObj.frameHeight).toBe(32);
             expect(imgObj.enemyFrame).toBe(2);
             expect(imgObj.enemyX).toBe(100);
             expect(imgObj.enemyY).toBe(150);
-            expect(imgObj.size).toBe(1.5);
+            expect(imgObj.size).toBe(1);
             expect(imgObj.type).toBe('stun');
         });
     });

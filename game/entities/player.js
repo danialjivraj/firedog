@@ -21,7 +21,7 @@ import { Fireball, CoinLoss, PoisonBubbles, IceCrystalBubbles, SpinningChicks } 
 import {
     AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Gloomlet, EnemyBoss, Barrier,
     Aura, KarateCroco, SpearFish, LilHornet, Cactus, IceBall, Garry, InkBeam, RockProjectile, VolcanoWasp, VolcanicBubble,
-    CrystalWasp, DrillIce, FrozenShard, VolcanicPlant, ScorpionPoison, LavaBall, CrypticFly, CrypticRocky,
+    CrystalWasp, DrillIce, Frostling, FrozenShard, VolcanicPlant, ScorpionPoison, LavaBall, CrypticFly, CrypticRocky,
 } from './enemies/enemies.js';
 import { InkSplash } from '../animations/ink.js';
 import { DamageIndicator } from '../animations/damageIndicator.js';
@@ -1894,6 +1894,8 @@ export class CollisionLogic {
             }
 
             // slow
+            case enemy instanceof DrillIce:
+            case enemy instanceof Frostling:
             case enemy instanceof IceBall:
             case enemy instanceof FrozenShard:
             case enemy instanceof SpinningIceBalls:
@@ -2585,6 +2587,7 @@ export class CollisionLogic {
 
             // slow
             case enemy instanceof DrillIce:
+            case enemy instanceof Frostling:
             case enemy instanceof FrozenShard:
             case enemy instanceof IceBall:
             case enemy instanceof IceTrail:
@@ -2871,6 +2874,7 @@ export class CollisionLogic {
 
             // slow
             case enemy instanceof DrillIce:
+            case enemy instanceof Frostling:
             case enemy instanceof FrozenShard:
             case enemy instanceof IceBall:
             case enemy instanceof IceTrail:

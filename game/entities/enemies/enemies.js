@@ -1264,7 +1264,7 @@ export class LaserBeam extends Projectile {
 
 export class FrozenShard extends Projectile {
     constructor(game, x, y, speedX) {
-        super(game, x, y, 55.5, 40, 1, 'frozenShard', speedX, 20);
+        super(game, x, y, 56, 26, 0, 'frozenShard', speedX, 20);
         this.isSlowEnemy = true;
     }
 }
@@ -1571,6 +1571,23 @@ export class Vertibat extends VerticalEnemy {
         this.angle += this.va;
         this.playSoundOnce('batPitch');
         if (this.frameX === 3 && this.isOnScreen()) this.game.audioHandler.enemySFX.playSound('wooshBat');
+    }
+}
+
+export class Geargle extends VerticalEnemy {
+    constructor(game) {
+        super(game, 64.5, 100, 1, 'geargle');
+        this.angle = 0;
+        this.va = Math.random() * 0.1 + 0.1;
+        this.amplitude = 3;
+        this.playsOnce = true;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.y += this.speedY;
+        this.x += this.speedX;
+        this.x += this.amplitude * Math.sin(this.angle);
+        this.angle += this.va;
     }
 }
 
@@ -2071,12 +2088,32 @@ export class Dolly extends FlyingEnemy {
 // Map 3 --------------------------------------------------------------------------------------------------------------------------------------
 export class Piranha extends UnderwaterEnemy {
     constructor(game) {
-        super(game, 75.166666666666666666666666666667, 50, 5, 'piranha');
+        super(game, 100, 70, 3, 'piranha');
+        this.setFps(10);
     }
     update(deltaTime) {
         super.update(deltaTime);
         this.x -= 3;
         if (this.frameX === 1 && this.isOnScreen()) this.game.audioHandler.enemySFX.playSound('crunchSound');
+    }
+}
+
+export class Jellion extends UnderwaterEnemy {
+    constructor(game) {
+        super(game, 98.5, 120, 1, 'jellion');
+        this.setFps(7);
+        this.baseY = game.height * 0.5 - this.height * 0.5;
+        this.y = this.baseY;
+        this.amplitude = 180;
+        this.sinAngle = Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2;
+        this.sinSpeed = 0.025;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.x -= 3;
+        this.y = this.baseY + this.amplitude * Math.sin(this.sinAngle);
+        this.sinAngle += this.sinSpeed;
+        if (this.frameX === 2 && this.isOnScreen()) this.game.audioHandler.enemySFX.playSound('crunchSound');
     }
 }
 
@@ -2220,7 +2257,7 @@ export class SpearFish extends MovingGroundEnemy {
 
 export class JetFish extends UnderwaterEnemy {
     constructor(game) {
-        super(game, 142, 55, 7, 'jetFish');
+        super(game, 124.5, 75, 3, 'jetFish');
         this.y = this.game.player.y;
         this.va = Math.random() * 0.001 + 0.1;
         this.setFps(60);
@@ -2275,7 +2312,7 @@ export class Piper extends ImmobileGroundEnemy {
 
 export class Voltzeel extends FallingEnemy {
     constructor(game) {
-        super(game, 107, 87, 4, 'voltzeel');
+        super(game, 81, 100, 4, 'voltzeel');
         this.isStunEnemy = true;
         this.chaseDistance = 900;
         this.initialSpeed = 3;
@@ -2436,7 +2473,7 @@ export class BigGreener extends ImmobileGroundEnemy {
 
 export class Chiquita extends FlyingEnemy {
     constructor(game) {
-        super(game, 118.82352941176470588235294117647, 85, 16, 'chiquita');
+        super(game, 95.05882352941176, 68, 16, 'chiquita');
         this.setFps(120);
         this.playsOnce = true;
     }
@@ -2444,6 +2481,33 @@ export class Chiquita extends FlyingEnemy {
         super.update(deltaTime);
         this.playSoundOnce('ravenCallAudio');
         if (this.frameX === 7 && this.isOnScreen()) this.game.audioHandler.enemySFX.playSound('ravenSingleFlap');
+    }
+}
+
+export class Fofinha extends FallingEnemy {
+    constructor(game) {
+        super(game, 118.82352941176470588235294117647, 85, 16, 'fofinha');
+        this.x = game.width * 0.5 + Math.random() * game.width * 0.5;
+        this.speedX = 2.5;
+        this.speedY = 4;
+        this.drawAngle = -0.6;
+        this.setFps(120);
+        this.playsOnce = true;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.playSoundOnce('ravenCallAudio');
+        if (this.frameX === 7 && this.isOnScreen()) this.game.audioHandler.enemySFX.playSound('ravenSingleFlap');
+    }
+    draw(context) {
+        const angle = this.drawAngle;
+        this.applyGlow(context);
+        withCtx(context, () => {
+            context.translate(this.x + this.width / 2, this.y + this.height / 2);
+            context.rotate(angle);
+            drawSprite(context, this.image, this.frameX * this.width, 0, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
+        });
+        this.clearGlow(context);
     }
 }
 
@@ -2906,39 +2970,15 @@ export class AngryBee extends BeeInstances {
     }
 }
 
-export class HangingSpidoLazer extends ClimbingEnemy {
+export class Strawspider extends ClimbingEnemy {
     constructor(game) {
-        super(game, 123.2333333333333, 110, 59, 'hangingSpidoLazer');
+        super(game, 93.83333333333333, 110, 5, 'strawspider');
         this.lives = 2;
-        this.setFps(120);
+        this.setFps(13);
         this.swingAngle = 0;
         this.swingSpeed = 0.002 + Math.random() * 0.006;
         this.swingAmplitude = 1 + Math.random() * 4;
         this.canAttack = true;
-        this.laserBeamConfig = {
-            width: 300,
-            height: 28,
-            maxFrame: 9,
-            imageId: 'laser_beam',
-            speedX: 30
-        };
-    }
-
-    throwLaserBeam() {
-        const {
-            x,
-            y,
-            height
-        } = this;
-        const {
-            width,
-            height: spitHeight,
-            maxFrame,
-            imageId
-        } = this.laserBeamConfig;
-
-        const laser = new LaserBeam(this.game, x - 185, y + 25 + height / 2 - spitHeight / 2, width, spitHeight, maxFrame, imageId, this.laserBeamConfig.speedX);
-        this.game.enemies.push(laser);
     }
 
     update(deltaTime) {
@@ -2946,12 +2986,6 @@ export class HangingSpidoLazer extends ClimbingEnemy {
         this.swingAngle += this.swingSpeed * deltaTime;
         const swingOffsetX = Math.sin(this.swingAngle) * this.swingAmplitude;
         this.x += swingOffsetX;
-        if (this.frameX === 27 && this.x <= this.game.width && this.canAttack === true) {
-            this.throwLaserBeam();
-            this.game.audioHandler.enemySFX.playSound('laserAttackAudio', false, true);
-            this.canAttack = false;
-        }
-        if (this.frameX === 59) this.canAttack = true;
     }
 
     draw(context) {
@@ -3526,11 +3560,12 @@ export class DrillIce extends UndergroundEnemy {
     }
 }
 
-export class IceGlider extends FallingEnemy {
+export class Frostling extends FallingEnemy {
     constructor(game) {
-        super(game, 138, 150, 1, 'iceGlider');
+        super(game, 46.5, 100, 1, 'frostling');
+        this.isSlowEnemy = true;
         this.speedY = Math.random() * 4 + 4;
-        this.setFps(10);
+        this.setFps(5);
     }
 }
 
@@ -3861,7 +3896,7 @@ export class Plazer extends ImmobileGroundEnemy {
 
 export class Veynoculus extends FlyingEnemy {
     constructor(game) {
-        super(game, 57, 37, 4, 'veynoculus');
+        super(game, 78.6, 50, 4, 'veynoculus');
     }
 }
 

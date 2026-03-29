@@ -138,7 +138,7 @@ import {
     AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Gloomlet, EnemyBoss, Barrier,
     Aura, KarateCroco, SpearFish, LilHornet, Cactus, IceBall, Garry, InkBeam, RockProjectile,
     VolcanoWasp, FrozenShard, CrystalWasp, VolcanicPlant, VolcanicBubble, LavaBall, ScorpionPoison,
-    CrypticFly, CrypticRocky, DrillIce,
+    CrypticFly, CrypticRocky, DrillIce, Frostling,
 } from '../../game/entities/enemies/enemies.js';
 
 import {
@@ -762,6 +762,7 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
     describe.each([
         ['IceBall', IceBall, 'fallback', null],
         ['Drillice', DrillIce, 'fallback', null],
+        ['Frostling', Frostling, 'fallback', null],
         ['IceTrail', IceTrail, IceTrailCollision, null],
         ['IcyStormBall', IcyStormBall, IcyStormBallCollision, null],
         ['SpinningIceBalls', SpinningIceBalls, SpinningIceBallsCollision, null],
@@ -1350,6 +1351,7 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
     describe.each([
         ['IceBall', IceBall, 'fallback', null],
         ['Drillice', DrillIce, 'fallback', null],
+        ['Frostling', Frostling, 'fallback', null],
         ['IceTrail', IceTrail, IceTrailCollision, null],
         ['IcyStormBall', IcyStormBall, IcyStormBallCollision, null],
         ['SpinningIceBalls', SpinningIceBalls, SpinningIceBallsCollision, null],

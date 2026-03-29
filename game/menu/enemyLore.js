@@ -64,7 +64,7 @@ export class EnemyLore extends BaseMenu {
                 + "HAVE TRANSFORMED INTO NOTORIOUS THIEVES.\nNO ONE KNOWS WHAT DROVE THEM TO ABANDON THEIR SERENE HOMELAND, BUT THEIR DEPARTURE MARKED THE BEGINNING OF CHAOS.\n"
                 + "NOW, THESE SMALL, AGILE CREATURES CAN BE FOUND ALL AROUND, AS THEY ARE KNOWN FOR THEIR ABILITY TO STEAL ANYTHING THEY SET THEIR SIGHTS ON, ESPECIALLY COINS.",
             images: [
-                this.createImage('goblinSteal', 60.083, 80, 3, this.pageWidth - 135, this.pageHeight - 120, 1.3),
+                this.createImage('goblinSteal', 60.083, 80, 3, 'right', 'bottom'),
             ],
             mapKey: "map1",
         });
@@ -79,7 +79,7 @@ export class EnemyLore extends BaseMenu {
                 + "EVEN ON THE BRINK OF EXTINCTION, THEY HAVE ALWAYS MANAGED TO SURVIVE.\n"
                 + "THESE LITTLE CREATURES CAN BE FOUND ROAMING AROUND PEACEFULLY WITHIN THE FOREST.",
             images: [
-                this.createImage('dotter', 60.083, 80, 0, this.pageWidth - 140, 60, 1.4),
+                this.createImage('dotter', 60.083, 80, 0, 'right', 'top'),
             ],
             mapKey: "map1",
         });
@@ -93,7 +93,7 @@ export class EnemyLore extends BaseMenu {
                 "NOT MUCH IS KNOWN ABOUT THIS GHOST-SHAPED BAT.\n"
                 + "ALL THAT IS KNOWN IS THAT IT LIKES TO FLAP ITS WINGS AND CHASE DOTTERS...",
             images: [
-                this.createImage('ghobat', 134.33, 84, 0, this.pageWidth - 190, 40, 1.1),
+                this.createImage('ghobat', 134.33, 84, 0, 'right', 'top'),
             ],
             mapKey: "map1",
         });
@@ -105,7 +105,7 @@ export class EnemyLore extends BaseMenu {
             foundAt: "LUNAR GLADE",
             description: "THIS FLYING CREATURE LIKES TO PEACEFULLY FLY THROUGH TREES!",
             images: [
-                this.createImage('ravengloom', 139.66, 100, 0, this.pageWidth - 200, 40, 1),
+                this.createImage('ravengloom', 139.66, 100, 0, 'right', 'top'),
             ],
             mapKey: "map1",
         });
@@ -120,7 +120,7 @@ export class EnemyLore extends BaseMenu {
                 + "HOWEVER, BEING VETERANS OF PAST WARS TOOK A MENTAL TOLL ON THEM, AND THEY EVENTUALLY BECAME UNCONTROLLABLE.\n"
                 + "UP TO THIS DAY, THEY STILL THINK THEY ARE ON DUTY.\nTHEY CAN BE FOUND ROAMING THE AREA, LOOKING FOR ENEMIES TO ATTACK.",
             images: [
-                this.createImage('meatSoldier', 67.625, 80, 0, this.pageWidth - 150, this.pageHeight - 110, 1.1),
+                this.createImage('meatSoldier', 67.625, 80, 0, 'right', 'bottom'),
             ],
             mapKey: "map1",
         });
@@ -134,7 +134,7 @@ export class EnemyLore extends BaseMenu {
                 "HE HAD NEVER BEEN IN THIS AREA UNTIL SOME TIME AGO. NO ONE KNOWS HIS ORIGIN, AND IT IS BELIEVED THAT SKULNAP WAS "
                 + "AN EXPERIMENT MADE BY ONE OF THE LANDS.\nHE CAN BE FOUND SLEEPING ON THE GROUND, BUT AS SOON AS YOU STEP WITHIN HEARING RANGE, YOU'LL WAKE HIM RIGHT AWAY!",
             images: [
-                this.createImage('skulnap', 57, 57, 0, this.pageWidth - 150, this.pageHeight - 100, 1.1, 'stun', 0),
+                this.createImage('skulnap', 57, 57, 0, 'right', 'bottom', 'stun'),
             ],
             mapKey: "map1",
         });
@@ -148,7 +148,7 @@ export class EnemyLore extends BaseMenu {
                 "YOU'LL HEAR THEM BEFORE YOU SEE THEM!\n"
                 + "THESE LOUD CREATURES SPIN AGGRESSIVELY LIKE A CHAINSAW AS THEY MOVE THROUGH THE TREES OF THE FOREST.\nWATCH OUT, SO YOU DON'T GET CUT!",
             images: [
-                this.createImage('abyssaw', 100.44, 100, 0, this.pageWidth - 160, 40, 1),
+                this.createImage('abyssaw', 100.44, 100, 0, 'right', 'top'),
             ],
             mapKey: "map1",
         });
@@ -163,8 +163,22 @@ export class EnemyLore extends BaseMenu {
                 + "FLAPPING THEIR WINGS VICIOUSLY NEAR THE SEA, WHICH IN TURN CAUSED A TSUNAMI BIG ENOUGH TO WIPE OUT HALF OF THE LAND.\n"
                 + "WITH THE ABILITY TO FLAP THEIR WINGS WITH SUCH FORCE, GLIDESPIKES CAN CREATE TORNADOES.\nBE CAREFUL NOT TO GET SUCKED IN!",
             images: [
-                this.createImage('glidoSpike', 191.68, 130, 0, this.pageWidth - 220, 30, 1, null, 0),
-                this.createImage('windAttack', 105, 120, 0, this.pageWidth - 200, 120, 1),
+                this.createImage('glidoSpike', 191.68, 130, 0, 'right', 'top'),
+            ],
+            mapKey: "map1",
+        });
+
+
+        this.createPage({
+            name: "GEARGLE",
+            type: "NORMAL",
+            foundAt: "LUNAR GLADE",
+            description:
+                "A PECULIAR MECHANICAL CREATURE BUILT FROM GEARS, BOLTS, AND A SINGLE OVERSIZED EYE.\n"
+                + "NOBODY KNOWS WHO BUILT IT OR WHY, BUT GEARGLE DESCENDS FROM ABOVE IN A WAVY PATTERN, SCANNING EVERYTHING IN ITS PATH.\n"
+                + "LEGENDS SAY ITS DESIGN WAS INSPIRED BY VEYNOCULUS, A MYSTERIOUS GALACTICAL CREATURE WHOSE EXISTENCE FEW DARE TO BELIEVE.",
+            images: [
+                this.createImage('geargle', 64.5, 100, 0, 'right', 'top'),
             ],
             mapKey: "map1",
         });
@@ -190,7 +204,7 @@ export class EnemyLore extends BaseMenu {
                 + "IT IS SPECULATED THAT VERTIBATS CAN DETECT FREQUENCIES NO OTHER CREATURE CAN, INCLUDING PARANORMAL FREQUENCY, WHICH DRAWS THEM TO THIS HAUNTED LAND.\n"
                 + "AS SOON AS THEY DETECT MOVEMENT, THEY FALL ONTO THEIR TARGET.",
             images: [
-                this.createImage('vertibat', 151.166, 90, 0, this.pageWidth - 210, 40, 1),
+                this.createImage('vertibat', 151.166, 90, 0, 'right', 'top'),
             ],
             mapKey: "map2",
         });
@@ -203,8 +217,7 @@ export class EnemyLore extends BaseMenu {
                 "THESE RARE PLANTS ARE DORMANT BY DAY BUT AWAKEN AS DARKNESS FALLS, PROWLING THE SHADOWS IN SEARCH "
                 + "OF UNSUSPECTING PREY.\n AS SOON AS THEY DETECT MOVEMENT, DUSK PLANTS WILL LAUNCH A VERY DARK LEAF FROM THEIR MOUTHS, AIMING TO SLICE THROUGH THEIR TARGET!",
             images: [
-                this.createImage('duskPlant', 60, 87, 0, this.pageWidth - 150, this.pageHeight - 110, 1),
-                this.createImage('darkLeafAttack', 35.416, 45, 0, this.pageWidth - 210, this.pageHeight - 100, 1),
+                this.createImage('duskPlant', 60, 87, 0, 'right', 'bottom'),
             ],
             mapKey: "map2",
         });
@@ -218,8 +231,8 @@ export class EnemyLore extends BaseMenu {
                 "THESE BIG SPIDERS APPEAR AT NIGHT, CRAWLING DOWN THE TALLEST TREES FOR SOME PREYS!\n"
                 + "SILKNOIRS ARE BIG IN SIZE BECAUSE THEY FEAST ON ANYTHING THEY LAY THEIR EYES ON!",
             images: [
-                this.createImage('blackLine', 3, 345, 0, this.pageWidth - 111, 0, 1),
-                this.createImage('silknoir', 120, 144, 0, this.pageWidth - 170, 270, 1),
+                this.createLine(this.pageWidth - 110, 0, 345),
+                this.createImage('silknoir', 120, 144, 0, 'right', 270),
             ],
             mapKey: "map2",
         });
@@ -232,7 +245,7 @@ export class EnemyLore extends BaseMenu {
             description:
                 "WALTER IS A VERY CURIOUS AND SPOOKY GHOST.\nIF HE SPOTS YOU, HE MIGHT CHASE YOU!",
             images: [
-                this.createImage('walterTheGhost', 104.83, 84, 0, this.pageWidth - 160, 70, 1),
+                this.createImage('walterTheGhost', 104.83, 84, 0, 'right', 'top'),
             ],
             mapKey: "map2",
         });
@@ -246,7 +259,7 @@ export class EnemyLore extends BaseMenu {
                 "BEN IS A SMALL CREATURE WHO SEEMS TO APPEAR OUT OF NOWHERE.\nLITTLE IS KNOWN ABOUT HIS BACKSTORY OR PURPOSE, "
                 + "EXCEPT THAT HE DROPS FROM ABOVE AND MOVES CURIOUSLY IN YOUR DIRECTION.",
             images: [
-                this.createImage('ben', 61.5, 50, 0, this.pageWidth - 160, 70, 1.3),
+                this.createImage('ben', 61.5, 50, 0, 'right', 'top'),
             ],
             mapKey: "map2",
         });
@@ -261,7 +274,7 @@ export class EnemyLore extends BaseMenu {
                 + "THEIR FACES NEVER CHANGE, BUT PEOPLE SWEAR THEIR EXPRESSIONS SHIFT WHEN NO ONE IS LOOKING.\n"
                 + "SOME SAY THEY DRIFT TOWARD ANY PLACE WHERE A SECRET WAS ONCE WHISPERED, AS IF STILL LISTENING FOR THE REST OF THE STORY.",
             images: [
-                this.createImage('gloomlet', 78, 74, 0, this.pageWidth - 160, 50, 1.3, 'red'),
+                this.createImage('gloomlet', 78, 74, 0, 'right', 'top', 'red'),
             ],
             mapKey: "map2",
         });
@@ -276,8 +289,7 @@ export class EnemyLore extends BaseMenu {
                 + "RUMOR HAS IT THAT THE CHILD'S SPIRIT NOW RESIDES WITHIN DOLLY, HAUNTING THOSE WHO ENCOUNTER HER AT NIGHT.\nIF YOU SEE DOLLY LAUNCHING A YELLOWISH AURA, "
                 + "YOU SHOULD AVOID TOUCHING IT AT ALL COSTS!",
             images: [
-                this.createImage('dolly', 88.2, 120, 0, this.pageWidth - 160, 70, 1),
-                this.createImage('aura', 52, 50, 0, this.pageWidth - 210, 150, 1, 'stun'),
+                this.createImage('dolly', 88.2, 120, 0, 'right', 'top'),
             ],
             mapKey: "map2",
         });
@@ -290,7 +302,7 @@ export class EnemyLore extends BaseMenu {
                 "SKELLY IS A RESTLESS SKELETON THAT HAS WANDERED THESE GROUNDS FOR CENTURIES.\n"
                 + "THOUGH IT MOVES FORWARD AT A STEADY PACE, SKELLY CAN LEAP GREAT DISTANCES WITHOUT WARNING, MAKING IT HARD TO PREDICT WHERE IT WILL LAND NEXT!",
             images: [
-                this.createImage('skelly', 57.5, 60, 0, this.pageWidth - 150, this.pageHeight - 90, 1.2),
+                this.createImage('skelly', 57.5, 60, 0, 'right', 'bottom'),
             ],
             mapKey: "map2",
         });
@@ -314,7 +326,7 @@ export class EnemyLore extends BaseMenu {
             description:
                 "PIRANHAS ARE QUICK AND NIPPY FISH.\nTHEIR SHARP TEETH CAN GIVE YOU NASTY BITE, SO KEEP YOUR DISTANCE!",
             images: [
-                this.createImage('piranha', 75.167, 50, 0, this.pageWidth - 160, 70, 1),
+                this.createImage('piranha', 100, 70, 0, 'right', 'top'),
             ],
             mapKey: "map3",
         });
@@ -328,7 +340,7 @@ export class EnemyLore extends BaseMenu {
                 "ROAMING THE SEAS FOR THOUSANDS OF YEARS, THESE ANCIENT FISH HAVE ADAPTED TO THEIR UNDERWATER HABITAT.\n"
                 + "THEY DON'T HAVE EYES, BUT THEY CAN SENSE MOVEMENT AND WILL BE QUICK AND PERSISTENT IN CHASING YOU DOWN!",
             images: [
-                this.createImage('skeletonFish', 55, 39, 0, this.pageWidth - 160, 70, 1),
+                this.createImage('skeletonFish', 55, 39, 0, 'right', 'top'),
             ],
             mapKey: "map3",
         });
@@ -344,7 +356,7 @@ export class EnemyLore extends BaseMenu {
                 + "LEGEND HAS IT THAT THE SPEAR FISH'S SKILLS WERE MASTERED IN ANCIENT DUELS, AND NOW IT GUARDS THE SEAS WITH A COMBINATION OF ANCIENT FEROCITY "
                 + "AND DETERMINATION, RUNNING BRAVELY TOWARDS ITS TARGET!",
             images: [
-                this.createImage('spearFish', 91.875, 110, 0, this.pageWidth - 160, this.pageHeight - 130, 1, 'red'),
+                this.createImage('spearFish', 91.875, 110, 0, 'right', 'bottom', 'red'),
             ],
             mapKey: "map3",
         });
@@ -358,7 +370,7 @@ export class EnemyLore extends BaseMenu {
                 "IS IT A JET? IS IT A FISH? NO, IT'S BOTH!\n"
                 + "JET FISH BLENDS THE SPEED OF A JET WITH THE SWIFT MOVES OF A FISH, GLIDING THROUGH THE WATERS OF CORAL ABYSS AT SUPERSONIC SPEED!",
             images: [
-                this.createImage('jetFish', 142, 55, 0, this.pageWidth - 160, 70, 1),
+                this.createImage('jetFish', 124.5, 75, 0, 'right', 'top'),
             ],
             mapKey: "map3",
         });
@@ -372,13 +384,26 @@ export class EnemyLore extends BaseMenu {
                 "PIPER SEEMS LIKE A HARMLESS ENEMY AT FIRST...\n"
                 + "BUT GET TOO CLOSE, AND SHE'LL UNVEIL HER TRUE FORM, EXPANDING TO FIVE TIMES HER ORIGINAL SIZE!",
             images: [
-                this.createImage('piper', 87, 67, 0, this.pageWidth - 250, this.pageHeight - 110, 1, null, 0),
-                this.createImage('piper', 82, 234, 10, this.pageWidth - 150, this.pageHeight - 275, 1, null, 67),
+                this.createImage('piper', 87, 67, 0, 'right', 'bottom'),
             ],
             mapKey: "map3",
         });
 
-        // 20
+        // 21
+        this.createPage({
+            name: "JELLION",
+            type: "NORMAL",
+            foundAt: "CORAL ABYSS",
+            description:
+                "DRIFTING THROUGH THE DEPTHS IN LONG, HYPNOTIC WAVES, JELLION IS A CREATURE OF PURE RHYTHM.\n"
+                + "DON'T BE FOOLED BY ITS GRACEFUL MOVEMENT - ITS UNDULATING PATH MAKES IT SURPRISINGLY HARD TO AVOID!",
+            images: [
+                this.createImage('jellion', 98.5, 120, 0, 'right', 'top'),
+            ],
+            mapKey: "map3",
+        });
+
+        // 22
         this.createPage({
             name: "VOLTZEEL",
             type: "STUN",
@@ -387,12 +412,12 @@ export class EnemyLore extends BaseMenu {
                 "AMONG THE MOST DANGEROUS ENEMIES, VOLTZEEL WILL STRIKE FROM ABOVE WHEN YOU LEAST EXPECT IT!\n"
                 + "IT IS RUMORED THAT HIS INTENSE ELECTRICAL AURA IS THE RESULT OF EXPERIMENTS CARRIED OUT BY THE INHABITANTS OF CORAL ABYSS.",
             images: [
-                this.createImage('voltzeel', 107, 87, 4, this.pageWidth - 160, 70, 1, 'stun')
+                this.createImage('voltzeel', 81, 100, 4, 'right', 'top', 'stun')
             ],
             mapKey: "map3",
         });
 
-        // 21
+        // 23
         this.createPage({
             name: "GARRY",
             type: "NORMAL",
@@ -401,16 +426,15 @@ export class EnemyLore extends BaseMenu {
                 "GARRY DOESN'T LIKE IT WHEN YOU ATTACK HIM WITH PHYSICAL CONTACT AS HE MIGHT SURPRISE YOU WITH SOME INK THAT "
                 + "TAKES A WHILE TO FADE AWAY!",
             images: [
-                this.createImage('paint_splatter_8', 1994, 995, 0, -130, 175, 0.5),
-                this.createImage('garry', 165, 122, 0, this.pageWidth - 220, this.pageHeight - 130, 1),
-                this.createImage('inkBeam', 77, 34, 2, this.pageWidth - 250, this.pageHeight - 70, 1),
+                this.createImage('paint_splatter_8', 1994, 995, 0, -130, 175, null, 0, 0.5),
+                this.createImage('garry', 165, 122, 0, 'right', 'bottom'),
+                this.createImage('inkBeam', 77, 34, 2, this.pageWidth - 250, 'bottom'),
             ],
             mapKey: "map3",
         });
 
-
         // MAP 4 - Verdant Vine
-        // 22
+        // 23
         this.createCoverPage({
             mapKey: 'map4',
             coverTitle: 'VERDANT VINE',
@@ -428,9 +452,7 @@ export class EnemyLore extends BaseMenu {
                 "THE OXYGEN LEVELS IN THIS AREA ARE TWICE AS HIGH COMPARED TO OTHERS DUE TO ITS VAST PLANTATION.\n"
                 + "THIS PLANT'S LARGE SIZE IS A RESULT OF THIS ABUNDANT OXYGEN.\nBIG GREENERS CAN THROW TWO LEAVES AT ONCE, SO BE CAREFUL, AS THEY SLICE THROUGH ANYTHING THAT CROSSES THEIR PATH!",
             images: [
-                this.createImage('bigGreener', 113, 150, 0, this.pageWidth - 150, this.pageHeight - 170, 1),
-                this.createImage('leafAttack', 35.416, 45, 0, this.pageWidth - 200, this.pageHeight - 125, 1),
-                this.createImage('leafAttack', 35.416, 45, 8, this.pageWidth - 340, this.pageHeight - 125, 1),
+                this.createImage('bigGreener', 113, 150, 0, 'right', 'bottom'),
             ],
             mapKey: "map4",
         });
@@ -445,7 +467,22 @@ export class EnemyLore extends BaseMenu {
                 + "HER PEACEFUL FLIGHTS ARE A SIGHT TO BEHOLD, AS SHE GLIDES EFFORTLESSLY AND GRACEFULLY.\n"
                 + "WITH A CHEERFUL CHIRP AND A GENTLE HEART, CHIQUITA BRINGS JOY AND TRANQUILITY TO EVERYONE SHE MEETS.",
             images: [
-                this.createImage('chiquita', 118.823529411764, 85, 0, this.pageWidth - 190, 40, 1),
+                this.createImage('chiquita', 95.05882352941176, 68, 0, 'right', 'top'),
+            ],
+            mapKey: "map4",
+        });
+
+        // 23
+        this.createPage({
+            name: "FOFINHA",
+            type: "NORMAL",
+            foundAt: "VERDANT VINE",
+            description:
+                "FOFINHA BELONGS TO THE SAME SPECIES AS CHIQUITA, BUT WITH A FAR MORE FIERY TEMPER.\n"
+                + "HIS FLIGHTS ARE QUICKER AND LESS GRACEFUL, OFTEN DARTING THROUGH THE SKY WITH SUDDEN BURSTS OF SPEED.\n"
+                + "HE MAY LOOK JUST AS CHARMING, BUT GET TOO CLOSE AND YOU’LL SEE HE’S NOT AS GENTLE AS HIS COUNTERPART.",
+            images: [
+                this.createImage('fofinha', 118.823529411764, 85, 0, 'right', 'top'),
             ],
             mapKey: "map4",
         });
@@ -459,8 +496,8 @@ export class EnemyLore extends BaseMenu {
                 "SLUGGIE IS A SLOW BUT DETERMINED ENEMY.\nHE DOES NOT APPRECIATE PHYSICAL CONTACT AND WILL LET YOU KNOW OF THAT "
                 + "IF YOU STEP TOO CLOSE TO HIM!",
             images: [
-                this.createImage('paint_splatter_4', 1994, 995, 0, -170, 30, 0.9),
-                this.createImage('sluggie', 147.33, 110, 0, this.pageWidth - 200, this.pageHeight - 140, 1),
+                this.createImage('paint_splatter_4', 1994, 995, 0, -170, 30, null, 0, 0.9),
+                this.createImage('sluggie', 147.33, 110, 0, 'right', 'bottom'),
             ],
             mapKey: "map4",
         });
@@ -474,7 +511,7 @@ export class EnemyLore extends BaseMenu {
                 "WITH A SHARP HORN AT THE TOP OF ITS HEAD, THEY CAN CAUSE SOME SERIOUS DAMAGE IF YOU MAKE CONTACT WITH THEM!\n"
                 + "IT IS BELIEVED THAT EVERY CREATURE IN VERDANT VINE IS AFRAID TO ATTACK LIL HORNETS DUE TO THEIR INTIMIDATING HORN!",
             images: [
-                this.createImage('lilHornet', 56, 47, 0, this.pageWidth - 170, 50, 1, 'stun'),
+                this.createImage('lilHornet', 56, 47, 0, 'right', 'top', 'stun'),
             ],
             mapKey: "map4",
         });
@@ -489,7 +526,7 @@ export class EnemyLore extends BaseMenu {
                 + "LEGENDS SAY AN EARTHQUAKE CAUSED A HUGE TSUNAMI, FLUSHING THE CROCODILE TO THE SHORE OF VERDANT VINE.\nCROCO, IN NEW TERRITORY, HAD TO LEARN KARATE TO SURVIVE.\n"
                 + "AFTER MONTHS OF TRAINING AND EARNING A BLACK BELT, HE BECAME UNTOUCHABLE. HE QUICKLY EARNED A REPUTATION FOR HIS KARATE SKILLS. SOON, EVERYONE KNEW HIM AS... KARATE CROCO!",
             images: [
-                this.createImage('karateCroco', 98.25, 140, 0, this.pageWidth - 150, this.pageHeight - 160, 1, 'red', 0),
+                this.createImage('karateCroco', 98.25, 140, 0, 'right', 'bottom', 'red'),
             ],
             mapKey: "map4",
         });
@@ -504,8 +541,7 @@ export class EnemyLore extends BaseMenu {
                 + "IT HAS THE UNIQUE ABILITY TO SHOOT FOCUSED LASERS FROM ITS EYE.\nTHERE IS SPECULATION REGARDING THE ORIGINS OF SPIDOLAZER, AS SOME LOCAL RESIDENTS BELIEVE "
                 + "THAT THIS SPIDER IS FROM ANOTHER PLANET DUE TO ITS ALIEN-LIKE CHARACTERISTICS.",
             images: [
-                this.createImage('spidoLazer', 134.45, 120, 13, this.pageWidth - 210, this.pageHeight - 140, 1, null, 120),
-                this.createImage('laser_beam', 300, 28, 0, this.pageWidth - 440, this.pageHeight - 105, 1),
+                this.createImage('spidoLazer', 134.45, 120, 13, 'right', 'bottom', null, 120),
             ],
             mapKey: "map4",
         });
@@ -519,11 +555,7 @@ export class EnemyLore extends BaseMenu {
                 "JERRY LIKES TO GIVE OUT PRESENTS... BUT NOT THE TYPE OF PRESENTS YOU'D EXPECT!\n"
                 + "NO ONE KNOWS HOW HE GOT SO MANY SKULNAPS IN HIS BAG!",
             images: [
-                this.createImage('jerry', 185, 103, 4, this.pageWidth - 250, 30, 1),
-                this.createImage('skulnap', 57, 57, 0, this.pageWidth - 170, this.pageHeight - 420, 0.80, 'stun', 0),
-                this.createImage('skulnap', 57, 57, 0, this.pageWidth - 150, this.pageHeight - 250, 0.80, 'stun', 0),
-                this.createImage('skulnap', 57, 57, 0, this.pageWidth - 130, this.pageHeight - 70, 0.80, 'stun', 0),
-                this.createImage('skulnap', 104.23076923076923, 70, 0, this.pageWidth - 280, this.pageHeight - 85, 0.80, 'stun', 57),
+                this.createImage('jerry', 185, 103, 4, 'right', 'top'),
             ],
             mapKey: "map4",
         });
@@ -546,7 +578,7 @@ export class EnemyLore extends BaseMenu {
             foundAt: "SPRINGLY LEMONY",
             description: "JUST A REGULAR SNAIL...",
             images: [
-                this.createImage('snailey', 103, 74, 0, this.pageWidth - 230, this.pageHeight - 100, 1),
+                this.createImage('snailey', 103, 74, 0, 'right', 'bottom'),
             ],
             mapKey: "map5",
         });
@@ -560,8 +592,7 @@ export class EnemyLore extends BaseMenu {
                 "THIS FLY WILL PEACEFULLY ROAM AROUND THE AREA.\n"
                 + "RAIN EFFECT: SHOOTS LASERS OUT OF ITS EYE!",
             images: [
-                this.createImage('redFlyer', 79.3333333, 65, 0, this.pageWidth - 140, 70, 1),
-                this.createImage('darkLaser', 63, 40, 0, this.pageWidth - 200, 92, 1),
+                this.createImage('redFlyer', 79.3333333, 65, 0, 'right', 'top'),
             ],
             mapKey: "map5",
         });
@@ -575,11 +606,7 @@ export class EnemyLore extends BaseMenu {
                 "THIS FLY WILL PEACEFULLY ROAM AROUND THE AREA.\n"
                 + "RAIN EFFECT: SHOOTS ICE BALLS OUT OF ITS EYE, SLOWING YOU DOWN IF YOU MAKE CONTACT WITH IT!",
             images: [
-                this.createImage('purpleFlyer', 83.33333, 65, 0, this.pageWidth - 140, 70, 1),
-                this.createImage('iceBall', 35, 35, 0, this.pageWidth - 180, 100, 1, 'slow'),
-                this.createImage('ice_crystal', 365, 419, 0, this.pageWidth - 220, 100, 0.05),
-                this.createImage('ice_crystal', 365, 419, 0, this.pageWidth - 180, 150, 0.05),
-                this.createImage('ice_crystal', 365, 419, 0, this.pageWidth - 100, 170, 0.05),
+                this.createImage('purpleFlyer', 83.33333, 65, 0, 'right', 'top'),
             ],
             mapKey: "map5",
         });
@@ -591,7 +618,7 @@ export class EnemyLore extends BaseMenu {
             foundAt: "SPRINGLY LEMONY",
             description: "JUST A LAZY MOSQUITO...",
             images: [
-                this.createImage('lazyMosquito', 67.23076923076923, 50, 0, this.pageWidth - 160, 70, 1.1),
+                this.createImage('lazyMosquito', 67.23076923076923, 50, 0, 'right', 'top'),
             ],
             mapKey: "map5",
         });
@@ -605,7 +632,7 @@ export class EnemyLore extends BaseMenu {
                 "THIS STRANGE-LOOKING CREATURE IS A COMMON SIGHT IN THE AREA.\n"
                 + "IT HAS A UNIQUE, LEAF-COVERED BACK THAT HELPS IT BLEND SEAMLESSLY INTO ITS SURROUNDING. WITH BAD EYESIGHT, THEY MOVE SLOWLY AND STEADILY, TOWARDS ANY TARGET IT FINDS AHEAD!\n",
             images: [
-                this.createImage('leafSlug', 89, 84, 0, this.pageWidth - 210, this.pageHeight - 110, 1),
+                this.createImage('leafSlug', 89, 84, 0, 'right', 'bottom'),
             ],
             mapKey: "map5",
         });
@@ -619,12 +646,7 @@ export class EnemyLore extends BaseMenu {
                 "THIS MASSIVE, UNIQUELY SHAPED FLOWER ABSORBS SUNLIGHT AT AN EXCEPTIONALLY RAPID RATE COMPARED TO ANY OTHER "
                 + "FLOWER IN THE VICINITY.\nRAIN EFFECT: WHEN IT RAINS, SUNFLORA HARNESSES THE STORED SOLAR ENERGY AND RELEASES IT IN THE FORM OF POWERFUL YELLOW LASER BEAMS.",
             images: [
-                this.createImage('yellowBeam', 53, 85, 0, this.pageWidth - 173, this.pageHeight - 210, 1),
-                this.createImage('yellowBeam', 53, 85, 0, this.pageWidth - 173, this.pageHeight - 310, 1),
-                this.createImage('yellowBeam', 53, 85, 0, this.pageWidth - 173, this.pageHeight - 410, 1),
-                this.createImage('yellowBeam', 53, 85, 0, this.pageWidth - 173, this.pageHeight - 510, 1),
-                this.createImage('yellowBeam', 53, 85, 0, this.pageWidth - 173, this.pageHeight - 610, 1),
-                this.createImage('sunflora', 132, 137, 0, this.pageWidth - 210, this.pageHeight - 150, 1),
+                this.createImage('sunflora', 132, 137, 0, 'right', 'bottom'),
             ],
             mapKey: "map5",
         });
@@ -639,7 +661,7 @@ export class EnemyLore extends BaseMenu {
                 + "NO ONE TRULY KNOWS WHAT EGGRY WOULD HATCH INTO OR WHY IT DECIDES TO REMAIN IN ITS SEMI-CRACKED SHELL, BUT LEGENDS SAY IT’S WAITING FOR THE PERFECT STORM TO FINALLY BREAK FREE.\n"
                 + "RAIN EFFECT: DUE TO ITS SOFT SHELL, EGGRY JUMPS ANGRILY IN HOPES OF FINDING SHELTER FROM THE RAIN!",
             images: [
-                this.createImage('eggry', 102.6923076923077, 100, 12, this.pageWidth - 180, this.pageHeight - 115, 1),
+                this.createImage('eggry', 102.6923076923077, 100, 12, 'right', 'bottom'),
             ],
             mapKey: "map5",
         });
@@ -653,7 +675,7 @@ export class EnemyLore extends BaseMenu {
                 "IN THIS AREA RESIDES THOUNSANDS OF BEES.\nTHEY HAVE TAKEN OVER THE TERRITORY, AND IF THEY DETECT ANY UNKNOWN "
                 + "PRESENCE WITHIN SPRINGLY LEMONY, THEY WILL CHASE YOU DOWN AND STING YOU!",
             images: [
-                this.createImage('bee', 55.23, 57, 0, this.pageWidth - 160, 70, 1.1, 'stun'),
+                this.createImage('bee', 55.23, 57, 0, 'right', 'top', 'stun'),
             ],
             mapKey: "map5",
         });
@@ -666,24 +688,23 @@ export class EnemyLore extends BaseMenu {
             description:
                 "RAIN EFFECT: THESE FASTER, ANGRIER, AND MORE FEROCIOUS BEES ONLY APPEAR DURING THE RAIN, AS REGULAR BEES SEEK COVER!",
             images: [
-                this.createImage('angryBee', 55.23, 57, 0, this.pageWidth - 160, 70, 1.1, 'stun'),
+                this.createImage('angryBee', 55.23, 57, 0, 'right', 'top', 'stun'),
             ],
             mapKey: "map5",
         });
 
         // 40
         this.createPage({
-            name: "HANGING SPIDOLAZER",
+            name: "STRAWSPIDER",
             type: "NORMAL",
             foundAt: "SPRINGLY LEMONY",
             description:
-                "HAVE YOU EVER SEEN A SPIDER HANGING ON A WEB SHOOTING LASERS!?\n"
-                + "THESE HANGING SPIDER-LASERS ARE THE SAME SPECIES AS THE ONES FOUND ON THE GROUND IN VERDANT VINE, BUT HERE THEY CRAWL FROM TREES BECAUSE THEIR LEGS CAN OVERHEAT ON THE "
-                + "HOT GROUND.\nTHE STRONG SUN ALSO GIVES THEM A SLIGHT YELLOW TINT TO THEIR SKIN!",
+                "A SMALL SPIDER WITH A BODY RESEMBLING A RIPE STRAWBERRY.\n"
+                + "IT SKITTERS THROUGH THE FOLIAGE, BLENDING IN WITH THE FRUIT AROUND IT.\n"
+                + "DON’T BE FOOLED BY ITS SWEET APPEARANCE! IT’S QUICK, CURIOUS, AND ALWAYS ON THE MOVE.",
             images: [
-                this.createImage('blackLine', 3, 485, 0, this.pageWidth - 120, -30, 1),
-                this.createImage('hangingSpidoLazer', 123.2333333333333, 110, 17, this.pageWidth - 180, this.pageHeight - 200, 1),
-                this.createImage('laser_beam', 170, 28, 0, this.pageWidth - 340, this.pageHeight - 140, 1),
+                this.createLine(this.pageWidth - 110, -30, 265),
+                this.createImage('strawspider', 93.83333333333333, 110, 0, 'right', this.pageHeight - 400),
             ],
             mapKey: "map5",
         });
@@ -709,8 +730,7 @@ export class EnemyLore extends BaseMenu {
                 + "UNTIL HE SEES A TARGET! HE CAN SPIT POISON OUT OF HIS MOUTH, DRAINING ENERGY RAPIDLY!\n"
                 + "VENOMVEIL LAKE IS THE PERFECT HOME FOR ZABKOUS — ITS TOXIC WATERS MATCH HIS POISONOUS NATURE.",
             images: [
-                this.createImage('zabkous', 134.0588235294118, 100, 14, this.pageWidth - 200, this.pageHeight - 140, 1, null, 150),
-                this.createImage('poison_spit', 59, 22, 0, this.pageWidth - 260, this.pageHeight - 100, 1, 'poison'),
+                this.createImage('zabkous', 134.0588235294118, 100, 2, 'right', 'bottom', null, 150),
             ],
             mapKey: "map6",
         });
@@ -733,7 +753,7 @@ export class EnemyLore extends BaseMenu {
             foundAt: "INFERNAL CRATER PEAK",
             description: "THERE'S QUITE A FEW CACTUSES AROUND THIS AREA.\nTHEY BLEND IN PERFECTLY WITH THE ROCKY VOLCANIC TERRAIN — WATCH WHERE YOU STEP!",
             images: [
-                this.createImage('cactus', 115.3, 130, 0, this.pageWidth - 180, this.pageHeight - 120, 1, 'stun'),
+                this.createImage('cactus', 115.3, 130, 0, 'right', 'bottom', 'stun'),
             ],
             mapKey: "map7",
         });
@@ -746,7 +766,7 @@ export class EnemyLore extends BaseMenu {
                 "THESE ANCIENT PLANTS HAVE ADAPTED TO THE EXTREME HEAT OF THE VOLCANIC SOIL.\n"
                 + "THEY BUBBLE WITH SUPERHEATED LIQUID AND LAUNCH VOLATILE BUBBLES THAT EXPLODE ON CONTACT!",
             images: [
-                this.createImage('volcanicPlant', 167, 130, 0, this.pageWidth - 210, this.pageHeight - 155, 1, 'red'),
+                this.createImage('volcanicPlant', 167, 130, 0, 'right', 'bottom', 'red'),
             ],
             mapKey: "map7",
         });
@@ -760,7 +780,7 @@ export class EnemyLore extends BaseMenu {
                 + "VOLCANO WASPS ARE DEVIOUS MENACES, LOATHING EVERYTHING THAT BREATHES AND STINGING ANY TARGET THEY SPOT!\n"
                 + "LITTLE IS KNOWN ABOUT THEM EXCEPT THAT THEY ONCE INHABITED THE LUSH ENVIRONMENT OF VERDANT VINE, BUT SOMETHING FORCED THEM TO MIGRATE TO VOLCANIC AREAS...",
             images: [
-                this.createImage('volcanoWasp', 93, 90, 0, this.pageWidth - 170, 70, 1, 'stun'),
+                this.createImage('volcanoWasp', 93, 90, 0, 'right', 'top', 'stun'),
             ],
             mapKey: "map7",
         });
@@ -773,7 +793,7 @@ export class EnemyLore extends BaseMenu {
                 "JUST A BIG AND SLOW TURTLE THAT ALWAYS MARCHES FORWARD...\n"
                 + "THIS TYPE OF TURTLE WILL BE IN HIBERNATION FOR MOST OF THE YEAR, SO IF YOU CATCH SIGHT OF ONE, CONSIDER YOURSELF QUITE LUCKY!",
             images: [
-                this.createImage('volcanurtle', 152.25, 100, 4, this.pageWidth - 300, this.pageHeight - 120, 1, 'red'),
+                this.createImage('volcanurtle', 152.25, 100, 4, 'right', 'bottom', 'red'),
             ],
             mapKey: "map7",
         });
@@ -786,7 +806,7 @@ export class EnemyLore extends BaseMenu {
                 "THE VOLCANO SCORPION HAS THRIVED IN THE SCORCHING TERRAIN OF INFERNAL CRATER PEAK FOR MILLENNIA.\n"
                 + "WHEN THREATENED, IT LAUNCHES TOXIC VENOM FROM ITS TAIL — CONTACT WITH THE VENOM WILL DRAIN YOUR ENERGY RAPIDLY!",
             images: [
-                this.createImage('volcanoScorpion', 161, 150, 0, this.pageWidth - 220, this.pageHeight - 170, 1),
+                this.createImage('volcanoScorpion', 161, 150, 0, 'right', 'bottom'),
             ],
             mapKey: "map7",
         });
@@ -799,7 +819,7 @@ export class EnemyLore extends BaseMenu {
                 "THESE HARDY FLIES HAVE EVOLVED HEAT-RESISTANT WINGS THAT ALLOW THEM TO SOAR THROUGH THE SCORCHING SKIES ABOVE THE CRATERS.\n"
                 + "THEY ARE RELENTLESS IN THEIR PURSUIT OF ANY INTRUDER WHO ENTERS THEIR TERRITORY.",
             images: [
-                this.createImage('volcanoFly', 85.5, 100, 0, this.pageWidth - 150, 55, 1),
+                this.createImage('volcanoFly', 85.5, 100, 0, 'right', 'top'),
             ],
             mapKey: "map7",
         });
@@ -812,7 +832,7 @@ export class EnemyLore extends BaseMenu {
                 "A GLOWING EMBER THAT DRIFTS THROUGH THE VOLCANIC AIR, BLOBURN HOMES IN ON ANY WARM PRESENCE IT DETECTS.\n"
                 + "ONCE IT LOCKS ON, IT WILL RELENTLESSLY CHASE ITS TARGET ACROSS THE CRATER!",
             images: [
-                this.createImage('bloburn', 52, 50, 0, this.pageWidth - 130, 70, 1.3),
+                this.createImage('bloburn', 52, 50, 0, 'right', 'top'),
             ],
             mapKey: "map7",
         });
@@ -825,7 +845,7 @@ export class EnemyLore extends BaseMenu {
                 "THESE BEETLES ARE COVERED IN A THICK VOLCANIC SHELL THAT PROTECTS THEM FROM THE INTENSE HEAT.\n"
                 + "WHAT THEY LACK IN INTELLIGENCE, THEY MAKE UP FOR IN SHEER SPEED — THEY COME CHARGING FORWARD WITHOUT HESITATION!",
             images: [
-                this.createImage('volcanoBeetle', 90.25, 60, 0, this.pageWidth - 165, this.pageHeight - 90, 1.1),
+                this.createImage('volcanoBeetle', 90.25, 60, 0, 'right', 'bottom'),
             ],
             mapKey: "map7",
         });
@@ -838,7 +858,7 @@ export class EnemyLore extends BaseMenu {
                 "THE LAVA COBRA LURKS BENEATH THE VOLCANIC SOIL, WAITING FOR THE PERFECT MOMENT TO STRIKE.\n"
                 + "WHEN A TARGET APPROACHES, IT RISES FROM THE GROUND AND LAUNCHES SCORCHING LAVA BALLS AT ITS PREY!",
             images: [
-                this.createImage('lavaCobra', 176.5, 160, 0, this.pageWidth - 230, this.pageHeight - 185, 1),
+                this.createImage('lavaCobra', 176.5, 160, 0, 'right', 'bottom'),
             ],
             mapKey: "map7",
         });
@@ -862,8 +882,8 @@ export class EnemyLore extends BaseMenu {
                 "A FROZEN RELATIVE OF THE SILKNOIR, ADAPTED TO THE ICY DEPTHS OF THE CAVE.\n"
                 + "IT DESCENDS SILENTLY FROM THE STALACTITES ABOVE, SWAYING GENTLY AS IT WAITS FOR PREY TO PASS BELOW.",
             images: [
-                this.createImage('blackLine', 3, 345, 0, this.pageWidth - 111, 0, 1),
-                this.createImage('iceSilknoir', 120, 144, 0, this.pageWidth - 170, 270, 1),
+                this.createLine(this.pageWidth - 110, 0, 345),
+                this.createImage('iceSilknoir', 120, 144, 0, 'right', 270),
             ],
             mapKey: "bonusMap1",
             category: "bonus",
@@ -877,7 +897,7 @@ export class EnemyLore extends BaseMenu {
                 "NATIVE TO THE FROZEN CAVERNS OF ICEBOUND CAVE, THE ICE BAT SWOOPS THROUGH THE FRIGID AIR WITH EASE.\n"
                 + "ITS WINGS ARE ENCRUSTED WITH FROST THAT NEVER MELTS, EVEN AS IT DIVES TOWARD ITS TARGET.",
             images: [
-                this.createImage('iceBat', 156.75, 130, 0, this.pageWidth - 210, 40, 1),
+                this.createImage('iceBat', 156.75, 130, 0, 'right', 'top'),
             ],
             mapKey: "bonusMap1",
             category: "bonus",
@@ -891,7 +911,7 @@ export class EnemyLore extends BaseMenu {
                 "THE CRYSTAL WASP IS A FORMIDABLE PREDATOR OF THE ICE CAVES.\n"
                 + "ITS CRYSTALLINE WINGS HUM WITH COLD ENERGY, AND CONTACT WITH IT WILL LEAVE YOU FROZEN IN PLACE!",
             images: [
-                this.createImage('crystalWasp', 111.8333333333333, 110, 0, this.pageWidth - 175, 50, 1, 'frozen'),
+                this.createImage('crystalWasp', 111.8333333333333, 110, 0, 'right', 'top', 'frozen'),
             ],
             mapKey: "bonusMap1",
             category: "bonus",
@@ -905,7 +925,7 @@ export class EnemyLore extends BaseMenu {
                 "ROOTED IN THE PERMAFROST, THE ICE PLANT SURVIVES BY ABSORBING AMBIENT COLD ENERGY.\n"
                 + "IT LAUNCHES RAZOR-SHARP ICE SHARDS AT ANYTHING THAT PASSES TOO CLOSE — KEEP YOUR DISTANCE!",
             images: [
-                this.createImage('icePlant', 78.42857142857143, 115, 0, this.pageWidth - 155, this.pageHeight - 140, 1),
+                this.createImage('icePlant', 78.42857142857143, 115, 0, 'right', 'bottom'),
             ],
             mapKey: "bonusMap1",
             category: "bonus",
@@ -919,7 +939,7 @@ export class EnemyLore extends BaseMenu {
                 "GLOBBY IS A GELATINOUS CREATURE THAT OOZES THROUGH THE ICE CAVES.\n"
                 + "DESPITE ITS SLOW APPEARANCE, IT CAN MOVE SURPRISINGLY FAST WHEN IT SPOTS A TARGET!",
             images: [
-                this.createImage('globby', 115, 110, 0, this.pageWidth - 185, this.pageHeight - 135, 1),
+                this.createImage('globby', 115, 110, 0, 'right', 'bottom'),
             ],
             mapKey: "bonusMap1",
             category: "bonus",
@@ -933,21 +953,22 @@ export class EnemyLore extends BaseMenu {
                 "THIS ELONGATED CREATURE SCUTTLES ACROSS THE ICY CAVE FLOOR AT REMARKABLE SPEED.\n"
                 + "ITS MANY LEGS GIVE IT PERFECT GRIP ON THE SLIPPERY ICE, MAKING IT NEARLY IMPOSSIBLE TO OUTRUN.",
             images: [
-                this.createImage('iceCentipede', 126, 80, 0, this.pageWidth - 200, this.pageHeight - 110, 1),
+                this.createImage('iceCentipede', 126, 80, 0, 'right', 'bottom'),
             ],
             mapKey: "bonusMap1",
             category: "bonus",
         });
 
         this.createPage({
-            name: "ICE GLIDER",
-            type: "NORMAL",
+            name: "FROSTLING",
+            type: "SLOW",
             foundAt: "ICEBOUND CAVE",
             description:
-                "THE ICE GLIDER SOARS DOWN FROM THE CEILING OF THE CAVE, RIDING COLD AIR CURRENTS TO AMBUSH ITS PREY FROM ABOVE.\n"
-                + "ITS GLASSY WINGS MAKE ALMOST NO SOUND AS IT DESCENDS.",
+                "FROSTLINGS HANG SILENTLY FROM THE CAVE CEILING, BLENDING IN WITH THE ICE.\n"
+                + "THEY SUDDENLY BREAK AWAY AND DROP WITHOUT WARNING.\n"
+                + "WHAT LOOKS LIKE A SIMPLE ICICLE MAY NOT BE SO PASSIVE AFTER ALL.",
             images: [
-                this.createImage('iceGlider', 138, 150, 0, this.pageWidth - 200, 30, 1),
+                this.createImage('frostling', 46.5, 100, 0, 'right', 'top', 'slow'),
             ],
             mapKey: "bonusMap1",
             category: "bonus",
@@ -961,7 +982,7 @@ export class EnemyLore extends BaseMenu {
                 "DRILL ICE BURROWS BENEATH THE FROZEN GROUND, WAITING FOR THE RIGHT MOMENT TO SPIRAL UPWARD AND IMPALE ANYTHING ABOVE.\n"
                 + "CONTACT WITH IT WILL SLOW YOU DOWN — IT LEAVES ICE CRYSTALS EMBEDDED IN YOUR PATH!",
             images: [
-                this.createImage('drillice', 197, 115, 0, this.pageWidth - 250, this.pageHeight - 140, 1, 'slow'),
+                this.createImage('drillice', 197, 115, 0, 'right', 'bottom', 'slow'),
             ],
             mapKey: "bonusMap1",
             category: "bonus",
@@ -986,7 +1007,7 @@ export class EnemyLore extends BaseMenu {
                 "CRYPTIC SLIMES APPEAR FROM ABOVE, FALLING FROM THE FISSURE CEILINGS BEFORE QUICKLY SCUTTLING TOWARD ANY PREY THEY DETECT ON THE GROUND.\n"
                 + "THEIR ORIGIN IS UNKNOWN — THEY SEEM TO MATERIALISE OUT OF THIN AIR.",
             images: [
-                this.createImage('crypticSlime', 124, 50, 0, this.pageWidth - 185, this.pageHeight - 80, 1),
+                this.createImage('crypticSlime', 124, 50, 0, 'right', 'bottom'),
             ],
             mapKey: "bonusMap2",
             category: "bonus",
@@ -1000,7 +1021,7 @@ export class EnemyLore extends BaseMenu {
                 "THIS EERIE FLY DRIFTS THROUGH THE FISSURE WITH AN OTHERWORLDLY GLOW.\n"
                 + "CONTACT WITH IT IS PARTICULARLY DANGEROUS — ITS CRIMSON AURA WILL LEAVE A BURNING MARK!",
             images: [
-                this.createImage('crypticFly', 128, 100, 0, this.pageWidth - 185, 50, 1, 'red'),
+                this.createImage('crypticFly', 128, 100, 0, 'right', 'top', 'red'),
             ],
             mapKey: "bonusMap2",
             category: "bonus",
@@ -1014,7 +1035,7 @@ export class EnemyLore extends BaseMenu {
                 "CRYPTIC ROCKY IS A DENSE, CRYSTALLIZED ROCK FORMATION THAT HAS SOMEHOW GAINED THE ABILITY TO MOVE.\n"
                 + "IT ZIGZAGS ERRATICALLY THROUGH THE TERRAIN — CONTACT WITH IT IS PARTICULARLY PAINFUL!",
             images: [
-                this.createImage('crypticRocky', 152, 140, 0, this.pageWidth - 215, this.pageHeight - 165, 1, 'red'),
+                this.createImage('crypticRocky', 152, 140, 0, 'right', 'bottom', 'red'),
             ],
             mapKey: "bonusMap2",
             category: "bonus",
@@ -1028,7 +1049,7 @@ export class EnemyLore extends BaseMenu {
                 "THE CRYPTIC GECKO LURKS IN THE SHADOWS OF THE FISSURE, WAITING PATIENTLY BEFORE LAUNCHING ITSELF AT ITS TARGET.\n"
                 + "WHEN IT SPOTS PREY, IT LEAPS THROUGH THE AIR IN A POWERFUL ARC — THERE IS LITTLE TIME TO REACT!",
             images: [
-                this.createImage('crypticGecko', 124.5, 80, 0, this.pageWidth - 200, this.pageHeight - 110, 1),
+                this.createImage('crypticGecko', 124.5, 80, 0, 'right', 'bottom'),
             ],
             mapKey: "bonusMap2",
             category: "bonus",
@@ -1042,7 +1063,7 @@ export class EnemyLore extends BaseMenu {
                 "THE CRYPTIC SPIDER SKITTERS THROUGH THE CRIMSON FISSURE AT SURPRISING SPEED.\n"
                 + "IT WEAVES BETWEEN THE ROCKS AND RUBBLE WITH EASE, MAKING IT DIFFICULT TO AVOID IN THE NARROW PASSAGES.",
             images: [
-                this.createImage('crypticSpider', 98.66666666666667, 70, 0, this.pageWidth - 175, this.pageHeight - 90, 1),
+                this.createImage('crypticSpider', 98.66666666666667, 70, 0, 'right', 'bottom'),
             ],
             mapKey: "bonusMap2",
             category: "bonus",
@@ -1056,9 +1077,7 @@ export class EnemyLore extends BaseMenu {
                 "PETROPLANTS GROW IN MINERAL-RICH VOLCANIC SOIL, FUELED BY THE EARTH RATHER THAN SUNLIGHT.\n"
                 + "THEY CAN THROW DANGEROUS ROCKS FROM THEIR MOUTHS WHEN THEY FEEL THREATENED.",
             images: [
-                this.createImage('petroPlant', 91.5555555, 100, 0, this.pageWidth - 180, this.pageHeight - 120, 1),
-                this.createImage('rockProjectile', 37, 40, 0, this.pageWidth - 240, this.pageHeight - 100, 1, 'stun'),
-                this.createImage('rockProjectile', 37, 40, 0, this.pageWidth - 430, this.pageHeight - 100, 1, 'stun'),
+                this.createImage('petroPlant', 91.5555555, 100, 0, 'right', 'bottom'),
             ],
             mapKey: "bonusMap2",
             category: "bonus",
@@ -1072,7 +1091,7 @@ export class EnemyLore extends BaseMenu {
                 "A MASSIVE SERPENT WITH A SINGLE GLOWING EYE THAT PIERCES THROUGH THE CRIMSON HAZE.\n"
                 + "IT MOVES SWIFTLY ACROSS THE FISSURE FLOOR — ITS ENORMOUS SIZE MAKES IT VERY HARD TO AVOID!",
             images: [
-                this.createImage('oneEyeSnake', 217, 100, 0, this.pageWidth - 285, this.pageHeight - 125, 1),
+                this.createImage('oneEyeSnake', 217, 100, 0, 'right', 'bottom'),
             ],
             mapKey: "bonusMap2",
             category: "bonus",
@@ -1087,8 +1106,7 @@ export class EnemyLore extends BaseMenu {
                 + "ITS IMPOSING WINGS HAVE THE POWER TO WHIP UP FEROCIOUS TORNADOES, RAGING ACROSS THE LAND.\nIT IS BELIEVED THAT THOUSANDS OF YEARS AGO, THE DRAGON'S ROAR CAUSED "
                 + "THE VOLCANOES IN THE AREA TO ERUPT DUE TO THE INTENSITY OF THE FREQUENCY VIBRATIONS!",
             images: [
-                this.createImage('dragon', 182, 172, 0, this.pageWidth - 230, 30, 1),
-                this.createImage('windAttack', 105, 120, 0, this.pageWidth - 240, 180, 1),
+                this.createImage('dragon', 182, 172, 0, 'right', 'top'),
             ],
             mapKey: "bonusMap2",
             category: "bonus",
@@ -1114,7 +1132,7 @@ export class EnemyLore extends BaseMenu {
                 + "IT IS BELIEVED THAT BEFORE A CATACLYSMIC EVENT, VEYNOCULUS LIVED INSIDE ACTIVE VOLCANOS AND FED OFF MICRO-ORGANISMS AROUND THE CRATERS.\n"
                 + "NOW DISPLACED, IT DRIFTS THROUGH THE COSMIC RIFT, DRAWN TO ITS STRANGE ENERGY.",
             images: [
-                this.createImage('veynoculus', 57, 37, 0, this.pageWidth - 140, 70, 1.3),
+                this.createImage('veynoculus', 78.6, 50, 0, 'right', 'top'),
             ],
             mapKey: "bonusMap3",
             category: "bonus",
@@ -1128,10 +1146,7 @@ export class EnemyLore extends BaseMenu {
                 "THIS ODD-LOOKING PLANT CANNOT HELP ITSELF BUT SHOOT A LASER OUT OF ITS EYE WHEN IT BLINKS!\n"
                 + "BE CAREFUL NOT TO GET CAUGHT BY THE LASER RAYS!",
             images: [
-                this.createImage('plazer', 75, 89, 2, this.pageWidth - 150, this.pageHeight - 110, 1),
-                this.createImage('purpleLaser', 82, 48, 0, this.pageWidth - 250, this.pageHeight - 101, 1),
-                this.createImage('purpleLaser', 82, 48, 0, this.pageWidth - 450, this.pageHeight - 101, 1),
-                this.createImage('purpleLaser', 82, 48, 0, this.pageWidth - 650, this.pageHeight - 101, 1),
+                this.createImage('plazer', 75, 89, 2, 'right', 'bottom'),
             ],
             mapKey: "bonusMap3",
             category: "bonus",
@@ -1145,7 +1160,7 @@ export class EnemyLore extends BaseMenu {
                 "SPACE CRABS DESCEND FROM THE UPPER REACHES OF THE COSMIC RIFT, DROPPING DOWN AT TERRIFYING SPEED.\n"
                 + "THEIR ARMORED SHELLS PROTECT THEM AS THEY PLUMMET TOWARD ANYTHING BELOW.",
             images: [
-                this.createImage('spaceCrab', 125.6666666666667, 130, 0, this.pageWidth - 195, 30, 1),
+                this.createImage('spaceCrab', 125.6666666666667, 130, 0, 'right', 'top'),
             ],
             mapKey: "bonusMap3",
             category: "bonus",
@@ -1159,7 +1174,7 @@ export class EnemyLore extends BaseMenu {
                 "JOHNNY IS A RELENTLESS PURSUER.\n"
                 + "ONCE IT LOCKS EYES ON A TARGET, IT WILL CHASE IT ACROSS THE ENTIRE RIFT WITHOUT HESITATION — AND IT IS FAST!",
             images: [
-                this.createImage('johnny', 98, 80, 0, this.pageWidth - 165, 50, 1.1),
+                this.createImage('johnny', 98, 80, 0, 'right', 'top'),
             ],
             mapKey: "bonusMap3",
             category: "bonus",
@@ -1173,7 +1188,7 @@ export class EnemyLore extends BaseMenu {
                 "SPINDLE IS A SPINDLY CREATURE THAT MOVES AT ALARMING SPEED ACROSS THE RIFT FLOOR.\n"
                 + "IT SKITTERS FORWARD IN ERRATIC BURSTS, MAKING IT EXTREMELY HARD TO PREDICT OR AVOID!",
             images: [
-                this.createImage('spindle', 99.69230769230769, 90, 0, this.pageWidth - 175, this.pageHeight - 120, 1),
+                this.createImage('spindle', 99.69230769230769, 90, 0, 'right', 'bottom'),
             ],
             mapKey: "bonusMap3",
             category: "bonus",
@@ -1271,18 +1286,32 @@ export class EnemyLore extends BaseMenu {
         });
     }
 
-    createImage(enemyImage, frameWidth, frameHeight, enemyFrame, enemyX, enemyY, size, type, srcY = 0) {
+    createImage(enemyImage, frameWidth, frameHeight, enemyFrame, enemyX, enemyY, type, srcY = 0, size = 1) {
+        const renderedWidth = frameWidth * size;
+        const renderedHeight = frameHeight * size;
+
+        let resolvedX = enemyX;
+        if (enemyX === 'right') resolvedX = this.pageWidth - 110 - renderedWidth / 2;
+
+        let resolvedY = enemyY;
+        if (enemyY === 'top') resolvedY = 90 - renderedHeight / 2;
+        else if (enemyY === 'bottom') resolvedY = this.pageHeight - renderedHeight - 30;
+
         return {
             enemyImage: document.getElementById(enemyImage),
             frameWidth,
             frameHeight,
             enemyFrame,
-            enemyX,
-            enemyY,
+            enemyX: resolvedX,
+            enemyY: resolvedY,
             size,
             type, // 'red' or 'stun' or 'poison' or 'slow' or null
             srcY,
         };
+    }
+
+    createLine(x, y, length, lineWidth = 2) {
+        return { kind: 'line', lineX: x, lineY: y, lineLength: length, lineWidth };
     }
 
     setCategory(category) {
@@ -1602,6 +1631,18 @@ export class EnemyLore extends BaseMenu {
         if (page.images && page.images.length > 0) {
             page.images.forEach(image => {
                 context.filter = locked ? 'blur(15px)' : 'none';
+
+                if (image.kind === 'line') {
+                    context.save();
+                    context.strokeStyle = 'black';
+                    context.lineWidth = image.lineWidth;
+                    context.beginPath();
+                    context.moveTo(x + image.lineX, y + image.lineY);
+                    context.lineTo(x + image.lineX, y + image.lineY + image.lineLength);
+                    context.stroke();
+                    context.restore();
+                    return;
+                }
 
                 const scale = image.size || 1;
                 const frameWidth = image.frameWidth * scale;

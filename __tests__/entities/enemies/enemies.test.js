@@ -62,7 +62,6 @@ import {
   Eggry,
   Bee,
   AngryBee,
-  HangingSpidoLazer,
   Cactus,
   PetroPlant,
   Plazer,
@@ -1433,17 +1432,6 @@ describe('Map 5 Enemies', () => {
 
     expect(b.soundId).toBe('beeBuzzing');
     expect(ab.soundId).toBe('angryBeeBuzzing');
-  });
-
-  it('HangingSpidoLazer throws LaserBeam on frame 27', () => {
-    const hl = new HangingSpidoLazer(game);
-    hl.frameX = 27;
-    hl.x = game.width / 2;
-    hl.canAttack = true;
-
-    hl.update(16);
-
-    expect(game.enemies.some((e) => e instanceof LaserBeam)).toBe(true);
   });
 });
 
