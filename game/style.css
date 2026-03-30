@@ -77,11 +77,11 @@ body {
         /* map3 */
         #piranha, #skeletonFish, #spearFish, #voltzeel, #jetFish, #piper, #jellion, #garry, 
         /* map4 */
-        #sluggie, #bigGreener, #spidoLazer, #jerry, #chiquita, #fofinha, #lilHornet, #karateCroco,
+        #sluggie, #bigGreener, #spidoLazer, #jerry, #chiquita, #fofinha, #lilHornet, #karateCroco, #vinelash,
         /* map5 */
         #bee, #angryBee, #strawspider, #snailey, #redFlyer, #purpleFlyer, #lazyMosquito, #leafSlug, #sunflora, #eggry, 
         /* map6 */
-        #zabkous,
+        #zabkous, #venflora, #virefly, #larvox, #venarach, #mycora, #toxwing, #venoblitz, #woxin,
         /* map7 */
         #cactus, #volcanurtle, #volcanoWasp, #volcanicPlant, #volcanoScorpion, #volcanoFly, #bloburn, #volcanoBeetle, #lavaCobra,
         /* bonusmap1 */
@@ -145,7 +145,7 @@ body {
             #dreamDark5, #dreamDark6, 
         /* map1 cutscene */
             #map1crypticTokenWallpaper, #map1crypticTokenWar, #map1DestroyedTree,  #map1KingsBedroom, #map1Lab, #map1outsideCastleDoor,  #map1outsideLakeAndTrees,
-            #map1RegeneratedTree,  #map1SafeRoom, #map1TentFireplace, 
+            #map1RegeneratedTree,  #map1SafeRoom, #map1SafeRoomBroken, #map1TentFireplace, 
         /* map2 cutscene */
             #map2outsideCabin, 
         /* map3 cutscene */

@@ -2581,6 +2581,19 @@ export class KarateCroco extends MovingGroundEnemy {
     }
 }
 
+export class Vinelash extends UndergroundEnemy {
+    constructor(game) {
+        super(game, 221, 200, 1, 'vinelash', {
+            warningDuration: 800,
+            riseDuration: 500,
+            holdDuration: 3000,
+            triggerDistance: 1000
+        });
+        this.lives = 2;
+        this.setFps(12);
+    }
+}
+
 export class SpidoLazer extends MovingGroundEnemy {
     static STATES = {
         walk: {
@@ -2998,6 +3011,108 @@ export class Strawspider extends ClimbingEnemy {
 }
 
 // Map 6 --------------------------------------------------------------------------------------------------------------------------------------
+export class Toxwing extends VerticalEnemy {
+    constructor(game) {
+        super(game, 121.5, 100, 1, 'toxwing');
+        this.angle = Math.random() * Math.PI * 2;
+        this.va = Math.random() * 0.04 + 0.04;
+        this.amplitude = 15;
+        this.playsOnce = true;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.y += this.speedY;
+        this.x += this.speedX;
+        this.x += this.amplitude * Math.sin(this.angle);
+        this.angle += this.va;
+        this.playSoundOnce('batPitch');
+        if (this.frameX === 1 && this.isOnScreen()) this.game.audioHandler.enemySFX.playSound('wooshBat');
+    }
+}
+
+export class Mycora extends ImmobileGroundEnemy {
+    constructor(game) {
+        super(game, 165.125, 200, 7, 'mycora');
+        this.lives = 2;
+        this.setFps(15);
+    }
+}
+
+export class Venarach extends ClimbingEnemy {
+    constructor(game) {
+        super(game, 124.25, 150, 3, 'venarach');
+        this.setFps(17);
+        this.angle = 0;
+        this.va = Math.random() * 0.1 + 0.09;
+        this.soundId = 'nightSpiderSound';
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.y += this.speedY * Math.sin(this.angle);
+        this.angle += this.va;
+    }
+}
+
+export class Larvox extends MovingGroundEnemy {
+    constructor(game) {
+        super(game, 114.75, 70, 3, 'larvox');
+        this.setFps(12);
+        this.xSpeed = Math.floor(Math.random() * 3) + 1;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.x -= this.xSpeed;
+    }
+}
+
+export class Venoblitz extends MovingGroundEnemy {
+    constructor(game) {
+        super(game, 133.5, 100, 5, 'venoblitz');
+        this.xSpeed = Math.floor(Math.random() * 3) + 9;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.x -= this.xSpeed;
+    }
+}
+
+export class Virefly extends FlyingEnemy {
+    constructor(game) {
+        super(game, 100, 120, 1, 'virefly');
+        this.playsOnce = true;
+        this.t1 = Math.random() * Math.PI * 2;
+        this.t2 = Math.random() * Math.PI * 2;
+        this.t3 = Math.random() * Math.PI * 2;
+        this.va = 0;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.t1 += 0.07;
+        this.t2 += 0.13;
+        this.t3 += 0.031;
+        this.y += Math.sin(this.t1) * 3 + Math.sin(this.t2) * 1.5 + Math.sin(this.t3) * 2.5;
+        this.x += Math.cos(this.t2) * 1.5 + Math.cos(this.t3) * 1;
+        this.playSoundOnce('buzzingFly');
+    }
+}
+
+export class Woxin extends BeeInstances {
+    constructor(game) {
+        super(game, 79, 85, 1, 'woxin', 1100, 3, 10, 140);
+        this.isStunEnemy = false;
+        this.isPoisonEnemy = true;
+        this.soundId = 'beeBuzzing';
+        this.setFps(17);
+    }
+}
+
+export class Venflora extends ImmobileGroundEnemy {
+    constructor(game) {
+        super(game, 98.28571428571429, 150, 6, 'venflora');
+        this.setFps(15);
+    }
+}
+
 export class Zabkous extends MovingGroundEnemy {
     static STATES = {
         run: {

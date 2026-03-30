@@ -561,6 +561,20 @@ export class EnemyLore extends BaseMenu {
         });
 
 
+        this.createPage({
+            name: "VINELASH",
+            type: "NORMAL",
+            foundAt: "VERDANT VINE",
+            description:
+                "VINELASH LIES DORMANT BENEATH THE SOIL OF VERDANT VINE, WAITING FOR SOMETHING TO WANDER TOO CLOSE.\n"
+                + "WHEN IT ERUPTS, IT HOLDS ITS GROUND AND IS NOT EASY TO TAKE DOWN — IT TAKES MORE THAN ONE HIT TO STOP IT.",
+            images: [
+                this.createImage('vinelash', 221, 200, 0, 'right', 'bottom', null, 0, 0.9),
+            ],
+            mapKey: "map4",
+        });
+
+
         // MAP 5 - Springly Lemony
         // 30
         this.createCoverPage({
@@ -731,6 +745,112 @@ export class EnemyLore extends BaseMenu {
                 + "VENOMVEIL LAKE IS THE PERFECT HOME FOR ZABKOUS — ITS TOXIC WATERS MATCH HIS POISONOUS NATURE.",
             images: [
                 this.createImage('zabkous', 134.0588235294118, 100, 2, 'right', 'bottom', null, 150),
+            ],
+            mapKey: "map6",
+        });
+
+
+        this.createPage({
+            name: "TOXWING",
+            type: "NORMAL",
+            foundAt: "VENOMVEIL LAKE",
+            description:
+                "TOXWING DESCENDS FROM ABOVE IN AN UNPREDICTABLE SIDE-TO-SIDE WEAVE.\n"
+                + "ITS ERRATIC PATH MAKES IT HARD TO ANTICIPATE WHERE IT WILL END UP.",
+            images: [
+                this.createImage('toxwing', 121.5, 100, 0, 'right', 'top'),
+            ],
+            mapKey: "map6",
+        });
+
+        this.createPage({
+            name: "MYCORA",
+            type: "NORMAL",
+            foundAt: "VENOMVEIL LAKE",
+            description:
+                "MYCORA IS A TOWERING FUNGAL CREATURE THAT DOMINATES THE LAKE FLOOR.\n"
+                + "IT TAKES MORE THAN A SINGLE HIT TO BRING IT DOWN — AND IT DOESN'T MOVE AN INCH.",
+            images: [
+                this.createImage('mycora', 165.125, 200, 1, 'right', 'bottom'),
+            ],
+            mapKey: "map6",
+        });
+
+        this.createPage({
+            name: "VENARACH",
+            type: "NORMAL",
+            foundAt: "VENOMVEIL LAKE",
+            description:
+                "VENARACH CLINGS TO WALLS AND CEILINGS, CREEPING DOWNWARD IN A SWAYING MOTION.\n"
+                + "ITS RHYTHMIC MOVEMENT IS ALMOST HYPNOTIC — UNTIL IT LANDS RIGHT ON TOP OF YOU.",
+            images: [
+                this.createLine(this.pageWidth - 110, -30, 265),
+                this.createImage('venarach', 124.25, 150, 0, 'right', this.pageHeight - 400),
+            ],
+            mapKey: "map6",
+        });
+
+        this.createPage({
+            name: "LARVOX",
+            type: "NORMAL",
+            foundAt: "VENOMVEIL LAKE",
+            description:
+                "A SLOW-MOVING LARVA THAT CRAWLS ALONG THE GROUND AT A STEADY PACE.\n"
+                + "DON'T LET ITS SIZE FOOL YOU — IT IS STURDIER THAN IT LOOKS.",
+            images: [
+                this.createImage('larvox', 114.75, 70, 0, 'right', 'bottom'),
+            ],
+            mapKey: "map6",
+        });
+
+        this.createPage({
+            name: "VENOBLITZ",
+            type: "NORMAL",
+            foundAt: "VENOMVEIL LAKE",
+            description:
+                "VENOBLITZ CHARGES ACROSS THE GROUND AT ALARMING SPEED.\n"
+                + "BY THE TIME YOU SEE IT, IT IS ALREADY TOO LATE TO GET OUT OF THE WAY.",
+            images: [
+                this.createImage('venoblitz', 133.5, 100, 0, 'right', 'bottom'),
+            ],
+            mapKey: "map6",
+        });
+
+        this.createPage({
+            name: "VIREFLY",
+            type: "NORMAL",
+            foundAt: "VENOMVEIL LAKE",
+            description:
+                "VIREFLY DRIFTS THROUGH THE AIR IN A DAZED, ERRATIC PATTERN — AS IF IT CAN'T QUITE DECIDE WHERE IT IS GOING.\n"
+                + "ITS UNPREDICTABLE MOVEMENT MAKES IT ONE OF THE TRICKIEST ENEMIES TO DODGE.",
+            images: [
+                this.createImage('virefly', 100, 120, 0, 'right', 'top'),
+            ],
+            mapKey: "map6",
+        });
+
+        this.createPage({
+            name: "WOXIN",
+            type: "POISON",
+            foundAt: "VENOMVEIL LAKE",
+            description:
+                "WOXIN IS A VENOMOUS WASP THAT LOCKS ONTO ITS TARGET AND DIVES IN AT HIGH SPEED.\n"
+                + "A SINGLE STING IS ENOUGH TO POISON YOU — AND IT NEVER MISSES TWICE.",
+            images: [
+                this.createImage('woxin', 79, 85, 0, 'right', 'top', 'poison'),
+            ],
+            mapKey: "map6",
+        });
+
+        this.createPage({
+            name: "VENFLORA",
+            type: "NORMAL",
+            foundAt: "VENOMVEIL LAKE",
+            description:
+                "VENFLORA IS A CARNIVOROUS PLANT ROOTED TO THE LAKE FLOOR.\n"
+                + "IT SWAYS AND PULSES AS PREY APPROACHES, WAITING FOR THE PERFECT MOMENT TO STRIKE.",
+            images: [
+                this.createImage('venflora', 98.28571428571429, 150, 0, 'right', 'bottom'),
             ],
             mapKey: "map6",
         });

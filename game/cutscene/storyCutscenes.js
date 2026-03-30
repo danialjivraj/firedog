@@ -557,6 +557,12 @@ export class Map1StartCutscene extends StoryCutscene {
         this.addDialogue( //70
             `${this.valdorin}`,
             `I looked behind and a dark-hooded figure knocked me down with some sort of electric attack before I could use any of my abilities.`,
+            {
+                onAdvance: () => this.transitionWithBg({
+                    fadeIn: 500, blackDuration: 500, fadeOut: 500,
+                    imageId: 'map1SafeRoomBroken',
+                }),
+            },
             this.addImage('valdorinSurprised', RIGHT),
         );
         this.addDialogue( //71
