@@ -47,7 +47,7 @@ These are the programs I've used to be able to edit my assets:
 - [Underwater Sea Landscape](https://www.vecteezy.com/vector-art/14306440-underwater-sea-landscape-with-marine-animals) from Vecteezy
 - [Night Forest Landscape](https://www.freepik.com/free-vector/night-forest-landscape-with-river-green-fireflies-glowing-darkness-vector-cartoon-illustration-water-flowing-dark-woodland-moonlight-beams-trees-magic-lights-shimmering-air_67186444.htm#page=2&query=moonlit%20woods&position=3&from_view=keyword&track=ais&uuid=a53a04c1-350f-4a65-b504-60be6de5dce7) from Freepik
 - [Deep Forest Landscape](https://www.freepik.com/free-vector/deep-forest-landscape-with-swamp-vector-cartoon-illustration-mysterious-woodland-with-old-trees-mushrooms-green-glade-water-lily-leaves-lake-surrounded-with-reeds-bright-sunlight-beams_61392900.htm) from Freepik
-- [Anime Style Mountains Landscape](https://www.freepik.com/free-ai-image/anime-style-mountains-landscape_122781129.htm#query=mountain%20volcano&position=2&from_view=keyword&track=ais&uuid=230b30bf-8025-415d-8586-ab08bd366147) from Freepik
+- [Ice Landscape](https://retrostylegames.com/portfolio/lucky-jack-story-2d-game-backgrounds) from RetroStyle Games
 
 ### Map Grounds
 - [Forest Layer](https://www.frankslaboratory.co.uk/downloads/97/forest/layer-5.png) from Frank's Laboratory

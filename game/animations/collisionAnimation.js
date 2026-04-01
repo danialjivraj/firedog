@@ -219,6 +219,12 @@ export class PoisonDropGroundCollision extends Collision {
     }
 }
 
+export class PoisonousOrbCollision extends Collision {
+    constructor(game, x, y) {
+        super(game, x, y, 'poisonousOrbCollision', 50, 50, 9, 30);
+    }
+}
+
 function _makeOffscreenCanvas(w, h) {
     const c = document.createElement("canvas");
     c.width = Math.max(1, Math.ceil(w));

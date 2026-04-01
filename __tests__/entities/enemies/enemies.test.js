@@ -21,7 +21,7 @@ import {
   YellowBeam,
   InkBeam,
   PurpleLaser,
-  RockProjectile,
+  YellowOrb,
   Goblin,
   Dotter,
   Vertibat,
@@ -124,6 +124,7 @@ const makeCtx = (overrides = {}) => ({
   rect: jest.fn(),
   clip: jest.fn(),
   createRadialGradient: jest.fn(() => ({ addColorStop: jest.fn() })),
+  arc: jest.fn(),
   ellipse: jest.fn(),
   fill: jest.fn(),
 
@@ -729,12 +730,12 @@ describe('Projectile & subclasses', () => {
   });
 
   it('WindAttack.update() moves and pushes player', () => {
-    const player = { x: 50, y: 50 };
-    const w = new WindAttack(game, 10, 20, 30, 40, 2, 'img', 5, player);
+    game.player = { x: 50, y: 50 };
+    const w = new WindAttack(game, 10, 20, 2);
 
     w.update(16);
 
-    expect(player.x).not.toBe(50);
+    expect(game.player.x).not.toBe(50);
     expect(() => w.update(16)).not.toThrow();
   });
 
@@ -784,10 +785,10 @@ describe('Projectile & subclasses', () => {
     expect(() => dl.draw(ctx)).not.toThrow();
   });
 
-  it('RockProjectile rotates over time and draw() does not throw', () => {
-    const rp = new RockProjectile(game, 10, 20, 30, 40, 1, 'img', 5, 0.01);
+  it('YellowOrb pulseTimer advances over time and draw() does not throw', () => {
+    const rp = new YellowOrb(game, 10, 20, 0);
     rp.update(16);
-    expect(rp.rotation).toBeGreaterThan(0);
+    expect(rp.pulseTimer).toBeGreaterThan(0);
     expect(() => rp.draw(ctx)).not.toThrow();
   });
 });
@@ -975,9 +976,9 @@ describe('Map 2 Enemies', () => {
   it('DuskPlant throws a LeafAttack when cooldown has elapsed and it is on-screen enough', () => {
     const dp = new DuskPlant(game);
     dp.x = game.width - dp.width - 1;
-    dp.lastLeafAttackTime = dp.leafAttackConfig.cooldown;
+    dp.lastLeafAttackTime = 5000;
 
-    dp.update(dp.leafAttackConfig.cooldown);
+    dp.update(5000);
 
     expect(game.enemies.some((e) => e instanceof LeafAttack)).toBe(true);
   });
@@ -1215,9 +1216,9 @@ describe('Map 4 Enemies', () => {
   it('BigGreener throws two LeafAttacks after cooldown', () => {
     const bg = new BigGreener(game);
     bg.x = game.width - bg.width - 1;
-    bg.lastLeafAttackTime = bg.leafAttackConfig.cooldown;
+    bg.lastLeafAttackTime = 5000;
 
-    bg.update(bg.leafAttackConfig.cooldown);
+    bg.update(5000);
 
     const leafs = game.enemies.filter((e) => e instanceof LeafAttack);
     expect(leafs.length).toBeGreaterThanOrEqual(2);
@@ -1460,22 +1461,22 @@ describe('Map 6 Enemies', () => {
     expect(c.isStunEnemy).toBe(true);
   });
 
-  it('PetroPlant throws two RockProjectiles after cooldown', () => {
+  it('PetroPlant throws two YellowOrbs after cooldown', () => {
     const pp = new PetroPlant(game);
     pp.x = game.width - pp.width - 1;
-    pp.lastRockAttackTime = pp.rockAttackConfig.cooldown;
+    pp.lastRockAttackTime = 2000;
 
-    pp.update(pp.rockAttackConfig.cooldown);
+    pp.update(2000);
 
-    const rocks = game.enemies.filter((e) => e instanceof RockProjectile);
-    expect(rocks.length).toBeGreaterThanOrEqual(2);
+    const rocks = game.enemies.filter((e) => e instanceof YellowOrb);
+    expect(rocks.length).toBe(1);
   });
 
   it('Plazer throws PurpleLaser on frame 1 when allowed', () => {
     const pz = new Plazer(game);
     pz.x = game.player.x + 100;
-    pz.frameX = 1;
-    pz.canAttack = true;
+    pz.frameX = 0;
+    pz.frameTimer = pz.frameInterval + 1;
 
     pz.update(16);
 

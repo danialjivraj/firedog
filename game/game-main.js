@@ -1024,7 +1024,7 @@ export class Game {
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
                 { type: Dotter, probability: 0.35, spawningDistance: 0 },
                 { type: Ghobat, probability: 0.3, spawningDistance: 0 },
-                { type: Geargle, probability: 0.07, spawningDistance: 0 },
+                { type: Geargle, probability: 0.35, spawningDistance: 0 },
                 { type: Ravengloom, probability: 0.3, spawningDistance: 0 },
                 { type: MeatSoldier, probability: 0.1, spawningDistance: 0 },
                 { type: Skulnap, probability: 0.25, spawningDistance: 50 },
@@ -1075,7 +1075,7 @@ export class Game {
                 { type: Sunflora, probability: 1, spawningDistance: 0 },
                 { type: Eggry, probability: 0.3, spawningDistance: 0 },
                 { type: this.background && this.background.isRaining ? AngryBee : Bee, probability: this.background && this.background.isRaining ? 0.06 : 0.07, spawningDistance: 0 },
-                { type: Strawspider, probability: 1, spawningDistance: 0 },
+                { type: Strawspider, probability: 0.05, spawningDistance: 0 },
             ],
             Map6: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
@@ -1107,9 +1107,9 @@ export class Game {
                 { type: IceBat, probability: 1, spawningDistance: 0 },
                 { type: CrystalWasp, probability: 0.06, spawningDistance: 0 },
                 { type: IcePlant, probability: 0.2, spawningDistance: 0 },
-                { type: Globby, probability: 0.1, spawningDistance: 100 },
                 { type: IceCentipede, probability: 0.3, spawningDistance: 0 },
                 { type: Frostling, probability: 0.1, spawningDistance: 0 },
+                { type: Globby, probability: 0.1, spawningDistance: 50 },
                 { type: DrillIce, probability: 0.07, spawningDistance: 100 },
             ],
             BonusMap2: [

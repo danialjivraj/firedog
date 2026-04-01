@@ -135,10 +135,10 @@ import {
 
 import {
     MeatSoldier,
-    AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Gloomlet, EnemyBoss, Barrier,
-    Aura, KarateCroco, SpearFish, LilHornet, Cactus, IceBall, Garry, InkBeam, RockProjectile,
+    AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Gloomlet,
+    Aura, KarateCroco, SpearFish, LilHornet, Cactus, IceBall, Garry, InkBeam,
     VolcanoWasp, FrozenShard, CrystalWasp, VolcanicPlant, VolcanicBubble, LavaBall, ScorpionPoison,
-    CrypticFly, CrypticRocky, DrillIce, Frostling, GalacticSpiderOrb,
+    CrypticFly, CrypticRocky, DrillIce, Frostling, CyanOrb, YellowOrb, GreenOrb, RedOrb, BlueOrb,
 } from '../../game/entities/enemies/enemies.js';
 
 import {
@@ -613,13 +613,13 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
         ['Voltzeel', Voltzeel, 'fallback', null],
         ['Aura', Aura, 'fallback', null],
         ['Cactus', Cactus, 'fallback', null],
-        ['RockProjectile', RockProjectile, 'fallback', null],
 
         ['Skulnap', Skulnap, ExplosionCollisionAnimation, null],
         ['YellowArrow', YellowArrow, DisintegrateCollision, null],
         ['PurpleThunder', PurpleThunder, PurpleThunderCollision, 50],
         ['YellowBeamOrb', YellowBeamOrb, DisintegrateCollision, null],
         ['GalacticSpike', GalacticSpike, GalacticSpikeCollision, null],
+        ['YellowOrb', YellowOrb, DisintegrateCollision, null],
     ])('Stun enemy: %s', (_name, EnemyClass, Expected, livesOverride) => {
         test.each(normalScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();
@@ -688,6 +688,7 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
         ['PoisonDrop', PoisonDrop, PoisonDropCollision],
         ['GreenArrow', GreenArrow, DisintegrateCollision],
         ['ScorpionPoison', ScorpionPoison, DisintegrateCollision],
+        ['GreenOrb', GreenOrb, DisintegrateCollision],
     ])('Poison enemy: %s', (_name, EnemyClass, ExpectedCollisionClass) => {
         test.each(normalScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();
@@ -730,6 +731,7 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
         ['VolcanicBubble', VolcanicBubble, 1, DisintegrateCollision],
         ['CrypticFly', CrypticFly, 1, 'fallback'],
         ['CrypticRocky', CrypticRocky, 2, 'fallback'],
+        ['RedOrb', RedOrb, 1, DisintegrateCollision],
     ])('Red enemy: %s', (_name, EnemyClass, startingLives, Expected) => {
         test.each(normalScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();
@@ -769,6 +771,7 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
         ['PointyIcicleShard', PointyIcicleShard, PointyIcicleShardCollision, null],
         ['BlueArrow', BlueArrow, DisintegrateCollision, null],
         ['FrozenShard', FrozenShard, DisintegrateCollision, null],
+        ['BlueOrb', BlueOrb, DisintegrateCollision, null],
     ])('Slow enemy: %s', (_name, EnemyClass, Expected, livesOverride) => {
         test.each(normalScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();
@@ -812,7 +815,7 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
         ['IceSlash', IceSlash, IceSlashCollision],
         ['BlueAsteroid', BlueAsteroid, DisintegrateCollision],
         ['CyanArrow', CyanArrow, DisintegrateCollision],
-        ['GalacticSpiderOrb', GalacticSpiderOrb, DisintegrateCollision],
+        ['CyanOrb', CyanOrb, DisintegrateCollision],
     ])('Frozen enemy: %s', (_name, EnemyClass, ExpectedCollisionClass) => {
         test.each(normalScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();
@@ -1237,13 +1240,13 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
         ['Voltzeel', Voltzeel, 'fallback', null],
         ['Aura', Aura, 'fallback', null],
         ['Cactus', Cactus, 'fallback', null],
-        ['RockProjectile', RockProjectile, 'fallback', null],
 
         ['Skulnap', Skulnap, ExplosionCollisionAnimation, null],
         ['PurpleThunder', PurpleThunder, PurpleThunderCollision, 50],
         ['YellowArrow', YellowArrow, DisintegrateCollision, null],
         ['YellowBeamOrb', YellowBeamOrb, DisintegrateCollision, null],
         ['GalacticSpike', GalacticSpike, GalacticSpikeCollision, null],
+        ['YellowOrb', YellowOrb, DisintegrateCollision, null],
     ])('Stun enemy: %s', (_name, EnemyClass, Expected, livesOverride) => {
         test.each(rollDiveScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();
@@ -1296,6 +1299,7 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
         ['PoisonDrop', PoisonDrop, PoisonDropCollision],
         ['GreenArrow', GreenArrow, DisintegrateCollision],
         ['ScorpionPoison', ScorpionPoison, DisintegrateCollision],
+        ['GreenOrb', GreenOrb, DisintegrateCollision],
     ])('Poison enemy: %s', (_name, EnemyClass, ExpectedCollisionClass) => {
         test.each(rollDiveScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();
@@ -1326,6 +1330,7 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
         ['VolcanicBubble', VolcanicBubble, 1, DisintegrateCollision],
         ['CrypticFly', CrypticFly, 1, 'fallback'],
         ['CrypticRocky', CrypticRocky, 2, 'fallback'],
+        ['RedOrb', RedOrb, 1, DisintegrateCollision],
     ])('Red enemy: %s', (_name, EnemyClass, startingLives, Expected) => {
         test.each(rollDiveScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();
@@ -1359,6 +1364,7 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
         ['PointyIcicleShard', PointyIcicleShard, PointyIcicleShardCollision, null],
         ['BlueArrow', BlueArrow, DisintegrateCollision, null],
         ['FrozenShard', FrozenShard, DisintegrateCollision, null],
+        ['BlueOrb', BlueOrb, DisintegrateCollision, null],
     ])('Slow enemy: %s', (_name, EnemyClass, Expected, livesOverride) => {
         test.each(rollDiveScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();
@@ -1390,7 +1396,7 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
         ['IceSlash', IceSlash, IceSlashCollision],
         ['BlueAsteroid', BlueAsteroid, DisintegrateCollision],
         ['CyanArrow', CyanArrow, DisintegrateCollision],
-        ['GalacticSpiderOrb', GalacticSpiderOrb, DisintegrateCollision],
+        ['CyanOrb', CyanOrb, DisintegrateCollision],
     ])('Frozen enemy: %s', (_name, EnemyClass, ExpectedCollisionClass) => {
         test.each(rollDiveScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();
@@ -1652,7 +1658,11 @@ describe('CollisionLogic.fireball vs enemy', () => {
         [FrozenShard, DisintegrateCollision],
 
         [VolcanicBubble, DisintegrateCollision],
-        [GalacticSpiderOrb, DisintegrateCollision],
+        [CyanOrb, DisintegrateCollision],
+        [GreenOrb, DisintegrateCollision],
+        [RedOrb, DisintegrateCollision],
+        [BlueOrb, DisintegrateCollision],
+        [YellowOrb, DisintegrateCollision],
     ];
 
     test.each([

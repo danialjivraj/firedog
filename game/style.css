@@ -67,7 +67,7 @@ body {
             /* abilities */
             #healingStar, #galacticSpike, #antennaeTentacleUpward, #laserBall, #laserBallMode2, #purpleAsteroid, #blueAsteroid, #healingBarrier, #healingBarrier1, #healingBarrier2, #healingBarrier3, #healingBarrier4,
         /* projectiles */ 
-        #leafAttack, #darkLeafAttack, #windAttack, #poison_spit, #aura, #laser_beam, #iceBall, #darkLaser, #yellowBeam, #rockProjectile, #purpleLaser, #inkBeam, #frozenShard, #lavaBall,
+        #leafAttack, #darkLeafAttack, #windAttack, #poison_spit, #aura, #laser_beam, #iceBall, #darkLaser, #yellowBeam, #purpleLaser, #inkBeam, #frozenShard, #lavaBall, #poisonousOrb,
         /* goblin */
         #goblinRun, #goblinSteal, #goblinJump, 
         /* map1 */
@@ -132,6 +132,7 @@ body {
 #singleCoin, #collisionAnimation, #explosionCollisionAnimation, #darkExplosion, #redFireballCollision, #purpleFireballCollision, #purpleThunderCollision, #meteorExplosion, #asteroidExplosion,
 #electricityCollision, #blueCollisionAnimation, #poisonSpitSplash, #poisonDropCollision, #blackInk, #inkBombCollision, #blood, #raindropSplash, #poisonDropGroundCollision,
 #icyStormBallCollision, #iceSlashCollision, #iceTrailCollision, #spinningIceBallsCollision, #pointyIcicleShardCollision, #undergroundIcicleCollision, #galacticSpikeCollision, #purpleFireballCollision,
+#poisonousOrbCollision,
 /* cutscene images */
     /* background */
     #blackBackground, #madeByDanial, #toBeContinued,

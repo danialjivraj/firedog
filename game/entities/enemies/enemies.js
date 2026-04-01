@@ -1120,10 +1120,13 @@ export class Projectile extends Enemy {
 }
 
 export class WindAttack extends Projectile {
-    constructor(game, x, y, width, height, maxFrame, imageId, speedX, player) {
-        super(game, x, y, width, height, maxFrame, imageId, speedX, 30);
-        this.player = player;
+    constructor(game, x, y, speedX) {
+        super(game, x, y, 105, 120, 5, 'windAttack', speedX, 20);
+        this.player = game.player;
         this.loopingSoundId = 'tornadoAudio';
+        this.drawScale = 0.1;
+        this.growDuration = 400;
+        this.growTimer = 0;
     }
     update(deltaTime) {
         super.update(deltaTime);
@@ -1140,9 +1143,22 @@ export class WindAttack extends Projectile {
         const playerPushbackX = this.player.x - dirX * pushbackDistance;
         this.player.x += (playerPushbackX - this.player.x) * 0.04;
 
+        if (this.drawScale < 1) {
+            this.growTimer += deltaTime;
+            this.drawScale = Math.min(1, this.growTimer / this.growDuration);
+        }
+
         if (!(this.x + this.width < 0 || this.y > this.game.height || this.lives <= 0)) {
             this.game.audioHandler.enemySFX.playSound('tornadoAudio');
         }
+    }
+    draw(context) {
+        withCtx(context, () => {
+            context.translate(this.x + this.width / 2, this.y + this.height / 2);
+            context.scale(this.drawScale, this.drawScale);
+            drawSprite(context, this.image, this.frameX * this.width, 0, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
+        });
+        if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
     }
 }
 
@@ -1175,8 +1191,8 @@ export class InkBeam extends Projectile {
 }
 
 export class LeafAttack extends Projectile {
-    constructor(game, x, y, width, height, maxFrame, imageId, speedX, rotationAngle) {
-        super(game, x, y, width, height, maxFrame, imageId, speedX, 30);
+    constructor(game, x, y, imageId, speedX, rotationAngle) {
+        super(game, x, y, 35.416, 45, 11, imageId, speedX, 30);
         this.rotation = 0;
         this.rotationAngle = rotationAngle;
     }
@@ -1198,10 +1214,50 @@ export class LeafAttack extends Projectile {
 }
 
 export class PoisonSpit extends Projectile {
-    constructor(game, x, y, width, height, maxFrame, imageId, speedX) {
-        super(game, x, y, width, height, maxFrame, imageId, speedX, 30);
+    constructor(game, x, y) {
+        super(game, x, y, 59, 22, 11, 'poison_spit', 18, 30);
         this.dealsDirectHitDamage = false;
         this.isPoisonEnemy = true;
+    }
+}
+
+export class PoisonousOrb extends Projectile {
+    constructor(game, x, y, angle) {
+        super(game, x, y, 48.625, 50, 3, 'poisonousOrb', 0, 30);
+        this.dealsDirectHitDamage = false;
+        this.isPoisonEnemy = true;
+        this.angle = angle;
+        this.orbSpeed = 5;
+        this.rotation = 0;
+        this.rotationSpeed = 0.1;
+        this.drawScale = 0.1;
+        this.scaleSpeed = 0.04;
+    }
+    advanceFrame(deltaTime) {
+        if (this.frameX >= this.maxFrame) return;
+        if (this.frameTimer > this.frameInterval) {
+            this.frameTimer = 0;
+            this.frameX = Math.min(this.frameX + 1, this.maxFrame);
+        } else {
+            this.frameTimer += deltaTime;
+        }
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.x += Math.cos(this.angle) * this.orbSpeed;
+        this.y += Math.sin(this.angle) * this.orbSpeed;
+        this.rotation += this.rotationSpeed;
+        if (this.drawScale < 1) this.drawScale = Math.min(1, this.drawScale + this.scaleSpeed);
+    }
+    draw(context) {
+        withCtx(context, () => {
+            context.translate(this.x + this.width / 2, this.y + this.height / 2);
+            context.rotate(this.rotation);
+            context.scale(this.drawScale, this.drawScale);
+            setShadow(context, 'green', 20);
+            drawSprite(context, this.image, this.frameX * this.width, 0, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
+            setShadow(context, 'transparent', 0);
+        });
     }
 }
 
@@ -1257,8 +1313,8 @@ export class ScorpionPoison extends Projectile {
 }
 
 export class LaserBeam extends Projectile {
-    constructor(game, x, y, width, height, maxFrame, imageId, speedX) {
-        super(game, x, y, width, height, maxFrame, imageId, speedX, 30);
+    constructor(game, x, y) {
+        super(game, x, y, 82, 48, 0, 'laser_beam', 30);
     }
 }
 
@@ -1347,32 +1403,108 @@ export class YellowBeam extends Projectile {
 }
 
 export class PurpleLaser extends Projectile {
-    constructor(game, x, y) {
-        super(game, x, y, 82, 48, 0, 'purpleLaser', 15, 0);
-    }
-}
-
-export class RockProjectile extends Projectile {
-    constructor(game, x, y, width, height, maxFrame, imageId, speedX, rotationAngle) {
-        super(game, x, y, width, height, maxFrame, imageId, speedX, 30);
-        this.rotation = 0;
-        this.rotationAngle = rotationAngle;
+    constructor(game, x, y, angle) {
+        super(game, x, y, 82, 48, 0, 'purpleLaser', 0, 0);
+        this.angle = angle;
+        this.laserSpeed = 15;
     }
     update(deltaTime) {
         super.update(deltaTime);
-        this.rotation += deltaTime * this.rotationAngle;
+        this.x += Math.cos(this.angle) * this.laserSpeed;
+        this.y += Math.sin(this.angle) * this.laserSpeed;
     }
     draw(context) {
         withCtx(context, () => {
-            setShadow(context, 'yellow', 10);
             context.translate(this.x + this.width / 2, this.y + this.height / 2);
-            context.rotate(this.rotation);
-            drawSprite(
-                context, this.image, this.frameX * this.width, 0, this.width, this.height,
-                -this.width / 2, -this.height / 2, this.width, this.height
-            );
+            context.rotate(this.angle);
+            drawSprite(context, this.image, 0, 0, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
         });
         if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
+    }
+}
+
+export class GlowOrb extends Projectile {
+    constructor(game, x, y, size, outerColor, innerColor, angle, orbSpeed) {
+        super(game, x, y, size, size, 0, null, 0, 60);
+        this.outerColor = outerColor;
+        this.innerColor = innerColor;
+        this.angle = angle;
+        this.orbSpeed = orbSpeed;
+        this.pulseTimer = 0;
+        this.growDuration = 0;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.pulseTimer += deltaTime;
+        if (this.angle !== undefined) {
+            this.x += Math.cos(this.angle) * this.orbSpeed;
+            this.y += Math.sin(this.angle) * this.orbSpeed;
+        }
+    }
+    draw(context) {
+        const cx = this.x + this.width / 2;
+        const cy = this.y + this.height / 2;
+        const r = this.width / 2;
+        const grow = this.growDuration > 0 ? Math.min(1, this.pulseTimer / this.growDuration) : 1;
+        const pulse = 0.85 + 0.15 * Math.sin(this.pulseTimer * 0.01);
+        withCtx(context, () => {
+            context.shadowColor = this.outerColor;
+            context.shadowBlur = 18;
+            context.globalAlpha = 0.3;
+            context.fillStyle = this.outerColor;
+            context.beginPath();
+            context.arc(cx, cy, r * 1.3 * pulse * grow, 0, Math.PI * 2);
+            context.fill();
+
+            context.globalAlpha = 1;
+            context.shadowBlur = 10;
+            context.fillStyle = this.innerColor;
+            context.beginPath();
+            context.arc(cx, cy, r * 0.55 * pulse * grow, 0, Math.PI * 2);
+            context.fill();
+        });
+    }
+}
+
+export class CyanOrb extends GlowOrb {
+    constructor(game, x, y, angle = undefined) {
+        super(game, x, y, 40, '#00eaff', '#aaffff', angle, 8);
+        this.isFrozenEnemy = true;
+        this.speedX = 8;
+        this.growDuration = 600;
+    }
+}
+
+export class YellowOrb extends GlowOrb {
+    constructor(game, x, y, angle) {
+        super(game, x, y, 44, '#ffee00', '#ffffaa', angle, 6);
+        this.isStunEnemy = true;
+        this.growDuration = 400;
+    }
+}
+
+export class RedOrb extends GlowOrb {
+    constructor(game, x, y, angle) {
+        super(game, x, y, 50, '#ff4444', '#ffaaaa', angle, 6);
+        this.isRedEnemy = true;
+        this.growDuration = 500;
+    }
+}
+
+export class GreenOrb extends GlowOrb {
+    constructor(game, x, y, angle) {
+        super(game, x, y, 44, '#44ff88', '#003366', angle, 6);
+        this.dealsDirectHitDamage = false;
+        this.isPoisonEnemy = true;
+        this.growDuration = 450;
+    }
+}
+
+export class BlueOrb extends GlowOrb {
+    constructor(game, x, y, angle) {
+        super(game, x, y, 44, '#0044cc', '#aaccff', angle, 6);
+        this.isSlowEnemy = true;
+        this.growDuration = 450;
     }
 }
 
@@ -1727,31 +1859,10 @@ export class GlidoSpike extends FlyingEnemy {
         this.attackFps = 120;
 
         this.canAttack = true;
-        this.windAttackConfig = {
-            width: 105,
-            height: 120,
-            maxFrame: 5,
-            imageId: 'windAttack',
-            speedX: 2,
-            fps: 20,
-            offsetX: 0,
-            offsetY: 0
-        };
     }
 
     throwWindAttack() {
-        const windAttack = new WindAttack(
-            this.game,
-            this.x + this.windAttackConfig.offsetX + 50,
-            this.y + this.windAttackConfig.offsetY + 20,
-            this.windAttackConfig.width,
-            this.windAttackConfig.height,
-            this.windAttackConfig.maxFrame,
-            this.windAttackConfig.imageId,
-            this.windAttackConfig.speedX,
-            this.game.player
-        );
-        this.game.enemies.push(windAttack);
+        this.game.enemies.push(new WindAttack(this.game, this.x + 50, this.y + 20, 2));
     }
 
     update(deltaTime) {
@@ -1814,52 +1925,22 @@ export class DuskPlant extends ImmobileGroundEnemy {
     constructor(game) {
         super(game, 60, 87, 1, 'duskPlant');
         this.soundId = 'teethChatteringSound';
-        this.leafAttackConfig = {
-            width: 35.416,
-            height: 45,
-            maxFrame: 11,
-            imageId: 'darkLeafAttack',
-            cooldown: 5000,
-            speedX: 5
-        };
         this.lastLeafAttackTime = 4999;
-        this.soundId = 'teethChatteringSound';
     }
 
     throwLeaf() {
-        const {
-            x,
-            y,
-            height
-        } = this;
-        const {
-            width,
-            height: leafHeight,
-            maxFrame,
-            imageId
-        } = this.leafAttackConfig;
-
-        const leaf = new LeafAttack(
-            this.game,
-            x,
-            y + height / 2 - leafHeight / 2,
-            width,
-            leafHeight,
-            maxFrame,
-            imageId,
-            this.leafAttackConfig.speedX,
-            0.0002 + Math.random() * (0.001 - 0.0002)
-        );
+        this.game.enemies.push(new LeafAttack(
+            this.game, this.x, this.y + this.height / 2 - 22.5,
+            'darkLeafAttack', 5, 0.0002 + Math.random() * 0.0008
+        ));
         this.game.audioHandler.enemySFX.playSound('leafAttackAudio');
-        this.game.enemies.push(leaf);
-
         this.lastLeafAttackTime = 0;
     }
 
     update(deltaTime) {
         super.update(deltaTime);
         this.lastLeafAttackTime += deltaTime;
-        if (this.lastLeafAttackTime >= this.leafAttackConfig.cooldown && this.x < this.game.width - this.width) {
+        if (this.lastLeafAttackTime >= 5000 && this.x < this.game.width - this.width) {
             this.throwLeaf();
         }
     }
@@ -2121,32 +2202,22 @@ export class SkeletonFish extends UnderwaterEnemy {
     constructor(game) {
         super(game, 55, 39, 4, 'skeletonFish');
         this.chaseDistance = 900;
-        this.initialSpeed = 3;
-        this.currentSpeed = this.initialSpeed;
+        this.currentSpeed = 3;
         this.passedPlayer = false;
         this.speed = 6;
         this.moveTowardsPlayerActive = false;
-        this.useLogic1 = Math.random() < 0.5;
     }
 
     update(deltaTime) {
         super.update(deltaTime);
-        if (this.useLogic1) this.updateLogic1();
-        else this.updateLogic2();
 
-        if (this.frameX === 1 && this.isOnScreen()) {
-            this.game.audioHandler.enemySFX.playSound('skeletonCrunshSound');
-        }
-    }
-
-    updateLogic1() {
         const distanceToPlayer = this.getDistanceToPlayer();
-
         if (!this.passedPlayer) {
             if (distanceToPlayer <= this.chaseDistance) {
                 const a = this.getAngleToPlayer();
                 this.angleToPlayer = a;
-                this.moveTowardsPlayer();
+                this.moveTowardsPlayerActive = true;
+                moveAlongAngle(this, a, this.speed);
             } else {
                 this.x -= this.currentSpeed;
             }
@@ -2155,87 +2226,21 @@ export class SkeletonFish extends UnderwaterEnemy {
         }
 
         if (this.x < this.game.player.x) this.passedPlayer = true;
-    }
 
-    updateLogic2() {
-        const distanceToPlayer = this.getDistanceToPlayer();
-
-        if (!this.passedPlayer) {
-            if (distanceToPlayer <= this.chaseDistance) {
-                const a = this.getAngleToPlayer();
-                this.angleToPlayer = a;
-                this.moveTowardsPlayer();
-            } else {
-                this.x -= this.currentSpeed;
-            }
-        } else {
-            this.x -= this.currentSpeed;
+        if (this.frameX === 1 && this.isOnScreen()) {
+            this.game.audioHandler.enemySFX.playSound('skeletonCrunshSound');
         }
-
-        if (this.x < this.game.player.x - 150 || this.game.gameOver) {
-            this.passedPlayer = true;
-        }
-    }
-
-    moveTowardsPlayer() {
-        const a = this.getAngleToPlayer();
-        moveAlongAngle(this, a, this.speed);
-        this.angleToPlayer = a;
-        this.moveTowardsPlayerActive = true;
     }
 
     draw(context) {
-        if (this.useLogic1) this.drawLogic1(context);
-        else this.drawLogic2(context);
-    }
-
-    drawLogic1(context) {
         if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
         withCtx(context, () => {
             context.translate(this.x + this.width / 2, this.y + this.height / 2);
-
             if (this.moveTowardsPlayerActive || this.passedPlayer) {
                 context.rotate(this.angleToPlayer);
                 if (this.moveTowardsPlayerActive) context.scale(-1, -1);
             }
-
-            drawSprite(
-                context,
-                this.image,
-                this.frameX * this.width,
-                0,
-                this.width,
-                this.height,
-                -this.width / 2,
-                -this.height / 2,
-                this.width,
-                this.height
-            );
-        });
-    }
-
-    drawLogic2(context) {
-        if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
-        withCtx(context, () => {
-            context.translate(this.x + this.width / 2, this.y + this.height / 2);
-
-            if (!this.passedPlayer) {
-                context.rotate(this.angleToPlayer);
-                if (this.moveTowardsPlayerActive) context.scale(-1, -1);
-            }
-
-            drawSprite(
-                context,
-                this.image,
-                this.frameX * this.width,
-                0,
-                this.width,
-                this.height,
-                -this.width / 2,
-                -this.height / 2,
-                this.width,
-                this.height
-            );
+            drawSprite(context, this.image, this.frameX * this.width, 0, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
         });
     }
 }
@@ -2407,65 +2412,22 @@ export class Garry extends ImmobileGroundEnemy {
 export class BigGreener extends ImmobileGroundEnemy {
     constructor(game) {
         super(game, 113, 150, 1, 'bigGreener');
-        this.leafAttackConfig = {
-            width: 35.416,
-            height: 45,
-            maxFrame: 11,
-            imageId: 'leafAttack',
-            cooldown: 5000,
-            speedX: 5
-        };
         this.lastLeafAttackTime = 4999;
         this.soundId = 'teethChatteringSound';
     }
 
     throwLeaf() {
-        const {
-            x,
-            y,
-            height
-        } = this;
-        const {
-            width,
-            height: leafHeight,
-            maxFrame,
-            imageId
-        } = this.leafAttackConfig;
-
-        const firstLeafAttack = new LeafAttack(
-            this.game,
-            x,
-            y + height / 2 - leafHeight / 2,
-            width,
-            leafHeight,
-            maxFrame,
-            imageId,
-            this.leafAttackConfig.speedX,
-            0.0002 + Math.random() * (0.001 - 0.0002)
-        );
+        const spawnY = this.y + this.height / 2 - 22.5;
+        this.game.enemies.push(new LeafAttack(this.game, this.x, spawnY, 'leafAttack', 5, 0.0002 + Math.random() * 0.0008));
+        this.game.enemies.push(new LeafAttack(this.game, this.x, spawnY, 'leafAttack', 7.5, 0.0001 + Math.random() * 0.0089));
         this.game.audioHandler.enemySFX.playSound('leafAttackAudio');
-        this.game.enemies.push(firstLeafAttack);
-
-        const secondLeafAttack = new LeafAttack(
-            this.game,
-            x,
-            y + height / 2 - leafHeight / 2,
-            width,
-            leafHeight,
-            maxFrame,
-            imageId,
-            this.leafAttackConfig.speedX * 1.5,
-            0.0001 + Math.random() * (0.009 - 0.0001)
-        );
-        this.game.enemies.push(secondLeafAttack);
-
         this.lastLeafAttackTime = 0;
     }
 
     update(deltaTime) {
         super.update(deltaTime);
         this.lastLeafAttackTime += deltaTime;
-        if (this.lastLeafAttackTime >= this.leafAttackConfig.cooldown && this.x < this.game.width - this.width) {
+        if (this.lastLeafAttackTime >= 5000 && this.x < this.game.width - this.width) {
             this.throwLeaf();
         }
     }
@@ -2626,14 +2588,6 @@ export class SpidoLazer extends MovingGroundEnemy {
         this.canAttack = true;
         this.loopingSoundId = 'spidoLazerWalking';
 
-        this.laserBeamConfig = {
-            width: 300,
-            height: 28,
-            maxFrame: 9,
-            imageId: 'laser_beam',
-            speedX: 30,
-        };
-
         this.applyState('walk');
     }
 
@@ -2661,26 +2615,7 @@ export class SpidoLazer extends MovingGroundEnemy {
     }
 
     throwLaserBeam() {
-        const { x, y, height } = this;
-        const {
-            width,
-            height: laserHeight,
-            maxFrame,
-            imageId,
-            speedX,
-        } = this.laserBeamConfig;
-
-        const laser = new LaserBeam(
-            this.game,
-            x - 170,
-            y - 15 + height / 2 - laserHeight / 2,
-            width,
-            laserHeight,
-            maxFrame,
-            imageId,
-            speedX
-        );
-        this.game.enemies.push(laser);
+        this.game.enemies.push(new LaserBeam(this.game, this.x - 40, this.y - 15 + this.height / 2 - 16));
     }
 
     update(deltaTime) {
@@ -3035,6 +2970,25 @@ export class Mycora extends ImmobileGroundEnemy {
         super(game, 165.125, 200, 7, 'mycora');
         this.lives = 2;
         this.setFps(15);
+        this.shotTurn = 0;
+    }
+    throwOrbs() {
+        const cx = this.x + this.width / 2 - 15;
+        const cy = this.y + this.height / 3 - 5;
+        const baseAngle = -Math.PI + Math.PI / 8;
+        const spread = Math.PI / 6;
+        const angles = [baseAngle - spread, baseAngle, baseAngle + spread];
+        for (const angle of angles) {
+            this.game.enemies.push(new PoisonousOrb(this.game, cx, cy, angle));
+        }
+    }
+    advanceFrame(deltaTime) {
+        const prevFrame = this.frameX;
+        super.advanceFrame(deltaTime);
+        if (prevFrame === 2 && this.frameX === 3) {
+            this.shotTurn++;
+            if (this.shotTurn % 2 === 0 && this.isOnScreen()) this.throwOrbs();
+        }
     }
 }
 
@@ -3053,15 +3007,61 @@ export class Venarach extends ClimbingEnemy {
     }
 }
 
+export class LarvoxMini extends MovingGroundEnemy {
+    constructor(game, x, y, launchVX) {
+        super(game, 114.75 * 0.5, 70 * 0.5, 3, 'larvox');
+        this.setFps(14);
+        this.x = x;
+        this.y = y;
+        this.vx = launchVX;
+        this.vy = -(Math.random() * 5 + 7);
+        this.gravity = 0.4;
+        this.grounded = false;
+        this.groundY = game.height - (70 * 0.5) - game.groundMargin;
+    }
+    update(deltaTime) {
+        if (!this.grounded) {
+            if (!this.game.cabin.isFullyVisible) this.x -= this.game.speed;
+            this.x += this.vx;
+            this.vy += this.gravity;
+            this.y += this.vy;
+            this.advanceFrame(deltaTime);
+            if (this.y >= this.groundY) {
+                this.y = this.groundY;
+                this.grounded = true;
+                this.xSpeed = Math.floor(Math.random() * 3) + 3;
+            }
+            if (this.x + this.width < 0) this.markedForDeletion = true;
+            return;
+        }
+        super.update(deltaTime);
+        this.x -= this.xSpeed;
+    }
+    draw(context) {
+        withCtx(context, () => {
+            context.scale(0.5, 0.5);
+            drawSprite(context, this.image, this.frameX * 114.75, 0, 114.75, 70, this.x * 2, this.y * 2, 114.75, 70);
+        });
+        if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
+    }
+}
+
 export class Larvox extends MovingGroundEnemy {
     constructor(game) {
         super(game, 114.75, 70, 3, 'larvox');
         this.setFps(12);
         this.xSpeed = Math.floor(Math.random() * 3) + 1;
+        this.spawned = false;
     }
     update(deltaTime) {
         super.update(deltaTime);
         this.x -= this.xSpeed;
+        if (!this.spawned && this.lives <= 0) {
+            this.spawned = true;
+            const cx = this.x + this.width / 2;
+            this.game.enemies.push(new LarvoxMini(this.game, cx, this.y, -4));
+            this.game.enemies.push(new LarvoxMini(this.game, cx, this.y, 3));
+        }
     }
 }
 
@@ -3110,6 +3110,23 @@ export class Venflora extends ImmobileGroundEnemy {
     constructor(game) {
         super(game, 98.28571428571429, 150, 6, 'venflora');
         this.setFps(15);
+        this.shotTurn = 3;
+    }
+    shoot() {
+        const cx = this.x + this.width / 2;
+        const cy = this.y + this.height / 3;
+        const px = this.game.player.x + this.game.player.width / 2;
+        const py = this.game.player.y + this.game.player.height / 2;
+        const angle = Math.atan2(py - cy, px - cx);
+        this.game.enemies.push(new RedOrb(this.game, cx - 15, cy - 25, angle));
+    }
+    advanceFrame(deltaTime) {
+        const prevFrame = this.frameX;
+        super.advanceFrame(deltaTime);
+        if (prevFrame === 1 && this.frameX === 2 && this.isOnScreen()) {
+            this.shotTurn++;
+            if (this.shotTurn % 4 === 0) this.shoot();
+        }
     }
 }
 
@@ -3145,13 +3162,6 @@ export class Zabkous extends MovingGroundEnemy {
         this.originalY = this.y;
         this.jumpedBeforeDistanceLogic = false;
 
-        this.poisonSpitConfig = {
-            width: 59,
-            height: 22,
-            maxFrame: 11,
-            imageId: 'poison_spit',
-            speedX: 18,
-        };
         this.poisonSpitThrown = false;
         this.playsOnce = true;
 
@@ -3186,27 +3196,7 @@ export class Zabkous extends MovingGroundEnemy {
 
     throwPoisonSpit() {
         if (!this.poisonSpitThrown) {
-            const { x, y, height } = this;
-            const {
-                width,
-                height: spitHeight,
-                maxFrame,
-                imageId,
-                speedX,
-            } = this.poisonSpitConfig;
-
-            const spit = new PoisonSpit(
-                this.game,
-                x + 20,
-                y + 15 + height / 2 - spitHeight / 2,
-                width,
-                spitHeight,
-                maxFrame,
-                imageId,
-                speedX
-            );
-
-            this.game.enemies.push(spit);
+            this.game.enemies.push(new PoisonSpit(this.game, this.x + 20, this.y + 15 + this.height / 2 - 11));
             this.poisonSpitThrown = true;
         }
     }
@@ -3598,13 +3588,18 @@ export class CrystalWasp extends FlyingEnemy {
         this.isFrozenEnemy = true;
         this.currentSpeed = 1.5;
         this.chaseDistance = this.game.width;
+        this.lockedAngle = null;
     }
     update(deltaTime) {
         super.update(deltaTime);
         this.playSoundOnce('buzzingFly');
 
-        if (this.x >= this.game.player.x && this.getDistanceToPlayer() <= this.chaseDistance) {
-            moveAlongAngle(this, this.getAngleToPlayer(), this.currentSpeed);
+        if (this.lockedAngle !== null) {
+            moveAlongAngle(this, this.lockedAngle, this.currentSpeed);
+        } else if (this.x >= this.game.player.x && this.getDistanceToPlayer() <= this.chaseDistance) {
+            const a = this.getAngleToPlayer();
+            moveAlongAngle(this, a, this.currentSpeed);
+            if (this.x < this.game.player.x) this.lockedAngle = a;
         } else {
             this.x -= this.currentSpeed;
         }
@@ -3651,15 +3646,63 @@ export class Globby extends MovingGroundEnemy {
     }
 }
 
+export class IceCentipedeMini extends MovingGroundEnemy {
+    constructor(game, x, y, launchVX) {
+        super(game, 126 * 0.65, 80 * 0.65, 5, 'iceCentipede');
+        this.setFps(14);
+        this.x = x;
+        this.y = y;
+        this.vx = launchVX;
+        this.vy = -(Math.random() * 5 + 7);
+        this.gravity = 0.4;
+        this.grounded = false;
+        this.groundY = game.height - (80 * 0.65) - game.groundMargin;
+    }
+    update(deltaTime) {
+        if (!this.grounded) {
+            if (!this.game.cabin.isFullyVisible) this.x -= this.game.speed;
+            this.x += this.vx;
+            this.vy += this.gravity;
+            this.y += this.vy;
+            this.advanceFrame(deltaTime);
+            if (this.y >= this.groundY) {
+                this.y = this.groundY;
+                this.grounded = true;
+                this.width = 126 * 0.65;
+                this.height = 80 * 0.65;
+                this.xSpeed = Math.floor(Math.random() * 2) + 3;
+            }
+            if (this.x + this.width < 0) this.markedForDeletion = true;
+            return;
+        }
+        super.update(deltaTime);
+        this.x -= this.xSpeed;
+    }
+    draw(context) {
+        withCtx(context, () => {
+            context.scale(0.65, 0.65);
+            drawSprite(context, this.image, this.frameX * 126, 0, 126, 80, this.x / 0.65, this.y / 0.65, 126, 80);
+        });
+        if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
+    }
+}
+
 export class IceCentipede extends MovingGroundEnemy {
     constructor(game) {
         super(game, 126, 80, 5, 'iceCentipede');
         this.setFps(12);
         this.xSpeed = Math.floor(Math.random() * 2) + 2;
+        this.spawned = false;
     }
     update(deltaTime) {
         super.update(deltaTime);
         this.x -= this.xSpeed;
+        if (!this.spawned && this.lives <= 0) {
+            this.spawned = true;
+            const cx = this.x + this.width / 2;
+            this.game.enemies.push(new IceCentipedeMini(this.game, cx, this.y, -4));
+            this.game.enemies.push(new IceCentipedeMini(this.game, cx, this.y, 3));
+        }
     }
 }
 
@@ -3699,36 +3742,43 @@ export class CrypticRocky extends MovingGroundEnemy {
         this.isRedEnemy = true;
         this.setFps(6);
         this.y = this.y + 17;
+        this.groundY = this.y;
         this.xSpeed = Math.floor(Math.random() * 2) + 3;
         this.ySpeed = 3;
         this._phase = 0;
         this._distCovered = 0;
-        this._segmentDist = 200;
+        this._segmentDist = 120 + Math.random() * 160;
+        this._currentSpeed = 2 + Math.random() * 3;
+    }
+    _nextSegment() {
+        this._distCovered = 0;
+        this._phase++;
+        this._segmentDist = 80 + Math.random() * 200;
     }
     update(deltaTime) {
         super.update(deltaTime);
         switch (this._phase % 4) {
             case 0:
-                this.x -= this.xSpeed;
-                this._distCovered += this.xSpeed;
+                this.x -= this._currentSpeed;
+                this._distCovered += this._currentSpeed;
                 break;
             case 1:
-                this.y -= this.ySpeed;
-                this._distCovered += this.ySpeed;
+                this.y -= this._currentSpeed;
+                this._distCovered += this._currentSpeed;
                 break;
             case 2:
-                this.x -= this.xSpeed;
-                this._distCovered += this.xSpeed;
+                this.x -= this._currentSpeed;
+                this._distCovered += this._currentSpeed;
                 break;
             case 3:
-                this.y += this.ySpeed;
-                this._distCovered += this.ySpeed;
+                this.y += this._currentSpeed;
+                this._distCovered += this._currentSpeed;
                 break;
         }
-        if (this._distCovered >= this._segmentDist) {
-            this._distCovered = 0;
-            this._phase++;
-        }
+        if (this._distCovered >= this._segmentDist) this._nextSegment();
+        const prevY = this.y;
+        this.y = Math.max(0, Math.min(this.groundY, this.y));
+        if (this.y !== prevY) this._nextSegment();
     }
 }
 
@@ -3791,9 +3841,18 @@ export class CrypticFly extends FlyingEnemy {
         super(game, 128, 100, 1, 'crypticFly');
         this.playsOnce = true;
         this.isRedEnemy = true;
+        this.speed = 1.5;
+        this.lockedAngle = null;
     }
     update(deltaTime) {
         super.update(deltaTime);
+        if (this.lockedAngle !== null) {
+            moveAlongAngle(this, this.lockedAngle, this.speed);
+        } else {
+            const a = this.getAngleToPlayer();
+            moveAlongAngle(this, a, this.speed);
+            if (this.x < this.game.player.x) this.lockedAngle = a;
+        }
         this.playSoundOnce('buzzingFly');
     }
 }
@@ -3801,66 +3860,26 @@ export class CrypticFly extends FlyingEnemy {
 export class PetroPlant extends ImmobileGroundEnemy {
     constructor(game) {
         super(game, 91.555555555555555555555555555556, 100, 1, 'petroPlant');
-        this.rockAttackConfig = {
-            width: 37,
-            height: 40,
-            maxFrame: 0,
-            imageId: 'rockProjectile',
-            cooldown: 5000,
-            speedX: 5
-        };
-        this.lastRockAttackTime = 4999;
+        this.lastRockAttackTime = 1999;
         this.soundId = 'teethChatteringSound';
     }
 
-    throwRockProjectile() {
-        const {
-            x,
-            y,
-            height
-        } = this;
-        const {
-            width,
-            height: leafHeight,
-            maxFrame,
-            imageId
-        } = this.rockAttackConfig;
-
-        const rockProjectile = new RockProjectile(
-            this.game,
-            x,
-            y + height / 2 - leafHeight / 2,
-            width,
-            leafHeight,
-            maxFrame,
-            imageId,
-            this.rockAttackConfig.speedX,
-            0.02 + Math.random() * (0.01 - 0.0002)
-        );
+    throwYellowOrbProjectile() {
+        const cx = this.x + this.width / 2;
+        const cy = this.y + this.height / 3;
+        const px = this.game.player.x + this.game.player.width / 2;
+        const py = this.game.player.y + this.game.player.height / 2;
+        const angle = Math.atan2(py - cy, px - cx);
+        this.game.enemies.push(new YellowOrb(this.game, cx - 22, cy - 22, angle));
         this.game.audioHandler.enemySFX.playSound('rockAttackSound');
-        this.game.enemies.push(rockProjectile);
-
-        const secondRockAttack = new RockProjectile(
-            this.game,
-            x,
-            y + height / 2 - leafHeight / 2,
-            width,
-            leafHeight,
-            maxFrame,
-            imageId,
-            this.rockAttackConfig.speedX * 1.5,
-            0.02 + Math.random() * (0.01 - 0.0002)
-        );
-        this.game.enemies.push(secondRockAttack);
-
         this.lastRockAttackTime = 0;
     }
 
     update(deltaTime) {
         super.update(deltaTime);
         this.lastRockAttackTime += deltaTime;
-        if (this.lastRockAttackTime >= this.rockAttackConfig.cooldown && this.x < this.game.width - this.width) {
-            this.throwRockProjectile();
+        if (this.lastRockAttackTime >= 2000 && this.x < this.game.width - this.width) {
+            this.throwYellowOrbProjectile();
         }
     }
 }
@@ -3936,31 +3955,10 @@ export class Dragon extends FlyingEnemy {
         this.lives = 2;
         this.setFps(14);
         this.canAttack = true;
-        this.windAttackConfig = {
-            width: 105,
-            height: 120,
-            maxFrame: 5,
-            imageId: 'windAttack',
-            speedX: 4,
-            fps: 20,
-            offsetX: 0,
-            offsetY: 0
-        };
     }
 
     throwWindAttack() {
-        const windAttack = new WindAttack(
-            this.game,
-            this.x + this.windAttackConfig.offsetX + 50,
-            this.y + this.windAttackConfig.offsetY + 20,
-            this.windAttackConfig.width,
-            this.windAttackConfig.height,
-            this.windAttackConfig.maxFrame,
-            this.windAttackConfig.imageId,
-            this.windAttackConfig.speedX,
-            this.game.player
-        );
-        this.game.enemies.push(windAttack);
+        this.game.enemies.push(new WindAttack(this.game, this.x + 50, this.y + 20, 4));
     }
 
     update(deltaTime) {
@@ -3988,24 +3986,43 @@ export class Plazer extends ImmobileGroundEnemy {
     constructor(game) {
         super(game, 61.33333333333333, 90, 2, 'plazer');
         this.setFps(6);
-        this.canAttack = true;
+        this.shotTurn = 3;
+        this.burstCount = 0;
+        this.burstTimer = 0;
+        this.inBurst = false;
+        this.burstDelay = 150;
     }
-    throwPurpleLaserAttack() {
-        const purpleLaser = new PurpleLaser(this.game, this.x - 40, this.y + 15);
-        this.game.enemies.push(purpleLaser);
+    fireLaser() {
+        const cx = this.x;
+        const cy = this.y + this.height / 2;
+        const px = this.game.player.x + this.game.player.width / 2;
+        const py = this.game.player.y + this.game.player.height / 2;
+        const angle = Math.atan2(py - cy, px - cx);
+        this.game.enemies.push(new PurpleLaser(this.game, cx - 40, cy - 30, angle));
+        this.game.audioHandler.enemySFX.playSound('laserAttackAudio', false, true);
+    }
+    advanceFrame(deltaTime) {
+        const prevFrame = this.frameX;
+        super.advanceFrame(deltaTime);
+        if (prevFrame === 0 && this.frameX === 1 && this.isOnScreen() && this.x >= this.game.player.x) {
+            this.shotTurn++;
+            if (this.shotTurn % 4 === 0) {
+                this.inBurst = true;
+                this.burstCount = 0;
+                this.burstTimer = this.burstDelay;
+            }
+        }
     }
     update(deltaTime) {
         super.update(deltaTime);
-
-        if (!this.game.gameOver && this.x >= this.game.player.x) {
-            if (this.frameX === 1 && this.canAttack && this.x + this.width / 2 < this.game.width) {
-                this.canAttack = false;
-                this.throwPurpleLaserAttack();
-                this.game.audioHandler.enemySFX.playSound('laserAttackAudio', false, true);
-                this.darkLaserTimer = 0;
-            }
+        if (!this.inBurst || this.game.gameOver) return;
+        this.burstTimer += deltaTime;
+        if (this.burstTimer >= this.burstDelay) {
+            this.burstTimer = 0;
+            this.fireLaser();
+            this.burstCount++;
+            if (this.burstCount >= 2) this.inBurst = false;
         }
-        if (this.frameX === 2) this.canAttack = true;
     }
 }
 
@@ -4058,11 +4075,36 @@ export class Borion extends UndergroundEnemy {
         super(game, 228, 150, 1, 'borion', {
             warningDuration: 500,
             riseDuration: 500,
-            holdDuration: 3000,
+            holdDuration: 5000,
             triggerDistance: 1300
         });
+        this.lives = 3;
         this.setFps(10);
         this.drawOffsetY = 30;
+        this.orbTimer = 0;
+    }
+    throwOrbs() {
+        const orbTypes = [YellowOrb, RedOrb, CyanOrb, GreenOrb, BlueOrb];
+        const cx = this.x + this.width / 2;
+        const cy = this.y + this.height / 4;
+        const angles = [
+            -Math.PI * 0.8 + Math.random() * Math.PI * 0.2,
+            -Math.PI * 0.6 + Math.random() * Math.PI * 0.2,
+            -Math.PI * 0.4 + Math.random() * Math.PI * 0.2,
+        ];
+        const shuffled = [...orbTypes].sort(() => Math.random() - 0.5);
+        for (let i = 0; i < 3; i++) {
+            this.game.enemies.push(new shuffled[i](this.game, cx - 22, cy + 40, angles[i]));
+        }
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        if (this.phase !== 'hold' || this.game.gameOver) return;
+        this.orbTimer -= deltaTime;
+        if (this.orbTimer <= 0) {
+            this.orbTimer = 2000;
+            this.throwOrbs();
+        }
     }
     draw(context) {
         if (this.phase === 'warning') {
@@ -4105,8 +4147,72 @@ export class Vespion extends FlyingEnemy {
 
 export class GalacticPlant extends ImmobileGroundEnemy {
     constructor(game) {
-        super(game, 95.75, 150, 3, 'galacticPlant');
-        this.setFps(15);
+        super(game, 95.75, 150, 1, 'galacticPlant');
+        this.setFps(10);
+        this.suckParticles = [];
+        this.particleTimer = 0;
+        this.particleInterval = 80;
+    }
+    spawnSuckParticle() {
+        const my = this.y + this.height * 0.3 + 10;
+        this.suckParticles.push({
+            x: this.x - 200 + (Math.random() - 0.5) * 60,
+            y: my + (Math.random() - 0.5) * 300,
+            size: 3 + Math.random() * 5,
+            speed: 1 + Math.random() * 2.5,
+            alpha: 0,
+            lifeTimer: 0,
+            maxLife: 1000 + Math.random() * 600,
+            fadeIn: 50,
+        });
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+
+        const mx = this.x + this.width * 0.5;
+        const my = this.y + this.height * 0.3 + 10;
+        const scroll = this.game.cabin?.isFullyVisible ? 0 : this.game.speed;
+        for (const p of this.suckParticles) {
+            p.x -= scroll;
+            const dx = mx - p.x;
+            const dy = my - p.y;
+            const d = Math.hypot(dx, dy);
+            if (d <= 8) { p.done = true; continue; }
+            p.x += (dx / d) * p.speed;
+            p.y += (dy / d) * p.speed;
+            p.lifeTimer += deltaTime;
+            const fadeInT = Math.min(1, p.lifeTimer / p.fadeIn);
+            const fadeOutT = 1 - p.lifeTimer / p.maxLife;
+            p.alpha = fadeInT * fadeOutT * 0.9;
+        }
+        this.suckParticles = this.suckParticles.filter(p => !p.done && p.lifeTimer < p.maxLife);
+
+        if (this.game.gameOver || !this.isOnScreen()) return;
+
+        const dx = (this.x + this.width / 2) - this.game.player.x;
+        if (dx <= 0) return;
+
+        this.particleTimer += deltaTime;
+        if (this.particleTimer >= this.particleInterval) {
+            this.particleTimer = 0;
+            this.spawnSuckParticle();
+        }
+
+        this.game.player.x += dx * 0.008;
+    }
+    draw(context) {
+        super.draw(context);
+        for (const p of this.suckParticles) {
+            context.save();
+            context.globalAlpha = Math.max(0, p.alpha);
+            context.fillStyle = '#99ccff';
+            context.shadowColor = '#4499ff';
+            context.shadowBlur = 12;
+            context.beginPath();
+            context.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            context.fill();
+            context.restore();
+        }
     }
 }
 
@@ -4159,41 +4265,6 @@ export class Lancer extends UnderwaterEnemy {
     }
 }
 
-export class GalacticSpiderOrb extends Projectile {
-    constructor(game, x, y) {
-        super(game, x, y, 40, 40, 0, null, 8, 60);
-        this.isFrozenEnemy = true;
-        this.pulseTimer = 0;
-    }
-    update(deltaTime) {
-        super.update(deltaTime);
-        this.pulseTimer += deltaTime;
-    }
-    draw(context) {
-        const cx = this.x + this.width / 2;
-        const cy = this.y + this.height / 2;
-        const growDuration = 600;
-        const grow = Math.min(1, this.pulseTimer / growDuration);
-        const pulse = 0.8 + 0.2 * Math.sin(this.pulseTimer * 0.008);
-        withCtx(context, () => {
-            context.shadowColor = '#00eaff';
-            context.shadowBlur = 20;
-            context.globalAlpha = 0.35;
-            context.fillStyle = '#00eaff';
-            context.beginPath();
-            context.arc(cx, cy, 28 * pulse * grow, 0, Math.PI * 2);
-            context.fill();
-
-            context.globalAlpha = 1;
-            context.shadowBlur = 10;
-            context.fillStyle = '#aaffff';
-            context.beginPath();
-            context.arc(cx, cy, 12 * grow, 0, Math.PI * 2);
-            context.fill();
-        });
-    }
-}
-
 export class GalacticSpider extends MovingGroundEnemy {
     constructor(game) {
         super(game, 160.5, 120, 3, 'galacticSpider');
@@ -4204,7 +4275,7 @@ export class GalacticSpider extends MovingGroundEnemy {
         this.shotTimer = 2500;
     }
     throwOrb() {
-        this.game.enemies.push(new GalacticSpiderOrb(this.game, this.x + 55, this.y + 48));
+        this.game.enemies.push(new CyanOrb(this.game, this.x + 55, this.y + 48));
         this.shotTimer = 0;
     }
     update(deltaTime) {
