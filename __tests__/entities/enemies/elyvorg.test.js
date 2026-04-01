@@ -604,7 +604,6 @@ describe("elyvorg.js entities – behavior coverage", () => {
             const th = new PurpleThunder(mockGame, 120);
 
             expect(th.phase).toBe("warning");
-            expect(th.dealsDirectHitDamage).toBe(false);
 
             th.update(th.warningDuration + 1);
 
@@ -616,13 +615,11 @@ describe("elyvorg.js entities – behavior coverage", () => {
             const th = new PurpleThunder(mockGame, 120);
             th.phase = "strike";
             th.frameX = th.maxFrame;
-            th.dealsDirectHitDamage = true;
             th.frameTimer = th.frameInterval;
 
             th.update(0);
 
             expect(th.phase).toBe("done");
-            expect(th.dealsDirectHitDamage).toBe(false);
             expect(th.markedForDeletion).toBe(true);
         });
     });

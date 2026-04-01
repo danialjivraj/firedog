@@ -1216,7 +1216,6 @@ export class LeafAttack extends Projectile {
 export class PoisonSpit extends Projectile {
     constructor(game, x, y) {
         super(game, x, y, 59, 22, 11, 'poison_spit', 18, 30);
-        this.dealsDirectHitDamage = false;
         this.isPoisonEnemy = true;
     }
 }
@@ -1224,7 +1223,6 @@ export class PoisonSpit extends Projectile {
 export class PoisonousOrb extends Projectile {
     constructor(game, x, y, angle) {
         super(game, x, y, 48.625, 50, 3, 'poisonousOrb', 0, 30);
-        this.dealsDirectHitDamage = false;
         this.isPoisonEnemy = true;
         this.angle = angle;
         this.orbSpeed = 5;
@@ -1264,7 +1262,6 @@ export class PoisonousOrb extends Projectile {
 export class ScorpionPoison extends Projectile {
     constructor(game, x, y) {
         super(game, x, y, 50, 50, 0, null, 9, 0);
-        this.dealsDirectHitDamage = false;
         this.isPoisonEnemy = true;
         this.r = 25;
         this.age = 0;
@@ -1494,7 +1491,6 @@ export class RedOrb extends GlowOrb {
 export class GreenOrb extends GlowOrb {
     constructor(game, x, y, angle) {
         super(game, x, y, 44, '#44ff88', '#003366', angle, 6);
-        this.dealsDirectHitDamage = false;
         this.isPoisonEnemy = true;
         this.growDuration = 450;
     }
@@ -1859,6 +1855,8 @@ export class GlidoSpike extends FlyingEnemy {
         this.attackFps = 120;
 
         this.canAttack = true;
+        this.attackCooldown = 1000;
+        this.attackCooldownDuration = 1000;
     }
 
     throwWindAttack() {
@@ -1871,11 +1869,13 @@ export class GlidoSpike extends FlyingEnemy {
 
         if (this.state === 'walk') {
             this.x -= 1;
-            if (playerDistance <= 1200 && this.frameX == 24) {
+            this.attackCooldown += deltaTime;
+            if (playerDistance <= 1200 && this.frameX == 24 && this.attackCooldown >= this.attackCooldownDuration) {
                 if (!this.game.gameOver) {
                     this.state = 'attack';
                     this.attackFrameX = 0;
                     this.attackFrameTimer = 0;
+                    this.attackCooldown = 0;
                 }
             }
         } else if (this.state === 'attack') {
@@ -2054,6 +2054,7 @@ export class WalterTheGhost extends FlyingEnemy {
 export class Ben extends VerticalEnemy {
     constructor(game) {
         super(game, 61.5, 50, 5, 'ben');
+        this.isPoisonEnemy = true;
         this.initialSpeed = 3;
         this.currentSpeed = 4;
         this.chaseDistance = this.game.width;
@@ -2412,6 +2413,7 @@ export class Garry extends ImmobileGroundEnemy {
 export class BigGreener extends ImmobileGroundEnemy {
     constructor(game) {
         super(game, 113, 150, 1, 'bigGreener');
+        this.isPoisonEnemy = true;
         this.lastLeafAttackTime = 4999;
         this.soundId = 'teethChatteringSound';
     }
@@ -2520,7 +2522,7 @@ export class KarateCroco extends MovingGroundEnemy {
             this.playSoundOnce('ahhhSound', false, true);
             this.x -= 14;
             if (this.flykickFrameX < 3) {
-                if (this.flykickFrameTimer > this.frameInterval) {
+                if (this.flykickFrameTimer > this.frameInterval / 2) {
                     this.flykickFrameTimer = 0;
                     this.flykickFrameX++;
                 } else {
@@ -2551,6 +2553,7 @@ export class Vinelash extends UndergroundEnemy {
             holdDuration: 3000,
             triggerDistance: 1000
         });
+        this.isPoisonEnemy = true;
         this.lives = 2;
         this.setFps(12);
     }
@@ -2968,6 +2971,7 @@ export class Toxwing extends VerticalEnemy {
 export class Mycora extends ImmobileGroundEnemy {
     constructor(game) {
         super(game, 165.125, 200, 7, 'mycora');
+        this.isRedEnemy = true;
         this.lives = 2;
         this.setFps(15);
         this.shotTurn = 0;
@@ -2995,6 +2999,7 @@ export class Mycora extends ImmobileGroundEnemy {
 export class Venarach extends ClimbingEnemy {
     constructor(game) {
         super(game, 124.25, 150, 3, 'venarach');
+        this.isPoisonEnemy = true;
         this.setFps(17);
         this.angle = 0;
         this.va = Math.random() * 0.1 + 0.09;
@@ -3009,7 +3014,7 @@ export class Venarach extends ClimbingEnemy {
 
 export class LarvoxMini extends MovingGroundEnemy {
     constructor(game, x, y, launchVX) {
-        super(game, 114.75 * 0.5, 70 * 0.5, 3, 'larvox');
+        super(game, 114.75 * 0.6, 70 * 0.6, 3, 'larvox');
         this.setFps(14);
         this.x = x;
         this.y = y;
@@ -3017,7 +3022,7 @@ export class LarvoxMini extends MovingGroundEnemy {
         this.vy = -(Math.random() * 5 + 7);
         this.gravity = 0.4;
         this.grounded = false;
-        this.groundY = game.height - (70 * 0.5) - game.groundMargin;
+        this.groundY = game.height - (70 * 0.6) - game.groundMargin;
     }
     update(deltaTime) {
         if (!this.grounded) {
@@ -3038,10 +3043,7 @@ export class LarvoxMini extends MovingGroundEnemy {
         this.x -= this.xSpeed;
     }
     draw(context) {
-        withCtx(context, () => {
-            context.scale(0.5, 0.5);
-            drawSprite(context, this.image, this.frameX * 114.75, 0, 114.75, 70, this.x * 2, this.y * 2, 114.75, 70);
-        });
+        drawSprite(context, this.image, this.frameX * 114.75, 0, 114.75, 70, this.x, this.y, this.width, this.height);
         if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
     }
 }
@@ -3069,6 +3071,8 @@ export class Venoblitz extends MovingGroundEnemy {
     constructor(game) {
         super(game, 133.5, 100, 5, 'venoblitz');
         this.xSpeed = Math.floor(Math.random() * 3) + 9;
+        this.lives = 2;
+        this.isPoisonEnemy = true;
     }
     update(deltaTime) {
         super.update(deltaTime);
@@ -3109,6 +3113,7 @@ export class Woxin extends BeeInstances {
 export class Venflora extends ImmobileGroundEnemy {
     constructor(game) {
         super(game, 98.28571428571429, 150, 6, 'venflora');
+        this.isPoisonEnemy = true;
         this.setFps(15);
         this.shotTurn = 3;
     }
@@ -3268,6 +3273,14 @@ export class Cactus extends MovingGroundEnemy {
     update(deltaTime) {
         super.update(deltaTime);
         this.x -= this.xSpeed;
+    }
+}
+
+export class Blazice extends ImmobileGroundEnemy {
+    constructor(game) {
+        super(game, 103, 75, 1, 'blazice');
+        this.setFps(17);
+        this.isFrozenEnemy = true;
     }
 }
 
@@ -3569,6 +3582,7 @@ export class LavaCobra extends UndergroundEnemy {
 export class IceSilknoir extends ClimbingEnemy {
     constructor(game) {
         super(game, 120, 144, 5, 'iceSilknoir');
+        this.isSlowEnemy = true;
         this.angle = 0;
         this.va = Math.random() * 0.1 + 0.09;
         this.soundId = 'nightSpiderSound';
@@ -3860,6 +3874,7 @@ export class CrypticFly extends FlyingEnemy {
 export class PetroPlant extends ImmobileGroundEnemy {
     constructor(game) {
         super(game, 91.555555555555555555555555555556, 100, 1, 'petroPlant');
+        this.isFrozenEnemy = true;
         this.lastRockAttackTime = 1999;
         this.soundId = 'teethChatteringSound';
     }
@@ -3946,6 +3961,37 @@ export class CrypticGecko extends MovingGroundEnemy {
         } else if (this.state === 'land') {
             drawSprite(context, this.image, 0, 165, 122, 111, this.x, this.y - 20, 122, 111);
         }
+    }
+}
+
+export class Sigilash extends FallingEnemy {
+    static NATURAL_ANGLE = Math.atan2(9.5, 10);
+
+    constructor(game) {
+        super(game, 99, 100, 1, 'sigilash');
+        this.isStunEnemy = true;
+        this.x = game.width;
+        this.y = -this.height;
+
+        const minAngle = 20 * Math.PI / 180;
+        const maxAngle = 65 * Math.PI / 180;
+        const angle = minAngle + Math.random() * (maxAngle - minAngle);
+        const totalSpeed = Math.random() * 2 + 12;
+
+        this.speedX = totalSpeed * Math.cos(angle);
+        this.speedY = totalSpeed * Math.sin(angle);
+        this.drawRotation = Sigilash.NATURAL_ANGLE - angle;
+    }
+
+    draw(context) {
+        if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
+        this.applyGlow(context);
+        withCtx(context, () => {
+            context.translate(this.x + this.width / 2, this.y + this.height / 2);
+            context.rotate(this.drawRotation);
+            drawSprite(context, this.image, this.frameX * this.width, 0, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
+        });
+        this.clearGlow(context);
     }
 }
 
@@ -4043,6 +4089,7 @@ export class SpaceCrab extends FallingEnemy {
 export class Johnny extends FlyingEnemy {
     constructor(game) {
         super(game, 98, 80, 0, 'johnny');
+        this.isStunEnemy = true;
         this.setFps(0);
         this.currentSpeed = 7;
         this.chaseDistance = this.game.width;
@@ -4131,6 +4178,7 @@ export class Borion extends UndergroundEnemy {
 export class Vespion extends FlyingEnemy {
     constructor(game) {
         super(game, 117, 100, 1, 'vespion');
+        this.isSlowEnemy = true;
         this.playsOnce = true;
         this.baseY = game.height * 0.5 - this.height * 0.5;
         this.y = this.baseY;
@@ -4224,6 +4272,7 @@ export class Oculith extends UndergroundEnemy {
             holdDuration: 0,
             triggerDistance: 700
         });
+        this.isPoisonEnemy = true;
         this.ascendSpeed = (this.hiddenY - this.visibleY) / this.riseDuration;
     }
 
@@ -4289,9 +4338,9 @@ export class GalacticSpider extends MovingGroundEnemy {
 export class GalacticFrog extends ImmobileGroundEnemy {
     constructor(game) {
         super(game, 96.5, 100, 1, 'galacticFrog');
+        this.isRedEnemy = true;
         this.state = 'idle';
         this.setFps(10);
-        this.lives = 2;
         this.playsOnce = true;
         this.jumpFrameX = 0;
         this.jumpFrameTimer = 0;
@@ -4314,7 +4363,7 @@ export class GalacticFrog extends ImmobileGroundEnemy {
 
         if (this.state === 'idle') {
             this.landingTimer += deltaTime;
-            if ((playerDistance < 1300 && this.landingTimer >= this.landingCooldown) || this.lives <= 1) {
+            if ((playerDistance < 1300 && this.landingTimer >= this.landingCooldown)) {
                 this.state = 'jump';
             }
         }
@@ -4361,7 +4410,9 @@ export class GalacticFrog extends ImmobileGroundEnemy {
         if (this.state === 'idle') {
             super.draw(context);
         } else if (this.state === 'jump') {
+            this.applyGlow(context);
             drawSprite(context, this.image, this.jumpFrameX * this.jumpFrameW, this.height, this.jumpFrameW, this.jumpFrameH, this.x, this.y, this.jumpFrameW, this.jumpFrameH);
+            this.clearGlow(context);
         }
     }
 }

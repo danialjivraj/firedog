@@ -12,9 +12,9 @@ import {
     Sluggie, BigGreener, Chiquita, Fofinha, LilHornet, KarateCroco, SpidoLazer, Jerry, Vinelash,
     Snailey, RedFlyer, PurpleFlyer, LazyMosquito, LeafSlug, Sunflora, Eggry, AngryBee, Bee, Strawspider,
     Zabkous, Venflora, Virefly, Larvox, Venarach, Mycora, Toxwing, Venoblitz, Woxin,
-    Cactus, VolcanicPlant, Volcanurtle, VolcanoWasp, VolcanoScorpion, VolcanoFly, Bloburn, VolcanoBeetle, LavaCobra,
+    Cactus, Blazice, VolcanicPlant, Volcanurtle, VolcanoWasp, VolcanoScorpion, VolcanoFly, Bloburn, VolcanoBeetle, LavaCobra,
     IceSilknoir, CrystalWasp, IcePlant, Globby, IceCentipede, DrillIce, Frostling, IceBat,
-    Dragon, CrypticFly, PetroPlant, CrypticRocky, OneEyeSnake, CrypticSlime, CrypticGecko, CrypticSpider,
+    Dragon, CrypticFly, PetroPlant, CrypticRocky, OneEyeSnake, CrypticSlime, CrypticGecko, CrypticSpider, Sigilash,
     Plazer, Veynoculus, SpaceCrab, Johnny, Spindle, Borion, Vespion, GalacticPlant, Oculith, Lancer, GalacticSpider, GalacticFrog,
     ImmobileGroundEnemy,
 } from "./entities/enemies/enemies.js";
@@ -1093,6 +1093,7 @@ export class Game {
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
                 { type: VolcanicPlant, probability: 0.1, spawningDistance: 0 },
                 { type: Cactus, probability: 0.1, spawningDistance: 0 },
+                { type: Blazice, probability: 0.1, spawningDistance: 0 },
                 { type: VolcanoWasp, probability: 0.03, spawningDistance: 0 },
                 { type: Volcanurtle, probability: 0.1, spawningDistance: 0 },
                 { type: VolcanoScorpion, probability: 0.1, spawningDistance: 0 },
@@ -1104,7 +1105,7 @@ export class Game {
             BonusMap1: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
                 { type: IceSilknoir, probability: 0.4, spawningDistance: 0 },
-                { type: IceBat, probability: 1, spawningDistance: 0 },
+                { type: IceBat, probability: 0.4, spawningDistance: 0 },
                 { type: CrystalWasp, probability: 0.06, spawningDistance: 0 },
                 { type: IcePlant, probability: 0.2, spawningDistance: 0 },
                 { type: IceCentipede, probability: 0.3, spawningDistance: 0 },
@@ -1121,6 +1122,7 @@ export class Game {
                 { type: PetroPlant, probability: 0.05, spawningDistance: 0 },
                 { type: OneEyeSnake, probability: 0.05, spawningDistance: 0 },
                 { type: CrypticGecko, probability: 0.05, spawningDistance: 0 },
+                { type: Sigilash, probability: 0.05, spawningDistance: 0 },
                 { type: Dragon, probability: 0.05, spawningDistance: 0 },
             ],
             BonusMap3: [

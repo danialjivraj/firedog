@@ -637,9 +637,6 @@ export class PurpleThunder extends ImmobileGroundEnemy {
         this.lives = 50;
         this.setFps(18);
 
-        this.isSlowEnemy = true;
-        this.dealsDirectHitDamage = false;
-
         this.shouldInvert = Math.random() < 0.5;
 
         const halfW = this.width * 0.5;
@@ -671,7 +668,6 @@ export class PurpleThunder extends ImmobileGroundEnemy {
 
         if (this.phase === "warning") {
             this.y = this.warningY;
-            this.dealsDirectHitDamage = false;
 
             if (this.timer >= this.warningDuration) {
                 this.phase = "strike";
@@ -696,7 +692,6 @@ export class PurpleThunder extends ImmobileGroundEnemy {
                 if (this.frameX < this.maxFrame) {
                     this.frameX++;
                 } else {
-                    this.dealsDirectHitDamage = false;
                     this.markedForDeletion = true;
                     this.phase = "done";
                 }

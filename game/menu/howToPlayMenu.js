@@ -35,6 +35,8 @@ export class HowToPlayMenu extends BaseMenu {
         this._menuParticleTimers = { poison: 0, slow: 0 };
 
         this._lastPageIndex = -1;
+        this._hitAnimPhaseRef = { phase: 'hit' };
+        this._hitAnimResets = [];
         this.pages = this._buildPages();
         this.currentPage = 0;
 
@@ -139,8 +141,9 @@ export class HowToPlayMenu extends BaseMenu {
 
             skulnap: id('skulnap'),
             gloomlet: id('gloomlet'),
-            duskPlant: id('duskPlant'),
+            bigGreener: id('bigGreener'),
             iceSilknoir: id('iceSilknoir'),
+            crystalWasp: id('crystalWasp'),
 
             defaultSkin: id('defaultSkin'),
             frozenIce: id('frozenIce'),
@@ -792,7 +795,7 @@ export class HowToPlayMenu extends BaseMenu {
             ]),
 
             this.createPage('Enemy types: Yellow (1)', [
-                this.createHitLoopAnimation({ state: 'STUNNED', x: cx - 200, y: groundY, fps: 20, cooldownMs: 2000 }),
+                (() => { const a = this.createHitLoopAnimation({ state: 'STUNNED', x: cx - 200, y: groundY, fps: 20, cooldownMs: 2000, phaseRef: this._hitAnimPhaseRef }); this._hitAnimResets.push(a.reset); return a; })(),
                 this.createTextBlock({
                     text: 'Yellow enemies have a yellowish glow!',
                     x: cx,
@@ -816,10 +819,13 @@ export class HowToPlayMenu extends BaseMenu {
                 }),
 
                 ...this.createEnemyTypeShowcase({ focusType: 'yellow', dimAlpha: 0.1, cx, groundY }),
-            ]),
+            ], {
+                ...baseUI,
+                hitAnimPhaseRef: this._hitAnimPhaseRef,
+            }),
 
             this.createPage('Enemy types: Red (2)', [
-                this.createHitLoopAnimation({ x: cx - 200, y: groundY, fps: 20, cooldownMs: 2000 }),
+                (() => { const a = this.createHitLoopAnimation({ x: cx - 200, y: groundY, fps: 20, cooldownMs: 2000, phaseRef: this._hitAnimPhaseRef }); this._hitAnimResets.push(a.reset); return a; })(),
                 this.createTextBlock({
                     text: 'Red enemies have a reddish glow!',
                     x: cx,
@@ -843,7 +849,10 @@ export class HowToPlayMenu extends BaseMenu {
                 }),
 
                 ...this.createEnemyTypeShowcase({ focusType: 'red', dimAlpha: 0.1, cx, groundY }),
-            ]),
+            ], {
+                ...baseUI,
+                hitAnimPhaseRef: this._hitAnimPhaseRef,
+            }),
 
             this.createPage('Enemy types: Poison (3)', [
                 ...infoArrowText({
@@ -960,7 +969,7 @@ export class HowToPlayMenu extends BaseMenu {
                     startY: 580,
                     textX: 460,
                     textY: 390,
-                    text: 'While Frozen, you cannot move or use abilities, except Invisibility!',
+                    text: 'You will take damage and be Frozen for a short period of time if you use your Rolling or Diving ability against Frozen enemies, however using any other ability will not damage you!',
                     maxW: 500,
                     align: 'center',
                     arrowToX: (tx) => tx + 60,
@@ -1047,7 +1056,7 @@ export class HowToPlayMenu extends BaseMenu {
                 label: 'Red',
                 image: 'gloomlet',
                 key: 'enemy_gloomlet',
-                fps: 6,
+                fps: 10,
                 maxFrame: 4,
                 frameY: 0,
                 frameW: 78,
@@ -1063,15 +1072,15 @@ export class HowToPlayMenu extends BaseMenu {
             {
                 type: 'poison',
                 label: 'Poison',
-                image: 'duskPlant',
-                key: 'enemy_duskplant',
-                fps: 9,
+                image: 'bigGreener',
+                key: 'enemy_biggreener',
+                fps: 15,
                 maxFrame: 1,
                 frameY: 0,
-                frameW: 60,
-                frameH: 87,
-                w: 80,
-                h: 115,
+                frameW: 113,
+                frameH: 150,
+                w: 113,
+                h: 150,
                 x: xDuskPlant,
                 y: groundLine,
                 anchor: 'bottomCenter',
@@ -1083,7 +1092,7 @@ export class HowToPlayMenu extends BaseMenu {
                 label: 'Slow',
                 image: 'iceSilknoir',
                 key: 'enemy_icesilknoir_slow',
-                fps: 15,
+                fps: 20,
                 maxFrame: 5,
                 frameY: 0,
                 frameW: 120,
@@ -1099,15 +1108,15 @@ export class HowToPlayMenu extends BaseMenu {
             {
                 type: 'freeze',
                 label: 'Freeze',
-                image: 'iceSilknoir',
-                key: 'enemy_icesilknoir_freeze',
-                fps: 15,
+                image: 'crystalWasp',
+                key: 'enemy_crystalwasp_freeze',
+                fps: 20,
                 maxFrame: 5,
                 frameY: 0,
-                frameW: 120,
-                frameH: 144,
-                w: 95,
-                h: 115,
+                frameW: 111.83,
+                frameH: 110,
+                w: 112,
+                h: 110,
                 x: xFreeze,
                 y: topLine + 200,
                 anchor: 'topLeft',
@@ -1119,7 +1128,7 @@ export class HowToPlayMenu extends BaseMenu {
 
     createEnemyTypeShowcase({ focusType = null, dimAlpha = 0.3, cx = 0, groundY = 0 }) {
         const specs = this._getEnemyPreviewSpecs(cx, groundY);
-        const isSpider = (t) => t === 'slow' || t === 'freeze';
+        const isSpider = (t) => t === 'slow';
 
         const out = [];
         for (const s of specs) {
@@ -1418,13 +1427,14 @@ export class HowToPlayMenu extends BaseMenu {
         };
     }
 
-    createHitLoopAnimation({ x, y, anchor = 'bottomCenter', fps = 20, cooldownMs = 2000, state = 'HIT' } = {}) {
+    createHitLoopAnimation({ x, y, anchor = 'bottomCenter', fps = 20, cooldownMs = 2000, delayMs = 700, state = 'HIT', phaseRef = null } = {}) {
         const { width: FW, height: FH } = FIREDOG_FRAME;
         const hitCfg = HowToPlayMenu._PLAYER_ANIM[state] ?? HowToPlayMenu._PLAYER_ANIM.HIT;
         const standCfg = HowToPlayMenu._PLAYER_ANIM.STANDING;
         const frameInterval = 1000 / fps;
 
-        let phase = 'hit';
+        let phase = 'delay';
+        let delayTimer = 0;
         let frameX = 0;
         let frameTimer = 0;
         let cooldownTimer = 0;
@@ -1433,7 +1443,19 @@ export class HowToPlayMenu extends BaseMenu {
             draw: (ctx) => {
                 const dt = Math.max(0, this._dt());
 
-                if (phase === 'hit') {
+                if (phase === 'delay') {
+                    delayTimer += dt;
+                    frameTimer += dt;
+                    while (frameTimer >= frameInterval) {
+                        frameTimer -= frameInterval;
+                        frameX = (frameX < standCfg.maxFrame) ? frameX + 1 : 0;
+                    }
+                    if (delayTimer >= delayMs) {
+                        phase = 'hit';
+                        frameX = 0;
+                        frameTimer = 0;
+                    }
+                } else if (phase === 'hit') {
                     frameTimer += dt;
                     while (frameTimer >= frameInterval) {
                         frameTimer -= frameInterval;
@@ -1461,7 +1483,9 @@ export class HowToPlayMenu extends BaseMenu {
                     }
                 }
 
-                const cfg = phase === 'hit' ? hitCfg : standCfg;
+                if (phaseRef) phaseRef.phase = phase;
+
+                const cfg = (phase === 'hit') ? hitCfg : standCfg;
                 let dx = this._num(x, 0);
                 let dy = this._num(y, 0);
                 if (anchor === 'bottomCenter') { dx -= FW / 2; dy -= FH; }
@@ -1473,6 +1497,14 @@ export class HowToPlayMenu extends BaseMenu {
                 ctx.shadowBlur = 0;
                 ctx.drawImage(sprite, frameX * FW, cfg.frameY * FH, FW, FH, Math.round(dx), Math.round(dy), FW, FH);
                 ctx.restore();
+            },
+            reset: () => {
+                phase = 'delay';
+                delayTimer = 0;
+                frameX = 0;
+                frameTimer = 0;
+                cooldownTimer = 0;
+                if (phaseRef) phaseRef.phase = 'delay';
             },
         };
     }
@@ -3133,6 +3165,8 @@ export class HowToPlayMenu extends BaseMenu {
     }
 
     _resetDemosOnPageChange() {
+        this._hitAnimPhaseRef.phase = 'delay';
+        for (const reset of this._hitAnimResets) reset();
         this._demoEnergy = this._createEnergyDemoState();
         this._demoDiving = this._createDivingDemoState();
         this._demoFireball = this._createFireballDemoState();
@@ -3195,6 +3229,10 @@ export class HowToPlayMenu extends BaseMenu {
         }
 
         applyDemo(cfg?.dashDemo?.enabled, this._updateDashDemo, cfg?.dashDemo);
+
+        if (cfg?.hitAnimPhaseRef?.phase === 'hit') {
+            demoPlayer = { ...(demoPlayer || {}), isFrozen: true };
+        }
 
         const restorePlayer = this.applyDemoPlayerState(demoPlayer);
         const restoreCooldowns = this.applyDemoCooldowns(cfg?.cooldowns);

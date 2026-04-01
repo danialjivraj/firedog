@@ -22,7 +22,9 @@ import {
     AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Gloomlet, EnemyBoss, Barrier,
     Aura, KarateCroco, SpearFish, LilHornet, Cactus, IceBall, Garry, InkBeam, VolcanoWasp, VolcanicBubble,
     CrystalWasp, DrillIce, Frostling, FrozenShard, VolcanicPlant, ScorpionPoison, LavaBall, CrypticFly, CrypticRocky,
-    CyanOrb, RedOrb, GreenOrb, BlueOrb, YellowOrb, Lancer, PoisonousOrb,
+    CyanOrb, RedOrb, GreenOrb, BlueOrb, YellowOrb, Lancer, PoisonousOrb, Venarach, Venoblitz, Woxin,
+    Venflora, Mycora, IceSilknoir, GalacticFrog, Johnny, Oculith, Vespion, Ben, Vinelash, PetroPlant, Blazice,
+    Sigilash, BigGreener,
 } from './enemies/enemies.js';
 import { InkSplash } from '../animations/ink.js';
 import { DamageIndicator } from '../animations/damageIndicator.js';
@@ -1900,6 +1902,7 @@ export class CollisionLogic {
             }
 
             // slow
+            case enemy instanceof IceSilknoir:
             case enemy instanceof DrillIce:
             case enemy instanceof Frostling:
             case enemy instanceof IceBall:
@@ -1910,7 +1913,8 @@ export class CollisionLogic {
             case enemy instanceof IceTrail:
             case enemy instanceof IcyStormBall:
             case enemy instanceof BlueArrow:
-            case enemy instanceof BlueOrb: {
+            case enemy instanceof BlueOrb:
+            case enemy instanceof Vespion: {
                 if (enemy instanceof UndergroundIcicle) {
                     this.game.collisions.push(new UndergroundIcicleCollision(this.game, ex, attackerY, enemy.id));
                 } else if (enemy instanceof SpinningIceBalls) {
@@ -1924,24 +1928,27 @@ export class CollisionLogic {
                 } else if (enemy instanceof IcyStormBall) {
                     this.game.collisions.push(new IcyStormBallCollision(this.game, ex, ey, enemy.id));
                 } else {
-                    if (fallbackToDefault) { // for IceBall
-                        this.bloodOrPoof(enemy, player);
-                    }
+                    this.bloodOrPoof(enemy, player);
                 }
                 this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
                 return true;
             }
 
             // frozen
+            case enemy instanceof CrystalWasp:
             case enemy instanceof IceSlash:
+            case enemy instanceof PetroPlant:
+            case enemy instanceof Blazice:
             case enemy instanceof BlueAsteroid:
             case enemy instanceof CyanArrow:
             case enemy instanceof CyanOrb: {
                 if (enemy instanceof IceSlash) {
                     const shouldInvert = enemy.speedX > 0;
                     this.game.collisions.push(new IceSlashCollision(this.game, ex, ey, shouldInvert));
-                } else {
+                } else if (enemy instanceof BlueAsteroid || enemy instanceof CyanArrow || enemy instanceof CyanOrb) {
                     this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
+                } else {
+                    this.bloodOrPoof(enemy, player);
                 }
 
                 this.game.audioHandler.collisionSFX.playSound('breakingIceNoDamageSound', false, true);
@@ -2527,8 +2534,10 @@ export class CollisionLogic {
             case enemy instanceof LilHornet:
             case enemy instanceof Voltzeel:
             case enemy instanceof Aura:
+            case enemy instanceof Sigilash:
             case enemy instanceof Cactus:
             case enemy instanceof Lancer:
+            case enemy instanceof Johnny:
             // special stun collision
             case enemy instanceof Skulnap:
             case enemy instanceof YellowArrow:
@@ -2566,6 +2575,14 @@ export class CollisionLogic {
             }
 
             // poison
+            case enemy instanceof Ben:
+            case enemy instanceof BigGreener:
+            case enemy instanceof Vinelash:
+            case enemy instanceof Woxin:
+            case enemy instanceof Venflora:
+            case enemy instanceof Venarach:
+            case enemy instanceof Venoblitz:
+            case enemy instanceof Oculith:
             case enemy instanceof PoisonousOrb:
             case enemy instanceof PoisonSpit:
             case enemy instanceof PoisonDrop:
@@ -2573,7 +2590,7 @@ export class CollisionLogic {
             case enemy instanceof ScorpionPoison:
             case enemy instanceof GreenOrb: {
                 if (canPlayCollisionFx) {
-                    this.playCollisionFx(enemy);
+                    this.playCollisionFx(enemy, { fallbackToDefault: true });
                 }
 
                 if (canReceiveStatus) {
@@ -2591,11 +2608,13 @@ export class CollisionLogic {
             case enemy instanceof Gloomlet:
             case enemy instanceof KarateCroco:
             case enemy instanceof SpearFish:
+            case enemy instanceof Mycora:
             case enemy instanceof VolcanicPlant:
             case enemy instanceof VolcanicBubble:
             case enemy instanceof RedOrb:
             case enemy instanceof CrypticFly:
             case enemy instanceof CrypticRocky:
+            case enemy instanceof GalacticFrog:
                 this.hit(enemy, player);
                 if (canPlayCollisionFx) {
                     this.playCollisionFx(enemy, { fallbackToDefault: true });
@@ -2603,6 +2622,7 @@ export class CollisionLogic {
                 break;
 
             // slow
+            case enemy instanceof IceSilknoir:
             case enemy instanceof DrillIce:
             case enemy instanceof Frostling:
             case enemy instanceof FrozenShard:
@@ -2612,7 +2632,8 @@ export class CollisionLogic {
             case enemy instanceof SpinningIceBalls:
             case enemy instanceof PointyIcicleShard:
             case enemy instanceof BlueArrow:
-            case enemy instanceof BlueOrb: {
+            case enemy instanceof BlueOrb:
+            case enemy instanceof Vespion: {
                 if (canPlayCollisionFx) {
                     this.playCollisionFx(enemy, { fallbackToDefault: true });
                 }
@@ -2631,6 +2652,8 @@ export class CollisionLogic {
             // frozen
             case enemy instanceof CrystalWasp:
             case enemy instanceof IceSlash:
+            case enemy instanceof PetroPlant:
+            case enemy instanceof Blazice:
             case enemy instanceof BlueAsteroid:
             case enemy instanceof CyanArrow:
             case enemy instanceof CyanOrb: {
@@ -2827,9 +2850,11 @@ export class CollisionLogic {
             case enemy instanceof VolcanoWasp:
             case enemy instanceof Voltzeel:
             case enemy instanceof Aura:
+            case enemy instanceof Sigilash:
             case enemy instanceof LilHornet:
             case enemy instanceof Cactus:
             case enemy instanceof Lancer:
+            case enemy instanceof Johnny:
             // special collision
             case enemy instanceof Skulnap:
             case enemy instanceof PurpleThunder:
@@ -2862,6 +2887,14 @@ export class CollisionLogic {
             }
 
             // poison
+            case enemy instanceof Ben:
+            case enemy instanceof BigGreener:
+            case enemy instanceof Vinelash:
+            case enemy instanceof Woxin:
+            case enemy instanceof Venflora:
+            case enemy instanceof Venarach:
+            case enemy instanceof Venoblitz:
+            case enemy instanceof Oculith:
             case enemy instanceof PoisonousOrb:
             case enemy instanceof PoisonSpit:
             case enemy instanceof PoisonDrop:
@@ -2870,14 +2903,11 @@ export class CollisionLogic {
             case enemy instanceof GreenOrb: {
                 const applied = this.tryApplyPoison(player, 2500);
 
-                if (!player.isInvisible) {
-                    this.hit(enemy, player);
-                    if (applied) {
-                        this.game.audioHandler.enemySFX.playSound('acidSoundEffect', false, true);
-                    }
+                if (!player.isInvisible && applied) {
+                    this.game.audioHandler.enemySFX.playSound('acidSoundEffect', false, true);
                 }
 
-                this.playCollisionFx(enemy);
+                this.playCollisionFx(enemy, { fallbackToDefault: true });
 
                 break;
             }
@@ -2886,16 +2916,19 @@ export class CollisionLogic {
             case enemy instanceof Gloomlet:
             case enemy instanceof KarateCroco:
             case enemy instanceof SpearFish:
+            case enemy instanceof Mycora:
             case enemy instanceof VolcanicPlant:
             case enemy instanceof VolcanicBubble:
             case enemy instanceof RedOrb:
             case enemy instanceof CrypticFly:
             case enemy instanceof CrypticRocky:
+            case enemy instanceof GalacticFrog:
                 if (player.currentState === player.states[4]) this.hit(enemy, player);
                 this.playCollisionFx(enemy, { fallbackToDefault: true });
                 break;
 
             // slow
+            case enemy instanceof IceSilknoir:
             case enemy instanceof DrillIce:
             case enemy instanceof Frostling:
             case enemy instanceof FrozenShard:
@@ -2905,7 +2938,8 @@ export class CollisionLogic {
             case enemy instanceof SpinningIceBalls:
             case enemy instanceof PointyIcicleShard:
             case enemy instanceof BlueArrow:
-            case enemy instanceof BlueOrb: {
+            case enemy instanceof BlueOrb:
+            case enemy instanceof Vespion: {
                 const applied = this.tryApplySlow(player, 5000);
                 if (applied) {
                     this.game.audioHandler.enemySFX.playSound('iceSlowedSound', false, true);
@@ -2917,6 +2951,8 @@ export class CollisionLogic {
             // frozen
             case enemy instanceof CrystalWasp:
             case enemy instanceof IceSlash:
+            case enemy instanceof PetroPlant:
+            case enemy instanceof Blazice:
             case enemy instanceof BlueAsteroid:
             case enemy instanceof CyanArrow:
             case enemy instanceof CyanOrb: {
