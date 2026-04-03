@@ -15,8 +15,7 @@ import {
   WindAttack,
   LeafAttack,
   PoisonSpit,
-  LaserBeam,
-  IceBall,
+  BerriflyIceBall,
   DarkLaser,
   YellowBeam,
   InkBeam,
@@ -38,7 +37,7 @@ import {
   Aura,
   Gloomlet,
   Dolly,
-  Piranha,
+  Razorfin,
   SkeletonFish,
   SpearFish,
   JetFish,
@@ -51,24 +50,22 @@ import {
   LilHornet,
   KarateCroco,
   Zabkous,
-  SpidoLazer,
   Jerry,
   Snailey,
-  RedFlyer,
-  PurpleFlyer,
+  Citrifly,
+  Berrifly,
   LazyMosquito,
   LeafSlug,
   Sunflora,
   Eggry,
   Bee,
   AngryBee,
-  Cactus,
+  Cactrix,
   PetroPlant,
   Plazer,
   Veynoculus,
-  Volcanurtle,
   VolcanoWasp,
-  Dragon,
+  Wardrake,
 } from '../../../game/entities/enemies/enemies';
 
 beforeAll(() => {
@@ -760,11 +757,6 @@ describe('Projectile & subclasses', () => {
     expect(() => o.draw(ctx)).not.toThrow();
   });
 
-  it('LaserBeam.draw() does not throw', () => {
-    const lb = new LaserBeam(game, 10, 20, 30, 40, 1, 'img', -5);
-    expect(() => lb.draw(ctx)).not.toThrow();
-  });
-
   it('YellowBeam.update() moves up by 2×speedY (base + subclass)', () => {
     const yb = new YellowBeam(game, 10, 20);
     const oldY = yb.y;
@@ -774,8 +766,8 @@ describe('Projectile & subclasses', () => {
     expect(yb.y).toBe(oldY - 10);
   });
 
-  it('IceBall grows in size over time', () => {
-    const ib = new IceBall(game, 10, 20, 3);
+  it('BerriflyIceBall grows in size over time', () => {
+    const ib = new BerriflyIceBall(game, 10, 20, 3);
     ib.update(16);
     expect(ib.size).toBeGreaterThan(ib.initialSize);
   });
@@ -1081,8 +1073,8 @@ describe('Map 3 Enemies', () => {
 
   afterEach(() => restoreRandom());
 
-  it('Piranha plays crunchSound on frame 1 when on-screen', () => {
-    const p = new Piranha(game);
+  it('Razorfin plays crunchSound on frame 1 when on-screen', () => {
+    const p = new Razorfin(game);
     p.speedX = 0;
     game.speed = 0;
 
@@ -1277,18 +1269,6 @@ describe('Map 4 Enemies', () => {
     expect(game.enemies.some((e) => e instanceof PoisonSpit)).toBe(true);
   });
 
-  it('SpidoLazer throws LaserBeam on attack frame 27', () => {
-    const slz = new SpidoLazer(game);
-    slz.x = game.player.x + 100;
-    slz.state = 'attack';
-    slz.canAttack = true;
-    slz.frameX = 27;
-
-    slz.update(16);
-
-    expect(game.enemies.some((e) => e instanceof LaserBeam)).toBe(true);
-  });
-
   it('Jerry spawns Skulnap when frame max is reached (and not gameOver)', () => {
     const j = new Jerry(game);
     j.x = game.width / 2;
@@ -1329,8 +1309,8 @@ describe('Map 5 Enemies', () => {
     expect(sn.x).toBeLessThan(ox);
   });
 
-  it('RedFlyer throws DarkLaser when raining and cooldown met', () => {
-    const rf = new RedFlyer(game);
+  it('Citrifly throws DarkLaser when raining and cooldown met', () => {
+    const rf = new Citrifly(game);
     rf.x = game.player.x + 100;
     rf.darkLaserTimer = 3000;
 
@@ -1339,14 +1319,14 @@ describe('Map 5 Enemies', () => {
     expect(game.enemies.some((e) => e instanceof DarkLaser)).toBe(true);
   });
 
-  it('PurpleFlyer throws IceBall when raining and cooldown met', () => {
-    const pf = new PurpleFlyer(game);
+  it('Berrifly throws BerriflyIceBall when raining and cooldown met', () => {
+    const pf = new Berrifly(game);
     pf.x = game.player.x + 100;
     pf.iceballTimer = 2000;
 
     pf.update(2000);
 
-    expect(game.enemies.some((e) => e instanceof IceBall)).toBe(true);
+    expect(game.enemies.some((e) => e instanceof BerriflyIceBall)).toBe(true);
   });
 
   it('LazyMosquito buzzes once when it first becomes on-screen', () => {
@@ -1456,8 +1436,8 @@ describe('Map 6 Enemies', () => {
 
   afterEach(() => restoreRandom());
 
-  it('Cactus is a stun enemy', () => {
-    const c = new Cactus(game);
+  it('Cactrix is a stun enemy', () => {
+    const c = new Cactrix(game);
     expect(c.isStunEnemy).toBe(true);
   });
 
@@ -1499,16 +1479,5 @@ describe('Map 6 Enemies', () => {
     vw.update(16);
 
     expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith('angryBeeBuzzing');
-  });
-
-  it('Dragon throws WindAttack on frame 7 when allowed', () => {
-    const dr = new Dragon(game);
-    dr.x = game.player.x + 100;
-    dr.frameX = 7;
-    dr.canAttack = true;
-
-    dr.update(16);
-
-    expect(game.enemies.some((e) => e instanceof WindAttack)).toBe(true);
   });
 });

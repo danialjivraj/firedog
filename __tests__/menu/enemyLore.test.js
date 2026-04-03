@@ -53,10 +53,10 @@ describe('EnemyLore', () => {
             <img id="meatSoldier" />
             <img id="skulnap" />
             <img id="chiquita" />
-            <img id="cactus" />
+            <img id="cactrix" />
             <img id="duskPlant" />
             <img id="darkLeafAttack" />
-            <img id="piranha" />
+            <img id="razorfin" />
         `;
     });
 
@@ -851,11 +851,11 @@ describe('EnemyLore', () => {
             ['EVERYWHERE', 'GOBLITO', [], 'white', 5],
             ['LUNAR', 'DOTTER', [], '#06580dff', 7],
             ['NIGHTFALL', 'DUSK PLANT', ['map2Unlocked'], 'black', 10],
-            ['CORAL', 'PIRANHA', ['map3Unlocked'], 'darkblue', 5],
+            ['CORAL', 'RAZORFIN', ['map3Unlocked'], 'darkblue', 5],
             ['VERDANT', 'CHIQUITA', ['map4Unlocked'], 'black', 15],
             ['SPRINGLY', 'SNAILEY', ['map5Unlocked'], 'orange', 5],
             ['VENOMVEIL', 'ZABKOUS', ['map6Unlocked'], '#003b00', 10],
-            ['INFERNAL', 'CACTUS', ['map7Unlocked'], 'black', 10],
+            ['INFERNAL', 'CACTRIX', ['map7Unlocked'], 'black', 10],
             ['RED', 'SPEAR FISH', ['map3Unlocked'], 'black', 1],
             ['STUN', 'SKULNAP', [], 'black', 1],
         ];

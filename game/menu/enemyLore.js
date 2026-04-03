@@ -317,13 +317,13 @@ export class EnemyLore extends BaseMenu {
         });
 
         this.createPage({
-            name: "PIRANHA",
+            name: "RAZORFIN",
             type: "NORMAL",
             foundAt: "CORAL ABYSS",
             description:
-                "PIRANHAS ARE QUICK AND NIPPY FISH.\nTHEIR SHARP TEETH CAN GIVE YOU NASTY BITE, SO KEEP YOUR DISTANCE!",
+                "RAZORFINS ARE QUICK AND NIPPY FISH.\nTHEIR SHARP TEETH CAN GIVE YOU NASTY BITE, SO KEEP YOUR DISTANCE!",
             images: [
-                this.createImage('piranha', 100, 70, 0, 'right', 'top'),
+                this.createImage('razorfin', 100, 70, 0, 'right', 'top'),
             ],
             mapKey: "map3",
         });
@@ -513,6 +513,37 @@ export class EnemyLore extends BaseMenu {
             mapKey: "map4",
         });
 
+        // 29
+        this.createPage({
+            name: "JERRY",
+            type: "NORMAL",
+            foundAt: "VERDANT VINE",
+            description:
+                "JERRY LIKES TO GIVE OUT PRESENTS... BUT NOT THE TYPE OF PRESENTS YOU'D EXPECT!\n"
+                + "NO ONE KNOWS HOW HE GOT SO MANY SKULNAPS IN HIS BAG!",
+            images: [
+                this.createImage('jerry', 185, 103, 4, 'right', 'top'),
+            ],
+            mapKey: "map4",
+        });
+
+        // 28
+        this.createPage({
+            name: "BRAMBLE",
+            type: "NORMAL",
+            foundAt: "VERDANT VINE",
+            description:
+                "BRAMBLE IS A BIG SPIDER FOUND IN DENSE, PLANT-RICH AREAS.\n"
+                + "IT HAS THE UNIQUE ABILITY TO SHOOT FOCUSED LASERS FROM ITS EYE.\nTHERE IS SPECULATION REGARDING THE ORIGINS OF BRAMBLE, AS SOME LOCAL RESIDENTS BELIEVE "
+                + "THAT THIS SPIDER IS FROM ANOTHER PLANET DUE TO ITS ALIEN-LIKE CHARACTERISTICS.",
+
+            images: [
+                this.createLine(this.pageWidth - 110, -30, 200),
+                this.createImage('bramble', 174.2, 140, 0, 'right', this.pageHeight - 450),
+            ],
+            mapKey: "map4",
+        });
+
         // 26
         this.createPage({
             name: "KARATE CROCO",
@@ -524,35 +555,6 @@ export class EnemyLore extends BaseMenu {
                 + "AFTER MONTHS OF TRAINING AND EARNING A BLACK BELT, HE BECAME UNTOUCHABLE. HE QUICKLY EARNED A REPUTATION FOR HIS KARATE SKILLS. SOON, EVERYONE KNEW HIM AS... KARATE CROCO!",
             images: [
                 this.createImage('karateCroco', 98.25, 140, 0, 'right', 'bottom', 'red'),
-            ],
-            mapKey: "map4",
-        });
-
-        // 28
-        this.createPage({
-            name: "SPIDOLAZER",
-            type: "NORMAL",
-            foundAt: "VERDANT VINE",
-            description:
-                "SPIDOLAZER IS A BIG SPIDER FOUND IN DENSE, PLANT-RICH AREAS.\n"
-                + "IT HAS THE UNIQUE ABILITY TO SHOOT FOCUSED LASERS FROM ITS EYE.\nTHERE IS SPECULATION REGARDING THE ORIGINS OF SPIDOLAZER, AS SOME LOCAL RESIDENTS BELIEVE "
-                + "THAT THIS SPIDER IS FROM ANOTHER PLANET DUE TO ITS ALIEN-LIKE CHARACTERISTICS.",
-            images: [
-                this.createImage('spidoLazer', 134.45, 120, 13, 'right', 'bottom', null, 120),
-            ],
-            mapKey: "map4",
-        });
-
-        // 29
-        this.createPage({
-            name: "JERRY",
-            type: "NORMAL",
-            foundAt: "VERDANT VINE",
-            description:
-                "JERRY LIKES TO GIVE OUT PRESENTS... BUT NOT THE TYPE OF PRESENTS YOU'D EXPECT!\n"
-                + "NO ONE KNOWS HOW HE GOT SO MANY SKULNAPS IN HIS BAG!",
-            images: [
-                this.createImage('jerry', 185, 103, 4, 'right', 'top'),
             ],
             mapKey: "map4",
         });
@@ -594,28 +596,28 @@ export class EnemyLore extends BaseMenu {
 
         // 31
         this.createPage({
-            name: "REDFLYER",
+            name: "CITRIFLY",
             type: "NORMAL",
             foundAt: "SPRINGLY LEMONY",
             description:
                 "THIS FLY WILL PEACEFULLY ROAM AROUND THE AREA.\n"
                 + "RAIN EFFECT: SHOOTS LASERS OUT OF ITS EYE!",
             images: [
-                this.createImage('redFlyer', 79.3333333, 65, 0, 'right', 'top'),
+                this.createImage('citrifly', 80.5, 90, 0, 'right', 'top'),
             ],
             mapKey: "map5",
         });
 
         // 32
         this.createPage({
-            name: "PURPLEFLYER",
+            name: "BERRIFLY",
             type: "NORMAL",
             foundAt: "SPRINGLY LEMONY",
             description:
                 "THIS FLY WILL PEACEFULLY ROAM AROUND THE AREA.\n"
                 + "RAIN EFFECT: SHOOTS ICE BALLS OUT OF ITS EYE, SLOWING YOU DOWN IF YOU MAKE CONTACT WITH IT!",
             images: [
-                this.createImage('purpleFlyer', 83.33333, 65, 0, 'right', 'top'),
+                this.createImage('berrifly', 84, 75, 0, 'right', 'top'),
             ],
             mapKey: "map5",
         });
@@ -861,27 +863,27 @@ export class EnemyLore extends BaseMenu {
         });
 
         this.createPage({
-            name: "VOLCANO FLY",
+            name: "EMBER FLY",
             type: "NORMAL",
             foundAt: "INFERNAL CRATER PEAK",
             description:
                 "THESE HARDY FLIES HAVE EVOLVED HEAT-RESISTANT WINGS THAT ALLOW THEM TO SOAR THROUGH THE SCORCHING SKIES ABOVE THE CRATERS.\n"
                 + "THEY ARE RELENTLESS IN THEIR PURSUIT OF ANY INTRUDER WHO ENTERS THEIR TERRITORY.",
             images: [
-                this.createImage('volcanoFly', 85.5, 100, 0, 'right', 'top'),
+                this.createImage('emberFly', 85.5, 100, 0, 'right', 'top'),
             ],
             mapKey: "map7",
         });
 
         this.createPage({
-            name: "VOLCANO BEETLE",
+            name: "SCORBLE",
             type: "NORMAL",
             foundAt: "INFERNAL CRATER PEAK",
             description:
                 "THESE BEETLES ARE COVERED IN A THICK VOLCANIC SHELL THAT PROTECTS THEM FROM THE INTENSE HEAT.\n"
                 + "WHAT THEY LACK IN INTELLIGENCE, THEY MAKE UP FOR IN SHEER SPEED — THEY COME CHARGING FORWARD WITHOUT HESITATION!",
             images: [
-                this.createImage('volcanoBeetle', 90.25, 60, 0, 'right', 'bottom'),
+                this.createImage('scorble', 90.25, 60, 0, 'right', 'bottom'),
             ],
             mapKey: "map7",
         });
@@ -900,25 +902,25 @@ export class EnemyLore extends BaseMenu {
         });
 
         this.createPage({
-            name: "CACTUS",
+            name: "CACTRIX",
             type: "STUN",
             foundAt: "INFERNAL CRATER PEAK",
             description: "THERE'S QUITE A FEW CACTUSES AROUND THIS AREA.\nTHEY BLEND IN PERFECTLY WITH THE ROCKY VOLCANIC TERRAIN — WATCH WHERE YOU STEP!",
             images: [
-                this.createImage('cactus', 115.3, 130, 0, 'right', 'bottom', 'stun'),
+                this.createImage('cactrix', 115.3, 130, 0, 'right', 'bottom', 'stun'),
             ],
             mapKey: "map7",
         });
 
         this.createPage({
-            name: "VOLCANIC PLANT",
+            name: "MAGMAPOD",
             type: "RED",
             foundAt: "INFERNAL CRATER PEAK",
             description:
                 "THESE ANCIENT PLANTS HAVE ADAPTED TO THE EXTREME HEAT OF THE VOLCANIC SOIL.\n"
                 + "THEY BUBBLE WITH SUPERHEATED LIQUID AND LAUNCH VOLATILE BUBBLES THAT EXPLODE ON CONTACT!",
             images: [
-                this.createImage('volcanicPlant', 167, 130, 0, 'right', 'bottom', 'red'),
+                this.createImage('magmapod', 167, 130, 0, 'right', 'bottom', 'red'),
             ],
             mapKey: "map7",
         });
@@ -964,27 +966,27 @@ export class EnemyLore extends BaseMenu {
         });
 
         this.createPage({
-            name: "VOLCANO SCORPION",
+            name: "SCORVEX",
             type: "NORMAL",
             foundAt: "INFERNAL CRATER PEAK",
             description:
                 "THE VOLCANO SCORPION HAS THRIVED IN THE SCORCHING TERRAIN OF INFERNAL CRATER PEAK FOR MILLENNIA.\n"
                 + "WHEN THREATENED, IT LAUNCHES TOXIC VENOM FROM ITS TAIL — CONTACT WITH THE VENOM WILL DRAIN YOUR ENERGY RAPIDLY!",
             images: [
-                this.createImage('volcanoScorpion', 161, 150, 0, 'right', 'bottom'),
+                this.createImage('scorvex', 161, 150, 0, 'right', 'bottom'),
             ],
             mapKey: "map7",
         });
 
         this.createPage({
-            name: "LAVA COBRA",
+            name: "LAVARYN",
             type: "NORMAL",
             foundAt: "INFERNAL CRATER PEAK",
             description:
-                "THE LAVA COBRA LURKS BENEATH THE VOLCANIC SOIL, WAITING FOR THE PERFECT MOMENT TO STRIKE.\n"
+                "LAVARYN LURKS BENEATH THE VOLCANIC SOIL, WAITING FOR THE PERFECT MOMENT TO STRIKE.\n"
                 + "WHEN A TARGET APPROACHES, IT RISES FROM THE GROUND AND LAUNCHES SCORCHING LAVA BALLS AT ITS PREY!",
             images: [
-                this.createImage('lavaCobra', 176.5, 160, 0, 'right', 'bottom'),
+                this.createImage('lavaryn', 176.5, 160, 0, 'right', 'bottom'),
             ],
             mapKey: "map7",
         });
@@ -1014,14 +1016,14 @@ export class EnemyLore extends BaseMenu {
         });
 
         this.createPage({
-            name: "ICE CENTIPEDE",
+            name: "CRYOPEDE",
             type: "NORMAL",
             foundAt: "ICEBOUND CAVE",
             description:
                 "THIS ELONGATED CREATURE SCUTTLES ACROSS THE ICY CAVE FLOOR AT REMARKABLE SPEED.\n"
                 + "ITS MANY LEGS GIVE IT PERFECT GRIP ON THE SLIPPERY ICE, MAKING IT NEARLY IMPOSSIBLE TO OUTRUN.",
             images: [
-                this.createImage('iceCentipede', 126, 80, 0, 'right', 'bottom'),
+                this.createImage('cryopede', 126, 80, 0, 'right', 'bottom'),
             ],
             mapKey: "bonusMap1",
             category: "bonus",
@@ -1058,14 +1060,14 @@ export class EnemyLore extends BaseMenu {
         });
 
         this.createPage({
-            name: "ICE BAT",
+            name: "FROBAT",
             type: "NORMAL",
             foundAt: "ICEBOUND CAVE",
             description:
-                "NATIVE TO THE FROZEN CAVERNS OF ICEBOUND CAVE, THE ICE BAT SWOOPS THROUGH THE FRIGID AIR WITH EASE.\n"
+                "NATIVE TO THE FROZEN CAVERNS OF ICEBOUND CAVE, THE FROBAT SWOOPS THROUGH THE FRIGID AIR WITH EASE.\n"
                 + "ITS WINGS ARE ENCRUSTED WITH FROST THAT NEVER MELTS, EVEN AS IT DIVES TOWARD ITS TARGET.",
             images: [
-                this.createImage('iceBat', 156.75, 130, 0, 'right', 'top'),
+                this.createImage('frobat', 156.75, 130, 0, 'right', 'top'),
             ],
             mapKey: "bonusMap1",
             category: "bonus",
@@ -1100,11 +1102,11 @@ export class EnemyLore extends BaseMenu {
         });
 
         this.createPage({
-            name: "DRILL ICE",
+            name: "DRILLICE",
             type: "SLOW",
             foundAt: "ICEBOUND CAVE",
             description:
-                "DRILL ICE BURROWS BENEATH THE FROZEN GROUND, WAITING FOR THE RIGHT MOMENT TO SPIRAL UPWARD AND IMPALE ANYTHING ABOVE.\n"
+                "DRILLICE BURROWS BENEATH THE FROZEN GROUND, WAITING FOR THE RIGHT MOMENT TO SPIRAL UPWARD AND IMPALE ANYTHING ABOVE.\n"
                 + "CONTACT WITH IT WILL SLOW YOU DOWN — IT LEAVES ICE CRYSTALS EMBEDDED IN YOUR PATH!",
             images: [
                 this.createImage('drillice', 197, 115, 0, 'right', 'bottom', 'slow'),
@@ -1124,14 +1126,28 @@ export class EnemyLore extends BaseMenu {
         });
 
         this.createPage({
-            name: "CRYPTIC SLIME",
+            name: "SIGILFLY",
+            type: "RED",
+            foundAt: "CRIMSON FISSURE",
+            description:
+                "THIS EERIE FLY DRIFTS THROUGH THE FISSURE WITH AN OTHERWORLDLY GLOW.\n"
+                + "CONTACT WITH IT IS PARTICULARLY DANGEROUS — ITS CRIMSON AURA WILL LEAVE A BURNING MARK!",
+            images: [
+                this.createImage('sigilfly', 128, 100, 0, 'right', 'top', 'red'),
+            ],
+            mapKey: "bonusMap2",
+            category: "bonus",
+        });
+
+        this.createPage({
+            name: "OOZEL",
             type: "NORMAL",
             foundAt: "CRIMSON FISSURE",
             description:
-                "CRYPTIC SLIMES APPEAR FROM ABOVE, FALLING FROM THE FISSURE CEILINGS BEFORE QUICKLY SCUTTLING TOWARD ANY PREY THEY DETECT ON THE GROUND.\n"
+                "OOZELS APPEAR FROM ABOVE, FALLING FROM THE FISSURE CEILINGS BEFORE QUICKLY SCUTTLING TOWARD ANY PREY THEY DETECT ON THE GROUND.\n"
                 + "THEIR ORIGIN IS UNKNOWN — THEY SEEM TO MATERIALISE OUT OF THIN AIR.",
             images: [
-                this.createImage('crypticSlime', 124, 50, 0, 'right', 'bottom'),
+                this.createImage('oozel', 124, 50, 0, 'right', 'bottom'),
             ],
             mapKey: "bonusMap2",
             category: "bonus",
@@ -1152,42 +1168,28 @@ export class EnemyLore extends BaseMenu {
         });
 
         this.createPage({
-            name: "CRYPTIC SPIDER",
+            name: "RUNESPIDER",
             type: "NORMAL",
             foundAt: "CRIMSON FISSURE",
             description:
-                "THE CRYPTIC SPIDER SKITTERS THROUGH THE CRIMSON FISSURE AT SURPRISING SPEED.\n"
+                "THE RUNESPIDER SKITTERS THROUGH THE CRIMSON FISSURE AT SURPRISING SPEED.\n"
                 + "IT WEAVES BETWEEN THE ROCKS AND RUBBLE WITH EASE, MAKING IT DIFFICULT TO AVOID IN THE NARROW PASSAGES.",
             images: [
-                this.createImage('crypticSpider', 98.66666666666667, 70, 0, 'right', 'bottom'),
+                this.createImage('runespider', 98.66666666666667, 70, 0, 'right', 'bottom'),
             ],
             mapKey: "bonusMap2",
             category: "bonus",
         });
 
         this.createPage({
-            name: "CRYPTIC FLY",
-            type: "RED",
-            foundAt: "CRIMSON FISSURE",
-            description:
-                "THIS EERIE FLY DRIFTS THROUGH THE FISSURE WITH AN OTHERWORLDLY GLOW.\n"
-                + "CONTACT WITH IT IS PARTICULARLY DANGEROUS — ITS CRIMSON AURA WILL LEAVE A BURNING MARK!",
-            images: [
-                this.createImage('crypticFly', 128, 100, 0, 'right', 'top', 'red'),
-            ],
-            mapKey: "bonusMap2",
-            category: "bonus",
-        });
-
-        this.createPage({
-            name: "CRYPTIC GECKO",
+            name: "RUNECKO",
             type: "NORMAL",
             foundAt: "CRIMSON FISSURE",
             description:
-                "THE CRYPTIC GECKO LURKS IN THE SHADOWS OF THE FISSURE, WAITING PATIENTLY BEFORE LAUNCHING ITSELF AT ITS TARGET.\n"
+                "THE RUNECKO LURKS IN THE SHADOWS OF THE FISSURE, WAITING PATIENTLY BEFORE LAUNCHING ITSELF AT ITS TARGET.\n"
                 + "WHEN IT SPOTS PREY, IT LEAPS THROUGH THE AIR IN A POWERFUL ARC — THERE IS LITTLE TIME TO REACT!",
             images: [
-                this.createImage('crypticGecko', 124.5, 80, 0, 'right', 'bottom'),
+                this.createImage('runecko', 124.5, 80, 0, 'right', 'bottom'),
             ],
             mapKey: "bonusMap2",
             category: "bonus",
@@ -1208,43 +1210,43 @@ export class EnemyLore extends BaseMenu {
         });
 
         this.createPage({
-            name: "CRYPTIC ROCKY",
+            name: "GOLEX",
             type: "RED",
             foundAt: "CRIMSON FISSURE",
             description:
-                "CRYPTIC ROCKY IS A DENSE, CRYSTALLIZED ROCK FORMATION THAT HAS SOMEHOW GAINED THE ABILITY TO MOVE.\n"
+                "GOLEX IS A DENSE, CRYSTALLIZED ROCK FORMATION THAT HAS SOMEHOW GAINED THE ABILITY TO MOVE.\n"
                 + "IT ZIGZAGS ERRATICALLY THROUGH THE TERRAIN — CONTACT WITH IT IS PARTICULARLY PAINFUL!",
             images: [
-                this.createImage('crypticRocky', 152, 140, 0, 'right', 'bottom', 'red'),
+                this.createImage('golex', 152, 140, 0, 'right', 'bottom', 'red'),
             ],
             mapKey: "bonusMap2",
             category: "bonus",
         });
 
         this.createPage({
-            name: "ONE EYE SNAKE",
+            name: "VOIDSERP",
             type: "NORMAL",
             foundAt: "CRIMSON FISSURE",
             description:
                 "A MASSIVE SERPENT WITH A SINGLE GLOWING EYE THAT PIERCES THROUGH THE CRIMSON HAZE.\n"
                 + "IT MOVES SWIFTLY ACROSS THE FISSURE FLOOR — ITS ENORMOUS SIZE MAKES IT VERY HARD TO AVOID!",
             images: [
-                this.createImage('oneEyeSnake', 217, 100, 0, 'right', 'bottom', null, 0, 0.9),
+                this.createImage('voidserp', 217, 100, 0, 'right', 'bottom', null, 0, 0.9),
             ],
             mapKey: "bonusMap2",
             category: "bonus",
         });
 
         this.createPage({
-            name: "DRAGON",
+            name: "WARDRAKE",
             type: "NORMAL",
             foundAt: "CRIMSON FISSURE",
             description:
-                "IF THERE IS A CREATURE THAT EVERY BEING FEARS IN THE CRIMSON FISSURE, IT'S THE DRAGON!\n"
-                + "ITS IMPOSING WINGS HAVE THE POWER TO WHIP UP FEROCIOUS TORNADOES, RAGING ACROSS THE LAND.\nIT IS BELIEVED THAT THOUSANDS OF YEARS AGO, THE DRAGON'S ROAR CAUSED "
+                "IF THERE IS A CREATURE THAT EVERY BEING FEARS IN THE CRIMSON FISSURE, IT'S THE WARDRAKE!\n"
+                + "ITS IMPOSING WINGS HAVE THE POWER TO WHIP UP FEROCIOUS TORNADOES, RAGING ACROSS THE LAND.\nIT IS BELIEVED THAT THOUSANDS OF YEARS AGO, THE WARDRAKE'S ROAR CAUSED "
                 + "THE VOLCANOES IN THE AREA TO ERUPT DUE TO THE INTENSITY OF THE FREQUENCY VIBRATIONS!",
             images: [
-                this.createImage('dragon', 182, 172, 0, 'right', 'top'),
+                this.createImage('wardrake', 182, 172, 0, 'right', 'top'),
             ],
             mapKey: "bonusMap2",
             category: "bonus",
@@ -1261,14 +1263,14 @@ export class EnemyLore extends BaseMenu {
         });
 
         this.createPage({
-            name: "GALACTIC PLANT",
+            name: "NEBULURE",
             type: "NORMAL",
             foundAt: "COSMIC RIFT",
             description:
-                "ROOTED TO THE RIFT FLOOR, THE GALACTIC PLANT STANDS COMPLETELY STILL — UNTIL SOMETHING GETS TOO CLOSE.\n"
+                "ROOTED TO THE RIFT FLOOR, THE NEBULURE STANDS COMPLETELY STILL — UNTIL SOMETHING GETS TOO CLOSE.\n"
                 + "WHAT IT LACKS IN MOBILITY, IT MORE THAN MAKES UP FOR IN PATIENCE.",
             images: [
-                this.createImage('galacticPlant', 95.75, 150, 1, 'right', 'bottom'),
+                this.createImage('nebulure', 95.75, 150, 1, 'right', 'bottom'),
             ],
             mapKey: "bonusMap3",
             category: "bonus",
@@ -1318,14 +1320,14 @@ export class EnemyLore extends BaseMenu {
         });
 
         this.createPage({
-            name: "SPACE CRAB",
+            name: "CRABULA",
             type: "NORMAL",
             foundAt: "COSMIC RIFT",
             description:
-                "SPACE CRABS DESCEND FROM THE UPPER REACHES OF THE COSMIC RIFT, DROPPING DOWN AT TERRIFYING SPEED.\n"
+                "CRABULA DESCENDS FROM THE UPPER REACHES OF THE COSMIC RIFT, DROPPING DOWN AT TERRIFYING SPEED.\n"
                 + "THEIR ARMORED SHELLS PROTECT THEM AS THEY PLUMMET TOWARD ANYTHING BELOW.",
             images: [
-                this.createImage('spaceCrab', 125.6666666666667, 130, 0, 'right', 'top'),
+                this.createImage('crabula', 125.6666666666667, 130, 0, 'right', 'top'),
             ],
             mapKey: "bonusMap3",
             category: "bonus",
@@ -1360,14 +1362,14 @@ export class EnemyLore extends BaseMenu {
         });
 
         this.createPage({
-            name: "GALACTIC FROG",
+            name: "FROGULA",
             type: "RED",
             foundAt: "COSMIC RIFT",
             description:
-                "THE GALACTIC FROG WAITS ON THE RIFT FLOOR UNTIL IT SPOTS ITS TARGET — THEN IT LEAPS.\n"
+                "FROGULA WAITS ON THE RIFT FLOOR UNTIL IT SPOTS ITS TARGET — THEN IT LEAPS.\n"
                 + "IT JUMPS IN A PRECISE ARC TOWARD WHEREVER YOU ARE, AND WILL KEEP JUMPING UNTIL IT IS STOPPED.",
             images: [
-                this.createImage('galacticFrog', 96.5, 100, 0, 'right', 'bottom', 'red'),
+                this.createImage('frogula', 96.5, 100, 0, 'right', 'bottom', 'red'),
             ],
             mapKey: "bonusMap3",
             category: "bonus",
@@ -1402,14 +1404,14 @@ export class EnemyLore extends BaseMenu {
         });
 
         this.createPage({
-            name: "GALACTIC SPIDER",
+            name: "ASTRAIDER",
             type: "NORMAL",
             foundAt: "COSMIC RIFT",
             description:
-                "THE GALACTIC SPIDER CRAWLS ACROSS THE RIFT FLOOR WITH UNSETTLING CONFIDENCE.\n"
+                "ASTRAIDER CRAWLS ACROSS THE RIFT FLOOR WITH UNSETTLING CONFIDENCE.\n"
                 + "IT TAKES MORE THAN ONE HIT TO BRING DOWN, AND IT FIRES GLOWING ORBS FROM ITS CRYSTAL EYE WITHOUT WARNING.",
             images: [
-                this.createImage('galacticSpider', 160.5, 120, 0, 'right', 'bottom'),
+                this.createImage('astraider', 160.5, 120, 0, 'right', 'bottom'),
             ],
             mapKey: "bonusMap3",
             category: "bonus",

@@ -138,10 +138,10 @@ import {
 import {
     MeatSoldier,
     AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Gloomlet,
-    Aura, KarateCroco, SpearFish, LilHornet, Cactus, IceBall, Garry, InkBeam,
-    VolcanoWasp, FrozenShard, CrystalWasp, VolcanicPlant, VolcanicBubble, LavaBall, ScorpionPoison,
-    CrypticFly, CrypticRocky, DrillIce, Frostling, CyanOrb, YellowOrb, GreenOrb, RedOrb, BlueOrb,
-    PoisonousOrb, IceSilknoir, GalacticFrog, Lancer, Johnny, Venarach, Woxin, Venflora, Venoblitz, Oculith,
+    Aura, KarateCroco, SpearFish, LilHornet, Cactrix, BerriflyIceBall, Garry, InkBeam,
+    VolcanoWasp, FrozenShard, CrystalWasp, Magmapod, VolcanicBubble, LavaBall, ScorpionPoison,
+    Sigilfly, Golex, DrillIce, Frostling, CyanOrb, YellowOrb, GreenOrb, RedOrb, BlueOrb,
+    PoisonousOrb, IceSilknoir, Frogula, Lancer, Johnny, Venarach, Woxin, Venflora, Venoblitz, Oculith,
     Vespion, Ben, Vinelash, PetroPlant, Blazice, Sigilash, BigGreener,
 } from '../../game/entities/enemies/enemies.js';
 
@@ -618,7 +618,7 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
         ['Voltzeel', Voltzeel, 'fallback', null],
         ['Aura', Aura, 'fallback', null],
         ['Sigilash', Sigilash, 'fallback', null],
-        ['Cactus', Cactus, 'fallback', null],
+        ['Cactrix', Cactrix, 'fallback', null],
         ['Lancer', Lancer, 'fallback', null],
         ['Johnny', Johnny, 'fallback', null],
 
@@ -748,12 +748,12 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
         ['Gloomlet', Gloomlet, 1, 'fallback'],
         ['KarateCroco', KarateCroco, 2, 'fallback'],
         ['SpearFish', SpearFish, 2, 'fallback'],
-        ['VolcanicPlant', VolcanicPlant, 1, 'fallback'],
+        ['Magmapod', Magmapod, 1, 'fallback'],
         ['VolcanicBubble', VolcanicBubble, 1, DisintegrateCollision],
-        ['CrypticFly', CrypticFly, 1, 'fallback'],
-        ['CrypticRocky', CrypticRocky, 2, 'fallback'],
+        ['Sigilfly', Sigilfly, 1, 'fallback'],
+        ['Golex', Golex, 2, 'fallback'],
         ['RedOrb', RedOrb, 1, DisintegrateCollision],
-        ['GalacticFrog', GalacticFrog, 1, 'fallback'],
+        ['Frogula', Frogula, 1, 'fallback'],
     ])('Red enemy: %s', (_name, EnemyClass, startingLives, Expected) => {
         test.each(normalScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();
@@ -784,7 +784,7 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
     });
 
     describe.each([
-        ['IceBall', IceBall, 'fallback', null],
+        ['BerriflyIceBall', BerriflyIceBall, 'fallback', null],
         ['Drillice', DrillIce, 'fallback', null],
         ['IceSilknoir', IceSilknoir, 'fallback', null],
         ['Frostling', Frostling, 'fallback', null],
@@ -1266,7 +1266,7 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
         ['Voltzeel', Voltzeel, 'fallback', null],
         ['Aura', Aura, 'fallback', null],
         ['Sigilash', Sigilash, 'fallback', null],
-        ['Cactus', Cactus, 'fallback', null],
+        ['Cactrix', Cactrix, 'fallback', null],
         ['Lancer', Lancer, 'fallback', null],
         ['Johnny', Johnny, 'fallback', null],
 
@@ -1367,12 +1367,12 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
         ['Gloomlet', Gloomlet, 1, 'fallback'],
         ['KarateCroco', KarateCroco, 2, 'fallback'],
         ['SpearFish', SpearFish, 2, 'fallback'],
-        ['VolcanicPlant', VolcanicPlant, 1, 'fallback'],
+        ['Magmapod', Magmapod, 1, 'fallback'],
         ['VolcanicBubble', VolcanicBubble, 1, DisintegrateCollision],
-        ['CrypticFly', CrypticFly, 1, 'fallback'],
-        ['CrypticRocky', CrypticRocky, 2, 'fallback'],
+        ['Sigilfly', Sigilfly, 1, 'fallback'],
+        ['Golex', Golex, 2, 'fallback'],
         ['RedOrb', RedOrb, 1, DisintegrateCollision],
-        ['GalacticFrog', GalacticFrog, 1, 'fallback'],
+        ['Frogula', Frogula, 1, 'fallback'],
     ])('Red enemy: %s', (_name, EnemyClass, startingLives, Expected) => {
         test.each(rollDiveScenarios)('$label', (s) => {
             const ctx = makeGameAndLogic();
@@ -1397,7 +1397,7 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
     });
 
     describe.each([
-        ['IceBall', IceBall, 'fallback', null],
+        ['BerriflyIceBall', BerriflyIceBall, 'fallback', null],
         ['Drillice', DrillIce, 'fallback', null],
         ['IceSilknoir', IceSilknoir, 'fallback', null],
         ['Frostling', Frostling, 'fallback', null],

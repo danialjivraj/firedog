@@ -67,7 +67,7 @@ body {
             /* abilities */
             #healingStar, #galacticSpike, #antennaeTentacleUpward, #laserBall, #laserBallMode2, #purpleAsteroid, #blueAsteroid, #healingBarrier, #healingBarrier1, #healingBarrier2, #healingBarrier3, #healingBarrier4,
         /* projectiles */ 
-        #leafAttack, #darkLeafAttack, #windAttack, #poison_spit, #aura, #laser_beam, #iceBall, #darkLaser, #yellowBeam, #purpleLaser, #inkBeam, #frozenShard, #lavaBall, #poisonousOrb,
+        #leafAttack, #darkLeafAttack, #windAttack, #poison_spit, #aura, #iceBall, #darkLaser, #yellowBeam, #purpleLaser, #inkBeam, #frozenShard, #lavaBall, #poisonousOrb,
         /* goblin */
         #goblinRun, #goblinSteal, #goblinJump, 
         /* map1 */
@@ -75,21 +75,21 @@ body {
         /* map2 */
         #duskPlant, #vertibat, #silknoir, #skelly, #walterTheGhost, #gloomlet, #dolly, #ben,
         /* map3 */
-        #piranha, #skeletonFish, #spearFish, #voltzeel, #jetFish, #piper, #jellion, #garry, 
+        #razorfin, #skeletonFish, #spearFish, #voltzeel, #jetFish, #piper, #jellion, #garry, 
         /* map4 */
-        #sluggie, #bigGreener, #spidoLazer, #jerry, #chiquita, #fofinha, #lilHornet, #karateCroco, #vinelash,
+        #sluggie, #bigGreener, #bramble, #jerry, #chiquita, #fofinha, #lilHornet, #karateCroco, #vinelash,
         /* map5 */
-        #bee, #angryBee, #strawspider, #snailey, #redFlyer, #purpleFlyer, #lazyMosquito, #leafSlug, #sunflora, #eggry, 
+        #bee, #angryBee, #strawspider, #snailey, #citrifly, #berrifly, #lazyMosquito, #leafSlug, #sunflora, #eggry, 
         /* map6 */
         #zabkous, #venflora, #virefly, #larvox, #venarach, #mycora, #toxwing, #venoblitz, #woxin,
         /* map7 */
-        #cactus, #blazice, #volcanurtle, #volcanoWasp, #volcanicPlant, #volcanoScorpion, #volcanoFly, #bloburn, #volcanoBeetle, #lavaCobra,
+        #cactrix, #blazice, #volcanurtle, #volcanoWasp, #magmapod, #scorvex, #emberFly, #bloburn, #scorble, #lavaryn,
         /* bonusmap1 */
-        #iceSilknoir, #crystalWasp, #icePlant, #globby, #iceCentipede, #drillice, #frostling, #iceBat,
+        #iceSilknoir, #crystalWasp, #icePlant, #globby, #cryopede, #drillice, #frostling, #frobat,
         /* bonusmap2 */
-         #dragon, #petroPlant, #crypticFly, #crypticRocky, #oneEyeSnake, #crypticSlime, #crypticGecko, #crypticSpider, #sigilash,
+         #wardrake, #petroPlant, #sigilfly, #golex, #voidserp, #oozel, #runecko, #runespider, #sigilash,
         /* bonusmap3 */
-         #plazer, #veynoculus, #spaceCrab, #johnny, #spindle, #borion, #vespion, #galacticPlant, #oculith, #lancer, #galacticSpider, #galacticFrog,
+         #plazer, #veynoculus, #crabula, #johnny, #spindle, #borion, #vespion, #nebulure, #oculith, #lancer, #astraider, #frogula,
     /* cabin */
     #map1cabin, #map2cabin, #map3submarine, #map4cabin, #map5cabin, #map6cabin, #map7cave, #bonusmap1cabin, #bonusmap2cabin, #bonusmap3cabin,
     /* power up */ 

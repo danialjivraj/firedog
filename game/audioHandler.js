@@ -493,17 +493,21 @@ export class EnemySFXAudioHandler extends AudioHandler {
       goblinStealing: 'goblinStealing',
       goblinRunSound: 'goblinRunSound',
       goblinJumpSound: 'goblinJumpSound',
-      //dotter, lilHornet, redFlyer, purpleFlyer, lazyMosquito
+      //dotter, lilHornet, citrifly, berrifly, lazyMosquito
       buzzingFly: 'buzzingFly',
       //meatSoldier
       meatSoldierSound: 'meatSoldierSound',
       //abyssaw
       spinningChainsaw: 'spinningChainsaw',
+      //geargle
+      helicopterSound: 'helicopterSound',
       //ravengloom
       ravenCallAudio: 'ravenCallAudio',
       ravenSingleFlap: 'ravenSingleFlap',
       //walterTheGhost
       ghostHmAudio: 'ghostHmAudio',
+      //skelly
+      skellyJumpSound: 'skellyJumpSound',
       //ghobat
       ghobatFlapAudio: 'ghobatFlapAudio',
       //bee
@@ -530,9 +534,7 @@ export class EnemySFXAudioHandler extends AudioHandler {
       //zabkous
       frogSound: 'frogSound',
       landingJumpSound: 'landingJumpSound',
-      //spidoLazer
-      spidoLazerWalking: 'spidoLazerWalking',
-      //glidospike, dragon
+      //glidospike
       flyMonsterFlap: 'flyMonsterFlap',
       //vertibat
       wooshBat: 'wooshBat',
@@ -541,7 +543,7 @@ export class EnemySFXAudioHandler extends AudioHandler {
       inkSpit: 'inkSpit',
       //ben
       verticalGhostSound: 'verticalGhostSound',
-      //piranha
+      //razorfin
       crunchSound: 'crunchSound',
       //skeletonFish
       skeletonCrunshSound: 'skeletonCrunshSound',
@@ -551,14 +553,84 @@ export class EnemySFXAudioHandler extends AudioHandler {
       rocketLauncherSound: 'rocketLauncherSound',
       //spearFish
       stepWaterSound: 'stepWaterSound',
+      //jellion
+      jellionSound: 'jellionSound',
       //karateCroco
       ahhhSound: 'ahhhSound',
-      //purpleFlyer
+      //vinelash
+      vinelashEmergeSound: 'vinelashEmergeSound',
+      vinelashRetractSound: 'vinelashRetractSound',
+      //berrifly
       iceballThrowSound: 'iceballThrowSound',
       //sunflora
       yellowLaserBeamSound: 'yellowLaserBeamSound',
+      //eggry
+      eggrySound: 'eggrySound',
+      //leafSlug
+      leafSlugSound: 'leafSlugSound',
       //piper
       extendingSound: 'extendingSound',
+      //venflora
+      venfloraProjectileSound: 'venfloraProjectileSound',
+      //venoblitz
+      venoblitzRunningSound: 'venoblitzRunningSound',
+      //mycora
+      mycoraMouthSound: 'mycoraMouthSound',
+      mycoraMouthCloseSound: 'mycoraMouthCloseSound',
+      //scorble
+      scorbleSound: 'scorbleSound',
+      //magmapod
+      magmapodProjectileSound: 'magmapodProjectileSound',
+      //volcanurtle
+      volcanurtleSound: 'volcanurtleSound',
+      //bloburn
+      bloburnSound: 'bloburnSound',
+      //scorvex
+      scorvexProjectileSound: 'scorvexProjectileSound',
+      //lavaryn
+      lavarynEmergeSound: 'lavarynEmergeSound',
+      lavarynProjectileSound: 'lavarynProjectileSound',
+      //cryopede
+      cryopedeWalkingSound: 'cryopedeWalkingSound',
+      //frostling
+      frostlingSound: 'frostlingSound',
+      //globby
+      globbySound: 'globbySound',
+      //drillice
+      drilliceEmergeSound: 'drilliceEmergeSound',
+      drilliceRetractSound: 'drilliceRetractSound',
+      drilliceHoldSound: 'drilliceHoldSound',
+      //oozel
+      oozelFallingSound: 'oozelFallingSound',
+      //runespider
+      runespiderWalkingSound: 'runespiderWalkingSound',
+      //voidserp
+      voidserpSound: 'voidserpSound',
+      //golex
+      golexMovingSound: 'golexMovingSound',
+      golexAppearingSound: 'golexAppearingSound',
+      //wardrake
+      wardrakeProjectileSound: 'wardrakeProjectileSound',
+      //nebulure
+      nebulureSuctionSound: 'nebulureSuctionSound',
+      //veynoculus
+      veynoculusSound: 'veynoculusSound',
+      //johnny
+      johnnyAlienSound: 'johnnyAlienSound',
+      //crabula
+      crabulaSnippingSound: 'crabulaSnippingSound',
+      crabulaEntranceSound: 'crabulaEntranceSound',
+      //frogula
+      frogulaSound: 'frogulaSound',
+      //oculith
+      oculithEmergeSound: 'oculithEmergeSound',
+      //astraider
+      astraiderWalkingSound: 'astraiderWalkingSound',
+      //borion
+      borionEmergeSound: 'borionEmergeSound',
+      borionRetractSound: 'borionRetractSound',
+      borionProjectileSound: 'borionProjectileSound',
+      borionMouthSound: 'borionMouthSound',
     };
     this.initializeSounds();
   }

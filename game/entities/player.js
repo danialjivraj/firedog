@@ -20,10 +20,10 @@ import { FloatingMessage } from '../animations/floatingMessages.js';
 import { Fireball, CoinLoss, PoisonBubbles, IceCrystalBubbles, SpinningChicks } from '../animations/particles.js';
 import {
     AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Gloomlet, EnemyBoss, Barrier,
-    Aura, KarateCroco, SpearFish, LilHornet, Cactus, IceBall, Garry, InkBeam, VolcanoWasp, VolcanicBubble,
-    CrystalWasp, DrillIce, Frostling, FrozenShard, VolcanicPlant, ScorpionPoison, LavaBall, CrypticFly, CrypticRocky,
+    Aura, KarateCroco, SpearFish, LilHornet, Cactrix, BerriflyIceBall, Garry, InkBeam, VolcanoWasp, VolcanicBubble,
+    CrystalWasp, DrillIce, Frostling, FrozenShard, Magmapod, ScorpionPoison, LavaBall, Sigilfly, Golex,
     CyanOrb, RedOrb, GreenOrb, BlueOrb, YellowOrb, Lancer, PoisonousOrb, Venarach, Venoblitz, Woxin,
-    Venflora, Mycora, IceSilknoir, GalacticFrog, Johnny, Oculith, Vespion, Ben, Vinelash, PetroPlant, Blazice,
+    Venflora, Mycora, IceSilknoir, Frogula, Johnny, Oculith, Vespion, Ben, Vinelash, PetroPlant, Blazice,
     Sigilash, BigGreener,
 } from './enemies/enemies.js';
 import { InkSplash } from '../animations/ink.js';
@@ -1884,11 +1884,6 @@ export class CollisionLogic {
                 return true;
             }
 
-            case enemy instanceof YellowOrb: {
-                this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
-                return true;
-            }
-
             case enemy instanceof ElectricWheel: {
                 this.game.audioHandler.collisionSFX.playSound('elyvorg_electricity_wheel_collision_sound', false, true);
                 this.game.collisions.push(new ElectricityCollision(this.game, ex, ey));
@@ -1905,7 +1900,7 @@ export class CollisionLogic {
             case enemy instanceof IceSilknoir:
             case enemy instanceof DrillIce:
             case enemy instanceof Frostling:
-            case enemy instanceof IceBall:
+            case enemy instanceof BerriflyIceBall:
             case enemy instanceof FrozenShard:
             case enemy instanceof SpinningIceBalls:
             case enemy instanceof PointyIcicleShard:
@@ -1983,14 +1978,13 @@ export class CollisionLogic {
                 return true;
             }
 
-            // red
+            // ball projectiles
             case enemy instanceof VolcanicBubble:
             case enemy instanceof RedOrb:
-                this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
-                return true;
-
+            case enemy instanceof YellowOrb:
             case enemy instanceof LavaBall:
                 this.game.collisions.push(new DisintegrateCollision(this.game, enemy));
+                this.game.audioHandler.collisionSFX.playSound('ntharaxSplitBeamCollisionSound', false, true);
                 return true;
 
             // special Y = attacker center Y
@@ -2535,7 +2529,7 @@ export class CollisionLogic {
             case enemy instanceof Voltzeel:
             case enemy instanceof Aura:
             case enemy instanceof Sigilash:
-            case enemy instanceof Cactus:
+            case enemy instanceof Cactrix:
             case enemy instanceof Lancer:
             case enemy instanceof Johnny:
             // special stun collision
@@ -2609,12 +2603,12 @@ export class CollisionLogic {
             case enemy instanceof KarateCroco:
             case enemy instanceof SpearFish:
             case enemy instanceof Mycora:
-            case enemy instanceof VolcanicPlant:
+            case enemy instanceof Magmapod:
             case enemy instanceof VolcanicBubble:
             case enemy instanceof RedOrb:
-            case enemy instanceof CrypticFly:
-            case enemy instanceof CrypticRocky:
-            case enemy instanceof GalacticFrog:
+            case enemy instanceof Sigilfly:
+            case enemy instanceof Golex:
+            case enemy instanceof Frogula:
                 this.hit(enemy, player);
                 if (canPlayCollisionFx) {
                     this.playCollisionFx(enemy, { fallbackToDefault: true });
@@ -2626,7 +2620,7 @@ export class CollisionLogic {
             case enemy instanceof DrillIce:
             case enemy instanceof Frostling:
             case enemy instanceof FrozenShard:
-            case enemy instanceof IceBall:
+            case enemy instanceof BerriflyIceBall:
             case enemy instanceof IceTrail:
             case enemy instanceof IcyStormBall:
             case enemy instanceof SpinningIceBalls:
@@ -2852,7 +2846,7 @@ export class CollisionLogic {
             case enemy instanceof Aura:
             case enemy instanceof Sigilash:
             case enemy instanceof LilHornet:
-            case enemy instanceof Cactus:
+            case enemy instanceof Cactrix:
             case enemy instanceof Lancer:
             case enemy instanceof Johnny:
             // special collision
@@ -2917,12 +2911,12 @@ export class CollisionLogic {
             case enemy instanceof KarateCroco:
             case enemy instanceof SpearFish:
             case enemy instanceof Mycora:
-            case enemy instanceof VolcanicPlant:
+            case enemy instanceof Magmapod:
             case enemy instanceof VolcanicBubble:
             case enemy instanceof RedOrb:
-            case enemy instanceof CrypticFly:
-            case enemy instanceof CrypticRocky:
-            case enemy instanceof GalacticFrog:
+            case enemy instanceof Sigilfly:
+            case enemy instanceof Golex:
+            case enemy instanceof Frogula:
                 if (player.currentState === player.states[4]) this.hit(enemy, player);
                 this.playCollisionFx(enemy, { fallbackToDefault: true });
                 break;
@@ -2932,7 +2926,7 @@ export class CollisionLogic {
             case enemy instanceof DrillIce:
             case enemy instanceof Frostling:
             case enemy instanceof FrozenShard:
-            case enemy instanceof IceBall:
+            case enemy instanceof BerriflyIceBall:
             case enemy instanceof IceTrail:
             case enemy instanceof IcyStormBall:
             case enemy instanceof SpinningIceBalls:

@@ -1213,6 +1213,20 @@ export class LeafAttack extends Projectile {
     }
 }
 
+export class BrambleLeafAttack extends LeafAttack {
+    constructor(game, x, y, fallSpeedX, fallSpeedY) {
+        super(game, x, y, 'leafAttack', 0, 0.0002 + Math.random() * 0.0008);
+        this.fallSpeedX = fallSpeedX;
+        this.fallSpeedY = fallSpeedY;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.x -= this.fallSpeedX;
+        this.y += this.fallSpeedY;
+        if (this.y > this.game.height) this.markedForDeletion = true;
+    }
+}
+
 export class PoisonSpit extends Projectile {
     constructor(game, x, y) {
         super(game, x, y, 59, 22, 11, 'poison_spit', 18, 30);
@@ -1309,20 +1323,38 @@ export class ScorpionPoison extends Projectile {
     }
 }
 
-export class LaserBeam extends Projectile {
-    constructor(game, x, y) {
-        super(game, x, y, 82, 48, 0, 'laser_beam', 30);
-    }
-}
-
 export class FrozenShard extends Projectile {
     constructor(game, x, y, speedX) {
-        super(game, x, y, 56, 26, 0, 'frozenShard', speedX, 20);
+        super(game, x, y, 35, 35, 0, 'frozenShard', speedX, 20);
         this.isSlowEnemy = true;
+        this.initialSize = 8;
+        this.size = this.initialSize;
+        this.maxSize = 35;
+        this.growthRate = 1.5;
+        this.rotationAngle = 0;
+        this.rotationSpeed = 0.08;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        if (this.size < this.maxSize) {
+            const sizeChange = Math.min(this.growthRate, this.maxSize - this.size);
+            this.size += sizeChange;
+            this.x -= sizeChange / 2;
+            this.y -= sizeChange / 2;
+        }
+        this.rotationAngle += this.rotationSpeed;
+    }
+    draw(context) {
+        withCtx(context, () => {
+            setShadow(context, 'blue', 10);
+            context.translate(this.x + this.size / 2, this.y + this.size / 2);
+            context.rotate(this.rotationAngle);
+            drawSprite(context, this.image, 0, 0, this.maxSize, this.maxSize, -this.size / 2, -this.size / 2, this.size, this.size);
+        });
     }
 }
 
-export class IceBall extends Projectile {
+export class BerriflyIceBall extends Projectile {
     constructor(game, x, y, speedY) {
         super(game, x, y, 35, 35, 0, 'iceBall', 7, speedY);
         this.isSlowEnemy = true;
@@ -1349,7 +1381,7 @@ export class IceBall extends Projectile {
             context.translate(this.x + this.size / 2, this.y + this.size / 2);
             context.rotate(this.rotationAngle);
             if (this.game.debug) context.strokeRect(-this.size / 2, -this.size / 2, this.size, this.size);
-            drawSprite(context, this.image, 0, 0, this.size, this.size, -this.size / 2, -this.size / 2, this.size, this.size);
+            drawSprite(context, this.image, 0, 0, this.maxSize, this.maxSize, -this.size / 2, -this.size / 2, this.size, this.size);
         });
     }
 }
@@ -1716,6 +1748,7 @@ export class Geargle extends VerticalEnemy {
         this.x += this.speedX;
         this.x += this.amplitude * Math.sin(this.angle);
         this.angle += this.va;
+        this.playSoundOnce('helicopterSound');
     }
 }
 
@@ -1965,6 +1998,7 @@ export class Skelly extends MovingGroundEnemy {
         this.jumpStartTime = this.game.hiddenTime;
         this.groundY = this.game.height - this.height - this.game.groundMargin;
         this.jumpDir = -1;
+        this.game.audioHandler.enemySFX.playSound('skellyJumpSound');
     }
 
     update(deltaTime) {
@@ -2168,9 +2202,9 @@ export class Dolly extends FlyingEnemy {
 }
 
 // Map 3 --------------------------------------------------------------------------------------------------------------------------------------
-export class Piranha extends UnderwaterEnemy {
+export class Razorfin extends UnderwaterEnemy {
     constructor(game) {
-        super(game, 100, 70, 3, 'piranha');
+        super(game, 100, 70, 3, 'razorfin');
         this.setFps(10);
     }
     update(deltaTime) {
@@ -2189,13 +2223,14 @@ export class Jellion extends UnderwaterEnemy {
         this.amplitude = 180;
         this.sinAngle = Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2;
         this.sinSpeed = 0.025;
+        this.playsOnce = true;
     }
     update(deltaTime) {
         super.update(deltaTime);
         this.x -= 3;
         this.y = this.baseY + this.amplitude * Math.sin(this.sinAngle);
         this.sinAngle += this.sinSpeed;
-        if (this.frameX === 2 && this.isOnScreen()) this.game.audioHandler.enemySFX.playSound('crunchSound');
+        this.playSoundOnce('jellionSound');
     }
 }
 
@@ -2551,7 +2586,11 @@ export class Vinelash extends UndergroundEnemy {
             warningDuration: 800,
             riseDuration: 500,
             holdDuration: 3000,
-            triggerDistance: 1000
+            triggerDistance: 1000,
+            soundIds: {
+                emerge: 'vinelashEmergeSound',
+                retract: 'vinelashRetractSound'
+            }
         });
         this.isPoisonEnemy = true;
         this.lives = 2;
@@ -2559,107 +2598,52 @@ export class Vinelash extends UndergroundEnemy {
     }
 }
 
-export class SpidoLazer extends MovingGroundEnemy {
-    static STATES = {
-        walk: {
-            width: 134.4210526315789,
-            height: 120,
-            maxFrame: 18,
-            fps: 260,
-            srcY: 0,
-            xOffset: 0,
-            yOffset: 0,
-        },
-        attack: {
-            width: 134.45,
-            height: 120,
-            maxFrame: 59,
-            fps: 120,
-            srcY: 120,
-            xOffset: 0,
-            yOffset: 0,
-        },
-    };
-
+export class Bramble extends ClimbingEnemy {
     constructor(game) {
-        const { width, height, maxFrame } = SpidoLazer.STATES.walk;
-        super(game, width, height, maxFrame, 'spidoLazer');
-
-        this.game = game;
+        super(game, 174.2, 140, 4, 'bramble');
         this.lives = 2;
-        this.state = 'walk';
-        this.canAttack = true;
-        this.loopingSoundId = 'spidoLazerWalking';
-
-        this.applyState('walk');
+        this.setFps(13);
+        this.soundId = 'nightSpiderSound';
+        this.swingAngle = 0;
+        this.swingSpeed = 0.002 + Math.random() * 0.006;
+        this.swingAmplitude = 1 + Math.random() * 4;
+        this.attackCooldown = 1000;
+        this.attackCooldownDuration = 1000;
     }
 
-    applyState(newState) {
-        const cfg = SpidoLazer.STATES[newState];
-        if (!cfg) return;
-
-        this.state = newState;
-
-        this.width = cfg.width;
-        this.height = cfg.height;
-        this.maxFrame = cfg.maxFrame;
-        this.setFps(cfg.fps);
-        this.frameX = 0;
-
-        const groundY = this.game.height - this.height - this.game.groundMargin;
-        this.y = groundY + cfg.yOffset;
-        this.x += cfg.xOffset;
-    }
-
-    draw(context) {
-        if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
-        const srcY = SpidoLazer.STATES[this.state]?.srcY ?? 0;
-        drawSprite(context, this.image, this.frameX * this.width, srcY, this.width, this.height, this.x, this.y, this.width, this.height);
-    }
-
-    throwLaserBeam() {
-        this.game.enemies.push(new LaserBeam(this.game, this.x - 40, this.y - 15 + this.height / 2 - 16));
+    throwLeaves() {
+        const spawnX = this.x + this.width / 2 - 17;
+        const spawnY = this.y + this.height - 10;
+        this.game.enemies.push(new BrambleLeafAttack(this.game, spawnX, spawnY, -1.5, 4));
+        this.game.enemies.push(new BrambleLeafAttack(this.game, spawnX, spawnY, 1.5, 4));
+        this.game.audioHandler.enemySFX.playSound('leafAttackAudio');
+        this.attackCooldown = 0;
     }
 
     update(deltaTime) {
         super.update(deltaTime);
+        const maxY = this.game.height * 0.75 - this.height;
+        if (this.y > maxY && this.speedY > 0) {
+            this.y = maxY;
+            this.speedY *= -1;
+        }
+        this.swingAngle += this.swingSpeed * deltaTime;
+        this.x += Math.sin(this.swingAngle) * this.swingAmplitude;
 
-        const player = this.game.player;
-        const playerDistance = Math.abs(player.x - this.x);
-
-        if (this.state === 'walk') {
-            this.x -= 2;
-
-            if (
-                playerDistance <= 1600 &&
-                this.frameX === this.maxFrame &&
-                player.x <= this.x &&
-                !this.game.gameOver
-            ) {
-                this.applyState('attack');
-            }
-
-            if ((this.frameX === 0 || this.frameX === 9) && this.isOnScreen()) {
-                this.game.audioHandler.enemySFX.playSound('spidoLazerWalking');
-            }
-
-        } else if (this.state === 'attack') {
-            const hasPassedPlayer = player.x > this.x;
-
-            if (this.frameX === 27 && this.canAttack) {
-                this.throwLaserBeam();
-                this.game.audioHandler.enemySFX.playSound('laserAttackAudio', false, true);
-                this.canAttack = false;
-            }
-
-            if (this.frameX >= this.maxFrame) {
-                this.canAttack = true;
-
-                if (hasPassedPlayer || this.game.gameOver) {
-                    this.applyState('walk');
-                }
+        if (this.x < this.game.width - this.width) {
+            this.attackCooldown += deltaTime;
+            if (this.attackCooldown >= this.attackCooldownDuration) {
+                this.throwLeaves();
             }
         }
+    }
+
+    draw(context) {
+        context.beginPath();
+        context.moveTo(this.x + this.width / 2, 0);
+        context.lineTo(this.x + this.width / 2, this.y + 50);
+        context.stroke();
+        super.draw(context);
     }
 }
 
@@ -2723,9 +2707,9 @@ export class Snailey extends MovingGroundEnemy {
     }
 }
 
-export class RedFlyer extends FlyingEnemy {
+export class Citrifly extends FlyingEnemy {
     constructor(game) {
-        super(game, 79.333333333333333333333333333333, 65, 14, 'redFlyer');
+        super(game, 80.5, 90, 1, 'citrifly');
         this.playsOnce = true;
         this.darkLaserTimer = 2800;
     }
@@ -2758,9 +2742,10 @@ export class RedFlyer extends FlyingEnemy {
     }
 }
 
-export class PurpleFlyer extends FlyingEnemy {
+export class Berrifly extends FlyingEnemy {
     constructor(game) {
-        super(game, 83.333333333333333333333333333333, 65, 14, 'purpleFlyer');
+        super(game, 84, 75, 1, 'berrifly');
+        this.setFps(10);
         this.playsOnce = true;
         this.iceballTimer = 200;
     }
@@ -2772,7 +2757,7 @@ export class PurpleFlyer extends FlyingEnemy {
         const angle = Math.atan2(deltaY, Math.abs(this.game.player.x - this.x));
         const verticalSpeed = Math.sin(angle) * 10;
 
-        const fireball = new IceBall(this.game, this.x + 5, this.y + this.height / 2 + 10, verticalSpeed);
+        const fireball = new BerriflyIceBall(this.game, this.x + 17, this.y + 37, verticalSpeed);
         this.game.enemies.push(fireball);
     }
 
@@ -2810,10 +2795,12 @@ export class LeafSlug extends MovingGroundEnemy {
         super(game, 89, 84, 2, 'leafSlug');
         this.setFps(12);
         this.xSpeed = Math.floor(Math.random() * 3) + 1;
+        this.loopingSoundId = 'leafSlugSound';
     }
     update(deltaTime) {
         super.update(deltaTime);
         this.x -= this.xSpeed;
+        this.playIfOnScreen('leafSlugSound');
     }
 }
 
@@ -2865,8 +2852,6 @@ export class Eggry extends ImmobileGroundEnemy {
             this.jumpDuration = 0.55 + Math.random() * 0.1;
             this.baseHorizontalSpeed = 7 + Math.random() * 2;
             this.horizontalSpeed = this.baseHorizontalSpeed;
-
-
         }
     }
 
@@ -2877,6 +2862,8 @@ export class Eggry extends ImmobileGroundEnemy {
 
         this.jumpDir = -1;
         if (this.jumpStyle === 'smart') this.horizontalSpeed = this.baseHorizontalSpeed;
+
+        this.game.audioHandler.enemySFX.playSound('eggrySound');
     }
 
     update(deltaTime) {
@@ -2926,6 +2913,7 @@ export class Strawspider extends ClimbingEnemy {
         super(game, 93.83333333333333, 110, 5, 'strawspider');
         this.lives = 2;
         this.setFps(13);
+        this.soundId = 'nightSpiderSound';
         this.swingAngle = 0;
         this.swingSpeed = 0.002 + Math.random() * 0.006;
         this.swingAmplitude = 1 + Math.random() * 4;
@@ -2982,6 +2970,9 @@ export class Mycora extends ImmobileGroundEnemy {
         const baseAngle = -Math.PI + Math.PI / 8;
         const spread = Math.PI / 6;
         const angles = [baseAngle - spread, baseAngle, baseAngle + spread];
+
+        this.playIfOnScreen('mycoraMouthSound');
+
         for (const angle of angles) {
             this.game.enemies.push(new PoisonousOrb(this.game, cx, cy, angle));
         }
@@ -2989,9 +2980,21 @@ export class Mycora extends ImmobileGroundEnemy {
     advanceFrame(deltaTime) {
         const prevFrame = this.frameX;
         super.advanceFrame(deltaTime);
+
         if (prevFrame === 2 && this.frameX === 3) {
             this.shotTurn++;
-            if (this.shotTurn % 2 === 0 && this.isOnScreen()) this.throwOrbs();
+
+            if (
+                this.shotTurn % 2 === 0 &&
+                this.isOnScreen() &&
+                !this.game.gameOver
+            ) {
+                this.throwOrbs();
+            }
+        }
+
+        if (prevFrame === this.maxFrame - 1 && this.frameX === this.maxFrame) {
+            this.game.audioHandler.enemySFX.playSound('mycoraMouthCloseSound', false, true);
         }
     }
 }
@@ -3016,6 +3019,7 @@ export class LarvoxMini extends MovingGroundEnemy {
     constructor(game, x, y, launchVX) {
         super(game, 114.75 * 0.6, 70 * 0.6, 3, 'larvox');
         this.setFps(14);
+        this.soundId = 'slimyWalkSound';
         this.x = x;
         this.y = y;
         this.vx = launchVX;
@@ -3052,6 +3056,7 @@ export class Larvox extends MovingGroundEnemy {
     constructor(game) {
         super(game, 114.75, 70, 3, 'larvox');
         this.setFps(12);
+        this.soundId = 'slimyWalkSound';
         this.xSpeed = Math.floor(Math.random() * 3) + 1;
         this.spawned = false;
     }
@@ -3073,6 +3078,7 @@ export class Venoblitz extends MovingGroundEnemy {
         this.xSpeed = Math.floor(Math.random() * 3) + 9;
         this.lives = 2;
         this.isPoisonEnemy = true;
+        this.soundId = 'venoblitzRunningSound';
     }
     update(deltaTime) {
         super.update(deltaTime);
@@ -3123,6 +3129,7 @@ export class Venflora extends ImmobileGroundEnemy {
         const px = this.game.player.x + this.game.player.width / 2;
         const py = this.game.player.y + this.game.player.height / 2;
         const angle = Math.atan2(py - cy, px - cx);
+        this.playIfOnScreen('venfloraProjectileSound');
         this.game.enemies.push(new RedOrb(this.game, cx - 15, cy - 25, angle));
     }
     advanceFrame(deltaTime) {
@@ -3263,12 +3270,13 @@ export class Zabkous extends MovingGroundEnemy {
 }
 
 // Map 7 --------------------------------------------------------------------------------------------------------------------------------------
-export class Cactus extends MovingGroundEnemy {
+export class Cactrix extends MovingGroundEnemy {
     constructor(game) {
-        super(game, 115.3, 130, 9, 'cactus');
+        super(game, 115.3, 130, 9, 'cactrix');
         this.setFps(20);
         this.isStunEnemy = true;
-        this.xSpeed = Math.floor(Math.random() * 2) + 3;
+        this.xSpeed = Math.floor(Math.random() * 2) + 5;
+        this.soundId = 'venoblitzRunningSound';
     }
     update(deltaTime) {
         super.update(deltaTime);
@@ -3290,10 +3298,12 @@ export class Volcanurtle extends MovingGroundEnemy {
         this.lives = 2;
         this.setFps(8);
         this.xSpeed = Math.floor(Math.random() * 1) + 1;
+        this.playsOnce = true;
     }
     update(deltaTime) {
         super.update(deltaTime);
         this.x -= this.xSpeed;
+        this.playSoundOnce('volcanurtleSound');
     }
 }
 
@@ -3403,9 +3413,9 @@ export class VolcanicBubble extends Projectile {
     }
 }
 
-export class VolcanicPlant extends ImmobileGroundEnemy {
+export class Magmapod extends ImmobileGroundEnemy {
     constructor(game) {
-        super(game, 167, 130, 1, 'volcanicPlant');
+        super(game, 167, 130, 1, 'magmapod');
         this.isRedEnemy = true;
         this.lives = 3;
         this.setFps(7);
@@ -3416,6 +3426,7 @@ export class VolcanicPlant extends ImmobileGroundEnemy {
     throwBubble() {
         const bx = this.x + 66;
         const by = this.y + 8;
+        this.game.audioHandler.enemySFX.playSound('magmapodProjectileSound', false, true);
         this.game.enemies.push(new VolcanicBubble(this.game, bx, by));
     }
 
@@ -3429,9 +3440,9 @@ export class VolcanicPlant extends ImmobileGroundEnemy {
     }
 }
 
-export class VolcanoScorpion extends ImmobileGroundEnemy {
+export class Scorvex extends ImmobileGroundEnemy {
     constructor(game) {
-        super(game, 161, 150, 9, 'volcanoScorpion');
+        super(game, 161, 150, 9, 'scorvex');
         this.setFps(14);
         this.prevFrameX = -1;
         this.poisonCooldown = 0;
@@ -3444,16 +3455,22 @@ export class VolcanoScorpion extends ImmobileGroundEnemy {
         const playerAhead = player.x < this.x;
         if (this.frameX === 4 && this.prevFrameX !== 4 && this.poisonCooldown <= 0 && this.x + this.width / 2 < this.game.width && playerAhead) {
             this.game.enemies.push(new ScorpionPoison(this.game, this.x + 35, this.y + 10));
+            this.playIfOnScreen('scorvexProjectileSound');
             this.poisonCooldown = 1300;
         }
         this.prevFrameX = this.frameX;
     }
 }
 
-export class VolcanoFly extends FlyingEnemy {
+export class EmberFly extends FlyingEnemy {
     constructor(game) {
-        super(game, 85.5, 100, 1, 'volcanoFly');
+        super(game, 85.5, 100, 1, 'emberFly');
         this.setFps(7);
+        this.playsOnce = true;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.playSoundOnce('buzzingFly');
     }
 }
 
@@ -3463,14 +3480,14 @@ export class Bloburn extends VerticalEnemy {
         this.initialSpeed = 3;
         this.currentSpeed = 4;
         this.chaseDistance = this.game.width;
-        this.loopingSoundId = 'verticalGhostSound';
+        this.loopingSoundId = 'bloburnSound';
         this.rotation = 0;
         this.rotationSpeed = 0.05;
     }
 
     update(deltaTime) {
         super.update(deltaTime);
-        this.playIfOnScreen('verticalGhostSound');
+        this.playIfOnScreen('bloburnSound');
         this.rotation += this.rotationSpeed;
 
         const distanceToPlayer = this.getDistanceToPlayer();
@@ -3508,11 +3525,12 @@ export class Bloburn extends VerticalEnemy {
     }
 }
 
-export class VolcanoBeetle extends MovingGroundEnemy {
+export class Scorble extends MovingGroundEnemy {
     constructor(game) {
-        super(game, 90.25, 60, 3, 'volcanoBeetle');
+        super(game, 90.25, 60, 3, 'scorble');
         this.setFps(20);
         this.xSpeed = Math.floor(Math.random() * 2) + 6;
+        this.soundId = 'scorbleSound';
     }
     update(deltaTime) {
         super.update(deltaTime);
@@ -3520,13 +3538,17 @@ export class VolcanoBeetle extends MovingGroundEnemy {
     }
 }
 
-export class LavaCobra extends UndergroundEnemy {
+export class Lavaryn extends UndergroundEnemy {
     constructor(game) {
-        super(game, 176.5, 160, 1, 'lavaCobra', {
+        super(game, 176.5, 160, 1, 'lavaryn', {
             warningDuration: 500,
             riseDuration: 400,
             holdDuration: 3200,
-            triggerDistance: 1600
+            triggerDistance: 1600,
+            soundIds: {
+                emerge: 'lavarynEmergeSound',
+                retract: 'lavarynEmergeSound'
+            }
         });
         this.lives = 2;
         this.setFps(5);
@@ -3573,6 +3595,7 @@ export class LavaCobra extends UndergroundEnemy {
             this._lastFrameCount++;
             if (this._lastFrameCount % 4 === 1) {
                 this.throwLavaBall();
+                this.playIfOnScreen('lavarynProjectileSound');
             }
         }
     }
@@ -3623,7 +3646,6 @@ export class CrystalWasp extends FlyingEnemy {
 export class IcePlant extends ImmobileGroundEnemy {
     constructor(game) {
         super(game, 78.42857142857143, 115, 6, 'icePlant');
-        this.soundId = 'teethChatteringSound';
         this.shardCooldown = 4000;
         this.lastShardTime = 3999;
     }
@@ -3631,18 +3653,20 @@ export class IcePlant extends ImmobileGroundEnemy {
     throwShard() {
         const shard = new FrozenShard(
             this.game,
-            this.x - 10,
-            this.y + this.height / 2 - 30,
+            this.x + 30,
+            this.y + this.height / 2 - 20,
             8
         );
         this.game.enemies.push(shard);
+        this.playIfOnScreen('iceballThrowSound');
         this.lastShardTime = 0;
     }
 
     update(deltaTime) {
+        const prevFrameX = this.frameX;
         super.update(deltaTime);
         this.lastShardTime += deltaTime;
-        if (this.lastShardTime >= this.shardCooldown && this.x < this.game.width - this.width) {
+        if (this.lastShardTime >= this.shardCooldown && this.frameX === 1 && prevFrameX !== 1 && this.x < this.game.width - this.width) {
             this.throwShard();
         }
     }
@@ -3653,16 +3677,18 @@ export class Globby extends MovingGroundEnemy {
         super(game, 115, 110, 5, 'globby');
         this.setFps(12);
         this.xSpeed = Math.floor(Math.random() * 6) + 2;
+        this.loopingSoundId = 'globbySound';
     }
     update(deltaTime) {
         super.update(deltaTime);
         this.x -= this.xSpeed;
+        this.playIfOnScreen('globbySound');
     }
 }
 
-export class IceCentipedeMini extends MovingGroundEnemy {
+export class CryopedeMini extends MovingGroundEnemy {
     constructor(game, x, y, launchVX) {
-        super(game, 126 * 0.65, 80 * 0.65, 5, 'iceCentipede');
+        super(game, 126 * 0.65, 80 * 0.65, 5, 'cryopede');
         this.setFps(14);
         this.x = x;
         this.y = y;
@@ -3671,6 +3697,7 @@ export class IceCentipedeMini extends MovingGroundEnemy {
         this.gravity = 0.4;
         this.grounded = false;
         this.groundY = game.height - (80 * 0.65) - game.groundMargin;
+        this.loopingSoundId = 'cryopedeWalkingSound';
     }
     update(deltaTime) {
         if (!this.grounded) {
@@ -3691,6 +3718,7 @@ export class IceCentipedeMini extends MovingGroundEnemy {
         }
         super.update(deltaTime);
         this.x -= this.xSpeed;
+        if (this.grounded) this.playIfOnScreen('cryopedeWalkingSound');
     }
     draw(context) {
         withCtx(context, () => {
@@ -3701,21 +3729,23 @@ export class IceCentipedeMini extends MovingGroundEnemy {
     }
 }
 
-export class IceCentipede extends MovingGroundEnemy {
+export class Cryopede extends MovingGroundEnemy {
     constructor(game) {
-        super(game, 126, 80, 5, 'iceCentipede');
+        super(game, 126, 80, 5, 'cryopede');
         this.setFps(12);
         this.xSpeed = Math.floor(Math.random() * 2) + 2;
         this.spawned = false;
+        this.loopingSoundId = 'cryopedeWalkingSound';
     }
     update(deltaTime) {
         super.update(deltaTime);
         this.x -= this.xSpeed;
+        this.playIfOnScreen('cryopedeWalkingSound');
         if (!this.spawned && this.lives <= 0) {
             this.spawned = true;
             const cx = this.x + this.width / 2;
-            this.game.enemies.push(new IceCentipedeMini(this.game, cx, this.y, -4));
-            this.game.enemies.push(new IceCentipedeMini(this.game, cx, this.y, 3));
+            this.game.enemies.push(new CryopedeMini(this.game, cx, this.y, -4));
+            this.game.enemies.push(new CryopedeMini(this.game, cx, this.y, 3));
         }
     }
 }
@@ -3725,10 +3755,23 @@ export class DrillIce extends UndergroundEnemy {
         super(game, 197, 115, 3, 'drillice', {
             warningDuration: 800,
             riseDuration: 300,
-            holdDuration: 1200,
-            triggerDistance: 700
+            holdDuration: 2100,
+            triggerDistance: 700,
+            soundIds: {
+                emerge: 'drilliceEmergeSound',
+                retract: 'drilliceRetractSound'
+            }
         });
         this.isSlowEnemy = true;
+    }
+    onEmergeComplete() {
+        if (this.isOnScreen()) this.game.audioHandler.enemySFX.playSound('drilliceHoldSound', true);
+        this.loopingSoundId = 'drilliceHoldSound';
+    }
+    onRetractStart() {
+        super.onRetractStart();
+        this.game.audioHandler.enemySFX.stopSound('drilliceHoldSound');
+        this.loopingSoundId = null;
     }
 }
 
@@ -3738,20 +3781,31 @@ export class Frostling extends FallingEnemy {
         this.isSlowEnemy = true;
         this.speedY = Math.random() * 4 + 4;
         this.setFps(5);
+        this.playsOnce = true;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.playSoundOnce('frostlingSound');
     }
 }
 
-export class IceBat extends FlyingEnemy {
+export class Frobat extends FlyingEnemy {
     constructor(game) {
-        super(game, 156.75, 130, 3, 'iceBat');
+        super(game, 156.75, 130, 3, 'frobat');
         this.setFps(15);
+        this.playsOnce = true;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.playSoundOnce('batPitch');
+        if (this.frameX === 3 && this.isOnScreen()) this.game.audioHandler.enemySFX.playSound('wooshBat');
     }
 }
 
 // Bonus Map 2 --------------------------------------------------------------------------------------------------------------------------------------
-export class CrypticRocky extends MovingGroundEnemy {
+export class Golex extends MovingGroundEnemy {
     constructor(game) {
-        super(game, 152, 140, 1, 'crypticRocky');
+        super(game, 152, 140, 1, 'golex');
         this.lives = 2;
         this.isRedEnemy = true;
         this.setFps(6);
@@ -3763,14 +3817,17 @@ export class CrypticRocky extends MovingGroundEnemy {
         this._distCovered = 0;
         this._segmentDist = 120 + Math.random() * 160;
         this._currentSpeed = 2 + Math.random() * 3;
+        this.playsOnce = true;
     }
     _nextSegment() {
         this._distCovered = 0;
         this._phase++;
         this._segmentDist = 80 + Math.random() * 200;
+        this.playIfOnScreen('golexMovingSound', false, true);
     }
     update(deltaTime) {
         super.update(deltaTime);
+        this.playSoundOnce('golexAppearingSound');
         switch (this._phase % 4) {
             case 0:
                 this.x -= this._currentSpeed;
@@ -3796,22 +3853,24 @@ export class CrypticRocky extends MovingGroundEnemy {
     }
 }
 
-export class CrypticSpider extends MovingGroundEnemy {
+export class Runespider extends MovingGroundEnemy {
     constructor(game) {
-        super(game, 98.66666666666667, 70, 2, 'crypticSpider');
+        super(game, 98.66666666666667, 70, 2, 'runespider');
         this.setFps(12);
         this.xSpeed = Math.floor(Math.random() * 2) + 2;
+        this.loopingSoundId = 'runespiderWalkingSound';
     }
     update(deltaTime) {
         super.update(deltaTime);
         this.x -= this.xSpeed;
+        this.playIfOnScreen('runespiderWalkingSound');
     }
 }
 
 
-export class CrypticSlime extends MovingGroundEnemy {
+export class Oozel extends MovingGroundEnemy {
     constructor(game) {
-        super(game, 124, 50, 3, 'crypticSlime');
+        super(game, 124, 50, 3, 'oozel');
         this.setFps(8);
         this.groundY = game.height - this.height - game.groundMargin;
         this.y = -this.height;
@@ -3821,10 +3880,13 @@ export class CrypticSlime extends MovingGroundEnemy {
         this.speedY = Math.random() * 2 + 3;
         this.xSpeed = Math.floor(Math.random() * 2) + 3;
         this.state = 'falling';
+        this.playsOnce = true;
+        this.loopingSoundId = 'slimyWalkSound';
     }
     update(deltaTime) {
         super.update(deltaTime);
         if (this.state === 'falling') {
+            this.playSoundOnce('oozelFallingSound');
             this.y += this.speedY;
             if (this.y >= this.groundY) {
                 this.y = this.groundY;
@@ -3833,26 +3895,29 @@ export class CrypticSlime extends MovingGroundEnemy {
             }
         } else {
             this.x -= this.xSpeed;
+            this.playIfOnScreen('slimyWalkSound');
         }
     }
 }
 
-export class OneEyeSnake extends MovingGroundEnemy {
+export class Voidserp extends MovingGroundEnemy {
     constructor(game) {
-        super(game, 217, 100, 1, 'oneEyeSnake');
+        super(game, 217, 100, 1, 'voidserp');
         this.lives = 2;
         this.setFps(6);
         this.xSpeed = Math.floor(Math.random() * 4) + 2;
+        this.loopingSoundId = 'voidserpSound';
     }
     update(deltaTime) {
         super.update(deltaTime);
         this.x -= this.xSpeed;
+        this.playIfOnScreen('voidserpSound');
     }
 }
 
-export class CrypticFly extends FlyingEnemy {
+export class Sigilfly extends FlyingEnemy {
     constructor(game) {
-        super(game, 128, 100, 1, 'crypticFly');
+        super(game, 128, 100, 1, 'sigilfly');
         this.playsOnce = true;
         this.isRedEnemy = true;
         this.speed = 1.5;
@@ -3893,15 +3958,15 @@ export class PetroPlant extends ImmobileGroundEnemy {
     update(deltaTime) {
         super.update(deltaTime);
         this.lastRockAttackTime += deltaTime;
-        if (this.lastRockAttackTime >= 2000 && this.x < this.game.width - this.width) {
+        if (this.lastRockAttackTime >= 2000 && this.x < this.game.width - this.width && this.game.player.x < this.x) {
             this.throwYellowOrbProjectile();
         }
     }
 }
 
-export class CrypticGecko extends MovingGroundEnemy {
+export class Runecko extends MovingGroundEnemy {
     constructor(game) {
-        super(game, 124.5, 80, 1, 'crypticGecko');
+        super(game, 124.5, 80, 1, 'runecko');
         this.state = 'idle';
         this.setFps(7);
         this.lives = 2;
@@ -3972,6 +4037,7 @@ export class Sigilash extends FallingEnemy {
         this.isStunEnemy = true;
         this.x = game.width;
         this.y = -this.height;
+        this.soundId = 'angryBeeBuzzing';
 
         const minAngle = 20 * Math.PI / 180;
         const maxAngle = 65 * Math.PI / 180;
@@ -3995,29 +4061,39 @@ export class Sigilash extends FallingEnemy {
     }
 }
 
-export class Dragon extends FlyingEnemy {
+export class Wardrake extends FlyingEnemy {
     constructor(game) {
-        super(game, 182, 172, 11, 'dragon');
+        super(game, 182, 172, 11, 'wardrake');
         this.lives = 2;
         this.setFps(14);
         this.canAttack = true;
+        this._attackFrame = null;
     }
 
-    throwWindAttack() {
-        this.game.enemies.push(new WindAttack(this.game, this.x + 50, this.y + 20, 4));
+    throwRedOrbs() {
+        const cx = this.x + this.width / 2;
+        const cy = this.y + this.height / 2;
+        const spread = Math.PI / 6;
+        for (let i = -1; i <= 1; i++) {
+            this.game.enemies.push(new RedOrb(this.game, cx - 25, cy - 25, Math.PI + spread * i));
+        }
+        this.playIfOnScreen('wardrakeProjectileSound');
     }
 
     update(deltaTime) {
         super.update(deltaTime);
-        const playerDistance = Math.abs(this.game.player.x - this.x);
 
-        if (playerDistance <= 1600 && this.frameX == 7 && this.canAttack === true) {
-            this.canAttack = false;
-            if (!this.game.gameOver) {
-                this.throwWindAttack();
-                this.game.audioHandler.enemySFX.playSound('windAttackAudio', false, true);
-            }
+        if (this._attackFrame === null && this.x + this.width <= this.game.width) {
+            const distTo1 = (1 - this.frameX + 11) % 11;
+            const distTo7 = (7 - this.frameX + 11) % 11;
+            this._attackFrame = distTo1 <= distTo7 ? 1 : 7;
         }
+
+        if (this._attackFrame !== null && this.frameX === this._attackFrame && this.canAttack === true) {
+            this.canAttack = false;
+            if (!this.game.gameOver) this.throwRedOrbs();
+        }
+
         if (this.frameX === 10) this.canAttack = true;
         if (this.frameX === 0 && this.isOnScreen()) {
             this.game.audioHandler.enemySFX.playSound('ravenSingleFlap');
@@ -4075,14 +4151,27 @@ export class Plazer extends ImmobileGroundEnemy {
 export class Veynoculus extends FlyingEnemy {
     constructor(game) {
         super(game, 78.6, 50, 4, 'veynoculus');
+        this.playsOnce = true;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.playSoundOnce('veynoculusSound');
     }
 }
 
-export class SpaceCrab extends FallingEnemy {
+export class Crabula extends FallingEnemy {
     constructor(game) {
-        super(game, 125.6666666666667, 130, 2, 'spaceCrab');
+        super(game, 125.6666666666667, 130, 2, 'crabula');
         this.speedY = Math.random() * 6 + 5;
         this.setFps(10);
+        this._prevFrameX = -1;
+        this.playsOnce = true;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.playSoundOnce('crabulaEntranceSound', false, true);
+        if (this.frameX === 2 && this._prevFrameX !== 2) this.playIfOnScreen('crabulaSnippingSound', false, true);
+        this._prevFrameX = this.frameX;
     }
 }
 
@@ -4093,15 +4182,26 @@ export class Johnny extends FlyingEnemy {
         this.setFps(0);
         this.currentSpeed = 7;
         this.chaseDistance = this.game.width;
+        this.loopingSoundId = 'johnnyAlienSound';
+        this.passedPlayer = false;
+        this.angleToPlayer = Math.PI;
     }
     update(deltaTime) {
         super.update(deltaTime);
+        this.game.audioHandler.enemySFX.playSound('johnnyAlienSound');
 
-        if (this.x >= this.game.player.x && this.getDistanceToPlayer() <= this.chaseDistance) {
-            moveAlongAngle(this, this.getAngleToPlayer(), this.currentSpeed);
+        if (!this.passedPlayer) {
+            if (this.getDistanceToPlayer() <= this.chaseDistance) {
+                this.angleToPlayer = this.getAngleToPlayer();
+                moveAlongAngle(this, this.angleToPlayer, this.currentSpeed);
+            } else {
+                this.x -= this.currentSpeed;
+            }
         } else {
-            this.x -= this.currentSpeed;
+            moveAlongAngle(this, this.angleToPlayer, this.currentSpeed);
         }
+
+        if (this.x < this.game.player.x) this.passedPlayer = true;
     }
 }
 
@@ -4110,10 +4210,12 @@ export class Spindle extends MovingGroundEnemy {
         super(game, 99.69230769230769, 90, 12, 'spindle');
         this.setFps(70);
         this.xSpeed = Math.floor(Math.random() * 6) + 3;
+        this.loopingSoundId = 'runespiderWalkingSound';
     }
     update(deltaTime) {
         super.update(deltaTime);
         this.x -= this.xSpeed;
+        this.playIfOnScreen('runespiderWalkingSound');
     }
 }
 
@@ -4123,7 +4225,11 @@ export class Borion extends UndergroundEnemy {
             warningDuration: 500,
             riseDuration: 500,
             holdDuration: 5000,
-            triggerDistance: 1300
+            triggerDistance: 1300,
+            soundIds: {
+                emerge: 'borionEmergeSound',
+                retract: 'borionRetractSound'
+            }
         });
         this.lives = 3;
         this.setFps(10);
@@ -4143,6 +4249,16 @@ export class Borion extends UndergroundEnemy {
         for (let i = 0; i < 3; i++) {
             this.game.enemies.push(new shuffled[i](this.game, cx - 22, cy + 40, angles[i]));
         }
+        this.playIfOnScreen('borionProjectileSound');
+    }
+    onEmergeComplete() {
+        if (this.isOnScreen()) this.game.audioHandler.enemySFX.playSound('borionMouthSound', true);
+        this.loopingSoundId = 'borionMouthSound';
+    }
+    onRetractStart() {
+        super.onRetractStart();
+        this.game.audioHandler.enemySFX.stopSound('borionMouthSound');
+        this.loopingSoundId = null;
     }
     update(deltaTime) {
         super.update(deltaTime);
@@ -4193,13 +4309,14 @@ export class Vespion extends FlyingEnemy {
     }
 }
 
-export class GalacticPlant extends ImmobileGroundEnemy {
+export class Nebulure extends ImmobileGroundEnemy {
     constructor(game) {
-        super(game, 95.75, 150, 1, 'galacticPlant');
+        super(game, 95.75, 150, 1, 'nebulure');
         this.setFps(10);
         this.suckParticles = [];
         this.particleTimer = 0;
         this.particleInterval = 80;
+        this.loopingSoundId = 'nebulureSuctionSound';
     }
     spawnSuckParticle() {
         const my = this.y + this.height * 0.3 + 10;
@@ -4216,6 +4333,7 @@ export class GalacticPlant extends ImmobileGroundEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
+        this.playIfOnScreen('nebulureSuctionSound');
 
         const mx = this.x + this.width * 0.5;
         const my = this.y + this.height * 0.3 + 10;
@@ -4237,14 +4355,14 @@ export class GalacticPlant extends ImmobileGroundEnemy {
 
         if (this.game.gameOver || !this.isOnScreen()) return;
 
-        const dx = (this.x + this.width / 2) - this.game.player.x;
-        if (dx <= 0) return;
-
         this.particleTimer += deltaTime;
         if (this.particleTimer >= this.particleInterval) {
             this.particleTimer = 0;
             this.spawnSuckParticle();
         }
+
+        const dx = (this.x + this.width / 2) - this.game.player.x;
+        if (dx <= 0) return;
 
         this.game.player.x += dx * 0.008;
     }
@@ -4270,7 +4388,10 @@ export class Oculith extends UndergroundEnemy {
             warningDuration: 800,
             riseDuration: 300,
             holdDuration: 0,
-            triggerDistance: 700
+            triggerDistance: 700,
+            soundIds: {
+                emerge: 'oculithEmergeSound',
+             }
         });
         this.isPoisonEnemy = true;
         this.ascendSpeed = (this.hiddenY - this.visibleY) / this.riseDuration;
@@ -4314,30 +4435,36 @@ export class Lancer extends UnderwaterEnemy {
     }
 }
 
-export class GalacticSpider extends MovingGroundEnemy {
+export class Astraider extends MovingGroundEnemy {
     constructor(game) {
-        super(game, 160.5, 120, 3, 'galacticSpider');
+        super(game, 160.5, 120, 3, 'astraider');
         this.setFps(15);
         this.lives = 2;
         this.xSpeed = Math.floor(Math.random() * 2) + 1;
         this.shotCooldown = 3000;
         this.shotTimer = 2500;
+        this.loopingSoundId = 'astraiderWalkingSound';
     }
+
     throwOrb() {
         this.game.enemies.push(new CyanOrb(this.game, this.x + 55, this.y + 48));
+        this.playIfOnScreen('iceballThrowSound');
         this.shotTimer = 0;
     }
+
     update(deltaTime) {
         super.update(deltaTime);
         this.x -= this.xSpeed;
         this.shotTimer += deltaTime;
         if (this.shotTimer >= this.shotCooldown && this.isOnScreen()) this.throwOrb();
+        this.playIfOnScreen('astraiderWalkingSound');
     }
 }
 
-export class GalacticFrog extends ImmobileGroundEnemy {
+export class Frogula extends ImmobileGroundEnemy {
     constructor(game) {
-        super(game, 96.5, 100, 1, 'galacticFrog');
+        super(game, 96.5, 100, 1, 'frogula');
+        this.lives = 2;
         this.isRedEnemy = true;
         this.state = 'idle';
         this.setFps(10);
@@ -4363,16 +4490,15 @@ export class GalacticFrog extends ImmobileGroundEnemy {
 
         if (this.state === 'idle') {
             this.landingTimer += deltaTime;
-            if ((playerDistance < 1300 && this.landingTimer >= this.landingCooldown)) {
+            if ((playerDistance < 1300 && this.landingTimer >= this.landingCooldown) || this.lives <= 1) {
                 this.state = 'jump';
             }
         }
 
         if (this.state === 'jump') {
-            this.playSoundOnce('ahhhSound', false, true);
-
             if (!this.jumpInitialized) {
                 this.jumpInitialized = true;
+                this.playIfOnScreen('frogulaSound');
                 this.width = this.jumpFrameW;
                 this.groundY = this.y;
                 const dx = Math.max(300, this.x - this.game.player.x);
