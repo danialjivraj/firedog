@@ -142,7 +142,7 @@ import {
     VolcanoWasp, FrozenShard, CrystalWasp, Magmapod, VolcanicBubble, LavaBall, ScorpionPoison,
     Sigilfly, Golex, DrillIce, Frostling, CyanOrb, YellowOrb, GreenOrb, RedOrb, BlueOrb,
     PoisonousOrb, IceSilknoir, Frogula, Lancer, Johnny, Venarach, Woxin, Venflora, Venoblitz, Oculith,
-    Vespion, Ben, Vinelash, PetroPlant, Blazice, Sigilash, BigGreener,
+    Vespion, Ben, Vinelash, Mawrune, Blazice, Sigilash, BigGreener,
 } from '../../game/entities/enemies/enemies.js';
 
 import {
@@ -837,7 +837,7 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
     describe.each([
         ['CrystalWasp', CrystalWasp, 'fallback'],
         ['IceSlash', IceSlash, IceSlashCollision],
-        ['PetroPlant', PetroPlant, 'fallback'],
+        ['Mawrune', Mawrune, 'fallback'],
         ['Blazice', Blazice, 'fallback'],
         ['BlueAsteroid', BlueAsteroid, DisintegrateCollision],
         ['CyanArrow', CyanArrow, DisintegrateCollision],
@@ -1438,7 +1438,7 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
     describe.each([
         ['CrystalWasp', CrystalWasp, 'fallback'],
         ['IceSlash', IceSlash, IceSlashCollision],
-        ['PetroPlant', PetroPlant, 'fallback'],
+        ['Mawrune', Mawrune, 'fallback'],
         ['Blazice', Blazice, 'fallback'],
         ['BlueAsteroid', BlueAsteroid, DisintegrateCollision],
         ['CyanArrow', CyanArrow, DisintegrateCollision],

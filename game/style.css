@@ -27,6 +27,7 @@ body {
 #greenBand, #blankStarLeft, #blankStarMiddle, #blankStarRight, #filledStarLeft, #filledStarMiddle, #filledStarRight, #storyCompleteText,
 /* enemy lore images */ 
 #enemyLoreBookBackground, #map1Cover, #map2Cover, #map3Cover, #map4Cover, #map5Cover, #map6Cover, #map7Cover, #bonusMap1Cover, #bonusMap2Cover, #bonusMap3Cover,
+#normalProjectile, #stunProjectile, #redProjectile, #slowProjectile, #poisonProjectile, #frozenProjectile, #allProjectile,
     /* forest images */ 
     #forestmap, #forestmapNight, #forestmapFiredogDefault, #forestmapFiredogShinySkin, 
     /* saving images */ 
@@ -87,7 +88,7 @@ body {
         /* bonusmap1 */
         #iceSilknoir, #crystalWasp, #icePlant, #globby, #cryopede, #drillice, #frostling, #frobat,
         /* bonusmap2 */
-         #wardrake, #petroPlant, #sigilfly, #golex, #voidserp, #oozel, #runecko, #runespider, #sigilash,
+         #wardrake, #mawrune, #sigilfly, #golex, #voidserp, #oozel, #runecko, #runespider, #sigilash,
         /* bonusmap3 */
          #plazer, #veynoculus, #crabula, #johnny, #spindle, #borion, #vespion, #nebulure, #oculith, #lancer, #astraider, #frogula,
     /* cabin */

@@ -522,7 +522,7 @@ export class EnemySFXAudioHandler extends AudioHandler {
       //jerry
       throwingBombSound: 'throwingBombSound',
       kiteSound: 'kiteSound',
-      //duskPlant, bigGreener, petroPlant
+      //duskPlant, bigGreener
       teethChatteringSound: 'teethChatteringSound',
       //skulnap
       fuseSound: 'fuseSound',
@@ -602,6 +602,8 @@ export class EnemySFXAudioHandler extends AudioHandler {
       drilliceHoldSound: 'drilliceHoldSound',
       //oozel
       oozelFallingSound: 'oozelFallingSound',
+      //mawrune
+      mawruneBiteSound: 'mawruneBiteSound',
       //runespider
       runespiderWalkingSound: 'runespiderWalkingSound',
       //voidserp

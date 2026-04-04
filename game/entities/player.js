@@ -23,7 +23,7 @@ import {
     Aura, KarateCroco, SpearFish, LilHornet, Cactrix, BerriflyIceBall, Garry, InkBeam, VolcanoWasp, VolcanicBubble,
     CrystalWasp, DrillIce, Frostling, FrozenShard, Magmapod, ScorpionPoison, LavaBall, Sigilfly, Golex,
     CyanOrb, RedOrb, GreenOrb, BlueOrb, YellowOrb, Lancer, PoisonousOrb, Venarach, Venoblitz, Woxin,
-    Venflora, Mycora, IceSilknoir, Frogula, Johnny, Oculith, Vespion, Ben, Vinelash, PetroPlant, Blazice,
+    Venflora, Mycora, IceSilknoir, Frogula, Johnny, Oculith, Vespion, Ben, Vinelash, Mawrune, Blazice,
     Sigilash, BigGreener,
 } from './enemies/enemies.js';
 import { InkSplash } from '../animations/ink.js';
@@ -1932,7 +1932,7 @@ export class CollisionLogic {
             // frozen
             case enemy instanceof CrystalWasp:
             case enemy instanceof IceSlash:
-            case enemy instanceof PetroPlant:
+            case enemy instanceof Mawrune:
             case enemy instanceof Blazice:
             case enemy instanceof BlueAsteroid:
             case enemy instanceof CyanArrow:
@@ -2646,7 +2646,7 @@ export class CollisionLogic {
             // frozen
             case enemy instanceof CrystalWasp:
             case enemy instanceof IceSlash:
-            case enemy instanceof PetroPlant:
+            case enemy instanceof Mawrune:
             case enemy instanceof Blazice:
             case enemy instanceof BlueAsteroid:
             case enemy instanceof CyanArrow:
@@ -2945,7 +2945,7 @@ export class CollisionLogic {
             // frozen
             case enemy instanceof CrystalWasp:
             case enemy instanceof IceSlash:
-            case enemy instanceof PetroPlant:
+            case enemy instanceof Mawrune:
             case enemy instanceof Blazice:
             case enemy instanceof BlueAsteroid:
             case enemy instanceof CyanArrow:

@@ -3936,12 +3936,13 @@ export class Sigilfly extends FlyingEnemy {
     }
 }
 
-export class PetroPlant extends ImmobileGroundEnemy {
+export class Mawrune extends ImmobileGroundEnemy {
     constructor(game) {
-        super(game, 91.555555555555555555555555555556, 100, 1, 'petroPlant');
+        super(game, 108.5, 120, 1, 'mawrune');
+        this.setFps(7);
         this.isFrozenEnemy = true;
         this.lastRockAttackTime = 1999;
-        this.soundId = 'teethChatteringSound';
+        this.soundId = 'mawruneBiteSound';
     }
 
     throwYellowOrbProjectile() {

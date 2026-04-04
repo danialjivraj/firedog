@@ -14,7 +14,7 @@ import {
     Zabkous, Venflora, Virefly, Larvox, Venarach, Mycora, Toxwing, Venoblitz, Woxin,
     Cactrix, Blazice, Magmapod, Volcanurtle, VolcanoWasp, Scorvex, EmberFly, Bloburn, Scorble, Lavaryn,
     IceSilknoir, CrystalWasp, IcePlant, Globby, Cryopede, DrillIce, Frostling, Frobat,
-    Wardrake, Sigilfly, PetroPlant, Golex, Voidserp, Oozel, Runecko, Runespider, Sigilash,
+    Wardrake, Sigilfly, Mawrune, Golex, Voidserp, Oozel, Runecko, Runespider, Sigilash,
     Plazer, Veynoculus, Crabula, Johnny, Spindle, Borion, Vespion, Nebulure, Oculith, Lancer, Astraider, Frogula,
     ImmobileGroundEnemy,
 } from "./entities/enemies/enemies.js";
@@ -1117,7 +1117,7 @@ export class Game {
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
                 { type: Sigilfly, probability: 0.05, spawningDistance: 0 },
                 { type: Oozel, probability: 0.05, spawningDistance: 0 },
-                { type: PetroPlant, probability: 0.05, spawningDistance: 0 },
+                { type: Mawrune, probability: 0.05, spawningDistance: 0 },
                 { type: Runespider, probability: 0.1, spawningDistance: 0 },
                 { type: Runecko, probability: 0.05, spawningDistance: 0 },
                 { type: Sigilash, probability: 0.05, spawningDistance: 0 },

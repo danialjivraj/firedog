@@ -61,11 +61,10 @@ import {
   Bee,
   AngryBee,
   Cactrix,
-  PetroPlant,
+  Mawrune,
   Plazer,
   Veynoculus,
   VolcanoWasp,
-  Wardrake,
 } from '../../../game/entities/enemies/enemies';
 
 beforeAll(() => {
@@ -1441,8 +1440,8 @@ describe('Map 6 Enemies', () => {
     expect(c.isStunEnemy).toBe(true);
   });
 
-  it('PetroPlant throws two YellowOrbs after cooldown', () => {
-    const pp = new PetroPlant(game);
+  it('Mawrune throws two YellowOrbs after cooldown', () => {
+    const pp = new Mawrune(game);
     pp.x = game.width - pp.width - 1;
     pp.lastRockAttackTime = 2000;
 
