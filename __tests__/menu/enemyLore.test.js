@@ -930,7 +930,7 @@ describe('EnemyLore', () => {
             const cosmicStyle = menu.phraseColors['COSMIC RIFT'];
             expect(cosmicStyle).toBeDefined();
 
-            const entry = menu.highlightPhrases.find(p => p.phrase === 'COSMIC RIFT');
+            const entry = menu.highlightPhrases.find(p => p.words?.join(' ') === 'COSMIC RIFT');
             expect(entry).toBeDefined();
             expect(entry.words).toEqual(['COSMIC', 'RIFT']);
             expect(entry.style).toBe(cosmicStyle);

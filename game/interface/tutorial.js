@@ -1,4 +1,4 @@
-import { Dotter, MeatSoldier, Piper, Skulnap, SpearFish } from "../entities/enemies/enemies.js";
+import { Dotter, MeatSoldier, Piper, Skulnap, SpearFish, BigGreener, IceSilknoir, CrystalWasp } from "../entities/enemies/enemies.js";
 import { getDefaultKeyBindings } from "../config/keyBindings.js";
 import { fadeInAndOut } from "../animations/fading.js";
 
@@ -21,7 +21,10 @@ export class Tutorial {
             Tutorial: { fill: "green", stroke: "black" },
             Energy: { fill: "black", stroke: "DodgerBlue" },
             "Red Enemy": { fill: "red", stroke: "black" },
-            "Yellow Enemy": { fill: "yellow", stroke: "black" },
+            "Stun Enemy": { fill: "yellow", stroke: "black" },
+            "Poison Enemy": { fill: "#55ee66", stroke: "black" },
+            "Slow Enemy": { fill: "#7799ff", stroke: "black" },
+            "Frozen Enemy": { fill: "#aaeeff", stroke: "black" },
             "1 Life": { fill: "black", stroke: "MediumSeaGreen" },
             Settings: { fill: "LightSeaGreen", stroke: "black" },
 
@@ -41,6 +44,9 @@ export class Tutorial {
             Dotter: { fill: "FireBrick", stroke: "black" },
             Skulnap: { fill: "FireBrick", stroke: "black" },
             "Spear Fish": { fill: "FireBrick", stroke: "black" },
+            "Big Greener": { fill: "FireBrick", stroke: "black" },
+            "Ice Silknoir": { fill: "FireBrick", stroke: "black" },
+            "Crystal Wasp": { fill: "FireBrick", stroke: "black" },
 
             // abilities
             "Dive Attack": { fill: "DodgerBlue", stroke: "black" },
@@ -211,7 +217,7 @@ export class Tutorial {
             },
             {
                 message:
-                    "Up ahead is a Skulnap (a Yellow Enemy)!\nIf you make contact with any enemy that glows yellow,\nyou will get stunned for a split second and take damage.\nUse Q instead!",
+                    "Up ahead is a Skulnap (a Stun Enemy)!\nIf you make contact with any enemy that glows yellow,\nyou will get stunned for a split second and take damage.\nUse Q instead!",
                 action: "fireballAttack",
                 condition: () => {
                     const skulnap = this.game.enemies.find((enemy) => enemy instanceof Skulnap);
@@ -275,6 +281,105 @@ export class Tutorial {
             },
             {
                 message:
+                    "That's a Big Greener (a Poison Enemy)!\nIf you make contact with it, you will get poisoned.\nWhile poisoned, your Energy will start dropping!\nUse Q to defeat it safely!",
+                action: "fireballAttack",
+                condition: () => {
+                    const bigGreener = this.game.enemies.find((enemy) => enemy instanceof BigGreener);
+                    return (
+                        this.isPlayerNearEnemy(bigGreener, 1200) &&
+                        this.game.player.fireballTimer >= this.game.player.fireballCooldown &&
+                        this.game.player.isEnergyExhausted === false
+                    );
+                },
+                timerDuration: 2000,
+                spawnEnemy: (deltaTime) => {
+                    this.createSpawnEnemy(BigGreener, deltaTime, null, { throwLeaf: () => {} });
+                },
+            },
+            {
+                message:
+                    "Now hold Enter to roll into the Big Greener\nso you can see the Poison Effect!",
+                action: "rollAttack",
+                condition: () => {
+                    const bigGreener = this.game.enemies.find((enemy) => enemy instanceof BigGreener);
+                    return (
+                        this.isPlayerNearEnemy(bigGreener, 1200) &&
+                        this.game.player.isEnergyExhausted === false
+                    );
+                },
+                timerDuration: 2000,
+                spawnEnemy: (deltaTime) => {
+                    this.createSpawnEnemy(BigGreener, deltaTime, null, { throwLeaf: () => {} });
+                },
+            },
+            {
+                message:
+                    "That's an Ice Silknoir (a Slow Enemy)!\nIf you make contact with it, you will be slowed down.\nWhile slowed, your movement will be slower!\nUse Q to defeat it safely!",
+                action: "fireballAttack",
+                condition: () => {
+                    const iceSilknoir = this.game.enemies.find((enemy) => enemy instanceof IceSilknoir);
+                    return (
+                        this.isPlayerNearEnemy(iceSilknoir, 1200) &&
+                        this.game.player.fireballTimer >= this.game.player.fireballCooldown &&
+                        this.game.player.isEnergyExhausted === false
+                    );
+                },
+                timerDuration: 4000,
+                spawnEnemy: (deltaTime) => {
+                    this.createSpawnEnemy(IceSilknoir, deltaTime, this.game.height * 0.60, { speedY: 1 });
+                },
+            },
+            {
+                message:
+                    "Now hold Enter to roll into the Ice Silknoir\nso you can see the Slow Effect!",
+                action: "rollAttack",
+                condition: () => {
+                    const iceSilknoir = this.game.enemies.find((enemy) => enemy instanceof IceSilknoir);
+                    return (
+                        this.isPlayerNearEnemy(iceSilknoir, 1200) &&
+                        this.game.player.isEnergyExhausted === false
+                    );
+                },
+                timerDuration: 4000,
+                spawnEnemy: (deltaTime) => {
+                    this.createSpawnEnemy(IceSilknoir, deltaTime, this.game.height * 0.60, { speedY: 1 });
+                },
+            },
+            {
+                message:
+                    "That's a Crystal Wasp (a Frozen Enemy)!\nUsing Roll Attack or Dive Attack against it will damage you!\nHowever, any other ability is safe to use.\nUse Q to defeat it!",
+                action: "fireballAttack",
+                condition: () => {
+                    const crystalWasp = this.game.enemies.find((enemy) => enemy instanceof CrystalWasp);
+                    return (
+                        this.isPlayerNearEnemy(crystalWasp, 1200) &&
+                        this.game.player.fireballTimer >= this.game.player.fireballCooldown &&
+                        this.game.player.isEnergyExhausted === false
+                    );
+                },
+                timerDuration: 5000,
+                spawnEnemy: (deltaTime) => {
+                    this.createSpawnEnemy(CrystalWasp, deltaTime, this.game.height - 200);
+                },
+            },
+            {
+                message:
+                    "Now hold Enter to roll into the Crystal Wasp\nso you can see the Frozen Effect!",
+                action: "rollAttack",
+                condition: () => {
+                    const crystalWasp = this.game.enemies.find((enemy) => enemy instanceof CrystalWasp);
+                    return (
+                        this.isPlayerNearEnemy(crystalWasp, 1200) &&
+                        this.game.player.isEnergyExhausted === false
+                    );
+                },
+                timerDuration: 2000,
+                spawnEnemy: (deltaTime) => {
+                    this.createSpawnEnemy(CrystalWasp, deltaTime, this.game.height - 200);
+                },
+            },
+            {
+                message:
                     "Some enemies will have more than 1 Life!\n To quickly kill the enemy you can use Q followed by Enter!",
                 action: "fireballAttack",
                 condition: () => {
@@ -314,7 +419,7 @@ export class Tutorial {
                     const playerNearMeatSoldier = meatSoldier && this.isPlayerNearEnemy(meatSoldier, 600);
                     return playerOnGround && playerNearMeatSoldier;
                 },
-                timerDuration: 0,
+                timerDuration: 3000,
                 spawnEnemy: (deltaTime) => {
                     this.createSpawnEnemy(MeatSoldier, deltaTime);
                 },
@@ -428,6 +533,7 @@ export class Tutorial {
             this.tutorialPause = true;
             this.elapsedTime = 0;
             this.cooldownTime = 0;
+            this.spawnTimer = undefined;
 
             lastStep.resetGameValues();
         }, Math.max(0, fadeOutMs));
@@ -440,8 +546,7 @@ export class Tutorial {
 
     getStepKey(step) {
         if (!step) return null;
-        if (step.action) return this.getKeyForAction(step.action);
-        return step.key || null;
+        return this.getKeyForAction(step.action);
     }
 
     isStepKeyHeld(step) {
@@ -451,7 +556,8 @@ export class Tutorial {
     }
 
     createSpawnEnemy(enemyClass, deltaTime, initialY = null, additionalConfig = {}) {
-        if (this.game.enemies.length < 1) {
+        const alreadyExists = this.game.enemies.some(e => e instanceof enemyClass);
+        if (!alreadyExists) {
             if (this.spawnTimer === undefined) {
                 this.spawnTimer = 0;
             }
@@ -505,6 +611,7 @@ export class Tutorial {
 
         if (this.currentStepIndex !== this._lastStepIndex) {
             this._lastStepIndex = this.currentStepIndex;
+            this.spawnTimer = undefined;
 
             if (currentStep && currentStep.action === "dashAttack") {
                 this._prepareDashForTutorialStep(this.currentStepIndex);
@@ -547,13 +654,13 @@ export class Tutorial {
 
             if (nextStepIndex < this.steps.length) {
                 const nextStep = this.steps[nextStepIndex];
-                if (nextStep.spawnEnemy) nextStep.spawnEnemy(deltaTime);
-            }
+                const player = this.game.player;
+                const hasEnoughEnergy = player && player.energy >= 30 && !player.isEnergyExhausted;
+                const timerReady = this.elapsedTime >= nextStep.timerDuration;
 
-            if (nextStepIndex < this.steps.length) {
-                const nextStep = this.steps[nextStepIndex];
+                if (nextStep.spawnEnemy && hasEnoughEnergy && timerReady) nextStep.spawnEnemy(deltaTime);
 
-                if (this.elapsedTime >= nextStep.timerDuration && nextStep.condition()) {
+                if (timerReady && hasEnoughEnergy && nextStep.condition()) {
                     this.currentStepIndex++;
                     this.tutorialPause = true;
 

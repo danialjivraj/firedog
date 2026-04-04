@@ -263,6 +263,7 @@ describe('Tutorial', () => {
         test('spawnEnemy called for MeatSoldier on step 4 → 5', () => {
             tutorial.currentStepIndex = 4;
             tutorial.tutorialPause = false;
+            tutorial.elapsedTime = 2000;
             const spy = jest.spyOn(tutorial, 'createSpawnEnemy');
             tutorial.update(150);
             const [ctor, dt] = spy.mock.calls[0];
@@ -273,6 +274,7 @@ describe('Tutorial', () => {
         test('spawnEnemy called for Dotter on step 5 → 6', () => {
             tutorial.currentStepIndex = 5;
             tutorial.tutorialPause = false;
+            tutorial.elapsedTime = 2000;
             const spy = jest.spyOn(tutorial, 'createSpawnEnemy');
             tutorial.update(200);
             const [ctor, dt, initialY] = spy.mock.calls[0];
@@ -284,6 +286,7 @@ describe('Tutorial', () => {
         test('spawnEnemy called for SpearFish on step 18 → 19', () => {
             tutorial.currentStepIndex = 18;
             tutorial.tutorialPause = false;
+            tutorial.elapsedTime = 4000;
             const spy = jest.spyOn(tutorial, 'createSpawnEnemy');
             tutorial.update(300);
             const [ctor, dt, initY, cfg] = spy.mock.calls[0];
@@ -293,9 +296,10 @@ describe('Tutorial', () => {
             expect(cfg).toEqual({ lives: 1 });
         });
 
-        test('spawnEnemy called for Piper on step 20 → 21', () => {
-            tutorial.currentStepIndex = 20;
+        test('spawnEnemy called for Piper on step 26 → 27', () => {
+            tutorial.currentStepIndex = 26;
             tutorial.tutorialPause = false;
+            tutorial.elapsedTime = 4000;
             const spy = jest.spyOn(tutorial, 'createSpawnEnemy');
             tutorial.update(400);
             const [ctor, dt] = spy.mock.calls[0];
