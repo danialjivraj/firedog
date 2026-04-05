@@ -211,7 +211,7 @@ describe('BonusMap3NTharaxIngameCutsceneBeforeFight', () => {
             height: 200,
         });
         expect(line.images[1]).toEqual({
-            id: 'ntharaxBorder',
+            id: 'ntharaxNormalBorder',
             x: 1520,
             y: 400,
             width: 200,
@@ -276,8 +276,8 @@ describe('BonusMap3NTharaxIngameCutsceneAfterFight', () => {
             height: 200,
         });
         expect(first.images[1]).toEqual({
-            id: 'ntharaxBorder',
-            x: 750,
+            id: 'ntharaxHurtBorder',
+            x: 950,
             y: 400,
             width: 200,
             height: 200,

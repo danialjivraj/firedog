@@ -1014,6 +1014,7 @@ export class Player {
     setState(state, speed) {
         this.previousState = this.currentState;
         this.currentState = this.states[state];
+        this._lastSpeedMultiplier = speed;
 
         if (!this.game.isBossVisible) {
             if (this.isFrozen) {
@@ -1028,6 +1029,14 @@ export class Player {
         }
 
         this.currentState.enter();
+    }
+
+    refreshSpeed() {
+        let speed = this._lastSpeedMultiplier ?? 1;
+        if (this.currentState === this.states[4] && speed === 0) speed = 2;
+        if (!this.game.isBossVisible) {
+            this.game.speed = this.game.normalSpeed * speed;
+        }
     }
 
     // screen indicators

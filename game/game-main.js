@@ -534,7 +534,10 @@ export class Game {
             this.saveGameState();
 
             const t = formatTimeMs(newMs, 2);
-            this.showRecordToast(`NEW RECORD!\nFINAL BOSS BEATEN IN: ${t}`, 1000);
+            this.showRecordToast([
+                [{ text: "NEW RECORD!", fill: "yellow" }],
+                [{ text: "FINAL BOSS BEATEN IN ", fill: "yellow" }, { text: t, fill: "orange" }],
+            ], 1000);
         }
     }
 
@@ -552,7 +555,10 @@ export class Game {
             this.saveGameState();
 
             const t = formatTimeMs(newMs, 2);
-            this.showRecordToast(`NEW RECORD!\nMAP CLEARED IN: ${t}`);
+            this.showRecordToast([
+                [{ text: "NEW RECORD!", fill: "yellow" }],
+                [{ text: "MAP CLEARED IN ", fill: "yellow" }, { text: t, fill: "orange" }],
+            ]);
         }
     }
 

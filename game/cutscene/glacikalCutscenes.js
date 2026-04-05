@@ -26,7 +26,7 @@ export class BonusMap1GlacikalIngameCutsceneBeforeFight extends GlacikalCutscene
         super(game);
 
         const FIREDOG = { x: 100, y: 400, width: 200, height: 200 };
-        const GLACIKAL = { x: 1560, y: 400, width: 200, height: 200 };
+        const GLACIKAL = { x: 1590, y: 400, width: 200, height: 200 };
 
         this.addDialogue( //0
             `${this.firedog}`,
@@ -150,7 +150,7 @@ export class BonusMap1GlacikalIngameCutsceneAfterFight extends GlacikalCutscene 
         super(game);
 
         const FIREDOG = { x: 100, y: 400, width: 200, height: 200 };
-        const GLACIKAL = { x: 1100, y: 400, width: 200, height: 200 };
+        const GLACIKAL = { x: 950, y: 400, width: 200, height: 200 };
 
         this.addDialogue( //0
             `${this.glacikal}`,

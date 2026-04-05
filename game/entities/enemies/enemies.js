@@ -284,6 +284,7 @@ export class EnemyBoss extends Enemy {
                 this.game.boss.talkToBoss = false;
                 this.game.boss.runAway = false;
                 this.game.boss.current = null;
+                this.game.player.refreshSpeed();
             }
             this.markedForDeletion = true;
             this.stopRunSFX();
@@ -331,7 +332,7 @@ export class EnemyBoss extends Enemy {
             this.game.collisions = [];
             this.game.behindPlayerParticles = [];
 
-            this.x = this.game.width / 2;
+            this.x = this.game.width / 2 + 200;
             this.y = this.originalY;
             this.speedX = 0;
             this.speedY = 0;

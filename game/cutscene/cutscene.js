@@ -878,6 +878,10 @@ export class Cutscene {
         }
     }
 
+    getGlowColorForImage(_img) {
+        return null;
+    }
+
     drawSingleImage(context, img) {
         const { id, opacity, x, y, width, height, effectKey, opts } = img;
 
@@ -899,9 +903,20 @@ export class Cutscene {
         if (f) context.filter = f;
         context.globalAlpha = opacity !== undefined ? opacity : 1;
 
+        const glowColor = this.getGlowColorForImage(img);
+        if (glowColor) {
+            context.shadowColor = 'rgba(255, 208, 0, 0.5)';
+            context.shadowBlur = 30;
+        }
+
         const baseDomId = this.isFiredogEmotionImageId(id) ? this.getAliasedFiredogDomId(id) : id;
         const baseEl = document.getElementById(baseDomId);
         if (baseEl) context.drawImage(baseEl, x, y, width, height);
+
+        if (glowColor) {
+            context.shadowColor = 'transparent';
+            context.shadowBlur = 0;
+        }
 
         if (this.shouldDrawPanelBorderForImageId(id)) {
             this.drawRoundedPanelBorder(context, x, y, width, height, opts || {});

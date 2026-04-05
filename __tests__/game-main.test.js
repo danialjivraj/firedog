@@ -1165,7 +1165,10 @@ describe('Game class (game-main.js)', () => {
 
       expect(formatTimeMs).toHaveBeenCalledWith(1234, 2);
       expect(game.showRecordToast).toHaveBeenCalledWith(
-        'NEW RECORD!\nFINAL BOSS BEATEN IN: 07:30.95',
+        [
+          [{ text: 'NEW RECORD!', fill: 'yellow' }],
+          [{ text: 'FINAL BOSS BEATEN IN ', fill: 'yellow' }, { text: '07:30.95', fill: 'orange' }],
+        ],
         1000
       );
     });
@@ -1187,7 +1190,10 @@ describe('Game class (game-main.js)', () => {
 
       expect(formatTimeMs).toHaveBeenCalledWith(5000, 2);
       expect(game.showRecordToast).toHaveBeenCalledWith(
-        'NEW RECORD!\nMAP CLEARED IN: 07:30.95'
+        [
+          [{ text: 'NEW RECORD!', fill: 'yellow' }],
+          [{ text: 'MAP CLEARED IN ', fill: 'yellow' }, { text: '07:30.95', fill: 'orange' }],
+        ]
       );
     });
   });

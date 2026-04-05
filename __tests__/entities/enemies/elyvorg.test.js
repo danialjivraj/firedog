@@ -122,6 +122,7 @@ describe("elyvorg.js entities – behavior coverage", () => {
                 isSlowed: false,
 
                 setState: jest.fn(),
+                refreshSpeed: jest.fn(),
                 invisibleCooldown: 5000,
 
                 resetElectricWheelCounters: false,
@@ -1222,7 +1223,7 @@ describe("elyvorg.js entities – behavior coverage", () => {
 
             expect(mockGame.boss.talkToBoss).toBe(true);
             expect(mockGame.player.setState).toHaveBeenCalledWith(8, 0);
-            expect(boss.x).toBe(mockGame.width / 2);
+            expect(boss.x).toBe(mockGame.width / 2 + 200);
 
             jest.useRealTimers();
         });

@@ -252,17 +252,17 @@ body {
         /* orelian */
         #orelianHappy, #orelianHurt, #orelianSurprised, #orelianTalking, #orelianWorried, 
         /* penguini */
-        #penguinBatLaugh, #penguinBatTalkNormal, #penguinBatUp, #penguinGunLaugh, #penguinGunTalkNormal, #penguinGunUp, 
+        #penguiniBatLaugh, #penguiniBatTalkNormal, #penguiniBatUp, #penguiniGunLaugh, #penguiniGunTalkNormal, #penguiniGunUp, 
     /* border images */
     #blueBackground, #darkBlueBackground, #greenBackground, #redBackground, #yellowBackground,
         /* penguin */
-        #penguinBatLaughBorder, #penguinBatTalkNormalBorder, #penguinBatUpBorder, #penguinGunLaughBorder, #penguinGunTalkNormalBorder, #penguinGunUpBorder, #penguinOnFloorBorder,
+        #penguiniBatLaughBorder, #penguiniBatTalkNormalBorder, #penguiniBatUpBorder, #penguiniGunLaughBorder, #penguiniGunTalkNormalBorder, #penguiniGunUpBorder, #penguiniOnFloorBorder,
         /* elyvorg */
         #elyvorgBorder, #elyvorgTokenBorder,
         /* glacikal */
         #glacikalBorder,
         /* ntharax */
-        #ntharaxBorder
+        #ntharaxNormalBorder, #ntharaxHurtBorder
 {
     display: none;
 }

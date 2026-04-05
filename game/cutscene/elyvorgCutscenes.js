@@ -30,7 +30,7 @@ export class Map7ElyvorgIngameCutsceneBeforeFight extends ElyvorgCutscene {
 
         const FIREDOG = { x: 100, y: 400, width: 200, height: 200 };
         const ELYVORG_RIGHT = { x: 1560, y: 400, width: 200, height: 200 };
-        const ELYVORG_TOKEN_RIGHT = { x: 1560, y: 250, width: 200, height: 200 };
+        const ELYVORG_TOKEN_RIGHT = { x: 1500, y: 400, width: 200, height: 200 };
         const TOKEN_SHINE_RIGHT = { x: 1620, y: 400, width: 260, height: 260 };
 
         this.addDialogue( //0
@@ -253,10 +253,10 @@ export class Map7ElyvorgIngameCutsceneAfterFight extends ElyvorgCutscene {
         super(game);
 
         const FIREDOG = { x: 100, y: 400, width: 200, height: 200 };
-        const ELYVORG = { x: 1100, y: 400, width: 200, height: 200 };
+        const ELYVORG = { x: 950, y: 400, width: 200, height: 200 };
 
-        const ELYVORG_TOKEN = { x: 1100, y: 400, width: 200, height: 200 };
-        const TOKEN_SHINE = { x: 800, y: 400, width: 260, height: 260 };
+        const ELYVORG_TOKEN = { x: 930, y: 400, width: 200, height: 200 };
+        const TOKEN_SHINE = { x: 1030, y: 400, width: 260, height: 260 };
 
         this.addDialogue( //0
             `${this.elyvorg}`,
