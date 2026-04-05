@@ -257,6 +257,7 @@ export class CutsceneSFXAudioHandler extends AudioHandler {
       fallingOutOfPortalSound: 'fallingOutOfPortalSound',
       touchingPortalSound: 'touchingPortalSound',
       ntharaxExplosionSound: 'ntharaxExplosionSound',
+      ntharaxGrowl: 'ntharaxGrowl',
     };
     this.initializeSounds();
   }

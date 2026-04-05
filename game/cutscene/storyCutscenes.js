@@ -3890,7 +3890,7 @@ export class Map4StartCutscene extends StoryCutscene {
             `Yes. Even after the connection was severed, ${this.firedog} began having those dreams again.`,
             this.addImage('nyseraSurprised', LEFT),
             this.addImage('valdorinCrossedArms', RIGHT),
-        ); 
+        );
         this.addDialogue( //94
             `${this.valdorin}`,
             `No doctor could explain it. They believed that the intense energy of the ${this.crypticToken} had somehow left a mark on him.`,
@@ -9452,8 +9452,8 @@ export class BonusMap3StartCutscene extends StoryCutscene {
             `Wah!`,
             {
                 onAdvance: () => this.transitionWithBg({
-                    fadeIn: 500, blackDuration: 5000, fadeOut: 500,
-                    imageId: 'bonusMap3AnchoredPortal',
+                    fadeIn: 500, blackDuration: 7000, fadeOut: 500,
+                    imageId: 'blackBackground',
                     beforeFade: () => {
                         this.playSFX('touchingPortalSound', false, true);
                         this.fadeOutSFX('insidePortalSound');
@@ -9470,21 +9470,57 @@ export class BonusMap3StartCutscene extends StoryCutscene {
             this.addImage(this.setfiredogHeadache(), LEFT),
         );
         this.addDialogue( //97
+            `${this.questionMark}`,
+            `...`,
+            {
+                onAdvance: () => this.game.audioHandler.cutsceneSFX.playSound('ntharaxGrowl'),
+            },
+        );
+        this.addDialogue( //98
+            `${this.questionMark}`,
+            `RRGH...`,
+        );
+        this.addDialogue( //99
+            `${this.questionMark}`,
+            `I FEEL A PRESENCE... A PRESENCE I HAVEN'T FELT IN AGES...`,
+        );
+        this.addDialogue( //100
+            `${this.questionMark}`,
+            `A TRESPASSER... IN MY REALM.`,
+        );
+        this.addDialogue( //101
+            `${this.questionMark}`,
+            `YOU DO NOT BELONG HERE.`,
+        );
+        this.addDialogue( //102
+            `${this.questionMark}`,
+            `YOU WILL CEASE TO EXIST.`,
+            {
+                onAdvance: () => {
+                    this.fadeOutSFX('ntharaxGrowl');
+                    this.transitionWithBg({
+                        fadeIn: 500, blackDuration: 3000, fadeOut: 500,
+                        imageId: 'bonusMap3AnchoredPortal',
+                    });
+                },
+            },
+        );
+        this.addDialogue( //103
             `${this.firedog}`,
             `Ouch... That was quite the fall...`,
             this.addImage(this.setfiredogHeadache(), LEFT),
         );
-        this.addDialogue( //98
+        this.addDialogue( //104
             `${this.firedog}`,
             `Where am I?`,
             this.addImage(this.setfiredogHeadache(), LEFT),
         );
-        this.addDialogue( //99
+        this.addDialogue( //105
             `${this.firedog}`,
             `Right... I jumped through the portal. It appears I'm in ${this.cosmicRift}.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
         );
-        this.addDialogue( //100
+        this.addDialogue( //106
             `${this.firedog}`,
             `Alright, time to find ${this.ntharax} and stop him. Let's go!`,
             this.addImage(this.setfiredogUpset(), LEFT),
