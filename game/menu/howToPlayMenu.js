@@ -623,7 +623,7 @@ export class HowToPlayMenu extends BaseMenu {
                     startY: 106,
                     textX: 460,
                     textY: 100,
-                    text: 'Invisibility uses 0 Energy and during this time, no enemies can damage you!',
+                    text: 'Invisibility costs 0 Energy. While invisible, you are immune to enemy damage and status effects (such as poison and slow)!',
                     maxW: 590,
                 }),
 
@@ -662,7 +662,7 @@ export class HowToPlayMenu extends BaseMenu {
                     startY: 106,
                     textX: 460,
                     textY: 100,
-                    text: 'Dashing uses 15 Energy, dealing 3 damage for each dash. While dashing, you do not take any damage, however you can still be affected by status conditions such as slow and poison.',
+                    text: 'Dashing costs 10 Energy, dealing 3 damage for each dash. While dashing, you are immune to enemy damage and status effects (such as poison and slow)!”',
                     maxW: 670,
                 }),
 
@@ -687,7 +687,7 @@ export class HowToPlayMenu extends BaseMenu {
                     cooldownMs: 60000,
                     maxEnergy: 100,
                     startEnergy: 100,
-                    energyCost: 15,
+                    energyCost: 10,
                     regenPerSec: 5.7,
                 },
                 player: { ...basePlayer },

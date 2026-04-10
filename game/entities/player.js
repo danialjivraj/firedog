@@ -23,7 +23,7 @@ import {
     Aura, KarateCroco, SpearFish, LilHornet, Cactrix, BerriflyIceBall, Garry, InkBeam, VolcanoWasp, VolcanicBubble,
     CrystalWasp, DrillIce, Frostling, FrozenShard, Magmapod, ScorpionPoison, LavaBall, Sigilfly, Golex,
     CyanOrb, RedOrb, GreenOrb, BlueOrb, YellowOrb, Lancer, PoisonousOrb, Venarach, Venoblitz, Woxin,
-    Venflora, Mycora, IceSilknoir, Frogula, Johnny, Oculith, Vespion, Ben, Vinelash, Mawrune, Blazice,
+    Bloburn, Mycora, IceSilknoir, Frogula, Johnny, Oculith, Vespion, Ben, Vinelash, Mawrune, Blazice,
     Sigilash, BigGreener,
 } from './enemies/enemies.js';
 import { InkSplash } from '../animations/ink.js';
@@ -151,6 +151,10 @@ export class Player {
             invisible: 1,
             dash: 1,
         };
+        // hit invincibility
+        this.isInvincible = false;
+        this.invincibleTimer = 0;
+        this.invincibleDuration = 1000;
         // poison
         this.isPoisonedActive = false;
         this.poisonTimer = 0;
@@ -197,9 +201,9 @@ export class Player {
         this.dashSecondWindowTimer = 0;
         this.secondDashDistanceMultiplier = 1.75;
         this.dashAwaitingSecond = false;
-        this.dashEnergyCost = 15;
+        this.dashEnergyCost = 10;
         this.dashInstanceId = 0;
-        this.postDashGraceMs = 200;
+        this.postDashGraceMs = 500;
         this.postDashGraceTimer = 0;
         // firedog vars when interacting with boss
         this.setToRunOnce = true;
@@ -315,6 +319,9 @@ export class Player {
         this.isHourglassActive = false;
         this.hourglassTimer = 0;
         this.cooldownRates = { fireball: 1, invisible: 1, dash: 1 };
+        // hit invincibility
+        this.isInvincible = false;
+        this.invincibleTimer = 0;
         // invisibility
         this.isInvisible = false;
         this.invisibleActiveCooldownTimer = 0;
@@ -423,6 +430,7 @@ export class Player {
         this.energyLogic(deltaTime);
         this.updateBluePotionTimer(deltaTime);
         this.updateHourglass(deltaTime);
+        this.updateInvincibility(deltaTime);
         this.dashImmunityTimer(deltaTime);
         this.checkIfFiredogIsSlowed(deltaTime);
         this.updateConfuse(deltaTime);
@@ -462,6 +470,8 @@ export class Player {
 
         if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
 
+        const skipSkin = this.isInvincible && (Math.floor(this.game.hiddenTime / 80) % 2 !== 0);
+
         context.save();
         context.translate(this.x + this.width / 2, this.y + this.height / 2);
 
@@ -485,7 +495,7 @@ export class Player {
             this.facingLeft = false;
         }
 
-        this.drawPlayerWithCurrentSkin(context);
+        this.drawPlayerWithCurrentSkin(context, skipSkin);
 
         context.restore();
     }
@@ -571,7 +581,7 @@ export class Player {
         return oc;
     }
 
-    drawPlayerWithCurrentSkin(context) {
+    drawPlayerWithCurrentSkin(context, skipSkin = false) {
         const skinImg = this.getCurrentSkinImage();
         const cosmeticLayers = this.getCurrentCosmeticImagesInOrder();
 
@@ -662,42 +672,44 @@ export class Player {
             }
         };
 
-        if (slowed && poisoned) {
-            const glow = 'rgba(0,160,255,1)';
+        if (!skipSkin) {
+            if (slowed && poisoned) {
+                const glow = 'rgba(0,160,255,1)';
 
-            drawSkinGlow(glow, 7);
-            drawCosmeticsGlow(glow, 7);
+                drawSkinGlow(glow, 7);
+                drawCosmeticsGlow(glow, 7);
 
-            const mixTint = {
-                dir: 'horizontal',
-                stops: [
-                    { offset: 0.00, color: 'rgba(0,100,0,0.40)' },
-                    { offset: 0.50, color: 'rgba(0,150,120,0.38)' },
-                    { offset: 1.00, color: 'rgba(0,120,255,0.35)' },
-                ],
-            };
+                const mixTint = {
+                    dir: 'horizontal',
+                    stops: [
+                        { offset: 0.00, color: 'rgba(0,100,0,0.40)' },
+                        { offset: 0.50, color: 'rgba(0,150,120,0.38)' },
+                        { offset: 1.00, color: 'rgba(0,120,255,0.35)' },
+                    ],
+                };
 
-            drawSkinTint(mixTint);
-            drawCosmeticsTint(mixTint);
-        } else if (poisoned) {
-            const glow = 'rgba(0,130,0,1)';
+                drawSkinTint(mixTint);
+                drawCosmeticsTint(mixTint);
+            } else if (poisoned) {
+                const glow = 'rgba(0,130,0,1)';
 
-            drawSkinGlow(glow, 6);
-            drawCosmeticsGlow(glow, 6);
+                drawSkinGlow(glow, 6);
+                drawCosmeticsGlow(glow, 6);
 
-            drawSkinTint('rgba(0,100,0,0.40)');
-            drawCosmeticsTint('rgba(0,100,0,0.40)');
-        } else if (slowed) {
-            const glow = 'rgba(0,160,255,1)';
+                drawSkinTint('rgba(0,100,0,0.40)');
+                drawCosmeticsTint('rgba(0,100,0,0.40)');
+            } else if (slowed) {
+                const glow = 'rgba(0,160,255,1)';
 
-            drawSkinGlow(glow, 6);
-            drawCosmeticsGlow(glow, 6);
+                drawSkinGlow(glow, 6);
+                drawCosmeticsGlow(glow, 6);
 
-            drawSkinTint('rgba(0,120,255,0.35)');
-            drawCosmeticsTint('rgba(0,120,255,0.35)');
-        } else {
-            drawSkinBase();
-            drawCosmeticsBase();
+                drawSkinTint('rgba(0,120,255,0.35)');
+                drawCosmeticsTint('rgba(0,120,255,0.35)');
+            } else {
+                drawSkinBase();
+                drawCosmeticsBase();
+            }
         }
 
         if (this.isFrozen && this.frozenIceImage) {
@@ -726,7 +738,11 @@ export class Player {
         let regenAmount = 0.4;
 
         if (this.currentState === this.states[5]) { // dive attack slows regen
-            regenAmount *= 0.07;
+            regenAmount *= 0.15;
+        }
+
+        if (this.isHourglassActive) {
+            regenAmount *= 2;
         }
 
         if (this.energyTimer >= this.energyInterval) {
@@ -1309,7 +1325,8 @@ export class Player {
         if (this.isFrozen) return;
 
         if (this.isSpace) {
-            const spaceGravity = 0.07;
+            const weightRatio = this.weight / this.baseWeight;
+            const spaceGravity = 0.07 * (this.isSlowed ? weightRatio * 1.3 : weightRatio);
             const fallClamp = 3;
 
             this.y += this.vy;
@@ -1453,6 +1470,15 @@ export class Player {
         }
     }
 
+    updateInvincibility(deltaTime) {
+        if (!this.isInvincible) return;
+        this.invincibleTimer -= deltaTime;
+        if (this.invincibleTimer <= 0) {
+            this.invincibleTimer = 0;
+            this.isInvincible = false;
+        }
+    }
+
     updateConfuse(deltaTime) {
         if (!this.isConfused) return;
 
@@ -1542,11 +1568,14 @@ export class CollisionLogic {
     hit(enemy, player = this.game.player) {
         if (player.isInvisible) return;
         if (player.isDashing) return;
+        if (player.isInvincible) return;
 
         if (player.isFrozen) {
             if (enemy.dealsDirectHitDamage) {
                 this.game.coins -= 1;
                 this.game.lives -= 1;
+                player.isInvincible = true;
+                player.invincibleTimer = player.invincibleDuration;
             }
             return;
         }
@@ -1560,17 +1589,22 @@ export class CollisionLogic {
         if (enemy.dealsDirectHitDamage) {
             this.game.coins -= 1;
             this.game.lives -= 1;
+            player.isInvincible = true;
+            player.invincibleTimer = player.invincibleDuration;
         }
     }
 
     stunned(player = this.game.player) {
         if (player.isInvisible) return;
         if (player.isDashing) return;
+        if (player.isInvincible) return;
 
         if (player.isFrozen) {
             this.game.audioHandler.firedogSFX.playSound('stunnedSound', false, true);
             this.game.coins -= 1;
             this.game.lives -= 1;
+            player.isInvincible = true;
+            player.invincibleTimer = player.invincibleDuration;
             return;
         }
 
@@ -1579,6 +1613,8 @@ export class CollisionLogic {
 
         this.game.coins -= 1;
         this.game.lives -= 1;
+        player.isInvincible = true;
+        player.invincibleTimer = player.invincibleDuration;
     }
 
     bloodOrPoof(enemy, player = this.game.player) {
@@ -1627,17 +1663,19 @@ export class CollisionLogic {
     }
 
     handleFloatingMessages(enemy, player = this.game.player) {
+        if (enemy instanceof EnemyBoss) enemy.coinValue = 10;
         if (enemy.lives <= 0 && this.game.lives === player.previousLives) {
-            this.game.coins += 1;
+            const coins = enemy.coinValue ?? 1;
+            this.game.coins += coins;
             player.energy += 2;
             this.game.floatingMessages.push(
-                new FloatingMessage('+1', enemy.x, enemy.y, 120, 20, 30)
+                new FloatingMessage(`+${coins}`, enemy.x, enemy.y, 120, 20, 30)
             );
         }
     }
 
     triggerInkSplash(player = this.game.player) {
-        if (player.isInvisible) return;
+        if (player.isInvisible || player.isInvincible) return;
 
         const inkSplash = new InkSplash(this.game);
         inkSplash.x = player.x - inkSplash.getWidth() / 2;
@@ -1658,6 +1696,7 @@ export class CollisionLogic {
     }
 
     tryApplySlow(player = this.game.player, durationMs = 5000) {
+        if (player.isInvisible || player.isInvincible) return false;
         return this.setSlow(durationMs, player);
     }
 
@@ -1725,7 +1764,7 @@ export class CollisionLogic {
     }
 
     tryApplyPoison(player = this.game.player, durationMs = 2500) {
-        if (player.isInvisible) {
+        if (player.isInvisible || player.isInvincible) {
             player.isPoisonedActive = false;
             player.poisonTimer = 0;
             return false;
@@ -1943,6 +1982,7 @@ export class CollisionLogic {
             case enemy instanceof IceSlash:
             case enemy instanceof Mawrune:
             case enemy instanceof Blazice:
+            case enemy instanceof Lancer:
             case enemy instanceof BlueAsteroid:
             case enemy instanceof CyanArrow:
             case enemy instanceof CyanOrb: {
@@ -2277,6 +2317,7 @@ export class CollisionLogic {
         const player = this.game.player;
         if (this.game.gameOver) return;
         if (enemy.grounded === false) return;
+        if (player.isInvincible && !player.isDashing && !this.isRollingOrDiving(player)) return;
 
         const isAttackState = this.isRollingOrDiving(player);
 
@@ -2519,11 +2560,11 @@ export class CollisionLogic {
             case enemy instanceof InkBomb:
             case enemy instanceof Garry:
             case enemy instanceof InkBeam:
-                this.hit(enemy, player);
-
-                if (canReceiveStatus) {
+                if (canReceiveStatus && !player.isDashing && !treatAsDash) {
                     this.triggerInkSplash(player);
                 }
+
+                this.hit(enemy, player);
 
                 if (canPlayCollisionFx) {
                     this.playCollisionFx(enemy);
@@ -2539,7 +2580,6 @@ export class CollisionLogic {
             case enemy instanceof Aura:
             case enemy instanceof Sigilash:
             case enemy instanceof Cactrix:
-            case enemy instanceof Lancer:
             case enemy instanceof Johnny:
             // special stun collision
             case enemy instanceof Skulnap:
@@ -2582,7 +2622,6 @@ export class CollisionLogic {
             case enemy instanceof BigGreener:
             case enemy instanceof Vinelash:
             case enemy instanceof Woxin:
-            case enemy instanceof Venflora:
             case enemy instanceof Venarach:
             case enemy instanceof Venoblitz:
             case enemy instanceof Oculith:
@@ -2591,12 +2630,13 @@ export class CollisionLogic {
             case enemy instanceof PoisonDrop:
             case enemy instanceof GreenArrow:
             case enemy instanceof ScorpionPoison:
+            case enemy instanceof Bloburn:
             case enemy instanceof GreenOrb: {
                 if (canPlayCollisionFx) {
                     this.playCollisionFx(enemy, { fallbackToDefault: true });
                 }
 
-                if (canReceiveStatus) {
+                if (canReceiveStatus && !player.isDashing && !treatAsDash) {
                     const applied = this.tryApplyPoison(player, 2500);
                     this.hit(enemy, player);
 
@@ -2641,7 +2681,7 @@ export class CollisionLogic {
                     this.playCollisionFx(enemy, { fallbackToDefault: true });
                 }
 
-                if (canReceiveStatus) {
+                if (canReceiveStatus && !player.isDashing && !treatAsDash) {
                     const applied = this.tryApplySlow(player, 5000);
                     this.hit(enemy, player);
 
@@ -2657,6 +2697,7 @@ export class CollisionLogic {
             case enemy instanceof IceSlash:
             case enemy instanceof Mawrune:
             case enemy instanceof Blazice:
+            case enemy instanceof Lancer:
             case enemy instanceof BlueAsteroid:
             case enemy instanceof CyanArrow:
             case enemy instanceof CyanOrb: {
@@ -2665,8 +2706,9 @@ export class CollisionLogic {
                 }
 
                 if (canReceiveStatus && !player.isDashing && !treatAsDash) {
+                    const wasInvincible = player.isInvincible;
                     this.hit(enemy, player);
-                    this.startFrozen(player, 2000);
+                    if (!wasInvincible) this.startFrozen(player, 2000);
                 }
 
                 break;
@@ -2674,7 +2716,7 @@ export class CollisionLogic {
 
             // tunnel vision
             case enemy instanceof BlackBeamOrb:
-                if (canReceiveStatus) {
+                if (canReceiveStatus && !player.isDashing && !treatAsDash) {
                     this.hit(enemy, player);
 
                     if (canPlayCollisionFx) {
@@ -2856,7 +2898,6 @@ export class CollisionLogic {
             case enemy instanceof Sigilash:
             case enemy instanceof LilHornet:
             case enemy instanceof Cactrix:
-            case enemy instanceof Lancer:
             case enemy instanceof Johnny:
             // special collision
             case enemy instanceof Skulnap:
@@ -2894,7 +2935,6 @@ export class CollisionLogic {
             case enemy instanceof BigGreener:
             case enemy instanceof Vinelash:
             case enemy instanceof Woxin:
-            case enemy instanceof Venflora:
             case enemy instanceof Venarach:
             case enemy instanceof Venoblitz:
             case enemy instanceof Oculith:
@@ -2903,6 +2943,7 @@ export class CollisionLogic {
             case enemy instanceof PoisonDrop:
             case enemy instanceof GreenArrow:
             case enemy instanceof ScorpionPoison:
+            case enemy instanceof Bloburn:
             case enemy instanceof GreenOrb: {
                 const applied = this.tryApplyPoison(player, 2500);
 
@@ -2956,14 +2997,16 @@ export class CollisionLogic {
             case enemy instanceof IceSlash:
             case enemy instanceof Mawrune:
             case enemy instanceof Blazice:
+            case enemy instanceof Lancer:
             case enemy instanceof BlueAsteroid:
             case enemy instanceof CyanArrow:
             case enemy instanceof CyanOrb: {
                 this.playCollisionFx(enemy, { fallbackToDefault: true });
 
                 if (!player.isInvisible) {
+                    const wasInvincible = player.isInvincible;
                     this.hit(enemy, player);
-                    this.startFrozen(player, 2000);
+                    if (!wasInvincible) this.startFrozen(player, 2000);
                 }
 
                 break;
@@ -2971,7 +3014,7 @@ export class CollisionLogic {
 
             // tunnel vision
             case enemy instanceof BlackBeamOrb:
-                if (!player.isInvisible) {
+                if (!player.isInvisible && !player.isInvincible) {
                     player.triggerTunnelVision({
                         fadeInMs: 1200,
                         holdMs: 2000,

@@ -549,7 +549,7 @@ export class UI {
         }
 
         // <20 warning
-        if (showLowWarning && !paused) {
+        if (showLowWarning && !paused && !this.game.player.isHourglassActive) {
             ctx.save();
             this.roundedRectPath(ctx, x, y, w, h, r);
 
@@ -584,7 +584,7 @@ export class UI {
         }
 
         // low-energy glow
-        if (showLowWarning && !paused) {
+        if (showLowWarning && !paused && !this.game.player.isHourglassActive) {
             ctx.save();
             this.roundedRectPath(ctx, x, y, w, h, r);
 
@@ -599,19 +599,37 @@ export class UI {
             ctx.restore();
         }
 
+        // hourglass active
+        if (this.game.player.isHourglassActive && !paused && !showExhaustedMarker && !statusActive) {
+            const t = Math.sin(nowRaw * 0.010) * 0.5 + 0.5;
+            const a = 0.15 + 0.55 * t;
+
+            ctx.save();
+            ctx.shadowColor = 'rgba(255, 215, 0, 1)';
+            ctx.shadowBlur = 10 + 18 * t;
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'rgba(255, 215, 0, 1)';
+            ctx.globalAlpha = a;
+            this.roundedRectPath(ctx, x, y, w, h, r);
+            ctx.stroke();
+            ctx.restore();
+        }
+
         ctx.save();
         ctx.lineWidth = 2;
 
         const strokeColor =
             showExhaustedMarker
                 ? 'rgba(255, 40, 40, 0.95)'
-                : (ratio01 <= (this.energyBar.pulseLowThreshold / 100) && !statusActive)
-                    ? 'rgba(255, 220, 70, 0.95)'
-                    : (status === 'blue')
-                        ? 'rgba(80, 180, 255, 0.95)'
-                        : (status === 'poison')
-                            ? 'rgba(19, 216, 19, 0.95)'
-                            : 'rgba(0, 0, 0, 0.90)';
+                : (status === 'blue')
+                    ? 'rgba(80, 180, 255, 0.95)'
+                    : (status === 'poison')
+                        ? 'rgba(19, 216, 19, 0.95)'
+                        : this.game.player.isHourglassActive
+                            ? 'rgba(0, 0, 0, 0)'
+                            : (ratio01 <= (this.energyBar.pulseLowThreshold / 100))
+                                ? 'rgba(255, 220, 70, 0.95)'
+                                : 'rgba(0, 0, 0, 0.90)';
 
         ctx.strokeStyle = strokeColor;
 
@@ -632,7 +650,20 @@ export class UI {
         const maxEnergy =
             (typeof player.maxEnergy === 'number' && player.maxEnergy > 0) ? player.maxEnergy : 100;
 
-        const energy = this.clamp(player.energy ?? 0, 0, maxEnergy);
+        const realEnergy = this.clamp(player.energy ?? 0, 0, maxEnergy);
+
+        // lerp toward real value each frame
+        const now = Date.now();
+        if (this._smoothEnergy === undefined) {
+            this._smoothEnergy = realEnergy;
+            this._smoothEnergyTime = now;
+        }
+        const dt = Math.min((now - this._smoothEnergyTime) / 1000, 0.1);
+        this._smoothEnergyTime = now;
+        this._smoothEnergy += (realEnergy - this._smoothEnergy) * (1 - Math.exp(-60 * dt));
+        this._smoothEnergy = this.clamp(this._smoothEnergy, 0, maxEnergy);
+
+        const energy = this._smoothEnergy;
         const ratio = maxEnergy > 0 ? (energy / maxEnergy) : 0;
 
         const exhausted = player.isEnergyExhausted === true;

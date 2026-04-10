@@ -77,6 +77,11 @@ export class AudioHandler {
     audioElement.pause();
     audioElement.currentTime = 0;
     delete this.pausedSoundPositions[audioElement.id];
+
+    if (audioElement.dataset && typeof audioElement.dataset.originalVolume !== 'undefined') {
+      audioElement.volume = Number(audioElement.dataset.originalVolume);
+      delete audioElement.dataset.originalVolume;
+    }
   }
 
   pauseAllSounds() {
@@ -614,6 +619,7 @@ export class EnemySFXAudioHandler extends AudioHandler {
       golexAppearingSound: 'golexAppearingSound',
       //wardrake
       wardrakeProjectileSound: 'wardrakeProjectileSound',
+      wardrakeGrowlSound: 'wardrakeGrowlSound',
       //nebulure
       nebulureSuctionSound: 'nebulureSuctionSound',
       //veynoculus

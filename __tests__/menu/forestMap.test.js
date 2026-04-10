@@ -847,7 +847,7 @@ describe('ForestMapMenu', () => {
             expect(mockGame.player.isSpace).toBe(false);
 
             expect(mockGame.maxDistance).toBe(270);
-            expect(mockGame.winningCoins).toBe(200);
+            expect(mockGame.winningCoins).toBe(290);
 
             expect(Map3StartCutscene).toHaveBeenCalledWith(mockGame);
             const cutsceneInstance = Map3StartCutscene.mock.results[0].value;
@@ -870,7 +870,7 @@ describe('ForestMapMenu', () => {
             expect(mockGame.player.isSpace).toBe(false);
 
             expect(mockGame.maxDistance).toBe(9999999);
-            expect(mockGame.winningCoins).toBe(200);
+            expect(mockGame.winningCoins).toBe(150);
 
             expect(BonusMap1StartCutscene).toHaveBeenCalledWith(mockGame);
             const cutsceneInstance = BonusMap1StartCutscene.mock.results[0].value;

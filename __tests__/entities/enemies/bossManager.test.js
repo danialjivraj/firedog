@@ -116,8 +116,8 @@ describe('BossManager', () => {
             expect(typeof cfg.type).toBe('function');
             expect(cfg.gate).toEqual({
                 mode: 'coinsAndDistance',
-                minCoins: 100,
-                minDistance: 100,
+                minCoins: 240,
+                minDistance: 220,
             });
         });
 
@@ -131,7 +131,7 @@ describe('BossManager', () => {
             expect(cfg.gate).toEqual({
                 mode: 'coinsAndDistance',
                 minCoins: 200,
-                minDistance: 250,
+                minDistance: 200,
             });
         });
 
@@ -158,8 +158,8 @@ describe('BossManager', () => {
             const gate = manager.getGateForCurrentMap();
             expect(gate).toEqual({
                 mode: 'coinsAndDistance',
-                minCoins: 100,
-                minDistance: 100,
+                minCoins: 240,
+                minDistance: 220,
             });
         });
 

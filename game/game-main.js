@@ -100,6 +100,7 @@ export class Game {
         this.winningCoins = 100;
         this.coins = 0;
         this.notEnoughCoins = false;
+        this.surplusCoins = 0;
         this.time = 0;
         this.hiddenTime = 0;
         this.maxTime = 450000;
@@ -1030,7 +1031,7 @@ export class Game {
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
                 { type: Dotter, probability: 0.35, spawningDistance: 0 },
                 { type: Ghobat, probability: 0.3, spawningDistance: 0 },
-                { type: Geargle, probability: 0.35, spawningDistance: 0 },
+                { type: Geargle, probability: 0.2, spawningDistance: 0 },
                 { type: Ravengloom, probability: 0.3, spawningDistance: 0 },
                 { type: MeatSoldier, probability: 0.1, spawningDistance: 0 },
                 { type: Skulnap, probability: 0.25, spawningDistance: 50 },
@@ -1043,7 +1044,7 @@ export class Game {
                 { type: DuskPlant, probability: 0.2, spawningDistance: 0 },
                 { type: Silknoir, probability: 0.4, spawningDistance: 0 },
                 { type: WalterTheGhost, probability: 0.2, spawningDistance: 0 },
-                { type: Ben, probability: 0.2, spawningDistance: 0 },
+                { type: Ben, probability: 0.09, spawningDistance: 0 },
                 { type: Skelly, probability: 0.07, spawningDistance: 50 },
                 { type: Gloomlet, probability: 0.08, spawningDistance: 50 },
                 { type: Dolly, probability: 0.01, spawningDistance: 100 },
@@ -1057,7 +1058,7 @@ export class Game {
                 { type: Piper, probability: 0.2, spawningDistance: 50 },
                 { type: Jellion, probability: 0.09, spawningDistance: 70 },
                 { type: Voltzeel, probability: 0.08, spawningDistance: 100 },
-                { type: Garry, probability: 0.07, spawningDistance: 100 },
+                { type: Garry, probability: 0.07, spawningDistance: 130 },
             ],
             Map4: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
@@ -1085,66 +1086,66 @@ export class Game {
             ],
             Map6: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: Larvox, probability: 0.05, spawningDistance: 0 },
-                { type: Venflora, probability: 0.05, spawningDistance: 0 },
-                { type: Venarach, probability: 0.05, spawningDistance: 0 },
+                { type: Larvox, probability: 0.2, spawningDistance: 0 },
+                { type: Venflora, probability: 0.1, spawningDistance: 0 },
+                { type: Venarach, probability: 0.2, spawningDistance: 0 },
                 { type: Venoblitz, probability: 0.05, spawningDistance: 0 },
-                { type: Virefly, probability: 0.05, spawningDistance: 0 },
-                { type: Toxwing, probability: 0.05, spawningDistance: 0 },
-                { type: Woxin, probability: 0.05, spawningDistance: 0 },
-                { type: Zabkous, probability: 0.05, spawningDistance: 0 },
-                { type: Mycora, probability: 0.1, spawningDistance: 0 },
+                { type: Virefly, probability: 0.08, spawningDistance: 0 },
+                { type: Toxwing, probability: 0.09, spawningDistance: 0 },
+                { type: Woxin, probability: 0.07, spawningDistance: 50 },
+                { type: Zabkous, probability: 0.07, spawningDistance: 100 },
+                { type: Mycora, probability: 0.04, spawningDistance: 150 },
             ],
             Map7: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: EmberFly, probability: 0.1, spawningDistance: 0 },
+                { type: EmberFly, probability: 0.2, spawningDistance: 0 },
                 { type: Scorble, probability: 0.1, spawningDistance: 0 },
-                { type: Blazice, probability: 0.1, spawningDistance: 0 },
+                { type: Blazice, probability: 0.07, spawningDistance: 0 },
                 { type: Cactrix, probability: 0.1, spawningDistance: 0 },
-                { type: Magmapod, probability: 0.1, spawningDistance: 0 },
                 { type: Volcanurtle, probability: 0.1, spawningDistance: 0 },
-                { type: Bloburn, probability: 0.1, spawningDistance: 0 },
-                { type: VolcanoWasp, probability: 0.03, spawningDistance: 0 },
-                { type: Scorvex, probability: 0.1, spawningDistance: 0 },
-                { type: Lavaryn, probability: 0.1, spawningDistance: 0 },
+                { type: Bloburn, probability: 0.08, spawningDistance: 0 },
+                { type: VolcanoWasp, probability: 0.04, spawningDistance: 30 },
+                { type: Magmapod, probability: 0.08, spawningDistance: 100 },
+                { type: Scorvex, probability: 0.09, spawningDistance: 100 },
+                { type: Lavaryn, probability: 0.06, spawningDistance: 150 },
             ],
             BonusMap1: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
                 { type: IcePlant, probability: 0.2, spawningDistance: 0 },
-                { type: Cryopede, probability: 0.3, spawningDistance: 0 },
-                { type: IceSilknoir, probability: 0.4, spawningDistance: 0 },
-                { type: Frostling, probability: 0.1, spawningDistance: 0 },
-                { type: Frobat, probability: 0.4, spawningDistance: 0 },
-                { type: CrystalWasp, probability: 0.06, spawningDistance: 0 },
-                { type: Globby, probability: 0.1, spawningDistance: 50 },
-                { type: DrillIce, probability: 0.07, spawningDistance: 100 },
+                { type: Cryopede, probability: 0.2, spawningDistance: 0 },
+                { type: IceSilknoir, probability: 0.1, spawningDistance: 0 },
+                { type: Frostling, probability: 0.06, spawningDistance: 0 },
+                { type: Frobat, probability: 0.2, spawningDistance: 0 },
+                { type: CrystalWasp, probability: 0.05, spawningDistance: 0 },
+                { type: Globby, probability: 0.07, spawningDistance: 50 },
+                { type: DrillIce, probability: 0.06, spawningDistance: 100 },
             ],
             BonusMap2: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: Sigilfly, probability: 0.05, spawningDistance: 0 },
-                { type: Oozel, probability: 0.05, spawningDistance: 0 },
-                { type: Mawrune, probability: 0.05, spawningDistance: 0 },
+                { type: Sigilfly, probability: 0.1, spawningDistance: 0 },
+                { type: Oozel, probability: 0.15, spawningDistance: 0 },
                 { type: Runespider, probability: 0.1, spawningDistance: 0 },
-                { type: Runecko, probability: 0.05, spawningDistance: 0 },
+                { type: Golex, probability: 0.07, spawningDistance: 0 },
+                { type: Voidserp, probability: 0.09, spawningDistance: 0 },
                 { type: Sigilash, probability: 0.05, spawningDistance: 0 },
-                { type: Golex, probability: 0.05, spawningDistance: 0 },
-                { type: Voidserp, probability: 0.05, spawningDistance: 0 },
-                { type: Wardrake, probability: 0.05, spawningDistance: 0 },
+                { type: Mawrune, probability: 0.06, spawningDistance: 70 },
+                { type: Runecko, probability: 0.05, spawningDistance: 100 },
+                { type: Wardrake, probability: 0.04, spawningDistance: 150 },
             ],
             BonusMap3: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
                 { type: Nebulure, probability: 0.05, spawningDistance: 0 },
-                { type: Veynoculus, probability: 0.05, spawningDistance: 0 },
-                { type: Plazer, probability: 0.05, spawningDistance: 0 },
-                { type: Johnny, probability: 0.05, spawningDistance: 0 },
+                { type: Veynoculus, probability: 0.25, spawningDistance: 0 },
+                { type: Spindle, probability: 0.2, spawningDistance: 0 },
+                { type: Plazer, probability: 0.1, spawningDistance: 0 },
                 { type: Crabula, probability: 0.05, spawningDistance: 0 },
-                { type: Spindle, probability: 0.05, spawningDistance: 0 },
-                { type: Lancer, probability: 0.05, spawningDistance: 0 },
-                { type: Frogula, probability: 0.05, spawningDistance: 0 },
-                { type: Vespion, probability: 0.05, spawningDistance: 0 },
-                { type: Oculith, probability: 0.05, spawningDistance: 0 },
-                { type: Astraider, probability: 0.05, spawningDistance: 0 },
-                { type: Borion, probability: 0.05, spawningDistance: 0 },
+                { type: Vespion, probability: 0.1, spawningDistance: 0 },
+                { type: Johnny, probability: 0.04, spawningDistance: 0 },
+                { type: Lancer, probability: 0.04, spawningDistance: 0 },
+                { type: Oculith, probability: 0.05, spawningDistance: 50 },
+                { type: Frogula, probability: 0.04, spawningDistance: 100 },
+                { type: Astraider, probability: 0.04, spawningDistance: 100 },
+                { type: Borion, probability: 0.04, spawningDistance: 150 },
             ],
         };
 
@@ -1182,7 +1183,7 @@ export class Game {
         }
     }
 
-    addPowerUp() {
+    _spawnItems(list, entries) {
         if (this.bossManager.hasBossConfiguredForCurrentMap()) {
             if (this.bossManager.bossIsEngaged()) return;
             if (this.bossManager.bossGateReached()) return;
@@ -1193,70 +1194,36 @@ export class Game {
             this.background &&
             this.background.totalDistanceTraveled < this.maxDistance - 3
         ) {
-            if (Math.random() < 0.0025) {
-                this.powerUps.push(new RandomPower(this));
-            }
-            if (Math.random() < 0.005) {
-                this.powerUps.push(new RedPotion(this));
-            }
-            if (Math.random() < 0.005) {
-                this.powerUps.push(new BluePotion(this));
-            }
-            if (Math.random() < 0.005) {
-                this.powerUps.push(new Hourglass(this));
-            }
-            if (Math.random() < 0.005) {
-                this.powerUps.push(new HealthLive(this));
-            }
-            if (Math.random() < 0.005) {
-                this.powerUps.push(new Coin(this));
-            }
-            if (this.player.isUnderwater) {
-                if (Math.random() < 0.005) {
-                    this.powerUps.push(new OxygenTank(this));
-                }
+            for (const { type, chance, underwaterOnly } of entries) {
+                if (underwaterOnly && !this.player.isUnderwater) continue;
+                if (Math.random() < chance) list.push(new type(this));
             }
         }
     }
 
-    addPowerDown() {
-        if (this.bossManager.hasBossConfiguredForCurrentMap()) {
-            if (this.bossManager.bossIsEngaged()) return;
-            if (this.bossManager.bossGateReached()) return;
-        }
+    addPowerUp() {
+        this._spawnItems(this.powerUps, [
+            { type: RandomPower, chance: 0.0025 },
+            { type: RedPotion, chance: 0.005 },
+            { type: BluePotion, chance: 0.005 },
+            { type: Hourglass, chance: 0.005 },
+            { type: HealthLive, chance: 0.005 },
+            { type: Coin, chance: 0.005 },
+            { type: OxygenTank, chance: 0.005, underwaterOnly: true },
+        ]);
+    }
 
-        if (
-            this.speed > 0 &&
-            this.background &&
-            this.background.totalDistanceTraveled < this.maxDistance - 3
-        ) {
-            if (Math.random() < 0.0025) {
-                this.powerDowns.push(new RandomPower(this));
-            }
-            if (Math.random() < 0.005) {
-                this.powerDowns.push(new IceDrink(this));
-            }
-            if (Math.random() < 0.005) {
-                this.powerDowns.push(new IceCube(this));
-            }
-            if (Math.random() < 0.005) {
-                this.powerDowns.push(new Cauldron(this));
-            }
-            if (Math.random() < 0.005) {
-                this.powerDowns.push(new BlackHole(this));
-            }
-            if (Math.random() < 0.005) {
-                this.powerDowns.push(new Confuse(this));
-            }
-            if (Math.random() < 0.005) {
-                this.powerDowns.push(new DeadSkull(this));
-            }
-            if (this.player.isUnderwater) {
-                if (Math.random() < 0.005) {
-                    this.powerDowns.push(new CarbonDioxideTank(this));
-                }
-            }
-        }
+    addPowerDown() {
+        this._spawnItems(this.powerDowns, [
+            { type: RandomPower, chance: 0.0025 },
+            { type: IceDrink, chance: 0.005 },
+            { type: IceCube, chance: 0.005 },
+            { type: Cauldron, chance: 0.005 },
+            { type: BlackHole, chance: 0.005 },
+            { type: Confuse, chance: 0.005 },
+            { type: DeadSkull, chance: 0.005 },
+            { type: CarbonDioxideTank, chance: 0.005, underwaterOnly: true },
+        ]);
     }
 
     addCabin() {
@@ -1329,7 +1296,7 @@ window.addEventListener("load", function () {
                     setTimeout(() => {
                         game.fadingIn = false;
                         fadingInInitiated = false;
-                        fadeIn(canvas, 1300, () => {});
+                        fadeIn(canvas, 1300, () => { });
                     }, 1300);
                     setTimeout(() => {
                         game.waitForFadeInOpacity = false;

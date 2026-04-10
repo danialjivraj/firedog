@@ -561,17 +561,21 @@ export class Map5 extends Background {
         const fireflyLayer5 = new Firefly(game, 5);
         const fireflyLayer6 = new Firefly(game, 5);
 
-        const raindropAnimationLayer = new RaindropAnimation(game, 100);
+        const raindropBack  = new RaindropAnimation(game, 100, 'back');
+        const raindropMid   = new RaindropAnimation(game, 20, 'mid');
+        const raindropFront = new RaindropAnimation(game, 20, 'front');
 
         super(
             game,
             { imageId: 'map5Background', bgSpeed: 0 },
             fireflyLayer,
+            raindropBack,
             { imageId: 'map5TallGrass', bgSpeed: 0.1 },
             fireflyLayer2,
             { imageId: ['map5BigSunflowers1', 'map5BigSunflowers2'], zabbyId: 'map5Zabby1', bgSpeed: 0.15 },
             { imageId: ['map5Bush1', 'map5Bush2'], bgSpeed: 0.3 },
             fireflyLayer3,
+            raindropMid,
             { imageId: ['map5Trees1', 'map5Trees2'], bgSpeed: 0.4 },
             fireflyLayer4,
             { imageId: ['map5Trees3', 'map5Trees4'], zabbyId: 'map5Zabby2', bgSpeed: 0.5 },
@@ -580,7 +584,7 @@ export class Map5 extends Background {
             fireflyLayer6,
             { imageId: ['map5Flowers1', 'map5Flowers2'], bgSpeed: 0.87 },
             { imageId: 'map5Ground', bgSpeed: 1 },
-            raindropAnimationLayer,
+            raindropFront,
         );
 
         this.soundId = 'map5Soundtrack';
@@ -589,33 +593,22 @@ export class Map5 extends Background {
 
     update(deltaTime) {
         super.update(deltaTime);
-        let raindropLayer = this.backgroundLayers.find(layer => layer instanceof RaindropAnimation);
+        const raindropLayers = this.backgroundLayers.filter(layer => layer instanceof RaindropAnimation);
 
-        if (
+        const shouldRain = (
             (this.totalDistanceTraveled > 30 && this.totalDistanceTraveled <= 60) ||
             (this.totalDistanceTraveled > 120 && this.totalDistanceTraveled <= 160) ||
             (this.totalDistanceTraveled > 220)
-        ) {
-            if (raindropLayer) {
-                raindropLayer.isRaining = true;
-                this.isRaining = true;
-            }
-        } else {
-            if (raindropLayer) {
-                raindropLayer.isRaining = false;
-                this.isRaining = false;
-            }
-        }
+        ) && !this.game.cabin.isFullyVisible;
 
-        if (this.game.cabin.isFullyVisible) {
-            if (raindropLayer) raindropLayer.isRaining = false;
-            this.isRaining = false;
-        }
+        const wasRaining = this.isRaining;
+        this.isRaining = shouldRain;
+        raindropLayers.forEach(layer => { layer.isRaining = shouldRain; });
 
-        if (this.isRaining) {
+        if (shouldRain && !wasRaining) {
             this.game.audioHandler.mapSoundtrack.playSound('rainSound', true);
-        } else {
-            this.game.audioHandler.mapSoundtrack.playSound('rainSound', false, true, true);
+        } else if (!shouldRain && wasRaining) {
+            this.game.audioHandler.mapSoundtrack.fadeOutAndStop('rainSound', 2000);
         }
     }
 }
@@ -1335,9 +1328,10 @@ export class BigFish extends EntityAnimation {
 }
 
 export class RaindropAnimation {
-    constructor(game, maxRaindrops) {
+    constructor(game, maxRaindrops, depth = 'mid') {
         this.game = game;
         this.maxRaindrops = maxRaindrops;
+        this.depth = depth;
         this.raindrops = [];
         this.isRaining = false;
         this.splashes = [];
@@ -1345,56 +1339,91 @@ export class RaindropAnimation {
         this.createRaindrops();
     }
 
-    createRaindrops() {
-        for (let i = 0; i < this.maxRaindrops; i++) {
-            const x = Math.random() * this.game.width;
-            const y = Math.random() * this.game.height;
-            const length = Math.random() * 110 + 5;
-            const speed = Math.random() * 0.5 + 1;
+    makeRaindrop(randomY = true) {
+        const d = this.depth;
+        const length =
+            d === 'back'  ? Math.random() * 8  + 4  :
+            d === 'front' ? Math.random() * 35 + 30 :
+                            Math.random() * 18 + 12;
+        const speed =
+            d === 'back'  ? Math.random() * 0.15 + 0.2 :
+            d === 'front' ? Math.random() * 0.45 + 0.65 :
+                            Math.random() * 0.3  + 0.38;
+        const width =
+            d === 'back'  ? Math.random() * 0.3 + 0.4 :
+            d === 'front' ? Math.random() * 0.8 + 1.2 :
+                            Math.random() * 0.5 + 0.7;
+        const opacity =
+            d === 'back'  ? Math.random() * 0.15 + 0.58 :
+            d === 'front' ? Math.random() * 0.3  + 0.55 :
+                            Math.random() * 0.15 + 0.25;
 
-            this.raindrops.push({ x, y, length, speed });
+        return {
+            x: Math.random() * (this.game.width + 80) - 40,
+            y: randomY ? Math.random() * this.game.height : -Math.random() * this.game.height * 0.6,
+            length, speed, width, opacity,
+            active: true,
+        };
+    }
+
+    createRaindrops() {
+        const count = this.maxRaindrops * 3;
+        for (let i = 0; i < count; i++) {
+            const drop = this.makeRaindrop(false);
+            drop.active = false;
+            this.raindrops.push(drop);
         }
     }
 
     update(deltaTime) {
-        if (this.isRaining) {
-            for (let i = 0; i < this.raindrops.length; i++) {
-                const raindrop = this.raindrops[i];
+        const hasActiveDrops = this.raindrops.some(d => d.active);
+        if (!this.isRaining && !hasActiveDrops && this.splashes.length === 0) return;
 
-                raindrop.y += raindrop.speed * deltaTime;
+        for (let i = 0; i < this.raindrops.length; i++) {
+            const drop = this.raindrops[i];
+            if (!drop.active) continue;
 
-                if (raindrop.y > this.game.height) {
-                    raindrop.y = 0;
-                    raindrop.x = Math.random() * this.game.width;
+            drop.y += drop.speed * deltaTime;
+            drop.x -= drop.speed * deltaTime * 0.12;
 
-                    if (Math.random() <= 0.065) {
-                        const splashAnimation = new RaindropSplashAnimation(this.game, raindrop.x);
-                        this.splashes.push(splashAnimation);
+            if (drop.y - drop.length > this.game.height) {
+                if (this.isRaining) {
+                    if (Math.random() <= 0.1) {
+                        this.splashes.push(new RaindropSplashAnimation(this.game, drop.x));
                     }
+                    Object.assign(drop, this.makeRaindrop(false));
+                } else {
+                    drop.active = false;
                 }
             }
+        }
 
-            this.splashes.forEach(splash => splash.update(deltaTime));
+        this.splashes.forEach(splash => splash.update(deltaTime));
+        this.splashes = this.splashes.filter(splash => !splash.markedForDeletion);
 
-            this.splashes = this.splashes.filter(splash => !splash.markedForDeletion);
+        if (this.isRaining) {
+            this.raindrops.forEach(d => { if (!d.active) { Object.assign(d, this.makeRaindrop(false)); d.active = true; } });
         }
     }
 
     draw(context) {
-        context.save();
-        if (this.isRaining) {
-            context.strokeStyle = '#808080';
-            context.lineWidth = 0.5;
+        const hasActiveDrops = this.raindrops.some(d => d.active);
+        if (!this.isRaining && !hasActiveDrops && this.splashes.length === 0) return;
 
-            for (let i = 0; i < this.raindrops.length; i++) {
-                const raindrop = this.raindrops[i];
-                context.beginPath();
-                context.moveTo(raindrop.x, raindrop.y);
-                context.lineTo(raindrop.x, raindrop.y + raindrop.length);
-                context.stroke();
-            }
-            this.splashes.forEach(splash => splash.draw(context));
+        context.save();
+        for (let i = 0; i < this.raindrops.length; i++) {
+            const drop = this.raindrops[i];
+            if (!drop.active) continue;
+            const dx = drop.length * 0.12;
+
+            context.beginPath();
+            context.moveTo(drop.x, drop.y);
+            context.lineTo(drop.x - dx, drop.y + drop.length);
+            context.strokeStyle = `rgba(210, 230, 255, ${drop.opacity})`;
+            context.lineWidth = drop.width;
+            context.stroke();
         }
+        this.splashes.forEach(splash => splash.draw(context));
         context.restore();
     }
 }

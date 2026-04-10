@@ -34,6 +34,7 @@ export class Enemy {
         this.frameInterval = 1000 / this.fps;
         this.frameTimer = 0;
         this.markedForDeletion = false;
+        this.coinValue = 1;
         this.lives = 1;
         this.id = Math.random().toString(36).substring(2, 11);
         this.soundId = undefined;
@@ -2080,7 +2081,7 @@ export class WalterTheGhost extends FlyingEnemy {
 
     draw(context) {
         withCtx(context, () => {
-            context.globalAlpha = 0.3;
+            context.globalAlpha = 0.5;
             super.draw(context);
         });
     }
@@ -2136,6 +2137,7 @@ export class Aura extends FlyingEnemy {
 
     update(deltaTime) {
         super.update(deltaTime);
+        this.playIfOnScreen('auraSoundEffect', true);
 
         const distanceToPlayer = this.getDistanceToPlayer();
 
@@ -2181,7 +2183,6 @@ export class Dolly extends FlyingEnemy {
     update(deltaTime) {
         super.update(deltaTime);
         this.game.audioHandler.enemySFX.playSound('dollHumming');
-        this.game.audioHandler.enemySFX.playSound('auraSoundEffect', true);
 
         this.auraTimer += deltaTime;
 
@@ -2287,6 +2288,7 @@ export class SpearFish extends MovingGroundEnemy {
         super(game, 91.875, 110, 7, 'spearFish');
         this.isRedEnemy = true;
         this.lives = 2;
+        this.coinValue = 2;
         this.setFps(60);
         this.loopingSoundId = 'stepWaterSound';
     }
@@ -2317,6 +2319,7 @@ export class Piper extends ImmobileGroundEnemy {
         super(game, 87, 67, 2, 'piper');
         this.state = 'idle';
         this.lives = 2;
+        this.coinValue = 2;
         this.setFps(14);
         this.playOnce = true;
     }
@@ -2391,7 +2394,7 @@ export class Voltzeel extends FallingEnemy {
 export class Garry extends ImmobileGroundEnemy {
     constructor(game) {
         super(game, 165, 122, 3, 'garry');
-        this.inkCooldown = 2000;
+        this.inkCooldown = 3000;
         this.inkTimer = this.inkCooldown;
     }
 
@@ -2542,6 +2545,7 @@ export class KarateCroco extends MovingGroundEnemy {
         this.state = 'idle';
         this.setFps(10);
         this.lives = 2;
+        this.coinValue = 2;
         this.playsOnce = true;
         this.flykickFrameX = 0;
         this.flykickFrameTimer = 0;
@@ -2595,6 +2599,7 @@ export class Vinelash extends UndergroundEnemy {
         });
         this.isPoisonEnemy = true;
         this.lives = 2;
+        this.coinValue = 2;
         this.setFps(12);
     }
 }
@@ -2603,6 +2608,7 @@ export class Bramble extends ClimbingEnemy {
     constructor(game) {
         super(game, 174.2, 140, 4, 'bramble');
         this.lives = 2;
+        this.coinValue = 2;
         this.setFps(13);
         this.soundId = 'nightSpiderSound';
         this.swingAngle = 0;
@@ -2809,6 +2815,7 @@ export class Sunflora extends ImmobileGroundEnemy {
     constructor(game) {
         super(game, 132, 137, 3, 'sunflora');
         this.lives = 2;
+        this.coinValue = 2;
         this.setFps(15);
         this.yellowBeamTimer = 350;
     }
@@ -2877,8 +2884,7 @@ export class Eggry extends ImmobileGroundEnemy {
                 this.startJump();
                 this.jumpedThisCycle = true;
             }
-        } else {
-            this.isJumping = false;
+        } else if (!this.isJumping) {
             this.jumpedThisCycle = false;
             this.y = this.groundY;
         }
@@ -2913,6 +2919,7 @@ export class Strawspider extends ClimbingEnemy {
     constructor(game) {
         super(game, 93.83333333333333, 110, 5, 'strawspider');
         this.lives = 2;
+        this.coinValue = 2;
         this.setFps(13);
         this.soundId = 'nightSpiderSound';
         this.swingAngle = 0;
@@ -2940,7 +2947,8 @@ export class Strawspider extends ClimbingEnemy {
 // Map 6 --------------------------------------------------------------------------------------------------------------------------------------
 export class Toxwing extends VerticalEnemy {
     constructor(game) {
-        super(game, 121.5, 100, 1, 'toxwing');
+        super(game, 127, 105, 1, 'toxwing');
+        this.setFps(12);
         this.angle = Math.random() * Math.PI * 2;
         this.va = Math.random() * 0.04 + 0.04;
         this.amplitude = 15;
@@ -2962,8 +2970,9 @@ export class Mycora extends ImmobileGroundEnemy {
         super(game, 165.125, 200, 7, 'mycora');
         this.isRedEnemy = true;
         this.lives = 2;
+        this.coinValue = 2;
         this.setFps(15);
-        this.shotTurn = 0;
+        this.shotTurn = 1;
     }
     throwOrbs() {
         const cx = this.x + this.width / 2 - 15;
@@ -2986,8 +2995,9 @@ export class Mycora extends ImmobileGroundEnemy {
             this.shotTurn++;
 
             if (
-                this.shotTurn % 2 === 0 &&
+                this.shotTurn % 3 === 0 &&
                 this.isOnScreen() &&
+                this.x >= this.game.player.x &&
                 !this.game.gameOver
             ) {
                 this.throwOrbs();
@@ -3078,6 +3088,7 @@ export class Venoblitz extends MovingGroundEnemy {
         super(game, 133.5, 100, 5, 'venoblitz');
         this.xSpeed = Math.floor(Math.random() * 3) + 9;
         this.lives = 2;
+        this.coinValue = 2;
         this.isPoisonEnemy = true;
         this.soundId = 'venoblitzRunningSound';
     }
@@ -3122,7 +3133,7 @@ export class Venflora extends ImmobileGroundEnemy {
         super(game, 98.28571428571429, 150, 6, 'venflora');
         this.isPoisonEnemy = true;
         this.setFps(15);
-        this.shotTurn = 3;
+        this.shotTurn = 5;
     }
     shoot() {
         const cx = this.x + this.width / 2;
@@ -3136,9 +3147,9 @@ export class Venflora extends ImmobileGroundEnemy {
     advanceFrame(deltaTime) {
         const prevFrame = this.frameX;
         super.advanceFrame(deltaTime);
-        if (prevFrame === 1 && this.frameX === 2 && this.isOnScreen()) {
+        if (prevFrame === 1 && this.frameX === 2 && this.isOnScreen() && this.x >= this.game.player.x) {
             this.shotTurn++;
-            if (this.shotTurn % 4 === 0) this.shoot();
+            if (this.shotTurn % 6 === 0) this.shoot();
         }
     }
 }
@@ -3166,6 +3177,7 @@ export class Zabkous extends MovingGroundEnemy {
 
         this.game = game;
         this.lives = 2;
+        this.coinValue = 2;
         this.setFps(60);
 
         this.state = 'run';
@@ -3274,6 +3286,8 @@ export class Zabkous extends MovingGroundEnemy {
 export class Cactrix extends MovingGroundEnemy {
     constructor(game) {
         super(game, 115.3, 130, 9, 'cactrix');
+        this.lives = 2;
+        this.coinValue = 2;
         this.setFps(20);
         this.isStunEnemy = true;
         this.xSpeed = Math.floor(Math.random() * 2) + 5;
@@ -3297,6 +3311,7 @@ export class Volcanurtle extends MovingGroundEnemy {
     constructor(game) {
         super(game, 152.25, 100, 7, 'volcanurtle');
         this.lives = 2;
+        this.coinValue = 2;
         this.setFps(8);
         this.xSpeed = Math.floor(Math.random() * 1) + 1;
         this.playsOnce = true;
@@ -3419,6 +3434,7 @@ export class Magmapod extends ImmobileGroundEnemy {
         super(game, 167, 130, 1, 'magmapod');
         this.isRedEnemy = true;
         this.lives = 3;
+        this.coinValue = 3;
         this.setFps(7);
         this.bubbleCooldown = 1000;
         this.bubbleTimer = 800;
@@ -3454,7 +3470,7 @@ export class Scorvex extends ImmobileGroundEnemy {
         if (this.poisonCooldown > 0) this.poisonCooldown -= deltaTime;
         const player = this.game.player;
         const playerAhead = player.x < this.x;
-        if (this.frameX === 4 && this.prevFrameX !== 4 && this.poisonCooldown <= 0 && this.x + this.width / 2 < this.game.width && playerAhead) {
+        if (this.frameX === 4 && this.prevFrameX !== 4 && this.poisonCooldown <= 0 && this.x + this.width / 2 < this.game.width && playerAhead && !this.game.gameOver) {
             this.game.enemies.push(new ScorpionPoison(this.game, this.x + 35, this.y + 10));
             this.playIfOnScreen('scorvexProjectileSound');
             this.poisonCooldown = 1300;
@@ -3478,6 +3494,7 @@ export class EmberFly extends FlyingEnemy {
 export class Bloburn extends VerticalEnemy {
     constructor(game) {
         super(game, 52, 50, 0, 'bloburn');
+        this.isPoisonEnemy = true;
         this.initialSpeed = 3;
         this.currentSpeed = 4;
         this.chaseDistance = this.game.width;
@@ -3552,6 +3569,7 @@ export class Lavaryn extends UndergroundEnemy {
             }
         });
         this.lives = 2;
+        this.coinValue = 2;
         this.setFps(5);
         this._lastFrameCount = 0;
     }
@@ -3658,6 +3676,7 @@ export class IcePlant extends ImmobileGroundEnemy {
             this.y + this.height / 2 - 20,
             8
         );
+        shard.speedY = 0.5;
         this.game.enemies.push(shard);
         this.playIfOnScreen('iceballThrowSound');
         this.lastShardTime = 0;
@@ -3667,7 +3686,7 @@ export class IcePlant extends ImmobileGroundEnemy {
         const prevFrameX = this.frameX;
         super.update(deltaTime);
         this.lastShardTime += deltaTime;
-        if (this.lastShardTime >= this.shardCooldown && this.frameX === 1 && prevFrameX !== 1 && this.x < this.game.width - this.width) {
+        if (this.lastShardTime >= this.shardCooldown && this.frameX === 1 && prevFrameX !== 1 && this.x < this.game.width - this.width && this.x >= this.game.player.x) {
             this.throwShard();
         }
     }
@@ -3745,7 +3764,6 @@ export class Cryopede extends MovingGroundEnemy {
         if (!this.spawned && this.lives <= 0) {
             this.spawned = true;
             const cx = this.x + this.width / 2;
-            this.game.enemies.push(new CryopedeMini(this.game, cx, this.y, -4));
             this.game.enemies.push(new CryopedeMini(this.game, cx, this.y, 3));
         }
     }
@@ -3808,6 +3826,7 @@ export class Golex extends MovingGroundEnemy {
     constructor(game) {
         super(game, 152, 140, 1, 'golex');
         this.lives = 2;
+        this.coinValue = 2;
         this.isRedEnemy = true;
         this.setFps(6);
         this.y = this.y + 17;
@@ -3869,20 +3888,57 @@ export class Runespider extends MovingGroundEnemy {
 }
 
 
+export class OozelMini extends MovingGroundEnemy {
+    constructor(game, x, y, launchVX) {
+        super(game, 124 * 0.715, 50 * 0.715, 3, 'oozel');
+        this.setFps(8);
+        this.x = x;
+        this.y = y;
+        this.vx = launchVX;
+        this.vy = -(Math.random() * 5 + 7);
+        this.gravity = 0.4;
+        this.grounded = false;
+        this.groundY = game.height - (50 * 0.715) - game.groundMargin;
+        this.loopingSoundId = 'slimyWalkSound';
+    }
+    update(deltaTime) {
+        if (!this.grounded) {
+            if (!this.game.cabin.isFullyVisible) this.x -= this.game.speed;
+            this.x += this.vx;
+            this.vy += this.gravity;
+            this.y += this.vy;
+            this.advanceFrame(deltaTime);
+            if (this.y >= this.groundY) {
+                this.y = this.groundY;
+                this.grounded = true;
+                this.xSpeed = Math.floor(Math.random() * 2) + 3;
+            }
+            if (this.x + this.width < 0) this.markedForDeletion = true;
+            return;
+        }
+        super.update(deltaTime);
+        this.x -= this.xSpeed;
+        this.playIfOnScreen('slimyWalkSound');
+    }
+    draw(context) {
+        drawSprite(context, this.image, this.frameX * 124, 0, 124, 50, this.x, this.y, this.width, this.height);
+        if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
+    }
+}
+
 export class Oozel extends MovingGroundEnemy {
     constructor(game) {
         super(game, 124, 50, 3, 'oozel');
         this.setFps(8);
         this.groundY = game.height - this.height - game.groundMargin;
         this.y = -this.height;
-        const minX = Math.max(game.width / 2, game.player.x);
-        const maxX = game.width - this.width;
-        this.x = minX + Math.random() * (maxX - minX);
+        this.x = game.width - this.width;
         this.speedY = Math.random() * 2 + 3;
         this.xSpeed = Math.floor(Math.random() * 2) + 3;
         this.state = 'falling';
         this.playsOnce = true;
         this.loopingSoundId = 'slimyWalkSound';
+        this.spawned = false;
     }
     update(deltaTime) {
         super.update(deltaTime);
@@ -3898,6 +3954,12 @@ export class Oozel extends MovingGroundEnemy {
             this.x -= this.xSpeed;
             this.playIfOnScreen('slimyWalkSound');
         }
+        if (!this.spawned && this.lives <= 0) {
+            this.spawned = true;
+            const cx = this.x + this.width / 2;
+            this.game.enemies.push(new OozelMini(this.game, cx, this.y, -4));
+            this.game.enemies.push(new OozelMini(this.game, cx, this.y, 3));
+        }
     }
 }
 
@@ -3905,6 +3967,7 @@ export class Voidserp extends MovingGroundEnemy {
     constructor(game) {
         super(game, 217, 100, 1, 'voidserp');
         this.lives = 2;
+        this.coinValue = 2;
         this.setFps(6);
         this.xSpeed = Math.floor(Math.random() * 4) + 2;
         this.loopingSoundId = 'voidserpSound';
@@ -3942,7 +4005,7 @@ export class Mawrune extends ImmobileGroundEnemy {
         super(game, 108.5, 120, 1, 'mawrune');
         this.setFps(7);
         this.isFrozenEnemy = true;
-        this.lastRockAttackTime = 1999;
+        this.lastRockAttackTime = 2599;
         this.soundId = 'mawruneBiteSound';
     }
 
@@ -3960,7 +4023,7 @@ export class Mawrune extends ImmobileGroundEnemy {
     update(deltaTime) {
         super.update(deltaTime);
         this.lastRockAttackTime += deltaTime;
-        if (this.lastRockAttackTime >= 2000 && this.x < this.game.width - this.width && this.game.player.x < this.x) {
+        if (this.lastRockAttackTime >= 2600 && this.x < this.game.width - this.width && this.game.player.x < this.x) {
             this.throwYellowOrbProjectile();
         }
     }
@@ -3972,6 +4035,7 @@ export class Runecko extends MovingGroundEnemy {
         this.state = 'idle';
         this.setFps(7);
         this.lives = 2;
+        this.coinValue = 2;
         this.playsOnce = true;
         this.jumpGroundY = 0;
         this.jumpTime = 0;
@@ -4067,9 +4131,11 @@ export class Wardrake extends FlyingEnemy {
     constructor(game) {
         super(game, 182, 172, 11, 'wardrake');
         this.lives = 2;
+        this.coinValue = 2;
         this.setFps(14);
         this.canAttack = true;
         this._attackFrame = null;
+        this.playsOnce = true;
     }
 
     throwRedOrbs() {
@@ -4084,6 +4150,7 @@ export class Wardrake extends FlyingEnemy {
 
     update(deltaTime) {
         super.update(deltaTime);
+        this.playSoundOnce('wardrakeGrowlSound');
 
         if (this._attackFrame === null && this.x + this.width <= this.game.width) {
             const distTo1 = (1 - this.frameX + 11) % 11;
@@ -4234,6 +4301,7 @@ export class Borion extends UndergroundEnemy {
             }
         });
         this.lives = 3;
+        this.coinValue = 3;
         this.setFps(10);
         this.drawOffsetY = 30;
         this.orbTimer = 0;
@@ -4355,13 +4423,15 @@ export class Nebulure extends ImmobileGroundEnemy {
         }
         this.suckParticles = this.suckParticles.filter(p => !p.done && p.lifeTimer < p.maxLife);
 
-        if (this.game.gameOver || !this.isOnScreen()) return;
+        if (!this.isOnScreen()) return;
 
         this.particleTimer += deltaTime;
         if (this.particleTimer >= this.particleInterval) {
             this.particleTimer = 0;
             this.spawnSuckParticle();
         }
+
+        if (this.game.gameOver) return;
 
         const dx = (this.x + this.width / 2) - this.game.player.x;
         if (dx <= 0) return;
@@ -4393,7 +4463,7 @@ export class Oculith extends UndergroundEnemy {
             triggerDistance: 700,
             soundIds: {
                 emerge: 'oculithEmergeSound',
-             }
+            }
         });
         this.isPoisonEnemy = true;
         this.ascendSpeed = (this.hiddenY - this.visibleY) / this.riseDuration;
@@ -4424,7 +4494,7 @@ export class Oculith extends UndergroundEnemy {
 export class Lancer extends UnderwaterEnemy {
     constructor(game) {
         super(game, 181.25, 70, 3, 'lancer');
-        this.isStunEnemy = true;
+        this.isFrozenEnemy = true;
         this.y = this.game.player.y;
         this.va = Math.random() * 0.001 + 0.2;
         this.setFps(15);
@@ -4442,6 +4512,7 @@ export class Astraider extends MovingGroundEnemy {
         super(game, 160.5, 120, 3, 'astraider');
         this.setFps(15);
         this.lives = 2;
+        this.coinValue = 2;
         this.xSpeed = Math.floor(Math.random() * 2) + 1;
         this.shotCooldown = 3000;
         this.shotTimer = 2500;
@@ -4467,6 +4538,7 @@ export class Frogula extends ImmobileGroundEnemy {
     constructor(game) {
         super(game, 96.5, 100, 1, 'frogula');
         this.lives = 2;
+        this.coinValue = 2;
         this.isRedEnemy = true;
         this.state = 'idle';
         this.setFps(10);
@@ -4503,12 +4575,8 @@ export class Frogula extends ImmobileGroundEnemy {
                 this.playIfOnScreen('frogulaSound');
                 this.width = this.jumpFrameW;
                 this.groundY = this.y;
-                const dx = Math.max(300, this.x - this.game.player.x);
-                this.jumpVX = dx / 60;
-                const t = dx / this.jumpVX;
-                const playerTargetY = this.game.player.y + this.game.player.height / 2;
-                const dy = playerTargetY - this.groundY;
-                this.jumpVY = clamp((dy - 0.5 * this.jumpGravity * t * t) / t, -15, -3);
+                this.jumpVX = 7;
+                this.jumpVY = -12;
             }
 
             this.jumpFrameTimer += deltaTime;

@@ -16,11 +16,27 @@ export class PenguiniCutscene extends Cutscene {
 
         const cashOutDialogue = this.dialogue[this.dialogueIndex];
         if (cashOutDialogue.dialogue.includes("That's good enough, give me that!") && this.lastSound2Played) {
-            this.game.audioHandler.cutsceneSFX.playSound("cashOut");
+            this.game.audioHandler.cutsceneSFX.playSound("cashOut", false, true);
             this.game.coins -= this.game.winningCoins;
             this.game.floatingMessages.push(
                 new FloatingMessage(
                     "-" + this.game.winningCoins,
+                    150,
+                    50,
+                    this.game.penguini.x + 75,
+                    this.game.penguini.y + 40,
+                    40,
+                    "green"
+                )
+            );
+        }
+
+        if (cashOutDialogue.dialogue.includes("I'll be taking those extra coins too.") && this.lastSound2Played) {
+            this.game.audioHandler.cutsceneSFX.playSound("cashOut", false, true);
+            this.game.coins -= this.game.surplusCoins;
+            this.game.floatingMessages.push(
+                new FloatingMessage(
+                    "-" + this.game.surplusCoins,
                     150,
                     50,
                     this.game.penguini.x + 75,
@@ -1653,6 +1669,72 @@ export class CoinDialogueConditionCutscene extends PenguiniCutscene {
         super(game);
     }
 
+    makeSurplusDialogue(mapId, penguinX) {
+        const penguinNormalBorderByMap = {
+            Map1: 'penguiniBatTalkNormalBorder',
+            Map2: 'penguiniBatTalkNormalBorder',
+            Map3: 'penguiniBatTalkNormalBorder',
+            Map4: 'penguiniGunTalkNormalBorder',
+            Map5: 'penguiniGunTalkNormalBorder',
+            Map6: 'penguiniGunTalkNormalBorder',
+            BonusMap1: 'penguiniGunTalkNormalBorder',
+            BonusMap2: 'penguiniGunTalkNormalBorder',
+            BonusMap3: 'penguiniGunTalkNormalBorder',
+        };
+
+        const penguinLaughBorderByMap = {
+            Map1: 'penguiniBatLaughBorder',
+            Map2: 'penguiniBatLaughBorder',
+            Map3: 'penguiniBatLaughBorder',
+            Map4: 'penguiniGunLaughBorder',
+            Map5: 'penguiniGunLaughBorder',
+            Map6: 'penguiniGunLaughBorder',
+            BonusMap1: 'penguiniGunLaughBorder',
+            BonusMap2: 'penguiniGunLaughBorder',
+            BonusMap3: 'penguiniGunLaughBorder',
+        };
+
+        const penguinNormalBorder = penguinNormalBorderByMap[mapId] || 'penguiniBatTalkNormalBorder';
+        const penguinLaughBorder = penguinLaughBorderByMap[mapId] || 'penguiniBatLaughBorder';
+        const FIREDOG = { x: 100, y: 400, width: 200, height: 200 };
+        const PENGUIN = { x: penguinX, y: 400, width: 200, height: 200 };
+
+        return [
+            {
+                character: this.penguini,
+                dialogue: `Hmm... you still have quite a few coins on you.`,
+                images: [
+                    this.addImage(this.setfiredogNormalBorder(), FIREDOG),
+                    this.addImage(penguinNormalBorder, PENGUIN, { talking: true }),
+                ],
+            },
+            {
+                character: this.penguini,
+                dialogue: `I'll be taking those extra coins too.`,
+                images: [
+                    this.addImage(this.setfiredogNormalBorder(), FIREDOG),
+                    this.addImage(penguinLaughBorder, PENGUIN, { talking: true }),
+                ],
+            },
+            {
+                character: this.firedog,
+                dialogue: `Are you serious right now?!`,
+                images: [
+                    this.addImage(this.setfiredogAngryBorder(), FIREDOG, { talking: true }),
+                    this.addImage(penguinLaughBorder, PENGUIN),
+                ],
+            },
+            {
+                character: this.penguini,
+                dialogue: `Those are the rules!`,
+                images: [
+                    this.addImage(this.setfiredogAngryBorder(), FIREDOG),
+                    this.addImage(penguinLaughBorder, PENGUIN, { talking: true }),
+                ],
+            },
+        ];
+    }
+
     makeEnoughCoinsDialogue(mapId, firedogX = 100, penguinX = 1400) {
         const penguinLaughByMap = {
             Map1: 'penguiniBatLaughBorder',
@@ -2030,6 +2112,21 @@ export class CoinDialogueConditionCutscene extends PenguiniCutscene {
 
             default:
                 break;
+        }
+
+        if (!notEnough) {
+            const penguinXByMap = {
+                Map1: 1400, Map2: 1400, Map3: 1265,
+                Map4: 1430, Map5: 1430, Map6: 1430,
+                BonusMap1: 1430, BonusMap2: 1430, BonusMap3: 1430,
+            };
+            const penguinX = penguinXByMap[mapId] ?? 1400;
+            const leftover = this.game.coins - this.game.winningCoins;
+            const maxLeftover = 300;
+            if (leftover > maxLeftover) {
+                this.game.surplusCoins = leftover - maxLeftover;
+                newDialogues.push(...this.makeSurplusDialogue(mapId, penguinX));
+            }
         }
 
         return newDialogues;

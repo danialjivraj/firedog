@@ -1049,7 +1049,6 @@ describe('Map 2 Enemies', () => {
     d.update(16);
 
     expect(playSpy).toHaveBeenCalledWith('dollHumming');
-    expect(playSpy).toHaveBeenCalledWith('auraSoundEffect', true);
   });
 });
 
@@ -1156,7 +1155,7 @@ describe('Map 3 Enemies', () => {
     expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith('inkSpit', false, true);
   });
 
-  it('Garry fires one InkBeam every 2000ms while remaining on-screen', () => {
+  it('Garry fires one InkBeam every 3000ms while remaining on-screen', () => {
     const g = new Garry(game);
 
     game.speed = 0;
@@ -1169,7 +1168,7 @@ describe('Map 3 Enemies', () => {
 
     game.audioHandler.enemySFX.playSound.mockClear();
 
-    g.update(1999);
+    g.update(2999);
     expect(game.enemies.filter((e) => e instanceof InkBeam).length).toBe(firstCount);
     expect(game.audioHandler.enemySFX.playSound).not.toHaveBeenCalledWith('inkSpit', false, true);
 

@@ -725,13 +725,13 @@ export class EnemyLore extends BaseMenu {
 
         this.createPage({ //52
             name: "VENFLORA",
-            type: "POISON",
+            type: "NORMAL",
             foundAt: "VENOMVEIL LAKE",
             description:
                 "VENFLORA IS A CARNIVOROUS PLANT ROOTED DEEP IN THE TOXIC SOIL.\n"
                 + "THOSE WHO HAVE STUDIED IT FROM A SAFE DISTANCE BELIEVE IT IS ONE OF THE OLDEST KNOWN PLANT SPECIES IN THE REGION.",
             images: [
-                this.createImage('venflora', 98.28571428571429, 150, 0, 'right', 'bottom', 'poison'),
+                this.createImage('venflora', 98.28571428571429, 150, 0, 'right', 'bottom'),
             ],
             mapKey: "map6",
             projectile: 'red',
@@ -788,7 +788,7 @@ export class EnemyLore extends BaseMenu {
                 "TOXWING DESCENDS FROM ABOVE IN AN UNPREDICTABLE SIDE-TO-SIDE WEAVE.\n"
                 + "ITS ERRATIC PATH MAKES IT HARD TO ANTICIPATE WHERE IT WILL END UP.",
             images: [
-                this.createImage('toxwing', 121.5, 100, 0, 'right', 'top'),
+                this.createImage('toxwing', 127, 105, 0, 'right', 'top'),
             ],
             mapKey: "map6",
         });
@@ -929,14 +929,14 @@ export class EnemyLore extends BaseMenu {
 
         this.createPage({ //67
             name: "BLOBURN",
-            type: "NORMAL",
+            type: "POISON",
             foundAt: "INFERNAL CRATER PEAK",
             description:
                 "BLOBURNS FORM DEEP INSIDE ACTIVE VOLCANOES, BUBBLING TOGETHER FROM HEAT AND PRESSURE UNTIL AN ERUPTION LAUNCHES THEM INTO THE AIR.\n"
                 + "THEY NEVER ASKED FOR THIS. THEY SIMPLY END UP HERE, DRIFTING AND SPINNING THROUGH THE TERRAIN.\n"
                 + "SOMEWHERE ALONG THE WAY, THEY DECIDED THAT CHASING THINGS WAS A PERFECTLY GOOD USE OF THEIR TIME.",
             images: [
-                this.createImage('bloburn', 52, 50, 0, 'right', 'top'),
+                this.createImage('bloburn', 52, 50, 0, 'right', 'top', 'poison'),
             ],
             mapKey: "map7",
         });
@@ -1352,13 +1352,13 @@ export class EnemyLore extends BaseMenu {
 
         this.createPage({ //27
             name: "LANCER",
-            type: "STUN",
+            type: "FROZEN",
             foundAt: "COSMIC RIFT",
             description:
                 "LANCER IS ONE OF THE FASTEST THREATS IN THE RIFT, ROCKETING THROUGH THE AIR AT BLISTERING SPEED.\n"
-                + "ITS STUNNING IMPACT LEAVES YOU MOMENTARILY HELPLESS. BLINK AND YOU WILL MISS IT.",
+                + "ITS FROZEN IMPACT LEAVES YOU MOMENTARILY HELPLESS. BLINK AND YOU WILL MISS IT.",
             images: [
-                this.createImage('lancer', 181.25, 70, 0, 'right', 'top', 'stun'),
+                this.createImage('lancer', 181.25, 70, 0, 'right', 'top', 'frozen'),
             ],
             mapKey: "bonusMap3",
             category: "bonus",

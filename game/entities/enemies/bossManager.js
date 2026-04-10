@@ -8,7 +8,7 @@ const BOSS_CONFIG = {
         type: Glacikal,
         gate: {
             mode: "coinsAndDistance",
-            minDistance: 250,
+            minDistance: 200,
             minCoins: 200,
         },
     },
@@ -17,8 +17,8 @@ const BOSS_CONFIG = {
         type: NTharax,
         gate: {
             mode: "coinsAndDistance",
-            minDistance: 100,
-            minCoins: 100,
+            minDistance: 240,
+            minCoins: 260,
         },
     },
     Map7: {
@@ -26,8 +26,8 @@ const BOSS_CONFIG = {
         type: Elyvorg,
         gate: {
             mode: "coinsAndDistance",
-            minDistance: 100,
-            minCoins: 100,
+            minDistance: 220,
+            minCoins: 240,
         },
     },
 };

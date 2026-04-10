@@ -426,7 +426,7 @@ export class Tutorial {
             },
             {
                 message:
-                    "Now use your second dash charge.\nDuring Dash you cannot be damaged,\nalthough status conditions like poison or slow will still affect you.\nPress Shift again on Skulnap!",
+                    "Now use your second dash charge.\nDuring Dash you cannot be damaged!\nPress Shift again on Skulnap!",
                 action: "dashAttack",
                 condition: () => {
                     const playerOnGround = this.game.player.onGround();

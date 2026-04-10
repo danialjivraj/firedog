@@ -1125,7 +1125,7 @@ describe('Map constructors', () => {
         { Cls: Map2, id: 'map2Soundtrack', expectedLen: 15 },
         { Cls: Map3, id: 'map3Soundtrack', expectedLen: 17 },
         { Cls: Map4, id: 'map4Soundtrack', expectedLen: 11 },
-        { Cls: Map5, id: 'map5Soundtrack', expectedLen: 16 },
+        { Cls: Map5, id: 'map5Soundtrack', expectedLen: 18 },
         { Cls: Map6, id: 'map6Soundtrack', expectedLen: 12 },
         { Cls: Map7, id: 'map7Soundtrack', expectedLen: 16 },
         { Cls: BonusMap1, id: 'bonusMap1Soundtrack', expectedLen: 11 },
@@ -1428,15 +1428,23 @@ describe('Map5 rain windows & cabin stop', () => {
     });
 
     test.each([10, 80, 200])('turns rain OFF when totalDistanceTraveled=%d', (dist) => {
+        map5.totalDistanceTraveled = 40;
+        map5.update(0);
+        soundtrack.fadeOutAndStop.mockClear();
+
         map5.totalDistanceTraveled = dist;
         map5.update(0);
 
         const rainLayer = map5.backgroundLayers.find((l) => l instanceof RaindropAnimation);
         expect(rainLayer.isRaining).toBe(false);
-        expect(soundtrack.playSound).toHaveBeenCalledWith('rainSound', false, true, true);
+        expect(soundtrack.fadeOutAndStop).toHaveBeenCalledWith('rainSound', 2000);
     });
 
     test('forces rain and rain audio OFF immediately when cabin becomes visible', () => {
+        map5.totalDistanceTraveled = 40;
+        map5.update(0);
+        soundtrack.fadeOutAndStop.mockClear();
+
         map5.totalDistanceTraveled = 50;
         game.cabin.isFullyVisible = true;
 
@@ -1444,7 +1452,7 @@ describe('Map5 rain windows & cabin stop', () => {
 
         const rainLayer = map5.backgroundLayers.find((l) => l instanceof RaindropAnimation);
         expect(rainLayer.isRaining).toBe(false);
-        expect(soundtrack.playSound).toHaveBeenCalledWith('rainSound', false, true, true);
+        expect(soundtrack.fadeOutAndStop).toHaveBeenCalledWith('rainSound', 2000);
     });
 });
 
@@ -1475,7 +1483,9 @@ describe('RaindropAnimation', () => {
 
     test('when raining, drops reset at bottom and splash animations spawn and are cleaned up', () => {
         rain.isRaining = true;
-        rain.raindrops[0].y = game.height + 1;
+        rain.raindrops[0].active = true;
+        rain.raindrops[0].length = 1;
+        rain.raindrops[0].y = game.height + 2;
 
         const r = jest.spyOn(Math, 'random').mockReturnValue(0);
         rain.update(1);
@@ -1495,6 +1505,7 @@ describe('RaindropAnimation', () => {
         expect(ctx.beginPath).not.toHaveBeenCalled();
 
         rain.isRaining = true;
+        rain.raindrops[0].active = true;
         rain.draw(ctx);
         expect(ctx.beginPath).toHaveBeenCalled();
     });

@@ -29,6 +29,7 @@ describe('PenguiniCutscene & subclasses', () => {
         game = {
             coins: 150,
             winningCoins: 100,
+            surplusCoins: 0,
             floatingMessages: [],
             penguini: { x: 200, y: 100 },
             menu: {
@@ -103,7 +104,7 @@ describe('PenguiniCutscene & subclasses', () => {
         it('performs cash-out: plays sound, deducts coins, and pushes FloatingMessage', () => {
             cutscene.enterOrLeftClick();
             expect(game.audioHandler.cutsceneSFX.playSound)
-                .toHaveBeenCalledWith('cashOut');
+                .toHaveBeenCalledWith('cashOut', false, true);
             expect(game.coins).toBe(50);
             expect(game.floatingMessages[0])
                 .toMatchObject({ x: 275, y: 140, size: 40, color: 'green' });
@@ -386,6 +387,131 @@ describe('PenguiniCutscene & subclasses', () => {
                 expect(arr).toHaveLength(1);
                 expect(arr[0].dialogue).toBe("That's good enough, give me that!");
             });
+        });
+
+        describe('surplus coins logic (leftover > 300)', () => {
+            it('does not append surplus dialogues when leftover is exactly 300', () => {
+                game.currentMap = 'Map1';
+                game.coins = 400;
+                game.winningCoins = 100;
+                const arr = cond.checkPlayerCoins();
+                expect(game.surplusCoins).toBe(0);
+                expect(arr).toHaveLength(1);
+            });
+
+            it('does not append surplus dialogues when leftover is below 300', () => {
+                game.currentMap = 'Map1';
+                game.coins = 350;
+                game.winningCoins = 100;
+                const arr = cond.checkPlayerCoins();
+                expect(game.surplusCoins).toBe(0);
+                expect(arr).toHaveLength(1);
+            });
+
+            it('appends 4 surplus dialogues and sets surplusCoins when leftover > 300', () => {
+                game.currentMap = 'Map1';
+                game.coins = 450;
+                game.winningCoins = 100;
+                const arr = cond.checkPlayerCoins();
+                expect(game.surplusCoins).toBe(50);
+                expect(arr).toHaveLength(5);
+            });
+
+            it('calculates surplusCoins correctly', () => {
+                game.currentMap = 'Map1';
+                game.coins = 550;
+                game.winningCoins = 100;
+                cond.checkPlayerCoins();
+                expect(game.surplusCoins).toBe(150);
+            });
+
+            it('first surplus dialogue is the normal penguini image', () => {
+                game.currentMap = 'Map1';
+                game.coins = 450;
+                game.winningCoins = 100;
+                const arr = cond.checkPlayerCoins();
+                expect(arr[1].dialogue).toBe('Hmm... you still have quite a few coins on you.');
+            });
+
+            it('second surplus dialogue contains the cashout trigger line', () => {
+                game.currentMap = 'Map1';
+                game.coins = 450;
+                game.winningCoins = 100;
+                const arr = cond.checkPlayerCoins();
+                expect(arr[2].dialogue).toBe("I'll be taking those extra coins too.");
+            });
+
+            it('works for all maps', () => {
+                const maps = ['Map1', 'Map2', 'Map3', 'Map4', 'Map5', 'Map6', 'BonusMap1', 'BonusMap2', 'BonusMap3'];
+                maps.forEach(mapId => {
+                    game.currentMap = mapId;
+                    game.coins = 500;
+                    game.winningCoins = 100;
+                    game.surplusCoins = 0;
+                    const arr = cond.checkPlayerCoins();
+                    expect(game.surplusCoins).toBe(100);
+                    expect(arr).toHaveLength(5);
+                });
+            });
+
+            it('does not append surplus dialogues when notEnough (coins < winningCoins)', () => {
+                game.currentMap = 'Map1';
+                game.coins = 50;
+                game.winningCoins = 100;
+                game.surplusCoins = 0;
+                const arr = cond.checkPlayerCoins();
+                expect(game.surplusCoins).toBe(0);
+                expect(arr).toHaveLength(3);
+            });
+        });
+    });
+
+    describe('enterOrLeftClick: surplus cashout', () => {
+        beforeEach(() => {
+            cutscene.dialogue = [
+                { dialogue: "That's good enough, give me that!" },
+                { dialogue: "I'll be taking those extra coins too." },
+                { dialogue: "Last line." }
+            ];
+            cutscene.continueDialogue = false;
+            cutscene.lastSound2Played = true;
+        });
+
+        it('deducts surplusCoins, plays cashOut, and pushes FloatingMessage', () => {
+            game.coins = 150;
+            game.surplusCoins = 50;
+            cutscene.dialogueIndex = 1;
+            cutscene.textIndex = cutscene.dialogue[1].dialogue.length;
+            cutscene.enterOrLeftClick();
+            expect(game.audioHandler.cutsceneSFX.playSound).toHaveBeenCalledWith('cashOut', false, true);
+            expect(game.coins).toBe(100);
+            expect(game.floatingMessages[0]).toMatchObject({ x: 275, y: 140, size: 40, color: 'green' });
+        });
+
+        it('does not deduct when lastSound2Played is false', () => {
+            game.coins = 150;
+            game.surplusCoins = 50;
+            cutscene.dialogueIndex = 1;
+            cutscene.textIndex = cutscene.dialogue[1].dialogue.length;
+            cutscene.lastSound2Played = false;
+            cutscene.enterOrLeftClick();
+            expect(game.coins).toBe(150);
+            expect(game.floatingMessages).toHaveLength(0);
+        });
+
+        it('surplus cashout only fires once', () => {
+            game.coins = 150;
+            game.surplusCoins = 50;
+            cutscene.dialogueIndex = 1;
+            cutscene.textIndex = cutscene.dialogue[1].dialogue.length;
+
+            cutscene.enterOrLeftClick();
+            expect(game.coins).toBe(100);
+            expect(cutscene.dialogueIndex).toBe(2);
+            expect(cutscene.lastSound2Played).toBe(false);
+
+            cutscene.enterOrLeftClick();
+            expect(game.coins).toBe(100);
         });
     });
 

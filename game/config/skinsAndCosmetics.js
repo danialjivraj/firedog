@@ -6,17 +6,17 @@ export const FIREDOG_FRAME = {
 export const SKINS = {
     defaultSkin: { key: 'defaultSkin', spriteId: 'defaultSkin', label: 'Default', cutscene: { prefix: '' }, price: 0, ownedByDefault: true },
     shinySkin: { key: 'shinySkin', spriteId: 'shinySkin', label: 'Firedog (Shiny)', variantOf: 'defaultSkin', hidden: true, cutscene: { prefix: 'shiny' }, price: 0, ownedByDefault: true },
-    midnightSteelSkin: { key: 'midnightSteelSkin', spriteId: 'midnightSteelSkin', label: 'Midnight Steel', cutscene: { prefix: 'midnightSteel' }, price: 70, ownedByDefault: false },
-    sunsetIronSkin: { key: 'sunsetIronSkin', spriteId: 'sunsetIronSkin', label: 'Sunset Iron', cutscene: { prefix: 'sunsetIron' }, price: 70, ownedByDefault: false },
-    reddenShockSkin: { key: 'reddenShockSkin', spriteId: 'reddenShockSkin', label: 'Redden Shock', cutscene: { prefix: 'reddenShock' }, price: 100, ownedByDefault: false },
-    neonPinkSkin: { key: 'neonPinkSkin', spriteId: 'neonPinkSkin', label: 'Neon Pink', cutscene: { prefix: 'neonPink' }, price: 100, ownedByDefault: false },
-    ghostSkin: { key: 'ghostSkin', spriteId: 'ghostSkin', label: 'Ghost', cutscene: { prefix: 'ghost' }, price: 120, ownedByDefault: false },
-    zombieSkin: { key: 'zombieSkin', spriteId: 'zombieSkin', label: 'Zombie', cutscene: { prefix: 'zombie' }, price: 140, ownedByDefault: false },
-    sharkSkin: { key: 'sharkSkin', spriteId: 'sharkSkin', label: 'Shark', cutscene: { prefix: 'shark' }, price: 150, ownedByDefault: false },
-    zebraSkin: { key: 'zebraSkin', spriteId: 'zebraSkin', label: 'Zebra', cutscene: { prefix: 'zebra' }, price: 150, ownedByDefault: false },
-    foxSkin: { key: 'foxSkin', spriteId: 'foxSkin', label: 'Fox', cutscene: { prefix: 'fox' }, price: 150, ownedByDefault: false },
-    leopardSkin: { key: 'leopardSkin', spriteId: 'leopardSkin', label: 'Leopard', cutscene: { prefix: 'leopard' }, price: 150, ownedByDefault: false },
-    tigerSkin: { key: 'tigerSkin', spriteId: 'tigerSkin', label: 'Tiger', cutscene: { prefix: 'tiger' }, price: 150, ownedByDefault: false },
+    midnightSteelSkin: { key: 'midnightSteelSkin', spriteId: 'midnightSteelSkin', label: 'Midnight Steel', cutscene: { prefix: 'midnightSteel' }, price: 30, ownedByDefault: false },
+    sunsetIronSkin: { key: 'sunsetIronSkin', spriteId: 'sunsetIronSkin', label: 'Sunset Iron', cutscene: { prefix: 'sunsetIron' }, price: 30, ownedByDefault: false },
+    reddenShockSkin: { key: 'reddenShockSkin', spriteId: 'reddenShockSkin', label: 'Redden Shock', cutscene: { prefix: 'reddenShock' }, price: 35, ownedByDefault: false },
+    neonPinkSkin: { key: 'neonPinkSkin', spriteId: 'neonPinkSkin', label: 'Neon Pink', cutscene: { prefix: 'neonPink' }, price: 35, ownedByDefault: false },
+    ghostSkin: { key: 'ghostSkin', spriteId: 'ghostSkin', label: 'Ghost', cutscene: { prefix: 'ghost' }, price: 40, ownedByDefault: false },
+    zombieSkin: { key: 'zombieSkin', spriteId: 'zombieSkin', label: 'Zombie', cutscene: { prefix: 'zombie' }, price: 45, ownedByDefault: false },
+    sharkSkin: { key: 'sharkSkin', spriteId: 'sharkSkin', label: 'Shark', cutscene: { prefix: 'shark' }, price: 50, ownedByDefault: false },
+    zebraSkin: { key: 'zebraSkin', spriteId: 'zebraSkin', label: 'Zebra', cutscene: { prefix: 'zebra' }, price: 50, ownedByDefault: false },
+    foxSkin: { key: 'foxSkin', spriteId: 'foxSkin', label: 'Fox', cutscene: { prefix: 'fox' }, price: 50, ownedByDefault: false },
+    leopardSkin: { key: 'leopardSkin', spriteId: 'leopardSkin', label: 'Leopard', cutscene: { prefix: 'leopard' }, price: 50, ownedByDefault: false },
+    tigerSkin: { key: 'tigerSkin', spriteId: 'tigerSkin', label: 'Tiger', cutscene: { prefix: 'tiger' }, price: 50, ownedByDefault: false },
     iceBreakerSkin: { key: 'iceBreakerSkin', spriteId: 'iceBreakerSkin', label: 'Ice Breaker', cutscene: { prefix: 'iceBreaker' }, price: 1000, ownedByDefault: false },
     infernalSkin: { key: 'infernalSkin', spriteId: 'infernalSkin', label: 'Infernal', cutscene: { prefix: 'infernal' }, price: 1000, ownedByDefault: false },
     galaxySkin: { key: 'galaxySkin', spriteId: 'galaxySkin', label: 'Galaxy', cutscene: { prefix: 'galaxy' }, price: 1000, ownedByDefault: false },
@@ -80,9 +80,30 @@ function makeHueChromaPack({ defaultId, variants } = {}) {
 export const COSMETICS = {
     [COSMETIC_SLOTS.HEAD]: {
         none: NONE_ENTRY,
-        unicornHornOutfit: { key: 'unicornHornOutfit', spriteId: 'unicornHornOutfit', label: 'Unicorn Horn', cutscene: { overlayId: 'cutsceneUnicornHornOutfit' }, price: 15, ownedByDefault: false },
+        unicornHornOutfit: { key: 'unicornHornOutfit', spriteId: 'unicornHornOutfit', label: 'Unicorn Horn', cutscene: { overlayId: 'cutsceneUnicornHornOutfit' }, price: 5, ownedByDefault: false },
+        flowerOutfit: {
+            key: 'flowerOutfit', spriteId: 'flowerOutfit', label: 'Flower', cutscene: { overlayId: 'cutsceneFlowerOutfit' }, price: 10, ownedByDefault: false,
+            chroma: makeHueChromaPack({
+                variants: [
+                    { id: 'base', deg: 0 },
+                    { id: 'lightblue', deg: 220 },
+                ],
+            }),
+            chromaSwatchBaseHex: '#ffbcd2',
+        },
+        frogCrownOutfit: {
+            key: 'frogCrownOutfit', spriteId: 'frogCrownOutfit', label: 'Frog Crown', cutscene: { overlayId: 'cutsceneFrogCrownOutfit' }, price: 10, ownedByDefault: false,
+            chroma: makeHueChromaPack({
+                variants: [
+                    { id: 'base', deg: 0 },
+                    { id: 'blue', deg: 100 },
+                    { id: 'red', deg: 240 },
+                ],
+            }),
+            chromaSwatchBaseHex: '#036a00',
+        },
         hatOutfit: {
-            key: 'hatOutfit', spriteId: 'hatOutfit', label: 'Hat', cutscene: { overlayId: 'cutsceneHatOutfit' }, price: 20, ownedByDefault: false,
+            key: 'hatOutfit', spriteId: 'hatOutfit', label: 'Hat', cutscene: { overlayId: 'cutsceneHatOutfit' }, price: 15, ownedByDefault: false,
             chroma: makeHueChromaPack({
                 variants: [
                     { id: 'base', deg: 0 },
@@ -93,30 +114,21 @@ export const COSMETICS = {
             }),
             chromaSwatchBaseHex: '#9f1318',
         },
-        flowerOutfit: {
-            key: 'flowerOutfit', spriteId: 'flowerOutfit', label: 'Flower', cutscene: { overlayId: 'cutsceneFlowerOutfit' }, price: 30, ownedByDefault: false,
+        clownWigOutfit: { key: 'clownWigOutfit', spriteId: 'clownWigOutfit', label: 'Clown Wig', cutscene: { overlayId: 'cutsceneClownWigOutfit' }, price: 15, ownedByDefault: false },
+        cowboyHatOutfit: { key: 'cowboyHatOutfit', spriteId: 'cowboyHatOutfit', label: 'Cowboy Hat', cutscene: { overlayId: 'cutsceneCowboyHatOutfit' }, price: 20, ownedByDefault: false },
+        catEarsOutfit: {
+            key: 'catEarsOutfit', spriteId: 'catEarsOutfit', label: 'Cat Ears', cutscene: { overlayId: 'cutsceneCatEarsOutfit' }, price: 20, ownedByDefault: false,
             chroma: makeHueChromaPack({
                 variants: [
                     { id: 'base', deg: 0 },
-                    { id: 'lightblue', deg: 220 },
+                    { id: 'lightgreen', deg: 150 },
                 ],
             }),
-            chromaSwatchBaseHex: '#ffbcd2',
+            chromaSwatchBaseHex: '#febcce',
         },
-        frogCrownOutfit: {
-            key: 'frogCrownOutfit', spriteId: 'frogCrownOutfit', label: 'Frog Crown', cutscene: { overlayId: 'cutsceneFrogCrownOutfit' }, price: 30, ownedByDefault: false,
-            chroma: makeHueChromaPack({
-                variants: [
-                    { id: 'base', deg: 0 },
-                    { id: 'blue', deg: 100 },
-                    { id: 'red', deg: 240 },
-                ],
-            }),
-            chromaSwatchBaseHex: '#036a00',
-        },
-        cowboyHatOutfit: { key: 'cowboyHatOutfit', spriteId: 'cowboyHatOutfit', label: 'Cowboy Hat', cutscene: { overlayId: 'cutsceneCowboyHatOutfit' }, price: 50, ownedByDefault: false },
+        devilHornsOutfit: { key: 'devilHornsOutfit', spriteId: 'devilHornsOutfit', label: 'Devil Horns', cutscene: { overlayId: 'cutsceneDevilHornsOutfit' }, price: 20, ownedByDefault: false },
         bandanaOutfit: {
-            key: 'bandanaOutfit', spriteId: 'bandanaOutfit', label: 'Bandana', cutscene: { overlayId: 'cutsceneBandanaOutfit' }, price: 70, ownedByDefault: false,
+            key: 'bandanaOutfit', spriteId: 'bandanaOutfit', label: 'Bandana', cutscene: { overlayId: 'cutsceneBandanaOutfit' }, price: 25, ownedByDefault: false,
             chroma: makeHueChromaPack({
                 variants: [
                     { id: 'base', deg: 0 },
@@ -126,27 +138,14 @@ export const COSMETICS = {
             }),
             chromaSwatchBaseHex: '#002dbc',
         },
-        catEarsOutfit: {
-            key: 'catEarsOutfit', spriteId: 'catEarsOutfit', label: 'Cat Ears', cutscene: { overlayId: 'cutsceneCatEarsOutfit' }, price: 70, ownedByDefault: false,
-            chroma: makeHueChromaPack({
-                variants: [
-                    { id: 'base', deg: 0 },
-                    { id: 'lightgreen', deg: 150 },
-                ],
-            }),
-            chromaSwatchBaseHex: '#febcce',
-        },
-        devilHornsOutfit: { key: 'devilHornsOutfit', spriteId: 'devilHornsOutfit', label: 'Devil Horns', cutscene: { overlayId: 'cutsceneDevilHornsOutfit' }, price: 70, ownedByDefault: false },
-        kingsCrownOutfit: { key: 'kingsCrownOutfit', spriteId: 'kingsCrownOutfit', label: "King's Crown", cutscene: { overlayId: 'cutsceneKingsCrownOutfit' }, price: 100, ownedByDefault: false },
-        vikingHelmetOutfit: { key: 'vikingHelmetOutfit', spriteId: 'vikingHelmetOutfit', label: 'Viking Helmet', cutscene: { overlayId: 'cutsceneVikingHelmetOutfit' }, price: 100, ownedByDefault: false },
-        clownWigOutfit: { key: 'clownWigOutfit', spriteId: 'clownWigOutfit', label: 'Clown Wig', cutscene: { overlayId: 'cutsceneClownWigOutfit' }, price: 100, ownedByDefault: false },
+        vikingHelmetOutfit: { key: 'vikingHelmetOutfit', spriteId: 'vikingHelmetOutfit', label: 'Viking Helmet', cutscene: { overlayId: 'cutsceneVikingHelmetOutfit' }, price: 25, ownedByDefault: false },
+        kingsCrownOutfit: { key: 'kingsCrownOutfit', spriteId: 'kingsCrownOutfit', label: "King's Crown", cutscene: { overlayId: 'cutsceneKingsCrownOutfit' }, price: 30, ownedByDefault: false },
     },
 
     [COSMETIC_SLOTS.NECK]: {
         none: NONE_ENTRY,
-        hawaiianNecklaceOutfit: { key: 'hawaiianNecklaceOutfit', spriteId: 'hawaiianNecklaceOutfit', label: 'Hawaiian Necklace', cutscene: { overlayId: 'cutsceneHawaiianNecklaceOutfit' }, price: 50, ownedByDefault: false },
         tieOutfit: {
-            key: 'tieOutfit', spriteId: 'tieOutfit', label: 'Tie', cutscene: { overlayId: 'cutsceneTieOutfit' }, price: 50, ownedByDefault: false,
+            key: 'tieOutfit', spriteId: 'tieOutfit', label: 'Tie', cutscene: { overlayId: 'cutsceneTieOutfit' }, price: 5, ownedByDefault: false,
             chroma: makeHueChromaPack({
                 variants: [
                     { id: 'base', deg: 0 },
@@ -157,7 +156,7 @@ export const COSMETICS = {
             chromaSwatchBaseHex: '#e00f13',
         },
         bowtieOutfit: {
-            key: 'bowtieOutfit', spriteId: 'bowtieOutfit', label: 'Bowtie', cutscene: { overlayId: 'cutsceneBowtieOutfit' }, price: 50, ownedByDefault: false,
+            key: 'bowtieOutfit', spriteId: 'bowtieOutfit', label: 'Bowtie', cutscene: { overlayId: 'cutsceneBowtieOutfit' }, price: 10, ownedByDefault: false,
             chroma: makeHueChromaPack({
                 variants: [
                     { id: 'base', deg: 0 },
@@ -168,8 +167,9 @@ export const COSMETICS = {
             }),
             chromaSwatchBaseHex: '#53b001',
         },
+        hawaiianNecklaceOutfit: { key: 'hawaiianNecklaceOutfit', spriteId: 'hawaiianNecklaceOutfit', label: 'Hawaiian Necklace', cutscene: { overlayId: 'cutsceneHawaiianNecklaceOutfit' }, price: 15, ownedByDefault: false },
         scarfOutfit: {
-            key: 'scarfOutfit', spriteId: 'scarfOutfit', label: 'Scarf', cutscene: { overlayId: 'cutsceneScarfOutfit' }, price: 50, ownedByDefault: false,
+            key: 'scarfOutfit', spriteId: 'scarfOutfit', label: 'Scarf', cutscene: { overlayId: 'cutsceneScarfOutfit' }, price: 20, ownedByDefault: false,
             chroma: makeHueChromaPack({
                 variants: [
                     { id: 'base', deg: 0 },
@@ -180,8 +180,10 @@ export const COSMETICS = {
             }),
             chromaSwatchBaseHex: '#ef2c2b',
         },
+        pearlOutfit: { key: 'pearlOutfit', spriteId: 'pearlOutfit', label: 'Pearl', cutscene: { overlayId: 'cutscenePearlOutfit' }, price: 20, ownedByDefault: false },
+        championMedalOutfit: { key: 'championMedalOutfit', spriteId: 'championMedalOutfit', label: 'Champion Medal', cutscene: { overlayId: 'cutsceneChampionMedalOutfit' }, price: 20, ownedByDefault: false },
         neckerchiefOutfit: {
-            key: 'neckerchiefOutfit', spriteId: 'neckerchiefOutfit', label: 'Neckerchief', cutscene: { overlayId: 'cutsceneNeckerchiefOutfit' }, price: 70, ownedByDefault: false,
+            key: 'neckerchiefOutfit', spriteId: 'neckerchiefOutfit', label: 'Neckerchief', cutscene: { overlayId: 'cutsceneNeckerchiefOutfit' }, price: 20, ownedByDefault: false,
             chroma: makeHueChromaPack({
                 variants: [
                     { id: 'base', deg: 0 },
@@ -191,17 +193,28 @@ export const COSMETICS = {
             }),
             chromaSwatchBaseHex: '#002dbc',
         },
-        pearlOutfit: { key: 'pearlOutfit', spriteId: 'pearlOutfit', label: 'Pearl', cutscene: { overlayId: 'cutscenePearlOutfit' }, price: 100, ownedByDefault: false },
-        cubanChainOutfit: { key: 'cubanChainOutfit', spriteId: 'cubanChainOutfit', label: 'Cuban Chain', cutscene: { overlayId: 'cutsceneCubanChainOutfit' }, price: 100, ownedByDefault: false },
-        championMedalOutfit: { key: 'championMedalOutfit', spriteId: 'championMedalOutfit', label: 'Champion Medal', cutscene: { overlayId: 'cutsceneChampionMedalOutfit' }, price: 100, ownedByDefault: false },
-        spikeChokerOutfit: { key: 'spikeChokerOutfit', spriteId: 'spikeChokerOutfit', label: 'Spike Choker', cutscene: { overlayId: 'cutsceneSpikeChokerOutfit' }, price: 100, ownedByDefault: false },
+        spikeChokerOutfit: { key: 'spikeChokerOutfit', spriteId: 'spikeChokerOutfit', label: 'Spike Choker', cutscene: { overlayId: 'cutsceneSpikeChokerOutfit' }, price: 25, ownedByDefault: false },
+        cubanChainOutfit: { key: 'cubanChainOutfit', spriteId: 'cubanChainOutfit', label: 'Cuban Chain', cutscene: { overlayId: 'cutsceneCubanChainOutfit' }, price: 30, ownedByDefault: false },
     },
 
     [COSMETIC_SLOTS.EYES]: {
         none: NONE_ENTRY,
-        roundGlassesOutfit: { key: 'roundGlassesOutfit', spriteId: 'roundGlassesOutfit', label: 'Round Glasses', cutscene: { overlayId: 'cutsceneRoundGlassesOutfit' }, price: 50, ownedByDefault: false },
+        roundGlassesOutfit: { key: 'roundGlassesOutfit', spriteId: 'roundGlassesOutfit', label: 'Round Glasses', cutscene: { overlayId: 'cutsceneRoundGlassesOutfit' }, price: 5, ownedByDefault: false },
+        leopardPrintSunglassesOutfit: { key: 'leopardPrintSunglassesOutfit', spriteId: 'leopardPrintSunglassesOutfit', label: 'Leopard Sunglasses', cutscene: { overlayId: 'cutsceneLeopardPrintSunglassesOutfit' }, price: 10, ownedByDefault: false },
+        glasses3dOutfit: { key: 'glasses3dOutfit', spriteId: 'glasses3dOutfit', label: '3D Glasses', cutscene: { overlayId: 'cutsceneGlasses3dOutfit' }, price: 15, ownedByDefault: false },
+        pirateEyePatchOutfit: {
+            key: 'pirateEyePatchOutfit', spriteId: 'pirateEyePatchOutfit', label: 'Pirate Eye Patch', cutscene: { overlayId: 'cutscenePirateEyePatchOutfit' }, price: 20, ownedByDefault: false,
+            chroma: makeHueChromaPack({
+                variants: [
+                    { id: 'base', deg: 0 },
+                    { id: 'yellow', deg: 160 },
+                    { id: 'green', deg: 250 },
+                ],
+            }),
+            chromaSwatchBaseHex: '#5951ae',
+        },
         wayfarerSunglassesOutfit: {
-            key: 'wayfarerSunglassesOutfit', spriteId: 'wayfarerSunglassesOutfit', label: 'Wayfarer Sunglasses', cutscene: { overlayId: 'cutsceneWayfarerSunglassesOutfit' }, price: 50, ownedByDefault: false,
+            key: 'wayfarerSunglassesOutfit', spriteId: 'wayfarerSunglassesOutfit', label: 'Wayfarer Sunglasses', cutscene: { overlayId: 'cutsceneWayfarerSunglassesOutfit' }, price: 20, ownedByDefault: false,
             chroma: makeHueChromaPack({
                 variants: [
                     { id: 'base', deg: 0 },
@@ -212,21 +225,8 @@ export const COSMETICS = {
             }),
             chromaSwatchBaseHex: '#4df821',
         },
-        leopardPrintSunglassesOutfit: { key: 'leopardPrintSunglassesOutfit', spriteId: 'leopardPrintSunglassesOutfit', label: 'Leopard Sunglasses', cutscene: { overlayId: 'cutsceneLeopardPrintSunglassesOutfit' }, price: 50, ownedByDefault: false },
-        pirateEyePatchOutfit: {
-            key: 'pirateEyePatchOutfit', spriteId: 'pirateEyePatchOutfit', label: 'Pirate Eye Patch', cutscene: { overlayId: 'cutscenePirateEyePatchOutfit' }, price: 50, ownedByDefault: false,
-            chroma: makeHueChromaPack({
-                variants: [
-                    { id: 'base', deg: 0 },
-                    { id: 'yellow', deg: 160 },
-                    { id: 'green', deg: 250 },
-                ],
-            }),
-            chromaSwatchBaseHex: '#5951ae',
-        },
-        glasses3dOutfit: { key: 'glasses3dOutfit', spriteId: 'glasses3dOutfit', label: '3D Glasses', cutscene: { overlayId: 'cutsceneGlasses3dOutfit' }, price: 70, ownedByDefault: false },
         thugSunglassesOutfit: {
-            key: 'thugSunglassesOutfit', spriteId: 'thugSunglassesOutfit', label: 'Thug Sunglasses', cutscene: { overlayId: 'cutsceneThugSunglassesOutfit' }, price: 100, ownedByDefault: false,
+            key: 'thugSunglassesOutfit', spriteId: 'thugSunglassesOutfit', label: 'Thug Sunglasses', cutscene: { overlayId: 'cutsceneThugSunglassesOutfit' }, price: 25, ownedByDefault: false,
             chroma: makeHueChromaPack({
                 variants: [
                     { id: 'base', deg: 0 },
@@ -240,9 +240,9 @@ export const COSMETICS = {
 
     [COSMETIC_SLOTS.NOSE]: {
         none: NONE_ENTRY,
-        bullRingOutfit: { key: 'bullRingOutfit', spriteId: 'bullRingOutfit', label: 'Bull Ring', cutscene: { overlayId: 'cutsceneBullRingOutfit' }, price: 30, ownedByDefault: false },
+        bullRingOutfit: { key: 'bullRingOutfit', spriteId: 'bullRingOutfit', label: 'Bull Ring', cutscene: { overlayId: 'cutsceneBullRingOutfit' }, price: 10, ownedByDefault: false },
         catWhiskersOutfit: {
-            key: 'catWhiskersOutfit', spriteId: 'catWhiskersOutfit', label: 'Cat Whiskers', cutscene: { overlayId: 'cutsceneCatWhiskersOutfit' }, price: 30, ownedByDefault: false,
+            key: 'catWhiskersOutfit', spriteId: 'catWhiskersOutfit', label: 'Cat Whiskers', cutscene: { overlayId: 'cutsceneCatWhiskersOutfit' }, price: 15, ownedByDefault: false,
             chroma: makeHueChromaPack({
                 variants: [
                     { id: 'base', deg: 0 },
@@ -253,7 +253,7 @@ export const COSMETICS = {
             chromaSwatchBaseHex: '#ff00f0',
         },
         clownNoseOutfit: {
-            key: 'clownNoseOutfit', spriteId: 'clownNoseOutfit', label: 'Clown Nose', cutscene: { overlayId: 'cutsceneClownNoseOutfit' }, price: 30, ownedByDefault: false,
+            key: 'clownNoseOutfit', spriteId: 'clownNoseOutfit', label: 'Clown Nose', cutscene: { overlayId: 'cutsceneClownNoseOutfit' }, price: 20, ownedByDefault: false,
             chroma: makeHueChromaPack({
                 variants: [
                     { id: 'base', deg: 0 },
@@ -264,7 +264,7 @@ export const COSMETICS = {
             chromaSwatchBaseHex: '#f81022',
         },
         mustacheOutfit: {
-            key: 'mustacheOutfit', spriteId: 'mustacheOutfit', label: 'Mustache', cutscene: { overlayId: 'cutsceneMustacheOutfit' }, price: 30, ownedByDefault: false,
+            key: 'mustacheOutfit', spriteId: 'mustacheOutfit', label: 'Mustache', cutscene: { overlayId: 'cutsceneMustacheOutfit' }, price: 25, ownedByDefault: false,
             chroma: makeHueChromaPack({
                 variants: [
                     { id: 'base', deg: 0 },
@@ -282,36 +282,36 @@ export const COSMETIC_MENU_ORDER = {
     [COSMETIC_SLOTS.HEAD]: [
         'none',
         'unicornHornOutfit',
-        'hatOutfit',
         'flowerOutfit',
         'frogCrownOutfit',
+        'hatOutfit',
+        'clownWigOutfit',
         'cowboyHatOutfit',
-        'bandanaOutfit',
         'catEarsOutfit',
         'devilHornsOutfit',
-        'kingsCrownOutfit',
+        'bandanaOutfit',
         'vikingHelmetOutfit',
-        'clownWigOutfit',
+        'kingsCrownOutfit',
     ],
     [COSMETIC_SLOTS.NECK]: [
         'none',
-        'hawaiianNecklaceOutfit',
         'tieOutfit',
         'bowtieOutfit',
+        'hawaiianNecklaceOutfit',
         'scarfOutfit',
-        'neckerchiefOutfit',
         'pearlOutfit',
-        'cubanChainOutfit',
         'championMedalOutfit',
+        'neckerchiefOutfit',
         'spikeChokerOutfit',
+        'cubanChainOutfit',
     ],
     [COSMETIC_SLOTS.EYES]: [
         'none',
         'roundGlassesOutfit',
-        'wayfarerSunglassesOutfit',
         'leopardPrintSunglassesOutfit',
-        'pirateEyePatchOutfit',
         'glasses3dOutfit',
+        'pirateEyePatchOutfit',
+        'wayfarerSunglassesOutfit',
         'thugSunglassesOutfit',
     ],
     [COSMETIC_SLOTS.NOSE]: [
@@ -446,3 +446,34 @@ export function getCutsceneCosmeticOverlayId(slot, cosmeticKey) {
     if (!entry) return null;
     return entry.cutscene?.overlayId || null;
 }
+
+// export function logCosmeticPrices() {
+//     const skinsTotal = Object.values(SKINS)
+//         .filter(s => !s.ownedByDefault && s.price < 1000)
+//         .reduce((sum, s) => sum + (s.price || 0), 0);
+
+//     console.log('=== Skins ===');
+//     console.log(`  skins: ${skinsTotal}`);
+
+//     const slotTotals = {};
+//     let cosmeticsTotal = 0;
+
+//     for (const slot of Object.values(COSMETIC_SLOTS)) {
+//         const entries = COSMETICS[slot];
+//         const total = Object.values(entries)
+//             .filter(e => e.key !== 'none')
+//             .reduce((sum, e) => sum + (e.price || 0), 0);
+//         slotTotals[slot] = total;
+//         cosmeticsTotal += total;
+//     }
+
+//     console.log('=== Cosmetics ===');
+//     for (const [slot, total] of Object.entries(slotTotals)) {
+//         console.log(`  ${slot}: ${total}`);
+//     }
+//     console.log(`  cosmetics total: ${cosmeticsTotal}`);
+
+//     console.log(`=== Total: ${skinsTotal + cosmeticsTotal} ===`);
+// }
+
+// window.logCosmeticPrices = logCosmeticPrices;
