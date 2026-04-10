@@ -4,13 +4,13 @@ export class TunnelVision {
 
         const defaults = {
             fadeInMs: 2000,
-            holdMs: 7000,
+            holdMs: 6000,
             expandMs: 6000,
-            fadeOutMs: 9000,
+            fadeOutMs: 1500,
 
             startRadius: 3000,
             minRadius: 400,
-            expandAmount: 1500,
+            expandAmount: 2500,
 
             keepDarkDuringExpand: true,
             fadeCircleAlphaWithFadeOut: false,
@@ -32,18 +32,13 @@ export class TunnelVision {
     _recomputeTimeline() {
         const c = this.cfg;
 
-        const fadeIn = Math.max(0, c.fadeInMs);
-        const hold = Math.max(0, c.holdMs);
-        const expand = Math.max(0, c.expandMs);
-        const fadeOut = Math.max(0, c.fadeOutMs);
-
-        this.tFadeInEnd = fadeIn;
-        this.tHoldEnd = this.tFadeInEnd + hold;
-        this.tExpandEnd = this.tHoldEnd + expand;
-
-        this.fadeOutStartTime = this.tExpandEnd;
-        this.fadeOutDuration = fadeOut;
+        this.tFadeInEnd = Math.max(0, c.fadeInMs);
+        this.tHoldEnd = this.tFadeInEnd + Math.max(0, c.holdMs);
+        this.fadeOutStartTime = this.tHoldEnd + Math.max(0, c.expandMs);
+        this.fadeOutDuration = Math.max(0, c.fadeOutMs);
         this.endTime = this.fadeOutStartTime + this.fadeOutDuration;
+
+        this.game.player.blackHoleDuration = this.endTime;
     }
 
     restartFromCurrent() {
@@ -62,6 +57,7 @@ export class TunnelVision {
         if (!this.game.isPlayerInGame) return;
 
         this.elapsedTime += deltaTime;
+        this.game.player.blackHoleTimer = Math.max(0, this.endTime - this.elapsedTime);
 
         this.x = this.game.player.x + this.game.player.width / 2;
         this.y = this.game.player.y + this.game.player.height / 2;
@@ -83,36 +79,34 @@ export class TunnelVision {
         // hold
         if (t < this.tHoldEnd) {
             this.radius = c.minRadius;
-            if (c.keepDarkDuringExpand) this.circleAlpha = Math.max(this.circleAlpha, 1.0);
+            if (c.keepDarkDuringExpand) this.circleAlpha = 1.0;
             this.alpha = 1.0;
             return;
         }
 
         // expand
         if (t < this.fadeOutStartTime) {
-            const expandElapsed = t - this.tHoldEnd;
-            const p = c.expandMs <= 0 ? 1 : Math.min(1, expandElapsed / c.expandMs);
+            const p = c.expandMs <= 0 ? 1 : Math.min(1, (t - this.tHoldEnd) / c.expandMs);
 
             this.radius = c.minRadius + p * c.expandAmount;
-            if (c.keepDarkDuringExpand) this.circleAlpha = Math.max(this.circleAlpha, 1.0);
+            if (c.keepDarkDuringExpand) this.circleAlpha = 1.0;
             this.alpha = 1.0;
             return;
         }
 
         // fade out
         if (t < this.endTime) {
-            const fadeElapsed = t - this.fadeOutStartTime;
-            const p = c.fadeOutMs <= 0 ? 1 : Math.min(1, fadeElapsed / c.fadeOutMs);
+            const p = c.fadeOutMs <= 0 ? 1 : Math.min(1, (t - this.fadeOutStartTime) / c.fadeOutMs);
 
             this.alpha = 1.0 - p;
-            if (c.fadeCircleAlphaWithFadeOut) {
-                this.circleAlpha = 1.0 - p;
-            }
+            if (c.fadeCircleAlphaWithFadeOut) this.circleAlpha = 1.0 - p;
             return;
         }
 
         this.game.collisions = this.game.collisions.filter(col => col !== this);
         this.game.player.isBlackHoleActive = false;
+        this.game.player.blackHoleTimer = 0;
+        this.game.player.blackHoleDuration = 0;
     }
 
     draw(context) {
@@ -134,7 +128,7 @@ export class TunnelVision {
     reset() {
         this.elapsedTime = 0;
         this.alpha = 1.0;
-        this.radius = 300;
+        this.radius = this.cfg.minRadius;
         this.restartRadius = null;
         this.circleAlpha = 0;
     }

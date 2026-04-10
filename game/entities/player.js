@@ -160,6 +160,8 @@ export class Player {
         this.poisonTimer = 0;
         // black hole
         this.isBlackHoleActive = false;
+        this.blackHoleTimer = 0;
+        this.blackHoleDuration = 0;
         // slow down
         this.isSlowed = false;
         this.slowedTimer = 0;
@@ -339,6 +341,8 @@ export class Player {
         this.postDashGraceTimer = 0;
         // black hole
         this.isBlackHoleActive = false;
+        this.blackHoleTimer = 0;
+        this.blackHoleDuration = 0;
         // energy
         this.energy = Math.min(100, Math.max(0, this.energy));
         this.energyInterval = 100;
@@ -1108,6 +1112,8 @@ export class Player {
     }
 
     triggerTunnelVision(options = null) {
+        this.isBlackHoleActive = true;
+
         const existing = this.game.collisions.find(c => c instanceof TunnelVision);
 
         if (existing) {
@@ -3176,7 +3182,6 @@ export class CollisionLogic {
                 this.setPoison(3500, player);
             },
             BlackHole() {
-                player.isBlackHoleActive = true;
                 player.triggerTunnelVision();
                 game.audioHandler.powerUpAndDownSFX.playSound('darkHoleLaughSound', false, true);
             },

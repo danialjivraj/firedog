@@ -174,6 +174,8 @@ export class BossManager {
 
         if (game.enemies.length !== 0) return false;
 
+        if (game.powerUps.length !== 0 || game.powerDowns.length !== 0) return false;
+
         const bossInstance = new config.type(game);
 
         this.state.current = bossInstance;

@@ -25,6 +25,8 @@ describe('BossManager', () => {
                 totalDistanceTraveled: 0,
             },
             enemies: [],
+            powerUps: [],
+            powerDowns: [],
         };
         manager = new BossManager(game);
     });
@@ -313,6 +315,26 @@ describe('BossManager', () => {
             game.currentMap = 'Map7';
             jest.spyOn(manager, 'bossGateReached').mockReturnValue(true);
             game.enemies.push({ id: 'regularEnemy' });
+
+            const result = manager.spawnBossIfNeeded();
+            expect(result).toBe(false);
+        });
+
+        it('does nothing when a power-up is still on screen', () => {
+            game.currentMap = 'Map7';
+            jest.spyOn(manager, 'bossGateReached').mockReturnValue(true);
+            game.enemies = [];
+            game.powerUps.push({ id: 'somePowerUp' });
+
+            const result = manager.spawnBossIfNeeded();
+            expect(result).toBe(false);
+        });
+
+        it('does nothing when a power-down is still on screen', () => {
+            game.currentMap = 'Map7';
+            jest.spyOn(manager, 'bossGateReached').mockReturnValue(true);
+            game.enemies = [];
+            game.powerDowns.push({ id: 'somePowerDown' });
 
             const result = manager.spawnBossIfNeeded();
             expect(result).toBe(false);

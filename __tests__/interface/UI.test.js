@@ -36,6 +36,7 @@ describe('UI', () => {
             moveTo: jest.fn(),
             lineTo: jest.fn(),
             arcTo: jest.fn(),
+            arc: jest.fn(),
             quadraticCurveTo: jest.fn(),
 
             fillRect: jest.fn(),
@@ -108,11 +109,26 @@ describe('UI', () => {
             player: {
                 isUnderwater: false,
                 isFrozen: false,
+                frozenTimer: 0,
+                frozenDuration: 0,
+
+                isPoisonedActive: false,
+                poisonTimer: 0,
+
+                isSlowed: false,
+                slowedTimer: 0,
+
+                isConfused: false,
+                confuseTimer: 0,
+                confuseDuration: 0,
+
+                isBlackHoleActive: false,
+                blackHoleTimer: 0,
+                blackHoleDuration: 0,
 
                 energy: 10.5,
                 maxEnergy: 100,
                 isBluePotionActive: false,
-                isPoisonedActive: false,
                 isEnergyExhausted: false,
 
                 divingTimer: 0,
@@ -916,6 +932,296 @@ describe('UI', () => {
                 (c) => c[0] === expectedText && c[1] === expectedCx && c[2] === expectedCy
             );
             expect(hourglassCall).toBeTruthy();
+        });
+    });
+
+    describe('getNegativeStatusSnapshot()', () => {
+        it('returns exactly 5 entries with keys in order', () => {
+            const snap = ui.getNegativeStatusSnapshot();
+            expect(snap).toHaveLength(5);
+            expect(snap.map(s => s.key)).toEqual(['freeze', 'poison', 'slow', 'confuse', 'blackHole']);
+        });
+
+        it('all entries inactive when no effects are applied', () => {
+            const snap = ui.getNegativeStatusSnapshot();
+            expect(snap.every(s => !s.active)).toBe(true);
+        });
+
+        it('freeze: active=true, correct remaining and total from frozenDuration', () => {
+            game.player.isFrozen = true;
+            game.player.frozenTimer = 2000;
+            game.player.frozenDuration = 5000;
+
+            const snap = ui.getNegativeStatusSnapshot();
+            const freeze = snap.find(s => s.key === 'freeze');
+
+            expect(freeze.active).toBe(true);
+            expect(freeze.remaining).toBe(2000);
+            expect(freeze.total).toBe(5000);
+        });
+
+        it('freeze: active=false when isFrozen=false even if timer > 0', () => {
+            game.player.isFrozen = false;
+            game.player.frozenTimer = 1000;
+
+            expect(ui.getNegativeStatusSnapshot().find(s => s.key === 'freeze').active).toBe(false);
+        });
+
+        it('freeze: active=false when frozenTimer=0 even if isFrozen=true', () => {
+            game.player.isFrozen = true;
+            game.player.frozenTimer = 0;
+
+            expect(ui.getNegativeStatusSnapshot().find(s => s.key === 'freeze').active).toBe(false);
+        });
+
+        it('poison: active=true, total falls back to poisonTimer when no duration property', () => {
+            game.player.isPoisonedActive = true;
+            game.player.poisonTimer = 3000;
+
+            const poison = ui.getNegativeStatusSnapshot().find(s => s.key === 'poison');
+
+            expect(poison.active).toBe(true);
+            expect(poison.remaining).toBe(3000);
+            expect(poison.total).toBe(3000);
+        });
+
+        it('slow: active=true with correct remaining', () => {
+            game.player.isSlowed = true;
+            game.player.slowedTimer = 1500;
+
+            const slow = ui.getNegativeStatusSnapshot().find(s => s.key === 'slow');
+
+            expect(slow.active).toBe(true);
+            expect(slow.remaining).toBe(1500);
+        });
+
+        it('confuse: uses confuseDuration for total when provided', () => {
+            game.player.isConfused = true;
+            game.player.confuseTimer = 1000;
+            game.player.confuseDuration = 4000;
+
+            const confuse = ui.getNegativeStatusSnapshot().find(s => s.key === 'confuse');
+
+            expect(confuse.active).toBe(true);
+            expect(confuse.remaining).toBe(1000);
+            expect(confuse.total).toBe(4000);
+        });
+
+        it('blackHole: active=true with correct remaining and total from blackHoleDuration', () => {
+            game.player.isBlackHoleActive = true;
+            game.player.blackHoleTimer = 8000;
+            game.player.blackHoleDuration = 15500;
+
+            const bh = ui.getNegativeStatusSnapshot().find(s => s.key === 'blackHole');
+
+            expect(bh.active).toBe(true);
+            expect(bh.remaining).toBe(8000);
+            expect(bh.total).toBe(15500);
+        });
+
+        it('blackHole: active=false when isBlackHoleActive=false', () => {
+            game.player.isBlackHoleActive = false;
+            game.player.blackHoleTimer = 5000;
+
+            expect(ui.getNegativeStatusSnapshot().find(s => s.key === 'blackHole').active).toBe(false);
+        });
+    });
+
+    describe('syncNegativeStatusIndicators()', () => {
+        beforeEach(() => {
+            ui.negativeStatusUi.activeOrder.clear();
+            ui.negativeStatusUi.nextOrder = 0;
+        });
+
+        it('returns empty array when no effects are active', () => {
+            expect(ui.syncNegativeStatusIndicators()).toEqual([]);
+        });
+
+        it('adds a new entry with appliedOrder=0 on first activation', () => {
+            game.player.isFrozen = true;
+            game.player.frozenTimer = 2000;
+            game.player.frozenDuration = 5000;
+
+            const result = ui.syncNegativeStatusIndicators();
+
+            expect(result).toHaveLength(1);
+            expect(result[0].key).toBe('freeze');
+            expect(result[0].appliedOrder).toBe(0);
+            expect(ui.negativeStatusUi.nextOrder).toBe(1);
+        });
+
+        it('preserves insertion (queue) order across multiple active effects', () => {
+            game.player.isPoisonedActive = true;
+            game.player.poisonTimer = 1000;
+            ui.syncNegativeStatusIndicators();
+
+            game.player.isFrozen = true;
+            game.player.frozenTimer = 2000;
+            game.player.frozenDuration = 5000;
+            ui.syncNegativeStatusIndicators();
+
+            game.player.isSlowed = true;
+            game.player.slowedTimer = 500;
+            const result = ui.syncNegativeStatusIndicators();
+
+            expect(result.map(r => r.key)).toEqual(['poison', 'freeze', 'slow']);
+            expect(result[0].appliedOrder).toBeLessThan(result[1].appliedOrder);
+            expect(result[1].appliedOrder).toBeLessThan(result[2].appliedOrder);
+        });
+
+        it('removes an effect from activeOrder when it becomes inactive', () => {
+            game.player.isFrozen = true;
+            game.player.frozenTimer = 1000;
+            game.player.frozenDuration = 3000;
+            ui.syncNegativeStatusIndicators();
+
+            game.player.isFrozen = false;
+            game.player.frozenTimer = 0;
+            const result = ui.syncNegativeStatusIndicators();
+
+            expect(result).toHaveLength(0);
+            expect(ui.negativeStatusUi.activeOrder.has('freeze')).toBe(false);
+        });
+
+        it('updates remaining without changing appliedOrder for an existing active effect', () => {
+            game.player.isFrozen = true;
+            game.player.frozenTimer = 3000;
+            game.player.frozenDuration = 5000;
+            ui.syncNegativeStatusIndicators();
+
+            game.player.frozenTimer = 1500;
+            const result = ui.syncNegativeStatusIndicators();
+
+            expect(result).toHaveLength(1);
+            expect(result[0].remaining).toBe(1500);
+            expect(result[0].appliedOrder).toBe(0);
+        });
+
+        it('does not shrink total when remaining decreases below initial total', () => {
+            game.player.isFrozen = true;
+            game.player.frozenTimer = 5000;
+            game.player.frozenDuration = 5000;
+            ui.syncNegativeStatusIndicators();
+
+            game.player.frozenTimer = 2000;
+            const result = ui.syncNegativeStatusIndicators();
+
+            expect(result[0].total).toBe(5000);
+            expect(result[0].remaining).toBe(2000);
+        });
+
+        it('expands total if remaining later exceeds it (effect refreshed)', () => {
+            game.player.isFrozen = true;
+            game.player.frozenTimer = 3000;
+            game.player.frozenDuration = 3000;
+            ui.syncNegativeStatusIndicators();
+
+            game.player.frozenTimer = 5000;
+            game.player.frozenDuration = 5000;
+            const result = ui.syncNegativeStatusIndicators();
+
+            expect(result[0].total).toBe(5000);
+        });
+    });
+
+    describe('drawNegativeStatusEffect()', () => {
+        it('draws the arc track, the remaining-time arc, and the label for a freeze effect', () => {
+            const effect = { key: 'freeze', color: 'cyan', remaining: 2000, total: 5000 };
+            const size = ui.negativeStatusUi.size;
+
+            ui.drawNegativeStatusEffect(ctx, 25, 230, size, effect);
+
+            expect(ctx.arc).toHaveBeenCalledTimes(2);
+
+            const labelCall = ctx.fillText.mock.calls.find(c => c[0] === 'F');
+            expect(labelCall).toBeTruthy();
+
+            expect(ctx.__assignments.strokeStyle).toContain('#00d4ff');
+        });
+
+        it('uses correct label letter for each theme', () => {
+            const size = ui.negativeStatusUi.size;
+            const cases = [
+                { key: 'freeze',    label: 'F' },
+                { key: 'poison',    label: 'P' },
+                { key: 'slow',      label: 'S' },
+                { key: 'confuse',   label: 'C' },
+                { key: 'blackHole', label: 'B' },
+            ];
+
+            for (const { key, label } of cases) {
+                ctx.fillText.mockClear();
+                ui.drawNegativeStatusEffect(ctx, 0, 0, size, { key, color: 'grey', remaining: 1000, total: 2000 });
+                expect(ctx.fillText.mock.calls.some(c => c[0] === label)).toBe(true);
+            }
+        });
+
+        it('skips the remaining-time arc when remainingRatio is 0', () => {
+            const size = ui.negativeStatusUi.size;
+            // remaining=0 → ratio=0 → arc ring skipped
+            ui.drawNegativeStatusEffect(ctx, 0, 0, size, { key: 'freeze', color: 'cyan', remaining: 0, total: 5000 });
+
+            expect(ctx.arc).toHaveBeenCalledTimes(1);
+        });
+
+        it('calls ctx.save/restore at least once', () => {
+            const size = ui.negativeStatusUi.size;
+            ui.drawNegativeStatusEffect(ctx, 25, 230, size, { key: 'poison', color: 'green', remaining: 500, total: 1000 });
+
+            expect(ctx.save).toHaveBeenCalled();
+            expect(ctx.restore).toHaveBeenCalled();
+        });
+    });
+
+    describe('drawNegativeStatusUI()', () => {
+        beforeEach(() => {
+            ui.negativeStatusUi.activeOrder.clear();
+            ui.negativeStatusUi.nextOrder = 0;
+        });
+
+        it('does nothing when no effects are active', () => {
+            const spy = jest.spyOn(ui, 'drawNegativeStatusEffect');
+            ui.drawNegativeStatusUI(ctx);
+            expect(spy).not.toHaveBeenCalled();
+        });
+
+        it('calls drawNegativeStatusEffect once per active effect', () => {
+            game.player.isFrozen = true;
+            game.player.frozenTimer = 2000;
+            game.player.frozenDuration = 5000;
+
+            game.player.isPoisonedActive = true;
+            game.player.poisonTimer = 3000;
+
+            const spy = jest.spyOn(ui, 'drawNegativeStatusEffect');
+            ui.drawNegativeStatusUI(ctx);
+
+            expect(spy).toHaveBeenCalledTimes(2);
+        });
+
+        it('positions each icon (size+gap) apart on the x axis at the same y', () => {
+            game.player.isFrozen = true;
+            game.player.frozenTimer = 1000;
+            game.player.frozenDuration = 3000;
+
+            game.player.isPoisonedActive = true;
+            game.player.poisonTimer = 1000;
+
+            const spy = jest.spyOn(ui, 'drawNegativeStatusEffect');
+            ui.drawNegativeStatusUI(ctx);
+
+            const size = ui.negativeStatusUi.size;
+            const gap = ui.negativeStatusUi.gap;
+            const startX = ui._abilityUiLayout.x;
+            const startY = ui._abilityUiLayout.bottomY + ui.negativeStatusUi.topSpacing;
+
+            const [, x0, y0] = spy.mock.calls[0];
+            const [, x1, y1] = spy.mock.calls[1];
+
+            expect(x0).toBe(startX);
+            expect(x1).toBe(startX + size + gap);
+            expect(y0).toBe(startY);
+            expect(y1).toBe(startY);
         });
     });
 });

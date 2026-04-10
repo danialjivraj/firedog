@@ -305,7 +305,7 @@ function makeGameAndLogic() {
         setState: jest.fn(),
 
         startFrozen: jest.fn(),
-        triggerTunnelVision: jest.fn(),
+        triggerTunnelVision: jest.fn(function() { this.isBlackHoleActive = true; }),
 
         x: 100,
         y: 100,

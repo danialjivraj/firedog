@@ -13,6 +13,8 @@ describe('TunnelVision', () => {
                 width: 100,
                 height: 200,
                 isBlackHoleActive: true,
+                blackHoleTimer: 0,
+                blackHoleDuration: 0,
             },
             width: 1920,
             height: 689,
@@ -37,9 +39,9 @@ describe('TunnelVision', () => {
             expect(tv.elapsedTime).toBe(0);
             expect(tv.restartRadius).toBeNull();
 
-            expect(tv.fadeOutStartTime).toBe(15000);
-            expect(tv.fadeOutDuration).toBe(9000);
-            expect(tv.endTime).toBe(24000);
+            expect(tv.fadeOutStartTime).toBe(14000);
+            expect(tv.fadeOutDuration).toBe(1500);
+            expect(tv.endTime).toBe(15500);
         });
 
         it('merges options into cfg and recomputes timeline', () => {
@@ -136,9 +138,9 @@ describe('TunnelVision', () => {
             it('increases radius linearly from minRadius by expandAmount over expandMs', () => {
                 tv.update(12000);
 
-                const expandElapsed = 12000 - 9000;
+                const expandElapsed = 12000 - 8000;
                 const p = expandElapsed / 6000;
-                const expectedRadius = 400 + p * 1500;
+                const expectedRadius = 400 + p * 2500;
 
                 expect(tv.radius).toBeCloseTo(expectedRadius);
                 expect(tv.alpha).toBe(1.0);
@@ -152,11 +154,13 @@ describe('TunnelVision', () => {
 
         describe('fade-out phase (fadeOutStartTime ≤ t < endTime)', () => {
             it('reduces alpha from 1 down to 0 over fadeOutDuration', () => {
-                tv.update(15000);
+                tv.restartFromCurrentWithOptions({ fadeOutMs: 9000 });
+
+                tv.update(14000);
                 expect(tv.alpha).toBeCloseTo(1.0);
 
                 tv.update(4500);
-                const p = (19500 - 15000) / 9000;
+                const p = (18500 - 14000) / 9000;
                 expect(tv.alpha).toBeCloseTo(1.0 - p);
             });
 
@@ -173,10 +177,10 @@ describe('TunnelVision', () => {
             });
 
             it('can fade circleAlpha when fadeCircleAlphaWithFadeOut=true', () => {
-                tv.restartFromCurrentWithOptions({ fadeCircleAlphaWithFadeOut: true });
+                tv.restartFromCurrentWithOptions({ fadeOutMs: 9000, fadeCircleAlphaWithFadeOut: true });
 
                 tv.update(2000);
-                tv.update(7000);
+                tv.update(6000);
                 tv.update(6000);
 
                 expect(tv.elapsedTime).toBe(tv.fadeOutStartTime);
@@ -191,7 +195,7 @@ describe('TunnelVision', () => {
                 tv.restartFromCurrentWithOptions({ fadeOutMs: 0 });
 
                 tv.update(2000);
-                tv.update(7000);
+                tv.update(6000);
                 tv.update(6000);
 
                 expect(game.collisions).not.toContain(tv);
@@ -250,24 +254,12 @@ describe('TunnelVision', () => {
             expect(alphaCalls).toEqual([0.75, 1.0]);
 
             expect(ctx.createRadialGradient).toHaveBeenCalledWith(
-                123,
-                456,
-                0,
-                123,
-                456,
-                500
+                123, 456, 0,
+                123, 456, 500
             );
 
-            expect(gradient.addColorStop).toHaveBeenNthCalledWith(
-                1,
-                0,
-                'rgba(0, 0, 0, 0)'
-            );
-            expect(gradient.addColorStop).toHaveBeenNthCalledWith(
-                2,
-                1,
-                `rgba(0, 0, 0, ${tv.circleAlpha})`
-            );
+            expect(gradient.addColorStop).toHaveBeenNthCalledWith(1, 0, 'rgba(0, 0, 0, 0)');
+            expect(gradient.addColorStop).toHaveBeenNthCalledWith(2, 1, `rgba(0, 0, 0, ${tv.circleAlpha})`);
 
             expect(ctx.fillStyle).toBe(gradient);
             expect(ctx.fillRect).toHaveBeenCalledWith(0, 0, game.width, game.height);
@@ -286,7 +278,7 @@ describe('TunnelVision', () => {
 
             expect(tv.elapsedTime).toBe(0);
             expect(tv.alpha).toBe(1.0);
-            expect(tv.radius).toBe(300);
+            expect(tv.radius).toBe(400);
             expect(tv.restartRadius).toBeNull();
             expect(tv.circleAlpha).toBe(0);
         });
