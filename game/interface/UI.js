@@ -1584,11 +1584,11 @@ export class UI {
             : 0;
 
         const themes = {
-            freeze:    { tint: 'rgba(0, 210, 255, 0.15)',   arc: '#00d4ff', glow: 'rgba(0, 210, 255, 0.80)',  label: 'F', border: 'rgba(0, 195, 255, 0.55)' },
-            poison:    { tint: 'rgba(57, 255, 20, 0.14)',   arc: '#39ff14', glow: 'rgba(57, 255, 20, 0.70)',  label: 'P', border: 'rgba(57, 255, 20, 0.48)' },
-            slow:      { tint: 'rgba(30, 80, 200, 0.16)',   arc: '#3a8fff', glow: 'rgba(40, 120, 255, 0.70)', label: 'S', border: 'rgba(50, 130, 255, 0.52)' },
-            confuse:   { tint: 'rgba(255, 200, 0, 0.15)',   arc: '#ffd700', glow: 'rgba(255, 200, 0, 0.72)',  label: 'C', border: 'rgba(255, 200, 0, 0.52)' },
-            blackHole: { tint: 'rgba(150, 60, 255, 0.14)',  arc: '#c070ff', glow: 'rgba(135, 55, 225, 0.72)', label: 'B', border: 'rgba(155, 72, 225, 0.52)' },
+            freeze: { tint: 'rgba(0, 210, 255, 0.15)', arc: '#00d4ff', glow: 'rgba(0, 210, 255, 0.80)', label: 'F', border: 'rgba(0, 195, 255, 0.55)' },
+            poison: { tint: 'rgba(57, 255, 20, 0.14)', arc: '#39ff14', glow: 'rgba(57, 255, 20, 0.70)', label: 'P', border: 'rgba(57, 255, 20, 0.48)' },
+            slow: { tint: 'rgba(30, 80, 200, 0.16)', arc: '#3a8fff', glow: 'rgba(40, 120, 255, 0.70)', label: 'S', border: 'rgba(50, 130, 255, 0.52)' },
+            confuse: { tint: 'rgba(255, 200, 0, 0.15)', arc: '#ffd700', glow: 'rgba(255, 200, 0, 0.72)', label: 'C', border: 'rgba(255, 200, 0, 0.52)' },
+            blackHole: { tint: 'rgba(150, 60, 255, 0.14)', arc: '#c070ff', glow: 'rgba(135, 55, 225, 0.72)', label: 'B', border: 'rgba(155, 72, 225, 0.52)' },
         };
 
         const theme = themes[effect.key] || {
@@ -1631,7 +1631,7 @@ export class UI {
         ctx.shadowBlur = 0;
         ctx.stroke();
 
-        // remaining-time arc (full = just applied, drains clockwise from 12)
+        // remaining-time arc
         if (remainingRatio > 0.02) {
             const arcStart = startAngle + (1 - remainingRatio) * Math.PI * 2;
             const arcEnd = startAngle + Math.PI * 2;
