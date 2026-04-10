@@ -301,7 +301,8 @@ describe('Game class (game-main.js)', () => {
     expect(game.coins).toBe(0);
     expect(game.lives).toBe(5);
     expect(game.maxLives).toBe(10);
-    expect(game.selectedDifficulty).toBe('Normal');
+    expect(game.powerUpSpawnMultiplier).toBe(1);
+    expect(game.powerDownSpawnMultiplier).toBe(1);
     expect(game.menu.main).toBeDefined();
   });
 
@@ -425,7 +426,7 @@ describe('Game class (game-main.js)', () => {
       game.glacikalDefeated = true;
       game.elyvorgDefeated = true;
       game.ntharaxDefeated = false;
-      game.selectedDifficulty = 'Hard';
+      game.menu.difficulty.setState({ livesIndex: 1, powerUpIndex: 2, powerDownIndex: 3 }, false);
       game.menu.wardrobe.getCurrentSkinId = () => 'tiger';
 
       game.menu.audioSettings.getState = () => VALID_AUDIO_STATE;
@@ -439,7 +440,11 @@ describe('Game class (game-main.js)', () => {
 
       expect(snapshot.map3Unlocked).toBe(true);
       expect(snapshot.currentSkinId).toBe('tiger');
-      expect(snapshot.selectedDifficulty).toBe('Hard');
+      expect(snapshot.difficultyState).toEqual({
+        livesIndex: 1,
+        powerUpIndex: 2,
+        powerDownIndex: 3,
+      });
 
       expect(snapshot.audioSettingsState).toEqual(VALID_AUDIO_STATE);
 
@@ -453,7 +458,11 @@ describe('Game class (game-main.js)', () => {
       const seed = {
         isTutorialActive: false,
         map2Unlocked: true,
-        selectedDifficulty: 'Easy',
+        difficultyState: {
+          livesIndex: 3,
+          powerUpIndex: 1,
+          powerDownIndex: 0,
+        },
         currentMap: 'Map2',
         glacikalDefeated: false,
         elyvorgDefeated: true,
@@ -465,17 +474,28 @@ describe('Game class (game-main.js)', () => {
       expect(g2.coins).toBe(0);
       expect(g2.isTutorialActive).toBe(false);
       expect(g2.map2Unlocked).toBe(true);
-      expect(g2.selectedDifficulty).toBe('Easy');
+      expect(g2.menu.difficulty.getState()).toEqual({
+        livesIndex: 3,
+        powerUpIndex: 1,
+        powerDownIndex: 0,
+      });
+      expect(g2.lives).toBe(7);
+      expect(g2.powerUpSpawnMultiplier).toBe(0.5);
+      expect(g2.powerDownSpawnMultiplier).toBe(0);
       expect(g2.glacikalDefeated).toBe(false);
       expect(g2.elyvorgDefeated).toBe(true);
       expect(g2.ntharaxDefeated).toBe(false);
     });
 
-    it('loadGameState() calls menu.setState / skins.setCurrentSkinById / levelDifficulty.setDifficulty', () => {
+    it('loadGameState() calls menu.setState / skins.setCurrentSkinById / difficulty.setState', () => {
       const fake = {
         audioSettingsState: VALID_AUDIO_STATE,
         currentSkinId: 'tiger',
-        selectedDifficulty: 'Hard',
+        difficultyState: {
+          livesIndex: 4,
+          powerUpIndex: 0,
+          powerDownIndex: 1,
+        },
       };
 
       localStorage.setItem('gameState', JSON.stringify(fake));
@@ -483,12 +503,19 @@ describe('Game class (game-main.js)', () => {
       const g3 = new Game(canvas, canvas.width, canvas.height);
       g3.menu.audioSettings.setState = jest.fn();
       g3.menu.wardrobe.setCurrentSkinById = jest.fn();
-      g3.menu.levelDifficulty.setDifficulty = jest.fn();
+      g3.menu.difficulty.setState = jest.fn();
       g3.loadGameState();
 
       expect(g3.menu.audioSettings.setState).toHaveBeenCalledWith(VALID_AUDIO_STATE);
       expect(g3.menu.wardrobe.setCurrentSkinById).toHaveBeenCalledWith('tiger');
-      expect(g3.menu.levelDifficulty.setDifficulty).toHaveBeenCalledWith('Hard');
+      expect(g3.menu.difficulty.setState).toHaveBeenCalledWith(
+        {
+          livesIndex: 4,
+          powerUpIndex: 0,
+          powerDownIndex: 1,
+        },
+        false
+      );
     });
 
     it('constructor + loadGameState() applies partial state and keeps default flags for omitted ones', () => {
@@ -1205,7 +1232,7 @@ describe('Game class (game-main.js)', () => {
     it('resets saved data, unlock flags, skins, audio settings, and keybindings to defaults', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
       game.menu.forestMap.resetSelectedCircleIndex = jest.fn();
-      game.menu.levelDifficulty.setDifficulty = jest.fn();
+      game.menu.difficulty.setState = jest.fn();
       game.menu.wardrobe.setCurrentSkinById = jest.fn();
       game.menu.audioSettings.setState = jest.fn();
 
@@ -1249,7 +1276,11 @@ describe('Game class (game-main.js)', () => {
         },
 
         currentSkinId: 'defaultSkin',
-        selectedDifficulty: 'Normal',
+        difficultyState: {
+          livesIndex: 2,
+          powerUpIndex: 2,
+          powerDownIndex: 2,
+        },
       });
 
       expect(game.isTutorialActive).toBe(true);
@@ -1266,7 +1297,10 @@ describe('Game class (game-main.js)', () => {
 
       expect(game.menu.forestMap.resetSelectedCircleIndex).toHaveBeenCalled();
       expect(game.menu.enemyLore.currentPage).toBe(0);
-      expect(game.menu.levelDifficulty.setDifficulty).toHaveBeenCalledWith('Normal');
+      expect(game.menu.difficulty.setState).toHaveBeenCalledWith(
+        { livesIndex: 2, powerUpIndex: 2, powerDownIndex: 2 },
+        false
+      );
       expect(game.menu.wardrobe.getCurrentSkinId()).toBe('defaultSkin');
       expect(game.menu.wardrobe.setCurrentSkinById).toHaveBeenCalledWith('defaultSkin');
 
@@ -1284,7 +1318,6 @@ describe('Game class (game-main.js)', () => {
             volumeLevels: [50, 50, 50, 50, 50, 50, null],
             muted: [false, false, false, false, false, false, null],
           },
-
         },
       });
 
@@ -2350,7 +2383,7 @@ describe('Game class (game-main.js)', () => {
         poisonScreen: false,
         poisonColourOpacity: 0,
       });
-      game.menu.levelDifficulty.setDifficulty = jest.fn();
+      game.menu.difficulty.setDifficulty = jest.fn();
 
       game.update(0);
 
@@ -2455,7 +2488,7 @@ describe('Game class (game-main.js)', () => {
         poisonScreen: false,
         poisonColourOpacity: 0,
       });
-      game.menu.levelDifficulty.setDifficulty = jest.fn();
+      game.menu.difficulty.setDifficulty = jest.fn();
 
       game.update(0);
 

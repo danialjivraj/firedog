@@ -2,7 +2,7 @@ import { BaseMenu } from "./baseMenu.js";
 
 export class SettingsMenu extends BaseMenu {
     constructor(game) {
-        const baseFullOptions = ["Audio", "Controls", "Level Difficulty", "Tutorial Activation", "Delete Progress", "Go Back"];
+        const baseFullOptions = ["Audio", "Controls", "Difficulty", "Tutorial", "Delete Progress", "Go Back"];
         super(game, baseFullOptions, "Settings");
 
         this._baseFullOptions = baseFullOptions;
@@ -16,16 +16,16 @@ export class SettingsMenu extends BaseMenu {
 
     _tutorialLabel() {
         const on = this.game.isTutorialActive === true;
-        return `Tutorial Activation: ${on ? "ON" : "OFF"}`;
+        return `Tutorial: ${on ? "ON" : "OFF"}`;
     }
 
     _isTutorialOption(optionText) {
-        return typeof optionText === "string" && optionText.startsWith("Tutorial Activation");
+        return typeof optionText === "string" && optionText.startsWith("Tutorial");
     }
 
     _buildFullMenuOptions() {
         return this._baseFullOptions.map((opt) => {
-            if (opt === "Tutorial Activation") return this._tutorialLabel();
+            if (opt === "Tutorial") return this._tutorialLabel();
             return opt;
         });
     }
@@ -58,7 +58,7 @@ export class SettingsMenu extends BaseMenu {
     }
 
     activateFromNav(state = {}) {
-        const inGame = state.menuInGame ?? this.menuInGame; // preserves false
+        const inGame = state.menuInGame ?? this.menuInGame;
         const sel = this._toIndex(state.selectedOption ?? 0, 0);
         this.activateMenu({ inGame: !!inGame, selectedOption: sel });
     }
@@ -103,8 +103,8 @@ export class SettingsMenu extends BaseMenu {
             return;
         }
 
-        if (!this.menuInGame && selected === "Level Difficulty") {
-            this.game.openMenu(this.game.menu.levelDifficulty, this.game.menu.levelDifficulty.selectedDifficultyIndex);
+        if (!this.menuInGame && selected === "Difficulty") {
+            this.game.openMenu(this.game.menu.difficulty, 0);
             return;
         }
 

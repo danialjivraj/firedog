@@ -49,7 +49,7 @@ describe('Tutorial', () => {
 
             menu: {
                 pause: { isPaused: false },
-                levelDifficulty: { setDifficulty: jest.fn() },
+                difficulty: { applyCurrentSettings: jest.fn() },
             },
 
             audioHandler: {
@@ -72,7 +72,6 @@ describe('Tutorial', () => {
 
             input: { keys: [] },
 
-            selectedDifficulty: 'Hard',
             coins: 123,
             time: 12435,
 
@@ -334,9 +333,11 @@ describe('Tutorial', () => {
             const last = tutorial.steps.length - 1;
             tutorial.currentStepIndex = last - 1;
             tutorial.tutorialPause = false;
+
             tutorial.update(6000);
+
             expect(game.player.clearAllStatusEffects).toHaveBeenCalled();
-            expect(game.menu.levelDifficulty.setDifficulty).toHaveBeenCalledWith(game.selectedDifficulty);
+            expect(game.menu.difficulty.applyCurrentSettings).toHaveBeenCalledTimes(1);
             expect(game.coins).toBe(0);
             expect(game.time).toBe(0);
             expect(game.player.energy).toBe(100);

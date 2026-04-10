@@ -1414,7 +1414,7 @@ export class Player {
     checkIfFiredogIsDead() {
         if (this.game.lives <= 0) {
             if (this.game.noDamageDuringTutorial) {
-                this.game.menu.levelDifficulty.setDifficulty(this.game.selectedDifficulty);
+                this.game.menu.difficulty.applyCurrentSettings();
             } else {
                 this.game.gameOver = true;
             }

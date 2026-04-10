@@ -34,7 +34,7 @@ import { Tutorial } from "./interface/tutorial.js";
 import { Map3, Map7, BonusMap1, BonusMap3 } from "./background/background.js";
 // menus
 import { MainMenu } from "./menu/mainMenu.js";
-import { LevelDifficultyMenu } from "./menu/levelDifficultyMenu.js";
+import { DifficultyMenu } from "./menu/difficultyMenu.js";
 import { ForestMapMenu } from "./menu/forestMap.js";
 import { HowToPlayMenu } from "./menu/howToPlayMenu.js";
 import { Wardrobe } from "./menu/wardrobeMenu.js";
@@ -152,7 +152,7 @@ export class Game {
             enemyLore: new EnemyLore(this),
             wardrobe: new Wardrobe(this),
             records: new RecordsMenu(this),
-            levelDifficulty: new LevelDifficultyMenu(this),
+            difficulty: new DifficultyMenu(this),
             howToPlay: new HowToPlayMenu(this),
             settings: new SettingsMenu(this),
             audioSettings: new AudioSettingsMenu(this),
@@ -168,7 +168,8 @@ export class Game {
         this.canSelect = true;
         this.canSelectForestMap = true;
         this.currentMap = null;
-        this.selectedDifficulty = "Normal";
+        this.powerUpSpawnMultiplier = 1;
+        this.powerDownSpawnMultiplier = 1;
         this.map1Unlocked = true;
         this.map2Unlocked = false;
         this.map3Unlocked = false;
@@ -816,8 +817,9 @@ export class Game {
 
                         this.player.clearAllStatusEffects();
                         this.player.energy = 100;
-                        if (this.lives < this.menu.levelDifficulty.getLivesForDifficulty(this.selectedDifficulty)) {
-                            this.menu.levelDifficulty.setDifficulty(this.selectedDifficulty, false);
+                        const targetLives = this.menu.difficulty.getConfiguredLives();
+                        if (this.lives < targetLives) {
+                            this.lives = targetLives;
                         }
 
                         const cutscene = new cfg.beforeCutscene(this);
@@ -1183,7 +1185,8 @@ export class Game {
         }
     }
 
-    _spawnItems(list, entries) {
+    _spawnItems(list, entries, multiplier = 1) {
+        if (multiplier === 0) return;
         if (this.bossManager.hasBossConfiguredForCurrentMap()) {
             if (this.bossManager.bossIsEngaged()) return;
             if (this.bossManager.bossGateReached()) return;
@@ -1196,7 +1199,7 @@ export class Game {
         ) {
             for (const { type, chance, underwaterOnly } of entries) {
                 if (underwaterOnly && !this.player.isUnderwater) continue;
-                if (Math.random() < chance) list.push(new type(this));
+                if (Math.random() < chance * multiplier) list.push(new type(this));
             }
         }
     }
@@ -1210,7 +1213,7 @@ export class Game {
             { type: HealthLive, chance: 0.005 },
             { type: Coin, chance: 0.005 },
             { type: OxygenTank, chance: 0.005, underwaterOnly: true },
-        ]);
+        ], this.powerUpSpawnMultiplier);
     }
 
     addPowerDown() {
@@ -1223,7 +1226,7 @@ export class Game {
             { type: Confuse, chance: 0.005 },
             { type: DeadSkull, chance: 0.005 },
             { type: CarbonDioxideTank, chance: 0.005, underwaterOnly: true },
-        ]);
+        ], this.powerDownSpawnMultiplier);
     }
 
     addCabin() {

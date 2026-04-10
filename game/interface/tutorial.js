@@ -448,7 +448,7 @@ export class Tutorial {
                 resetGameValues: () => {
                     this.game.player.clearAllStatusEffects();
                     this.game.player.energy = 100;
-                    this.game.menu.levelDifficulty.setDifficulty(this.game.selectedDifficulty);
+                    this.game.menu.difficulty.applyCurrentSettings();
                     this.game.coins = 0;
                     this.game.time = 0;
                 },

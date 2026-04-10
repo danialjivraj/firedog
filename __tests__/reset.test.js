@@ -121,15 +121,16 @@ describe('Reset', () => {
             talkToPenguin: true,
             enterToTalkToPenguin: true,
             talkToPenguinOneTimeOnly: false,
+
             // boss
             bossManager: { resetState: jest.fn() },
 
             // menu / difficulty / maps
             menu: {
-                levelDifficulty: { setDifficulty: jest.fn() },
+                difficulty: { applyCurrentSettings: jest.fn() },
                 forestMap: { setMap: jest.fn() },
             },
-            selectedDifficulty: 'hard',
+
             width: 800,
             height: 600,
             maxDistance: 500,
@@ -180,9 +181,9 @@ describe('Reset', () => {
             });
 
             it('removes cutscene listeners when a cutscene is active', () => {
-            const cs = game.currentCutscene;
-            reset.reset();
-            expect(cs.removeEventListeners).toHaveBeenCalled();
+                const cs = game.currentCutscene;
+                reset.reset();
+                expect(cs.removeEventListeners).toHaveBeenCalled();
             });
 
             it('does not remove listeners on a previous cutscene when currentCutscene is null', () => {
@@ -271,15 +272,15 @@ describe('Reset', () => {
         });
 
         it('clears any cutscene state and clears isEndCutscene flag without calling endCutscene()', () => {
-        game.isEndCutscene = true;
+            game.isEndCutscene = true;
 
-        reset.reset();
+            reset.reset();
 
-        expect(game.endCutscene).not.toHaveBeenCalled();
-        expect(game.isEndCutscene).toBe(false);
-        expect(game.cutsceneActive).toBe(false);
-        expect(game.currentCutscene).toBe(null);
-        expect(game.cutscenes).toEqual([]);
+            expect(game.endCutscene).not.toHaveBeenCalled();
+            expect(game.isEndCutscene).toBe(false);
+            expect(game.cutsceneActive).toBe(false);
+            expect(game.currentCutscene).toBe(null);
+            expect(game.cutscenes).toEqual([]);
         });
 
         it('creates a new player instance on each reset', () => {
@@ -357,9 +358,9 @@ describe('Reset', () => {
             expect(game._bossDefeatRecorded).toBe(false);
         });
 
-        it('sets difficulty according to selectedDifficulty', () => {
+        it('reapplies the current difficulty settings', () => {
             reset.reset();
-            expect(game.menu.levelDifficulty.setDifficulty).toHaveBeenCalledWith('hard');
+            expect(game.menu.difficulty.applyCurrentSettings).toHaveBeenCalledTimes(1);
         });
 
         describe('map selection', () => {

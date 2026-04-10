@@ -190,7 +190,6 @@ describe('Player', () => {
             time: 0,
             maxTime: 10000,
             noDamageDuringTutorial: false,
-            selectedDifficulty: 'Easy',
             UI: { secondsLeftActivated: false },
 
             collisions: [],
@@ -210,7 +209,7 @@ describe('Player', () => {
             },
             gameOver: false,
             menu: {
-                levelDifficulty: { setDifficulty: jest.fn() },
+                difficulty: { applyCurrentSettings: jest.fn() },
                 wardrobe: {
                     currentSkin: null,
                     getCurrentCosmeticKey: jest.fn(() => 'none'),
@@ -1119,12 +1118,14 @@ describe('Player', () => {
         expect(game.gameOver).toBe(true);
     });
 
-    test('checkIfFiredogIsDead resets difficulty during tutorial', () => {
+    test('checkIfFiredogIsDead reapplies current difficulty settings during tutorial', () => {
         game.lives = 0;
         game.noDamageDuringTutorial = true;
         player.currentState = { deathAnimation: false };
+
         player.checkIfFiredogIsDead();
-        expect(game.menu.levelDifficulty.setDifficulty).toHaveBeenCalledWith(game.selectedDifficulty);
+
+        expect(game.menu.difficulty.applyCurrentSettings).toHaveBeenCalledTimes(1);
     });
 
     test('checkIfFiredogIsSlowed drains timer and restores speed after two calls', () => {
@@ -1722,7 +1723,6 @@ describe('emitStatusParticles (bubble status logic)', () => {
             time: 0,
             maxTime: 10000,
             noDamageDuringTutorial: false,
-            selectedDifficulty: 'Easy',
             UI: { secondsLeftActivated: false },
 
             collisions: [],
@@ -1741,7 +1741,7 @@ describe('emitStatusParticles (bubble status logic)', () => {
             },
             gameOver: false,
             menu: {
-                levelDifficulty: { setDifficulty: jest.fn() },
+                difficulty: { applyCurrentSettings: jest.fn() },
                 wardrobe: {
                     currentSkin: makeImg('statusSkin'),
                     getCurrentCosmeticKey: jest.fn(() => 'none'),

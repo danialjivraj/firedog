@@ -40,7 +40,7 @@ function buildGameState(game) {
         ownedSkins: game.ownedSkins ?? {},
         ownedCosmetics: game.ownedCosmetics ?? {},
 
-        selectedDifficulty: game.selectedDifficulty,
+        difficultyState: game.menu.difficulty.getState(),
         keyBindings: game.keyBindings,
         records: game.records,
     };
@@ -109,9 +109,8 @@ export function loadGameState(game) {
             game.menu.wardrobe.outfitSlots = gameState.outfitSlots;
         }
 
-        if (gameState.selectedDifficulty) {
-            game.menu.levelDifficulty.setDifficulty(gameState.selectedDifficulty);
-            game.selectedDifficulty = gameState.selectedDifficulty;
+        if (gameState.difficultyState) {
+            game.menu.difficulty.setState(gameState.difficultyState, false);
         }
 
         if (gameState.keyBindings) {
@@ -157,8 +156,7 @@ export function clearSavedData(game) {
     game.menu.forestMap.resetSelectedCircleIndex();
     game.menu.enemyLore.currentPage = 0;
 
-    game.menu.levelDifficulty.setDifficulty("Normal");
-    game.selectedDifficulty = "Normal";
+    game.menu.difficulty.setState({ livesIndex: 2, powerUpIndex: 2, powerDownIndex: 2 }, false);
 
     game.menu.wardrobe.setCurrentSkinById("defaultSkin");
     game.menu.wardrobe.setCurrentCosmeticByKey(COSMETIC_SLOTS.HEAD, "none");

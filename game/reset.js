@@ -85,7 +85,7 @@ export class Reset {
         this.game._bossFightWasActive = false;
         this.game._bossDefeatRecorded = false;
         // level difficulty
-        this.game.menu.levelDifficulty.setDifficulty(this.game.selectedDifficulty);
+        this.game.menu.difficulty.applyCurrentSettings();
         // selecting map
         let selectedMap;
         switch (this.game.background.constructor) {
