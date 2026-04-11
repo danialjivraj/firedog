@@ -190,7 +190,14 @@ describe('Player', () => {
             time: 0,
             maxTime: 10000,
             noDamageDuringTutorial: false,
-            UI: { secondsLeftActivated: false },
+            UI: {
+                secondsLeftActivated: false,
+                anchors: {
+                    coins:  { targetX: 120, targetY: 38 },
+                    timer:  { targetX: 115, targetY: 78 },
+                    energy: { targetX: 250, targetY: 110 },
+                },
+            },
 
             collisions: [],
             floatingMessages: [],
@@ -1723,7 +1730,14 @@ describe('emitStatusParticles (bubble status logic)', () => {
             time: 0,
             maxTime: 10000,
             noDamageDuringTutorial: false,
-            UI: { secondsLeftActivated: false },
+            UI: {
+                secondsLeftActivated: false,
+                anchors: {
+                    coins:  { targetX: 120, targetY: 38 },
+                    timer:  { targetX: 115, targetY: 78 },
+                    energy: { targetX: 250, targetY: 110 },
+                },
+            },
 
             collisions: [],
             floatingMessages: [],

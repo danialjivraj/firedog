@@ -16,7 +16,7 @@ import * as fading from '../../game/animations/fading.js';
 
 jest.mock('../../game/animations/floatingMessages.js', () => ({
     FloatingMessage: jest.fn().mockImplementation(
-        (_text, _dur, _off, x, y, size, color) => ({ x, y, size, color })
+        (value, x, y, options = {}) => ({ value, x, y, ...options })
     )
 }));
 
@@ -107,7 +107,7 @@ describe('PenguiniCutscene & subclasses', () => {
                 .toHaveBeenCalledWith('cashOut', false, true);
             expect(game.coins).toBe(50);
             expect(game.floatingMessages[0])
-                .toMatchObject({ x: 275, y: 140, size: 40, color: 'green' });
+                .toMatchObject({ x: 150, y: 50, fontSize: 40, textColor: 'green', targetX: 200, targetY: 140 });
         });
 
         it('does nothing when lastSound2Played is false', () => {
@@ -485,7 +485,7 @@ describe('PenguiniCutscene & subclasses', () => {
             cutscene.enterOrLeftClick();
             expect(game.audioHandler.cutsceneSFX.playSound).toHaveBeenCalledWith('cashOut', false, true);
             expect(game.coins).toBe(100);
-            expect(game.floatingMessages[0]).toMatchObject({ x: 275, y: 140, size: 40, color: 'green' });
+            expect(game.floatingMessages[0]).toMatchObject({ x: 150, y: 50, fontSize: 40, textColor: 'green', targetX: 200, targetY: 140 });
         });
 
         it('does not deduct when lastSound2Played is false', () => {

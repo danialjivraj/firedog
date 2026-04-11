@@ -108,6 +108,13 @@ function makeExplosionGame(overrides = {}) {
       collisionSFX: { playSound: jest.fn() },
       enemySFX: { stopSound: jest.fn(), playSound: jest.fn() },
     },
+    UI: {
+      anchors: {
+        coins:  { targetX: 120, targetY: 38 },
+        timer:  { targetX: 115, targetY: 78 },
+        energy: { targetX: 250, targetY: 110 },
+      },
+    },
     ...overrides,
   };
 }

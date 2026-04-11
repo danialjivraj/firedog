@@ -1675,7 +1675,7 @@ export class CollisionLogic {
             this.game.coins += coins;
             player.energy += 2;
             this.game.floatingMessages.push(
-                new FloatingMessage(`+${coins}`, enemy.x, enemy.y, 120, 20, 30)
+                new FloatingMessage(`+${coins}`, enemy.x + enemy.width / 2, enemy.y, { fontSize: 30, ...this.game.UI.anchors.coins })
             );
         }
     }
@@ -2244,14 +2244,14 @@ export class CollisionLogic {
                 this.playCollisionFx(enemy, { fireball });
 
                 this.game.floatingMessages.push(
-                    new FloatingMessage('+20', enemy.x, enemy.y, 250, 110, 30, 'cyan')
+                    new FloatingMessage('+20', enemy.x + enemy.width / 2, enemy.y, { fontSize: 30, textColor: 'cyan', ...this.game.UI.anchors.energy })
                 );
 
                 player.energy += 20;
 
                 const msg = Math.random() < 0.5 ? 'NICE!' : 'EPIC!';
                 this.game.floatingMessages.push(
-                    new FloatingMessage(msg, enemy.x, enemy.y, this.game.width / 2, 80, 50)
+                    new FloatingMessage(msg, enemy.x + enemy.width / 2, enemy.y - 20, { fontSize: 50, duration: 1800 })
                 );
             },
 
@@ -2554,7 +2554,7 @@ export class CollisionLogic {
                         this.game.audioHandler.enemySFX.playSound('goblinStealing', false, true);
                         this.game.coins -= coinsToSteal;
                         this.game.floatingMessages.push(
-                            new FloatingMessage('-' + coinsToSteal, player.x, player.y, 120, 30, 30, 'red')
+                            new FloatingMessage('-' + coinsToSteal, player.x + player.width / 2, player.y, { fontSize: 30, textColor: 'red', ...this.game.UI.anchors.coins })
                         );
                     }
                 }
@@ -3115,8 +3115,9 @@ export class CollisionLogic {
                 game.time -= 10000;
                 game.audioHandler.powerUpAndDownSFX.playSound('oxygenTankSound', false, true);
                 game.floatingMessages.push(
-                    new FloatingMessage('+10s', item.x, item.y, 115, 70, 30, 'white', 'black', true)
+                    new FloatingMessage('+10s', item.x + item.width / 2, item.y, { fontSize: 30, smallSuffix: true, ...game.UI.anchors.timer })
                 );
+                game.UI.triggerTimerFlash('yellow');
             },
             HealthLive() {
                 game.lives++;
@@ -3125,7 +3126,7 @@ export class CollisionLogic {
             Coin(item) {
                 game.coins += 10;
                 game.floatingMessages.push(
-                    new FloatingMessage('+10', item.x, item.y, 120, 30, 30, 'yellow')
+                    new FloatingMessage('+10', item.x + item.width / 2, item.y, { fontSize: 30, textColor: 'yellow', ...game.UI.anchors.coins })
                 );
                 game.audioHandler.powerUpAndDownSFX.playSound('coinSound', false, true);
             },
@@ -3198,8 +3199,9 @@ export class CollisionLogic {
                 game.time += 10000;
                 game.audioHandler.powerUpAndDownSFX.playSound('carbonDioxideTankSound', false, true);
                 game.floatingMessages.push(
-                    new FloatingMessage('-10s', item.x, item.y, 115, 70, 30, 'red', 'black', true)
+                    new FloatingMessage('-10s', item.x + item.width / 2, item.y, { fontSize: 30, textColor: 'red', smallSuffix: true, ...game.UI.anchors.timer })
                 );
+                game.UI.triggerTimerFlash('red');
             },
             RandomPower(item) {
                 const candidates = Object.keys(downHandlers).filter(name => {

@@ -1135,6 +1135,7 @@ export class SmallFish extends EntityAnimation {
             const randomFishIndex = Math.floor(Math.random() * this.fishImages.length);
             const fishImage = this.fishImages[randomFishIndex];
 
+            const initialDirY = Math.random() > 0.5 ? directionY : -directionY;
             const fish = {
                 fishImage: fishImage,
                 x: Math.random() * this.game.width,
@@ -1142,7 +1143,10 @@ export class SmallFish extends EntityAnimation {
                 speed: Math.random() * 0.15 + 0.01,
                 opacity: 1,
                 directionX: Math.random() > 0.5 ? directionX : -directionX,
-                directionY: Math.random() > 0.5 ? directionY : -directionY,
+                directionY: initialDirY,
+                targetDirY: initialDirY,
+                directionChangeTimer: 0,
+                directionChangeInterval: Math.random() * 1200 + 800,
             };
             this.backgroundEntities.push(fish);
         }
@@ -1153,6 +1157,19 @@ export class SmallFish extends EntityAnimation {
             const entity = this.backgroundEntities[i];
 
             entity.y += entity.speed * entity.directionY * deltaTime;
+
+            entity.directionChangeTimer += deltaTime;
+            if (entity.directionChangeTimer >= entity.directionChangeInterval) {
+                entity.directionChangeTimer = 0;
+                entity.directionChangeInterval = Math.random() * 1200 + 800;
+                const adjustment = (Math.random() - 0.5) * 0.5;
+                entity.targetDirY = Math.max(-0.38, Math.min(0.38, entity.directionY + adjustment));
+            }
+
+            const diff = entity.targetDirY - entity.directionY;
+            entity.directionY += diff * 0.0025 * deltaTime;
+            const sign = entity.directionX >= 0 ? 1 : -1;
+            entity.directionX = sign * Math.sqrt(Math.max(0, 1 - entity.directionY * entity.directionY));
 
             if ((!this.game.cabin.isFullyVisible)) {
                 if (entity.directionX > 0 && this.game.player.isUnderwater) {
@@ -1200,6 +1217,9 @@ export class SmallFish extends EntityAnimation {
             opacity: 1,
             directionX: directionX,
             directionY: Math.random() > 0.5 ? directionY : -directionY,
+            targetDirY: Math.random() > 0.5 ? directionY : -directionY,
+            directionChangeTimer: 0,
+            directionChangeInterval: Math.random() * 1200 + 800,
         };
         this.backgroundEntities.push(newFish);
     }

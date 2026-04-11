@@ -104,17 +104,20 @@ export class ExplosionCollisionAnimation extends Collision {
                 enemy.x < this.x + this.width &&
                 enemy.x + enemy.width > this.x &&
                 enemy.y < this.y + this.height &&
-                enemy.y + enemy.height > this.y && !this.game.gameOver
+                enemy.y + enemy.height > this.y && !this.game.gameOver &&
+                !enemy.markedForDeletion
             ) {
                 enemy.markedForDeletion = true;
-                if (!(enemy instanceof Skulnap)) {
-                    this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
-                    this.game.collisions.push(new CollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
-                    this.game.floatingMessages.push(new FloatingMessage('+1', enemy.x, enemy.y, 150, 50, 20));
-                    this.game.coins++;
-                } else if (enemy instanceof Skulnap && enemy.id !== this.enemyId) {
+                if (enemy instanceof Skulnap && enemy.id !== this.enemyId) {
                     this.game.collisions.push(new ExplosionCollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5, this.enemyId));
                     this.game.audioHandler.collisionSFX.playSound('explosionCollision', false, true);
+                } else if (!(enemy instanceof Skulnap)) {
+                    this.game.collisions.push(new CollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
+                    this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
+                }
+                if (!(enemy instanceof Skulnap) || enemy.id !== this.enemyId) {
+                    this.game.floatingMessages.push(new FloatingMessage('+1', enemy.x + enemy.width / 2, enemy.y, { fontSize: 30, ...this.game.UI.anchors.coins }));
+                    this.game.coins++;
                 }
             }
         });

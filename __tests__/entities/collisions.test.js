@@ -251,6 +251,15 @@ function makeGameAndLogic() {
         },
 
         gameOver: false,
+
+        UI: {
+            anchors: {
+                coins:  { targetX: 160, targetY: 38 },
+                timer:  { targetX: 180, targetY: 78 },
+                energy: { targetX: 280, targetY: 110 },
+            },
+            triggerTimerFlash: jest.fn(),
+        },
     };
 
     const player = {

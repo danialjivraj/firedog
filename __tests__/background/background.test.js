@@ -1267,14 +1267,15 @@ describe('SmallFish', () => {
             f.directionX = 1;
             f.speed = 0.2;
             f.directionY = 0;
+            f.targetDirY = 0;
         });
     });
 
     test('removes off-screen fish and triggers respawn once (spawn mocked)', () => {
         sf.backgroundEntities = [
-            { x: -1, y: 10, speed: 0.1, directionX: 1, directionY: 0, opacity: 1 },
-            { x: 10, y: 10, speed: 0.1, directionX: 1, directionY: 0, opacity: 1 },
-            { x: 20, y: 10, speed: 0.1, directionX: 1, directionY: 0, opacity: 1 },
+            { x: -1, y: 10, speed: 0.1, directionX: 1, directionY: 0, targetDirY: 0, directionChangeTimer: 0, directionChangeInterval: 99999, opacity: 1 },
+            { x: 10, y: 10, speed: 0.1, directionX: 1, directionY: 0, targetDirY: 0, directionChangeTimer: 0, directionChangeInterval: 99999, opacity: 1 },
+            { x: 20, y: 10, speed: 0.1, directionX: 1, directionY: 0, targetDirY: 0, directionChangeTimer: 0, directionChangeInterval: 99999, opacity: 1 },
         ];
 
         sf.update(1);

@@ -678,7 +678,7 @@ export class Game {
             });
             // handle messages
             this.floatingMessages.forEach((message) => {
-                message.update();
+                message.update(deltaTime);
             });
 
             // handle record toasts

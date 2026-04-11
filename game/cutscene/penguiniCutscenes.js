@@ -19,15 +19,7 @@ export class PenguiniCutscene extends Cutscene {
             this.game.audioHandler.cutsceneSFX.playSound("cashOut", false, true);
             this.game.coins -= this.game.winningCoins;
             this.game.floatingMessages.push(
-                new FloatingMessage(
-                    "-" + this.game.winningCoins,
-                    150,
-                    50,
-                    this.game.penguini.x + 75,
-                    this.game.penguini.y + 40,
-                    40,
-                    "green"
-                )
+                new FloatingMessage("-" + this.game.winningCoins, 150, 50, { fontSize: 40, textColor: 'green', targetX: this.game.penguini.x, targetY: this.game.penguini.y + 40, easing: 'easeOut' })
             );
         }
 
@@ -35,15 +27,7 @@ export class PenguiniCutscene extends Cutscene {
             this.game.audioHandler.cutsceneSFX.playSound("cashOut", false, true);
             this.game.coins -= this.game.surplusCoins;
             this.game.floatingMessages.push(
-                new FloatingMessage(
-                    "-" + this.game.surplusCoins,
-                    150,
-                    50,
-                    this.game.penguini.x + 75,
-                    this.game.penguini.y + 40,
-                    40,
-                    "green"
-                )
+                new FloatingMessage("-" + this.game.surplusCoins, 150, 50, { fontSize: 40, textColor: 'green', targetX: this.game.penguini.x, targetY: this.game.penguini.y + 40, easing: 'easeOut' })
             );
         }
 

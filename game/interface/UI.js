@@ -18,6 +18,8 @@ export class UI {
         this.secondsLeft = 60000;
         this.secondsLeftActivated = false;
 
+        this.timerFlash = null; // { color, endTime }
+
         this.uiTime = 0;
         this.uiLastRealTime = null;
 
@@ -57,6 +59,12 @@ export class UI {
             size: 50,
             gap: 10,
             bottomY: 168 + this.topLeftYShift + 50,
+        };
+
+        this.anchors = {
+            coins: { targetX: 120, targetY: 30 + this.topLeftYShift },
+            timer: { targetX: 115, targetY: 78 + this.topLeftYShift },
+            energy: { targetX: 250, targetY: 110 + this.topLeftYShift },
         };
     }
 
@@ -756,6 +764,10 @@ export class UI {
         context.restore();
     }
 
+    triggerTimerFlash(color, durationMs = 1100) {
+        this.timerFlash = { color, endTime: this.getUiTime() + durationMs };
+    }
+
     timer(context) {
         context.font = this.fontSize * 1 + 'px ' + this.fontFamily;
         let formattedTime;
@@ -798,7 +810,19 @@ export class UI {
         }
         formattedTime = `${minutes}:${(seconds < 10 ? '0' : '') + seconds}`;
 
+        const now = this.getUiTime();
+        const flashActive = this.timerFlash && now < this.timerFlash.endTime;
+        const inCriticalBlink = this.game.player.isUnderwater && time <= this.secondsLeft;
+        const blinkOn = flashActive && !inCriticalBlink && Math.floor(now / 150) % 2 === 0;
+        if (blinkOn) {
+            context.save();
+            context.fillStyle = this.timerFlash.color;
+            context.shadowColor = 'black';
+        }
         context.fillText('Time: ' + formattedTime, 20, 78 + this.topLeftYShift);
+        if (blinkOn) {
+            context.restore();
+        }
 
         if (this.game.player.isUnderwater && time <= this.secondsLeft && time > this.secondsLeft - 60000) {
             this.secondsLeftActivated = true;
