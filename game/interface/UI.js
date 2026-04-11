@@ -1,3 +1,5 @@
+import { TIP_PHRASE_COLORS, MAP_TIPS } from './tips.js';
+
 export class UI {
     constructor(game) {
         this.game = game;
@@ -66,6 +68,18 @@ export class UI {
             timer: { targetX: 115, targetY: 78 + this.topLeftYShift },
             energy: { targetX: 250, targetY: 110 + this.topLeftYShift },
         };
+
+        this.tipState = {
+            index: -1,
+            opacity: 0,
+            phase: null,
+            timer: 0,
+            _lastTime: null,
+            _lastTipContext: null,
+            fadeInMs: 300,
+            holdMs: 10000,
+            fadeOutMs: 500,
+        };
     }
 
     getUiTime() {
@@ -129,6 +143,10 @@ export class UI {
 
         // negative status effects
         this.drawNegativeStatusUI(context);
+
+        // tips overlay
+        this.updateTip();
+        this.drawTip(context);
     }
 
     drawLives(context) {
@@ -1830,6 +1848,251 @@ export class UI {
         context.arcTo(barX, barY, barX + 10, barY, 5);
         context.closePath();
         context.fill();
+
+        context.restore();
+    }
+
+    _buildTipColorSpans(text) {
+        const spans = [];
+        const keys = Object.keys(TIP_PHRASE_COLORS).sort((a, b) => b.length - a.length);
+
+        for (const key of keys) {
+            const color = TIP_PHRASE_COLORS[key];
+            const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const rx = new RegExp(`\\b${escaped}(?:['']s)?\\b`, 'gi');
+            let m;
+            while ((m = rx.exec(text)) !== null) {
+                const start = m.index;
+                const end = m.index + m[0].length;
+                if (!spans.some(([s, e]) => start < e && end > s)) {
+                    spans.push([start, end, color]);
+                }
+            }
+        }
+        return spans;
+    }
+
+    _renderColoredTipLine(context, lineText, centerX, textY, spans) {
+        if (!spans) spans = this._buildTipColorSpans(lineText);
+        if (spans.length === 0) {
+            context.fillStyle = 'white';
+            context.fillText(lineText, centerX, textY);
+            return;
+        }
+
+        const segments = [];
+        let i = 0;
+        while (i < lineText.length) {
+            let color = null;
+            for (const [s, e, c] of spans) {
+                if (i >= s && i < e) { color = c; break; }
+            }
+            let j = i + 1;
+            while (j < lineText.length) {
+                let nextColor = null;
+                for (const [s, e, c] of spans) {
+                    if (j >= s && j < e) { nextColor = c; break; }
+                }
+                if (nextColor !== color) break;
+                j++;
+            }
+            segments.push({ text: lineText.slice(i, j), color });
+            i = j;
+        }
+
+        const totalWidth = context.measureText(lineText).width;
+        let x = centerX - totalWidth / 2;
+        const savedAlign = context.textAlign;
+        context.textAlign = 'left';
+
+        for (const { text, color } of segments) {
+            context.fillStyle = color ?? 'white';
+            context.fillText(text, x, textY);
+            x += context.measureText(text).width;
+        }
+
+        context.textAlign = savedAlign;
+    }
+
+    _getTipContext() {
+        const boss = this.game.boss;
+        if (boss && boss.inFight && boss.id) return boss.id;
+        return this.game.currentMap;
+    }
+
+    _getTips() {
+        const key = this._getTipContext();
+        return (key && MAP_TIPS[key]) || [];
+    }
+
+    dismissTip() {
+        const ts = this.tipState;
+        if (ts.phase === 'fadeIn' || ts.phase === 'hold') {
+            ts.phase = 'fadeOut';
+            ts.timer = 0;
+        }
+    }
+
+    resetTip() {
+        const ts = this.tipState;
+        ts.index = -1;
+        ts.opacity = 0;
+        ts.phase = null;
+        ts.timer = 0;
+        ts._lastTime = null;
+        ts._lastTipContext = null;
+    }
+
+    cycleTip() {
+        const tips = this._getTips();
+        if (!tips.length) return;
+
+        const newContext = this._getTipContext();
+
+        // if context changed (e.g. boss fight started), reset to tip 0 of new context
+        if (newContext !== this.tipState._lastTipContext) {
+            this.tipState._lastTipContext = newContext;
+            this.tipState.index = 0;
+        } else if (this.tipState.phase === 'fadeOut') {
+            // during fadeOut, re-show the same tip (don't advance)
+        } else if (this.tipState.index < 0 || this.tipState.phase === null) {
+            this.tipState.index = 0;
+        } else {
+            this.tipState.index = (this.tipState.index + 1) % tips.length;
+        }
+
+        this.tipState.opacity = 0;
+        this.tipState.phase = 'fadeIn';
+        this.tipState.timer = 0;
+        this.tipState._lastTime = null;
+    }
+
+    updateTip() {
+        const ts = this.tipState;
+        if (ts.phase === null) return;
+
+        const now = Date.now();
+        if (ts._lastTime === null) {
+            ts._lastTime = now;
+            return;
+        }
+
+        if (this.game.menu.pause.isPaused) {
+            ts._lastTime = now;
+            return;
+        }
+
+        const dt = now - ts._lastTime;
+        ts._lastTime = now;
+        ts.timer += dt;
+
+        if (ts.phase === 'fadeIn') {
+            ts.opacity = Math.min(1, ts.timer / ts.fadeInMs);
+            if (ts.timer >= ts.fadeInMs) {
+                ts.opacity = 1;
+                ts.phase = 'hold';
+                ts.timer = 0;
+            }
+        } else if (ts.phase === 'hold') {
+            if (ts.timer >= ts.holdMs) {
+                ts.phase = 'fadeOut';
+                ts.timer = 0;
+            }
+        } else if (ts.phase === 'fadeOut') {
+            ts.opacity = Math.max(0, 1 - ts.timer / ts.fadeOutMs);
+            if (ts.timer >= ts.fadeOutMs) {
+                ts.opacity = 0;
+                ts.phase = null;
+            }
+        }
+    }
+
+    drawTip(context) {
+        const ts = this.tipState;
+        if (ts.phase === null || ts.opacity <= 0) return;
+
+        const tips = this._getTips();
+        if (!tips.length || ts.index < 0 || ts.index >= tips.length) return;
+
+        const text = tips[ts.index];
+        const tipCount = tips.length;
+
+        const padX = 18;
+        const padY = 10;
+        const barBottom = 22;
+        const boxY = barBottom + 20;
+        const maxBoxW = this.barWidth + 400;
+        const fontSize = 16;
+        const lineHeight = 22;
+
+        context.save();
+        context.globalAlpha = ts.opacity;
+        context.font = `bold ${fontSize}px Arial`;
+        context.textAlign = 'center';
+        context.textBaseline = 'top';
+
+        const counterText = tipCount > 1 ? `${ts.index + 1}/${tipCount}` : null;
+        const counterReserve = counterText ? 48 : 0;
+
+        const maxLineW = maxBoxW - padX * 2 - counterReserve * 2;
+        const lines = [];
+        for (const paragraph of text.split('\n')) {
+            const words = paragraph.split(' ');
+            let current = '';
+            for (const word of words) {
+                const test = current ? current + ' ' + word : word;
+                if (context.measureText(test).width > maxLineW && current) {
+                    lines.push(current);
+                    current = word;
+                } else {
+                    current = test;
+                }
+            }
+            if (current) lines.push(current);
+        }
+
+        const widestLine = Math.max(...lines.map(l => context.measureText(l).width));
+        const boxW = Math.min(maxBoxW, widestLine + padX * 2 + counterReserve * 2 + 20);
+        const boxX = (this.game.width - boxW) / 2;
+
+        const boxH = padY * 2 + (lines.length - 1) * lineHeight + fontSize;
+
+        // background rectangle
+        context.fillStyle = 'rgba(0, 0, 0, 0.65)';
+        context.beginPath();
+        context.roundRect(boxX, boxY, boxW, boxH, 5);
+        context.fill();
+
+        // tip text
+        const centerX = boxX + boxW / 2;
+        context.shadowColor = 'black';
+        context.shadowBlur = 6;
+        context.shadowOffsetX = 1;
+        context.shadowOffsetY = 1;
+
+        const joinedText = lines.join(' ');
+        const allSpans = this._buildTipColorSpans(joinedText);
+
+        let textY = boxY + padY;
+        let lineStart = 0;
+        for (const line of lines) {
+            const lineEnd = lineStart + line.length;
+            const lineSpans = allSpans
+                .filter(([s, e]) => s < lineEnd && e > lineStart)
+                .map(([s, e, c]) => [Math.max(s, lineStart) - lineStart, Math.min(e, lineEnd) - lineStart, c]);
+            this._renderColoredTipLine(context, line, centerX, textY, lineSpans);
+            lineStart += line.length + 1;
+            textY += lineHeight;
+        }
+
+        if (counterText) {
+            context.font = `bold 14px Arial`;
+            context.fillStyle = 'rgba(220, 220, 220, 0.9)';
+            context.shadowBlur = 0;
+            context.textAlign = 'right';
+            context.textBaseline = 'bottom';
+            context.fillText(counterText, boxX + boxW - padX, boxY + boxH - padY);
+        }
 
         context.restore();
     }

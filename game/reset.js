@@ -84,6 +84,8 @@ export class Reset {
         this.game.bossTime = 0;
         this.game._bossFightWasActive = false;
         this.game._bossDefeatRecorded = false;
+        // tips
+        if (this.game.UI) this.game.UI.resetTip();
         // level difficulty
         this.game.menu.difficulty.applyCurrentSettings();
         // selecting map

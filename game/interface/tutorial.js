@@ -38,6 +38,7 @@ export class Tutorial {
             Enter: { fill: "orange", stroke: "black" },
             Shift: { fill: "orange", stroke: "black" },
             Tab: { fill: "orange", stroke: "black" },
+            F1: { fill: "orange", stroke: "black" },
 
             // enemies
             "Meat Soldier": { fill: "FireBrick", stroke: "black" },
@@ -259,7 +260,7 @@ export class Tutorial {
                 },
                 timerDuration: 2000,
                 spawnEnemy: (deltaTime) => {
-                    this.createSpawnEnemy(SpearFish, deltaTime, null, { lives: 1 });
+                    this.createSpawnEnemy(SpearFish, deltaTime, null, { lives: 1, coinValue: 1 });
                 },
             },
             {
@@ -276,7 +277,7 @@ export class Tutorial {
                 },
                 timerDuration: 4000,
                 spawnEnemy: (deltaTime) => {
-                    this.createSpawnEnemy(SpearFish, deltaTime, null, { lives: 1 });
+                    this.createSpawnEnemy(SpearFish, deltaTime, null, { lives: 1, coinValue: 1 });
                 },
             },
             {
@@ -411,7 +412,7 @@ export class Tutorial {
                 },
             },
             {
-                message: "For Dash Attack you have 2 charges.\nPress Shift to use the first charge!",
+                message: "For Dash Attack you have 2 charges.\nDuring Dash you cannot be damaged!\nPress Shift to use the first charge!",
                 action: "dashAttack",
                 condition: () => {
                     const playerOnGround = this.game.player.onGround();
@@ -426,7 +427,7 @@ export class Tutorial {
             },
             {
                 message:
-                    "Now use your second dash charge.\nDuring Dash you cannot be damaged!\nPress Shift again on Skulnap!",
+                    "Now use your second dash charge.\nPress Shift again on Skulnap!",
                 action: "dashAttack",
                 condition: () => {
                     const playerOnGround = this.game.player.onGround();
@@ -438,6 +439,13 @@ export class Tutorial {
                 spawnEnemy: (deltaTime) => {
                     this.createSpawnEnemy(Skulnap, deltaTime);
                 },
+            },
+            {
+                message:
+                    "You can press F1 at any time during the gameplay\n or when the game is over to cycle through tips for the current map!\nPress Enter to continue.",
+                action: "rollAttack",
+                condition: () => true,
+                timerDuration: 4000,
             },
             {
                 message:

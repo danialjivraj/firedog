@@ -1,0 +1,159 @@
+export const TIP_PHRASE_COLORS = {
+    // map names
+    'Venomveil Lake': '#39ff14',
+    'Icebound Cave': '#8fd7ff',
+    'Cosmic Rift': '#ff41ff',
+
+    // multi-word abilities
+    'Rolling attack': 'orange',
+    'Diving attack': 'orange',
+    'Dive attacks': 'orange',
+    'Dive attack': 'orange',
+    'Double Jump': 'orange',
+
+    // single-word abilities
+    'Fireball': 'orange',
+    'Invisibility': 'orange',
+    'Rolling': 'orange',
+    'Diving': 'orange',
+    'Dash': 'orange',
+    'Dive': 'orange',
+    'Energy': 'DodgerBlue',
+
+    // multi-word enemies
+    'Mini Oozels': '#ff5555',
+    'Volcano Wasps': '#ff5555',
+    'Crystal Wasps': '#ff5555',
+    'Karate Croco': '#ff5555',
+    'Angry Bees': '#ff5555',
+    'Big Greener': '#ff5555',
+    'Dusk Plant': '#ff5555',
+
+    // single-word enemies
+    "N'Tharax": '#ff5555',
+    "Mode 2": '#ff5555',
+    'Skulnaps': '#ff5555',
+    'Wardrake': '#ff5555',
+    'Sigilfly': '#ff5555',
+    'Magmapod': '#ff5555',
+    'Drillice': '#ff5555',
+    'Voltzeel': '#ff5555',
+    'Scorbles': '#ff5555',
+    'Glacikal': '#ff5555',
+    'Elyvorg': '#ff5555',
+    'Skulnap': '#ff5555',
+    'Crabula': '#ff5555',
+    'Mycora': '#ff5555',
+    'Oozels': '#ff5555',
+    'Jerry': '#ff5555',
+    'Dolly': '#ff5555',
+    'Garry': '#ff5555',
+    'Golex': '#ff5555',
+    'Oozel': '#ff5555',
+    'Bees': '#ff5555',
+    'Sunflora': '#ff5555',
+
+    // status types
+    'poisonous': '#a8ffb0',
+    'poisoned': '#a8ffb0',
+    'poison': '#a8ffb0',
+    'slow': '#c5d8ff',
+    'slowed': '#c5d8ff',
+    'Frozen': '#00e5ff',
+    'Stun': 'yellow',
+    'Red': 'red',
+
+    // N'Tharax hazards
+    'ground tentacles': '#9933ff',
+    'spirit balls':     '#d4aaff',
+
+    // boss attacks / abilities
+    'Gravitational Ball': '#d4aaff',
+    'Healing Barrier':    '#4cd97a',
+    'Purple Fireball':    '#cc66ff',
+    'Electric Wheel':     'yellow',
+    'Purple Slash':       '#9933ff',
+
+    // objects / hazards
+    'icicles': '#7ab8d8',
+    'raining': '#7ab8d8',
+    'rain':    '#7ab8d8',
+
+    // collectibles
+    'coins': 'orange',
+    'coin':  'orange',
+};
+
+export const MAP_TIPS = {
+    Map1: [
+        "Experiment and get familiar with your abilities against the enemies.",
+        "Skulnap is a Stun enemy that wakes up when you get close.\nUse your Fireball ability to take it down.",
+    ],
+    Map2: [
+        "Enemies like Dusk Plant throw projectiles. Destroying projectiles also gives you coins.",
+        "Dolly is a dangerous enemy that throws Stun projectiles.\nUse your Invisibility or Dash abilities to avoid it, or run away from Dolly entirely.",
+    ],
+    Map3: [
+        "You can jump while in the middle of a Dive attack underwater.",
+        "Enemies like Voltzeel attack unexpectedly from above.\nIt may be safer to stay on the ground most of the time.",
+        "Touching Garry will cover you in ink.\nUsing ranged attacks like Fireball is an effective counter.",
+    ],
+    Map4: [
+        "Big Greener is a Poison enemy that throws 2 quick leaf projectiles.\nTry sitting down and using Fireball to bypass the leaves and hit it directly.",
+        "Jerry stays high in the air and throws Skulnaps to the ground.\nBut that might be his weakness.",
+        "Karate Croco is a tough enemy to defeat.\nTry combining Fireball with a Dive attack to take him down.",
+    ],
+    Map5: [
+        "When it starts raining, most enemies become more aggressive.\nSave your Invisibility and Dash abilities for when it begins to rain.",
+        "Bees and Angry Bees are difficult to dodge.\nTry jumping as they approach and use Fireball when they line up with you.",
+        "When it is raining, Sunflora throws many projectile beams upward.\nUse this opportunity to Dive attack and earn extra coins.",
+    ],
+    Map6: [
+        "Venomveil Lake is filled with poisonous enemies.\nAvoid them when in trouble, but sometimes it may be worth getting poisoned for extra coins.",
+        "Mycora throws three poisonous projectiles.\nIt can be hard to get through without Invisibility or Dash, but not impossible.",
+    ],
+    Map7: [
+        "Watch the ground. Scorbles are fast enemies that blend in easily.",
+        "Magmapod is a Red enemy with Red projectiles.\nTry using one Fireball followed by two Dive attacks.\nThis defeats it and lets you collect extra coins from its projectiles.",
+        "Volcano Wasps are hard to dodge.\nJump as it approaches and use Fireball when it lines up with you.",
+    ],
+    BonusMap1: [
+        "Icebound Cave has very slippery ground.\nYour movement will feel delayed, so get used to the momentum.",
+        "Many enemies slow you down here.\nAvoid them when in trouble, but sometimes it may be worth getting slowed for extra coins.",
+        "Crystal Wasps are Frozen enemies that move slowly toward you.\nYou can avoid them, but to defeat them you need to jump and use Fireball at the right moment.",
+        "Drillice emerges from the ground.\nWatch the ground ahead for warning signs.",
+    ],
+    BonusMap2: [
+        "Enemies like Sigilfly and Golex are Red enemies and appear often.\nUse Dive attack to defeat them and collect coins.",
+        "Oozel splits into two when defeated.\nMini Oozels can be easy to miss.",
+        "Wardrake is extremely dangerous. If you see one, be ready to use Invisibility or Dash.\nIf those are not available, run.",
+    ],
+    BonusMap3: [
+        "You can Double Jump while falling or during a Dive attack, but only once.\nYou must land on the ground before you can Double Jump again.",
+        "Gravity behaves differently in Cosmic Rift.\nJumps are slower but go higher, and Dive attacks also take longer to reach the ground.",
+        "Stay on the ground when possible.\nEnemies like Crabula attack unexpectedly from above.\nDefeat airborne enemies quickly and use Dive attack to reach the ground faster.",
+    ],
+    elyvorg: [
+        "When Elyvorg's eyes turn grey, it is your chance to attack.",
+        "When Elyvorg throws a Gravitational Ball, it pulls you toward him.\nDestroy it before it reaches the top where you cannot reach it.",
+        "When Elyvorg teleports, he will appear behind you.\nIf that is not possible, he will appear in front of you instead.",
+        "Purple particles from Elyvorg's body mean a Purple Slash attack is coming.\nHe uses it while running, so jump over him to avoid it.",
+        "Blue particles from Elyvorg's body mean an Electric Wheel attack is coming.\nKeep your distance to avoid unexpected damage.",
+        "Elyvorg's Purple Fireball can damage you through your Rolling or Diving attack.\nDodge it or counter it with your own Fireball.",
+        "Dive attacks are the most consistent way to deal damage to Elyvorg.",
+    ],
+    glacikal: [
+        "When Glacikal's eyes turn grey, it is your chance to attack.",
+        "While running, Glacikal spawns small icicles on the ground and if ignored, they can quickly fill the whole ground. You may need to clear them even if they slow you down.",
+        "Dive attacks are the most consistent way of dealing damage without consuming Energy, but the slippery ground makes them harder to use.",
+        "Glacikal can summon large icicles from below.\nTouching them through Rolling or Diving, will damage you, so stay sharp.",
+    ],
+    ntharax: [
+        "Many attacks will damage you during Rolling or Diving, such as ground tentacles and spirit balls. Avoid them completely.",
+        "If N'Tharax throws a small bouncing purple, or yellow orb,\ndestroy it quickly before it multiplies.",
+        "N'Tharax can create a Healing Barrier that restores his health when damaged.\nAvoid attacking him while the barrier is active.",
+        "If the ground fills with warning markers, jump just before the Stun spikes appear.\nWhile in the air and falling, use your Double Jump just before you touch the Stun spikes.",
+        "To deal a quick burst of damage, try jumping toward N'Tharax and use Dive attack.\nOnce it hits him, jump again while the Dive is still active and chain another Dive attack.",
+        "At 50% health, N'Tharax enters Mode 2.\nMode 2 N'Tharax becomes faster and all of his abilities become more dangerous.",
+    ],
+};

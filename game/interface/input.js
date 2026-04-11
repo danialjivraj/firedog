@@ -89,6 +89,17 @@ export class InputHandler {
                 }
             }
 
+            if (
+                e.key === 'F1' &&
+                !e.repeat &&
+                this.game.isPlayerInGame &&
+                !this.game.menu.pause.isPaused &&
+                !this.game.cutsceneActive
+            ) {
+                this.game.UI.cycleTip();
+                e.preventDefault();
+            }
+
             if (lowercaseKey === 'm') {
                 //this.game.debug = !this.game.debug;
             }

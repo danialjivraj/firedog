@@ -822,6 +822,8 @@ export class Game {
                             this.lives = targetLives;
                         }
 
+                        this.UI.dismissTip();
+
                         const cutscene = new cfg.beforeCutscene(this);
                         this.startCutscene(cutscene);
                         cutscene.displayDialogue();

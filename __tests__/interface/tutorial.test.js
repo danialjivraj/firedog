@@ -292,7 +292,7 @@ describe('Tutorial', () => {
             expect(ctor.name).toBe('SpearFish');
             expect(dt).toBe(300);
             expect(initY).toBeNull();
-            expect(cfg).toEqual({ lives: 1 });
+            expect(cfg).toEqual({ lives: 1, coinValue: 1 });
         });
 
         test('spawnEnemy called for Piper on step 26 → 27', () => {

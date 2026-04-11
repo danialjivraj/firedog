@@ -40,6 +40,7 @@ describe('UI', () => {
             quadraticCurveTo: jest.fn(),
 
             fillRect: jest.fn(),
+            roundRect: jest.fn(),
 
             translate: jest.fn(),
             scale: jest.fn(),
@@ -1222,6 +1223,296 @@ describe('UI', () => {
             expect(x1).toBe(startX + size + gap);
             expect(y0).toBe(startY);
             expect(y1).toBe(startY);
+        });
+    });
+
+    describe('_buildTipColorSpans()', () => {
+        it('returns empty array when no phrases match', () => {
+            const spans = ui._buildTipColorSpans('Nothing special here.');
+            expect(spans).toEqual([]);
+        });
+
+        it('colours a known multi-word phrase as a single span', () => {
+            const spans = ui._buildTipColorSpans('Use a Dive attack now.');
+            const span = spans.find(([s, e]) => e - s > 4);
+            expect(span).toBeDefined();
+            expect(span[2]).toBe('orange');
+        });
+
+        it('longer phrase wins over a shorter sub-phrase (no overlap)', () => {
+            const spans = ui._buildTipColorSpans('Use Dive attacks here.');
+            const overlapping = spans.filter(([s1, e1]) =>
+                spans.some(([s2, e2]) => s2 !== s1 && s2 < e1 && e2 > s1)
+            );
+            expect(overlapping).toHaveLength(0);
+        });
+
+        it('colours a possessive form (Elyvorg\'s)', () => {
+            const text = "Elyvorg's attack is fast.";
+            const spans = ui._buildTipColorSpans(text);
+            const span = spans.find(([s, e]) => text.slice(s, e).startsWith('Elyvorg'));
+            expect(span).toBeDefined();
+            expect(text.slice(span[0], span[1])).toBe("Elyvorg's");
+        });
+
+    });
+
+    describe('_getTipContext()', () => {
+        it('returns currentMap when no boss fight is active', () => {
+            game.boss = null;
+            game.currentMap = 'Map3';
+            expect(ui._getTipContext()).toBe('Map3');
+        });
+
+        it('returns boss.id when boss is in fight', () => {
+            game.boss = { inFight: true, id: 'elyvorg' };
+            expect(ui._getTipContext()).toBe('elyvorg');
+        });
+
+        it('returns currentMap when boss exists but inFight is false', () => {
+            game.boss = { inFight: false, id: 'elyvorg' };
+            game.currentMap = 'Map7';
+            expect(ui._getTipContext()).toBe('Map7');
+        });
+    });
+
+    describe('cycleTip()', () => {
+        it('does nothing when there are no tips for the current context', () => {
+            game.currentMap = 'UnknownMap';
+            ui.cycleTip();
+            expect(ui.tipState.phase).toBeNull();
+        });
+
+        it('starts at index 0 and sets phase to fadeIn on first call', () => {
+            game.currentMap = 'Map1';
+            ui.cycleTip();
+            expect(ui.tipState.index).toBe(0);
+            expect(ui.tipState.phase).toBe('fadeIn');
+            expect(ui.tipState.opacity).toBe(0);
+        });
+
+        it('advances to the next tip on subsequent calls', () => {
+            game.currentMap = 'Map3';
+            ui.cycleTip();
+            expect(ui.tipState.index).toBe(0);
+            ui.tipState.phase = 'hold';
+            ui.cycleTip();
+            expect(ui.tipState.index).toBe(1);
+        });
+
+        it('wraps around to index 0 after the last tip', () => {
+            game.currentMap = 'Map1';
+            ui.tipState._lastTipContext = 'Map1';
+            ui.tipState.index = 1;
+            ui.tipState.phase = 'hold';
+            ui.cycleTip();
+            expect(ui.tipState.index).toBe(0);
+        });
+
+        it('resets to index 0 when context changes', () => {
+            ui.tipState._lastTipContext = 'Map1';
+            ui.tipState.index = 1;
+            ui.tipState.phase = 'hold';
+            game.currentMap = 'Map3';
+            ui.cycleTip();
+            expect(ui.tipState.index).toBe(0);
+            expect(ui.tipState._lastTipContext).toBe('Map3');
+        });
+
+        it('re-shows the same tip when called during fadeOut (does not advance index)', () => {
+            game.currentMap = 'Map3';
+            ui.tipState._lastTipContext = 'Map3';
+            ui.tipState.index = 1;
+            ui.tipState.phase = 'fadeOut';
+
+            ui.cycleTip();
+
+            expect(ui.tipState.index).toBe(1);
+            expect(ui.tipState.phase).toBe('fadeIn');
+            expect(ui.tipState.opacity).toBe(0);
+        });
+
+        it('resets to index 0 when called after tip has fully faded (phase null)', () => {
+            game.currentMap = 'Map3';
+            ui.tipState._lastTipContext = 'Map3';
+            ui.tipState.index = 2;
+            ui.tipState.phase = null;
+
+            ui.cycleTip();
+
+            expect(ui.tipState.index).toBe(0);
+            expect(ui.tipState.phase).toBe('fadeIn');
+        });
+
+    });
+
+    describe('updateTip()', () => {
+        it('does nothing when phase is null', () => {
+            ui.tipState.phase = null;
+            ui.updateTip();
+            expect(ui.tipState.opacity).toBe(0);
+        });
+
+        it('increases opacity during fadeIn', () => {
+            jest.spyOn(Date, 'now').mockReturnValueOnce(0).mockReturnValueOnce(150);
+            ui.tipState.phase = 'fadeIn';
+            ui.tipState.timer = 0;
+            ui.tipState._lastTime = null;
+
+            ui.updateTip();
+            ui.updateTip();
+            expect(ui.tipState.opacity).toBeCloseTo(0.5, 1);
+            expect(ui.tipState.phase).toBe('fadeIn');
+            jest.restoreAllMocks();
+        });
+
+        it('transitions from fadeIn to hold when fadeInMs elapsed', () => {
+            jest.spyOn(Date, 'now').mockReturnValueOnce(0).mockReturnValueOnce(400);
+            ui.tipState.phase = 'fadeIn';
+            ui.tipState._lastTime = null;
+
+            ui.updateTip();
+            ui.updateTip();
+            expect(ui.tipState.phase).toBe('hold');
+            expect(ui.tipState.opacity).toBe(1);
+            jest.restoreAllMocks();
+        });
+
+        it('transitions from hold to fadeOut when holdMs elapsed', () => {
+            jest.spyOn(Date, 'now').mockReturnValueOnce(0).mockReturnValueOnce(11000);
+            ui.tipState.phase = 'hold';
+            ui.tipState._lastTime = null;
+
+            ui.updateTip();
+            ui.updateTip();
+            expect(ui.tipState.phase).toBe('fadeOut');
+            jest.restoreAllMocks();
+        });
+
+        it('sets phase to null and opacity to 0 after fadeOut completes', () => {
+            jest.spyOn(Date, 'now').mockReturnValueOnce(0).mockReturnValueOnce(600);
+            ui.tipState.phase = 'fadeOut';
+            ui.tipState.opacity = 1;
+            ui.tipState._lastTime = null;
+
+            ui.updateTip();
+            ui.updateTip();
+            expect(ui.tipState.phase).toBeNull();
+            expect(ui.tipState.opacity).toBe(0);
+            jest.restoreAllMocks();
+        });
+
+        it('does not advance timer while paused', () => {
+            jest.spyOn(Date, 'now').mockReturnValueOnce(0).mockReturnValueOnce(5000);
+            game.menu.pause.isPaused = true;
+            ui.tipState.phase = 'hold';
+            ui.tipState.timer = 0;
+            ui.tipState._lastTime = null;
+
+            ui.updateTip();
+            ui.updateTip();
+            expect(ui.tipState.timer).toBe(0);
+            expect(ui.tipState.phase).toBe('hold');
+            jest.restoreAllMocks();
+        });
+    });
+
+    describe('dismissTip()', () => {
+        it('switches fadeIn to fadeOut', () => {
+            ui.tipState.phase = 'fadeIn';
+            ui.dismissTip();
+            expect(ui.tipState.phase).toBe('fadeOut');
+            expect(ui.tipState.timer).toBe(0);
+        });
+
+        it('switches hold to fadeOut', () => {
+            ui.tipState.phase = 'hold';
+            ui.dismissTip();
+            expect(ui.tipState.phase).toBe('fadeOut');
+        });
+
+        it('does not change phase when already in fadeOut', () => {
+            ui.tipState.phase = 'fadeOut';
+            ui.tipState.timer = 200;
+            ui.dismissTip();
+            expect(ui.tipState.timer).toBe(200);
+        });
+
+        it('does nothing when phase is null', () => {
+            ui.tipState.phase = null;
+            ui.dismissTip();
+            expect(ui.tipState.phase).toBeNull();
+        });
+    });
+
+    describe('resetTip()', () => {
+        it('fully resets all tip state fields', () => {
+            ui.tipState.index = 3;
+            ui.tipState.opacity = 0.8;
+            ui.tipState.phase = 'hold';
+            ui.tipState.timer = 5000;
+            ui.tipState._lastTime = 12345;
+            ui.tipState._lastTipContext = 'Map5';
+
+            ui.resetTip();
+
+            expect(ui.tipState.index).toBe(-1);
+            expect(ui.tipState.opacity).toBe(0);
+            expect(ui.tipState.phase).toBeNull();
+            expect(ui.tipState.timer).toBe(0);
+            expect(ui.tipState._lastTime).toBeNull();
+            expect(ui.tipState._lastTipContext).toBeNull();
+        });
+    });
+
+    describe('drawTip()', () => {
+        it('does not call fillText when phase is null', () => {
+            ui.tipState.phase = null;
+            ui.drawTip(ctx);
+            expect(ctx.fillText).not.toHaveBeenCalled();
+        });
+
+        it('renders the background box and tip text when active', () => {
+            game.currentMap = 'Map1';
+            ui.tipState.phase = 'hold';
+            ui.tipState.opacity = 1;
+            ui.tipState.index = 0;
+            ui.tipState._lastTipContext = 'Map1';
+
+            ui.drawTip(ctx);
+
+            expect(ctx.roundRect).toHaveBeenCalled();
+            expect(ctx.fill).toHaveBeenCalled();
+        });
+
+        it('counter reflects the current tip index (e.g. 2/3 for the second tip)', () => {
+            game.currentMap = 'Map3';
+            ui.tipState.phase = 'hold';
+            ui.tipState.opacity = 1;
+            ui.tipState.index = 1;
+            ui.tipState._lastTipContext = 'Map3';
+
+            ui.drawTip(ctx);
+
+            const counterCall = ctx.fillText.mock.calls.find(([text]) => /\d+\/\d+/.test(text));
+            expect(counterCall).toBeDefined();
+            expect(counterCall[0]).toBe('2/3');
+        });
+
+        it('colours matched phrases in tip text (fillStyle is set to a non-white colour)', () => {
+            game.currentMap = 'Map7';
+            ui.tipState.phase = 'hold';
+            ui.tipState.opacity = 1;
+            ui.tipState.index = 1;
+            ui.tipState._lastTipContext = 'Map7';
+
+            ctx.measureText.mockImplementation((t) => ({ width: t.length * 8 }));
+
+            ui.drawTip(ctx);
+
+            const fillStyles = ctx.__assignments.fillStyle;
+            const hasColour = fillStyles.some(s => s !== 'white' && s !== 'rgba(0, 0, 0, 0.65)');
+            expect(hasColour).toBe(true);
         });
     });
 });
