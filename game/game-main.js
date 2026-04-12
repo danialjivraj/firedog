@@ -338,6 +338,8 @@ export class Game {
             }
             if (!(this.background instanceof Map7)) {
                 this.canSelectForestMap = false;
+                this.nav.root = this.menu.main;
+                this.nav.stack = [{ menu: this.menu.main, state: this.menu.main.getNavState() }];
                 this.currentMenu = this.menu.forestMap;
                 this.menu.forestMap.showSavingSprite = true;
 

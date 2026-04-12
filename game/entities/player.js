@@ -1171,6 +1171,7 @@ export class Player {
 
     // movement logic
     spriteAnimation(deltaTime) {
+        if (this.currentState.deathAnimation) return;
         if (this.frameTimer > this.frameInterval) {
             this.frameTimer = 0;
             if (this.frameX < this.maxFrame) this.frameX++;

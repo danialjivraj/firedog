@@ -97,6 +97,10 @@ export class ControlsSettingsMenu extends BaseMenu {
             }
         }
 
+        if (this.showStarsSticker && this.menuInGame === false) {
+            this.drawStarsSticker(context);
+        }
+
         context.font = 'bold 46px Love Ya Like A Sister';
         context.fillStyle = 'white';
         context.shadowColor = 'black';
@@ -127,7 +131,6 @@ export class ControlsSettingsMenu extends BaseMenu {
             context.fillText(msg, this.game.width / 2, listTop - 16);
             context.restore();
         }
-
 
         const reservedForButtons = this.rowHeight * 2 + 40;
         const listBottom = this.game.height - reservedForButtons - 30;
@@ -235,10 +238,6 @@ export class ControlsSettingsMenu extends BaseMenu {
         }
 
         context.restore();
-
-        if (this.showStarsSticker && this.menuInGame === false) {
-            this.drawStarsSticker(context);
-        }
     }
 
     update(dt) {
