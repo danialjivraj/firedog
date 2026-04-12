@@ -1,5 +1,6 @@
 export const TIP_PHRASE_COLORS = {
     // map names
+    'Coral Abyss': 'dodgerblue',
     'Venomveil Lake': '#39ff14',
     'Icebound Cave': '#8fd7ff',
     'Cosmic Rift': '#ff41ff',
@@ -10,14 +11,20 @@ export const TIP_PHRASE_COLORS = {
     'Dive attacks': 'orange',
     'Dive attack': 'orange',
     'Double Jump': 'orange',
+    'Move Forward': '#ffc574',
 
     // single-word abilities
     'Fireball': 'orange',
     'Invisibility': 'orange',
+    'Roll': 'orange',
     'Rolling': 'orange',
     'Diving': 'orange',
     'Dash': 'orange',
     'Dive': 'orange',
+    'Jump': '#ffc574',
+    'Jumping': '#ffc574',
+    'Sit': '#ffc574',
+    'Sitting': '#ffc574',
     'Energy': 'DodgerBlue',
 
     // multi-word enemies
@@ -25,6 +32,7 @@ export const TIP_PHRASE_COLORS = {
     'Volcano Wasps': '#ff5555',
     'Crystal Wasps': '#ff5555',
     'Karate Croco': '#ff5555',
+    'Spear Fish': '#ff5555',
     'Angry Bees': '#ff5555',
     'Big Greener': '#ff5555',
     'Dusk Plant': '#ff5555',
@@ -89,6 +97,7 @@ export const TIP_PHRASE_COLORS = {
 export const MAP_TIPS = {
     Map1: [
         "Experiment and get familiar with your abilities against the enemies.",
+        "You may run out of Energy quickly.\nYou can always Sit down and wait for it to recharge.",
         "Skulnap is a Stun enemy that wakes up when you get close.\nUse your Fireball ability to take it down.",
     ],
     Map2: [
@@ -96,18 +105,20 @@ export const MAP_TIPS = {
         "Dolly is a dangerous enemy that throws Stun projectiles.\nUse your Invisibility or Dash abilities to avoid it, or run away from Dolly entirely.",
     ],
     Map3: [
-        "You can jump while in the middle of a Dive attack underwater.",
+        "Hold the Jump key to rise higher in the water.",
+        "In Coral Abyss, you can cancel your Dive attack by Jumping.",
+        "Spear Fish is a Red enemy. Use Fireball followed by Dive attack to quickly defeat it.",
         "Enemies like Voltzeel attack unexpectedly from above.\nIt may be safer to stay on the ground most of the time.",
         "Touching Garry will cover you in ink.\nUsing ranged attacks like Fireball is an effective counter.",
     ],
     Map4: [
-        "Big Greener is a Poison enemy that throws 2 quick leaf projectiles.\nTry sitting down and using Fireball to bypass the leaves and hit it directly.",
+        "Big Greener is a Poison enemy that throws 2 quick leaf projectiles.\nTry Sitting down and using Fireball to bypass the leaves and hit it directly.",
         "Jerry stays high in the air and throws Skulnaps to the ground.\nBut that might be his weakness.",
         "Karate Croco is a tough enemy to defeat.\nTry combining Fireball with a Dive attack to take him down.",
     ],
     Map5: [
         "When it starts raining, most enemies become more aggressive.\nSave your Invisibility and Dash abilities for when it begins to rain.",
-        "Bees and Angry Bees are difficult to dodge.\nTry jumping as they approach and use Fireball when they line up with you.",
+        "Bees and Angry Bees are difficult to dodge.\nTry Jumping as they approach and use Fireball when they line up with you.\nTo juke them, Roll forward quickly, or Jump as they get close, Dive, then Move Forward.",
         "When it is raining, Sunflora throws many projectile beams upward.\nUse this opportunity to Dive attack and earn extra coins.",
     ],
     Map6: [
@@ -122,7 +133,7 @@ export const MAP_TIPS = {
     BonusMap1: [
         "Icebound Cave has very slippery ground.\nYour movement will feel delayed, so get used to the momentum.",
         "Many enemies slow you down here.\nAvoid them when in trouble, but sometimes it may be worth getting slowed for extra coins.",
-        "Crystal Wasps are Frozen enemies that move slowly toward you.\nYou can avoid them, but to defeat them you need to jump and use Fireball at the right moment.",
+        "Crystal Wasps are Frozen enemies that move slowly toward you.\nYou can avoid them, but to defeat them you need to Jump and use Fireball at the right moment.",
         "Drillice emerges from the ground.\nWatch the ground ahead for warning signs.",
     ],
     BonusMap2: [
@@ -139,7 +150,7 @@ export const MAP_TIPS = {
         "When Elyvorg's eyes turn grey, it is your chance to attack.",
         "When Elyvorg throws a Gravitational Ball, it pulls you toward him.\nDestroy it before it reaches the top where you cannot reach it.",
         "When Elyvorg teleports, he will appear behind you.\nIf that is not possible, he will appear in front of you instead.",
-        "Purple particles from Elyvorg's body mean a Purple Slash attack is coming.\nHe uses it while running, so jump over him to avoid it.",
+        "Purple particles from Elyvorg's body mean a Purple Slash attack is coming.\nHe uses it while running, so Jump over him to avoid it.",
         "Blue particles from Elyvorg's body mean an Electric Wheel attack is coming.\nKeep your distance to avoid unexpected damage.",
         "Elyvorg's Purple Fireball can damage you through your Rolling or Diving attack.\nDodge it or counter it with your own Fireball.",
         "Dive attacks are the most consistent way to deal damage to Elyvorg.",
@@ -154,8 +165,8 @@ export const MAP_TIPS = {
         "Many attacks will damage you during Rolling or Diving, such as ground tentacles and spirit balls. Avoid them completely.",
         "If N'Tharax throws a small bouncing purple, or yellow orb,\ndestroy it quickly before it multiplies.",
         "N'Tharax can create a Healing Barrier that restores his health when damaged.\nAvoid attacking him while the barrier is active.",
-        "If the ground fills with warning markers, jump just before the Stun spikes appear.\nWhile in the air and falling, use your Double Jump just before you touch the Stun spikes.",
-        "To deal a quick burst of damage, try jumping toward N'Tharax and use Dive attack.\nOnce it hits him, jump again while the Dive is still active and chain another Dive attack.",
+        "If the ground fills with warning markers, Jump just before the Stun spikes appear.\nWhile in the air and falling, use your Double Jump just before you touch the Stun spikes.",
+        "To deal a quick burst of damage, try Jumping toward N'Tharax and use Dive attack.\nOnce it hits him, Jump again while the Dive is still active and chain another Dive attack.",
         "N'Tharax drains life force from the ground to heal from time to time.\nKeep attacking consistently to outpace his healing.",
         "You may find some attacking chances when N'Tharax goes in the air to use his most powerful attack.",
         "At 50% health, N'Tharax enters Mode 2.\nMode 2 N'Tharax becomes faster and all of his abilities become more dangerous.",

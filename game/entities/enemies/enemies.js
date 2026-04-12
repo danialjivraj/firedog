@@ -4005,7 +4005,7 @@ export class Mawrune extends ImmobileGroundEnemy {
         super(game, 108.5, 120, 1, 'mawrune');
         this.setFps(7);
         this.isFrozenEnemy = true;
-        this.lastRockAttackTime = 2599;
+        this.lastRockAttackTime = 2999;
         this.soundId = 'mawruneBiteSound';
     }
 
@@ -4023,7 +4023,7 @@ export class Mawrune extends ImmobileGroundEnemy {
     update(deltaTime) {
         super.update(deltaTime);
         this.lastRockAttackTime += deltaTime;
-        if (this.lastRockAttackTime >= 2600 && this.x < this.game.width - this.width && this.game.player.x < this.x) {
+        if (this.lastRockAttackTime >= 3000 && this.x < this.game.width - this.width && this.game.player.x < this.x) {
             this.throwYellowOrbProjectile();
         }
     }

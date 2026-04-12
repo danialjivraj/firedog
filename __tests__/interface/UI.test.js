@@ -1496,7 +1496,7 @@ describe('UI', () => {
 
             const counterCall = ctx.fillText.mock.calls.find(([text]) => /\d+\/\d+/.test(text));
             expect(counterCall).toBeDefined();
-            expect(counterCall[0]).toBe('2/3');
+            expect(counterCall[0]).toBe('2/5');
         });
 
         it('colours matched phrases in tip text (fillStyle is set to a non-white colour)', () => {

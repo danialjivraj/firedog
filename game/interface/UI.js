@@ -78,7 +78,7 @@ export class UI {
             _lastTipContext: null,
             fadeInMs: 300,
             holdMs: 10000,
-            fadeOutMs: 500,
+            fadeOutMs: 800,
         };
     }
 
