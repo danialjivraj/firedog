@@ -202,7 +202,7 @@ export class EnemyLore extends BaseMenu {
                 + "IT IS SPECULATED THAT VERTIBATS CAN DETECT FREQUENCIES NO OTHER CREATURE CAN, INCLUDING PARANORMAL FREQUENCIES, WHICH DRAWS THEM TO THIS HAUNTED LAND.\n"
                 + "AS SOON AS THEY DETECT MOVEMENT, THEY FALL ONTO THEIR TARGET.",
             images: [
-                this.createImage('vertibat', 151.166, 90, 0, 'right', 'top'),
+                this.createImage('vertibat', 132.3333333333333, 70, 0, 'right', 'top'),
             ],
             mapKey: "map2",
         });

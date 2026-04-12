@@ -662,7 +662,7 @@ export class HowToPlayMenu extends BaseMenu {
                     startY: 106,
                     textX: 460,
                     textY: 100,
-                    text: 'Dashing costs 10 Energy, dealing 3 damage for each dash. While dashing, you are immune to enemy damage and status effects (such as poison and slow)!”',
+                    text: 'Dashing costs 10 Energy, dealing 3 damage for each dash. While dashing, you are immune to enemy damage and status effects (such as poison and slow)!',
                     maxW: 670,
                 }),
 

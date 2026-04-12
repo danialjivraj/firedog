@@ -1719,7 +1719,7 @@ export class Dotter extends FlyingEnemy {
 
 export class Vertibat extends VerticalEnemy {
     constructor(game) {
-        super(game, 151.16666666, 90, 5, 'vertibat');
+        super(game, 132.3333333333333, 70, 5, 'vertibat');
         this.angle = 0;
         this.va = Math.random() * 0.1 + 0.1;
         this.amplitude = 3;
