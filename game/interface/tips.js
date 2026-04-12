@@ -62,26 +62,28 @@ export const TIP_PHRASE_COLORS = {
     'Frozen': '#00e5ff',
     'Stun': 'yellow',
     'Red': 'red',
+    'heal': '#4cd97a',
+    'healing': '#4cd97a',
 
     // N'Tharax hazards
     'ground tentacles': '#9933ff',
-    'spirit balls':     '#d4aaff',
+    'spirit balls': '#d4aaff',
 
     // boss attacks / abilities
     'Gravitational Ball': '#d4aaff',
-    'Healing Barrier':    '#4cd97a',
-    'Purple Fireball':    '#cc66ff',
-    'Electric Wheel':     'yellow',
-    'Purple Slash':       '#9933ff',
+    'Healing Barrier': '#4cd97a',
+    'Purple Fireball': '#cc66ff',
+    'Electric Wheel': 'yellow',
+    'Purple Slash': '#9933ff',
 
     // objects / hazards
     'icicles': '#7ab8d8',
     'raining': '#7ab8d8',
-    'rain':    '#7ab8d8',
+    'rain': '#7ab8d8',
 
     // collectibles
     'coins': 'orange',
-    'coin':  'orange',
+    'coin': 'orange',
 };
 
 export const MAP_TIPS = {
@@ -154,6 +156,8 @@ export const MAP_TIPS = {
         "N'Tharax can create a Healing Barrier that restores his health when damaged.\nAvoid attacking him while the barrier is active.",
         "If the ground fills with warning markers, jump just before the Stun spikes appear.\nWhile in the air and falling, use your Double Jump just before you touch the Stun spikes.",
         "To deal a quick burst of damage, try jumping toward N'Tharax and use Dive attack.\nOnce it hits him, jump again while the Dive is still active and chain another Dive attack.",
+        "N'Tharax drains life force from the ground to heal from time to time.\nKeep attacking consistently to outpace his healing.",
+        "You may find some attacking chances when N'Tharax goes in the air to use his most powerful attack.",
         "At 50% health, N'Tharax enters Mode 2.\nMode 2 N'Tharax becomes faster and all of his abilities become more dangerous.",
     ],
 };
