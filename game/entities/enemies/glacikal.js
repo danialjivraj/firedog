@@ -152,7 +152,7 @@ export class IceSpider extends FallingEnemy {
         if (offLeft || offRight || dead) {
             this.markedForDeletion = true;
             if (this.soundId) {
-                this.game.audioHandler.enemySFX.playSound(this.soundId, false, true, true);
+                this.game.audioHandler.enemySFX.stopSound(this.soundId);
             }
         } else if (this.soundId) {
             this.playIfOnScreen(this.soundId);
@@ -382,7 +382,7 @@ export class SpinningIceBalls extends Projectile {
 
         if (offLeft || offRight || offBottom || offTop || this.lives <= 0) {
             this.markedForDeletion = true;
-            this.game.audioHandler.enemySFX.playSound(this.soundId, false, true, true);
+            this.game.audioHandler.enemySFX.stopSound(this.soundId);
         } else if (this.phase === "travel") {
             this.playIfOnScreen(this.soundId);
         }
@@ -1171,9 +1171,7 @@ export class Glacikal extends EnemyBoss {
 
         if (this.markedForDeletion || this.lives <= 0) {
             if (this.isRunSoundPlaying) {
-                if (sfx.stopSound) sfx.stopSound("glacikalRunSound");
-                else if (sfx.fadeOutAndStop) sfx.fadeOutAndStop("glacikalRunSound", 200);
-                else sfx.playSound("glacikalRunSound", false, true, true);
+                sfx.stopSound("glacikalRunSound");
                 this.isRunSoundPlaying = false;
             }
             return;
@@ -1185,9 +1183,7 @@ export class Glacikal extends EnemyBoss {
         }
 
         if (this.state !== "run" && this.isRunSoundPlaying) {
-            if (sfx.stopSound) sfx.stopSound("glacikalRunSound");
-            else if (sfx.fadeOutAndStop) sfx.fadeOutAndStop("glacikalRunSound", 200);
-            else sfx.playSound("glacikalRunSound", false, true, true);
+            sfx.stopSound("glacikalRunSound");
             this.isRunSoundPlaying = false;
         }
     }

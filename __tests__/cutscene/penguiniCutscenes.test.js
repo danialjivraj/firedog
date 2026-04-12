@@ -52,6 +52,7 @@ describe('PenguiniCutscene & subclasses', () => {
             audioHandler: {
                 cutsceneDialogue: {
                     stopAllSounds: jest.fn(),
+                    stopSound: jest.fn(),
                     playSound: jest.fn()
                 },
                 cutsceneSFX: {
@@ -246,8 +247,8 @@ describe('PenguiniCutscene & subclasses', () => {
             expect(game.audioHandler.cutsceneDialogue.stopAllSounds).toHaveBeenCalled();
             expect(game.audioHandler.cutsceneSFX.stopAllSounds).toHaveBeenCalled();
             expect(game.audioHandler.cutsceneMusic.stopAllSounds).toHaveBeenCalled();
-            expect(game.audioHandler.cutsceneDialogue.playSound)
-                .toHaveBeenCalledWith('bit1', false, true, true);
+            expect(game.audioHandler.cutsceneDialogue.stopSound)
+                .toHaveBeenCalledWith('bit1');
 
             jest.advanceTimersByTime(400);
             expect(cutscene.dialogueIndex).toBe(1);

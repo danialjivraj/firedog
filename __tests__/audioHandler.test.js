@@ -22,11 +22,10 @@ describe('AudioHandler (base class)', () => {
         ah = new AudioHandler({});
         ah.soundsMapping = {};
         ah.sounds = {};
-        ah.pausedSoundPositions = {};
-        ah.fadeIntervals = {};
+        ah._state = {};
     });
 
-    describe('loadSound()', () => {
+    describe('_loadSound()', () => {
         it('returns audio element, registers `ended` listener, and clears stored position on end', () => {
             const audioEl = document.createElement('audio');
             audioEl.id = 'foo';
@@ -35,19 +34,19 @@ describe('AudioHandler (base class)', () => {
             const spyAdd = jest.spyOn(audioEl, 'addEventListener');
             ah.soundsMapping = { foo: 'foo' };
 
-            ah.pausedSoundPositions.foo = 5;
-            const loaded = ah.loadSound('foo');
+            ah._state.foo = { pausedAt: 5 };
+            const loaded = ah._loadSound('foo');
             expect(loaded).toBe(audioEl);
             expect(spyAdd).toHaveBeenCalledWith('ended', expect.any(Function));
 
             const handler = spyAdd.mock.calls[0][1];
             handler();
-            expect(ah.pausedSoundPositions.foo).toBeUndefined();
+            expect(ah._state.foo?.pausedAt).toBeUndefined();
         });
 
         it('logs error and returns null if audio element is missing', () => {
             ah.soundsMapping = { missing: 'no-such-id' };
-            const res = ah.loadSound('missing');
+            const res = ah._loadSound('missing');
             expect(res).toBeNull();
             expect(console.error).toHaveBeenCalledWith(
                 "Audio element with ID 'no-such-id' not found."
@@ -55,7 +54,7 @@ describe('AudioHandler (base class)', () => {
         });
     });
 
-    describe('prePlaySound()', () => {
+    describe('playSound()', () => {
         let fake;
 
         beforeEach(() => {
@@ -67,19 +66,34 @@ describe('AudioHandler (base class)', () => {
                 play: jest.fn(() => { fake.paused = false; }),
                 pause: jest.fn(),
             };
+            ah.sounds = { bar: fake };
         });
 
-        it('when currentTimeZero=true and loop=true, resets time, sets loop, and plays', () => {
-            const ret = ah.prePlaySound(fake, true, true);
+        it('sets loop, calls play, and returns the element', () => {
+            const ret = ah.playSound('bar', true, false);
+            expect(fake.loop).toBe(true);
+            expect(fake.play).toHaveBeenCalled();
             expect(ret).toBe(fake);
+        });
+
+        it('when currentTimeZero=true and loop=false, pauses first then resets time and plays', () => {
+            fake.currentTime = 5;
+            ah.playSound('bar', false, true);
+            expect(fake.pause).toHaveBeenCalled();
+            expect(fake.currentTime).toBe(0);
+            expect(fake.play).toHaveBeenCalled();
+        });
+
+        it('when currentTimeZero=true and loop=true, resets time without pausing first, then plays', () => {
+            ah.playSound('bar', true, true);
+            expect(fake.pause).not.toHaveBeenCalled();
             expect(fake.currentTime).toBe(0);
             expect(fake.loop).toBe(true);
             expect(fake.play).toHaveBeenCalled();
-            expect(fake.paused).toBe(false);
         });
 
         it('sets playbackRate from opts', () => {
-            ah.prePlaySound(fake, false, false, { playbackRate: 1.5 });
+            ah.playSound('bar', false, false, { playbackRate: 1.5 });
             expect(fake.playbackRate).toBe(1.5);
             expect(fake.play).toHaveBeenCalled();
         });
@@ -91,58 +105,18 @@ describe('AudioHandler (base class)', () => {
                 paused: true,
                 playbackRate: 1,
                 play: jest.fn(() => Promise.reject(new Error('autoplay blocked'))),
+                pause: jest.fn(),
             };
+            ah.sounds = { rej: rejecting };
 
-            expect(() => ah.prePlaySound(rejecting, false, false)).not.toThrow();
+            expect(() => ah.playSound('rej', false, false)).not.toThrow();
 
             await Promise.resolve();
             expect(rejecting.play).toHaveBeenCalled();
         });
 
-        it('returns null and does nothing if audioElement is falsy', () => {
-            expect(ah.prePlaySound(null)).toBeNull();
-        });
-    });
-
-    describe('playSound()', () => {
-        let fake;
-
-        beforeEach(() => {
-            fake = {
-                currentTime: 0,
-                loop: false,
-                paused: true,
-                playbackRate: 1,
-                play: jest.fn(() => { fake.paused = false; }),
-                pause: jest.fn(),
-            };
-            ah.sounds = { bar: fake };
-        });
-
-        it('delegates to prePlaySound when sound exists and shouldPause=false', () => {
-            const spy = jest.spyOn(ah, 'prePlaySound');
-            const ret = ah.playSound('bar', true, true, false);
-
-            expect(spy).toHaveBeenCalledWith(fake, true, true, {});
-            expect(ret).toBe(fake);
-        });
-
-        it('forwards opts to prePlaySound', () => {
-            const spy = jest.spyOn(ah, 'prePlaySound');
-            const opts = { playbackRate: 1.25 };
-            ah.playSound('bar', false, false, false, opts);
-
-            expect(spy).toHaveBeenCalledWith(fake, false, false, opts);
-        });
-
-        it('delegates to stopSound when sound exists and shouldPause=true', () => {
-            const spy = jest.spyOn(ah, 'stopSound');
-            ah.playSound('bar', false, false, true);
-            expect(spy).toHaveBeenCalledWith('bar');
-        });
-
-        it('returns undefined for unknown soundName', () => {
-            expect(ah.playSound('nope')).toBeUndefined();
+        it('returns null for unknown soundName', () => {
+            expect(ah.playSound('nope')).toBeNull();
         });
     });
 
@@ -159,17 +133,17 @@ describe('AudioHandler (base class)', () => {
             };
             ah.soundsMapping = { baz: 'baz' };
             ah.sounds = { baz: fake };
-            ah.pausedSoundPositions.baz = 123;
+            ah._state.baz = { pausedAt: 123 };
         });
 
-        it('stopSound pauses audio, resets time to 0, and clears stored paused position', () => {
+        it('stopSound pauses audio, resets time to 0, and clears stored state', () => {
             ah.stopSound('baz');
             expect(fake.pause).toHaveBeenCalled();
             expect(fake.currentTime).toBe(0);
-            expect(ah.pausedSoundPositions.baz).toBeUndefined();
+            expect(ah._state.baz).toBeUndefined();
         });
 
-        it('stopSound clears stored position using audioElement.id even when soundName differs', () => {
+        it('stopSound clears state keyed by soundName', () => {
             const audio = {
                 id: 'track1',
                 currentTime: 7,
@@ -179,20 +153,29 @@ describe('AudioHandler (base class)', () => {
             };
             ah.soundsMapping = { music: 'track1' };
             ah.sounds = { music: audio };
-            ah.pausedSoundPositions.track1 = 3;
+            ah._state.music = { pausedAt: 3 };
 
             ah.stopSound('music');
-            expect(ah.pausedSoundPositions.track1).toBeUndefined();
+            expect(ah._state.music).toBeUndefined();
         });
 
         it('stopSound clears an active fade interval for that sound', () => {
-            ah.fadeIntervals.baz = 12345;
+            ah._state.baz = { fadeIntervalId: 12345 };
             const clearSpy = jest.spyOn(global, 'clearInterval');
 
             ah.stopSound('baz');
 
             expect(clearSpy).toHaveBeenCalledWith(12345);
-            expect(ah.fadeIntervals.baz).toBeUndefined();
+            expect(ah._state.baz?.fadeIntervalId).toBeUndefined();
+        });
+
+        it('stopSound restores originalVolume from saved state when stopping a fading sound', () => {
+            fake.volume = 0.3;
+            ah._state.baz = { originalVolume: 0.8 };
+
+            ah.stopSound('baz');
+
+            expect(fake.volume).toBe(0.8);
         });
 
         it('stopSound does nothing (and does not throw) when audio is missing', () => {
@@ -228,29 +211,29 @@ describe('AudioHandler (base class)', () => {
             ah.sounds = { one, two };
         });
 
-        it('pauseSound pauses audio and stores currentTime under its id when not already paused', () => {
+        it('pauseSound pauses audio and stores currentTime in _state when not already paused', () => {
             ah.pauseSound('one');
             expect(one.pause).toHaveBeenCalled();
-            expect(ah.pausedSoundPositions.one).toBe(1);
+            expect(ah._state.one.pausedAt).toBe(1);
         });
 
         it('pauseSound clears an active fade interval before pausing', () => {
-            ah.fadeIntervals.one = 9876;
+            ah._state.one = { fadeIntervalId: 9876 };
             const clearSpy = jest.spyOn(global, 'clearInterval');
 
             ah.pauseSound('one');
 
             expect(clearSpy).toHaveBeenCalledWith(9876);
-            expect(ah.fadeIntervals.one).toBeUndefined();
+            expect(ah._state.one?.fadeIntervalId).toBeUndefined();
             expect(one.pause).toHaveBeenCalled();
-            expect(ah.pausedSoundPositions.one).toBe(1);
+            expect(ah._state.one.pausedAt).toBe(1);
         });
 
         it('pauseSound does nothing when audio is already paused', () => {
             one.paused = true;
             ah.pauseSound('one');
             expect(one.pause).not.toHaveBeenCalled();
-            expect(ah.pausedSoundPositions.one).toBeUndefined();
+            expect(ah._state.one?.pausedAt).toBeUndefined();
         });
 
         it('pauseSound does nothing (and does not throw) when audio is missing', () => {
@@ -273,36 +256,37 @@ describe('AudioHandler (base class)', () => {
                 id: 'three',
                 currentTime: 0,
                 duration: 5,
+                loop: false,
                 paused: true,
                 play: jest.fn(() => { three.paused = false; }),
                 pause: jest.fn(),
             };
             ah.soundsMapping = { three: 'three' };
             ah.sounds = { three };
-            ah.pausedSoundPositions.three = 2;
+            ah._state.three = { pausedAt: 2 };
         });
 
         it('resumeSound seeks to storedTime, plays, and clears stored position when paused and within duration', () => {
             ah.resumeSound('three');
             expect(three.currentTime).toBe(2);
             expect(three.play).toHaveBeenCalled();
-            expect(ah.pausedSoundPositions.three).toBeUndefined();
+            expect(ah._state.three?.pausedAt).toBeUndefined();
         });
 
         it('resumeSound does nothing when audio is not paused', () => {
             three.paused = false;
-            ah.pausedSoundPositions.three = 2;
+            ah._state.three = { pausedAt: 2 };
             ah.resumeSound('three');
             expect(three.play).not.toHaveBeenCalled();
-            expect(ah.pausedSoundPositions.three).toBe(2);
+            expect(ah._state.three?.pausedAt).toBe(2);
         });
 
-        it('resumeSound clears stored position but does not play when storedTime ≥ duration', () => {
+        it('resumeSound clears stored position but does not play when storedTime >= duration', () => {
             three.paused = true;
-            ah.pausedSoundPositions.three = 10;
+            ah._state.three = { pausedAt: 10 };
             ah.resumeSound('three');
             expect(three.play).not.toHaveBeenCalled();
-            expect(ah.pausedSoundPositions.three).toBeUndefined();
+            expect(ah._state.three?.pausedAt).toBeUndefined();
         });
 
         it('resumeAllSounds calls resumeSound for each sound in the mapping', () => {
@@ -312,27 +296,44 @@ describe('AudioHandler (base class)', () => {
         });
 
         it('resumeSound does nothing when there is no stored position', () => {
-            delete ah.pausedSoundPositions.three;
+            delete ah._state.three;
             ah.resumeSound('three');
             expect(three.play).not.toHaveBeenCalled();
         });
 
-        it('resumeSound resumes correctly when storedTime is 0', () => {
+        it('resumeSound does not play non-looped sounds paused before 0.02s to avoid Chrome play-pending corruption', () => {
             three.paused = true;
-            ah.pausedSoundPositions.three = 0;
+            three.loop = false;
+            ah._state.three = { pausedAt: 0.01 };
             ah.resumeSound('three');
-            expect(three.currentTime).toBe(0);
+            expect(three.play).not.toHaveBeenCalled();
+            expect(ah._state.three?.pausedAt).toBeUndefined();
+        });
+
+        it('resumeSound plays non-looped sounds paused at or after 0.02s', () => {
+            three.paused = true;
+            three.loop = false;
+            ah._state.three = { pausedAt: 0.05 };
+            ah.resumeSound('three');
+            expect(three.currentTime).toBe(0.05);
             expect(three.play).toHaveBeenCalled();
-            expect(ah.pausedSoundPositions.three).toBeUndefined();
+        });
+
+        it('resumeSound plays looped sounds even when pausedAt is below 0.02', () => {
+            three.paused = true;
+            three.loop = true;
+            ah._state.three = { pausedAt: 0 };
+            ah.resumeSound('three');
+            expect(three.play).toHaveBeenCalled();
         });
 
         it('resumeSound clears stored position but does not play when duration is NaN', () => {
             three.paused = true;
             three.duration = Number.NaN;
-            ah.pausedSoundPositions.three = 1;
+            ah._state.three = { pausedAt: 1 };
             ah.resumeSound('three');
             expect(three.play).not.toHaveBeenCalled();
-            expect(ah.pausedSoundPositions.three).toBeUndefined();
+            expect(ah._state.three?.pausedAt).toBeUndefined();
         });
 
         it('resumeSound does nothing (and does not throw) when audio is missing', () => {
@@ -344,20 +345,18 @@ describe('AudioHandler (base class)', () => {
 
             const three = {
                 id: 'three',
-                currentTime: 0,
+                currentTime: 1.0,
                 duration: 5,
+                loop: false,
                 paused: false,
                 volume: 1,
                 pause: jest.fn(() => { three.paused = true; }),
                 play: jest.fn(() => { three.paused = false; }),
-                dataset: {},
             };
 
             ah.soundsMapping = { three: 'three' };
             ah.sounds = { three };
-            ah.pausedSoundPositions = {};
-            ah.fadeIntervals = {};
-            ah.fadeStates = {};
+            ah._state = {};
 
             const fadeSpy = jest.spyOn(ah, 'fadeOutAndStop');
 
@@ -369,15 +368,15 @@ describe('AudioHandler (base class)', () => {
             ah.pauseSound('three');
 
             expect(three.pause).toHaveBeenCalled();
-            expect(ah.fadeStates.three).toEqual({ active: true });
-            expect(ah.fadeIntervals.three).toBeUndefined();
-            expect(ah.pausedSoundPositions.three).toBe(three.currentTime);
+            expect(ah._state.three.resumeFade).toBe(true);
+            expect(ah._state.three?.fadeIntervalId).toBeUndefined();
+            expect(ah._state.three.pausedAt).toBe(three.currentTime);
             expect(three.volume).toBe(volumeBeforePause);
 
             ah.resumeSound('three');
 
             expect(three.play).toHaveBeenCalled();
-            expect(ah.pausedSoundPositions.three).toBeUndefined();
+            expect(ah._state.three?.pausedAt).toBeUndefined();
             expect(fadeSpy).toHaveBeenCalledTimes(2);
             expect(fadeSpy).toHaveBeenLastCalledWith('three');
 
@@ -386,14 +385,13 @@ describe('AudioHandler (base class)', () => {
             expect(three.paused).toBe(true);
             expect(three.currentTime).toBe(0);
             expect(three.volume).toBe(1);
-            expect(ah.fadeIntervals.three).toBeUndefined();
-            expect(ah.fadeStates.three).toBeUndefined();
+            expect(ah._state.three?.fadeIntervalId).toBeUndefined();
 
             jest.useRealTimers();
         });
     });
 
-    describe('clearFadeInterval()', () => {
+    describe('_clearFade()', () => {
         beforeEach(() => {
             jest.useFakeTimers();
         });
@@ -404,21 +402,30 @@ describe('AudioHandler (base class)', () => {
 
         it('clears and removes the stored interval when one exists', () => {
             const intervalId = setInterval(() => { }, 1000);
-            ah.fadeIntervals.fade = intervalId;
+            ah._state.fade = { fadeIntervalId: intervalId };
             const clearSpy = jest.spyOn(global, 'clearInterval');
 
-            ah.clearFadeInterval('fade');
+            ah._clearFade('fade');
 
             expect(clearSpy).toHaveBeenCalledWith(intervalId);
-            expect(ah.fadeIntervals.fade).toBeUndefined();
+            expect(ah._state.fade?.fadeIntervalId).toBeUndefined();
         });
 
         it('does nothing when no interval exists for that sound', () => {
             const clearSpy = jest.spyOn(global, 'clearInterval');
 
-            ah.clearFadeInterval('missing');
+            ah._clearFade('missing');
 
             expect(clearSpy).not.toHaveBeenCalled();
+        });
+
+        it('sets resumeFade flag when keepPausedFlag=true', () => {
+            const intervalId = setInterval(() => { }, 1000);
+            ah._state.fade = { fadeIntervalId: intervalId };
+
+            ah._clearFade('fade', true);
+
+            expect(ah._state.fade.resumeFade).toBe(true);
         });
     });
 
@@ -433,7 +440,7 @@ describe('AudioHandler (base class)', () => {
 
         it('returns immediately when sound does not exist', () => {
             expect(() => ah.fadeOutAndStop('nonexistent', 300)).not.toThrow();
-            expect(ah.fadeIntervals.nonexistent).toBeUndefined();
+            expect(ah._state.nonexistent?.fadeIntervalId).toBeUndefined();
         });
 
         it('returns immediately when sound is already paused', () => {
@@ -444,18 +451,17 @@ describe('AudioHandler (base class)', () => {
                 pause: jest.fn(),
                 play: jest.fn(),
                 currentTime: 0,
-                dataset: {},
             };
             ah.soundsMapping = { pausedFade: 'pausedFade' };
             ah.sounds = { pausedFade: fake };
 
             ah.fadeOutAndStop('pausedFade', 300);
 
-            expect(ah.fadeIntervals.pausedFade).toBeUndefined();
+            expect(ah._state.pausedFade?.fadeIntervalId).toBeUndefined();
             expect(fake.pause).not.toHaveBeenCalled();
         });
 
-        it('stores originalVolume on dataset and fades sound out until paused/reset', () => {
+        it('stores originalVolume in _state and fades sound out until stopped', () => {
             const fake = {
                 id: 'fade',
                 volume: 1.0,
@@ -463,28 +469,26 @@ describe('AudioHandler (base class)', () => {
                 pause: jest.fn(() => { fake.paused = true; }),
                 play: jest.fn(),
                 currentTime: 7,
-                dataset: {},
             };
             ah.soundsMapping = { fade: 'fade' };
             ah.sounds = { fade: fake };
-            ah.pausedSoundPositions.fade = 99;
+            ah._state.fade = { pausedAt: 99 };
 
             ah.fadeOutAndStop('fade', 300);
 
-            expect(fake.dataset.originalVolume).toBe('1');
-            expect(ah.fadeIntervals.fade).toBeDefined();
+            expect(ah._state.fade.originalVolume).toBe(1);
+            expect(ah._state.fade.fadeIntervalId).toBeDefined();
 
             jest.advanceTimersByTime(400);
 
             expect(fake.pause).toHaveBeenCalled();
             expect(fake.currentTime).toBe(0);
             expect(fake.volume).toBe(1.0);
-            expect(ah.pausedSoundPositions.fade).toBeUndefined();
-            expect(ah.fadeIntervals.fade).toBeUndefined();
+            expect(ah._state.fade).toBeUndefined();
             expect(fake.paused).toBe(true);
         });
 
-        it('uses stored dataset.originalVolume when restoring volume', () => {
+        it('preserves existing originalVolume in _state if already set', () => {
             const fake = {
                 id: 'fade2',
                 volume: 0.4,
@@ -492,17 +496,17 @@ describe('AudioHandler (base class)', () => {
                 pause: jest.fn(() => { fake.paused = true; }),
                 play: jest.fn(),
                 currentTime: 3,
-                dataset: { originalVolume: '0.9' },
             };
             ah.soundsMapping = { fade2: 'fade2' };
             ah.sounds = { fade2: fake };
+            ah._state.fade2 = { originalVolume: 0.9 };
 
             ah.fadeOutAndStop('fade2', 200);
             jest.advanceTimersByTime(300);
 
             expect(fake.volume).toBe(0.9);
             expect(fake.pause).toHaveBeenCalled();
-            expect(ah.fadeIntervals.fade2).toBeUndefined();
+            expect(ah._state.fade2?.fadeIntervalId).toBeUndefined();
         });
 
         it('stops immediately and restores originalVolume when startVolume is 0', () => {
@@ -513,7 +517,6 @@ describe('AudioHandler (base class)', () => {
                 pause: jest.fn(() => { fake.paused = true; }),
                 play: jest.fn(),
                 currentTime: 8,
-                dataset: {},
             };
             ah.soundsMapping = { zeroFade: 'zeroFade' };
             ah.sounds = { zeroFade: fake };
@@ -524,7 +527,7 @@ describe('AudioHandler (base class)', () => {
 
             expect(stopSpy).toHaveBeenCalledWith('zeroFade');
             expect(fake.volume).toBe(0);
-            expect(ah.fadeIntervals.zeroFade).toBeUndefined();
+            expect(ah._state.zeroFade?.fadeIntervalId).toBeUndefined();
         });
 
         it('clears any previous fade interval before starting a new fade', () => {
@@ -535,18 +538,17 @@ describe('AudioHandler (base class)', () => {
                 pause: jest.fn(() => { fake.paused = true; }),
                 play: jest.fn(),
                 currentTime: 0,
-                dataset: {},
             };
             ah.soundsMapping = { again: 'again' };
             ah.sounds = { again: fake };
 
-            ah.fadeIntervals.again = 54321;
+            ah._state.again = { fadeIntervalId: 54321 };
             const clearSpy = jest.spyOn(global, 'clearInterval');
 
             ah.fadeOutAndStop('again', 200);
 
             expect(clearSpy).toHaveBeenCalledWith(54321);
-            expect(ah.fadeIntervals.again).toBeDefined();
+            expect(ah._state.again?.fadeIntervalId).toBeDefined();
         });
     });
 
@@ -559,7 +561,6 @@ describe('AudioHandler (base class)', () => {
                 currentTime: 0,
                 pause: jest.fn(),
                 play: jest.fn(),
-                dataset: {},
             };
             const two = {
                 id: 'two',
@@ -568,7 +569,6 @@ describe('AudioHandler (base class)', () => {
                 currentTime: 0,
                 pause: jest.fn(),
                 play: jest.fn(),
-                dataset: {},
             };
 
             ah.soundsMapping = { one: 'one', two: 'two', three: 'three' };
@@ -592,7 +592,6 @@ describe('AudioHandler (base class)', () => {
                 currentTime: 0,
                 pause: jest.fn(),
                 play: jest.fn(),
-                dataset: {},
             };
 
             ah.soundsMapping = { one: 'one' };

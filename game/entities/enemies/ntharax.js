@@ -665,7 +665,7 @@ export class PurpleBallOrbAttack {
         this.justLaunched = false;
 
         const rate = this.boss.mode2Active ? 1.35 : 1.0;
-        this.game.audioHandler.enemySFX.playSound("purpleBallOrbStartSound", false, true, false, { playbackRate: rate });
+        this.game.audioHandler.enemySFX.playSound("purpleBallOrbStartSound", false, true, { playbackRate: rate });
     }
 
     getMouthPosition() {
@@ -760,7 +760,7 @@ export class PurpleBallOrbAttack {
         this.game.enemies.push(proj);
 
         const rate = this.boss.mode2Active ? 1.35 : 1.0;
-        this.game.audioHandler.enemySFX.playSound("purpleBallOrbLaunchSound", false, true, false, { playbackRate: rate });
+        this.game.audioHandler.enemySFX.playSound("purpleBallOrbLaunchSound", false, true, { playbackRate: rate });
 
         this.justLaunched = true;
 
@@ -4299,7 +4299,6 @@ export class NTharax extends EnemyBoss {
                 "burrowInSound",
                 false,
                 true,
-                false,
                 { playbackRate: this.mode2Active ? 1.35 : 1 }
             );
         }
@@ -4359,7 +4358,6 @@ export class NTharax extends EnemyBoss {
                     "burrowOutSound",
                     false,
                     true,
-                    false,
                     { playbackRate: this.mode2Active ? 1.35 : 1 }
                 );
             }
@@ -5871,6 +5869,7 @@ export class NTharax extends EnemyBoss {
             this.asteroidAnimation.frameX = 0;
             this.asteroidStarted = false;
             this._asteroidsSpawned = false;
+            this.game.audioHandler.enemySFX.fadeOutAndStop('elyvorg_meteor_falling_sound', 4000);
             this.backToIdleSetUp();
         }
     }
@@ -6332,7 +6331,7 @@ export class NTharax extends EnemyBoss {
 
         const rate = this.mode2Active ? this.mode2FpsMult : 1.2;
 
-        this.game.audioHandler.enemySFX.playSound("bossRunningSound", true, true, false, { playbackRate: rate });
+        this.game.audioHandler.enemySFX.playSound("bossRunningSound", true, true, { playbackRate: rate });
     }
 
     stopRunSFX() {

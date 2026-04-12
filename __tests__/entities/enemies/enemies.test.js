@@ -236,7 +236,7 @@ describe('Enemy (base class)', () => {
     e.update(16);
 
     expect(e.markedForDeletion).toBe(true);
-    expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith('boom', false, true, true);
+    expect(game.audioHandler.enemySFX.stopSound).toHaveBeenCalledWith('boom');
   });
 
   it('playIfOnScreen() only plays when isOnScreen() is true', () => {
@@ -522,7 +522,7 @@ describe('ClimbingEnemy', () => {
   beforeEach(() => {
     mockRandom(0.5);
     game = makeGame({
-      audioHandler: { enemySFX: { playSound: jest.fn() } },
+      audioHandler: { enemySFX: { playSound: jest.fn(), stopSound: jest.fn() } },
     });
 
     ce = new ClimbingEnemy(game, 20, 10, 2, 'img');

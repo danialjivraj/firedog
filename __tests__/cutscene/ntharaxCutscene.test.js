@@ -47,6 +47,7 @@ const createBaseGame = () => {
             },
             cutsceneDialogue: {
                 playSound: noop,
+                stopSound: noop,
                 pauseSound: noop,
                 stopAllSounds: noop,
             },

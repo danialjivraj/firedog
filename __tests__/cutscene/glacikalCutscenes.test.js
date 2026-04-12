@@ -51,6 +51,7 @@ const createBaseGame = () => {
             },
             cutsceneDialogue: {
                 playSound: noop,
+                stopSound: noop,
                 stopAllSounds: noop,
                 pauseSound: noop,
             },
@@ -363,8 +364,8 @@ describe('GlacikalCutscene', () => {
             expect(cut.removeEventListeners).toHaveBeenCalled();
             expect(cut.cutsceneBackgroundChange).toHaveBeenCalledWith(500, 2500, 200);
             expect(cut.stopAllAudio).toHaveBeenCalled();
-            expect(game.audioHandler.cutsceneDialogue.playSound)
-                .toHaveBeenCalledWith('bit1', false, true, true);
+            expect(game.audioHandler.cutsceneDialogue.stopSound)
+                .toHaveBeenCalledWith('bit1');
             expect(game.audioHandler.cutsceneSFX.playSound)
                 .toHaveBeenCalledWith('battleStarting');
 

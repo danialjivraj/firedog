@@ -1,202 +1,176 @@
 export class AudioHandler {
   constructor(game) {
     this.game = game;
-    this.pausedSoundPositions = {};
     this.soundsMapping = {};
     this.sounds = {};
-    this.fadeIntervals = {};
-    this.fadeStates = {};
+    this._state = {};
     this.initializeSounds();
   }
 
   initializeSounds() {
     for (const soundName in this.soundsMapping) {
-      this.sounds[soundName] = this.loadSound(soundName);
+      this.sounds[soundName] = this._loadSound(soundName);
     }
   }
 
-  loadSound(soundName) {
+  _loadSound(soundName) {
     const soundId = this.soundsMapping[soundName];
-    const audioElement = document.getElementById(soundId);
-
-    if (audioElement) {
-      audioElement.addEventListener('ended', () => {
-        delete this.pausedSoundPositions[soundId];
-      });
-      return audioElement;
-    } else {
+    const el = document.getElementById(soundId);
+    if (!el) {
       console.error(`Audio element with ID '${soundId}' not found.`);
       return null;
     }
+    el.addEventListener('ended', () => {
+      if (this._state[soundName]) delete this._state[soundName].pausedAt;
+    });
+    return el;
   }
 
-  playSound(soundName, loop = false, currentTimeZero = false, shouldPause = false, opts = {}) {
-    const audioElement = this.sounds[soundName];
-    if (audioElement) {
-      if (shouldPause) {
-        this.stopSound(soundName);
-      } else {
-        this.prePlaySound(audioElement, loop, currentTimeZero, opts);
-      }
-    }
-    return audioElement;
-  }
-
-  prePlaySound(audioElement, loop = false, currentTimeZero = false, opts = {}) {
-    if (!audioElement) return audioElement;
+  // play
+  playSound(soundName, loop = false, currentTimeZero = false, opts = {}) {
+    const el = this.sounds[soundName];
+    if (!el) return null;
 
     const { playbackRate = 1.0 } = opts;
-
-    audioElement.playbackRate = playbackRate;
+    el.playbackRate = playbackRate;
+    el.loop = loop;
 
     if (currentTimeZero) {
-      audioElement.currentTime = 0;
+      if (!loop) el.pause();
+      el.currentTime = 0;
     }
 
-    audioElement.loop = loop;
+    const p = el.play();
+    if (p && typeof p.catch === 'function') p.catch(() => { });
 
-    const p = audioElement.play();
-    if (p && typeof p.catch === "function") p.catch(() => { });
-
-    return audioElement;
+    return el;
   }
 
+  // stop
   stopAllSounds() {
-    for (const soundName in this.soundsMapping) {
-      this.stopSound(soundName);
-    }
+    for (const soundName in this.soundsMapping) this.stopSound(soundName);
   }
 
   stopSound(soundName) {
-    const audioElement = this.sounds[soundName];
-    if (!audioElement) return;
+    const el = this.sounds[soundName];
+    if (!el) return;
 
-    this.clearFadeInterval(soundName);
-    delete this.fadeStates[soundName];
+    this._clearFade(soundName);
 
-    audioElement.pause();
-    audioElement.currentTime = 0;
-    delete this.pausedSoundPositions[audioElement.id];
+    el.pause();
+    el.currentTime = 0;
 
-    if (audioElement.dataset && typeof audioElement.dataset.originalVolume !== 'undefined') {
-      audioElement.volume = Number(audioElement.dataset.originalVolume);
-      delete audioElement.dataset.originalVolume;
+    const saved = this._state[soundName];
+    if (saved && typeof saved.originalVolume === 'number') {
+      el.volume = saved.originalVolume;
     }
+
+    delete this._state[soundName];
   }
 
+  // pause / resume
   pauseAllSounds() {
-    for (const soundName in this.soundsMapping) {
-      this.pauseSound(soundName);
-    }
+    for (const soundName in this.soundsMapping) this.pauseSound(soundName);
   }
 
   pauseSound(soundName) {
-    const audioElement = this.sounds[soundName];
-    if (audioElement && !audioElement.paused) {
-      const wasFading = !!this.fadeIntervals[soundName];
+    const el = this.sounds[soundName];
+    if (!el || el.paused) return;
 
-      if (wasFading) {
-        this.fadeStates[soundName] = { active: true };
-        this.clearFadeInterval(soundName);
-      }
+    const wasFading = !!(this._state[soundName]?.fadeIntervalId);
+    if (wasFading) this._clearFade(soundName, true);
 
-      audioElement.pause();
-      this.pausedSoundPositions[audioElement.id] = audioElement.currentTime;
-    }
+    el.pause();
+    if (!this._state[soundName]) this._state[soundName] = {};
+    this._state[soundName].pausedAt = el.currentTime;
   }
 
   resumeAllSounds() {
-    for (const soundName in this.soundsMapping) {
-      this.resumeSound(soundName);
-    }
+    for (const soundName in this.soundsMapping) this.resumeSound(soundName);
   }
 
   resumeSound(soundName) {
-    const audioElement = this.sounds[soundName];
-    if (audioElement && audioElement.paused) {
-      const storedTime = this.pausedSoundPositions[audioElement.id];
-      if (storedTime !== undefined) {
-        delete this.pausedSoundPositions[audioElement.id];
+    const el = this.sounds[soundName];
+    if (!el || !el.paused) return;
 
-        if (storedTime < audioElement.duration) {
-          audioElement.currentTime = storedTime;
-          const p = audioElement.play();
-          if (p && typeof p.catch === "function") p.catch(() => { });
+    const saved = this._state[soundName];
+    const pausedAt = saved?.pausedAt;
+    if (pausedAt === undefined) return;
 
-          if (this.fadeStates[soundName]?.active) {
-            delete this.fadeStates[soundName];
-            this.fadeOutAndStop(soundName);
-          }
-        }
-      }
+    delete saved.pausedAt;
+
+    if (isNaN(el.duration) || pausedAt >= el.duration) return;
+    if (!el.loop && pausedAt < 0.02) return;
+
+    // pause() cancels any lingering interrupted play() promise before resuming.
+    el.pause();
+    el.currentTime = pausedAt;
+    const p = el.play();
+    if (p && typeof p.catch === 'function') p.catch(() => { });
+
+    // if this sound was mid-fade when paused, resume the fade.
+    if (saved?.resumeFade) {
+      delete saved.resumeFade;
+      this.fadeOutAndStop(soundName);
     }
   }
 
-  clearFadeInterval(soundName) {
-    if (this.fadeIntervals[soundName]) {
-      clearInterval(this.fadeIntervals[soundName]);
-      delete this.fadeIntervals[soundName];
-    }
-  }
-
+  // fade
   fadeOutAndStop(soundName, duration = 1000) {
-    const audioElement = this.sounds[soundName];
-    if (!audioElement || audioElement.paused) return;
+    const el = this.sounds[soundName];
+    if (!el || el.paused) return;
 
-    this.clearFadeInterval(soundName);
-    delete this.fadeStates[soundName];
+    this._clearFade(soundName);
 
-    const originalVolume =
-      typeof audioElement.dataset.originalVolume !== 'undefined'
-        ? Number(audioElement.dataset.originalVolume)
-        : audioElement.volume;
+    if (!this._state[soundName]) this._state[soundName] = {};
+    const saved = this._state[soundName];
 
-    audioElement.dataset.originalVolume = String(originalVolume);
+    if (typeof saved.originalVolume !== 'number') {
+      saved.originalVolume = el.volume;
+    }
 
-    const startVolume = audioElement.volume;
+    const startVolume = el.volume;
     if (startVolume <= 0) {
       this.stopSound(soundName);
-      audioElement.volume = originalVolume;
       return;
     }
 
     const stepMs = 50;
-    const totalSteps = Math.max(1, Math.ceil(duration / stepMs));
-    const volumeStep = startVolume / totalSteps;
+    const steps = Math.max(1, Math.ceil(duration / stepMs));
+    const stepSize = startVolume / steps;
 
-    this.fadeIntervals[soundName] = setInterval(() => {
-      const nextVolume = Math.max(0, audioElement.volume - volumeStep);
-
-      if (nextVolume > 0) {
-        audioElement.volume = nextVolume;
+    saved.fadeIntervalId = setInterval(() => {
+      const next = Math.max(0, el.volume - stepSize);
+      if (next > 0) {
+        el.volume = next;
       } else {
-        this.clearFadeInterval(soundName);
-        delete this.fadeStates[soundName];
-        audioElement.pause();
-        audioElement.currentTime = 0;
-        delete this.pausedSoundPositions[audioElement.id];
-        audioElement.volume = originalVolume;
+        this.stopSound(soundName);
       }
     }, stepMs);
   }
 
   fadeOutAndStopAllSounds(duration = 1000) {
     for (const soundName in this.soundsMapping) {
-      const audioElement = this.sounds[soundName];
-      if (!audioElement) continue;
-
-      if (audioElement.paused) {
-        this.stopSound(soundName);
-        continue;
-      }
-
+      const el = this.sounds[soundName];
+      if (!el) continue;
+      if (el.paused) { this.stopSound(soundName); continue; }
       this.fadeOutAndStop(soundName, duration);
     }
   }
 
+  // helpers
+  // keepPausedFlag: true when pausing mid-fade, marks it to resume after unpausew
+  _clearFade(soundName, keepPausedFlag = false) {
+    const saved = this._state[soundName];
+    if (!saved?.fadeIntervalId) return;
+    clearInterval(saved.fadeIntervalId);
+    delete saved.fadeIntervalId;
+    if (keepPausedFlag) saved.resumeFade = true;
+  }
+
   isPlaying(soundName) {
-    const audioElement = this.sounds[soundName];
-    return !!(audioElement && !audioElement.paused);
+    const el = this.sounds[soundName];
+    return !!(el && !el.paused);
   }
 
   getSoundsMapping() {

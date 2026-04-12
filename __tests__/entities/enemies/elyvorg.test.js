@@ -741,7 +741,6 @@ describe("elyvorg.js entities – behavior coverage", () => {
                 "bossRunningSound",
                 true,
                 true,
-                false,
                 { playbackRate: 1.2 }
             );
 

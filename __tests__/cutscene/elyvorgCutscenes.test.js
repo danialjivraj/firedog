@@ -60,6 +60,7 @@ const createBaseGame = () => {
             },
             cutsceneDialogue: {
                 playSound: noop,
+                stopSound: noop,
                 stopAllSounds: noop,
                 pauseSound: noop,
             },
@@ -417,7 +418,7 @@ describe('ElyvorgCutscene', () => {
             expect(game.audioHandler.cutsceneDialogue.stopAllSounds).toHaveBeenCalled();
             expect(game.audioHandler.cutsceneSFX.stopAllSounds).toHaveBeenCalled();
             expect(game.audioHandler.cutsceneMusic.stopAllSounds).toHaveBeenCalled();
-            expect(game.audioHandler.cutsceneDialogue.playSound).toHaveBeenCalledWith('bit1', false, true, true);
+            expect(game.audioHandler.cutsceneDialogue.stopSound).toHaveBeenCalledWith('bit1');
             expect(game.audioHandler.cutsceneSFX.playSound).toHaveBeenCalledWith('battleStarting');
 
             jest.advanceTimersByTime(3000);
@@ -455,7 +456,7 @@ describe('ElyvorgCutscene', () => {
             expect(game.audioHandler.cutsceneDialogue.stopAllSounds).toHaveBeenCalled();
             expect(game.audioHandler.cutsceneSFX.stopAllSounds).toHaveBeenCalled();
             expect(game.audioHandler.cutsceneMusic.stopAllSounds).toHaveBeenCalled();
-            expect(game.audioHandler.cutsceneDialogue.playSound).toHaveBeenCalledWith('bit1', false, true, true);
+            expect(game.audioHandler.cutsceneDialogue.stopSound).toHaveBeenCalledWith('bit1');
             expect(cut.dialogueIndex).toBe(2);
         });
 

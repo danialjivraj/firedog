@@ -261,11 +261,8 @@ describe('Helper enemies / projectiles', () => {
         spider.update(16);
 
         expect(spider.markedForDeletion).toBe(true);
-        expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith(
+        expect(game.audioHandler.enemySFX.stopSound).toHaveBeenCalledWith(
             spider.soundId,
-            false,
-            true,
-            true,
         );
     });
 
@@ -280,11 +277,8 @@ describe('Helper enemies / projectiles', () => {
         ball.update(16);
 
         expect(ball.markedForDeletion).toBe(true);
-        expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith(
+        expect(game.audioHandler.enemySFX.stopSound).toHaveBeenCalledWith(
             ball.soundId,
-            false,
-            true,
-            true,
         );
     });
 

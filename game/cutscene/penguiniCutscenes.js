@@ -90,7 +90,7 @@ export class PenguiniCutscene extends Cutscene {
                         fadeIn: 200, blackDuration: 300, fadeOut: 200,
                         beforeFade: () => {
                             this.stopAllAudio();
-                            this.game.audioHandler.cutsceneDialogue.playSound("bit1", false, true, true);
+                            this.game.audioHandler.cutsceneDialogue.stopSound("bit1");
                         },
                         onBlack: () => {
                             this.jumpToDialogue(this.coinCheckIndex);

@@ -1192,11 +1192,11 @@ export class Cutscene {
                 this.playEightBitSound('bit1');
                 this.textIndex++;
             } else {
-                this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
+                this.game.audioHandler.cutsceneDialogue.stopSound('bit1');
             }
         } else {
             if (!this.lastSoundPlayed) {
-                this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
+                this.game.audioHandler.cutsceneDialogue.stopSound('bit1');
                 if (!this.lastSound2Played && !isVisuallyEmptyDialogue) {
                     this.playEightBitSound('bit2');
                     this.lastSound2Played = true;

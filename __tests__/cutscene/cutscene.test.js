@@ -51,6 +51,7 @@ describe('Cutscene', () => {
                 cutsceneDialogue: {
                     sounds: { bit1: {}, bit2: {} },
                     playSound: jest.fn(),
+                    stopSound: jest.fn(),
                     pauseSound: jest.fn(),
                     stopAllSounds: jest.fn(),
                 },
@@ -1599,7 +1600,7 @@ describe('Cutscene', () => {
             expect(context.drawImage).toHaveBeenCalledWith(charImg, 10, 20, 30, 40);
             expect(textBoxSpy).toHaveBeenCalledWith(context);
             expect(reminderSpy).toHaveBeenCalledWith(context);
-            expect(game.audioHandler.cutsceneDialogue.playSound).toHaveBeenCalledWith('bit1', false, true, true);
+            expect(game.audioHandler.cutsceneDialogue.stopSound).toHaveBeenCalledWith('bit1');
             expect(game.audioHandler.cutsceneDialogue.playSound).toHaveBeenCalledWith('bit2');
         });
 
@@ -1693,8 +1694,8 @@ describe('Cutscene', () => {
 
             cutscene.draw(context);
 
-            expect(game.audioHandler.cutsceneDialogue.playSound)
-                .toHaveBeenCalledWith('bit1', false, true, true);
+            expect(game.audioHandler.cutsceneDialogue.stopSound)
+                .toHaveBeenCalledWith('bit1');
         });
 
         it('ellipsis followed by terminal punctuation triggers dot-pause behavior', () => {

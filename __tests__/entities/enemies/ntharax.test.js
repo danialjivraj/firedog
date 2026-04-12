@@ -300,7 +300,6 @@ describe("NTharax", () => {
         "bossRunningSound",
         true,
         true,
-        false,
         expect.any(Object)
       );
 
@@ -316,7 +315,6 @@ describe("NTharax", () => {
         "bossRunningSound",
         true,
         true,
-        false,
         expect.any(Object)
       );
     });
@@ -493,14 +491,12 @@ describe("NTharax", () => {
         "burrowInSound",
         false,
         true,
-        false,
         expect.any(Object)
       );
       expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith(
         "burrowOutSound",
         false,
         true,
-        false,
         expect.any(Object)
       );
 
@@ -872,7 +868,6 @@ describe("NTharax", () => {
         "bossRunningSound",
         true,
         true,
-        false,
         expect.any(Object)
       );
 

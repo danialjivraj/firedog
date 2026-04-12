@@ -941,7 +941,7 @@ export class Elyvorg extends EnemyBoss {
     startRunSFX() {
         if (this.runSfxPlaying) return;
         this.runSfxPlaying = true;
-        this.game.audioHandler.enemySFX.playSound("bossRunningSound", true, true, false, { playbackRate: 1.2 });
+        this.game.audioHandler.enemySFX.playSound("bossRunningSound", true, true, { playbackRate: 1.2 });
     }
 
     stopRunSFX() {
@@ -1309,6 +1309,7 @@ export class Elyvorg extends EnemyBoss {
         }
 
         if (this.meteorThrowCount >= this.meteorThrowTarget && this.meteorAnimation.frameX === 23) {
+            this.game.audioHandler.enemySFX.fadeOutAndStop('elyvorg_meteor_falling_sound', 4000);
             this.backToIdleSetUp();
             this.meteorThrowCount = 0;
             this.meteorThrowTarget = Math.floor(Math.random() * 3) + 4; // 4 to 6

@@ -129,7 +129,7 @@ export class Enemy {
 
         if (offLeft || offBottom || offTop || dead) {
             this.markedForDeletion = true;
-            this.game.audioHandler.enemySFX.playSound(this.soundId, false, true, true);
+            this.game.audioHandler.enemySFX.stopSound(this.soundId);
         } else {
             this.playIfOnScreen(this.soundId);
         }

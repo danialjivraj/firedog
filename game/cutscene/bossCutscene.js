@@ -239,7 +239,7 @@ export class BossCutscene extends Cutscene {
         this.cutsceneBackgroundChange(500, 2500, 200);
 
         this.stopAllAudio();
-        this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
+        this.game.audioHandler.cutsceneDialogue.stopSound('bit1');
         this.game.audioHandler.cutsceneSFX.playSound('battleStarting');
 
         setTimeout(() => {
@@ -255,7 +255,7 @@ export class BossCutscene extends Cutscene {
             fadeOut: 200,
             beforeFade: () => {
                 this.stopAllAudio();
-                this.game.audioHandler.cutsceneDialogue.playSound('bit1', false, true, true);
+                this.game.audioHandler.cutsceneDialogue.stopSound('bit1');
             },
             onBlack: () => {
                 if (this.shouldRemoveBossAfterPostFight()) {
