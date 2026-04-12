@@ -1922,21 +1922,29 @@ export class EnemyLore extends BaseMenu {
                 context.shadowColor = 'transparent';
                 context.shadowBlur = 0;
 
-                if (image.type === 'red') {
-                    context.shadowColor = 'red';
-                    context.shadowBlur = 20;
-                } else if (image.type === 'stun') {
-                    context.shadowColor = 'yellow';
-                    context.shadowBlur = 20;
-                } else if (image.type === 'poison') {
-                    context.shadowColor = 'green';
-                    context.shadowBlur = 20;
-                } else if (image.type === 'slow') {
-                    context.shadowColor = 'blue';
-                    context.shadowBlur = 20;
-                } else if (image.type === 'frozen') {
-                    context.shadowColor = 'cyan';
-                    context.shadowBlur = 20;
+                if (!locked) {
+                    context.shadowColor = 'transparent';
+                    context.shadowBlur = 0;
+
+                    if (image.type === 'red') {
+                        context.shadowColor = 'red';
+                        context.shadowBlur = 20;
+                    } else if (image.type === 'stun') {
+                        context.shadowColor = 'yellow';
+                        context.shadowBlur = 20;
+                    } else if (image.type === 'poison') {
+                        context.shadowColor = 'green';
+                        context.shadowBlur = 20;
+                    } else if (image.type === 'slow') {
+                        context.shadowColor = 'blue';
+                        context.shadowBlur = 20;
+                    } else if (image.type === 'frozen') {
+                        context.shadowColor = 'cyan';
+                        context.shadowBlur = 20;
+                    }
+                } else {
+                    context.shadowColor = 'transparent';
+                    context.shadowBlur = 0;
                 }
 
                 context.drawImage(
