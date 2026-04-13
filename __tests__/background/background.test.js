@@ -24,7 +24,9 @@ import {
     ShootingStar,
     DragonSilhouette,
     MeteorBackground,
+    ZabbyFlyBy,
     Map3Zabby1FlyBy,
+    BonusMap3Zabby6FlyBy,
 } from '../../game/background/background.js';
 
 function makeSoundtrack() {
@@ -162,7 +164,7 @@ function seedDomImages() {
         'map4Trees4',
         'map4Trees2',
         'map4Trees1',
-        'map4TopVines',
+        'map4TopVines1',
         'map4Ground',
         // zabby
         'map4Zabby1',
@@ -285,6 +287,7 @@ function seedDomImages() {
         'bonusMap3Zabby3',
         'bonusMap3Zabby4',
         'bonusMap3Zabby5',
+        'bonusMap3Zabby6',
 
         // sprites
         'dragonSilhouette',
@@ -311,6 +314,7 @@ function seedDomImages() {
 
     setElSize('shark', 120, 60);
     setElSize('whale', 160, 80);
+    setElSize('bonusMap3Zabby6', 113, 80);
 
     // rain sprite sheet
     setElSize('raindropSplash', 120, 20);
@@ -1130,7 +1134,7 @@ describe('Map constructors', () => {
         { Cls: Map7, id: 'map7Soundtrack', expectedLen: 16 },
         { Cls: BonusMap1, id: 'bonusMap1Soundtrack', expectedLen: 11 },
         { Cls: BonusMap2, id: 'bonusMap2Soundtrack', expectedLen: 23 },
-        { Cls: BonusMap3, id: 'bonusMap3Soundtrack', expectedLen: 9 },
+        { Cls: BonusMap3, id: 'bonusMap3Soundtrack', expectedLen: 10 },
     ];
 
     test.each(specs)('%s wires soundtrack id and expected background layer count', ({ Cls, id, expectedLen }) => {
@@ -1810,12 +1814,12 @@ describe('ShootingStar', () => {
 });
 
 // -----------------------------------------------------------------------------
-// Map3Zabby1FlyBy
+// ZabbyFlyBy
 // -----------------------------------------------------------------------------
-describe('Map3Zabby1FlyBy', () => {
+describe('ZabbyFlyBy', () => {
     test('triggerOneShot spawns from either side and y is centered (40%-60% height)', () => {
         const game = { width: 600, height: 400 };
-        const flyby = new Map3Zabby1FlyBy(game);
+        const flyby = new ZabbyFlyBy(game);
         flyby.setOneShotImageIds(['map3Zabby1']);
 
         const ok = flyby.triggerOneShot();
@@ -1831,7 +1835,7 @@ describe('Map3Zabby1FlyBy', () => {
 
     test('update marks one-shot as shown when it goes offscreen', () => {
         const game = { width: 600, height: 400 };
-        const flyby = new Map3Zabby1FlyBy(game);
+        const flyby = new ZabbyFlyBy(game);
         flyby.setOneShotImageIds(['map3Zabby1']);
         flyby.triggerOneShot();
 
@@ -1852,7 +1856,7 @@ describe('Map3Zabby1FlyBy', () => {
 
         const smallFish = new SmallFish(game, 3);
         const bigFish = new BigFish(game, 1);
-        const flyby = new Map3Zabby1FlyBy(game);
+        const flyby = new ZabbyFlyBy(game);
 
         flyby.setOneShotImageIds(['map3Zabby1']);
 
@@ -1864,6 +1868,37 @@ describe('Map3Zabby1FlyBy', () => {
         expect(smallFish.backgroundEntities.length).toBe(smallFishCountBefore);
         expect(bigFish.backgroundEntities.length).toBe(bigFishCountBefore);
         expect(flyby._active).toBe(true);
+    });
+});
+
+describe('Map3Zabby1FlyBy', () => {
+    test('inherits the generic fly-by behavior for map 3 usage', () => {
+        const flyby = new Map3Zabby1FlyBy({ width: 600, height: 400 });
+        expect(flyby).toBeInstanceOf(ZabbyFlyBy);
+    });
+});
+
+describe('BonusMap3Zabby6FlyBy', () => {
+    test('triggerOneShot uses the bonus map 3 fly-by sprite and keeps the same across-screen behavior', () => {
+        const game = { width: 600, height: 400 };
+        const flyby = new BonusMap3Zabby6FlyBy(game);
+        flyby.setOneShotImageIds(['bonusMap3Zabby6']);
+
+        const ok = flyby.triggerOneShot();
+        expect(ok).toBe(true);
+        expect(flyby.imageId).toBe('bonusMap3Zabby6');
+        expect(flyby.image.width).toBe(113);
+        expect(flyby.image.height).toBe(80);
+        expect(flyby.y).toBeGreaterThanOrEqual(game.height * 0.4);
+        expect(flyby.y).toBeLessThanOrEqual(game.height * 0.6);
+
+        if (flyby._spawnedFromLeft) expect(flyby.x).toBeLessThan(0);
+        else expect(flyby.x).toBeGreaterThan(game.width);
+    });
+
+    test('inherits the generic fly-by behavior for bonus map 3 usage', () => {
+        const flyby = new BonusMap3Zabby6FlyBy({ width: 600, height: 400 });
+        expect(flyby).toBeInstanceOf(ZabbyFlyBy);
     });
 });
 

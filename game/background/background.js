@@ -544,7 +544,7 @@ export class Map4 extends Background {
             { imageId: 'map4Trees2', bgSpeed: 0.53 },
             { imageId: 'map4Trees1', bgSpeed: 0.65 },
             fireflyLayer3,
-            { imageId: 'map4TopVines', zabbyId: ['map4Zabby2', 'map4Zabby4'], bgSpeed: 0.92 },
+            { imageId: ['map4TopVines1', 'map4TopVines2'], zabbyId: ['map4Zabby2', 'map4Zabby4', 'map4Zabby5'], bgSpeed: 0.92 },
             { imageId: 'map4Ground', bgSpeed: 1 },
         );
 
@@ -799,7 +799,10 @@ export class BonusMap3 extends Background {
             minSpeed: 0.03,
             maxSpeed: 0.06,
         });
+        const zabby6FlyBy = new BonusMap3Zabby6FlyBy(game);
+
         meteors.setOneShotImageIds(['bonusMap3Zabby2']);
+        zabby6FlyBy.setOneShotImageIds(['bonusMap3Zabby6']);
 
         super(
             game,
@@ -807,6 +810,7 @@ export class BonusMap3 extends Background {
             starField,
             shootingStars,
             meteors,
+            zabby6FlyBy,
             { imageId: 'bonusMap3Stars', bgSpeed: 0.1 },
             { imageId: ['bonusMap3Planets6', 'bonusMap3Planets2', 'bonusMap3Planets3', 'bonusMap3Planets4', 'bonusMap3Planets5', 'bonusMap3Planets1'], zabbyId: ['bonusMap3Zabby3', 'bonusMap3Zabby4', 'bonusMap3Zabby5'], bgSpeed: 0.2 },
             { imageId: 'bonusMap3Nebula', zabbyId: 'bonusMap3Zabby1', bgSpeed: 0.35 },
@@ -963,8 +967,8 @@ export class Firefly extends EntityAnimation {
         context.globalAlpha = 1;
     }
 }
-export class Map3Zabby1FlyBy extends EntityAnimation {
-    constructor(game) {
+export class ZabbyFlyBy extends EntityAnimation {
+    constructor(game, options = {}) {
         super(game, 1);
 
         this.game = game;
@@ -981,14 +985,19 @@ export class Map3Zabby1FlyBy extends EntityAnimation {
 
         this._active = false;
 
-        this._minSpeed = 1.6;
-        this._maxSpeed = 2.6;
-        this._maxAngleRad = Math.PI / 24;
-        this._offscreenPad = 40;
+        this._minSpeed = options.minSpeed ?? 1.6;
+        this._maxSpeed = options.maxSpeed ?? 2.6;
+        this._maxAngleRad = options.maxAngleRad ?? Math.PI / 24;
+        this._offscreenPad = options.offscreenPad ?? 40;
 
-        this._spriteFacesRight = true;
+        this._spriteFacesRight = options.spriteFacesRight ?? true;
 
-        this._debug = false;
+        this._debug = options.debug ?? false;
+        this._spawnYBand = {
+            min: options.spawnYMin ?? 0.40,
+            max: options.spawnYMax ?? 0.60,
+        };
+        this._debugLabel = options.debugLabel ?? this.constructor.name;
 
         this._spawnedFromLeft = null;
     }
@@ -1006,8 +1015,8 @@ export class Map3Zabby1FlyBy extends EntityAnimation {
         const fromLeft = Math.random() < 0.5;
         this._spawnedFromLeft = fromLeft;
 
-        const yMin = this.game.height * 0.40;
-        const yMax = this.game.height * 0.60;
+        const yMin = this.game.height * this._spawnYBand.min;
+        const yMax = this.game.height * this._spawnYBand.max;
         this.y = this._rand(yMin, yMax);
 
         this.x = fromLeft
@@ -1026,7 +1035,7 @@ export class Map3Zabby1FlyBy extends EntityAnimation {
 
         if (this._debug) {
             console.log(
-                `[Map3Zabby1FlyBy] spawn=${fromLeft ? "LEFT" : "RIGHT"} ` +
+                `[${this._debugLabel}] spawn=${fromLeft ? "LEFT" : "RIGHT"} ` +
                 `dirX=${this.directionX.toFixed(2)} dirY=${this.directionY.toFixed(2)} ` +
                 `x=${this.x.toFixed(1)} y=${this.y.toFixed(1)}`
             );
@@ -1102,6 +1111,24 @@ export class Map3Zabby1FlyBy extends EntityAnimation {
         );
 
         context.restore();
+    }
+}
+
+export class Map3Zabby1FlyBy extends ZabbyFlyBy {
+    constructor(game, options = {}) {
+        super(game, {
+            debugLabel: 'Map3Zabby1FlyBy',
+            ...options,
+        });
+    }
+}
+
+export class BonusMap3Zabby6FlyBy extends ZabbyFlyBy {
+    constructor(game, options = {}) {
+        super(game, {
+            debugLabel: 'BonusMap3Zabby6FlyBy',
+            ...options,
+        });
     }
 }
 

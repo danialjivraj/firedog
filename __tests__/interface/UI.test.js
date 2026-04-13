@@ -1303,7 +1303,7 @@ describe('UI', () => {
         it('wraps around to index 0 after the last tip', () => {
             game.currentMap = 'Map1';
             ui.tipState._lastTipContext = 'Map1';
-            ui.tipState.index = 1;
+            ui.tipState.index = 2;
             ui.tipState.phase = 'hold';
             ui.cycleTip();
             expect(ui.tipState.index).toBe(0);
@@ -1390,7 +1390,7 @@ describe('UI', () => {
         });
 
         it('sets phase to null and opacity to 0 after fadeOut completes', () => {
-            jest.spyOn(Date, 'now').mockReturnValueOnce(0).mockReturnValueOnce(600);
+            jest.spyOn(Date, 'now').mockReturnValueOnce(0).mockReturnValueOnce(900);
             ui.tipState.phase = 'fadeOut';
             ui.tipState.opacity = 1;
             ui.tipState._lastTime = null;
