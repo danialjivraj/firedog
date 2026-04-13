@@ -807,13 +807,13 @@ export class EnemyLore extends BaseMenu {
         });
 
         this.createPage({ //58
-            name: "ZABKOUS",
+            name: "TOXHOP",
             type: "NORMAL",
             foundAt: "VENOMVEIL LAKE",
             description:
-                "LEGENDS SAY ZABKOUS HAS BATHED IN THE POISONED WATERS FOR SO LONG THAT ITS VERY SALIVA BECAME VENOMOUS, CAPABLE OF DRAINING THE STRENGTH OF ANYTHING IT HITS.\n",
+                "LEGENDS SAY TOXHOP HAS BATHED IN THE POISONED WATERS FOR SO LONG THAT ITS VERY SALIVA BECAME VENOMOUS, CAPABLE OF DRAINING THE STRENGTH OF ANYTHING IT HITS.\n",
             images: [
-                this.createImage('zabkous', 134.0588235294118, 100, 2, 'right', 'bottom', null, 150),
+                this.createImage('toxhop', 134.0588235294118, 100, 2, 'right', 'bottom', null, 150),
             ],
             mapKey: "map6",
             projectile: 'poison',

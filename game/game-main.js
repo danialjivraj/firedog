@@ -11,7 +11,7 @@ import {
     Razorfin, SkeletonFish, SpearFish, JetFish, Piper, Jellion, Voltzeel, Garry,
     Sluggie, BigGreener, Chiquita, Fofinha, LilHornet, KarateCroco, Bramble, Jerry, Vinelash,
     Snailey, Citrifly, Berrifly, LazyMosquito, LeafSlug, Sunflora, Eggry, AngryBee, Bee, Strawspider,
-    Zabkous, Venflora, Virefly, Larvox, Venarach, Mycora, Toxwing, Venoblitz, Woxin,
+    Toxhop, Venflora, Virefly, Larvox, Venarach, Mycora, Toxwing, Venoblitz, Woxin,
     Cactrix, Blazice, Magmapod, Volcanurtle, VolcanoWasp, Scorvex, EmberFly, Bloburn, Scorble, Lavaryn,
     IceSilknoir, CrystalWasp, IcePlant, Globby, Cryopede, DrillIce, Frostling, Frobat,
     Wardrake, Sigilfly, Mawrune, Golex, Voidserp, Oozel, Runecko, Runespider, Sigilash,
@@ -1099,7 +1099,7 @@ export class Game {
                 { type: Virefly, probability: 0.08, spawningDistance: 0 },
                 { type: Toxwing, probability: 0.09, spawningDistance: 0 },
                 { type: Woxin, probability: 0.07, spawningDistance: 50 },
-                { type: Zabkous, probability: 0.07, spawningDistance: 100 },
+                { type: Toxhop, probability: 0.07, spawningDistance: 100 },
                 { type: Mycora, probability: 0.04, spawningDistance: 150 },
             ],
             Map7: [

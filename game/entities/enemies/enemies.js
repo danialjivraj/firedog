@@ -3154,7 +3154,7 @@ export class Venflora extends ImmobileGroundEnemy {
     }
 }
 
-export class Zabkous extends MovingGroundEnemy {
+export class Toxhop extends MovingGroundEnemy {
     static STATES = {
         run: {
             width: 234.6470588235294,
@@ -3173,7 +3173,7 @@ export class Zabkous extends MovingGroundEnemy {
     };
 
     constructor(game) {
-        super(game, 316, 202, 16, 'zabkous');
+        super(game, 316, 202, 16, 'toxhop');
 
         this.game = game;
         this.lives = 2;
@@ -3194,7 +3194,7 @@ export class Zabkous extends MovingGroundEnemy {
     }
 
     applyState(newState, { resetJumpFlags = false } = {}) {
-        const cfg = Zabkous.STATES[newState];
+        const cfg = Toxhop.STATES[newState];
         if (!cfg) return;
 
         this.state = newState;
@@ -3215,7 +3215,7 @@ export class Zabkous extends MovingGroundEnemy {
 
     draw(context) {
         if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
-        const srcY = Zabkous.STATES[this.state]?.srcY ?? 0;
+        const srcY = Toxhop.STATES[this.state]?.srcY ?? 0;
         drawSprite(context, this.image, this.frameX * this.width, srcY, this.width, this.height, this.x, this.y, this.width, this.height);
     }
 

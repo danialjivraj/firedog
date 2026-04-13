@@ -854,7 +854,7 @@ describe('EnemyLore', () => {
             ['CORAL', 'RAZORFIN', ['map3Unlocked'], 'darkblue', 5],
             ['VERDANT', 'CHIQUITA', ['map4Unlocked'], 'black', 15],
             ['SPRINGLY', 'SNAILEY', ['map5Unlocked'], 'orange', 5],
-            ['VENOMVEIL', 'ZABKOUS', ['map6Unlocked'], '#003b00', 10],
+            ['VENOMVEIL', 'TOXHOP', ['map6Unlocked'], '#003b00', 10],
             ['INFERNAL', 'CACTRIX', ['map7Unlocked'], 'black', 10],
             ['RED', 'SPEAR FISH', ['map3Unlocked'], 'black', 1],
             ['STUN', 'SKULNAP', [], 'black', 1],

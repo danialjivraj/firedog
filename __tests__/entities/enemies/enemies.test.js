@@ -49,7 +49,7 @@ import {
   Sluggie,
   LilHornet,
   KarateCroco,
-  Zabkous,
+  Toxhop,
   Jerry,
   Snailey,
   Citrifly,
@@ -1256,8 +1256,8 @@ describe('Map 4 Enemies', () => {
     expect(kc.state).toBe('flykick');
   });
 
-  it('Zabkous throws PoisonSpit during attack when on the correct frame', () => {
-    const zb = new Zabkous(game);
+  it('Toxhop throws PoisonSpit during attack when on the correct frame', () => {
+    const zb = new Toxhop(game);
     zb.x = game.player.x + 100;
     zb.state = 'attack';
     zb.frameX = 13;

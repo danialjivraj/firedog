@@ -511,7 +511,7 @@ export class EnemySFXAudioHandler extends AudioHandler {
       slimyWalkSound: 'slimyWalkSound',
       //silknoir
       nightSpiderSound: 'nightSpiderSound',
-      //zabkous
+      //toxhop
       frogSound: 'frogSound',
       landingJumpSound: 'landingJumpSound',
       //glidospike
