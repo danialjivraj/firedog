@@ -159,6 +159,8 @@ function seedDomImages() {
 
         // map4
         'map4Background',
+        'map4BigVines1',
+        'map4BigVines2',
         'map4BottomVines',
         'map4Trees3',
         'map4Trees4',
@@ -171,6 +173,8 @@ function seedDomImages() {
         'map4Zabby2',
         'map4Zabby3',
         'map4Zabby4',
+        'map4Zabby5',
+        'map4Zabby6',
 
         // map5
         'map5Background',
@@ -1128,7 +1132,7 @@ describe('Map constructors', () => {
         { Cls: Map1, id: 'map1Soundtrack', expectedLen: 16 },
         { Cls: Map2, id: 'map2Soundtrack', expectedLen: 15 },
         { Cls: Map3, id: 'map3Soundtrack', expectedLen: 17 },
-        { Cls: Map4, id: 'map4Soundtrack', expectedLen: 11 },
+        { Cls: Map4, id: 'map4Soundtrack', expectedLen: 12 },
         { Cls: Map5, id: 'map5Soundtrack', expectedLen: 18 },
         { Cls: Map6, id: 'map6Soundtrack', expectedLen: 12 },
         { Cls: Map7, id: 'map7Soundtrack', expectedLen: 16 },

@@ -2933,6 +2933,18 @@ export class Strawspider extends ClimbingEnemy {
         this.swingAngle += this.swingSpeed * deltaTime;
         const swingOffsetX = Math.sin(this.swingAngle) * this.swingAmplitude;
         this.x += swingOffsetX;
+
+        if (this.game.background.isRaining && !this.game.gameOver) {
+            const targetY = this.game.player.y;
+            const dy = targetY - this.y;
+            const floorY = this.game.height - this.height - this.game.groundMargin;
+            const nearFloor = this.y > floorY - 20;
+            if (!(nearFloor && dy > 0)) {
+                const trackSpeed = 0.003;
+                this.speedY += dy * trackSpeed;
+                this.speedY = Math.max(-4, Math.min(4, this.speedY));
+            }
+        }
     }
 
     draw(context) {
