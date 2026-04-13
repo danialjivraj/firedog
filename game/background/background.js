@@ -537,12 +537,13 @@ export class Map4 extends Background {
             game,
             { imageId: 'map4Background', bgSpeed: 0 },
             fireflyLayer,
+            { imageId: ['map4BigVines1', 'map4BigVines2'], zabbyId: 'map4Zabby6', bgSpeed: 0.2 },
             { imageId: 'map4BottomVines', zabbyId: 'map4Zabby3', bgSpeed: 0.3 },
-            { imageId: 'map4Trees3', zabbyId: 'map4Zabby1', bgSpeed: 0.34 },
+            { imageId: 'map4Trees3', zabbyId: 'map4Zabby1', bgSpeed: 0.44 },
             fireflyLayer2,
-            { imageId: 'map4Trees4', bgSpeed: 0.44 },
-            { imageId: 'map4Trees2', bgSpeed: 0.53 },
-            { imageId: 'map4Trees1', bgSpeed: 0.65 },
+            { imageId: 'map4Trees4', bgSpeed: 0.54 },
+            { imageId: 'map4Trees2', bgSpeed: 0.63 },
+            { imageId: 'map4Trees1', bgSpeed: 0.75 },
             fireflyLayer3,
             { imageId: ['map4TopVines1', 'map4TopVines2'], zabbyId: ['map4Zabby2', 'map4Zabby4', 'map4Zabby5'], bgSpeed: 0.92 },
             { imageId: 'map4Ground', bgSpeed: 1 },
@@ -561,8 +562,8 @@ export class Map5 extends Background {
         const fireflyLayer5 = new Firefly(game, 5);
         const fireflyLayer6 = new Firefly(game, 5);
 
-        const raindropBack  = new RaindropAnimation(game, 100, 'back');
-        const raindropMid   = new RaindropAnimation(game, 20, 'mid');
+        const raindropBack = new RaindropAnimation(game, 100, 'back');
+        const raindropMid = new RaindropAnimation(game, 20, 'mid');
         const raindropFront = new RaindropAnimation(game, 20, 'front');
 
         super(
@@ -1389,21 +1390,21 @@ export class RaindropAnimation {
     makeRaindrop(randomY = true) {
         const d = this.depth;
         const length =
-            d === 'back'  ? Math.random() * 8  + 4  :
-            d === 'front' ? Math.random() * 35 + 30 :
-                            Math.random() * 18 + 12;
+            d === 'back' ? Math.random() * 8 + 4 :
+                d === 'front' ? Math.random() * 35 + 30 :
+                    Math.random() * 18 + 12;
         const speed =
-            d === 'back'  ? Math.random() * 0.15 + 0.2 :
-            d === 'front' ? Math.random() * 0.45 + 0.65 :
-                            Math.random() * 0.3  + 0.38;
+            d === 'back' ? Math.random() * 0.15 + 0.2 :
+                d === 'front' ? Math.random() * 0.45 + 0.65 :
+                    Math.random() * 0.3 + 0.38;
         const width =
-            d === 'back'  ? Math.random() * 0.3 + 0.4 :
-            d === 'front' ? Math.random() * 0.8 + 1.2 :
-                            Math.random() * 0.5 + 0.7;
+            d === 'back' ? Math.random() * 0.3 + 0.4 :
+                d === 'front' ? Math.random() * 0.8 + 1.2 :
+                    Math.random() * 0.5 + 0.7;
         const opacity =
-            d === 'back'  ? Math.random() * 0.15 + 0.58 :
-            d === 'front' ? Math.random() * 0.3  + 0.55 :
-                            Math.random() * 0.15 + 0.25;
+            d === 'back' ? Math.random() * 0.15 + 0.58 :
+                d === 'front' ? Math.random() * 0.3 + 0.55 :
+                    Math.random() * 0.15 + 0.25;
 
         return {
             x: Math.random() * (this.game.width + 80) - 40,

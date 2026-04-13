@@ -113,8 +113,8 @@ export const MAP_TIPS = {
     ],
     Map4: [
         "Big Greener is a Poison enemy that throws 2 quick leaf projectiles.\nTry Sitting down and using Fireball to bypass the leaves and hit it directly.",
+        "Karate Croco is a tough Red enemy to defeat.\nTry combining Fireball with a Dive attack to take him down.",
         "Jerry stays high in the air and throws Skulnaps to the ground.\nBut that might be his weakness.",
-        "Karate Croco is a tough enemy to defeat.\nTry combining Fireball with a Dive attack to take him down.",
     ],
     Map5: [
         "When it starts raining, most enemies become more aggressive.\nSave your Invisibility and Dash abilities for when it begins to rain.",
