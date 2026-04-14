@@ -2340,7 +2340,7 @@ describe('CollisionLogic.handlePowerCollisions — powerUps + powerDowns', () =>
 
         expect(item.markedForDeletion).toBe(true);
         expect(ctx.game.audioHandler.powerUpAndDownSFX.playSound).toHaveBeenCalledWith('bluePotionSound2', false, true);
-        expect(ctx.game.audioHandler.firedogSFX.playSound).toHaveBeenCalledWith('bluePotionEnergyGoingUp');
+        expect(ctx.game.audioHandler.firedogSFX.playSound).toHaveBeenCalledWith('bluePotionEnergyGoingUp', false, true);
 
         expect(ctx.player.isEnergyExhausted).toBe(false);
         expect(ctx.player.blueFireTimer).toBe(5000);

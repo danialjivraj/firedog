@@ -1303,7 +1303,7 @@ describe('UI', () => {
         it('wraps around to index 0 after the last tip', () => {
             game.currentMap = 'Map1';
             ui.tipState._lastTipContext = 'Map1';
-            ui.tipState.index = 2;
+            ui.tipState.index = 3;
             ui.tipState.phase = 'hold';
             ui.cycleTip();
             expect(ui.tipState.index).toBe(0);

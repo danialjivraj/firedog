@@ -559,7 +559,7 @@ describe('PenguiniCutscene & subclasses', () => {
         it('Map6 stops after its initial 9 entries', () => {
             game.currentMap = 'Map6';
             const m6 = new Map6PenguinIngameCutscene(game);
-            expect(m6.dialogue.length).toBe(9);
+            expect(m6.dialogue.length).toBe(10);
         });
     });
 

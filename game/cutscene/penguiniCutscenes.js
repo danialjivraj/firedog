@@ -994,6 +994,12 @@ export class Map6PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //8
             `${this.penguini}`,
+            `I will need ${this.game.winningCoins} ${this.coinsText} for you to stay in this poisonous cabin!`,
+            this.addImage(this.setfiredogNormalBorder(), FIREDOG),
+            this.addImage('penguiniGunTalkNormalBorder', PENGUIN, { talking: true }),
+        );
+        this.addDialogue( //9
+            `${this.penguini}`,
             `It seems you have ${this.playerCoins} ${this.coinText}.`,
             this.addImage(this.setfiredogNormalBorder(), FIREDOG),
             this.addImage('penguiniGunTalkNormalBorder', PENGUIN, { talking: true }),
@@ -1009,37 +1015,37 @@ export class Map6PenguinIngameCutscene extends PenguiniCutscene {
         }
 
         // rest of the dialogue
-        this.addDialogue( //9
+        this.addDialogue( //10
             `${this.firedog}`,
             `There goes my money... just so I can rest in a poison box...`,
             this.addImage(this.setfiredogPhewBorder(), FIREDOG, { talking: true }),
             this.addImage('penguiniGunTalkNormalBorder', PENGUIN),
         );
-        this.addDialogue( //10
+        this.addDialogue( //11
             `${this.penguini}`,
             `Look at it this way. You're paying for survival.`,
             this.addImage(this.setfiredogPhewBorder(), FIREDOG),
             this.addImage('penguiniGunLaughBorder', PENGUIN, { talking: true }),
         );
-        this.addDialogue( //11
+        this.addDialogue( //12
             `${this.penguini}`,
             `Out there? You choke.`,
             this.addImage(this.setfiredogPhewBorder(), FIREDOG),
             this.addImage('penguiniGunTalkNormalBorder', PENGUIN, { talking: true }),
         );
-        this.addDialogue( //12
+        this.addDialogue( //13
             `${this.penguini}`,
             `Inside this cabin behind me? You might live.`,
             this.addImage(this.setfiredogPhewBorder(), FIREDOG),
             this.addImage('penguiniGunTalkNormalBorder', PENGUIN, { talking: true }),
         );
-        this.addDialogue( //13
+        this.addDialogue( //14
             `${this.firedog}`,
             `That is not reassuring...`,
             this.addImage(this.setfiredogSighBorder(), FIREDOG, { talking: true }),
             this.addImage('penguiniGunTalkNormalBorder', PENGUIN),
         );
-        this.addDialogue( //14
+        this.addDialogue( //15
             `${this.penguini}`,
             `Just get inside ya' fool.`,
             this.addImage(this.setfiredogSighBorder(), FIREDOG),
@@ -1964,7 +1970,7 @@ export class CoinDialogueConditionCutscene extends PenguiniCutscene {
                     newDialogues.push(
                         {
                             character: this.penguini,
-                            dialogue: `That doesn't even cover the hazard costs of guarding a poisonous cabin ya' fool!`,
+                            dialogue: `That doesn't even cover the hazard costs of guarding this poisonous cabin ya' fool!`,
                             images: [
                                 this.addImage(this.setfiredogNormalBorder(), FIREDOG_100),
                                 this.addImage('penguiniGunUpBorder', PENGUIN_1430, { talking: true }),

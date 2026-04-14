@@ -26,6 +26,7 @@ export const TIP_PHRASE_COLORS = {
     'Sit': '#ffc574',
     'Sitting': '#ffc574',
     'Energy': 'DodgerBlue',
+    'Exhausted': '#ff4d4d',
 
     // multi-word enemies
     'Mini Oozels': '#ff5555',
@@ -98,6 +99,7 @@ export const MAP_TIPS = {
     Map1: [
         "Experiment and get familiar with your abilities against the enemies.",
         "You may run out of Energy quickly.\nYou can always Sit down and wait for it to recharge.",
+        "Dive Attack is a very useful ability because it does not consume Energy,\nbut while Diving, Energy regeneration is reduced.",
         "Skulnap is a Stun enemy that wakes up when you get close.\nUse your Fireball ability to take it down.",
     ],
     Map2: [
@@ -122,6 +124,7 @@ export const MAP_TIPS = {
         "When it is raining, Sunflora throws many projectile beams upward.\nUse this opportunity to Dive attack and earn extra coins.",
     ],
     Map6: [
+        "When Exhausted, it's best to rely on Dive Attack to take enemies down.\nRemember that you cannot get poisoned while Exhausted.",
         "Venomveil Lake is filled with poisonous enemies.\nAvoid them when in trouble, but sometimes it may be worth getting poisoned for extra coins.",
         "Mycora throws three poisonous projectiles.\nIt can be hard to get through without Invisibility or Dash, but not impossible.",
     ],

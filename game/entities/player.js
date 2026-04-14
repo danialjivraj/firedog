@@ -3143,7 +3143,7 @@ export class CollisionLogic {
                     game.audioHandler.powerUpAndDownSFX.playSound('bluePotionSound2', false, true);
                 }
 
-                game.audioHandler.firedogSFX.playSound('bluePotionEnergyGoingUp');
+                game.audioHandler.firedogSFX.playSound('bluePotionEnergyGoingUp', false, true);
                 player.isEnergyExhausted = false;
 
                 if (player.currentState === player.states[4]) {
