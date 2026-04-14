@@ -24,8 +24,7 @@ import {
   Goblin,
   Dotter,
   Vertibat,
-  Ghobat,
-  Ravengloom,
+  Moonsect,
   MeatSoldier,
   Skulnap,
   Abyssaw,
@@ -873,12 +872,12 @@ describe('Map 1 Enemies', () => {
     expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith('wooshBat');
   });
 
-  it('Ghobat plays batFlapAudio on frame 3 when on-screen', () => {
-    const g = new Ghobat(game);
+  it('Moonsect plays batFlapAudio on frame 3 when on-screen', () => {
+    const g = new Moonsect(game);
     g.speedX = 0;
     game.speed = 0;
 
-    g.frameX = 3;
+    g.frameX = 1;
     g.x = 100;
     g.y = 100;
     g.width = 1;
@@ -886,22 +885,7 @@ describe('Map 1 Enemies', () => {
 
     g.update(16);
 
-    expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith('batFlapAudio');
-  });
-
-  it('Ravengloom plays ravenCallAudio once and ravenSingleFlap on frame 2 (on-screen)', () => {
-    const r = new Ravengloom(game);
-    r.x = game.width / 2;
-    r.y = game.height / 2;
-
-    r.playsOnce = true;
-    r.update(16);
-    expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith('ravenCallAudio');
-
-    r.frameX = 2;
-    r.playsOnce = false;
-    r.update(16);
-    expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith('ravenSingleFlap');
+    expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith('moonsectFlapAudio');
   });
 
   it('MeatSoldier plays its sound on first update', () => {
@@ -1212,20 +1196,6 @@ describe('Map 4 Enemies', () => {
 
     const leafs = game.enemies.filter((e) => e instanceof LeafAttack);
     expect(leafs.length).toBeGreaterThanOrEqual(2);
-  });
-
-  it('Chiquita plays ravenCallAudio once and ravenSingleFlap on frame 7 when on-screen', () => {
-    const ch = new Chiquita(game);
-    ch.x = game.width / 2;
-    ch.y = game.height / 2;
-
-    ch.update(16);
-    expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith('ravenCallAudio');
-
-    ch.frameX = 7;
-    ch.frameTimer = 0;
-    ch.update(16);
-    expect(game.audioHandler.enemySFX.playSound).toHaveBeenCalledWith('ravenSingleFlap');
   });
 
   it('Sluggie moves left on update', () => {

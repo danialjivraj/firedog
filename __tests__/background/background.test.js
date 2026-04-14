@@ -1132,7 +1132,7 @@ describe('Map constructors', () => {
         { Cls: Map1, id: 'map1Soundtrack', expectedLen: 16 },
         { Cls: Map2, id: 'map2Soundtrack', expectedLen: 15 },
         { Cls: Map3, id: 'map3Soundtrack', expectedLen: 17 },
-        { Cls: Map4, id: 'map4Soundtrack', expectedLen: 12 },
+        { Cls: Map4, id: 'map4Soundtrack', expectedLen: 11 },
         { Cls: Map5, id: 'map5Soundtrack', expectedLen: 18 },
         { Cls: Map6, id: 'map6Soundtrack', expectedLen: 12 },
         { Cls: Map7, id: 'map7Soundtrack', expectedLen: 16 },

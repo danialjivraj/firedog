@@ -88,27 +88,27 @@ export class EnemyLore extends BaseMenu {
         });
 
         this.createPage({ //4
-            name: "GHOBAT",
+            name: "MOONSECT",
             type: "NORMAL",
             foundAt: "LUNAR GLADE",
             description:
-                "NOT MUCH IS KNOWN ABOUT THIS GHOST-SHAPED BAT.\n"
+                "NOT MUCH IS KNOWN ABOUT THIS MOON-SHAPED INSECT.\n"
                 + "ALL THAT IS KNOWN IS THAT IT LIKES TO FLAP ITS WINGS AND CHASE DOTTERS...",
             images: [
-                this.createImage('ghobat', 134.33, 84, 0, 'right', 'top'),
+                this.createImage('moonsect', 91.5, 100, 0, 'right', 'top'),
             ],
             mapKey: "map1",
         });
 
         this.createPage({ //5
-            name: "RAVENGLOOM",
+            name: "LUNNY",
             type: "NORMAL",
             foundAt: "LUNAR GLADE",
             description:
-                "LITTLE IS KNOWN ABOUT THE RAVENGLOOM, A SHADOWY BIRD THAT DRIFTS SILENTLY BETWEEN THE TREES.\n"
-                + "LOCALS BELIEVE THAT WHEREVER IT FLIES, THE LIGHT DIMS JUST A LITTLE BIT BEHIND IT.",
+                "LEGENDS SAY THE LUNNY WAS ONCE A PIECE OF THE MOON THAT BROKE OFF, FELL TO THE WORLD, AND SOMEHOW GAINED A CONSCIOUSNESS OF ITS OWN.\n"
+                + "NOW IT GLIDES THROUGH THE NIGHT, AS IF STILL SEARCHING FOR ITS WAY BACK TO THE SKY.",
             images: [
-                this.createImage('ravengloom', 139.66, 100, 0, 'right', 'top'),
+                this.createImage('lunny', 122, 100, 0, 'right', 'top'),
             ],
             mapKey: "map1",
         });
@@ -274,6 +274,19 @@ export class EnemyLore extends BaseMenu {
         });
 
         this.createPage({ //18
+            name: "SKELLY",
+            type: "NORMAL",
+            foundAt: "NIGHTFALL PHANTOM GRAVES",
+            description:
+                "SKELLY IS A RESTLESS SKELETON THAT HAS WANDERED THESE GROUNDS FOR CENTURIES.\n"
+                + "THOUGH IT MOVES FORWARD AT A STEADY PACE, SKELLY CAN LEAP GREAT DISTANCES WITHOUT WARNING, MAKING IT HARD TO PREDICT WHERE IT WILL LAND NEXT!",
+            images: [
+                this.createImage('skelly', 57.5, 60, 0, 'right', 'bottom'),
+            ],
+            mapKey: "map2",
+        });
+
+        this.createPage({ //19
             name: "DOLLY",
             type: "NORMAL",
             foundAt: "NIGHTFALL PHANTOM GRAVES",
@@ -285,19 +298,6 @@ export class EnemyLore extends BaseMenu {
             ],
             mapKey: "map2",
             projectile: 'stun',
-        });
-
-        this.createPage({ //19
-            name: "SKELLY",
-            type: "NORMAL",
-            foundAt: "NIGHTFALL PHANTOM GRAVES",
-            description:
-                "SKELLY IS A RESTLESS SKELETON THAT HAS WANDERED THESE GROUNDS FOR CENTURIES.\n"
-                + "THOUGH IT MOVES FORWARD AT A STEADY PACE, SKELLY CAN LEAP GREAT DISTANCES WITHOUT WARNING, MAKING IT HARD TO PREDICT WHERE IT WILL LAND NEXT!",
-            images: [
-                this.createImage('skelly', 57.5, 60, 0, 'right', 'bottom'),
-            ],
-            mapKey: "map2",
         });
 
         // MAP 3 - Coral Abyss

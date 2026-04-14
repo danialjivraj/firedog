@@ -481,15 +481,14 @@ export class EnemySFXAudioHandler extends AudioHandler {
       spinningChainsaw: 'spinningChainsaw',
       //geargle
       helicopterSound: 'helicopterSound',
-      //ravengloom
-      ravenCallAudio: 'ravenCallAudio',
+      //moonsect
+      moonsectFlapAudio: 'moonsectFlapAudio',
+      //lunny
       ravenSingleFlap: 'ravenSingleFlap',
       //walterTheGhost
       ghostHmAudio: 'ghostHmAudio',
       //skelly
       skellyJumpSound: 'skellyJumpSound',
-      //ghobat
-      ghobatFlapAudio: 'ghobatFlapAudio',
       //bee
       beeBuzzing: 'beeBuzzing',
       //angryBee, volcanoWasp
@@ -537,6 +536,8 @@ export class EnemySFXAudioHandler extends AudioHandler {
       jellionSound: 'jellionSound',
       //karateCroco
       ahhhSound: 'ahhhSound',
+      //chiquita
+      ravenCallAudio: 'ravenCallAudio',
       //vinelash
       vinelashEmergeSound: 'vinelashEmergeSound',
       vinelashRetractSound: 'vinelashRetractSound',

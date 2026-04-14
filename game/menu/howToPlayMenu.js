@@ -797,7 +797,7 @@ export class HowToPlayMenu extends BaseMenu {
             this.createPage('Enemy types: Yellow (1)', [
                 (() => { const a = this.createHitLoopAnimation({ state: 'STUNNED', x: cx - 200, y: groundY, fps: 20, cooldownMs: 2000, phaseRef: this._hitAnimPhaseRef }); this._hitAnimResets.push(a.reset); return a; })(),
                 this.createTextBlock({
-                    text: 'Yellow enemies have a yellowish glow!',
+                    text: 'Stun enemies have a yellowish glow!',
                     x: cx,
                     y: 100,
                     maxW: 600,
@@ -811,7 +811,7 @@ export class HowToPlayMenu extends BaseMenu {
                     startY: 570,
                     textX: 460,
                     textY: 390,
-                    text: 'You will take damage and be Stunned for a short period of time if you use your Rolling or Diving ability against Yellow enemies, however using any other ability will not damage you!',
+                    text: 'You will take damage and be Stunned for a short period of time if you use your Rolling or Diving ability against Stun enemies, however using any other ability will not damage you!',
                     maxW: 600,
                     align: 'center',
                     arrowToX: (tx) => tx + 180,
@@ -2620,13 +2620,11 @@ export class HowToPlayMenu extends BaseMenu {
         if (exhaustedSet.has(t)) return '#ff0000';
 
         const enemyColour = {
-            yellow: '#e7db2eff',
+            stun: 'rgb(201, 188, 12)',
             red: 'red',
             poison: 'green',
             slow: 'blue',
-            frozen: '#00eaff',
-            freeze: '#00eaff',
-            freezing: '#00eaff',
+            frozen: '#20cada',
         };
 
         return enemyColour[t] || null;

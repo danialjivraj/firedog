@@ -53,6 +53,7 @@ export class DifficultyMenu extends BaseMenu {
         const centerX = this.game.width / 2;
         const titleY = this.game.height / 2 - this.positionOffset;
         const listTop = titleY + 125;
+        const footerButtonSpacing = 60;
 
         const rows = this._getRows();
 
@@ -68,7 +69,7 @@ export class DifficultyMenu extends BaseMenu {
         const optionsStartX = labelRightX + this.labelToOptionsGap;
 
         const resetY = listTop + rows.length * this.rowHeight + 34;
-        const backY = resetY + this.rowHeight;
+        const backY = resetY + footerButtonSpacing;
 
         return {
             centerX,

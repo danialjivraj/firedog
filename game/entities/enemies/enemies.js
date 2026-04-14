@@ -1754,25 +1754,25 @@ export class Geargle extends VerticalEnemy {
     }
 }
 
-export class Ghobat extends FlyingEnemy {
+export class Moonsect extends FlyingEnemy {
     constructor(game) {
-        super(game, 134.33, 84, 5, 'ghobat');
+        super(game, 91.5, 100, 1, 'moonsect');
+        this.setFps(8);
     }
     update(deltaTime) {
         super.update(deltaTime);
-        if (this.frameX === 3 && this.isOnScreen()) this.game.audioHandler.enemySFX.playSound('batFlapAudio');
+        if (this.frameX === 1 && this.isOnScreen()) this.game.audioHandler.enemySFX.playSound('moonsectFlapAudio');
     }
 }
 
-export class Ravengloom extends FlyingEnemy {
+export class Lunny extends FlyingEnemy {
     constructor(game) {
-        super(game, 139.66, 100, 5, 'ravengloom');
-        this.playsOnce = true;
+        super(game, 122, 100, 1, 'lunny');
+        this.setFps(6);
     }
     update(deltaTime) {
         super.update(deltaTime);
-        this.playSoundOnce('ravenCallAudio');
-        if (this.frameX === 2 && this.isOnScreen()) this.game.audioHandler.enemySFX.playSound('ravenSingleFlap');
+        if (this.frameX === 1 && this.isOnScreen()) this.game.audioHandler.enemySFX.playSound('ravenSingleFlap');
     }
 }
 

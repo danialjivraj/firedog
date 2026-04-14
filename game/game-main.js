@@ -6,7 +6,7 @@ import { RecordToast } from "./animations/recordToast.js";
 import { formatTimeMs } from "./config/formatTime.js";
 import {
     Goblin,
-    Dotter, Vertibat, Ghobat, Ravengloom, MeatSoldier, Skulnap, Abyssaw, GlidoSpike, Geargle,
+    Dotter, Vertibat, Moonsect, Lunny, MeatSoldier, Skulnap, Abyssaw, GlidoSpike, Geargle,
     DuskPlant, Silknoir, Skelly, WalterTheGhost, Ben, Gloomlet, Dolly,
     Razorfin, SkeletonFish, SpearFish, JetFish, Piper, Jellion, Voltzeel, Garry,
     Sluggie, BigGreener, Chiquita, Fofinha, LilHornet, KarateCroco, Bramble, Jerry, Vinelash,
@@ -1036,9 +1036,9 @@ export class Game {
             Map1: [
                 { type: Goblin, probability: 0.05, spawningDistance: 0 },
                 { type: Dotter, probability: 0.35, spawningDistance: 0 },
-                { type: Ghobat, probability: 0.3, spawningDistance: 0 },
+                { type: Moonsect, probability: 0.3, spawningDistance: 0 },
                 { type: Geargle, probability: 0.2, spawningDistance: 0 },
-                { type: Ravengloom, probability: 0.3, spawningDistance: 0 },
+                { type: Lunny, probability: 0.3, spawningDistance: 0 },
                 { type: MeatSoldier, probability: 0.1, spawningDistance: 0 },
                 { type: Skulnap, probability: 0.25, spawningDistance: 50 },
                 { type: Abyssaw, probability: 0.06, spawningDistance: 100 },
