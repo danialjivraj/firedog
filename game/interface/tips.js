@@ -130,7 +130,7 @@ export const MAP_TIPS = {
     ],
     Map7: [
         "Watch the ground. Scorbles are fast enemies that blend in easily.",
-        "Magmapod is a Red enemy with Red projectiles.\nTry using one Fireball followed by two Dive attacks.\nThis defeats it and lets you collect extra coins from its projectiles.",
+        "Magmapod is a Red enemy with Red projectiles.\nTry using one Fireball followed by two consecutive Dive attacks.\nThis defeats it and lets you collect extra coins from its projectiles.",
         "Volcano Wasps are hard to dodge.\nJump as it approaches and use Fireball when it lines up with you.",
     ],
     BonusMap1: [
