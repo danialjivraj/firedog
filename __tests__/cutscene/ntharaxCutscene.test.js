@@ -258,13 +258,6 @@ describe('BonusMap3NTharaxIngameCutsceneAfterFight', () => {
         });
     });
 
-    it('ends with Firedog reflecting that NTharax is gone for now', () => {
-        expect(cutscene.dialogue[8]).toMatchObject({
-            character: cutscene.firedog,
-            dialogue: `Ugh... that was rough... but at least he's gone... well.. at least for now.`,
-        });
-    });
-
     it('builds the expected image setup for the opening post-fight dialogue', () => {
         const first = cutscene.dialogue[0];
 

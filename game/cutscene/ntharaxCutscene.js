@@ -201,7 +201,7 @@ export class BonusMap3NTharaxIngameCutsceneAfterFight extends NTharaxCutscene {
         );
         this.addDialogue( //8
             `${this.firedog}`,
-            `Ugh... that was rough... but at least he's gone... well.. at least for now.`,
+            `Ugh... that was rough... but at least ${this.ntharax} is gone... well.. at least for now.`,
             this.addImage(this.setfiredogTiredBorder(), FIREDOG, { talking: true }),
         );
     }

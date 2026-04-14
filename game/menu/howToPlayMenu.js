@@ -379,7 +379,7 @@ export class HowToPlayMenu extends BaseMenu {
                 ...infoArrowText({
                     startX: 160, startY: 145,
                     textX: 460, textY: 140,
-                    text: 'Each head represents one live. Reaching 0 is Game Over!',
+                    text: 'Each Firedog head represents one life. Reaching 0 is Game Over!',
                     maxW: 420,
                     arrowToY: (ty) => ty + 18,
                 }),
@@ -517,7 +517,7 @@ export class HowToPlayMenu extends BaseMenu {
                     startY: 106,
                     textX: 460,
                     textY: 60,
-                    text: 'Diving uses 0 Energy and deals 1 damage, however, it will slow the regeneration of your Energy!',
+                    text: 'Diving uses 0 Energy and deals 1 damage, however, it will reduce the regeneration of your Energy while active!',
                     maxW: 290,
                     arrowToY: (ty) => ty + 47,
                 }),
