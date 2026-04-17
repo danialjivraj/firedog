@@ -92,18 +92,18 @@ export const TIP_PHRASE_COLORS = {
 
     // collectibles
     'coins': 'orange',
-    'coin': 'orange',
+    'Credit Coins': '#aeaeaf',
 };
 
 export const MAP_TIPS = {
     Map1: [
-        "Experiment and get familiar with your abilities against the enemies.",
+        "Defeat as many enemies as possible to collect as many \uE001Coins as you can.\nWhen you complete the map, they will be converted into \uE002Credit Coins.",
         "You may run out of Energy quickly.\nYou can always Sit down and wait for it to recharge.",
         "Dive Attack is a very useful ability because it does not consume Energy,\nbut while Diving, Energy regeneration is reduced.",
         "Skulnap is a Stun enemy that wakes up when you get close.\nUse your Fireball ability to take it down.",
     ],
     Map2: [
-        "Enemies like Dusk Plant throw projectiles. Destroying projectiles also gives you coins.",
+        "Enemies like Dusk Plant throw projectiles. Destroying projectiles also gives you \uE001Coins.",
         "Dolly is a dangerous enemy that throws Stun projectiles.\nUse your Invisibility or Dash abilities to avoid it, or run away from Dolly entirely.",
     ],
     Map3: [
@@ -121,26 +121,26 @@ export const MAP_TIPS = {
     Map5: [
         "When it starts raining, most enemies become more aggressive.\nSave your Invisibility and Dash abilities for when it begins to rain.",
         "Bees and Angry Bees are difficult to dodge.\nTry Jumping as they approach and use Fireball when they line up with you.\nTo juke them, Roll forward quickly, or Jump as they get close, Dive, then Move Forward.",
-        "When it is raining, Sunflora throws many projectile beams upward.\nUse this opportunity to Dive attack and earn extra coins.",
+        "When it is raining, Sunflora throws many projectile beams upward.\nUse this opportunity to Dive attack and earn extra \uE001Coins.",
     ],
     Map6: [
         "When Exhausted, it's best to rely on Dive Attack to take enemies down.\nRemember that you cannot get poisoned while Exhausted.",
-        "Venomveil Lake is filled with poisonous enemies.\nAvoid them when in trouble, but sometimes it may be worth getting poisoned for extra coins.",
+        "Venomveil Lake is filled with poisonous enemies.\nAvoid them when in trouble, but sometimes it may be worth getting poisoned for extra \uE001Coins.",
         "Mycora throws three poisonous projectiles.\nIt can be hard to get through without Invisibility or Dash, but not impossible.",
     ],
     Map7: [
         "Watch the ground. Scorbles are fast enemies that blend in easily.",
-        "Magmapod is a Red enemy with Red projectiles.\nTry using one Fireball followed by two consecutive Dive attacks.\nThis defeats it and lets you collect extra coins from its projectiles.",
+        "Magmapod is a Red enemy with Red projectiles.\nTry using one Fireball followed by two consecutive Dive attacks.\nThis defeats it and lets you collect extra \uE001Coins from its projectiles.",
         "Volcano Wasps are hard to dodge.\nJump as it approaches and use Fireball when it lines up with you.",
     ],
     BonusMap1: [
         "Icebound Cave has very slippery ground.\nYour movement will feel delayed, so get used to the momentum.",
-        "Many enemies slow you down here.\nAvoid them when in trouble, but sometimes it may be worth getting slowed for extra coins.",
+        "Many enemies slow you down here.\nAvoid them when in trouble, but sometimes it may be worth getting slowed for extra \uE001Coins.",
         "Crystal Wasps are Frozen enemies that move slowly toward you.\nYou can avoid them, but to defeat them you need to Jump and use Fireball at the right moment.",
         "Drillice emerges from the ground.\nWatch the ground ahead for warning signs.",
     ],
     BonusMap2: [
-        "Enemies like Sigilfly and Golex are Red enemies and appear often.\nUse Dive attack to defeat them and collect coins.",
+        "Enemies like Sigilfly and Golex are Red enemies and appear often.\nUse Dive attack to defeat them and collect \uE001Coins.",
         "Oozel splits into two when defeated.\nMini Oozels can be easy to miss.",
         "Wardrake is extremely dangerous. If you see one, be ready to use Invisibility or Dash.\nIf those are not available, run.",
     ],

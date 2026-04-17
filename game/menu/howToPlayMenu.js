@@ -157,8 +157,8 @@ export class HowToPlayMenu extends BaseMenu {
 
                 const fireballIconX = 110;
                 const dashIconX = 230;
-                const arrowY = 250;
-                const textY = 285;
+                const arrowY = 225;
+                const textY = 260;
 
                 const drawDownArrow = (x) =>
                     this.drawArrowImpl(ctx, {
@@ -236,6 +236,49 @@ export class HowToPlayMenu extends BaseMenu {
                 outlineW: opts.outlineW,
             });
         };
+
+        const bentArrowFromTo = (x1, y1, cx1, cy1, x2, y2, opts = {}) => ({
+            draw: (ctx) => {
+                const head = opts.head ?? arrowHead;
+                const lineW = opts.lineW ?? 6;
+                const outlineW = opts.outlineW ?? 10;
+                const angle = Math.atan2(y2 - cy1, x2 - cx1);
+
+                const strokeArrow = () => {
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.quadraticCurveTo(cx1, cy1, x2, y2);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.moveTo(x2, y2);
+                    ctx.lineTo(
+                        x2 - Math.cos(angle - 0.7) * head,
+                        y2 - Math.sin(angle - 0.7) * head
+                    );
+                    ctx.moveTo(x2, y2);
+                    ctx.lineTo(
+                        x2 - Math.cos(angle + 0.7) * head,
+                        y2 - Math.sin(angle + 0.7) * head
+                    );
+                    ctx.stroke();
+                };
+
+                ctx.save();
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = outlineW;
+                strokeArrow();
+
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = lineW;
+                strokeArrow();
+
+                ctx.restore();
+            },
+        });
 
         const dynamicArrowFromTo = (getPoints, opts = {}) => ({
             draw: (ctx) => {
@@ -344,7 +387,7 @@ export class HowToPlayMenu extends BaseMenu {
             this.createPage('User Interface: Coins (1)', [
                 this.createPlayerAnimation({ state: 'STANDING', x: cx, y: groundY }),
                 ...infoArrowText({
-                    startX: 155, startY: 30,
+                    startX: 110, startY: 30,
                     textX: 460, textY: 60,
                     text: 'You get coins by killing enemies or projectiles!',
                     maxW: 290,
@@ -354,34 +397,43 @@ export class HowToPlayMenu extends BaseMenu {
 
             this.createPage('User Interface: Time (2)', [
                 this.createPlayerAnimation({ state: 'STANDING', x: cx, y: groundY }),
+                ...(() => {
+                    const textX = 460;
+                    const textY = 60;
+                    return [
+                        bentArrowFromTo(125, 53, 210, 6, textX - 18, textY + 18, { lineW: 6, outlineW: 10 }),
+                        this.createTextBlock({
+                            text: 'At the start of game, the time starts counting!',
+                            x: textX,
+                            y: textY,
+                            maxW: 350,
+                            lineH: 30,
+                            font: 'bold 24px "Gloria Hallelujah"',
+                            align: 'left',
+                        }),
+                    ];
+                })(),
+            ]),
+
+            this.createPage('User Interface: Lives (3)', [
+                this.createPlayerAnimation({ state: 'STANDING', x: cx, y: groundY }),
                 ...infoArrowText({
-                    startX: 165, startY: 70,
-                    textX: 460, textY: 60,
-                    text: 'At the start of game, the time starts counting!',
-                    maxW: 350,
-                    arrowToY: (ty) => ty + 18,
+                    startX: 228, startY: 70,
+                    textX: 460, textY: 100,
+                    text: 'These are your lives.\nReaching 0 is Game Over!',
+                    maxW: 420,
+                    arrowToY: (ty) => ty + 22,
                 }),
             ]),
 
-            this.createPage('User Interface: Energy (3)', [
+            this.createPage('User Interface: Energy (4)', [
                 this.createPlayerAnimation({ state: 'STANDING', x: cx, y: groundY }),
                 ...infoArrowText({
-                    startX: 275, startY: 106,
-                    textX: 460, textY: 100,
+                    startX: 275, startY: 109,
+                    textX: 460, textY: 140,
                     text: 'This is your Energy. Some abilities will require Energy to be used!',
                     maxW: 490,
                     arrowToY: (ty) => ty + 25,
-                }),
-            ]),
-
-            this.createPage('User Interface: Lives (4)', [
-                this.createPlayerAnimation({ state: 'STANDING', x: cx, y: groundY }),
-                ...infoArrowText({
-                    startX: 160, startY: 145,
-                    textX: 460, textY: 140,
-                    text: 'Each Firedog head represents one life. Reaching 0 is Game Over!',
-                    maxW: 420,
-                    arrowToY: (ty) => ty + 18,
                 }),
             ]),
 
@@ -390,10 +442,10 @@ export class HowToPlayMenu extends BaseMenu {
 
                 ...(() => {
                     const textX = 30;
-                    const textY = 285;
+                    const textY = 260;
 
                     const arrows = [50, 110, 170, 230].map((startX, i) =>
-                        arrowFromTo(startX, 230, startX, textY - 10, { lineW: 6, outlineW: 10 }),
+                        arrowFromTo(startX, 205, startX, textY - 10, { lineW: 6, outlineW: 10 }),
                     );
 
                     return [
@@ -505,12 +557,23 @@ export class HowToPlayMenu extends BaseMenu {
                 this.createKey({ key: 'S', x: cx, y: 180, w: 57, h: 55, image: 'keycap' }),
                 this.createDivingSequenceDemo(),
 
-                ...threeLineLeftArrowText({
-                    startX: 50,
-                    textX: 30,
-                    textY: 285,
-                    text: '0.3 second cooldown before you can use it again!',
-                }),
+                ...(() => {
+                    const startX = 50;
+                    const textX = 30;
+                    const textY = 260;
+                    return [
+                        arrowFromTo(startX, 205, startX, textY - 10, { lineW: 6, outlineW: 10 }),
+                        this.createTextBlock({
+                            text: '0.3 second cooldown before you can use it again!',
+                            x: textX,
+                            y: textY + 10,
+                            maxW: 330,
+                            lineH: 30,
+                            font: 'bold 24px "Gloria Hallelujah"',
+                            align: 'left',
+                        }),
+                    ];
+                })(),
 
                 ...infoArrowText({
                     startX: 275,
@@ -564,12 +627,23 @@ export class HowToPlayMenu extends BaseMenu {
                     maxW: 590,
                 }),
 
-                ...threeLineLeftArrowText({
-                    startX: 110,
-                    textX: 30,
-                    textY: 285,
-                    text: '1.0 second cooldown before you can use it again!',
-                }),
+                ...(() => {
+                    const startX = 110;
+                    const textX = 30;
+                    const textY = 260;
+                    return [
+                        arrowFromTo(startX, 205, startX, textY - 10, { lineW: 6, outlineW: 10 }),
+                        this.createTextBlock({
+                            text: '1.0 second cooldown before you can use it again!',
+                            x: textX,
+                            y: textY + 10,
+                            maxW: 330,
+                            lineH: 30,
+                            font: 'bold 24px "Gloria Hallelujah"',
+                            align: 'left',
+                        }),
+                    ];
+                })(),
 
                 this.createFireballDemo({ image: 'fireball' }),
             ], {
@@ -629,9 +703,11 @@ export class HowToPlayMenu extends BaseMenu {
 
                 ...leftCooldownText({
                     startX: 170,
+                    baseArrowY: 205,
+                    timerShownY: 225,
                     getTimerShown: () => this._demoInvisible?.phase === 'active',
                     textX: 30,
-                    textY: 285,
+                    textY: 260,
                     text: 'Invisibility is active for 5 seconds, and once it ends, a 35 second cooldown starts.',
                 }),
             ], {
@@ -668,12 +744,14 @@ export class HowToPlayMenu extends BaseMenu {
 
                 ...leftCooldownText({
                     startX: 230,
+                    baseArrowY: 205,
+                    timerShownY: 225,
                     getTimerShown: () => {
                         const d = this._demoDash;
-                        return d?.phase === 'afterFirst' && d?.secondWindowRemainingMs > 0;
+                        return (d?.phase === 'dashing1' || d?.phase === 'afterFirst') && d?.secondWindowRemainingMs > 0;
                     },
                     textX: 90,
-                    textY: 285,
+                    textY: 260,
                     text: 'You have 2 Dashes and after the first dash, you have 7 seconds to activate the second dash!',
                 }),
             ], {
@@ -2354,14 +2432,15 @@ export class HowToPlayMenu extends BaseMenu {
                 d.spriteFrameX = 0;
                 d.playerX = d.startX;
                 d.betweenElapsedMs = 0;
+                d.secondWindowRemainingMs = d.secondWindowMs;
             }
         } else if (d.phase === 'dashing1') {
             d.playerX += DASH1_VX * dt;
             d.betweenElapsedMs = Math.min(d.betweenMs, d.betweenElapsedMs + dt);
+            d.secondWindowRemainingMs = Math.max(0, d.secondWindowRemainingMs - dt);
             if (d.timer >= DASH_DURATION) {
                 d.phase = 'afterFirst';
                 d.timer = 0;
-                d.secondWindowRemainingMs = d.secondWindowMs;
             }
         } else if (d.phase === 'afterFirst') {
             d.betweenElapsedMs = Math.min(d.betweenMs, d.betweenElapsedMs + dt);
@@ -2418,7 +2497,7 @@ export class HowToPlayMenu extends BaseMenu {
             }
         }
 
-        const awaitingSecond = d.phase === 'afterFirst';
+        const awaitingSecond = d.phase === 'afterFirst' || d.phase === 'dashing1';
         const inCooldown = d.phase === 'cooldown';
         const inDashing1 = d.phase === 'dashing1';
         const inDashing2 = d.phase === 'dashing2';
@@ -3254,10 +3333,18 @@ export class HowToPlayMenu extends BaseMenu {
                 ui.firedogAbilityUI = () => { };
             }
 
-            ui.drawTopLeftOnly(ctx);
+            if (typeof ui.withHudLayoutStyle === 'function') {
+                ui.withHudLayoutStyle('compact', () => ui.drawTopLeftOnly(ctx));
+            } else {
+                ui.drawTopLeftOnly(ctx);
+            }
             if (restoreAbilityFn) restoreAbilityFn();
         } else if (showAbilities && typeof ui.firedogAbilityUI === 'function') {
-            ui.firedogAbilityUI(ctx);
+            if (typeof ui.withHudLayoutStyle === 'function') {
+                ui.withHudLayoutStyle('compact', () => ui.firedogAbilityUI(ctx));
+            } else {
+                ui.firedogAbilityUI(ctx);
+            }
         }
 
         if (restoreCooldowns) restoreCooldowns();

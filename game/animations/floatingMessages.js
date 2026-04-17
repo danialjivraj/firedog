@@ -1,3 +1,5 @@
+import { drawCoinIcon } from '../interface/hudIcons.js';
+
 export class FloatingMessage {
     constructor(value, x, y, options = {}) {
         this.value = value;
@@ -8,7 +10,18 @@ export class FloatingMessage {
         this.targetY = options.targetY ?? null;
         this.fontSize = options.fontSize ?? 28;
         this.textColor = options.textColor ?? 'white';
+        this.strokeColor = options.strokeColor ?? 'rgba(0, 0, 0, 0.9)';
         this.smallSuffix = options.smallSuffix ?? false;
+        this.iconType = options.iconType ?? null;
+        this.iconImage = options.iconImage ?? null;
+        this.iconWidth = options.iconWidth ?? this.fontSize;
+        this.iconHeight = options.iconHeight ?? this.fontSize;
+        this.iconGap = options.iconGap ?? 8;
+        this.iconPosition = options.iconPosition ?? 'left';
+        this.iconOffsetY = options.iconOffsetY ?? 0;
+        this.iconShadowColor = options.iconShadowColor ?? 'white';
+        this.iconStrokeFilter = options.iconStrokeFilter ?? null;
+        this.coinIconLoss = options.coinIconLoss ?? null;
         this.duration = options.duration ?? 1400;
         this.easing = options.easing ?? 'easeIn';
 
@@ -48,6 +61,58 @@ export class FloatingMessage {
         context.globalAlpha = alpha;
         context.textBaseline = 'middle';
 
+        const hasIcon = this.iconType === 'coin' || !!this.iconImage;
+
+        const drawIcon = (iconX, scaledFs) => {
+            if (!hasIcon) return 0;
+            const iconW = this.iconWidth * (scaledFs / this.fontSize);
+            const iconH = this.iconHeight * (scaledFs / this.fontSize);
+            const iconY = this.y - iconH / 2 + this.iconOffsetY;
+            const outlineOffsets = [
+                [-1, 0],
+                [1, 0],
+                [0, -1],
+                [0, 1],
+                [-1, -1],
+                [1, -1],
+                [-1, 1],
+                [1, 1],
+            ];
+
+            context.save();
+            context.shadowColor = 'transparent';
+            context.shadowBlur = 0;
+            context.shadowOffsetX = 0;
+            context.shadowOffsetY = 0;
+
+            if (this.iconType === 'coin') {
+                drawCoinIcon(
+                    context,
+                    iconX + iconW / 2,
+                    iconY + iconH / 2,
+                    Math.min(iconW, iconH) / 2,
+                    { isLoss: this.coinIconLoss ?? String(this.value).startsWith('-') }
+                );
+            } else if (this.iconStrokeFilter) {
+                context.save();
+                context.filter = this.iconStrokeFilter;
+
+                for (const [ox, oy] of outlineOffsets) {
+                    context.drawImage(this.iconImage, iconX + ox, iconY + oy, iconW, iconH);
+                }
+                context.restore();
+            } else {
+                context.shadowColor = this.iconShadowColor;
+                context.shadowBlur = 0;
+                context.shadowOffsetX = 2;
+                context.shadowOffsetY = 2;
+            }
+
+            if (this.iconImage) context.drawImage(this.iconImage, iconX, iconY, iconW, iconH);
+            context.restore();
+            return iconW;
+        };
+
         if (this.smallSuffix && this.value.length > 1) {
             const numberPart = this.value.slice(0, -1);
             const letterPart = this.value.slice(-1);
@@ -64,7 +129,7 @@ export class FloatingMessage {
 
             context.textAlign = 'left';
             context.lineWidth = 3;
-            context.strokeStyle = 'rgba(0, 0, 0, 0.9)';
+            context.strokeStyle = this.strokeColor;
 
             context.font = `bold ${scaledFs}px Love Ya Like A Sister`;
             context.strokeText(numberPart, startX, this.y);
@@ -78,12 +143,28 @@ export class FloatingMessage {
         } else {
             const scaledFs = Math.round(this.fontSize * scale);
             context.font = `bold ${scaledFs}px Love Ya Like A Sister`;
-            context.textAlign = 'center';
             context.lineWidth = 3;
-            context.strokeStyle = 'rgba(0, 0, 0, 0.9)';
-            context.strokeText(this.value, this.x, this.y);
+            context.strokeStyle = this.strokeColor;
+            const textWidth = context.measureText(this.value).width;
+            const iconW = hasIcon ? this.iconWidth * (scaledFs / this.fontSize) : 0;
+            const totalWidth = textWidth + (hasIcon ? iconW + this.iconGap : 0);
+            const startX = this.x - totalWidth / 2;
+            let textX = startX;
+
+            context.textAlign = 'left';
+            if (hasIcon) {
+                if (this.iconPosition === 'right') {
+                    textX = startX;
+                    drawIcon(startX + textWidth + this.iconGap, scaledFs);
+                } else {
+                    drawIcon(startX, scaledFs);
+                    textX = startX + iconW + this.iconGap;
+                }
+            }
+
+            context.strokeText(this.value, textX, this.y);
             context.fillStyle = this.textColor;
-            context.fillText(this.value, this.x, this.y);
+            context.fillText(this.value, textX, this.y);
         }
 
         context.restore();

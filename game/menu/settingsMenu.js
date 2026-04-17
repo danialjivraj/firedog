@@ -2,11 +2,11 @@ import { BaseMenu } from "./baseMenu.js";
 
 export class SettingsMenu extends BaseMenu {
     constructor(game) {
-        const baseFullOptions = ["Audio", "Controls", "Difficulty", "Tutorial", "Delete Progress", "Go Back"];
+        const baseFullOptions = ["Audio", "Controls", "Difficulty", "Interface", "Tutorial", "Delete Progress", "Go Back"];
         super(game, baseFullOptions, "Settings");
 
         this._baseFullOptions = baseFullOptions;
-        this.inGameOptions = ["Audio", "Controls", "Go Back"];
+        this.inGameOptions = ["Audio", "Controls", "Interface", "Go Back"];
 
         this.menuInGame = false;
 
@@ -51,7 +51,7 @@ export class SettingsMenu extends BaseMenu {
         this.menuInGame = inGame;
         this.menuOptions = this.menuInGame ? this.inGameOptions : this._buildFullMenuOptions();
 
-        this._applyInGameLayout();
+        this._applyMenuLayout();
 
         super.activateMenu(selectedOption);
         this.selectedOption = Math.max(0, Math.min(this.selectedOption, this.menuOptions.length - 1));
@@ -63,11 +63,14 @@ export class SettingsMenu extends BaseMenu {
         this.activateMenu({ inGame: !!inGame, selectedOption: sel });
     }
 
-    _applyInGameLayout() {
+    _applyMenuLayout() {
         this.positionOffset = this._basePositionOffset;
         this.menuOptionsPositionOffset = this._baseMenuOptionsPositionOffset;
 
-        if (!this.menuInGame) return;
+        if (!this.menuInGame) {
+            this.positionOffset = this._basePositionOffset + 20;
+            return;
+        }
 
         const optionHeight = 60;
         const n = this.menuOptions.length;
@@ -105,6 +108,14 @@ export class SettingsMenu extends BaseMenu {
 
         if (!this.menuInGame && selected === "Difficulty") {
             this.game.openMenu(this.game.menu.difficulty, 0);
+            return;
+        }
+
+        if (selected === "Interface") {
+            this.game.openMenu(this.game.menu.interfaceSettings, {
+                inGame: this.menuInGame,
+                selectedOption: this.game.uiLayoutStyle === "legacy" ? 1 : 0,
+            });
             return;
         }
 

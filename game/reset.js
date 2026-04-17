@@ -1,4 +1,3 @@
-import { Map1, Map2, Map3, Map4, Map5, Map6, Map7, BonusMap1, BonusMap2, BonusMap3 } from "./background/background.js";
 import { Player } from "./entities/player.js";
 
 export class Reset {
@@ -42,6 +41,7 @@ export class Reset {
         this.game.invisibleColourOpacity = 0;
         this.game.gameOver = false;
         this.coinReset();
+        if (this.game.UI) this.game.UI.resetTransientUiState();
         this.game.notEnoughCoins = false;
         this.game._fullClearRecorded = false;
         // player
@@ -89,47 +89,13 @@ export class Reset {
         // level difficulty
         this.game.menu.difficulty.applyCurrentSettings();
         // selecting map
-        let selectedMap;
-        switch (this.game.background.constructor) {
-            case Map1:
-                selectedMap = new Map1(this.game);
-                break;
-            case Map2:
-                selectedMap = new Map2(this.game);
-                break;
-            case Map3:
-                selectedMap = new Map3(this.game);
-                this.game.player.isUnderwater = true;
-                break;
-            case Map4:
-                selectedMap = new Map4(this.game);
-                break;
-            case Map5:
-                selectedMap = new Map5(this.game);
-                break;
-            case Map6:
-                selectedMap = new Map6(this.game);
-                break;
-            case Map7:
-                selectedMap = new Map7(this.game);
-                this.game.maxDistance = 9999999;
-                break;
-            case BonusMap1:
-                selectedMap = new BonusMap1(this.game);
-                this.game.maxDistance = 9999999;
-                this.game.player.isIce = true;
-                break;
-            case BonusMap2:
-                selectedMap = new BonusMap2(this.game);
-                break;
-            case BonusMap3:
-                selectedMap = new BonusMap3(this.game);
-                this.game.maxDistance = 9999999;
-                this.game.player.isSpace = true;
-                break;
-            default:
-                break;
+        const MapClass = this.game.background.constructor;
+        if (MapClass) {
+            const selectedMap = new MapClass(this.game);
+            this.game.menu.forestMap.applyMapOption(
+                this.game.menu.forestMap.getMapOptionByClass(MapClass)
+            );
+            this.game.menu.forestMap.setMap(selectedMap);
         }
-        this.game.menu.forestMap.setMap(selectedMap);
     }
 }

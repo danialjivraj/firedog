@@ -12,7 +12,9 @@ import {
     Map1StartCutscene, Map2StartCutscene, Map3StartCutscene, Map4StartCutscene, Map5StartCutscene, Map6StartCutscene, Map7StartCutscene,
     BonusMap1StartCutscene, BonusMap2StartCutscene, BonusMap3StartCutscene
 } from '../cutscene/storyCutscenes.js';
-import { Map1, Map2, Map3, Map4, Map5, Map6, Map7, BonusMap1, BonusMap2, BonusMap3 } from '../background/background.js';
+import {
+    Map1, Map2, Map3, Map4, Map5, Map6, Map7, BonusMap1, BonusMap2, BonusMap3,
+} from '../background/background.js';
 import { SavingAnimation, SavingBookAnimation } from '../animations/savingAnimation.js';
 import { Cabin } from '../entities/cabin.js';
 import { Penguini } from '../entities/penguini.js';
@@ -83,6 +85,38 @@ export class ForestMapMenu extends BaseMenu {
         document.addEventListener('wheel', this.handleMouseWheel.bind(this));
     }
 
+    getMapOptions() {
+        return [
+            { Map: Map1, maxDistance: 200, winningCoins: 250, environment: null, Cutscene: Map1StartCutscene },
+            { Map: Map2, maxDistance: 240, winningCoins: 270, environment: null, Cutscene: Map2StartCutscene },
+            { Map: Map3, maxDistance: 270, winningCoins: 290, environment: 'underwater', Cutscene: Map3StartCutscene },
+            { Map: Map4, maxDistance: 240, winningCoins: 340, environment: null, Cutscene: Map4StartCutscene },
+            { Map: Map5, maxDistance: 250, winningCoins: 380, environment: null, Cutscene: Map5StartCutscene },
+            { Map: Map6, maxDistance: 250, winningCoins: 300, environment: null, Cutscene: Map6StartCutscene },
+            { Map: Map7, maxDistance: 9999999, winningCoins: 0, environment: null, Cutscene: Map7StartCutscene },
+            { Map: BonusMap1, maxDistance: 9999999, winningCoins: 150, environment: 'ice', Cutscene: BonusMap1StartCutscene },
+            { Map: BonusMap2, maxDistance: 240, winningCoins: 280, environment: null, Cutscene: BonusMap2StartCutscene },
+            { Map: BonusMap3, maxDistance: 9999999, winningCoins: 210, environment: 'space', Cutscene: BonusMap3StartCutscene },
+        ];
+    }
+
+    getMapOptionByClass(MapClass) {
+        return this.getMapOptions().find((option) => option.Map === MapClass) || null;
+    }
+
+    applyMapOption(option) {
+        if (!option) return;
+
+        this.game.maxDistance = option.maxDistance;
+        this.game.winningCoins = option.winningCoins;
+
+        if (this.game.player) {
+            this.game.player.isUnderwater = option.environment === 'underwater';
+            this.game.player.isIce = option.environment === 'ice';
+            this.game.player.isSpace = option.environment === 'space';
+        }
+    }
+
     showLockedNotice(text = 'UNAVAILABLE!', durationMs = 1400) {
         this.lockedNoticeText = text;
         this.lockedNoticeTimer = durationMs;
@@ -106,45 +140,15 @@ export class ForestMapMenu extends BaseMenu {
             return;
         }
 
-        const mapOptions = [
-            { Map: Map1, maxDistance: 200, winningCoins: 250, environment: null, Cutscene: Map1StartCutscene },
-            { Map: Map2, maxDistance: 240, winningCoins: 270, environment: null, Cutscene: Map2StartCutscene },
-            { Map: Map3, maxDistance: 270, winningCoins: 290, environment: 'underwater', Cutscene: Map3StartCutscene },
-            { Map: Map4, maxDistance: 240, winningCoins: 340, environment: null, Cutscene: Map4StartCutscene },
-            { Map: Map5, maxDistance: 250, winningCoins: 380, environment: null, Cutscene: Map5StartCutscene },
-            { Map: Map6, maxDistance: 250, winningCoins: 300, environment: null, Cutscene: Map6StartCutscene },
-            { Map: Map7, maxDistance: 9999999, winningCoins: 0, environment: null, Cutscene: Map7StartCutscene },
-            { Map: BonusMap1, maxDistance: 9999999, winningCoins: 150, environment: 'ice', Cutscene: BonusMap1StartCutscene },
-            { Map: BonusMap2, maxDistance: 240, winningCoins: 280, environment: null, Cutscene: BonusMap2StartCutscene },
-            { Map: BonusMap3, maxDistance: 9999999, winningCoins: 210, environment: 'space', Cutscene: BonusMap3StartCutscene },
-        ];
-
+        const mapOptions = this.getMapOptions();
         const entry = mapOptions[circleIndex];
         if (!entry) {
             this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
             return;
         }
 
-        const { Map, maxDistance, winningCoins, environment = null, Cutscene } = entry;
-
-        this.game.player.isUnderwater = false;
-        this.game.player.isIce = false;
-        this.game.player.isSpace = false;
-
-        switch (environment) {
-            case 'underwater':
-                this.game.player.isUnderwater = true;
-                break;
-            case 'ice':
-                this.game.player.isIce = true;
-                break;
-            case 'space':
-                this.game.player.isSpace = true;
-                break;
-        }
-
-        this.game.maxDistance = maxDistance;
-        this.game.winningCoins = winningCoins;
+        const { Map, Cutscene } = entry;
+        this.applyMapOption(entry);
 
         const mapCutscene = new Cutscene(this.game);
         this.game.startCutscene(mapCutscene);

@@ -29,8 +29,10 @@ describe('DifficultyMenu', () => {
 
             canSelect: true,
             canSelectForestMap: true,
-
-            lives: null,
+            player: {
+                lives: null,
+                previousLives: null,
+            },
             powerUpSpawnMultiplier: null,
             powerDownSpawnMultiplier: null,
 
@@ -64,7 +66,6 @@ describe('DifficultyMenu', () => {
 
             currentMenu: null,
         };
-
         mockGame.goBackMenu = jest.fn(() => {
             mockGame.menu.settings.activateMenu(2);
             mockGame.currentMenu = mockGame.menu.settings;
@@ -83,7 +84,7 @@ describe('DifficultyMenu', () => {
             expect(menu.livesIndex).toBe(2);
             expect(menu.powerUpIndex).toBe(2);
             expect(menu.powerDownIndex).toBe(2);
-            expect(mockGame.lives).toBe(5);
+            expect(mockGame.player.lives).toBe(5);
             expect(mockGame.powerUpSpawnMultiplier).toBe(1);
             expect(mockGame.powerDownSpawnMultiplier).toBe(1);
         });
@@ -106,7 +107,7 @@ describe('DifficultyMenu', () => {
 
             menu.applyCurrentSettings();
 
-            expect(mockGame.lives).toBe(10);
+            expect(mockGame.player.lives).toBe(10);
             expect(mockGame.powerUpSpawnMultiplier).toBe(1.5);
             expect(mockGame.powerDownSpawnMultiplier).toBe(0.5);
             expect(mockGame.UI.syncLivesState).toHaveBeenCalledTimes(1);
@@ -153,7 +154,7 @@ describe('DifficultyMenu', () => {
             expect(menu.livesIndex).toBe(3);
             expect(menu.powerUpIndex).toBe(1);
             expect(menu.powerDownIndex).toBe(0);
-            expect(mockGame.lives).toBe(7);
+            expect(mockGame.player.lives).toBe(7);
             expect(mockGame.powerUpSpawnMultiplier).toBe(0.5);
             expect(mockGame.powerDownSpawnMultiplier).toBe(0);
         });
@@ -309,7 +310,7 @@ describe('DifficultyMenu', () => {
 
             menu._onReset();
 
-            expect(mockGame.lives).toBe(5);
+            expect(mockGame.player.lives).toBe(5);
             expect(mockGame.powerUpSpawnMultiplier).toBe(1);
             expect(mockGame.powerDownSpawnMultiplier).toBe(1);
         });
@@ -475,7 +476,7 @@ describe('DifficultyMenu', () => {
             menu.handleMouseClick(mkMouseEvt());
 
             expect(menu.livesIndex).toBe(0);
-            expect(mockGame.lives).toBe(1);
+            expect(mockGame.player.lives).toBe(1);
             expect(mockGame.saveGameState).toHaveBeenCalledTimes(1);
         });
 

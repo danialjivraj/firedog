@@ -12,6 +12,7 @@ export class AudioSettingsMenu extends BaseMenu {
         this.activeTab = 'MENU';
         this.headerSelectionIndex = -1;
         this.tabOffsetY = 80;
+        this.hoveredHeaderAction = null;
 
         this.draggingSlider = false;
         this.draggingSliderActive = false;
@@ -74,6 +75,20 @@ export class AudioSettingsMenu extends BaseMenu {
         document.addEventListener('mouseup', this.handleMouseUp);
         document.addEventListener('mousedown', this.handleMouseDown);
         document.addEventListener('mousemove', this.handleMouseDrag);
+    }
+
+    _getHeaderResetRect() {
+        const centerY = this.game.height / 2;
+        const titleY = centerY - this.positionOffset;
+        const tabY = titleY + this.tabOffsetY;
+        const x = this.game.width / 2 + 435;
+        const w = 42;
+        const h = 42;
+        return { x: x - w / 2, y: tabY - h + 8, w, h, centerX: x, centerY: tabY };
+    }
+
+    _getRowSpacing() {
+        return 60;
     }
 
     _canInteract() {
@@ -225,12 +240,8 @@ export class AudioSettingsMenu extends BaseMenu {
         const x = this.game.width / 2 - 30;
         const w = 300;
         const h = 25;
-
-        let y = centerY + this.audioContentOffsetY + i * 60 - 155;
-
-        if (this.menuOptions[i] === 'Go Back' || this.volumeLevels[i] === null) {
-            y += 20;
-        }
+        const rowSpacing = this._getRowSpacing();
+        let y = centerY + this.audioContentOffsetY + i * rowSpacing - 155;
 
         return { x, y, w, h };
     }
@@ -302,6 +313,11 @@ export class AudioSettingsMenu extends BaseMenu {
         return null;
     }
 
+    _hitTestHeaderReset(mouseX, mouseY) {
+        const r = this._getHeaderResetRect();
+        return mouseX >= r.x && mouseX <= r.x + r.w && mouseY >= r.y && mouseY <= r.y + r.h;
+    }
+
     _isMutedIndex(i) {
         return !!this.muted[i];
     }
@@ -349,6 +365,24 @@ export class AudioSettingsMenu extends BaseMenu {
 
         this.game.saveGameState();
         return true;
+    }
+
+    _resetActiveTab() {
+        const data = this._getActiveTabData();
+
+        data.volumeLevels = data.volumeLevels.map(level => (level === null ? null : 50));
+        data.muted = data.muted.map(value => (value === null ? null : false));
+
+        this.volumeLevels = data.volumeLevels;
+        this.muted = data.muted;
+
+        for (let i = 0; i < this.menuOptions.length; i++) {
+            if (this.volumeLevels[i] === null) continue;
+            const audioElementId = this.audioMap[this.menuOptions[i]];
+            if (audioElementId) this.updateAudioVolume(audioElementId, i);
+        }
+
+        this.game.saveGameState();
     }
 
     // button + icon
@@ -426,6 +460,31 @@ export class AudioSettingsMenu extends BaseMenu {
         ctx.restore();
     }
 
+    drawResetIconButton(ctx, rect, hovered) {
+        ctx.save();
+
+        ctx.shadowColor = 'rgba(0,0,0,0.55)';
+        ctx.shadowBlur = 6;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+
+        ctx.fillStyle = hovered ? '#0f4e4b' : '#0d3f3d';
+        ctx.strokeStyle = hovered ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.45)';
+        ctx.lineWidth = 2;
+        this.roundRect(ctx, rect.x, rect.y, rect.w, rect.h, 8, true, true);
+
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        ctx.fillStyle = 'rgba(255,255,255,0.95)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = 'bold 27px Arial';
+        ctx.fillText('↺', rect.x + rect.w / 2, rect.y + rect.h / 2 + 1);
+
+        ctx.restore();
+    }
+
     // draw
     draw(context) {
         if (!this.menuActive) return;
@@ -464,6 +523,7 @@ export class AudioSettingsMenu extends BaseMenu {
         const tabY = titleY + this.tabOffsetY;
         const tabSpacing = 260;
         const startX = this.game.width / 2 - tabSpacing;
+        const resetRect = this._getHeaderResetRect();
 
         context.shadowOffsetX = 2;
         context.shadowOffsetY = 2;
@@ -485,6 +545,8 @@ export class AudioSettingsMenu extends BaseMenu {
 
             context.fillText(this._displayTabLabel(tabKey), x, tabY);
         }
+
+        this.drawResetIconButton(context, resetRect, this.hoveredHeaderAction === 'reset');
 
         // options + sliders
         context.textAlign = 'right';
@@ -725,7 +787,16 @@ export class AudioSettingsMenu extends BaseMenu {
 
         const { x: mouseX, y: mouseY } = this._getMouse(event);
 
-        if (this._hitTestTab(mouseX, mouseY)) return;
+        const hitTab = this._hitTestTab(mouseX, mouseY);
+        const overReset = this._hitTestHeaderReset(mouseX, mouseY);
+
+        const nextHeaderAction = overReset ? 'reset' : null;
+        if (nextHeaderAction !== this.hoveredHeaderAction) {
+            this.hoveredHeaderAction = nextHeaderAction;
+            if (overReset) this._playHover();
+        }
+
+        if (hitTab || overReset) return;
 
         const hitIdx = this.hitTestOptionIndex(mouseX, mouseY);
         if (hitIdx !== null && hitIdx !== this.selectedOption) {
@@ -746,6 +817,12 @@ export class AudioSettingsMenu extends BaseMenu {
             this._playSelect();
             this.selectedOption = this.headerSelectionIndex;
             this.clampSelection();
+            return;
+        }
+
+        if (this._hitTestHeaderReset(mouseX, mouseY)) {
+            this._resetActiveTab();
+            this._playSelect();
             return;
         }
 
@@ -883,17 +960,8 @@ export class AudioSettingsMenu extends BaseMenu {
         this.game.saveGameState();
     }
 
-    // menu action
-    delayedEnablePress() {
-        setTimeout(() => {
-            this.canPressNow = true;
-        }, 10);
-    }
-
     handleMenuSelection() {
-        const selected = this.menuOptions[this.selectedOption];
-
-        if (selected === 'Go Back') {
+        if (this.menuOptions[this.selectedOption] === 'Go Back') {
             super.handleMenuSelection();
             this.game.goBackMenu();
             return;

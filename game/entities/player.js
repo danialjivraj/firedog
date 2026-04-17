@@ -1,4 +1,5 @@
 import { getDefaultKeyBindings } from '../config/keyBindings.js';
+import { getConfiguredLivesFromIndex } from '../config/difficultySettings.js';
 import {
     getSkinElement,
     getCosmeticElement,
@@ -39,6 +40,19 @@ import {
     PurpleBeamOrb, PurpleAsteroid, BlueAsteroid, GroundShockwaveRing, LaserBall
 } from './enemies/ntharax.js';
 
+const coinFloatingMessageOptions = (game, overrides = {}) => ({
+    fontSize: 30,
+    textColor: 'yellow',
+    iconType: 'coin',
+    iconWidth: 24,
+    iconHeight: 24,
+    iconGap: 6,
+    iconPosition: 'left',
+    iconOffsetY: -1,
+    ...(game.UI.anchors?.coins ?? {}),
+    ...overrides,
+});
+
 export class Player {
     constructor(game) {
         this.game = game;
@@ -67,17 +81,19 @@ export class Player {
         this.frameInterval = 1000 / this.fps;
         this.frameTimer = 0;
         this.speed = 0;
-        this.previousLives = this.game.lives;
+        this.lives = getConfiguredLivesFromIndex();
+        this.maxLives = 10;
+        this.previousLives = this.lives;
         this.facingRight = true;
         this.facingLeft = false;
         this.isRolling = false; // for sound
-        this.firstLoopDamageIndicator = true;
         // collision
         this.collisionCooldowns = {};
         this.collisionLogic = new CollisionLogic(this.game);
         // underwater vars
         this.isUnderwater = false;
-        this.loopDamageIndicator = true;
+        this.wasUnderwaterCriticalRedPhaseOn = false;
+        this.lastUnderwaterWarningRemainingTime = null;
         this.buoyancy = 4;
         // space vars
         this.isSpace = false;
@@ -731,7 +747,7 @@ export class Player {
 
     // lives
     firedogLivesLimit() {
-        this.game.lives = Math.min(this.game.lives, this.game.maxLives);
+        this.lives = Math.min(this.lives, this.maxLives);
     }
 
     // energy
@@ -1013,15 +1029,11 @@ export class Player {
         }
 
         // getting hit
-        if (this.game.lives < this.previousLives) {
+        if (this.lives < this.previousLives) {
             this.game.audioHandler.firedogSFX.playSound('gettingHit', false, true);
-            if (this.game.time >= 1000) {
-                this.triggerDamageIndicator();
-            } else {
-                this.game.audioHandler.firedogSFX.stopSound('gettingHit');
-            }
+            this.triggerDamageIndicator();
         }
-        this.previousLives = this.game.lives;
+        this.previousLives = this.lives;
 
         // no energy
         if (this.isEnergyExhausted && !this.noEnergyLeftSound) {
@@ -1061,31 +1073,42 @@ export class Player {
 
     // screen indicators
     triggerDamageIndicator() {
-        const ONE_MINUTE = 60000;
-        const isMap3 =
-            this.game.background &&
-            this.game.background.constructor &&
-            this.game.background.constructor.name === 'Map3';
-
-        if (isMap3 && this.game.time < this.game.maxTime - ONE_MINUTE) {
-            this.firstLoopDamageIndicator = true;
-        }
-
         const existingDamageIndicator = this.game.collisions.find(
             c => c instanceof DamageIndicator
         );
 
         if (existingDamageIndicator) {
-            if (!(isMap3 && this.game.time >= this.game.maxTime - ONE_MINUTE)) {
-                existingDamageIndicator.reset();
-            }
+            existingDamageIndicator.reset();
         } else {
             this.game.collisions.push(new DamageIndicator(this.game));
         }
     }
 
+    getUnderwaterRemainingTime() {
+        if (!this.isUnderwater) return null;
+        return Math.max(this.game.maxTimeUnderwater - this.game.time, 0);
+    }
+
+    isUnderwaterCriticalTime() {
+        const remainingTime = this.getUnderwaterRemainingTime();
+        return remainingTime !== null && remainingTime <= 60000;
+    }
+
+    isUnderwaterCriticalBlinkOn() {
+        const remainingTime = this.getUnderwaterRemainingTime();
+        return remainingTime !== null && remainingTime > 0 && remainingTime <= 60000 && (remainingTime % 2000 < 1000);
+    }
+
+    isUnderwaterCriticalRedPhaseOn() {
+        return this.isUnderwaterCriticalTime() && !this.isUnderwaterCriticalBlinkOn();
+    }
+
     underwaterGravityAndIndicator() {
-        if (!this.isUnderwater) return;
+        if (!this.isUnderwater) {
+            this.wasUnderwaterCriticalRedPhaseOn = false;
+            this.lastUnderwaterWarningRemainingTime = null;
+            return;
+        }
 
         if (this.onGround()) {
             this.vy = 0;
@@ -1094,21 +1117,22 @@ export class Player {
             this.vy = Math.max(-3, this.vy - vyDecreaseFactor * this.y / this.buoyancy);
         }
 
-        if (this.game.UI.secondsLeftActivated && this.loopDamageIndicator && !this.game.cabin.isFullyVisible) {
+        const remainingTime = this.getUnderwaterRemainingTime();
+        const criticalRedPhaseOn = this.isUnderwaterCriticalRedPhaseOn();
+        const redPhaseJustTurnedOn = criticalRedPhaseOn && !this.wasUnderwaterCriticalRedPhaseOn;
+        const warningTimeJumped =
+            this.lastUnderwaterWarningRemainingTime != null &&
+            remainingTime != null &&
+            Math.abs(remainingTime - this.lastUnderwaterWarningRemainingTime) >= 5000;
+
+        if (redPhaseJustTurnedOn && !warningTimeJumped && !this.game.cabin.isFullyVisible) {
             if (this.game.time >= 1000) {
-                if (this.firstLoopDamageIndicator) {
-                    this.firstLoopDamageIndicator = false;
-                    const existingDamageIndicator = this.game.collisions.find(
-                        collision => collision instanceof DamageIndicator
-                    );
-                    if (existingDamageIndicator) {
-                        existingDamageIndicator.reset();
-                    }
-                }
                 this.triggerDamageIndicator();
-                this.loopDamageIndicator = false;
             }
         }
+
+        this.wasUnderwaterCriticalRedPhaseOn = criticalRedPhaseOn;
+        this.lastUnderwaterWarningRemainingTime = remainingTime;
     }
 
     triggerTunnelVision(options = null) {
@@ -1419,7 +1443,7 @@ export class Player {
     }
 
     checkIfFiredogIsDead() {
-        if (this.game.lives <= 0) {
+        if (this.lives <= 0) {
             if (this.game.noDamageDuringTutorial) {
                 this.game.menu.difficulty.applyCurrentSettings();
             } else {
@@ -1580,7 +1604,7 @@ export class CollisionLogic {
         if (player.isFrozen) {
             if (enemy.dealsDirectHitDamage) {
                 this.game.coins -= 1;
-                this.game.lives -= 1;
+                player.lives -= 1;
                 player.isInvincible = true;
                 player.invincibleTimer = player.invincibleDuration;
             }
@@ -1595,7 +1619,7 @@ export class CollisionLogic {
 
         if (enemy.dealsDirectHitDamage) {
             this.game.coins -= 1;
-            this.game.lives -= 1;
+            player.lives -= 1;
             player.isInvincible = true;
             player.invincibleTimer = player.invincibleDuration;
         }
@@ -1609,7 +1633,7 @@ export class CollisionLogic {
         if (player.isFrozen) {
             this.game.audioHandler.firedogSFX.playSound('stunnedSound', false, true);
             this.game.coins -= 1;
-            this.game.lives -= 1;
+            player.lives -= 1;
             player.isInvincible = true;
             player.invincibleTimer = player.invincibleDuration;
             return;
@@ -1619,7 +1643,7 @@ export class CollisionLogic {
         player.setState(6, 0);
 
         this.game.coins -= 1;
-        this.game.lives -= 1;
+        player.lives -= 1;
         player.isInvincible = true;
         player.invincibleTimer = player.invincibleDuration;
     }
@@ -1671,7 +1695,7 @@ export class CollisionLogic {
 
     handleFloatingMessages(enemy, player = this.game.player) {
         if (enemy instanceof EnemyBoss) enemy.coinValue = 10;
-        if (enemy.lives <= 0 && this.game.lives === player.previousLives) {
+        if (enemy.lives <= 0 && player.lives === player.previousLives) {
             const coins = enemy.coinValue ?? 1;
             this.game.coins += coins;
             player.energy += 2;
@@ -2555,7 +2579,15 @@ export class CollisionLogic {
                         this.game.audioHandler.enemySFX.playSound('goblinStealing', false, true);
                         this.game.coins -= coinsToSteal;
                         this.game.floatingMessages.push(
-                            new FloatingMessage('-' + coinsToSteal, player.x + player.width / 2, player.y, { fontSize: 30, textColor: 'red', ...this.game.UI.anchors.coins })
+                            new FloatingMessage(
+                                '-' + coinsToSteal,
+                                player.x + player.width / 2,
+                                player.y,
+                                coinFloatingMessageOptions(this.game, {
+                                    textColor: 'red',
+                                    coinIconLoss: true,
+                                })
+                            )
                         );
                     }
                 }
@@ -3120,14 +3152,38 @@ export class CollisionLogic {
                 );
                 game.UI.triggerTimerFlash('yellow');
             },
-            HealthLive() {
-                game.lives++;
+            HealthLive(item) {
+                const previousLives = game.player.lives;
+                const nextLives = Math.min(previousLives + 1, game.player.maxLives);
+
                 game.audioHandler.powerUpAndDownSFX.playSound('healthLiveSound', false, true);
+
+                if (nextLives === previousLives) return;
+
+                game.player.lives = nextLives;
+                game.floatingMessages.push(
+                    new FloatingMessage('+1', item.x + item.width / 2, item.y, {
+                        fontSize: 30,
+                        textColor: '#2fe917',
+                        iconImage: game.UI?.livesImage ?? document.getElementById('firedogHead'),
+                        iconWidth: 28,
+                        iconHeight: 28,
+                        iconGap: 6,
+                        iconPosition: 'left',
+                        iconOffsetY: -5,
+                        iconStrokeFilter: 'brightness(0) saturate(100%) invert(72%) sepia(94%) saturate(1038%) hue-rotate(61deg) brightness(113%) contrast(124%)',
+                    })
+                );
             },
             Coin(item) {
                 game.coins += 10;
                 game.floatingMessages.push(
-                    new FloatingMessage('+10', item.x + item.width / 2, item.y, { fontSize: 30, textColor: 'yellow', ...game.UI.anchors.coins })
+                    new FloatingMessage(
+                        '+10',
+                        item.x + item.width / 2,
+                        item.y,
+                        coinFloatingMessageOptions(game)
+                    )
                 );
                 game.audioHandler.powerUpAndDownSFX.playSound('coinSound', false, true);
             },
@@ -3191,10 +3247,23 @@ export class CollisionLogic {
                 game.audioHandler.powerUpAndDownSFX.playSound('statusConfusedSound', false, true);
                 player.activateConfuse();
             },
-            DeadSkull() {
-                game.lives--;
+            DeadSkull(item) {
+                game.player.lives--;
                 player.setState(7, 1);
                 game.audioHandler.powerUpAndDownSFX.playSound('deadSkullLaugh', false, true);
+                game.floatingMessages.push(
+                    new FloatingMessage('-1', item.x + item.width / 2, item.y, {
+                        fontSize: 30,
+                        textColor: '#ff3b30',
+                        iconImage: game.UI?.livesImage ?? document.getElementById('firedogHead'),
+                        iconWidth: 28,
+                        iconHeight: 28,
+                        iconGap: 6,
+                        iconPosition: 'left',
+                        iconOffsetY: -5,
+                        iconStrokeFilter: 'brightness(0) saturate(100%) invert(15%) sepia(97%) saturate(7435%) hue-rotate(1deg) brightness(103%) contrast(118%)',
+                    })
+                );
             },
             CarbonDioxideTank(item) {
                 game.time += 10000;

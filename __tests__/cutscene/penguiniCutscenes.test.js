@@ -108,7 +108,20 @@ describe('PenguiniCutscene & subclasses', () => {
                 .toHaveBeenCalledWith('cashOut', false, true);
             expect(game.coins).toBe(50);
             expect(game.floatingMessages[0])
-                .toMatchObject({ x: 150, y: 50, fontSize: 40, textColor: 'green', targetX: 200, targetY: 140 });
+                .toMatchObject({
+                    value: '-100',
+                    x: 150,
+                    y: 50,
+                    fontSize: 40,
+                    textColor: '#ff6868',
+                    iconType: 'coin',
+                    iconWidth: 30,
+                    iconHeight: 30,
+                    iconPosition: 'left',
+                    coinIconLoss: true,
+                    targetX: 200,
+                    targetY: 140,
+                });
         });
 
         it('does nothing when lastSound2Played is false', () => {
@@ -431,7 +444,7 @@ describe('PenguiniCutscene & subclasses', () => {
                 game.coins = 450;
                 game.winningCoins = 100;
                 const arr = cond.checkPlayerCoins();
-                expect(arr[1].dialogue).toBe('Hmm... you still have quite a few coins on you.');
+                expect(arr[1].dialogue).toBe(`Hmm... you still have quite a few ${cond.coinIcon}${cond.coinsLabel} on you.`);
             });
 
             it('second surplus dialogue contains the cashout trigger line', () => {
@@ -439,7 +452,7 @@ describe('PenguiniCutscene & subclasses', () => {
                 game.coins = 450;
                 game.winningCoins = 100;
                 const arr = cond.checkPlayerCoins();
-                expect(arr[2].dialogue).toBe("I'll be taking those extra coins too.");
+                expect(arr[2].dialogue).toBe(`I'll be taking those extra ${cond.coinIcon}${cond.coinsLabel} too.`);
             });
 
             it('works for all maps', () => {
@@ -471,7 +484,7 @@ describe('PenguiniCutscene & subclasses', () => {
         beforeEach(() => {
             cutscene.dialogue = [
                 { dialogue: "That's good enough, give me that!" },
-                { dialogue: "I'll be taking those extra coins too." },
+                { dialogue: `I'll be taking those extra ${cutscene.coinIcon}${cutscene.coinsLabel} too.` },
                 { dialogue: "Last line." }
             ];
             cutscene.continueDialogue = false;
@@ -486,7 +499,20 @@ describe('PenguiniCutscene & subclasses', () => {
             cutscene.enterOrLeftClick();
             expect(game.audioHandler.cutsceneSFX.playSound).toHaveBeenCalledWith('cashOut', false, true);
             expect(game.coins).toBe(100);
-            expect(game.floatingMessages[0]).toMatchObject({ x: 150, y: 50, fontSize: 40, textColor: 'green', targetX: 200, targetY: 140 });
+            expect(game.floatingMessages[0]).toMatchObject({
+                value: '-50',
+                x: 150,
+                y: 50,
+                fontSize: 40,
+                textColor: '#ff6868',
+                iconType: 'coin',
+                iconWidth: 30,
+                iconHeight: 30,
+                iconPosition: 'left',
+                coinIconLoss: true,
+                targetX: 200,
+                targetY: 140,
+            });
         });
 
         it('does not deduct when lastSound2Played is false', () => {
@@ -602,35 +628,35 @@ describe('PenguiniCutscene & subclasses', () => {
     });
 
     describe('Map1PenguinIngameCutscene integration', () => {
-        it('initializes dialogues and pluralizes coinText appropriately', () => {
+        it('initializes dialogues and shows player coin count with coin icon', () => {
             jest.spyOn(CoinDialogueConditionCutscene.prototype, 'checkPlayerCoins')
                 .mockReturnValue([{ character: 'X', dialogue: 'D', images: [] }]);
             game.currentMap = 'Map1';
             const m1 = new Map1PenguinIngameCutscene(game);
             expect(m1.dialogue.length).toBeGreaterThanOrEqual(14);
-            expect(m1.coinText).toBe("coins");
+            expect(m1.dialogue.some(d => d.dialogue === `It seems you have ${m1.coinIcon}150.`)).toBe(true);
             jest.restoreAllMocks();
         });
 
-        it('selects singular coinText when player has exactly 1 coin', () => {
+        it('shows player coin count with coin icon regardless of amount', () => {
             game.coins = 1;
             game.currentMap = 'Map1';
             jest.spyOn(CoinDialogueConditionCutscene.prototype, 'checkPlayerCoins')
                 .mockReturnValue([]);
             const m1 = new Map1PenguinIngameCutscene(game);
-            expect(m1.coinText).toBe("coin");
+            expect(m1.dialogue.some(d => d.dialogue === `It seems you have ${m1.coinIcon}1.`)).toBe(true);
             jest.restoreAllMocks();
         });
     });
 
-    describe('Pluralization spot-check on Map3', () => {
-        it('uses singular "coin" when player has exactly 1 coin', () => {
+    describe('Coin icon spot-check on Map3', () => {
+        it('shows player coin count with coin icon', () => {
             game.coins = 1;
             game.currentMap = 'Map3';
             jest.spyOn(CoinDialogueConditionCutscene.prototype, 'checkPlayerCoins')
                 .mockReturnValue([]);
             const m3 = new Map3PenguinIngameCutscene(game);
-            expect(m3.coinText).toBe('coin');
+            expect(m3.dialogue.some(d => d.dialogue === `It seems you have ${m3.coinIcon}1.`)).toBe(true);
             jest.restoreAllMocks();
         });
     });

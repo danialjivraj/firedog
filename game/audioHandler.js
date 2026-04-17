@@ -294,7 +294,8 @@ export class MapSoundtrackAudioHandler extends AudioHandler {
       glacikalBattleTheme: 'glacikalBattleTheme',
       elyvorgBattleTheme: 'elyvorgBattleTheme',
       ntharaxBattleTheme: 'ntharaxBattleTheme',
-      timeTickingSound: 'timeTickingSound',
+      timeTicking1Sound: 'timeTicking1Sound',
+      timeTicking2Sound: 'timeTicking2Sound',
       rainSound: 'rainSound',
     };
     this.initializeSounds();

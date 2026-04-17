@@ -8,6 +8,23 @@ export class PenguiniCutscene extends Cutscene {
         this.textBoxBackgroundOpacity = 0.55;
     }
 
+    createCashOutFloatingMessage(amount) {
+        return new FloatingMessage("-" + amount, 150, 50, {
+            fontSize: 40,
+            textColor: '#ff6868',
+            iconType: 'coin',
+            iconWidth: 30,
+            iconHeight: 30,
+            iconGap: 6,
+            iconPosition: 'left',
+            iconOffsetY: -1,
+            coinIconLoss: true,
+            targetX: this.game.penguini.x,
+            targetY: this.game.penguini.y + 40,
+            easing: 'easeOut',
+        });
+    }
+
     enterOrLeftClick() {
         this.runCurrentDialogueAdvanceActionIfAny();
 
@@ -19,15 +36,15 @@ export class PenguiniCutscene extends Cutscene {
             this.game.audioHandler.cutsceneSFX.playSound("cashOut", false, true);
             this.game.coins -= this.game.winningCoins;
             this.game.floatingMessages.push(
-                new FloatingMessage("-" + this.game.winningCoins, 150, 50, { fontSize: 40, textColor: 'green', targetX: this.game.penguini.x, targetY: this.game.penguini.y + 40, easing: 'easeOut' })
+                this.createCashOutFloatingMessage(this.game.winningCoins)
             );
         }
 
-        if (cashOutDialogue.dialogue.includes("I'll be taking those extra coins too.") && this.lastSound2Played) {
+        if (cashOutDialogue.dialogue.includes(`I'll be taking those extra ${this.coinIcon}${this.coinsLabel} too.`) && this.lastSound2Played) {
             this.game.audioHandler.cutsceneSFX.playSound("cashOut", false, true);
             this.game.coins -= this.game.surplusCoins;
             this.game.floatingMessages.push(
-                new FloatingMessage("-" + this.game.surplusCoins, 150, 50, { fontSize: 40, textColor: 'green', targetX: this.game.penguini.x, targetY: this.game.penguini.y + 40, easing: 'easeOut' })
+                this.createCashOutFloatingMessage(this.game.surplusCoins)
             );
         }
 
@@ -126,7 +143,6 @@ export class Map1PenguinIngameCutscene extends PenguiniCutscene {
 
         this.coinDialogueConditionCutscene = new CoinDialogueConditionCutscene(game);
         const coinConditionDialogues = this.coinDialogueConditionCutscene.checkPlayerCoins();
-        this.coinText = this.playerCoins === 1 ? this.coinText : this.coinsText;
 
         const FIREDOG = { x: 100, y: 400, width: 200, height: 200 };
         const PENGUIN = { x: 1400, y: 400, width: 200, height: 200 };
@@ -195,7 +211,7 @@ export class Map1PenguinIngameCutscene extends PenguiniCutscene {
 
         this.addDialogue( //9
             `${this.penguini}`,
-            `I will need ${this.game.winningCoins} ${this.coinsText}.`,
+            `I will need ${this.coinIcon}${this.game.winningCoins}.`,
             this.addImage(this.setfiredogSadBorder(), FIREDOG),
             this.addImage('penguiniBatTalkNormalBorder', PENGUIN, { talking: true }),
         );
@@ -216,7 +232,7 @@ export class Map1PenguinIngameCutscene extends PenguiniCutscene {
 
         this.addDialogue( //12
             `${this.penguini}`,
-            `It seems you have ${this.playerCoins} ${this.coinText}.`,
+            `It seems you have ${this.coinIcon}${this.playerCoins}.`,
             this.addImage(this.setfiredogNormalBorder(), FIREDOG),
             this.addImage('penguiniBatTalkNormalBorder', PENGUIN, { talking: true }),
         );
@@ -232,7 +248,7 @@ export class Map1PenguinIngameCutscene extends PenguiniCutscene {
 
         this.addDialogue( //13
             `${this.firedog}`,
-            `Wha- you... you just took my money like that ${this.penguini}!? I was trying to negotiate.`,
+            `Wha- you... you just took my ${this.coinIcon}${this.coinsLabel} like that ${this.penguini}!? I was trying to negotiate.`,
             this.addImage(this.setfiredogUpsetBorder(), FIREDOG, { talking: true }),
             this.addImage('penguiniBatLaughBorder', PENGUIN),
         );
@@ -280,7 +296,6 @@ export class Map2PenguinIngameCutscene extends PenguiniCutscene {
 
         this.coinDialogueConditionCutscene = new CoinDialogueConditionCutscene(game);
         const coinConditionDialogues = this.coinDialogueConditionCutscene.checkPlayerCoins();
-        this.coinText = this.playerCoins === 1 ? this.coinText : this.coinsText;
 
         const FIREDOG = { x: 100, y: 400, width: 200, height: 200 };
         const PENGUIN = { x: 1400, y: 400, width: 200, height: 200 };
@@ -345,7 +360,7 @@ export class Map2PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //10
             `${this.penguini}`,
-            `I will need ${this.game.winningCoins} ${this.coinsText} for you to stay in this haunted cabin!`,
+            `I will need ${this.coinIcon}${this.game.winningCoins} for you to stay in this haunted cabin!`,
             this.addImage(this.setfiredogNormalBorder(), FIREDOG),
             this.addImage('penguiniBatTalkNormalBorder', PENGUIN, { talking: true }),
         );
@@ -369,7 +384,7 @@ export class Map2PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //14
             `${this.penguini}`,
-            `It seems you have ${this.playerCoins} ${this.coinText}.`,
+            `It seems you have ${this.coinIcon}${this.playerCoins}.`,
             this.addImage(this.setfiredogNormalBorder(), FIREDOG),
             this.addImage('penguiniBatTalkNormalBorder', PENGUIN, { talking: true }),
         );
@@ -418,7 +433,6 @@ export class Map3PenguinIngameCutscene extends PenguiniCutscene {
 
         this.coinDialogueConditionCutscene = new CoinDialogueConditionCutscene(game);
         const coinConditionDialogues = this.coinDialogueConditionCutscene.checkPlayerCoins();
-        this.coinText = this.playerCoins === 1 ? this.coinText : this.coinsText;
 
         const FIREDOG = { x: 100, y: 400, width: 200, height: 200 };
         const PENGUIN = { x: 1265, y: 400, width: 200, height: 200 };
@@ -470,7 +484,7 @@ export class Map3PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //8
             `${this.firedog}`,
-            `I see... so he was casting the spell for random explorers to breathe underwater and once they reached you, you just collect their money!`,
+            `I see... so he was casting the spell for random explorers to breathe underwater and once they reached you, you just collect their ${this.coinIcon}${this.coinsLabel}!`,
             this.addImage(this.setfiredogSurprisedBorder(), FIREDOG, { talking: true }),
             this.addImage('penguiniBatTalkNormalBorder', PENGUIN),
         );
@@ -500,13 +514,13 @@ export class Map3PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //13
             `${this.penguini}`,
-            `I will need ${this.game.winningCoins} ${this.coinsText} for a trip inside this beast of a sub!`,
+            `I will need ${this.coinIcon}${this.game.winningCoins} for a trip inside this beast of a sub!`,
             this.addImage(this.setfiredogNormalBorder(), FIREDOG),
             this.addImage('penguiniBatTalkNormalBorder', PENGUIN, { talking: true }),
         );
         this.addDialogue( //14
             `${this.penguini}`,
-            `It seems you have ${this.playerCoins} ${this.coinText}.`,
+            `It seems you have ${this.coinIcon}${this.playerCoins}.`,
             this.addImage(this.setfiredogNormalBorder(), FIREDOG),
             this.addImage('penguiniBatTalkNormalBorder', PENGUIN, { talking: true }),
         );
@@ -561,7 +575,6 @@ export class Map4PenguinIngameCutscene extends PenguiniCutscene {
 
         this.coinDialogueConditionCutscene = new CoinDialogueConditionCutscene(game);
         const coinConditionDialogues = this.coinDialogueConditionCutscene.checkPlayerCoins();
-        this.coinText = this.playerCoins === 1 ? this.coinText : this.coinsText;
 
         const FIREDOG = { x: 100, y: 400, width: 200, height: 200 };
         const PENGUIN = { x: 1430, y: 400, width: 200, height: 200 };
@@ -614,13 +627,13 @@ export class Map4PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //8
             `${this.penguini}`,
-            `I will need ${this.game.winningCoins} ${this.coinsText} for you to stay in this verdant cabin!`,
+            `I will need ${this.coinIcon}${this.game.winningCoins} for you to stay in this verdant cabin!`,
             this.addImage(this.setfiredogNormalBorder(), FIREDOG),
             this.addImage('penguiniGunTalkNormalBorder', PENGUIN, { talking: true }),
         );
         this.addDialogue( //9
             `${this.penguini}`,
-            `It seems you have ${this.playerCoins} ${this.coinText}.`,
+            `It seems you have ${this.coinIcon}${this.playerCoins}.`,
             this.addImage(this.setfiredogNormalBorder(), FIREDOG),
             this.addImage('penguiniGunTalkNormalBorder', PENGUIN, { talking: true }),
         );
@@ -655,7 +668,7 @@ export class Map4PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //13
             `${this.penguini}`,
-            `Good thing he had some spare money.. because I would not let that one slide otherwise ya' fool!`,
+            `Good thing he had some spare ${this.coinIcon}${this.coinsLabel}.. because I would not let that one slide otherwise ya' fool!`,
             this.addImage(this.setfiredogNormalBorder(), FIREDOG),
             this.addImage('penguiniGunLaughBorder', PENGUIN, { talking: true }),
         );
@@ -712,7 +725,6 @@ export class Map5PenguinIngameCutscene extends PenguiniCutscene {
 
         this.coinDialogueConditionCutscene = new CoinDialogueConditionCutscene(game);
         const coinConditionDialogues = this.coinDialogueConditionCutscene.checkPlayerCoins();
-        this.coinText = this.playerCoins === 1 ? this.coinText : this.coinsText;
 
         const FIREDOG = { x: 100, y: 400, width: 200, height: 200 };
         const PENGUIN = { x: 1430, y: 400, width: 200, height: 200 };
@@ -802,7 +814,7 @@ export class Map5PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //14
             `${this.penguini}`,
-            `I will need ${this.game.winningCoins} ${this.coinsText} for you to stay in this summery cabin!`,
+            `I will need ${this.coinIcon}${this.game.winningCoins} for you to stay in this summery cabin!`,
             this.addImage(this.setfiredogNormalBorder(), FIREDOG),
             this.addImage('penguiniGunTalkNormalBorder', PENGUIN, { talking: true }),
         );
@@ -832,7 +844,7 @@ export class Map5PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //19
             `${this.penguini}`,
-            `It seems you have ${this.playerCoins} ${this.coinText}.`,
+            `It seems you have ${this.coinIcon}${this.playerCoins}.`,
             this.addImage(this.setfiredogNormalBorder(), FIREDOG),
             this.addImage('penguiniGunTalkNormalBorder', PENGUIN, { talking: true }),
         );
@@ -941,7 +953,6 @@ export class Map6PenguinIngameCutscene extends PenguiniCutscene {
 
         this.coinDialogueConditionCutscene = new CoinDialogueConditionCutscene(game);
         const coinConditionDialogues = this.coinDialogueConditionCutscene.checkPlayerCoins();
-        this.coinText = this.playerCoins === 1 ? this.coinText : this.coinsText;
 
         const FIREDOG = { x: 100, y: 400, width: 200, height: 200 };
         const PENGUIN = { x: 1430, y: 400, width: 200, height: 200 };
@@ -994,13 +1005,13 @@ export class Map6PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //8
             `${this.penguini}`,
-            `I will need ${this.game.winningCoins} ${this.coinsText} for you to stay in this poisonous cabin!`,
+            `I will need ${this.coinIcon}${this.game.winningCoins} for you to stay in this poisonous cabin!`,
             this.addImage(this.setfiredogNormalBorder(), FIREDOG),
             this.addImage('penguiniGunTalkNormalBorder', PENGUIN, { talking: true }),
         );
         this.addDialogue( //9
             `${this.penguini}`,
-            `It seems you have ${this.playerCoins} ${this.coinText}.`,
+            `It seems you have ${this.coinIcon}${this.playerCoins}.`,
             this.addImage(this.setfiredogNormalBorder(), FIREDOG),
             this.addImage('penguiniGunTalkNormalBorder', PENGUIN, { talking: true }),
         );
@@ -1017,7 +1028,7 @@ export class Map6PenguinIngameCutscene extends PenguiniCutscene {
         // rest of the dialogue
         this.addDialogue( //10
             `${this.firedog}`,
-            `There goes my money... just so I can rest in a poison box...`,
+            `There goes my ${this.coinIcon}${this.coinsLabel}... just so I can rest in a poison box...`,
             this.addImage(this.setfiredogPhewBorder(), FIREDOG, { talking: true }),
             this.addImage('penguiniGunTalkNormalBorder', PENGUIN),
         );
@@ -1151,7 +1162,6 @@ export class BonusMap1PenguinIngameCutscene extends PenguiniCutscene {
 
         this.coinDialogueConditionCutscene = new CoinDialogueConditionCutscene(game);
         const coinConditionDialogues = this.coinDialogueConditionCutscene.checkPlayerCoins();
-        this.coinText = this.playerCoins === 1 ? this.coinText : this.coinsText;
 
         const FIREDOG = { x: 100, y: 400, width: 200, height: 200 };
         const PENGUIN = { x: 1430, y: 400, width: 200, height: 200 };
@@ -1258,13 +1268,13 @@ export class BonusMap1PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //17
             `${this.penguini}`,
-            `I will need ${this.game.winningCoins} ${this.coinsText} for you to stay in this igloo cabin.`,
+            `I will need ${this.coinIcon}${this.game.winningCoins} for you to stay in this igloo cabin.`,
             this.addImage(this.setfiredogNormalBorder(), FIREDOG),
             this.addImage('penguiniGunTalkNormalBorder', PENGUIN, { talking: true }),
         );
         this.addDialogue( //18
             `${this.firedog}`,
-            `Even in weather like this, you still care more about coins than anything else...`,
+            `Even in weather like this, you still care more about ${this.coinIcon}${this.coinsLabel} than anything else...`,
             this.addImage(this.setfiredogCryBorder(), FIREDOG, { talking: true }),
             this.addImage('penguiniGunTalkNormalBorder', PENGUIN),
         );
@@ -1282,7 +1292,7 @@ export class BonusMap1PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //21
             `${this.penguini}`,
-            `It seems you have ${this.playerCoins} ${this.coinText}.`,
+            `It seems you have ${this.coinIcon}${this.playerCoins}.`,
             this.addImage(this.setfiredogNormalBorder(), FIREDOG),
             this.addImage('penguiniGunTalkNormalBorder', PENGUIN, { talking: true }),
         );
@@ -1298,7 +1308,7 @@ export class BonusMap1PenguinIngameCutscene extends PenguiniCutscene {
 
         this.addDialogue( //22
             `${this.firedog}`,
-            `There goes my money... again...`,
+            `There goes my ${this.coinIcon}${this.coinsLabel}... again...`,
             this.addImage(this.setfiredogPhewBorder(), FIREDOG, { talking: true }),
             this.addImage('penguiniGunLaughBorder', PENGUIN),
         );
@@ -1336,7 +1346,6 @@ export class BonusMap2PenguinIngameCutscene extends PenguiniCutscene {
 
         this.coinDialogueConditionCutscene = new CoinDialogueConditionCutscene(game);
         const coinConditionDialogues = this.coinDialogueConditionCutscene.checkPlayerCoins();
-        this.coinText = this.playerCoins === 1 ? this.coinText : this.coinsText;
 
         const FIREDOG = { x: 100, y: 400, width: 200, height: 200 };
         const PENGUIN = { x: 1430, y: 400, width: 200, height: 200 };
@@ -1390,13 +1399,13 @@ export class BonusMap2PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //8
             `${this.penguini}`,
-            `I will need ${this.game.winningCoins} ${this.coinsText} for you to stay in this runic cabin.`,
+            `I will need ${this.coinIcon}${this.game.winningCoins} for you to stay in this runic cabin.`,
             this.addImage(this.setfiredogNormalBorder(), FIREDOG),
             this.addImage('penguiniGunTalkNormalBorder', PENGUIN, { talking: true }),
         );
         this.addDialogue( //9
             `${this.firedog}`,
-            `But my hard-earned money...`,
+            `But my hard-earned ${this.coinIcon}${this.coinsLabel}...`,
             this.addImage(this.setfiredogCryBorder(), FIREDOG, { talking: true }),
             this.addImage('penguiniGunTalkNormalBorder', PENGUIN),
         );
@@ -1414,7 +1423,7 @@ export class BonusMap2PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //12
             `${this.penguini}`,
-            `It seems you have ${this.playerCoins} ${this.coinText}.`,
+            `It seems you have ${this.coinIcon}${this.playerCoins}.`,
             this.addImage(this.setfiredogNormalBorder(), FIREDOG),
             this.addImage('penguiniGunTalkNormalBorder', PENGUIN, { talking: true }),
         );
@@ -1510,7 +1519,6 @@ export class BonusMap3PenguinIngameCutscene extends PenguiniCutscene {
 
         this.coinDialogueConditionCutscene = new CoinDialogueConditionCutscene(game);
         const coinConditionDialogues = this.coinDialogueConditionCutscene.checkPlayerCoins();
-        this.coinText = this.playerCoins === 1 ? this.coinText : this.coinsText;
 
         const FIREDOG = { x: 100, y: 400, width: 200, height: 200 };
         const PENGUIN = { x: 1430, y: 400, width: 200, height: 200 };
@@ -1569,7 +1577,7 @@ export class BonusMap3PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //9
             `${this.penguini}`,
-            `Anyways, if you want to rest inside this galactic cabin, I will need ${this.game.winningCoins} ${this.coinsText}.`,
+            `Anyways, if you want to rest inside this galactic cabin, I will need ${this.coinIcon}${this.game.winningCoins}.`,
             this.addImage(this.setfiredogNormalBorder(), FIREDOG),
             this.addImage('penguiniGunTalkNormalBorder', PENGUIN, { talking: true }),
         );
@@ -1593,7 +1601,7 @@ export class BonusMap3PenguinIngameCutscene extends PenguiniCutscene {
         );
         this.addDialogue( //13
             `${this.penguini}`,
-            `It seems you have ${this.playerCoins} ${this.coinText}.`,
+            `It seems you have ${this.coinIcon}${this.playerCoins}.`,
             this.addImage(this.setfiredogNormalBorder(), FIREDOG),
             this.addImage('penguiniGunTalkNormalBorder', PENGUIN, { talking: true }),
         );
@@ -1692,7 +1700,7 @@ export class CoinDialogueConditionCutscene extends PenguiniCutscene {
         return [
             {
                 character: this.penguini,
-                dialogue: `Hmm... you still have quite a few coins on you.`,
+                dialogue: `Hmm... you still have quite a few ${this.coinIcon}${this.coinsLabel} on you.`,
                 images: [
                     this.addImage(this.setfiredogNormalBorder(), FIREDOG),
                     this.addImage(penguinNormalBorder, PENGUIN, { talking: true }),
@@ -1700,7 +1708,7 @@ export class CoinDialogueConditionCutscene extends PenguiniCutscene {
             },
             {
                 character: this.penguini,
-                dialogue: `I'll be taking those extra coins too.`,
+                dialogue: `I'll be taking those extra ${this.coinIcon}${this.coinsLabel} too.`,
                 images: [
                     this.addImage(this.setfiredogNormalBorder(), FIREDOG),
                     this.addImage(penguinLaughBorder, PENGUIN, { talking: true }),
@@ -2046,7 +2054,7 @@ export class CoinDialogueConditionCutscene extends PenguiniCutscene {
                         },
                         {
                             character: this.penguini,
-                            dialogue: `No money, no entry. Go wander around with the cursed rocks instead.`,
+                            dialogue: `No ${this.coinIcon}${this.coinsLabel}, no entry. Go wander around with the cursed rocks instead.`,
                             images: [
                                 this.addImage(this.setfiredogNormalBorder(), FIREDOG_100),
                                 this.addImage('penguiniGunUpBorder', PENGUIN_1430, { talking: true }),

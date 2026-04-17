@@ -108,6 +108,8 @@ describe('UI', () => {
             enemies: [],
 
             player: {
+                lives: 2,
+                maxLives: 3,
                 isUnderwater: false,
                 isFrozen: false,
                 frozenTimer: 0,
@@ -173,7 +175,7 @@ describe('UI', () => {
             },
 
             time: 125000,
-            maxTime: 60000,
+            maxTimeUnderwater: 60000,
 
             cabin: { isFullyVisible: false },
             gameOver: false,
@@ -188,9 +190,22 @@ describe('UI', () => {
                 },
             },
 
-            maxLives: 3,
-            lives: 2,
         };
+
+        Object.defineProperties(game, {
+            lives: {
+                configurable: true,
+                enumerable: true,
+                get: () => game.player.lives,
+                set: (value) => { game.player.lives = value; },
+            },
+            maxLives: {
+                configurable: true,
+                enumerable: true,
+                get: () => game.player.maxLives,
+                set: (value) => { game.player.maxLives = value; },
+            },
+        });
 
         ui = new UI(game);
         ctx = makeTrackedCtx();
@@ -277,6 +292,7 @@ describe('UI', () => {
 
     describe('draw()', () => {
         it('renders top-level UI sections (coins, bars, timer, energy, lives, abilities)', () => {
+            const spyCoins = jest.spyOn(ui, 'drawCoinsUI');
             const spyDist = jest.spyOn(ui, 'distanceBar');
             const spyBossBar = jest.spyOn(ui, 'bossHealthBar');
             const spyTimer = jest.spyOn(ui, 'timer');
@@ -288,7 +304,7 @@ describe('UI', () => {
 
             ui.draw(ctx);
 
-            expect(ctx.fillText).toHaveBeenCalledWith('Coins: 5', 20, 38);
+            expect(spyCoins).toHaveBeenCalledWith(ctx);
             expect(spyDist).toHaveBeenCalledWith(ctx);
             expect(spyBossBar).toHaveBeenCalledWith(ctx);
             expect(spyTimer).toHaveBeenCalledWith(ctx);
@@ -299,7 +315,7 @@ describe('UI', () => {
     });
 
     describe('drawLives()', () => {
-        it('draws one heart per current life in steady state', () => {
+        it('draws one outlined lives icon in steady state', () => {
             game.lives = 2;
             game.maxLives = 3;
             ui = new UI(game);
@@ -309,10 +325,10 @@ describe('UI', () => {
 
             ui.drawLives(ctx);
 
-            expect(heartDrawCalls()).toHaveLength(2);
+            expect(heartDrawCalls()).toHaveLength(9);
         });
 
-        it('on life loss: blinks the lost heart for lifeBlinkDuration then stops drawing it', () => {
+        it('on life loss: animates the lives icon for lifeBlinkDuration then returns to steady state', () => {
             game.maxLives = 3;
             ui = new UI(game);
             ctx = makeTrackedCtx();
@@ -325,14 +341,14 @@ describe('UI', () => {
             jest.spyOn(ui, 'getUiTime').mockImplementation(() => times[i++]);
 
             ui.drawLives(ctx);
-            expect(heartDrawCalls()).toHaveLength(2);
+            expect(heartDrawCalls()).toHaveLength(1);
 
             ctx.drawImage.mockClear();
             ui.drawLives(ctx);
-            expect(heartDrawCalls()).toHaveLength(1);
+            expect(heartDrawCalls()).toHaveLength(9);
         });
 
-        it('on life gain: pops the new heart for lifeGainDuration then normalizes', () => {
+        it('on life gain: animates the lives icon for lifeGainDuration then normalizes', () => {
             game.maxLives = 3;
             ui = new UI(game);
             ctx = makeTrackedCtx();
@@ -345,12 +361,12 @@ describe('UI', () => {
             jest.spyOn(ui, 'getUiTime').mockImplementation(() => times[i++]);
 
             ui.drawLives(ctx);
-            expect(heartDrawCalls()).toHaveLength(2);
+            expect(heartDrawCalls()).toHaveLength(1);
             expect(ui.lifeGainEndTimes.size).toBeGreaterThan(0);
 
             ctx.drawImage.mockClear();
             ui.drawLives(ctx);
-            expect(heartDrawCalls()).toHaveLength(2);
+            expect(heartDrawCalls()).toHaveLength(9);
             expect(ui.lifeGainEndTimes.size).toBe(0);
         });
     });
@@ -661,31 +677,63 @@ describe('UI', () => {
     });
 
     describe('timer()', () => {
-        it('non-underwater: renders elapsed time and stops ticking sound', () => {
+        it('non-underwater: renders elapsed time', () => {
             game.player.isUnderwater = false;
             game.time = 125000; // 2:05
 
             ui.timer(ctx);
 
-            expect(ctx.fillText).toHaveBeenCalledWith('Time: 2:05', 20, 78);
-            expect(game.audioHandler.mapSoundtrack.stopSound).toHaveBeenCalledWith('timeTickingSound');
-            expect(game.audioHandler.mapSoundtrack.resumeSound).toHaveBeenCalledWith('timeTickingSound');
+            expect(ctx.fillText).toHaveBeenCalledWith('2:05', 0, 0);
         });
 
-        it('underwater: when remaining time is below threshold, activates ticking sound', () => {
+        it('underwater: when remaining time crosses into the next second naturally, activates ticking sound', () => {
             game.player.isUnderwater = true;
-            game.maxTime = 70000;
+            game.player.getUnderwaterRemainingTime = jest.fn(() => 5000);
+            game.player.isUnderwaterCriticalTime = jest.fn(() => true);
+            game.player.isUnderwaterCriticalBlinkOn = jest.fn(() => false);
+            game.player.isUnderwaterCriticalRedPhaseOn = jest.fn(() => true);
+            game.maxTimeUnderwater = 70000;
             game.time = 65000; // remaining = 5000 < 60000
 
             ui.timer(ctx);
+            expect(game.audioHandler.mapSoundtrack.playSound).not.toHaveBeenCalled();
 
-            expect(ui.secondsLeftActivated).toBe(true);
-            expect(game.audioHandler.mapSoundtrack.playSound).toHaveBeenCalledWith('timeTickingSound', true);
+            game.player.getUnderwaterRemainingTime = jest.fn(() => 4990);
+            ui.timer(ctx);
+
+            expect(game.audioHandler.mapSoundtrack.playSound).toHaveBeenCalledWith('timeTicking1Sound', false, true);
+        });
+
+        it('underwater: crossing naturally from above 60 seconds to 59 seconds plays the first warning tick', () => {
+            game.player.isUnderwater = true;
+            game.player.isUnderwaterCriticalTime = jest.fn(() => true);
+            game.player.isUnderwaterCriticalBlinkOn = jest.fn(() => true);
+
+            ui.lastUnderwaterTickRemainingTime = 60050;
+            game.player.getUnderwaterRemainingTime = jest.fn(() => 59990);
+
+            ui.timer(ctx);
+
+            expect(game.audioHandler.mapSoundtrack.playSound).toHaveBeenCalledWith('timeTicking1Sound', false, true);
+        });
+
+        it('underwater: a large remaining-time jump resyncs ticking instead of playing instantly', () => {
+            game.player.isUnderwater = true;
+            game.player.isUnderwaterCriticalTime = jest.fn(() => true);
+            game.player.isUnderwaterCriticalBlinkOn = jest.fn(() => false);
+
+            ui.lastUnderwaterTickRemainingTime = 65500;
+            game.player.getUnderwaterRemainingTime = jest.fn(() => 55500);
+
+            ui.timer(ctx);
+
+            expect(game.audioHandler.mapSoundtrack.playSound).not.toHaveBeenCalled();
+            expect(ui.lastUnderwaterTickRemainingTime).toBe(55500);
         });
 
         it('underwater: above threshold uses black text with white shadow', () => {
             game.player.isUnderwater = true;
-            game.maxTime = 70000;
+            game.maxTimeUnderwater = 70000;
             game.time = 5000; // remaining = 65000 > 60000
 
             ui.timer(ctx);
@@ -696,7 +744,7 @@ describe('UI', () => {
 
         it('underwater: when remaining time is 0 or less, timer styling is red', () => {
             game.player.isUnderwater = true;
-            game.maxTime = 1000;
+            game.maxTimeUnderwater = 1000;
             game.time = 2000;
 
             ui.timer(ctx);
@@ -704,21 +752,30 @@ describe('UI', () => {
             expect(ctx.__assignments.fillStyle).toContain('red');
         });
 
-        it('pauses ticking sound when paused', () => {
+        it('does not trigger underwater ticking when paused', () => {
+            game.player.isUnderwater = true;
+            game.player.getUnderwaterRemainingTime = jest.fn(() => 5000);
+            game.player.isUnderwaterCriticalTime = jest.fn(() => true);
+            game.player.isUnderwaterCriticalBlinkOn = jest.fn(() => false);
             game.menu.pause.isPaused = true;
 
             ui.timer(ctx);
 
-            expect(game.audioHandler.mapSoundtrack.pauseSound).toHaveBeenCalledWith('timeTickingSound');
+            expect(game.audioHandler.mapSoundtrack.playSound).not.toHaveBeenCalledWith('timeTicking1Sound', false, true);
+            expect(game.audioHandler.mapSoundtrack.playSound).not.toHaveBeenCalledWith('timeTicking2Sound', false, true);
         });
 
-        it('stops ticking sound when cabin is visible', () => {
+        it('does not trigger underwater ticking when cabin is visible', () => {
             game.player.isUnderwater = true;
+            game.player.getUnderwaterRemainingTime = jest.fn(() => 5000);
+            game.player.isUnderwaterCriticalTime = jest.fn(() => true);
+            game.player.isUnderwaterCriticalBlinkOn = jest.fn(() => false);
             game.cabin.isFullyVisible = true;
 
             ui.timer(ctx);
 
-            expect(game.audioHandler.mapSoundtrack.stopSound).toHaveBeenCalledWith('timeTickingSound');
+            expect(game.audioHandler.mapSoundtrack.playSound).not.toHaveBeenCalledWith('timeTicking1Sound', false, true);
+            expect(game.audioHandler.mapSoundtrack.playSound).not.toHaveBeenCalledWith('timeTicking2Sound', false, true);
         });
 
         it('renders blue potion center countdown when blue potion is active', () => {
@@ -904,7 +961,7 @@ describe('UI', () => {
 
             const expectedText = '12.3';
             const expectedCx = 170;
-            const expectedCy = 240;
+            const expectedCy = 210;
 
             const hourglassCall = ctx.fillText.mock.calls.find(
                 (c) => c[0] === expectedText && c[1] === expectedCx && c[2] === expectedCy
@@ -927,7 +984,7 @@ describe('UI', () => {
 
             const expectedText = '9.0';
             const expectedCx = 170;
-            const expectedCy = 265;
+            const expectedCy = 235;
 
             const hourglassCall = ctx.fillText.mock.calls.find(
                 (c) => c[0] === expectedText && c[1] === expectedCx && c[2] === expectedCy
@@ -1143,10 +1200,10 @@ describe('UI', () => {
         it('uses correct label letter for each theme', () => {
             const size = ui.negativeStatusUi.size;
             const cases = [
-                { key: 'freeze',    label: 'F' },
-                { key: 'poison',    label: 'P' },
-                { key: 'slow',      label: 'S' },
-                { key: 'confuse',   label: 'C' },
+                { key: 'freeze', label: 'F' },
+                { key: 'poison', label: 'P' },
+                { key: 'slow', label: 'S' },
+                { key: 'confuse', label: 'C' },
                 { key: 'blackHole', label: 'B' },
             ];
 

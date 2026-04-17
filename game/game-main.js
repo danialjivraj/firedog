@@ -42,6 +42,7 @@ import { RecordsMenu } from "./menu/recordsMenu.js";
 import { DeleteProgress, DeleteProgress2 } from "./menu/deleteProgress.js";
 import { SettingsMenu } from "./menu/settingsMenu.js";
 import { ControlsSettingsMenu } from "./menu/controlsSettingsMenu.js";
+import { InterfaceMenu } from "./menu/interfaceMenu.js";
 import { getDefaultKeyBindings } from "./config/keyBindings.js";
 // audios
 import { AudioSettingsMenu } from "./menu/audioSettingsMenu.js";
@@ -90,9 +91,7 @@ export class Game {
         this.canvas = canvas;
         this.width = width;
         this.height = height;
-        // player related
-        this.lives = 5;
-        this.maxLives = 10;
+        // general
         this.speed = 0;
         this.normalSpeed = 6;
         this.groundMargin = 40;
@@ -103,7 +102,7 @@ export class Game {
         this.surplusCoins = 0;
         this.time = 0;
         this.hiddenTime = 0;
-        this.maxTime = 450000;
+        this.maxTimeUnderwater = 450000;
         this.maxParticles = 210;
         this.maxEnemies = 6;
         this.enemyTimer = 0;
@@ -123,6 +122,7 @@ export class Game {
         this.player = new Player(this);
         this.player.currentState = this.player.states[0];
         this.player.currentState.enter();
+        this.uiLayoutStyle = "compact";
         this.input = new InputHandler(this);
         this.UI = new UI(this);
         this.background = null;
@@ -157,6 +157,7 @@ export class Game {
             settings: new SettingsMenu(this),
             audioSettings: new AudioSettingsMenu(this),
             controlsSettings: new ControlsSettingsMenu(this),
+            interfaceSettings: new InterfaceMenu(this),
             deleteProgress: new DeleteProgress(this),
             deleteProgress2: new DeleteProgress2(this),
             pause: new PauseMenu(this),
@@ -623,7 +624,10 @@ export class Game {
                 }
             } else if (!this.gameOver) {
                 this.time += deltaTime;
-                if (this.time > this.maxTime && this.player.isUnderwater) this.gameOver = true;
+                if (this.time > this.maxTimeUnderwater && this.player.isUnderwater) {
+                    this.audioHandler.firedogSFX.playSound('gettingHit', false, true);
+                    this.gameOver = true;
+                }
             } else {
                 this.speed = 0;
             }
@@ -820,8 +824,8 @@ export class Game {
                         this.player.clearAllStatusEffects();
                         this.player.energy = 100;
                         const targetLives = this.menu.difficulty.getConfiguredLives();
-                        if (this.lives < targetLives) {
-                            this.lives = targetLives;
+                        if (this.player.lives < targetLives) {
+                            this.player.lives = targetLives;
                         }
 
                         this.UI.dismissTip();

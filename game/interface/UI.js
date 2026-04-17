@@ -1,4 +1,5 @@
 import { TIP_PHRASE_COLORS, MAP_TIPS } from './tips.js';
+import { drawCoinIcon } from './hudIcons.js';
 
 export class UI {
     constructor(game) {
@@ -18,14 +19,18 @@ export class UI {
         this.dashingUI = document.getElementById('dashingUI');
 
         this.secondsLeft = 60000;
-        this.secondsLeftActivated = false;
-
         this.timerFlash = null; // { color, endTime }
+        this.nextUnderwaterTickSoundIndex = 0;
+        this.lastUnderwaterTickRemainingTime = null;
 
         this.uiTime = 0;
         this.uiLastRealTime = null;
+        this.prevCoins = this.game.coins;
+        this.coinPulseDuration = 220;
+        this.coinPulseEndTime = 0;
+        this.coinPulseType = null;
 
-        this.prevLives = this.game.lives;
+        this.prevLives = this.game.player.lives;
 
         this.lifeBlinkIndex = -1;
         this.lifeBlinkEndTime = 0;
@@ -36,7 +41,7 @@ export class UI {
 
         this.energyBar = {
             x: 20,
-            y: 92 + this.topLeftYShift,
+            y: 93 + this.topLeftYShift,
             w: 240,
             h: 32,
             radius: 10,
@@ -57,16 +62,16 @@ export class UI {
 
         this._abilityUiLayout = {
             x: 25,
-            y: 168 + this.topLeftYShift,
+            y: 138 + this.topLeftYShift,
             size: 50,
             gap: 10,
-            bottomY: 168 + this.topLeftYShift + 50,
+            bottomY: 138 + this.topLeftYShift + 50,
         };
 
         this.anchors = {
-            coins: { targetX: 120, targetY: 30 + this.topLeftYShift },
-            timer: { targetX: 115, targetY: 78 + this.topLeftYShift },
-            energy: { targetX: 250, targetY: 110 + this.topLeftYShift },
+            coins: { targetX: 96, targetY: 30 + this.topLeftYShift },
+            timer: { targetX: 96, targetY: 78 + this.topLeftYShift },
+            energy: { targetX: 250, targetY: 111 + this.topLeftYShift },
         };
 
         this.tipState = {
@@ -80,6 +85,20 @@ export class UI {
             holdMs: 10000,
             fadeOutMs: 800,
         };
+    }
+
+    getHudLayoutStyle() {
+        return this.game?.uiLayoutStyle === 'legacy' ? 'legacy' : 'compact';
+    }
+
+    withHudLayoutStyle(style, callback) {
+        const previous = this.game.uiLayoutStyle;
+        this.game.uiLayoutStyle = style === 'legacy' ? 'legacy' : 'compact';
+        try {
+            return callback?.();
+        } finally {
+            this.game.uiLayoutStyle = previous;
+        }
     }
 
     getUiTime() {
@@ -103,11 +122,26 @@ export class UI {
     syncLivesState() {
         const now = this.getUiTime();
 
-        this.prevLives = this.game.lives;
+        this.prevLives = this.game.player.lives;
 
         this.lifeBlinkIndex = -1;
         this.lifeBlinkEndTime = now;
         if (this.lifeGainEndTimes) this.lifeGainEndTimes.clear();
+    }
+
+    syncCoinsState() {
+        this.prevCoins = this.game.coins ?? 0;
+        this.coinPulseEndTime = 0;
+        this.coinPulseType = null;
+    }
+
+    resetTransientUiState() {
+        this.timerFlash = null;
+        this.nextUnderwaterTickSoundIndex = 0;
+        this.lastUnderwaterTickRemainingTime = null;
+        this.game.audioHandler.mapSoundtrack.stopSound('timeTicking1Sound');
+        this.game.audioHandler.mapSoundtrack.stopSound('timeTicking2Sound');
+        this.syncCoinsState();
     }
 
     draw(context) {
@@ -121,7 +155,7 @@ export class UI {
         context.fillStyle = this.game.fontColor;
 
         // coins score
-        context.fillText('Coins: ' + this.game.coins, 20, 38 + this.topLeftYShift);
+        this.drawCoinsUI(context);
 
         // bars
         this.distanceBar(context);
@@ -149,11 +183,66 @@ export class UI {
         this.drawTip(context);
     }
 
+    drawLivesCountText(context, x, centerY, value, {
+        scale = 1,
+        fillStyle = '#fff5bf',
+        glowColor = null,
+        glowBlur = 0,
+    } = {}) {
+        const xFont = '22px ' + this.fontFamily;
+        const valueFont = '29px ' + this.fontFamily;
+
+        context.save();
+        context.textAlign = 'left';
+        context.textBaseline = 'alphabetic';
+        context.lineWidth = 2;
+        context.strokeStyle = 'rgba(0, 0, 0, 0.85)';
+        context.fillStyle = fillStyle;
+
+        context.font = xFont;
+        const xMetrics = context.measureText('x');
+
+        context.font = valueFont;
+        const valueMetrics = context.measureText(String(value));
+
+        const ascent = Math.max(
+            xMetrics.actualBoundingBoxAscent ?? 16,
+            valueMetrics.actualBoundingBoxAscent ?? 21
+        );
+        const descent = Math.max(
+            xMetrics.actualBoundingBoxDescent ?? 5,
+            valueMetrics.actualBoundingBoxDescent ?? 6
+        );
+        const spacing = 2;
+        const totalWidth = xMetrics.width + spacing + valueMetrics.width;
+        const baselineY = centerY + ((ascent - descent) / 2);
+
+        context.translate(x + totalWidth / 2, centerY);
+        context.scale(scale, scale);
+
+        context.shadowColor = glowColor ?? 'rgba(0, 0, 0, 0.9)';
+        context.shadowBlur = glowBlur || 3;
+        context.shadowOffsetX = glowColor ? 0 : 1;
+        context.shadowOffsetY = glowColor ? 0 : 1;
+
+        context.font = xFont;
+        context.fillStyle = '#ffffff';
+        context.strokeText('x', -totalWidth / 2, baselineY - centerY);
+        context.fillText('x', -totalWidth / 2, baselineY - centerY);
+
+        context.font = valueFont;
+        context.fillStyle = '#ffffff';
+        context.strokeText(String(value), -totalWidth / 2 + xMetrics.width + spacing, baselineY - centerY);
+        context.fillText(String(value), -totalWidth / 2 + xMetrics.width + spacing, baselineY - centerY);
+        context.restore();
+    }
+
     drawLives(context) {
         const now = this.getUiTime();
+        const hudStyle = this.getHudLayoutStyle();
 
         const prev = this.prevLives;
-        const curr = this.game.lives;
+        const curr = this.game.player.lives;
 
         if (curr < prev) {
             this.lifeBlinkIndex = Math.max(0, prev - 1);
@@ -178,66 +267,153 @@ export class UI {
             }
         }
 
-        let gainMaxIndex = -1;
-        for (const idx of this.lifeGainEndTimes.keys()) {
-            if (idx > gainMaxIndex) gainMaxIndex = idx;
-        }
+        const isBlinkingLostLife = now < this.lifeBlinkEndTime && this.lifeBlinkIndex >= curr;
+        const isGainingLife = [...this.lifeGainEndTimes.values()].some((endTime) => now < endTime);
 
-        const heartsToDraw = Math.min(
-            this.game.maxLives,
-            Math.max(curr, this.lifeBlinkIndex + 1, gainMaxIndex + 1)
-        );
+        if (hudStyle === 'legacy') {
+            let gainMaxIndex = -1;
+            for (const idx of this.lifeGainEndTimes.keys()) {
+                if (idx > gainMaxIndex) gainMaxIndex = idx;
+            }
 
-        for (let i = 0; i < heartsToDraw; i++) {
-            const baseX = 25 * i + 20;
-            const baseY = 131 + this.topLeftYShift;
+            const maxLives = this.game.maxLives ?? this.game.player?.maxLives ?? curr;
+            const heartsToDraw = Math.min(
+                maxLives,
+                Math.max(curr, this.lifeBlinkIndex + 1, gainMaxIndex + 1)
+            );
 
-            const isBlinkingLostHeart =
-                i === this.lifeBlinkIndex &&
-                now < this.lifeBlinkEndTime &&
-                i >= curr;
+            for (let i = 0; i < heartsToDraw; i++) {
+                const baseX = 25 * i + 20;
+                const baseY = 131 + this.topLeftYShift;
 
-            const gainEndTime = this.lifeGainEndTimes.get(i);
-            const isGainingHeart = gainEndTime != null && now < gainEndTime && i < curr;
+                const isBlinkingLostHeart =
+                    i === this.lifeBlinkIndex &&
+                    now < this.lifeBlinkEndTime &&
+                    i >= curr;
 
-            context.save();
+                const gainEndTime = this.lifeGainEndTimes.get(i);
+                const isGainingHeart = gainEndTime != null && now < gainEndTime && i < curr;
 
-            if (isBlinkingLostHeart) {
-                const t = 1 - (this.lifeBlinkEndTime - now) / this.lifeBlinkDuration;
-                const pulse = 0.9 + 0.2 * Math.sin(t * Math.PI * 4);
+                context.save();
 
-                context.translate(baseX + 12.5, baseY + 12.5);
-                context.scale(pulse, pulse);
-
-                context.shadowColor = 'red';
-                context.shadowBlur = 18;
-                context.shadowOffsetX = 0;
-                context.shadowOffsetY = 0;
-
-                context.drawImage(this.livesImage, -12.5, -12.5, 25, 25);
-            } else if (i < curr) {
-                if (isGainingHeart) {
-                    const t = 1 - (gainEndTime - now) / this.lifeGainDuration;
-
-                    const pop = 1.35 - 0.35 * t;
-                    const pulse = 1 + 0.08 * Math.sin(t * Math.PI * 6);
+                if (isBlinkingLostHeart) {
+                    const t = 1 - (this.lifeBlinkEndTime - now) / this.lifeBlinkDuration;
+                    const pulse = 0.9 + 0.2 * Math.sin(t * Math.PI * 4);
 
                     context.translate(baseX + 12.5, baseY + 12.5);
-                    context.scale(pop * pulse, pop * pulse);
+                    context.scale(pulse, pulse);
 
-                    context.shadowColor = 'lime';
+                    context.shadowColor = 'red';
                     context.shadowBlur = 18;
                     context.shadowOffsetX = 0;
                     context.shadowOffsetY = 0;
 
                     context.drawImage(this.livesImage, -12.5, -12.5, 25, 25);
-                } else {
-                    context.drawImage(this.livesImage, baseX, baseY, 25, 25);
+                } else if (i < curr) {
+                    if (isGainingHeart) {
+                        const t = 1 - (gainEndTime - now) / this.lifeGainDuration;
+
+                        const pop = 1.35 - 0.35 * t;
+                        const pulse = 1 + 0.08 * Math.sin(t * Math.PI * 6);
+
+                        context.translate(baseX + 12.5, baseY + 12.5);
+                        context.scale(pop * pulse, pop * pulse);
+
+                        context.shadowColor = 'lime';
+                        context.shadowBlur = 18;
+                        context.shadowOffsetX = 0;
+                        context.shadowOffsetY = 0;
+
+                        context.drawImage(this.livesImage, -12.5, -12.5, 25, 25);
+                    } else {
+                        context.drawImage(this.livesImage, baseX, baseY, 25, 25);
+                    }
                 }
+
+                context.restore();
             }
 
-            context.restore();
+            if (now >= this.lifeBlinkEndTime) {
+                this.lifeBlinkIndex = -1;
+            }
+            return;
         }
+
+        const baseX = 154;
+        const baseY = 57 + this.topLeftYShift;
+        const iconSize = 25;
+        const centerX = baseX + iconSize / 2;
+        const centerY = baseY + iconSize / 2;
+        const outlineOffsets = [
+            [-1, 0],
+            [1, 0],
+            [0, -1],
+            [0, 1],
+            [-1, -1],
+            [1, -1],
+            [-1, 1],
+            [1, 1],
+        ];
+
+        context.save();
+        context.shadowColor = 'transparent';
+        context.shadowBlur = 0;
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+
+        if (isBlinkingLostLife) {
+            const t = 1 - (this.lifeBlinkEndTime - now) / this.lifeBlinkDuration;
+            const pulse = 0.9 + 0.2 * Math.sin(t * Math.PI * 4);
+
+            context.translate(centerX, centerY);
+            context.scale(pulse, pulse);
+            context.shadowColor = 'red';
+            context.shadowBlur = 18;
+            context.drawImage(this.livesImage, -iconSize / 2, -iconSize / 2, iconSize, iconSize);
+        } else if (isGainingLife) {
+            const activeEndTime = Math.max(...this.lifeGainEndTimes.values());
+            const t = 1 - (activeEndTime - now) / this.lifeGainDuration;
+            const pop = 1.35 - 0.35 * t;
+            const pulse = 1 + 0.08 * Math.sin(t * Math.PI * 6);
+
+            context.translate(centerX, centerY);
+            context.scale(pop * pulse, pop * pulse);
+            context.shadowColor = 'lime';
+            context.shadowBlur = 18;
+            context.drawImage(this.livesImage, -iconSize / 2, -iconSize / 2, iconSize, iconSize);
+        } else {
+            context.save();
+            context.filter = 'brightness(0) invert(1)';
+            for (const [ox, oy] of outlineOffsets) {
+                context.drawImage(this.livesImage, baseX + ox, baseY + oy, iconSize, iconSize);
+            }
+            context.restore();
+            context.drawImage(this.livesImage, baseX, baseY, iconSize, iconSize);
+        }
+        context.restore();
+
+        let textScale = 1;
+        let textGlowColor = null;
+        let textGlowBlur = 0;
+
+        if (isBlinkingLostLife) {
+            const t = 1 - (this.lifeBlinkEndTime - now) / this.lifeBlinkDuration;
+            textScale = 0.95 + 0.14 * Math.sin(t * Math.PI * 4);
+            textGlowColor = 'red';
+            textGlowBlur = 14;
+        } else if (isGainingLife) {
+            const activeEndTime = Math.max(...this.lifeGainEndTimes.values());
+            const t = 1 - (activeEndTime - now) / this.lifeGainDuration;
+            textScale = 1 + 0.12 * Math.sin(t * Math.PI * 6);
+            textGlowColor = 'lime';
+            textGlowBlur = 14;
+        }
+
+        this.drawLivesCountText(context, baseX + 31, centerY + 2, curr, {
+            scale: textScale,
+            glowColor: textGlowColor,
+            glowBlur: textGlowBlur,
+        });
 
         if (now >= this.lifeBlinkEndTime) {
             this.lifeBlinkIndex = -1;
@@ -782,29 +958,40 @@ export class UI {
         context.restore();
     }
 
-    triggerTimerFlash(color, durationMs = 1100) {
-        this.timerFlash = { color, endTime: this.getUiTime() + durationMs };
+    triggerTimerFlash(color, pulseCount = 5, pulseDurationMs = 260) {
+        const startTime = this.getUiTime();
+        this.timerFlash = {
+            color,
+            startTime,
+            pulseCount,
+            pulseDurationMs,
+            endTime: startTime + (pulseCount * pulseDurationMs),
+        };
     }
 
     timer(context) {
         context.font = this.fontSize * 1 + 'px ' + this.fontFamily;
         let formattedTime;
         let time;
+        const player = this.game.player;
+        const isUnderwater = !!player?.isUnderwater;
+        const criticalBlinkOn = !!player?.isUnderwaterCriticalBlinkOn?.();
+        const inCriticalBlink = !!player?.isUnderwaterCriticalTime?.();
 
-        if (this.game.player.isUnderwater) {
-            time = Math.max(this.game.maxTime - this.game.time, 0);
+        if (isUnderwater) {
+            time = player.getUnderwaterRemainingTime?.() ?? Math.max(this.game.maxTimeUnderwater - this.game.time, 0);
 
-            let dynamicColor = 'red';
-            if (time <= this.secondsLeft && time % 2000 < 1000) {
-                dynamicColor = 'white';
+            let dynamicColor = '#FF5555';
+            if (criticalBlinkOn) {
+                dynamicColor = '#88CCFF';
             }
             context.save();
 
-            if (dynamicColor === 'red') {
+            if (dynamicColor === '#FF5555') {
                 context.fillStyle = 'red';
                 context.shadowColor = 'black';
             } else {
-                context.fillStyle = 'white';
+                context.fillStyle = dynamicColor;
                 context.shadowColor = 'black';
             }
             if (time <= 0) {
@@ -815,7 +1002,7 @@ export class UI {
             time = this.game.time;
         }
 
-        if (this.game.player.isUnderwater && time > this.secondsLeft) {
+        if (isUnderwater && time > this.secondsLeft) {
             context.fillStyle = 'black';
             context.shadowColor = 'white';
         }
@@ -830,34 +1017,84 @@ export class UI {
 
         const now = this.getUiTime();
         const flashActive = this.timerFlash && now < this.timerFlash.endTime;
-        const inCriticalBlink = this.game.player.isUnderwater && time <= this.secondsLeft;
-        const blinkOn = flashActive && !inCriticalBlink && Math.floor(now / 150) % 2 === 0;
-        if (blinkOn) {
-            context.save();
-            context.fillStyle = this.timerFlash.color;
-            context.shadowColor = 'black';
-        }
-        context.fillText('Time: ' + formattedTime, 20, 78 + this.topLeftYShift);
-        if (blinkOn) {
-            context.restore();
+        let panelTextColor = 'white';
+        let panelBorderColor = 'rgba(255, 255, 255, 0.4)';
+        let flashPulseScale = 1;
+
+        if (isUnderwater) {
+            if (time <= 0) {
+                panelTextColor = '#FF5555';
+                panelBorderColor = 'rgba(255, 60, 60, 0.85)';
+            } else if (time <= this.secondsLeft) {
+                panelTextColor = criticalBlinkOn ? '#88CCFF' : '#FF5555';
+                panelBorderColor = 'rgba(255, 60, 60, 0.85)';
+            } else {
+                panelTextColor = '#88CCFF';
+                panelBorderColor = 'rgba(80, 160, 255, 0.6)';
+            }
         }
 
-        if (this.game.player.isUnderwater && time <= this.secondsLeft && time > this.secondsLeft - 60000) {
-            this.secondsLeftActivated = true;
-            this.game.audioHandler.mapSoundtrack.playSound('timeTickingSound', true);
+        if (flashActive && !inCriticalBlink) {
+            const flashElapsed = now - this.timerFlash.startTime;
+            const pulseDurationMs = this.timerFlash.pulseDurationMs;
+            const pulseLocalT = (flashElapsed % pulseDurationMs) / pulseDurationMs;
+            const blinkOn = pulseLocalT < 0.5;
+
+            if (blinkOn) {
+                panelTextColor = this.timerFlash.color;
+                panelBorderColor = this.timerFlash.color;
+            }
+
+            flashPulseScale = 1 + 0.08 * Math.sin(pulseLocalT * Math.PI);
+        }
+
+        this._drawTimerPanel(context, formattedTime, panelTextColor, flashPulseScale);
+
+        const canTrackUnderwaterWarning =
+            isUnderwater &&
+            time > 0 &&
+            !this.game.cabin.isFullyVisible &&
+            !this.game.gameOver;
+
+        const canPlayUnderwaterTick =
+            isUnderwater &&
+            inCriticalBlink &&
+            time > 0 &&
+            !this.game.cabin.isFullyVisible &&
+            !this.game.gameOver &&
+            !this.game.menu.pause.isPaused;
+
+        if (canPlayUnderwaterTick) {
+            const warningTimeJumped =
+                this.lastUnderwaterTickRemainingTime != null &&
+                Math.abs(time - this.lastUnderwaterTickRemainingTime) >= 5000;
+
+            const enteredCriticalNaturally =
+                this.lastUnderwaterTickRemainingTime != null &&
+                this.lastUnderwaterTickRemainingTime > this.secondsLeft &&
+                time <= this.secondsLeft &&
+                !warningTimeJumped;
+            const previousSecond = this.lastUnderwaterTickRemainingTime == null
+                ? null
+                : Math.floor(this.lastUnderwaterTickRemainingTime / 1000);
+            const currentSecond = Math.floor(time / 1000);
+            const crossedSecondBoundaryNaturally =
+                previousSecond != null &&
+                currentSecond < previousSecond &&
+                !warningTimeJumped;
+
+            if (enteredCriticalNaturally || crossedSecondBoundaryNaturally) {
+                const tickSound = this.nextUnderwaterTickSoundIndex === 0 ? 'timeTicking1Sound' : 'timeTicking2Sound';
+                this.game.audioHandler.mapSoundtrack.playSound(tickSound, false, true);
+                this.nextUnderwaterTickSoundIndex = this.nextUnderwaterTickSoundIndex === 0 ? 1 : 0;
+            }
+            this.lastUnderwaterTickRemainingTime = time;
+        } else if (canTrackUnderwaterWarning) {
+            this.lastUnderwaterTickRemainingTime = time;
         } else {
-            this.game.audioHandler.mapSoundtrack.stopSound('timeTickingSound');
-            this.secondsLeftActivated = false;
+            this.lastUnderwaterTickRemainingTime = null;
         }
-        if (this.game.cabin.isFullyVisible || this.game.gameOver) {
-            this.game.audioHandler.mapSoundtrack.stopSound('timeTickingSound');
-        }
-        if (this.game.menu.pause.isPaused) {
-            this.game.audioHandler.mapSoundtrack.pauseSound('timeTickingSound');
-        } else {
-            this.game.audioHandler.mapSoundtrack.resumeSound('timeTickingSound');
-        }
-        if (this.game.player.isUnderwater) {
+        if (isUnderwater) {
             context.restore();
         }
 
@@ -893,6 +1130,149 @@ export class UI {
 
             context.restore();
         }
+    }
+
+    drawCoinsUI(context) {
+        context.save();
+        context.shadowBlur = 0;
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+
+        const now = this.getUiTime();
+        const currentCoins = this.game.coins ?? 0;
+        if (currentCoins > this.prevCoins) {
+            this.coinPulseEndTime = now + this.coinPulseDuration;
+            this.coinPulseType = 'gain';
+        } else if (currentCoins < this.prevCoins) {
+            this.coinPulseEndTime = now + this.coinPulseDuration;
+            this.coinPulseType = 'loss';
+        }
+        this.prevCoins = currentCoins;
+
+        const coinScale = this.coinPulseEndTime > now
+            ? 1 + 0.12 * Math.sin((1 - ((this.coinPulseEndTime - now) / this.coinPulseDuration)) * Math.PI)
+            : 1;
+        const isLossPulse = this.coinPulseEndTime > now && this.coinPulseType === 'loss';
+
+        const panelX = 20;
+        const panelY = 7 + this.topLeftYShift;
+        const panelH = 40;
+        const iconD = 24;
+        const paddingL = 10;
+        const gap = 11;
+        const font = '29px ' + this.fontFamily;
+
+        context.font = font;
+        const coinText = '' + this.game.coins;
+
+        // Coin icon
+        const iconR = iconD / 2;
+        const cx = panelX + paddingL + iconR;
+        const cy = panelY + panelH / 2;
+        drawCoinIcon(context, cx, cy, iconR, { isLoss: isLossPulse, scale: coinScale });
+
+        const valueX = panelX + paddingL + iconD + gap + 5;
+        const valueY = cy + 2;
+
+        // Coin count
+        context.save();
+        context.translate(valueX, valueY);
+        context.scale(coinScale, coinScale);
+        context.font = font;
+        context.textAlign = 'left';
+        context.textBaseline = 'middle';
+        context.fillStyle = isLossPulse ? '#ff6f6f' : '#FFD15A';
+        context.strokeStyle = isLossPulse ? 'rgba(90, 12, 12, 0.92)' : 'rgba(90, 55, 0, 0.8)';
+        context.lineWidth = 2;
+        context.shadowColor = 'rgba(0, 0, 0, 0.9)';
+        context.shadowBlur = 3 + ((coinScale - 1) * 20);
+        context.shadowOffsetX = 1;
+        context.shadowOffsetY = 1;
+        context.strokeText(coinText, 0, 0);
+        context.fillText(coinText, 0, 0);
+        context.restore();
+
+        context.restore();
+    }
+
+    _drawTimerPanel(context, formattedTime, textColor, valueScale = 1) {
+        context.save();
+        context.shadowBlur = 0;
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+
+        const panelX = 20;
+        const panelY = 50 + this.topLeftYShift;
+        const panelH = 40;
+        const iconD = 24;
+        const paddingL = 10;
+        const gap = 11;
+        const font = '29px ' + this.fontFamily;
+
+        context.font = font;
+        // Clock icon
+        const iconR = iconD / 2;
+        const icx = panelX + paddingL + iconR;
+        const icy = panelY + panelH / 2;
+
+        context.save();
+        context.translate(icx, icy);
+        context.scale(valueScale, valueScale);
+        context.beginPath();
+        context.arc(0, 0, iconR, 0, Math.PI * 2);
+        context.fillStyle = 'rgba(255, 255, 255, 0.08)';
+        context.fill();
+        context.strokeStyle = textColor;
+        context.lineWidth = 1.8;
+        context.stroke();
+
+        context.lineCap = 'round';
+        context.strokeStyle = textColor;
+
+        const hourAngle = -Math.PI / 2 - Math.PI / 3;
+        context.beginPath();
+        context.lineWidth = 1.5;
+        context.moveTo(0, 0);
+        context.lineTo(iconR * 0.5 * Math.cos(hourAngle), iconR * 0.5 * Math.sin(hourAngle));
+        context.stroke();
+
+        const minAngle = -Math.PI / 2 + Math.PI / 3;
+        context.beginPath();
+        context.lineWidth = 1;
+        context.moveTo(0, 0);
+        context.lineTo(iconR * 0.7 * Math.cos(minAngle), iconR * 0.7 * Math.sin(minAngle));
+        context.stroke();
+
+        context.beginPath();
+        context.arc(0, 0, 1.5, 0, Math.PI * 2);
+        context.fillStyle = textColor;
+        context.fill();
+        context.restore();
+
+        const valueX = panelX + paddingL + iconD + gap + 4;
+        const valueY = icy + 2;
+
+        // Time text
+        context.save();
+        context.translate(valueX, valueY);
+        context.scale(valueScale, valueScale);
+        context.font = font;
+        context.textAlign = 'left';
+        context.textBaseline = 'middle';
+        context.fillStyle = textColor;
+        context.strokeStyle = textColor === '#111111'
+            ? 'rgba(255,255,255,0.55)'
+            : 'rgba(0, 0, 0, 0.85)';
+        context.lineWidth = 2;
+        context.shadowColor = 'rgba(0, 0, 0, 0.9)';
+        context.shadowBlur = 3 + ((valueScale - 1) * 24);
+        context.shadowOffsetX = 1;
+        context.shadowOffsetY = 1;
+        context.strokeText(formattedTime, 0, 0);
+        context.fillText(formattedTime, 0, 0);
+        context.restore();
+
+        context.restore();
     }
 
     roundedRectPath(ctx, x, y, w, h, r) {
@@ -1005,6 +1385,8 @@ export class UI {
         ctx.lineJoin = 'round';
         ctx.shadowColor = 'transparent';
         ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
 
         for (let i = 0; i < segments; i++) {
             const p0 = (i / segments) * perim;
@@ -1060,6 +1442,10 @@ export class UI {
         const clipSize = size - half * 2;
 
         ctx.save();
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
         this.roundedRectPath(ctx, clipX, clipY, clipSize, clipSize, Math.max(0, frame.radius - half));
         ctx.clip();
 
@@ -1102,6 +1488,8 @@ export class UI {
             ctx.save();
             ctx.shadowColor = 'transparent';
             ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
             ctx.globalAlpha = 1;
             ctx.lineWidth = frame.strokeWidth;
             ctx.strokeStyle = borderColor;
@@ -1115,7 +1503,8 @@ export class UI {
         const maxTextWidth = 50;
         const firedogBorderSize = 50;
         const spaceBetweenAbilities = 10;
-        const yPosition = 168 + this.topLeftYShift;
+        const hudStyle = this.getHudLayoutStyle();
+        const yPosition = (hudStyle === 'legacy' ? 168 : 138) + this.topLeftYShift;
 
         const player = this.game.player;
         const frozen = !!player.isFrozen;
@@ -1449,7 +1838,8 @@ export class UI {
             context.shadowColor = 'black';
             context.font = 'bold 16px Arial';
             context.textAlign = 'right';
-            context.fillText(String(charges), dashX + firedogBorderSize - 4, yPosition + 16);
+            context.textBaseline = 'top';
+            context.fillText(String(charges), dashX + firedogBorderSize - 4, yPosition + 3);
             context.restore();
         }
 
@@ -1535,10 +1925,10 @@ export class UI {
         }
 
         this._abilityUiLayout = {
-            x: divingX,
+            x: 25,
             y: yPosition,
-            size: firedogBorderSize,
-            gap: spaceBetweenAbilities,
+            size: 50,
+            gap: 10,
             bottomY: abilityBottomY,
         };
     }
@@ -1745,7 +2135,28 @@ export class UI {
     }
 
     // for how to play menu
-    drawTopLeftOnly(context) {
+    drawTopLeftOnly(context, options = {}) {
+        const previewCoins = options.previewCoins ?? 17;
+        const previewLives = options.previewLives ?? 5;
+        const previewTime = options.previewTime ?? 157000;
+        const previewPlayerPatch = options.previewPlayerPatch ?? null;
+        const drawAbilitiesWithPreviewState = options.drawAbilitiesWithPreviewState === true;
+
+        const originalCoins = this.game.coins;
+        const originalTime = this.game.time;
+        const originalLives = this.game.player?.lives;
+        const originalPlayerValues = new Map();
+        const originalPrevCoins = this.prevCoins;
+        const originalCoinPulseEndTime = this.coinPulseEndTime;
+        const originalCoinPulseType = this.coinPulseType;
+        const originalPrevLives = this.prevLives;
+        const originalLifeBlinkIndex = this.lifeBlinkIndex;
+        const originalLifeBlinkEndTime = this.lifeBlinkEndTime;
+        const originalLifeGainEndTimes = new Map(this.lifeGainEndTimes);
+        const originalTimerFlash = this.timerFlash;
+        const originalSmoothEnergy = this._smoothEnergy;
+        const originalSmoothEnergyTime = this._smoothEnergyTime;
+
         context.save();
         context.shadowOffsetX = 2;
         context.shadowOffsetY = 2;
@@ -1755,30 +2166,62 @@ export class UI {
         context.textAlign = 'left';
         context.fillStyle = this.game.fontColor;
 
-        context.fillText('Coins: ' + 17, 20, 38 + this.topLeftYShift);
+        this.game.coins = previewCoins;
+        this.game.time = previewTime;
 
-        const time = 157000;
-        let minutes = Math.floor(time / 60000);
-        let seconds = Math.floor((time % 60000) / 1000);
-        if (seconds === 60) {
-            seconds = 0;
-            minutes += 1;
+        if (this.game.player) {
+            this.game.player.lives = previewLives;
+            if (previewPlayerPatch && typeof previewPlayerPatch === 'object') {
+                for (const [key, value] of Object.entries(previewPlayerPatch)) {
+                    originalPlayerValues.set(key, this.game.player[key]);
+                    this.game.player[key] = value;
+                }
+            }
         }
-        const formattedTime = `${minutes}:${(seconds < 10 ? '0' : '') + seconds}`;
-        context.fillText('Time: ' + formattedTime, 20, 78 + this.topLeftYShift);
 
+        this.prevCoins = previewCoins;
+        this.coinPulseEndTime = 0;
+        this.coinPulseType = null;
+        this.prevLives = previewLives;
+        this.lifeBlinkIndex = -1;
+        this.lifeBlinkEndTime = 0;
+        this.lifeGainEndTimes.clear();
+        this.timerFlash = null;
+        if (this.game.player) {
+            const previewEnergy = Number.isFinite(Number(this.game.player.energy)) ? Number(this.game.player.energy) : 100;
+            this._smoothEnergy = previewEnergy;
+            this._smoothEnergyTime = Date.now();
+        }
+
+        this.drawCoinsUI(context);
+        this.timer(context);
         if (this.game.player) this.energy(context);
-
-        const headsToDraw = 5;
-        for (let i = 0; i < headsToDraw; i++) {
-            const x = 25 * i + 20;
-            const y = 131 + this.topLeftYShift;
-            context.drawImage(this.livesImage, x, y, 25, 25);
-        }
+        if (this.game.player) this.drawLives(context);
+        if (drawAbilitiesWithPreviewState && this.game.player) this.firedogAbilityUI(context);
 
         context.restore();
 
-        if (this.game.player) this.firedogAbilityUI(context);
+        this.game.coins = originalCoins;
+        this.game.time = originalTime;
+        if (this.game.player && typeof originalLives === 'number') {
+            this.game.player.lives = originalLives;
+            for (const [key, value] of originalPlayerValues.entries()) {
+                this.game.player[key] = value;
+            }
+        }
+
+        this.prevCoins = originalPrevCoins;
+        this.coinPulseEndTime = originalCoinPulseEndTime;
+        this.coinPulseType = originalCoinPulseType;
+        this.prevLives = originalPrevLives;
+        this.lifeBlinkIndex = originalLifeBlinkIndex;
+        this.lifeBlinkEndTime = originalLifeBlinkEndTime;
+        this.lifeGainEndTimes = originalLifeGainEndTimes;
+        this.timerFlash = originalTimerFlash;
+        this._smoothEnergy = originalSmoothEnergy;
+        this._smoothEnergyTime = originalSmoothEnergyTime;
+
+        if (!drawAbilitiesWithPreviewState && this.game.player) this.firedogAbilityUI(context);
     }
 
     drawTutorialProgressBar(context, percentage = 75, colour = '#2ecc71') {
@@ -1852,6 +2295,14 @@ export class UI {
         context.restore();
     }
 
+    _measureTipText(context, text) {
+        const coinIconWidth = 1 + 6 * 2 + 3; // leadingGap + diameter + trailingGap
+        const stripped = text.replace(/[\uE001\uE002]/g, '');
+        const iconCount = text.length - stripped.length;
+        if (iconCount === 0) return context.measureText(text).width;
+        return context.measureText(stripped).width + iconCount * coinIconWidth;
+    }
+
     _buildTipColorSpans(text) {
         const spans = [];
         const keys = Object.keys(TIP_PHRASE_COLORS).sort((a, b) => b.length - a.length);
@@ -1874,21 +2325,37 @@ export class UI {
 
     _renderColoredTipLine(context, lineText, centerX, textY, spans) {
         if (!spans) spans = this._buildTipColorSpans(lineText);
-        if (spans.length === 0) {
+
+        const COIN = '\uE001';
+        const CREDIT_COIN = '\uE002';
+        const hasIcon = lineText.includes(COIN) || lineText.includes(CREDIT_COIN);
+
+        if (!hasIcon && spans.length === 0) {
             context.fillStyle = 'white';
             context.fillText(lineText, centerX, textY);
             return;
         }
 
+        const coinR = 6;
+        const coinLeadingGap = 1;
+        const coinTrailingGap = 3;
+        const coinIconWidth = coinLeadingGap + coinR * 2 + coinTrailingGap;
+
         const segments = [];
         let i = 0;
         while (i < lineText.length) {
+            const ch = lineText[i];
+            if (ch === COIN || ch === CREDIT_COIN) {
+                segments.push({ type: 'coin', palette: ch === CREDIT_COIN ? 'silver' : 'gold' });
+                i++;
+                continue;
+            }
             let color = null;
             for (const [s, e, c] of spans) {
                 if (i >= s && i < e) { color = c; break; }
             }
             let j = i + 1;
-            while (j < lineText.length) {
+            while (j < lineText.length && lineText[j] !== COIN && lineText[j] !== CREDIT_COIN) {
                 let nextColor = null;
                 for (const [s, e, c] of spans) {
                     if (j >= s && j < e) { nextColor = c; break; }
@@ -1896,19 +2363,28 @@ export class UI {
                 if (nextColor !== color) break;
                 j++;
             }
-            segments.push({ text: lineText.slice(i, j), color });
+            segments.push({ type: 'text', text: lineText.slice(i, j), color });
             i = j;
         }
 
-        const totalWidth = context.measureText(lineText).width;
+        let totalWidth = 0;
+        for (const seg of segments) {
+            totalWidth += seg.type === 'coin' ? coinIconWidth : context.measureText(seg.text).width;
+        }
+
         let x = centerX - totalWidth / 2;
         const savedAlign = context.textAlign;
         context.textAlign = 'left';
 
-        for (const { text, color } of segments) {
-            context.fillStyle = color ?? 'white';
-            context.fillText(text, x, textY);
-            x += context.measureText(text).width;
+        for (const seg of segments) {
+            if (seg.type === 'coin') {
+                drawCoinIcon(context, x + coinLeadingGap + coinR, textY + 6, coinR, { palette: seg.palette });
+                x += coinIconWidth;
+            } else {
+                context.fillStyle = seg.color ?? 'white';
+                context.fillText(seg.text, x, textY);
+                x += context.measureText(seg.text).width;
+            }
         }
 
         context.textAlign = savedAlign;
@@ -2041,7 +2517,7 @@ export class UI {
             let current = '';
             for (const word of words) {
                 const test = current ? current + ' ' + word : word;
-                if (context.measureText(test).width > maxLineW && current) {
+                if (this._measureTipText(context, test) > maxLineW && current) {
                     lines.push(current);
                     current = word;
                 } else {
@@ -2051,7 +2527,7 @@ export class UI {
             if (current) lines.push(current);
         }
 
-        const widestLine = Math.max(...lines.map(l => context.measureText(l).width));
+        const widestLine = Math.max(...lines.map(l => this._measureTipText(context, l)));
         const boxW = Math.min(maxBoxW, widestLine + padX * 2 + counterReserve * 2 + 20);
         const boxX = (this.game.width - boxW) / 2;
 

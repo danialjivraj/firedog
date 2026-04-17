@@ -169,8 +169,6 @@ describe('Player', () => {
             width: 1920,
             height: 689,
             groundMargin: 50,
-            lives: 3,
-            maxLives: 5,
             normalSpeed: 6,
             speed: 6,
             enemyInterval: 1000,
@@ -188,7 +186,7 @@ describe('Player', () => {
             isBossVisible: false,
 
             time: 0,
-            maxTime: 10000,
+            maxTimeUnderwater: 10000,
             noDamageDuringTutorial: false,
             UI: {
                 secondsLeftActivated: false,
@@ -248,6 +246,23 @@ describe('Player', () => {
         };
 
         player = new Player(game);
+        player.lives = 3;
+        player.maxLives = 5;
+        player.previousLives = player.lives;
+        Object.defineProperties(game, {
+            lives: {
+                configurable: true,
+                enumerable: true,
+                get: () => player.lives,
+                set: (value) => { player.lives = value; },
+            },
+            maxLives: {
+                configurable: true,
+                enumerable: true,
+                get: () => player.maxLives,
+                set: (value) => { player.maxLives = value; },
+            },
+        });
         game.player = player;
 
         game.menu.wardrobe.currentSkin = makeImg('defaultSkin');
@@ -638,7 +653,7 @@ describe('Player', () => {
 
         test('getCurrentCosmeticImagesInOrder returns ordered layers with hueDeg from chroma state', () => {
             game.menu.wardrobe.getCurrentCosmeticKey.mockImplementation((slot) => {
-                if (slot === 'neck') return 'tieOutfit';
+                if (slot === 'neck') return 'necktieOutfit';
                 if (slot === 'eyes') return 'none';
                 if (slot === 'face') return 'clownNoseOutfit';
                 if (slot === 'head') return 'hatOutfit';
@@ -646,7 +661,7 @@ describe('Player', () => {
             });
 
             game.menu.wardrobe.getCurrentCosmeticsChromaState.mockReturnValue({
-                neck: { tieOutfit: 120 },
+                neck: { necktieOutfit: 120 },
                 face: { clownNoseOutfit: 45 },
                 head: { hatOutfit: 0 },
             });
@@ -654,11 +669,11 @@ describe('Player', () => {
             const out = player.getCurrentCosmeticImagesInOrder();
 
             expect(out.map(o => o.slot)).toEqual(['neck', 'face', 'head']);
-            expect(out.map(o => o.key)).toEqual(['tieOutfit', 'clownNoseOutfit', 'hatOutfit']);
+            expect(out.map(o => o.key)).toEqual(['necktieOutfit', 'clownNoseOutfit', 'hatOutfit']);
             expect(out.map(o => o.hueDeg)).toEqual([120, 45, 0]);
 
             expect(skinsCos.getCosmeticChromaDegFromState).toHaveBeenCalledWith(
-                'neck', 'tieOutfit', expect.any(Object)
+                'neck', 'necktieOutfit', expect.any(Object)
             );
             expect(skinsCos.getCosmeticChromaDegFromState).toHaveBeenCalledWith(
                 'face', 'clownNoseOutfit', expect.any(Object)
@@ -690,12 +705,12 @@ describe('Player', () => {
             player.frameY = 0;
 
             game.menu.wardrobe.getCurrentCosmeticKey.mockImplementation((slot) => {
-                if (slot === 'neck') return 'tieOutfit';
+                if (slot === 'neck') return 'necktieOutfit';
                 if (slot === 'head') return 'hatOutfit';
                 return 'none';
             });
             game.menu.wardrobe.getCurrentCosmeticsChromaState.mockReturnValue({
-                neck: { tieOutfit: 30 },
+                neck: { necktieOutfit: 30 },
                 head: { hatOutfit: 210 },
             });
         });
@@ -767,11 +782,25 @@ describe('Player', () => {
                 powerUps: [],
                 powerDowns: [],
                 coins: 0,
-                lives: 3,
-                maxLives: 5,
             };
 
             player = new Player(game);
+            player.lives = 3;
+            player.maxLives = 5;
+            Object.defineProperties(game, {
+                lives: {
+                    configurable: true,
+                    enumerable: true,
+                    get: () => player.lives,
+                    set: (value) => { player.lives = value; },
+                },
+                maxLives: {
+                    configurable: true,
+                    enumerable: true,
+                    get: () => player.maxLives,
+                    set: (value) => { player.maxLives = value; },
+                },
+            });
             game.player = player;
 
             player.states = player.states.map(() => ({
@@ -1420,13 +1449,30 @@ describe('Player', () => {
     });
 
     describe('underwaterGravityAndIndicator', () => {
-        test('in water triggers one damage indicator when secondsLeftActivated', () => {
+        test('in water triggers one damage indicator when the critical red phase begins', () => {
             player.isUnderwater = true;
-            game.UI.secondsLeftActivated = true;
             game.time = 2000;
+            player.wasUnderwaterCriticalRedPhaseOn = false;
+            player.isUnderwaterCriticalRedPhaseOn = jest.fn(() => true);
             jest.spyOn(player, 'triggerDamageIndicator');
             player.underwaterGravityAndIndicator();
             expect(player.triggerDamageIndicator).toHaveBeenCalled();
+        });
+
+        test('does not trigger immediately when a large underwater time jump lands inside the red phase', () => {
+            player.isUnderwater = true;
+            game.time = 6500;
+            player.wasUnderwaterCriticalRedPhaseOn = false;
+            player.lastUnderwaterWarningRemainingTime = 65500;
+            player.getUnderwaterRemainingTime = jest.fn(() => 55500);
+            player.isUnderwaterCriticalRedPhaseOn = jest.fn(() => true);
+
+            jest.spyOn(player, 'triggerDamageIndicator');
+
+            player.underwaterGravityAndIndicator();
+
+            expect(player.triggerDamageIndicator).not.toHaveBeenCalled();
+            expect(player.lastUnderwaterWarningRemainingTime).toBe(55500);
         });
     });
 
@@ -1709,8 +1755,6 @@ describe('emitStatusParticles (bubble status logic)', () => {
             width: 1920,
             height: 689,
             groundMargin: 50,
-            lives: 3,
-            maxLives: 5,
             normalSpeed: 6,
             speed: 6,
             enemyInterval: 1000,
@@ -1728,7 +1772,7 @@ describe('emitStatusParticles (bubble status logic)', () => {
             isBossVisible: false,
 
             time: 0,
-            maxTime: 10000,
+            maxTimeUnderwater: 10000,
             noDamageDuringTutorial: false,
             UI: {
                 secondsLeftActivated: false,
@@ -1765,6 +1809,22 @@ describe('emitStatusParticles (bubble status logic)', () => {
         };
 
         player = new Player(game);
+        player.lives = 3;
+        player.maxLives = 5;
+        Object.defineProperties(game, {
+            lives: {
+                configurable: true,
+                enumerable: true,
+                get: () => player.lives,
+                set: (value) => { player.lives = value; },
+            },
+            maxLives: {
+                configurable: true,
+                enumerable: true,
+                get: () => player.maxLives,
+                set: (value) => { player.maxLives = value; },
+            },
+        });
         game.player = player;
 
         player.currentState = { deathAnimation: false };

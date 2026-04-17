@@ -27,7 +27,6 @@ export class BaseIndicator {
             this.alpha = this.initialOpacity * (1 - fadeProgress);
         } else if (this.elapsedTime >= 2000) {
             this.game.collisions = this.game.collisions.filter(c => c !== this);
-            this.game.player.loopDamageIndicator = true;
         }
     }
 

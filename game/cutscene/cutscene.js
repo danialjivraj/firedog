@@ -7,6 +7,7 @@ import {
     getCosmeticChromaDegFromState,
     drawWithOptionalHue,
 } from '../config/skinsAndCosmetics.js';
+import { drawCoinIcon } from '../interface/hudIcons.js';
 
 export class Cutscene {
     constructor(game) {
@@ -48,8 +49,16 @@ export class Cutscene {
         this.textBoxWidth = 870;
 
         // coins
-        this.coinText = 'coin';
-        this.coinsText = 'coins';
+        this.coinIcon = '\uE001';
+        this.creditCoinIcon = '\uE002';
+        this.coinsLabel = 'Coins';
+        this.creditCoinsLabel = 'Credit Coins';
+        this.inlineCoinIcon = {
+            radius: 9,
+            leadingGap: 1,
+            trailingGap: 4,
+            baselineOffsetY: -8,
+        };
 
         // characters
         this.firedog = 'Firedog';
@@ -93,8 +102,8 @@ export class Cutscene {
             // coins
             [this.game.winningCoins]: 'orange',
             [this.playerCoins]: 'orange',
-            [this.coinText]: 'orange',
-            [this.coinsText]: 'orange',
+            [this.coinsLabel]: 'orange',
+            [this.creditCoinsLabel]: '#aeaeaf',
 
             // characters
             [this.firedog]: 'yellow',
@@ -225,6 +234,87 @@ export class Cutscene {
             if (globalIndex >= s && globalIndex < e) return c;
         }
         return fallback;
+    }
+
+    createDialogueTextTokens(text, startIndex, revealStart = startIndex) {
+        return Array.from(String(text || '')).map((ch, offset) => ({
+            type: 'char',
+            text: ch,
+            start: startIndex + offset,
+            end: startIndex + offset + 1,
+            revealStart: revealStart + offset,
+        }));
+    }
+
+    createInjectedDialogueTextTokens(text, startIndex, revealStart) {
+        return Array.from(String(text || '')).map((ch, offset) => ({
+            type: 'char',
+            text: ch,
+            start: startIndex + offset,
+            end: startIndex + offset + 1,
+            revealStart,
+        }));
+    }
+
+    tokenizeDialogueWord(word, wordStart) {
+        return this.createDialogueTextTokens(word, wordStart);
+    }
+
+    buildDialogueRenderWords(fullDialogue, getTokenWidth) {
+        const words = [];
+        const rx = /\S+/g;
+        const rawWords = [];
+        let match;
+
+        while ((match = rx.exec(fullDialogue)) !== null) {
+            rawWords.push({
+                text: match[0],
+                start: match.index,
+                end: match.index + match[0].length,
+            });
+        }
+
+        for (let i = 0; i < rawWords.length; i++) {
+            const word = rawWords[i];
+
+            if (word.text.startsWith(this.coinIcon) || word.text.startsWith(this.creditCoinIcon)) {
+                const palette = word.text.startsWith(this.creditCoinIcon) ? 'silver' : 'gold';
+                const iconToken = {
+                    type: 'coinIcon',
+                    text: 'coin',
+                    start: word.start,
+                    end: word.start + 1,
+                    revealStart: word.start,
+                    palette,
+                };
+                const trailing = word.text.slice(1);
+                const trailingTokens = trailing.length > 0
+                    ? this.createDialogueTextTokens(trailing, word.start + 1, word.start + 1)
+                    : [];
+                const tokens = [iconToken, ...trailingTokens];
+                const width = tokens.reduce((sum, t) => sum + getTokenWidth(t), 0);
+                words.push({
+                    text: word.text,
+                    start: word.start,
+                    end: word.end,
+                    tokens,
+                    width,
+                });
+                continue;
+            }
+
+            const tokens = this.tokenizeDialogueWord(word.text, word.start);
+            const width = tokens.reduce((sum, token) => sum + getTokenWidth(token), 0);
+            words.push({
+                text: word.text,
+                start: word.start,
+                end: word.end,
+                tokens,
+                width,
+            });
+        }
+
+        return words;
     }
 
     getDotIndices(dialogue) {
@@ -966,7 +1056,7 @@ export class Cutscene {
         const punctuationChars = ',!?.:;()"';
         const dlgObj = this.dialogue[this.dialogueIndex];
         const specificPhrases = ['It seems you have', 'I will need'];
-        const allowNumericColor = specificPhrases.some(p => dlgObj.dialogue.includes(p));
+        const allowNumericColor = specificPhrases.some(p => String(dlgObj?.dialogue || '').includes(p));
 
         const numericRanges = [];
         if (!allowNumericColor) {
@@ -984,6 +1074,15 @@ export class Cutscene {
             return false;
         };
 
+        const coinIcon = this.inlineCoinIcon;
+        const coinIconWidth = coinIcon.leadingGap + (coinIcon.radius * 2) + coinIcon.trailingGap;
+        const visibleCharCount = Math.max(0, Math.min(String(partialText || '').length, fullDialogue.length));
+
+        const getTokenWidth = (token) => {
+            if (token.type === 'coinIcon') return coinIconWidth;
+            return context.measureText(token.text).width;
+        };
+
         const drawChar = (ch, globalIndex, x, y) => {
             let color = this.colorAtGlobal(globalIndex, spans, 'white');
 
@@ -995,24 +1094,25 @@ export class Cutscene {
             return context.measureText(ch).width;
         };
 
-        const getFullWordFrom = (text, startIdx) => {
-            let end = startIdx;
-            while (end < text.length && text[end] !== ' ') end++;
-            return text.slice(startIdx, end);
+        const drawToken = (token, x, y) => {
+            const revealStart = Number.isFinite(token.revealStart) ? token.revealStart : token.start;
+            if (revealStart >= visibleCharCount) return getTokenWidth(token);
+
+            if (token.type === 'coinIcon') {
+                drawCoinIcon(
+                    context,
+                    x + coinIcon.leadingGap + coinIcon.radius,
+                    y + coinIcon.baselineOffsetY,
+                    coinIcon.radius,
+                    { palette: token.palette || 'gold' }
+                );
+                return coinIconWidth;
+            }
+
+            return drawChar(token.text, token.start, x, y);
         };
 
-        const words = this.splitDialogueIntoWords(partialText);
-
-        let searchCursor = 0;
-        const wordStartsGlobal = words.map(w => {
-            const idx = fullDialogue.indexOf(w, searchCursor);
-            if (idx >= 0) {
-                searchCursor = idx + w.length + 1;
-                return idx;
-            }
-            searchCursor += (w.length + 1);
-            return Math.max(0, searchCursor - (w.length + 1));
-        });
+        const words = this.buildDialogueRenderWords(fullDialogue, getTokenWidth);
 
         const spaceW = context.measureText(' ').width;
 
@@ -1031,18 +1131,9 @@ export class Cutscene {
             return true;
         };
 
-        const typingMidWord = partialText.length < fullDialogue.length && !partialText.endsWith(' ');
-
         for (let wi = 0; wi < words.length; wi++) {
             const word = words[wi];
-            const wordStart = wordStartsGlobal[wi];
-
-            const isLastToken = wi === words.length - 1;
-            const isIncompleteTypedWord = typingMidWord && isLastToken;
-
-            const fullWord = isIncompleteTypedWord ? getFullWordFrom(fullDialogue, wordStart) : word;
-
-            const fullWordW = context.measureText(fullWord).width;
+            const fullWordW = word.width;
 
             const hasAnyOnLine = usedW() > 0;
             const neededW = (hasAnyOnLine ? spaceW : 0) + fullWordW;
@@ -1059,8 +1150,8 @@ export class Cutscene {
             if (neededNow <= remainingW()) {
                 if (hasAnyNow) x += spaceW;
 
-                for (let ci = 0; ci < word.length; ci++) {
-                    x += drawChar(word[ci], wordStart + ci, x, y);
+                for (const token of word.tokens) {
+                    x += drawToken(token, x, y);
                 }
                 continue;
             }
@@ -1069,15 +1160,14 @@ export class Cutscene {
                 if (!gotoNextLine()) return;
             }
 
-            for (let ci = 0; ci < word.length; ci++) {
-                const ch = word[ci];
-                const chW = context.measureText(ch).width;
+            for (const token of word.tokens) {
+                const tokenW = getTokenWidth(token);
 
-                if (chW > remainingW()) {
+                if (tokenW > remainingW()) {
                     if (!gotoNextLine()) return;
                 }
 
-                x += drawChar(ch, wordStart + ci, x, y);
+                x += drawToken(token, x, y);
             }
         }
     }

@@ -64,7 +64,7 @@ describe('BaseIndicator', () => {
             expect(indicator.alpha).toBeCloseTo(expectedAlpha);
         });
 
-        test('removes indicator after fade end and flags loopDamageIndicator', () => {
+        test('removes indicator after fade end', () => {
             game.isPlayerInGame = true;
             game.collisions = [indicator];
 
@@ -72,7 +72,6 @@ describe('BaseIndicator', () => {
             indicator.update(0);
 
             expect(game.collisions).not.toContain(indicator);
-            expect(game.player.loopDamageIndicator).toBe(true);
         });
     });
 

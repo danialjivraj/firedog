@@ -101,6 +101,12 @@ describe('FloatingMessage', () => {
                 fillText: jest.fn(),
                 strokeText: jest.fn(),
                 measureText: jest.fn().mockReturnValue({ width: 20 }),
+                beginPath: jest.fn(),
+                arc: jest.fn(),
+                fill: jest.fn(),
+                stroke: jest.fn(),
+                translate: jest.fn(),
+                scale: jest.fn(),
                 font: '',
                 fillStyle: '',
                 strokeStyle: '',
@@ -121,9 +127,27 @@ describe('FloatingMessage', () => {
         it('renders text with a stroke outline then fill', () => {
             const msg = new FloatingMessage('Hi', 50, 50, { textColor: 'yellow' });
             msg.draw(ctx);
-            expect(ctx.strokeText).toHaveBeenCalledWith('Hi', 50, 50);
-            expect(ctx.fillText).toHaveBeenCalledWith('Hi', 50, 50);
+            expect(ctx.strokeText).toHaveBeenCalledWith('Hi', 40, 50);
+            expect(ctx.fillText).toHaveBeenCalledWith('Hi', 40, 50);
             expect(ctx.fillStyle).toBe('yellow');
+        });
+
+        it('can render the compact coin icon beside the message text', () => {
+            const msg = new FloatingMessage('+10', 50, 50, {
+                fontSize: 30,
+                iconType: 'coin',
+                iconWidth: 24,
+                iconHeight: 24,
+                iconGap: 6,
+            });
+
+            msg.draw(ctx);
+
+            expect(ctx.arc).toHaveBeenCalledTimes(2);
+            expect(ctx.fill).toHaveBeenCalledTimes(1);
+            expect(ctx.stroke).toHaveBeenCalledTimes(2);
+            expect(ctx.strokeText).toHaveBeenCalledWith('+10', expect.any(Number), 50);
+            expect(ctx.fillText).toHaveBeenCalledWith('+10', expect.any(Number), 50);
         });
 
         it('sets globalAlpha=1 before fade starts (t < 0.85)', () => {
@@ -194,7 +218,7 @@ describe('FloatingMessage', () => {
             it('falls back to plain draw when value is a single character', () => {
                 const msg = new FloatingMessage('s', 0, 0, { smallSuffix: true });
                 msg.draw(ctx);
-                expect(ctx.fillText).toHaveBeenCalledWith('s', 0, 0);
+                expect(ctx.fillText).toHaveBeenCalledWith('s', -10, 0);
                 expect(ctx.fillText).toHaveBeenCalledTimes(1);
             });
         });

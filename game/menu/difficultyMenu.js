@@ -1,11 +1,12 @@
 import { BaseMenu } from './baseMenu.js';
-
-const LIVES_OPTIONS = ['1', '3', '5', '7', '10'];
-const SPAWN_OPTIONS = ['Off', 'Low', 'Normal', 'High'];
-const SPAWN_MULTIPLIERS = { Off: 0, Low: 0.5, Normal: 1, High: 1.5 };
-
-const DEFAULT_LIVES_INDEX = 2;  // 5 lives
-const DEFAULT_SPAWN_INDEX = 2;  // Normal
+import {
+    DEFAULT_LIVES_INDEX,
+    DEFAULT_SPAWN_INDEX,
+    LIVES_OPTIONS,
+    SPAWN_MULTIPLIERS,
+    SPAWN_OPTIONS,
+    getConfiguredLivesFromIndex,
+} from '../config/difficultySettings.js';
 
 export class DifficultyMenu extends BaseMenu {
     constructor(game) {
@@ -84,9 +85,13 @@ export class DifficultyMenu extends BaseMenu {
     }
 
     _applySettings(triggerUISync = true) {
-        this.game.lives = this.getConfiguredLives();
+        this.game.player.lives = this.getConfiguredLives();
         this.game.powerUpSpawnMultiplier = SPAWN_MULTIPLIERS[SPAWN_OPTIONS[this.powerUpIndex]];
         this.game.powerDownSpawnMultiplier = SPAWN_MULTIPLIERS[SPAWN_OPTIONS[this.powerDownIndex]];
+
+        if (this.game.player) {
+            this.game.player.previousLives = this.game.player.lives;
+        }
 
         if (triggerUISync) {
             this.game.UI?.syncLivesState?.();
@@ -98,7 +103,7 @@ export class DifficultyMenu extends BaseMenu {
     }
 
     getConfiguredLives() {
-        return parseInt(LIVES_OPTIONS[this.livesIndex], 10);
+        return getConfiguredLivesFromIndex(this.livesIndex);
     }
 
     getState() {

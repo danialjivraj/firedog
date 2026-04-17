@@ -7,6 +7,7 @@ function buildGameState(game) {
     return {
         currentMap: game.currentMap,
         isTutorialActive: game.isTutorialActive,
+        uiLayoutStyle: game.uiLayoutStyle ?? "compact",
 
         map1Unlocked: game.map1Unlocked,
         map2Unlocked: game.map2Unlocked,
@@ -66,6 +67,7 @@ export function loadGameState(game) {
 
         game.currentMap = gameState.currentMap ?? game.currentMap;
         game.isTutorialActive = gameState.isTutorialActive ?? game.isTutorialActive;
+        game.uiLayoutStyle = gameState.uiLayoutStyle ?? game.uiLayoutStyle ?? "compact";
 
         game.map1Unlocked = gameState.map1Unlocked ?? game.map1Unlocked;
         game.map2Unlocked = gameState.map2Unlocked ?? game.map2Unlocked;
@@ -132,6 +134,7 @@ export function clearSavedData(game) {
     localStorage.removeItem(SAVE_KEY);
 
     game.isTutorialActive = true;
+    game.uiLayoutStyle = "compact";
 
     game.map1Unlocked = true;
     game.map2Unlocked = false;

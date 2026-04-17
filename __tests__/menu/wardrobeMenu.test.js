@@ -133,6 +133,8 @@ describe('Wardrobe menu', () => {
 
             moveTo: jest.fn(),
             lineTo: jest.fn(),
+            translate: jest.fn(),
+            scale: jest.fn(),
             closePath: jest.fn(),
             arc: jest.fn(),
             arcTo: jest.fn(),
@@ -600,25 +602,17 @@ describe('Wardrobe menu', () => {
             expect(keys).not.toContain('iceBreakerSkin');
         });
 
-        it('selecting locked gift skin opens preview modal (locked gift flow)', () => {
+        it('locked gift skins cannot open preview modal directly', () => {
             menu.activeTabIndex = 0;
             menu.filterModeIndex = 0;
+            mockGame.glacikalDefeated = false;
 
             const tab = menu._getActiveTab();
-            const keys = menu._getActiveKeysForTab(tab).slice();
-            if (!keys.includes('iceBreakerSkin')) keys.push('iceBreakerSkin');
+            const item = menu._getItemDef(tab, 'iceBreakerSkin');
 
-            const orig = menu._getActiveKeysForTab.bind(menu);
-            menu._getActiveKeysForTab = jest.fn(() => keys);
+            menu._openPreviewModal(item);
 
-            menu.selectedOption = keys.indexOf('iceBreakerSkin');
-            menu._selectCurrent();
-
-            expect(menu.modal).toBeTruthy();
-            expect(menu.modal.type).toBe('preview');
-            expect(menu.modal.item.key).toBe('iceBreakerSkin');
-
-            menu._getActiveKeysForTab = orig;
+            expect(menu.modal).toBeNull();
         });
 
         it('unlocked gift skin is appended to active keys in All mode and can be equipped', () => {
@@ -653,7 +647,35 @@ describe('Wardrobe menu', () => {
             expect(menu.modal.focusIndex).toBe(1);
         });
 
-        it('modal navigation (ArrowLeft/ArrowRight) cycles through unowned items when browsing is allowed', () => {
+        it('details icon opens preview modal for owned item without equipping it', () => {
+            menu.activeTabIndex = 0;
+            menu.filterModeIndex = 0;
+
+            const targetKey = SKIN_MENU_ORDER.find((k) => k !== 'defaultSkin' && k !== 'shinySkin');
+            if (!targetKey) return;
+
+            mockGame.ownedSkins[targetKey] = true;
+            menu.currentSkinKey = 'defaultSkin';
+
+            const keys = menu._getActiveKeysForTab(menu._getActiveTab());
+            const idx = keys.indexOf(targetKey);
+            expect(idx).toBeGreaterThanOrEqual(0);
+
+            menu._detailsHitboxes = [{ key: targetKey, index: idx, x: 10, y: 10, w: 24, h: 24 }];
+
+            const clicked = menu._tryClickDetailsIcon(18, 18);
+
+            expect(clicked).toBe(true);
+            expect(menu.modal?.type).toBe('preview');
+            expect(menu.modal?.item.key).toBe(targetKey);
+            expect(menu.currentSkinKey).toBe('defaultSkin');
+            const btns = menu._getModalButtons();
+            expect(btns).toHaveLength(2);
+            expect(btns[0]).toEqual(expect.objectContaining({ label: 'Wear', action: 'wear', disabled: false }));
+            expect(btns[1]).toEqual(expect.objectContaining({ label: 'Close', action: 'close', disabled: false }));
+        });
+
+        it('modal navigation (ArrowLeft/ArrowRight) cycles through visible items when browsing is allowed', () => {
             menu.activeTabIndex = 0;
             menu.filterModeIndex = 0;
             mockGame.creditCoins = 9999;
@@ -721,9 +743,31 @@ describe('Wardrobe menu', () => {
             menu._handleModalKeyDown({ key: 'ArrowRight' });
             expect(menu.modal.focusIndex).toBe(1);
 
-            menu._handleModalKeyDown({ key: 'Enter' }); // cancel
-            expect(menu.modal).toBeNull();
+            menu._handleModalKeyDown({ key: 'Enter' }); // back to preview
+            expect(menu.modal?.type).toBe('preview');
+            expect(menu.modal?.item).toBe(item);
             expect(mockGame.ownedSkins[item.key]).not.toBe(true);
+        });
+
+        it('confirm modal allows chroma swatch clicks like preview modal', () => {
+            if (!chromaSeed?.slot || !chromaSeed?.key) return;
+
+            const slot = chromaSeed.slot;
+            const key = chromaSeed.key;
+            const tabIndex = menu.tabs.findIndex((t) => t.kind === 'cosmetic' && t.slot === slot);
+            if (tabIndex < 0) return;
+
+            menu.activeTabIndex = tabIndex;
+            mockGame.creditCoins = 999;
+            mockGame.ownedCosmetics[slot][key] = false;
+
+            const item = menu._getItemDef(menu._getActiveTab(), key);
+            menu._openConfirmModal(item, { previewChromaVariantId: 'base' });
+            menu._modalChromaHitboxes = [{ slot, key, variantId: 'alt', cx: 20, cy: 30, r: 12 }];
+
+            expect(menu._tryClickModalChromaSwatch(20, 30)).toBe(true);
+            expect(menu.modal.previewChromaVariantId).toBe('alt');
+            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('optionSelectedSound', false, true);
         });
     });
 
@@ -1185,6 +1229,213 @@ describe('Wardrobe menu', () => {
                 menu.handleMouseClick({ clientX: btn.x + btn.w / 2, clientY: btn.y + btn.h / 2, button: 0 });
                 expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('optionSelectedSound', false, true);
             });
+        });
+    });
+
+    describe('shiny skin modal substitution', () => {
+        it('_openPreviewModal substitutes shinySkin details when wearing shiny and opening defaultSkin', () => {
+            menu.currentSkinKey = 'shinySkin';
+            const item = menu._getItemDef(menu._getActiveTab(), 'defaultSkin');
+            menu._openPreviewModal(item);
+            expect(menu.modal?.item?.key).toBe('shinySkin');
+        });
+
+        it('_openPreviewModal shows defaultSkin normally when not wearing shiny', () => {
+            menu.currentSkinKey = 'defaultSkin';
+            const item = menu._getItemDef(menu._getActiveTab(), 'defaultSkin');
+            menu._openPreviewModal(item);
+            expect(menu.modal?.item?.key).toBe('defaultSkin');
+        });
+    });
+
+    describe('_isCurrentlyWearing', () => {
+        it('returns true when the skin is currently equipped', () => {
+            menu.currentSkinKey = 'defaultSkin';
+            const item = { kind: 'skin', slot: null, key: 'defaultSkin', price: 0, gift: false };
+            expect(menu._isCurrentlyWearing(item)).toBe(true);
+        });
+
+        it('returns false when a different skin is equipped', () => {
+            menu.currentSkinKey = 'defaultSkin';
+            const item = { kind: 'skin', slot: null, key: 'midnightSteelSkin', price: 30, gift: false };
+            expect(menu._isCurrentlyWearing(item)).toBe(false);
+        });
+
+        it('returns true for cosmetic when equipped with no specific chroma preview', () => {
+            const slot = COSMETIC_SLOTS.HEAD;
+            const key = (COSMETIC_MENU_ORDER[slot] || []).find((k) => k !== 'none') || 'hatOutfit';
+            mockGame.ownedCosmetics[slot][key] = true;
+            menu.setCurrentCosmeticByKey(slot, key);
+
+            const item = { kind: 'cosmetic', slot, key, price: 0, gift: false };
+            expect(menu._isCurrentlyWearing(item)).toBe(true);
+        });
+
+        it('returns false for cosmetic when a different key is equipped', () => {
+            const slot = COSMETIC_SLOTS.HEAD;
+            menu.currentCosmetics[slot] = 'none';
+            const item = { kind: 'cosmetic', slot, key: 'hatOutfit', price: 15, gift: false };
+            expect(menu._isCurrentlyWearing(item)).toBe(false);
+        });
+
+        it('returns false for cosmetic when equipped but preview chroma differs from active chroma', () => {
+            if (!chromaSeed?.slot || !chromaSeed?.key) return;
+            const { slot, key } = chromaSeed;
+            mockGame.ownedCosmetics[slot][key] = true;
+            menu.setCurrentCosmeticByKey(slot, key);
+            menu._setCosmeticChromaVariantId(slot, key, 'base');
+
+            const item = { kind: 'cosmetic', slot, key, price: 0, gift: false };
+            menu.modal = { previewChromaVariantId: 'alt' };
+            expect(menu._isCurrentlyWearing(item)).toBe(false);
+        });
+
+        it('returns true for cosmetic when equipped and preview chroma matches active chroma', () => {
+            if (!chromaSeed?.slot || !chromaSeed?.key) return;
+            const { slot, key } = chromaSeed;
+            mockGame.ownedCosmetics[slot][key] = true;
+            menu.setCurrentCosmeticByKey(slot, key);
+            menu._setCosmeticChromaVariantId(slot, key, 'base');
+
+            const item = { kind: 'cosmetic', slot, key, price: 0, gift: false };
+            menu.modal = { previewChromaVariantId: 'base' };
+            expect(menu._isCurrentlyWearing(item)).toBe(true);
+        });
+    });
+
+    describe('_wearItem', () => {
+        it('equips a skin with forceExact — no shiny roll even for defaultSkin', () => {
+            jest.spyOn(Math, 'random').mockReturnValue(0.95); // would normally trigger shiny
+            menu.currentSkinKey = 'midnightSteelSkin';
+
+            const item = { kind: 'skin', slot: null, key: 'defaultSkin', price: 0, gift: false };
+            menu.modal = { previewChromaVariantId: null };
+            menu._wearItem(item);
+
+            expect(menu.currentSkinKey).toBe('defaultSkin');
+            expect(mockGame.saveGameState).toHaveBeenCalled();
+            Math.random.mockRestore();
+        });
+
+        it('equips a cosmetic and saves', () => {
+            const slot = COSMETIC_SLOTS.HEAD;
+            const key = (COSMETIC_MENU_ORDER[slot] || []).find((k) => k !== 'none') || 'hatOutfit';
+            mockGame.ownedCosmetics[slot][key] = true;
+
+            const item = { kind: 'cosmetic', slot, key, price: 0, gift: false };
+            menu.modal = { previewChromaVariantId: null };
+            menu._wearItem(item);
+
+            expect(menu.getCurrentCosmeticKey(slot)).toBe(key);
+            expect(mockGame.saveGameState).toHaveBeenCalled();
+        });
+
+        it('applies previewChromaVariantId when wearing a cosmetic', () => {
+            if (!chromaSeed?.slot || !chromaSeed?.key) return;
+            const { slot, key } = chromaSeed;
+            mockGame.ownedCosmetics[slot][key] = true;
+
+            const item = { kind: 'cosmetic', slot, key, price: 0, gift: false };
+            menu.modal = { previewChromaVariantId: 'alt' };
+            menu._wearItem(item);
+
+            expect(menu.getCurrentCosmeticsChromaState()[slot][key]).toBe('alt');
+        });
+
+        it('does nothing when item is not owned', () => {
+            const targetKey = SKIN_MENU_ORDER.find((k) => k !== 'defaultSkin' && k !== 'shinySkin') || 'midnightSteelSkin';
+            delete mockGame.ownedSkins[targetKey];
+            menu.currentSkinKey = 'defaultSkin';
+
+            const item = { kind: 'skin', slot: null, key: targetKey, price: 30, gift: false };
+            menu.modal = { previewChromaVariantId: null };
+            menu._wearItem(item);
+
+            expect(menu.currentSkinKey).toBe('defaultSkin');
+            expect(mockGame.saveGameState).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('wear button in owned item modal', () => {
+        it('shows Wear (enabled) and Close when item is owned but not currently worn', () => {
+            const targetKey = SKIN_MENU_ORDER.find((k) => k !== 'defaultSkin' && k !== 'shinySkin') || 'midnightSteelSkin';
+            mockGame.ownedSkins[targetKey] = true;
+            menu.currentSkinKey = 'defaultSkin';
+
+            const item = menu._getItemDef(menu._getActiveTab(), targetKey);
+            menu._openPreviewModal(item);
+
+            const btns = menu._getModalButtons();
+            expect(btns).toHaveLength(2);
+            expect(btns[0]).toEqual(expect.objectContaining({ action: 'wear', disabled: false }));
+            expect(btns[1]).toEqual(expect.objectContaining({ action: 'close', disabled: false }));
+        });
+
+        it('shows Wear (disabled) when item is already being worn', () => {
+            const targetKey = SKIN_MENU_ORDER.find((k) => k !== 'defaultSkin' && k !== 'shinySkin') || 'midnightSteelSkin';
+            mockGame.ownedSkins[targetKey] = true;
+            menu.setCurrentSkinByKey(targetKey, { forceExact: true });
+
+            const item = menu._getItemDef(menu._getActiveTab(), targetKey);
+            menu._openPreviewModal(item);
+
+            const wearBtn = menu._getModalButtons().find((b) => b.action === 'wear');
+            expect(wearBtn.disabled).toBe(true);
+        });
+
+        it('Enter on Wear equips the item and keeps modal open', () => {
+            const targetKey = SKIN_MENU_ORDER.find((k) => k !== 'defaultSkin' && k !== 'shinySkin') || 'midnightSteelSkin';
+            mockGame.ownedSkins[targetKey] = true;
+            menu.currentSkinKey = 'defaultSkin';
+
+            const item = menu._getItemDef(menu._getActiveTab(), targetKey);
+            menu._openPreviewModal(item);
+            expect(menu.modal.focusIndex).toBe(0); // Wear is index 0
+
+            menu._handleModalKeyDown({ key: 'Enter' });
+
+            expect(menu.currentSkinKey).toBe(targetKey);
+            expect(menu.modal).toBeTruthy();
+            expect(menu.modal.type).toBe('preview');
+        });
+
+        it('Wear button becomes disabled after wearing', () => {
+            const targetKey = SKIN_MENU_ORDER.find((k) => k !== 'defaultSkin' && k !== 'shinySkin') || 'midnightSteelSkin';
+            mockGame.ownedSkins[targetKey] = true;
+            menu.currentSkinKey = 'defaultSkin';
+
+            const item = menu._getItemDef(menu._getActiveTab(), targetKey);
+            menu._openPreviewModal(item);
+
+            menu._handleModalKeyDown({ key: 'Enter' }); // wear
+
+            const wearBtn = menu._getModalButtons().find((b) => b.action === 'wear');
+            expect(wearBtn.disabled).toBe(true);
+        });
+    });
+
+    describe('I key shortcut', () => {
+        it('opens preview modal for the currently selected item', () => {
+            menu.activeTabIndex = 0;
+            menu.filterModeIndex = 0;
+            menu.selectedOption = 0;
+
+            const keys = menu._getActiveKeysForTab(menu._getActiveTab());
+            menu.handleKeyDown({ key: 'I' });
+
+            expect(menu.modal).toBeTruthy();
+            expect(menu.modal.type).toBe('preview');
+            expect(menu.modal.item.key).toBe(keys[0]);
+            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('optionSelectedSound', false, true);
+        });
+
+        it('does nothing when selectedOption is out of grid range (outfit slot / go back)', () => {
+            menu.activeTabIndex = 0;
+            menu.selectedOption = menu._getGoBackIndex();
+
+            menu.handleKeyDown({ key: 'I' });
+
+            expect(menu.modal).toBeNull();
         });
     });
 

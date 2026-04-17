@@ -1023,103 +1023,109 @@ export class Map1StartCutscene extends StoryCutscene {
         );
         this.addDialogue( //149
             `${this.nysera}`,
-            `Also... one more thing... Killing enemies will give you coins. Make sure you gather as many coins as you can.`,
+            `Also... one more thing... Killing enemies will give you ${this.coinIcon}${this.coinsLabel}. Make sure you gather as many ${this.coinIcon}${this.coinsLabel} as you can.`,
             this.addImage(this.setfiredogNormal(), LEFT),
             this.addImage('nyseraHandUp', RIGHT, { talking: true }),
         );
         this.addDialogue( //150
+            `${this.nysera}`,
+            `When entering a cabin, any leftover ${this.coinIcon}${this.coinsLabel} will be converted into ${this.creditCoinIcon}${this.creditCoinsLabel}, which you can then use to buy wardrobe items.`,
+            this.addImage(this.setfiredogNormal(), LEFT),
+            this.addImage('nyseraHandUp', RIGHT, { talking: true }),
+        );
+        this.addDialogue( //151
             `${this.firedog}`,
-            `I'm good at saving coins! That should be easy!`,
+            `I'm good at saving ${this.coinIcon}${this.coinsLabel}! That should be easy!`,
             this.addImage(this.setfiredogLaugh(), LEFT, { talking: true }),
             this.addImage('nyseraHandUp', RIGHT),
         );
-        this.addDialogue( //151
+        this.addDialogue( //152
             `${this.firedog}`,
             `Will you come with me as well?`,
             this.addImage(this.setfiredogCurious(), LEFT, { talking: true }),
             this.addImage('nyseraHandUp', RIGHT),
         );
-        this.addDialogue( //152
+        this.addDialogue( //153
             `${this.nysera}`,
             `I will stay here for now, protecting ${this.valdorin} as he recovers. In case anything else happens, we'll be ready.`,
             this.addImage(this.setfiredogCurious(), LEFT),
             this.addImage('nyseraNormal', RIGHT, { talking: true }),
         );
-        this.addDialogue( //153
+        this.addDialogue( //154
             `${this.nysera}`,
             `Now go ${this.firedog}.`,
             this.addImage(this.setfiredogNormal(), LEFT),
             this.addImage('nyseraNormal', RIGHT, { talking: true }),
         );
-        this.addDialogue( //154
+        this.addDialogue( //155
             `${this.firedog}`,
             `(To even think that someone defeated ${this.valdorin} with ease... Can I even do this?)`,
             { whisper: true },
             this.addImage(this.setfiredogSurprised(), LEFT, { talking: true }),
             this.addImage('nyseraNormal', RIGHT),
         );
-        this.addDialogue( //155
+        this.addDialogue( //156
             `${this.firedog}`,
             `(Only the higher-ups know about the situation... Apparently, the citizens are being kept in the dark. Well, it would be chaos if everyone knew...)`,
             { whisper: true },
             this.addImage(this.setfiredogSurprised(), LEFT, { talking: true }),
             this.addImage('nyseraNormal', RIGHT),
         );
-        this.addDialogue( //156
+        this.addDialogue( //157
             `${this.firedog}`,
             `(This is why it's important to get the ${this.temporalTimber} from the cave in ${this.infernalCraterPeak} as soon as possible...)`,
             { whisper: true },
             this.addImage(this.setfiredogNormal(), LEFT, { talking: true }),
             this.addImage('nyseraNormal', RIGHT),
         );
-        this.addDialogue( //157
+        this.addDialogue( //158
             `${this.firedog}`,
             `(But how is this happening? Someone really got through the safe unnoticed and got the ${this.crypticToken} that easily?)`,
             { whisper: true },
             this.addImage(this.setfiredogNormal(), LEFT, { talking: true }),
             this.addImage('nyseraNormal', RIGHT),
         );
-        this.addDialogue( //158
+        this.addDialogue( //159
             `${this.firedog}`,
             `(Come to think of it... could this also be connected to what happened 2 weeks ago with the traps?)`,
             { whisper: true },
             this.addImage(this.setfiredogNormal(), LEFT, { talking: true }),
             this.addImage('nyseraNormal', RIGHT),
         );
-        this.addDialogue( //159
+        this.addDialogue( //160
             `${this.firedog}`,
             `(What exactly is going on...)`,
             { whisper: true },
             this.addImage(this.setfiredogNormal(), LEFT, { talking: true }),
             this.addImage('nyseraNormal', RIGHT),
         );
-        this.addDialogue( //160
+        this.addDialogue( //161
             `${this.firedog}`,
             `(To be able to pass through the traps, the guards, get through the castle, and find the safe while being able to escape...)`,
             { whisper: true },
             this.addImage(this.setfiredogNormal(), LEFT, { talking: true }),
             this.addImage('nyseraNormal', RIGHT),
         );
-        this.addDialogue( //161
+        this.addDialogue( //162
             `${this.firedog}`,
             `(Let's go now, the future of this land might well depend on it.)`,
             { whisper: true },
             this.addImage(this.setfiredogNormal(), LEFT, { talking: true }),
             this.addImage('nyseraNormal', RIGHT),
         );
-        this.addDialogue( //162
+        this.addDialogue( //163
             `${this.firedog}`,
             `I'll be going now then.`,
             this.addImage(this.setfiredogNormal(), LEFT, { talking: true }),
             this.addImage('nyseraNormal', RIGHT),
         );
-        this.addDialogue( //163
+        this.addDialogue( //164
             `${this.firedog}`,
             `Let's see if I can catch up to ${this.galadon}...!`,
             this.addImage(this.setfiredogHappy(), LEFT, { talking: true }),
             this.addImage('nyseraNormal', RIGHT),
         );
-        this.addDialogue( //164
+        this.addDialogue( //165
             `${this.nysera}`,
             `Good luck out there, ${this.firedog}.`,
             this.addImage(this.setfiredogNormal(), LEFT),
@@ -1138,8 +1144,7 @@ export class Map1EndCutscene extends StoryCutscene {
 
         this.addDialogue( //0
             `${this.firedog}`,
-            `Well... there goes my money...`,
-            this.addImage(this.setfiredogSigh(), LEFT, { talking: true }),
+            `Well... there goes my ${this.coinIcon}${this.coinsLabel}...`, this.addImage(this.setfiredogSigh(), LEFT, { talking: true }),
         );
         this.addDialogue( //1
             `${this.firedog}`,
@@ -2049,7 +2054,7 @@ export class Map2StartCutscene extends StoryCutscene {
         );
         this.addDialogue( //50
             `${this.penguini}`,
-            `Thanks for the coins ya' fool! Now go if you want to get killed! Hahaha!`,
+            `Thanks for the ${this.coinIcon}${this.coinsLabel} ya' fool! Now go if you want to get killed! Hahaha!`,
             this.addImage(this.setfiredogNormal(), LEFT),
             this.addImage('penguiniBatLaugh', RIGHT, { talking: true }),
         );
@@ -2663,13 +2668,13 @@ export class Map3StartCutscene extends StoryCutscene {
         );
         this.addDialogue( //41
             `${this.zephyrion}`,
-            `Hmm I see, I see. How many coins do you have?`,
+            `Hmm I see, I see. How many ${this.coinIcon}${this.coinsLabel} do you have?`,
             this.addImage(this.setfiredogUpset(), LEFT),
             this.addImage('zephyrionNormal', RIGHT, { talking: true }),
         );
         this.addDialogue( //42
             `${this.firedog}`,
-            `Coins? I don't have any right now...`,
+            `${this.coinIcon}${this.coinsLabel}? I don't have any right now...`,
             this.addImage(this.setfiredogSad(), LEFT, { talking: true }),
             this.addImage('zephyrionNormal', RIGHT),
         );
@@ -5098,7 +5103,7 @@ export class Map5EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //25
             `${this.craggle}`,
-            `Travelers leave all sorts of things behind sometimes. Coins, tools... and occasionally rocks.`,
+            `Travelers leave all sorts of things behind sometimes. ${this.coinIcon}${this.coinsLabel}, tools... and occasionally rocks.`,
             this.addImage(this.setfiredogNormal(), LEFT),
             this.addImage('craggleHappy', RIGHT, { talking: true }),
         );
@@ -6929,7 +6934,7 @@ export class BonusMap1StartCutscene extends StoryCutscene {
         );
         this.addDialogue( //7
             `${this.penguini}`,
-            `Not my problem... unless you have some coins.`,
+            `Not my problem... unless you have some ${this.coinIcon}${this.coinsLabel}.`,
             this.addImage(this.setfiredogSurprised(), LEFT),
         );
         this.addDialogue( //8
@@ -6939,7 +6944,7 @@ export class BonusMap1StartCutscene extends StoryCutscene {
         );
         this.addDialogue( //9
             `${this.threeDots}`,
-            `I don't have any coins unfortunately...`,
+            `I don't have any ${this.coinIcon}${this.coinsLabel} unfortunately...`,
             this.addImage(this.setfiredogSurprised(), LEFT),
         );
         this.addDialogue( //10

@@ -31,6 +31,8 @@ describe('Reset', () => {
     let reset;
 
     beforeEach(() => {
+        const knownMapClasses = new Set(Object.values(Maps));
+
         game = {
             coins: 100,
             notEnoughCoins: false,
@@ -128,7 +130,13 @@ describe('Reset', () => {
             // menu / difficulty / maps
             menu: {
                 difficulty: { applyCurrentSettings: jest.fn() },
-                forestMap: { setMap: jest.fn() },
+                forestMap: {
+                    setMap: jest.fn(),
+                    getMapOptionByClass: jest.fn((MapClass) =>
+                        knownMapClasses.has(MapClass) ? { Map: MapClass } : null
+                    ),
+                    applyMapOption: jest.fn(),
+                },
             },
 
             width: 800,
@@ -364,89 +372,35 @@ describe('Reset', () => {
         });
 
         describe('map selection', () => {
-            it('loads Map1 and updates forest map', () => {
-                game.background = { constructor: Maps.Map1 };
+            it.each([
+                ['Map1', Maps.Map1],
+                ['Map2', Maps.Map2],
+                ['Map3', Maps.Map3],
+                ['Map4', Maps.Map4],
+                ['Map5', Maps.Map5],
+                ['Map6', Maps.Map6],
+                ['Map7', Maps.Map7],
+                ['BonusMap1', Maps.BonusMap1],
+                ['BonusMap2', Maps.BonusMap2],
+                ['BonusMap3', Maps.BonusMap3],
+            ])('loads %s, applies its forest map option, and updates forest map', (_name, MapClass) => {
+                game.background = { constructor: MapClass };
 
                 reset.reset();
 
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map1));
+                const option = game.menu.forestMap.getMapOptionByClass.mock.results[0].value;
+                expect(game.menu.forestMap.getMapOptionByClass).toHaveBeenCalledWith(MapClass);
+                expect(game.menu.forestMap.applyMapOption).toHaveBeenCalledWith(option);
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(MapClass));
             });
 
-            it('loads Map3 and enables underwater mode', () => {
-                game.background = { constructor: Maps.Map3 };
-
-                reset.reset();
-
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map3));
-                expect(game.player.isUnderwater).toBe(true);
-            });
-
-            it('loads Map4 and updates forest map', () => {
-                game.background = { constructor: Maps.Map4 };
-
-                reset.reset();
-
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map4));
-            });
-
-            it('loads Map5 and updates forest map', () => {
-                game.background = { constructor: Maps.Map5 };
-
-                reset.reset();
-
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map5));
-            });
-
-            it('loads Map6 and updates forest map', () => {
-                game.background = { constructor: Maps.Map6 };
-
-                reset.reset();
-
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map6));
-            });
-
-            it('loads Map7, updates forest map, and sets maxDistance', () => {
-                game.background = { constructor: Maps.Map7 };
-
-                reset.reset();
-
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.Map7));
-                expect(game.maxDistance).toBe(9999999);
-            });
-
-            it('loads BonusMap1, updates forest map, sets maxDistance, and enables ice mode', () => {
-                game.background = { constructor: Maps.BonusMap1 };
-
-                reset.reset();
-
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.BonusMap1));
-                expect(game.maxDistance).toBe(9999999);
-                expect(game.player.isIce).toBe(true);
-            });
-
-            it('loads BonusMap2 and updates forest map', () => {
-                game.background = { constructor: Maps.BonusMap2 };
-
-                reset.reset();
-
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.BonusMap2));
-            });
-
-            it('loads BonusMap3, updates forest map, sets maxDistance, and enables space mode', () => {
-                game.background = { constructor: Maps.BonusMap3 };
-
-                reset.reset();
-
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(Maps.BonusMap3));
-                expect(game.maxDistance).toBe(9999999);
-                expect(game.player.isSpace).toBe(true);
-            });
-
-            it('handles unrecognized map constructors without throwing and passes undefined to setMap', () => {
+            it('handles unrecognized map constructors without throwing', () => {
                 game.background = { constructor: class Foo { } };
 
                 expect(() => reset.reset()).not.toThrow();
-                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(undefined);
+                expect(game.menu.forestMap.getMapOptionByClass).toHaveBeenCalledWith(game.background.constructor);
+                expect(game.menu.forestMap.applyMapOption).toHaveBeenCalledWith(null);
+                expect(game.menu.forestMap.setMap).toHaveBeenCalledWith(expect.any(game.background.constructor));
             });
         });
 

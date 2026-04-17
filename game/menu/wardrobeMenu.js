@@ -14,6 +14,8 @@ import {
     getCosmeticChromaDegFromState,
     drawWithOptionalHue,
 } from '../config/skinsAndCosmetics.js';
+import { PurchaseConfetti } from '../animations/purchaseConfetti.js';
+import { drawCoinIcon } from '../interface/hudIcons.js';
 import { BaseMenu } from './baseMenu.js';
 
 const GIFT_SKIN_FLAGS = Object.freeze({
@@ -147,6 +149,9 @@ export class Wardrobe extends BaseMenu {
                 activeBar: { xPad: 8, yPad: 10, w: 8, r: 8 },
                 bgRadius: 14,
                 bgFill: 'rgba(0,0,0,0.45)',
+                bgFillHover: 'rgba(255,255,0,0.075)',
+                strokeHover: 'rgba(255,255,0,0.34)',
+                textFillHover: 'rgba(255,255,150,0.98)',
                 activeBarFill: 'rgba(255,255,0,0.92)',
             },
             goBack: {
@@ -175,6 +180,17 @@ export class Wardrobe extends BaseMenu {
                 priceMinFont: 7,
 
                 lockOverlayAlpha: 0.55,
+
+                details: {
+                    size: 20,
+                    margin: 7,
+                    fill: 'rgba(0,0,0,0.46)',
+                    fillHover: 'rgba(255,255,0,0.16)',
+                    stroke: 'rgba(255,255,255,0.32)',
+                    strokeHover: 'rgba(255,255,0,0.80)',
+                    iconFill: 'rgba(255,255,255,0.78)',
+                    iconFillHover: 'rgba(255,255,0,0.95)',
+                },
 
                 chroma: {
                     showOnlyWhenSelected: true,
@@ -252,59 +268,70 @@ export class Wardrobe extends BaseMenu {
             },
 
             modal: {
-                overlay: 'rgba(0,0,0,0.45)',
+                overlay: 'rgba(0,0,0,0.40)',
 
-                panelFill: 'rgba(10,10,12,0.96)',
-                panelStroke: 'rgba(255,255,255,0.18)',
-                radius: 18,
+                panelFill: 'rgba(10, 8, 18, 0.97)',
+                panelFillBottom: 'rgba(37, 21, 54, 0.98)',
+                panelStroke: 'rgba(255, 231, 128, 0.36)',
+                panelInnerStroke: 'rgba(255,255,255,0.12)',
+                accent: 'rgba(255, 218, 65, 0.95)',
+                accentSoft: 'rgba(255, 218, 65, 0.18)',
+                radius: 24,
 
-                w: 660,
-                h: 390,
+                w: 720,
+                h: 420,
 
-                pad: 28,
-                headerH: 60,
-                headerDividerStroke: 'rgba(255,255,255,0.12)',
+                pad: 30,
+                headerH: 72,
+                headerDividerStroke: 'rgba(255, 218, 65, 0.28)',
 
-                titleFont: 'bold 28px Arial',
-                bodyFont: '20px Arial',
-                smallFont: 'bold 18px Arial',
+                kickerFont: 'bold 15px Arial',
+                titleFont: 'bold 36px Love Ya Like A Sister',
+                bodyFont: '22px Arial',
+                smallFont: 'bold 20px Arial',
+                infoFont: 'bold 20px Arial',
+                infoLabelFill: 'rgba(255,255,255,0.64)',
+                infoValueFill: 'rgba(255,255,255,0.94)',
+                infoBoxFill: 'rgba(255,255,255,0.06)',
+                infoBoxStroke: 'rgba(255,255,255,0.12)',
 
                 close: {
                     size: 34,
-                    radius: 10,
+                    radius: 12,
                     font: 'bold 20px Arial',
                     fg: 'rgba(255,255,255,0.92)',
-                    bg: 'rgba(0,0,0,0.22)',
-                    bgHover: 'rgba(255,255,255,0.14)',
-                    stroke: 'rgba(255,255,255,0.22)',
+                    bg: 'rgba(255,255,255,0.07)',
+                    bgHover: 'rgba(255,255,255,0.18)',
+                    stroke: 'rgba(255,255,255,0.20)',
                     strokeHover: 'rgba(255,255,0,0.95)',
                 },
 
                 nav: {
                     size: 42,
-                    radius: 14,
+                    radius: 16,
                     gapFromPanel: 14,
-                    bg: 'rgba(0,0,0,0.22)',
-                    bgHover: 'rgba(255,255,255,0.14)',
-                    stroke: 'rgba(255,255,255,0.22)',
+                    bg: 'rgba(8, 6, 14, 0.76)',
+                    bgHover: 'rgba(255, 218, 65, 0.18)',
+                    stroke: 'rgba(255,255,255,0.20)',
                     strokeHover: 'rgba(255,255,0,0.95)',
                     fg: 'rgba(255,255,255,0.92)',
                 },
 
-                btnFont: 'bold 22px Arial',
+                btnFont: 'bold 24px Arial',
                 btnH: 54,
                 btnW: 170,
                 btnGap: 18,
 
                 preview: {
-                    pad: 22,
-                    boxFill: 'rgba(32,32,36,0.98)',
-                    boxStroke: 'rgba(255,255,255,0.22)',
-                    radius: 14,
+                    pad: 24,
+                    boxFill: 'rgba(25, 22, 32, 0.98)',
+                    boxFillBottom: 'rgba(55, 36, 72, 0.98)',
+                    boxStroke: 'rgba(255, 231, 128, 0.25)',
+                    radius: 18,
                     captionFont: '14px Arial',
                     captionFill: 'rgba(255,255,255,0.65)',
                     glowEnabled: true,
-                    glowAlpha: 0.20,
+                    glowAlpha: 0.16,
                 },
             },
 
@@ -414,6 +441,7 @@ export class Wardrobe extends BaseMenu {
         this.filterHoverBtn = false;
         this.randomizerHoverBtn = false;
         this.resetHoverBtn = false;
+        this.tabHoverIndex = -1;
 
         this._uiCtx = null;
         this.modal = null;
@@ -421,6 +449,7 @@ export class Wardrobe extends BaseMenu {
         // chroma hitboxes
         this._chromaHitboxes = [];
         this._modalChromaHitboxes = [];
+        this._detailsHitboxes = [];
 
         // scrolling + scrollbar
         this.scrollEase = 0.18;
@@ -440,6 +469,8 @@ export class Wardrobe extends BaseMenu {
         this.outfitSlotsHoverSlot = -1;
         this.outfitSlotsHoverBtn = null;
         this.outfitSlotFocusedBtn = null;
+
+        this.purchaseConfetti = [];
     }
 
     activateMenu(selectedOption = 0) {
@@ -453,8 +484,10 @@ export class Wardrobe extends BaseMenu {
         this.filterHoverBtn = false;
         this.randomizerHoverBtn = false;
         this.resetHoverBtn = false;
+        this.tabHoverIndex = -1;
 
         this.modal = null;
+        this.purchaseConfetti = [];
 
         if (Array.isArray(this.scrollYByTab)) this.scrollYByTab[0] = 0;
         if (Array.isArray(this.targetScrollYByTab)) this.targetScrollYByTab[0] = 0;
@@ -468,6 +501,7 @@ export class Wardrobe extends BaseMenu {
     // chroma swatches
     _clearChromaHitboxes() { this._chromaHitboxes = []; }
     _clearModalChromaHitboxes() { this._modalChromaHitboxes = []; }
+    _clearDetailsHitboxes() { this._detailsHitboxes = []; }
 
     _measureChromaBlockH(slot, key, maxWidth) {
         const item = COSMETICS?.[slot]?.[key];
@@ -631,7 +665,7 @@ export class Wardrobe extends BaseMenu {
     }
 
     _tryClickModalChromaSwatch(mouseX, mouseY) {
-        if (!this.modal || this.modal.type !== 'preview') return false;
+        if (!this.modal || (this.modal.type !== 'preview' && this.modal.type !== 'confirm')) return false;
 
         const hitboxes = this._modalChromaHitboxes;
         if (!Array.isArray(hitboxes) || hitboxes.length === 0) return false;
@@ -644,6 +678,27 @@ export class Wardrobe extends BaseMenu {
                 this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
                 return true;
             }
+        }
+
+        return false;
+    }
+
+    _tryClickDetailsIcon(mouseX, mouseY) {
+        const hitboxes = this._detailsHitboxes;
+        if (!Array.isArray(hitboxes) || hitboxes.length === 0) return false;
+
+        for (const h of hitboxes) {
+            if (mouseX < h.x || mouseX > h.x + h.w || mouseY < h.y || mouseY > h.y + h.h) continue;
+
+            const tab = this._getActiveTab();
+            const item = this._getItemDef(tab, h.key);
+            if (!item) return true;
+
+            this.selectedOption = h.index;
+            this._ensureSelectedVisible();
+            this._openPreviewModal(item);
+            this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
+            return true;
         }
 
         return false;
@@ -774,8 +829,8 @@ export class Wardrobe extends BaseMenu {
                 kind: 'skin',
                 slot: null,
                 key,
-                label: def.label ?? key,
-                price: gift ? 0 : (Number.isFinite(def.price) ? def.price : 0),
+                label: def.label,
+                price: gift ? 0 : def.price,
                 gift,
             };
         }
@@ -787,8 +842,8 @@ export class Wardrobe extends BaseMenu {
             kind: 'cosmetic',
             slot: tab.slot,
             key,
-            label: def.label ?? key,
-            price: Number.isFinite(def.price) ? def.price : 0,
+            label: def.label,
+            price: def.price,
             gift: false,
         };
     }
@@ -841,7 +896,65 @@ export class Wardrobe extends BaseMenu {
         this._save();
 
         this.game.audioHandler.menu.playSound('purchaseCompletedSound', false, true);
+        this._spawnPurchaseConfetti();
         return true;
+    }
+
+    _isCurrentlyWearing(item) {
+        if (!item || !this._isItemOwned(item)) return false;
+
+        if (item.kind === 'skin') {
+            return this.currentSkinKey === item.key;
+        }
+
+        const equippedKey = this.currentCosmetics?.[item.slot] ?? 'none';
+        if (equippedKey !== item.key) return false;
+
+        const previewVariantId = this.modal?.previewChromaVariantId;
+        if (previewVariantId) {
+            return this._getCosmeticChromaVariantId(item.slot, item.key) === previewVariantId;
+        }
+
+        return true;
+    }
+
+    _wearItem(item) {
+        if (!item || !this._isItemOwned(item)) return;
+
+        if (item.kind === 'skin') {
+            this.setCurrentSkinByKey(item.key, { forceExact: true });
+        } else {
+            const equippedKey = this.currentCosmetics?.[item.slot] ?? 'none';
+            if (equippedKey !== item.key) {
+                this.setCurrentCosmeticByKey(item.slot, item.key);
+            }
+            const previewVariantId = this.modal?.previewChromaVariantId;
+            if (previewVariantId) {
+                this._setCosmeticChromaVariantId(item.slot, item.key, previewVariantId);
+            }
+        }
+
+        this._save();
+    }
+
+    _spawnPurchaseConfetti() {
+        const panel = this._getModalPanelRect();
+        const y = panel.y + panel.h * 0.60;
+        const bursts = [
+            { x: panel.x + panel.w * 0.28, direction: -0.42 },
+            { x: panel.x + panel.w * 0.72, direction: 0.42 },
+        ];
+
+        for (const burst of bursts) {
+            this.purchaseConfetti.push(new PurchaseConfetti(this.game, {
+                x: burst.x + (Math.random() - 0.5) * 14,
+                y: y + (Math.random() - 0.5) * 10,
+                count: 36,
+                direction: burst.direction,
+            }));
+        }
+
+        this.purchaseConfetti = this.purchaseConfetti.slice(-4);
     }
 
     // asset helpers
@@ -1338,8 +1451,8 @@ export class Wardrobe extends BaseMenu {
     _buildLabelsForTab(tab) {
         if (!tab) return [];
         const keys = this._getActiveKeysForTab(tab);
-        if (tab.kind === 'skin') return keys.map((k) => SKINS[k]?.label ?? k);
-        return keys.map((k) => COSMETICS[tab.slot]?.[k]?.label ?? k);
+        if (tab.kind === 'skin') return keys.map((k) => SKINS[k].label);
+        return keys.map((k) => COSMETICS[tab.slot][k].label);
     }
 
     _setActiveTab(index, { playSound = true } = {}) {
@@ -1355,6 +1468,18 @@ export class Wardrobe extends BaseMenu {
         this._ensureSelectedVisible();
 
         if (playSound) this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
+    }
+
+    _hitTestTab(mx, my) {
+        const s = this._getSidebarLayout();
+        const tabX = s.sidebarX + this.UI.sidebar.tabOffsetX;
+
+        for (let i = 0; i < this.tabs.length; i++) {
+            const y = s.sidebarTopY + i * (s.tabH + s.gap);
+            if (mx >= tabX && mx <= tabX + s.tabW && my >= y && my <= y + s.tabH) return i;
+        }
+
+        return -1;
     }
 
     _syncSelectionToEquipped() {
@@ -1489,13 +1614,6 @@ export class Wardrobe extends BaseMenu {
         if (layout.maxScroll < 12) desired = 0;
 
         this.targetScrollYByTab[tabIndex] = desired;
-    }
-
-    _gridBounds() {
-        const layout = this._getGridLayout();
-        const padRightForBar = 18 + this.barWidth;
-        const w = Math.min(this.game.width, layout.gridW + padRightForBar);
-        return { x: layout.gridLeftX, y: layout.gridTopY, w, h: layout.gridH };
     }
 
     // filter dropdown layout + hit testing
@@ -1740,20 +1858,16 @@ export class Wardrobe extends BaseMenu {
 
         if (!this.modal || this.modal.type !== 'preview') return { tab, keys: [] };
 
-        const currentItem = this.modal.item;
-        const currentOwned = this._isItemOwned(currentItem);
-        if (currentOwned) return { tab, keys: [] };
-
         const ordered = this._getActiveKeysForTab(tab);
-        const unownedOnly = [];
+        const keys = [];
 
         for (const k of ordered) {
             const it = this._getItemDef(tab, k);
             if (!it) continue;
-            if (!this._isItemOwned(it)) unownedOnly.push(k);
+            keys.push(k);
         }
 
-        return { tab, keys: unownedOnly };
+        return { tab, keys };
     }
 
     _modalCanBrowse() {
@@ -1824,12 +1938,28 @@ export class Wardrobe extends BaseMenu {
     }
 
     // modal control
-    _openPreviewModal(item) {
+    _openPreviewModal(item, { previewChromaVariantId = null } = {}) {
         if (!item) return;
 
+        // If the player is currently wearing the shiny skin, show its details instead of the default skin
+        if (item.kind === 'skin' && item.key === 'defaultSkin' && this.currentSkinKey === 'shinySkin') {
+            const shinyDef = SKINS?.shinySkin;
+            if (shinyDef) {
+                item = {
+                    kind: 'skin',
+                    slot: null,
+                    key: 'shinySkin',
+                    label: shinyDef.label,
+                    price: shinyDef.price ?? 0,
+                    gift: false,
+                };
+            }
+        }
+
         const owned = this._isItemOwned(item);
-        const isGiftLocked = (item.kind === 'skin' && item.gift && !owned);
-        const afford = isGiftLocked ? false : this._canAfford(item);
+        if (item.kind === 'skin' && item.gift && !owned) return;
+
+        const afford = this._canAfford(item);
 
         this.modal = {
             type: 'preview',
@@ -1842,16 +1972,22 @@ export class Wardrobe extends BaseMenu {
             previewChromaVariantId: null,
         };
 
-        if (!owned && item.kind === 'cosmetic' && item.key !== 'none') {
+        if (item.kind === 'cosmetic' && item.key !== 'none') {
             const ccfg = getCosmeticChromaConfig(item.slot, item.key);
             if (ccfg && Array.isArray(ccfg.variants) && ccfg.variants.length > 1) {
-                const resolved = resolveCosmeticChromaVariant(item.slot, item.key, ccfg.default);
+                let startVariantId = previewChromaVariantId;
+                if (!startVariantId) {
+                    startVariantId = owned
+                        ? (this._getCosmeticChromaVariantId(item.slot, item.key) || ccfg.default)
+                        : ccfg.default;
+                }
+                const resolved = resolveCosmeticChromaVariant(item.slot, item.key, startVariantId);
                 this.modal.previewChromaVariantId = resolved?.id || ccfg.variants[0]?.id || null;
             }
         }
     }
 
-    _openConfirmModal(item) {
+    _openConfirmModal(item, { previewChromaVariantId = null } = {}) {
         if (!item) return;
         if (item.kind === 'skin' && item.gift) return;
 
@@ -1862,6 +1998,7 @@ export class Wardrobe extends BaseMenu {
             hoverClose: false,
             hoverNavLeft: false,
             hoverNavRight: false,
+            previewChromaVariantId,
         };
     }
 
@@ -1923,7 +2060,14 @@ export class Wardrobe extends BaseMenu {
                 if (focused?.disabled) return true;
 
                 if (focused?.action === 'buy') {
-                    this._openConfirmModal(item);
+                    this._openConfirmModal(item, {
+                        previewChromaVariantId: this.modal.previewChromaVariantId,
+                    });
+                    return true;
+                }
+
+                if (focused?.action === 'wear') {
+                    this._wearItem(item);
                     return true;
                 }
 
@@ -1944,12 +2088,14 @@ export class Wardrobe extends BaseMenu {
             if (event.key === 'Enter') {
                 this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
 
+                const item = this.modal.item;
+
                 if (this.modal.focusIndex === 1) {
-                    this._closeModal();
+                    this._openPreviewModal(item, {
+                        previewChromaVariantId: this.modal.previewChromaVariantId,
+                    });
                     return true;
                 }
-
-                const item = this.modal.item;
 
                 if (!this._purchaseItem(item)) {
                     this._closeModal();
@@ -2075,14 +2221,23 @@ export class Wardrobe extends BaseMenu {
             this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
 
             if (this.modal.type === 'preview') {
-                if (b.action === 'buy') this._openConfirmModal(this.modal.item);
-                else this._closeModal();
+                if (b.action === 'buy') {
+                    this._openConfirmModal(this.modal.item, {
+                        previewChromaVariantId: this.modal.previewChromaVariantId,
+                    });
+                } else if (b.action === 'wear') {
+                    this._wearItem(this.modal.item);
+                } else {
+                    this._closeModal();
+                }
                 return true;
             }
 
             if (this.modal.type === 'confirm') {
                 if (b.action === 'no') {
-                    this._closeModal();
+                    this._openPreviewModal(this.modal.item, {
+                        previewChromaVariantId: this.modal.previewChromaVariantId,
+                    });
                     return true;
                 }
 
@@ -2114,6 +2269,20 @@ export class Wardrobe extends BaseMenu {
         return { x, y, w: s, h: s };
     }
 
+    _getModalPreviewBoxRect(panel = this._getModalPanelRect()) {
+        const pcfg = this.UI.modal.preview;
+        const sw = this.width;
+        const sh = this.height;
+        const boxPad = pcfg.pad;
+
+        const w = Math.ceil(sw + boxPad * 2);
+        const h = Math.ceil(sh + boxPad * 2);
+        const x = Math.floor(panel.x + panel.w - this.UI.modal.pad - w);
+        const y = Math.floor(panel.y + this.UI.modal.pad + this.UI.modal.headerH + 18);
+
+        return { x, y, w, h, boxPad };
+    }
+
     _getModalButtons() {
         if (!this.modal) return [];
 
@@ -2130,14 +2299,14 @@ export class Wardrobe extends BaseMenu {
             const item = this.modal.item;
             const owned = this._isItemOwned(item);
 
-            if (item.kind === 'skin' && item.gift) {
-                const x = panel.x + panel.w - 26 - btnW;
-                return [{ x, y, w: btnW, h: btnH, label: 'Close', action: 'close', disabled: false }];
-            }
-
             if (owned) {
-                const x = panel.x + panel.w - 26 - btnW;
-                return [{ x, y, w: btnW, h: btnH, label: 'Close', action: 'close', disabled: false }];
+                const isWearing = this._isCurrentlyWearing(item);
+                const x2 = panel.x + panel.w - 26 - btnW;
+                const x1 = x2 - gap - btnW;
+                return [
+                    { x: x1, y, w: btnW, h: btnH, label: 'Wear', action: 'wear', disabled: isWearing },
+                    { x: x2, y, w: btnW, h: btnH, label: 'Close', action: 'close', disabled: false },
+                ];
             }
 
             const afford = this._canAfford(item);
@@ -2200,11 +2369,6 @@ export class Wardrobe extends BaseMenu {
         const item = this._getItemDef(tab, key);
         if (!item) return;
 
-        if (item.kind === 'skin' && item.gift && !this._isSkinOwned(item.key)) {
-            this._openPreviewModal(item);
-            return;
-        }
-
         if (!this._isItemOwned(item)) {
             this._openPreviewModal(item);
             return;
@@ -2214,25 +2378,6 @@ export class Wardrobe extends BaseMenu {
         else this.setCurrentCosmeticByKey(tab.slot, key);
 
         this._save();
-    }
-
-    _isHighlightedItemEquipped() {
-        const tab = this._getActiveTab();
-        if (!tab) return false;
-
-        const keys = this._getActiveKeysForTab(tab);
-        const idx = this.selectedOption ?? 0;
-        if (idx < 0 || idx >= keys.length) return false;
-
-        const key = keys[idx];
-
-        if (tab.kind === 'skin') {
-            const equipped = (this.currentSkinKey === 'shinySkin') ? 'defaultSkin' : (this.currentSkinKey || 'defaultSkin');
-            return key === equipped;
-        }
-
-        const equippedKey = this.currentCosmetics?.[tab.slot] ?? 'none';
-        return key === equippedKey;
     }
 
     _tryEnterCycleChromaOnEquippedSelection() {
@@ -2289,6 +2434,9 @@ export class Wardrobe extends BaseMenu {
             const cur = this.scrollYByTab[tabIndex] || 0;
             const next = cur + ((this.targetScrollYByTab[tabIndex] || 0) - cur) * this.scrollEase;
             this.scrollYByTab[tabIndex] = (layout.maxScroll < 12) ? 0 : Math.max(0, Math.min(next, layout.maxScroll));
+
+            for (const confetti of this.purchaseConfetti) confetti.update(deltaTime);
+            this.purchaseConfetti = this.purchaseConfetti.filter((c) => !c.markedForDeletion);
         }
     }
 
@@ -2387,6 +2535,20 @@ export class Wardrobe extends BaseMenu {
 
             this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
             this._selectCurrent();
+            return;
+        }
+
+        if (event.key === 'i' || event.key === 'I') {
+            const tab = this._getActiveTab();
+            const keys = this._getActiveKeysForTab(tab);
+            const idx = this.selectedOption ?? 0;
+            if (idx < 0 || idx >= keys.length) return;
+
+            const item = this._getItemDef(tab, keys[idx]);
+            if (!item) return;
+
+            this._openPreviewModal(item);
+            this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
             return;
         }
 
@@ -2530,6 +2692,15 @@ export class Wardrobe extends BaseMenu {
             }
         }
 
+        const hoveredTabIndex = this._hitTestTab(mouseX, mouseY);
+        if (hoveredTabIndex !== this.tabHoverIndex) {
+            this.tabHoverIndex = hoveredTabIndex;
+            if (hoveredTabIndex >= 0 && hoveredTabIndex !== this.activeTabIndex) {
+                this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
+            }
+        }
+        if (hoveredTabIndex >= 0) return;
+
         // outfit slot hover
         const outfitHit = this._hitTestOutfitPanel(mouseX, mouseY);
         const newSlot = outfitHit ? outfitHit.slot : -1;
@@ -2606,6 +2777,7 @@ export class Wardrobe extends BaseMenu {
         const ctx = this._getUiCtx();
 
         if (this._tryClickChromaSwatch(mouseX, mouseY)) return;
+        if (this._tryClickDetailsIcon(mouseX, mouseY)) return;
 
         // outfit slots click
         const outfitHit = this._hitTestOutfitPanel(mouseX, mouseY);
@@ -2661,17 +2833,11 @@ export class Wardrobe extends BaseMenu {
             }
         }
 
-        const s = this._getSidebarLayout();
-        const tabX = s.sidebarX + this.UI.sidebar.tabOffsetX;
-        const tabW = s.tabW;
-
-        for (let i = 0; i < this.tabs.length; i++) {
-            const y = s.sidebarTopY + i * (s.tabH + s.gap);
-            const inTab = mouseX >= tabX && mouseX <= tabX + tabW && mouseY >= y && mouseY <= y + s.tabH;
-            if (inTab) {
-                this._setActiveTab(i);
-                return;
-            }
+        const clickedTabIndex = this._hitTestTab(mouseX, mouseY);
+        if (clickedTabIndex >= 0) {
+            this._setActiveTab(clickedTabIndex, { playSound: false });
+            this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
+            return;
         }
 
         const gb = this._getGoBackLayout();
@@ -2721,6 +2887,7 @@ export class Wardrobe extends BaseMenu {
 
         this._clearChromaHitboxes();
         this._clearModalChromaHitboxes();
+        this._clearDetailsHitboxes();
 
         context.save();
 
@@ -2759,8 +2926,517 @@ export class Wardrobe extends BaseMenu {
         this._drawOutfitSlots(context);
 
         if (this.modal) this._drawModal(context);
+        this._drawPurchaseConfetti(context);
 
         context.restore();
+    }
+
+    _drawPurchaseConfetti(ctx) {
+        if (!Array.isArray(this.purchaseConfetti) || this.purchaseConfetti.length === 0) return;
+        for (const confetti of this.purchaseConfetti) confetti.draw(ctx);
+    }
+
+    _getFontPx(ctx, fallback = 20) {
+        const match = String(ctx.font || '').match(/(\d+(?:\.\d+)?)px/);
+        const px = match ? Number(match[1]) : fallback;
+        return Number.isFinite(px) ? px : fallback;
+    }
+
+    _getCoinIconCenterY(ctx, y, textBaseline, fontPx, text = '0') {
+        const metrics = ctx.measureText(String(text));
+        const ascent = metrics.actualBoundingBoxAscent;
+        const descent = metrics.actualBoundingBoxDescent;
+
+        if (Number.isFinite(ascent) && Number.isFinite(descent)) {
+            if (textBaseline === 'top') return y + (ascent + descent) / 2;
+            if (textBaseline === 'middle') return y + (descent - ascent) / 2;
+            return y + (descent - ascent) / 2;
+        }
+
+        if (textBaseline === 'top') return y + fontPx * 0.5;
+        if (textBaseline === 'middle') return y - fontPx * 0.18;
+        return y - fontPx * 0.36;
+    }
+
+    _drawCreditCoinAmount(ctx, amount, x, y, {
+        align = 'left',
+        textBaseline = ctx.textBaseline || 'alphabetic',
+        font = ctx.font,
+        fillStyle = ctx.fillStyle,
+        iconRadius = null,
+        gap = 6,
+        iconOffsetY = 0,
+    } = {}) {
+        const text = String(amount);
+
+        ctx.save();
+        ctx.font = font;
+        ctx.textBaseline = textBaseline;
+        ctx.textAlign = 'left';
+        ctx.fillStyle = fillStyle;
+
+        const fontPx = this._getFontPx(ctx);
+        const radius = iconRadius ?? Math.max(5, fontPx * 0.42);
+        const iconD = radius * 2;
+        const textW = ctx.measureText(text).width;
+        const totalW = iconD + gap + textW;
+
+        let startX = x;
+        if (align === 'center') startX = x - totalW / 2;
+        else if (align === 'right') startX = x - totalW;
+
+        drawCoinIcon(
+            ctx,
+            startX + radius,
+            this._getCoinIconCenterY(ctx, y, textBaseline, fontPx, text) + iconOffsetY,
+            radius,
+            { palette: 'silver' }
+        );
+
+        ctx.fillText(text, startX + iconD + gap, y);
+        ctx.restore();
+    }
+
+    _makeLinearGradient(ctx, x0, y0, x1, y1, stops) {
+        if (typeof ctx.createLinearGradient !== 'function') return null;
+        const g = ctx.createLinearGradient(x0, y0, x1, y1);
+        for (const [offset, color] of stops) g.addColorStop(offset, color);
+        return g;
+    }
+
+    _drawModalShell(ctx, panel) {
+        const cfg = this.UI.modal;
+
+        ctx.fillStyle = cfg.overlay;
+        ctx.fillRect(-2, -2, this.game.width + 4, this.game.height + 4);
+
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.70)';
+        ctx.shadowBlur = 28;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 14;
+        this._roundRect(ctx, panel.x, panel.y, panel.w, panel.h, cfg.radius);
+        ctx.fillStyle = 'rgba(0,0,0,0.55)';
+        ctx.fill();
+        ctx.restore();
+
+        const panelFill = this._makeLinearGradient(ctx, panel.x, panel.y, panel.x, panel.y + panel.h, [
+            [0, cfg.panelFill],
+            [0.52, 'rgba(18, 12, 32, 0.98)'],
+            [1, cfg.panelFillBottom],
+        ]);
+
+        ctx.save();
+        this._roundRect(ctx, panel.x, panel.y, panel.w, panel.h, cfg.radius);
+        ctx.fillStyle = panelFill || cfg.panelFill;
+        ctx.fill();
+        ctx.strokeStyle = cfg.panelStroke;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        ctx.strokeStyle = cfg.panelInnerStroke;
+        ctx.lineWidth = 1;
+        this._roundRect(ctx, panel.x + 5, panel.y + 5, panel.w - 10, panel.h - 10, Math.max(8, cfg.radius - 5));
+        ctx.stroke();
+        ctx.restore();
+
+        const headerFill = this._makeLinearGradient(ctx, panel.x, panel.y, panel.x + panel.w, panel.y, [
+            [0, 'rgba(255, 218, 65, 0.00)'],
+            [0.24, cfg.accentSoft],
+            [0.68, 'rgba(255, 255, 255, 0.06)'],
+            [1, 'rgba(255, 218, 65, 0.00)'],
+        ]);
+
+        ctx.save();
+        this._roundRect(ctx, panel.x + 10, panel.y + 10, panel.w - 20, cfg.headerH + 6, Math.max(10, cfg.radius - 8));
+        ctx.fillStyle = headerFill || cfg.accentSoft;
+        ctx.fill();
+        ctx.restore();
+
+        ctx.save();
+        const lineY = panel.y + cfg.pad + cfg.headerH;
+        const line = this._makeLinearGradient(ctx, panel.x + cfg.pad, lineY, panel.x + panel.w - cfg.pad, lineY, [
+            [0, 'rgba(255, 218, 65, 0.00)'],
+            [0.12, cfg.headerDividerStroke],
+            [0.50, 'rgba(255, 255, 255, 0.22)'],
+            [0.88, cfg.headerDividerStroke],
+            [1, 'rgba(255, 218, 65, 0.00)'],
+        ]);
+        ctx.strokeStyle = line || cfg.headerDividerStroke;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(panel.x + cfg.pad, lineY);
+        ctx.lineTo(panel.x + panel.w - cfg.pad, lineY);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    _drawModalHeader(ctx, panel, title, kicker) {
+        const cfg = this.UI.modal;
+        const headerX = panel.x + cfg.pad;
+        const headerY = panel.y + cfg.pad;
+
+        ctx.save();
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+        ctx.shadowColor = 'rgba(0,0,0,0.65)';
+        ctx.shadowBlur = 6;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+
+        ctx.font = cfg.kickerFont;
+        ctx.fillStyle = cfg.accent;
+        ctx.fillText(kicker, headerX, headerY + 14);
+
+        ctx.font = cfg.titleFont;
+        ctx.fillStyle = 'white';
+        ctx.fillText(title, headerX, headerY + 48);
+        ctx.restore();
+    }
+
+    _drawModalPurchaseSummary(ctx, {
+        x,
+        y,
+        w,
+        price,
+        balance,
+        after,
+        heading = 'PURCHASE SUMMARY',
+        priceLabel = 'Price',
+    }) {
+        const cfg = this.UI.modal;
+        const rowH = 29;
+        const pad = 14;
+        const headerH = 22;
+        const dividerGap = 12;
+        const h = pad + headerH + rowH * 3 + dividerGap + pad;
+        const isShort = after < 0;
+        const resultLabel = isShort ? 'Short by' : 'Remaining';
+        const resultAmount = isShort ? Math.abs(after) : after;
+        const resultFill = isShort ? 'rgba(255,80,80,0.95)' : 'rgba(180,255,150,0.95)';
+
+        ctx.save();
+
+        this._roundRect(ctx, x, y, w, h, 16);
+        const fill = this._makeLinearGradient(ctx, x, y, x, y + h, [
+            [0, 'rgba(255,255,255,0.075)'],
+            [1, 'rgba(255,255,255,0.035)'],
+        ]);
+        ctx.fillStyle = fill || 'rgba(255,255,255,0.055)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.13)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.font = cfg.kickerFont;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillStyle = cfg.accent;
+        ctx.fillText(heading, x + pad, y + pad + 12);
+
+        const drawRow = ({ label, amount, yy, valueFill = cfg.infoValueFill, bold = false }) => {
+            ctx.font = bold ? cfg.infoFont : '18px Arial';
+            ctx.fillStyle = bold ? 'rgba(255,255,255,0.86)' : cfg.infoLabelFill;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(label, x + pad, yy);
+
+            this._drawCreditCoinAmount(ctx, amount, x + w - pad, yy, {
+                align: 'right',
+                textBaseline: 'middle',
+                font: bold ? cfg.infoFont : '18px Arial',
+                fillStyle: valueFill,
+                iconRadius: bold ? 8.5 : 7.5,
+                gap: 7,
+            });
+        };
+
+        let yy = y + pad + headerH + rowH / 2;
+        drawRow({ label: 'Balance', amount: balance, yy });
+        yy += rowH;
+        drawRow({ label: priceLabel, amount: price, yy });
+
+        const lineY = yy + rowH / 2 + dividerGap / 2;
+        ctx.strokeStyle = 'rgba(255,255,255,0.13)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x + pad, lineY);
+        ctx.lineTo(x + w - pad, lineY);
+        ctx.stroke();
+
+        yy += rowH + dividerGap;
+        drawRow({ label: resultLabel, amount: resultAmount, yy, valueFill: resultFill, bold: true });
+
+        ctx.restore();
+        return h;
+    }
+
+    _getItemSourceDef(item) {
+        if (!item) return null;
+        if (item.kind === 'skin') return SKINS?.[item.key] || null;
+        return COSMETICS?.[item.slot]?.[item.key] || null;
+    }
+
+    _getItemTypeLabel(item) {
+        if (item.kind === 'skin') return 'Skin';
+
+        const tab = this.tabs.find((t) => t.kind === 'cosmetic' && t.slot === item.slot);
+        return tab.title;
+    }
+
+    _getItemPreviewDescription(item) {
+        return this._getItemSourceDef(item).description.trim();
+    }
+
+    _drawWrappedModalText(ctx, text, x, y, maxW, lineH, maxLines = 3) {
+        const words = String(text || '').split(/\s+/).filter(Boolean);
+        if (!words.length || maxLines <= 0) return 0;
+
+        let line = '';
+        let drawn = 0;
+
+        for (let i = 0; i < words.length; i++) {
+            const word = words[i];
+            const test = line ? `${line} ${word}` : word;
+
+            if (ctx.measureText(test).width <= maxW || !line) {
+                line = test;
+                continue;
+            }
+
+            const isLastAllowedLine = drawn === maxLines - 1;
+            if (isLastAllowedLine) {
+                let clipped = line;
+                while (clipped.length > 0 && ctx.measureText(`${clipped}...`).width > maxW) {
+                    clipped = clipped.slice(0, -1).trimEnd();
+                }
+                ctx.fillText(`${clipped || line}...`, x, y + drawn * lineH);
+                return maxLines * lineH;
+            }
+
+            ctx.fillText(line, x, y + drawn * lineH);
+            drawn++;
+            line = word;
+        }
+
+        if (line && drawn < maxLines) {
+            ctx.fillText(line, x, y + drawn * lineH);
+            drawn++;
+        }
+
+        return drawn * lineH;
+    }
+
+    _drawModalPreviewDetails(ctx, {
+        item,
+        x,
+        y,
+        w,
+        price,
+        balance,
+        owned = false,
+    }) {
+        const cfg = this.UI.modal;
+        const pad = 14;
+        const h = 176;
+        ctx.save();
+
+        this._roundRect(ctx, x, y, w, h, 16);
+        const fill = this._makeLinearGradient(ctx, x, y, x, y + h, [
+            [0, 'rgba(255,255,255,0.070)'],
+            [1, 'rgba(255,255,255,0.032)'],
+        ]);
+        ctx.fillStyle = fill || 'rgba(255,255,255,0.052)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.13)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.font = cfg.kickerFont;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillStyle = cfg.accent;
+        ctx.fillText('ITEM DETAILS', x + pad, y + pad + 14);
+
+        ctx.font = 'bold 19px Arial';
+        ctx.fillStyle = 'rgba(255,255,255,0.84)';
+        ctx.fillText(this._getItemTypeLabel(item), x + pad, y + pad + 43);
+
+        ctx.font = '18px Arial';
+        ctx.fillStyle = 'rgba(255,255,255,0.66)';
+        this._drawWrappedModalText(
+            ctx,
+            this._getItemPreviewDescription(item),
+            x + pad,
+            y + pad + 70,
+            w - pad * 2,
+            21,
+            2
+        );
+
+        const firstRowY = y + h - pad - 41;
+        const secondRowY = firstRowY + 29;
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.11)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x + pad, firstRowY - 24);
+        ctx.lineTo(x + w - pad, firstRowY - 24);
+        ctx.stroke();
+
+        if (owned) {
+            const rowY = Math.round((firstRowY + secondRowY) / 2);
+            const font = 'bold 18px Arial';
+            const isFree = price <= 0;
+            const rowLabel = isFree ? 'Free' : 'Purchased';
+
+            // checkmark circle on the left
+            const ckR = 9;
+            const ckX = x + pad + ckR;
+            const ckY = rowY - 1;
+
+            ctx.beginPath();
+            ctx.arc(ckX, ckY, ckR, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(80,220,100,0.16)';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(100,230,120,0.65)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            ctx.strokeStyle = 'rgba(150,255,170,0.95)';
+            ctx.lineWidth = 2.2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(ckX - 4, ckY + 0.5);
+            ctx.lineTo(ckX - 1, ckY + 3.5);
+            ctx.lineTo(ckX + 4.5, ckY - 3);
+            ctx.stroke();
+
+            ctx.font = font;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = cfg.infoLabelFill;
+            ctx.fillText(rowLabel, ckX + ckR + 8, rowY);
+
+            if (!isFree) {
+                this._drawCreditCoinAmount(ctx, price, x + w - pad, rowY, {
+                    align: 'right',
+                    textBaseline: 'middle',
+                    font,
+                    fillStyle: cfg.infoValueFill,
+                    iconRadius: 7.5,
+                    gap: 6,
+                });
+            }
+        } else {
+            const canAfford = balance >= price;
+            const priceFill = canAfford ? 'rgba(180,255,150,0.95)' : 'rgba(255,80,80,0.95)';
+
+            const drawCoinRow = ({ label, amount, rowY, valueFill }) => {
+                const font = 'bold 18px Arial';
+
+                ctx.font = font;
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = cfg.infoLabelFill;
+                ctx.fillText(label, x + pad, rowY);
+
+                this._drawCreditCoinAmount(ctx, amount, x + w - pad, rowY, {
+                    align: 'right',
+                    textBaseline: 'middle',
+                    font,
+                    fillStyle: valueFill,
+                    iconRadius: 7.5,
+                    gap: 6,
+                });
+            };
+
+            drawCoinRow({ label: 'Balance', amount: balance, rowY: firstRowY,  valueFill: cfg.infoValueFill });
+            drawCoinRow({ label: 'Price',   amount: price,   rowY: secondRowY, valueFill: priceFill });
+        }
+
+        ctx.restore();
+        return h;
+    }
+
+    _isChromaPurchaseItem(item) {
+        if (!item || item.kind !== 'cosmetic' || !item.slot || item.key === 'none') return false;
+        const cfg = getCosmeticChromaConfig(item.slot, item.key);
+        return !!(cfg && Array.isArray(cfg.variants) && cfg.variants.length > 1);
+    }
+
+    _drawModalChromaIncludedNote(ctx, { item, x, y }) {
+        if (!this._isChromaPurchaseItem(item)) return 0;
+
+        const h = 32;
+
+        ctx.save();
+
+        const iconX = x + 22;
+        const iconY = y + h / 2 + 1;
+        const dots = [
+            { x: iconX - 7, y: iconY + 3, fill: '#5de6ff' },
+            { x: iconX, y: iconY - 5, fill: '#ffdf5a' },
+            { x: iconX + 7, y: iconY + 3, fill: '#ff72d2' },
+        ];
+
+        for (const dot of dots) {
+            ctx.beginPath();
+            ctx.arc(dot.x, dot.y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = dot.fill;
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(0,0,0,0.55)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
+
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(255,255,255,0.62)';
+        ctx.fillText('Includes all chroma variants', x + 48, y + h / 2 + 1);
+
+        ctx.restore();
+        return h;
+    }
+
+    _drawModalGiftSkinNote(ctx, { item, x, y }) {
+        if (!item || item.kind !== 'skin' || !item.gift) return 0;
+
+        const h = 32;
+
+        ctx.save();
+
+        const iconX = x + 22;
+        const iconY = y + h / 2;
+
+        // star icon — same center and footprint as the chroma dots
+        const starR = 11;
+        const points = 5;
+        ctx.beginPath();
+        for (let i = 0; i < points * 2; i++) {
+            const angle = (i * Math.PI) / points - Math.PI / 2;
+            const r = i % 2 === 0 ? starR : starR * 0.42;
+            const px = iconX + r * Math.cos(angle);
+            const py = iconY + r * Math.sin(angle);
+            i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(255,218,65,0.90)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(255,255,255,0.62)';
+        ctx.fillText('Unlocked by defeating a boss', x + 48, y + h / 2 + 1);
+
+        ctx.restore();
+        return h;
     }
 
     _drawCreditCoins(ctx) {
@@ -2793,7 +3469,15 @@ export class Wardrobe extends BaseMenu {
 
         ctx.font = cfg.valueFont;
         ctx.fillStyle = isMaxed ? 'rgba(255,120,120,0.95)' : cfg.valueFill;
-        ctx.fillText(`${cc} cc`, x, y + 18);
+        this._drawCreditCoinAmount(ctx, cc, x, y + 18, {
+            align: 'right',
+            textBaseline: 'top',
+            font: cfg.valueFont,
+            fillStyle: isMaxed ? 'rgba(255,120,120,0.95)' : cfg.valueFill,
+            iconRadius: 9,
+            gap: 7,
+            iconOffsetY: 2,
+        });
 
         ctx.restore();
     }
@@ -2895,13 +3579,20 @@ export class Wardrobe extends BaseMenu {
 
         for (let i = 0; i < this.tabs.length; i++) {
             const isActive = i === this.activeTabIndex;
+            const isHovered = i === this.tabHoverIndex;
 
             const x = s.sidebarX + this.UI.sidebar.tabOffsetX;
             const y = s.sidebarTopY + i * (s.tabH + s.gap);
 
-            context.fillStyle = cfg.bgFill;
+            context.fillStyle = (isActive || isHovered) ? cfg.bgFillHover : cfg.bgFill;
             this._roundRect(context, x, y, s.tabW, s.tabH, cfg.bgRadius);
             context.fill();
+
+            if (isActive || isHovered) {
+                context.strokeStyle = cfg.strokeHover;
+                context.lineWidth = 2;
+                context.stroke();
+            }
 
             if (isActive) {
                 context.fillStyle = cfg.activeBarFill;
@@ -2917,7 +3608,7 @@ export class Wardrobe extends BaseMenu {
             }
 
             context.font = isActive ? `bold ${cfg.fontActive}px Arial` : `${cfg.fontInactive}px Arial`;
-            context.fillStyle = isActive ? 'yellow' : 'white';
+            context.fillStyle = (isActive || isHovered) ? cfg.textFillHover : 'white';
             context.textAlign = 'left';
             context.fillText(this.tabs[i].title, x + cfg.padLeft, y + Math.floor(s.tabH / 2));
         }
@@ -2960,6 +3651,7 @@ export class Wardrobe extends BaseMenu {
                     tab,
                     label: labels[idx],
                     key: keys[idx],
+                    index: idx,
                     x,
                     y,
                     size: layout.card,
@@ -3003,7 +3695,7 @@ export class Wardrobe extends BaseMenu {
         this.barRect = { x: barX, y: trackY, w, h: trackH, thumbY, thumbH };
     }
 
-    _drawItemCard(context, { tab, key, label, x, y, size, isSelected }) {
+    _drawItemCard(context, { tab, key, index, label, x, y, size, isSelected }) {
         const cfg = this.UI.card;
 
         context.save();
@@ -3012,7 +3704,7 @@ export class Wardrobe extends BaseMenu {
         const owned = this._isItemOwned(item);
 
         const isNoneCosmetic = (tab.kind === 'cosmetic' && key === 'none');
-        const showPrice = (!owned && !isNoneCosmetic && !(item?.kind === 'skin' && item?.gift));
+        const showPrice = (!owned && !isNoneCosmetic);
 
         const isEquipped = (() => {
             if (!item) return false;
@@ -3050,7 +3742,7 @@ export class Wardrobe extends BaseMenu {
 
         const maxTextWidth = size - 12;
         const price = Math.max(0, Math.floor(item?.price || 0));
-        const priceText = `${price} cc`;
+        const priceText = String(price);
 
         context.textAlign = 'center';
         context.textBaseline = 'alphabetic';
@@ -3065,7 +3757,10 @@ export class Wardrobe extends BaseMenu {
         let priceFont = cfg.priceMaxFont;
         if (showPrice) {
             context.font = `${isSelected ? 'bold ' : ''}${priceFont}px Arial`;
-            while (priceFont > cfg.priceMinFont && context.measureText(priceText).width > maxTextWidth) {
+            while (
+                priceFont > cfg.priceMinFont &&
+                context.measureText(priceText).width + (priceFont * 0.95 * 2) > maxTextWidth
+            ) {
                 priceFont--;
                 context.font = `${isSelected ? 'bold ' : ''}${priceFont}px Arial`;
             }
@@ -3172,6 +3867,14 @@ export class Wardrobe extends BaseMenu {
             context.restore();
         }
 
+        if (isSelected && owned && !isNoneCosmetic) {
+            const d = cfg.details;
+            const bx = x + d.margin;
+            const by = y + d.margin;
+            this._drawDetailsIcon(context, bx, by, d.size, true);
+            this._detailsHitboxes.push({ key, index, x: bx - 4, y: by - 4, w: d.size + 8, h: d.size + 8 });
+        }
+
         // chroma circles
         if (showChroma) {
             const stripTopY = Math.floor(y + size - reservedLabelH + cfg.chroma.padTop - 5);
@@ -3200,9 +3903,16 @@ export class Wardrobe extends BaseMenu {
         context.fillText(label, baseX, nameY);
 
         if (showPrice) {
-            context.font = `${isSelected ? 'bold ' : ''}${priceFont}px Arial`;
-            context.fillStyle = isSelected ? 'rgba(255,255,0,0.92)' : 'rgba(255,255,255,0.75)';
-            context.fillText(priceText, baseX, priceY);
+            const priceFill = isSelected ? 'rgba(255,255,0,0.92)' : 'rgba(255,255,255,0.75)';
+            this._drawCreditCoinAmount(context, price, baseX, priceY, {
+                align: 'center',
+                textBaseline: 'bottom',
+                font: `${isSelected ? 'bold ' : ''}${priceFont}px Arial`,
+                fillStyle: priceFill,
+                iconRadius: Math.max(4.5, priceFont * 0.42),
+                gap: 4,
+                iconOffsetY: 1,
+            });
         }
 
         context.restore();
@@ -3232,6 +3942,37 @@ export class Wardrobe extends BaseMenu {
         ctx.beginPath();
         ctx.arc(x, by + h * 0.45, 2.2, 0, Math.PI * 2);
         ctx.stroke();
+
+        ctx.restore();
+    }
+
+    _drawDetailsIcon(ctx, x, y, size, emphasized = false) {
+        const cfg = this.UI.card.details;
+        const r = size / 2;
+        const cx = x + r;
+        const cy = y + r;
+
+        ctx.save();
+        ctx.shadowColor = emphasized ? 'rgba(255,255,0,0.20)' : 'transparent';
+        ctx.shadowBlur = emphasized ? 8 : 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+
+        ctx.fillStyle = emphasized ? cfg.fillHover : cfg.fill;
+        ctx.strokeStyle = emphasized ? cfg.strokeHover : cfg.stroke;
+        ctx.lineWidth = emphasized ? 2 : 1.5;
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.shadowColor = 'transparent';
+        ctx.fillStyle = emphasized ? cfg.iconFillHover : cfg.iconFill;
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('i', cx, cy + 1);
 
         ctx.restore();
     }
@@ -3320,91 +4061,49 @@ export class Wardrobe extends BaseMenu {
         const panel = this._getModalPanelRect();
 
         ctx.save();
-
-        ctx.fillStyle = cfg.overlay;
-        ctx.fillRect(-2, -2, this.game.width + 4, this.game.height + 4);
-
-        ctx.fillStyle = cfg.panelFill;
-        ctx.strokeStyle = cfg.panelStroke;
-        ctx.lineWidth = 2;
-        this._roundRect(ctx, panel.x, panel.y, panel.w, panel.h, cfg.radius);
-        ctx.fill();
-        ctx.stroke();
+        this._drawModalShell(ctx, panel);
 
         ctx.shadowColor = 'transparent';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'alphabetic';
 
         const pad = cfg.pad;
-        const headerY = panel.y + pad;
-        const headerX = panel.x + pad;
-
-        ctx.save();
-        ctx.strokeStyle = cfg.headerDividerStroke;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(panel.x + pad, panel.y + pad + cfg.headerH);
-        ctx.lineTo(panel.x + panel.w - pad, panel.y + pad + cfg.headerH);
-        ctx.stroke();
-        ctx.restore();
 
         this._drawModalCloseButton(ctx);
 
         const contentX = panel.x + pad;
-        const contentTop = panel.y + pad + cfg.headerH + 36;
+        const contentTop = panel.y + pad + cfg.headerH + 18;
+        const contentW = panel.w - (pad * 2) - 190;
 
         if (this.modal.type === 'preview') {
             const item = this.modal.item;
             const owned = this._isItemOwned(item);
 
-            ctx.font = cfg.titleFont;
-            ctx.fillStyle = 'white';
-            ctx.fillText(item.label, headerX, headerY + 30);
+            this._drawModalHeader(
+                ctx,
+                panel,
+                item.label,
+                owned ? 'OWNED ITEM' : 'PREVIEW'
+            );
+
 
             this._drawModalSpritePreview(ctx, panel, item);
             this._drawModalNavButtons(ctx);
 
-            let y = contentTop;
-
-            if (item.kind === 'skin' && item.gift) {
-                const flag = getGiftFlag(item.key);
-                ctx.font = cfg.bodyFont;
-                ctx.fillStyle = 'rgba(255,255,255,0.88)';
-                ctx.fillText(
-                    owned ? 'Gift unlocked.' : 'Locked gift skin.',
-                    contentX,
-                    y
-                );
-                y += 30;
-
-                if (!owned && flag) {
-                    ctx.fillStyle = 'rgba(255,255,255,0.72)';
-                    ctx.font = cfg.smallFont;
-                    ctx.fillText(`Unlock by defeating the boss (${flag}).`, contentX, y);
-                }
-
-                this._drawModalButtons(ctx);
-                ctx.restore();
-                return;
-            }
-
             const cc = Math.max(0, Math.floor(this.game.creditCoins || 0));
             const price = Math.max(0, Math.floor(item.price || 0));
-            const after = cc - price;
 
-            ctx.font = cfg.bodyFont;
-            ctx.fillStyle = 'rgba(255,255,255,0.92)';
-            ctx.fillText(`Price: ${price} cc`, contentX, y);
-            y += 30;
+            const detailsH = this._drawModalPreviewDetails(ctx, {
+                item,
+                x: contentX,
+                y: contentTop,
+                w: contentW,
+                price,
+                balance: cc,
+                owned,
+            });
 
-            ctx.fillStyle = 'rgba(255,255,255,0.88)';
-            ctx.fillText(`Your balance: ${cc} cc`, contentX, y);
-            y += 30;
-
-            if (!owned) {
-                ctx.fillStyle = (after < 0) ? 'rgba(255,80,80,0.95)' : 'rgba(255,255,255,0.80)';
-                ctx.fillText(`After purchase: ${after} cc`, contentX, y);
-            }
+            this._drawModalGiftSkinNote(ctx, { item, x: contentX, y: contentTop + detailsH + 8 });
 
             this._drawModalButtons(ctx);
             ctx.restore();
@@ -3414,39 +4113,28 @@ export class Wardrobe extends BaseMenu {
         if (this.modal.type === 'confirm') {
             const item = this.modal.item;
 
-            if (item.kind === 'skin' && item.gift) {
-                this._closeModal();
-                ctx.restore();
-                return;
-            }
-
             const price = Math.max(0, Math.floor(item.price || 0));
             const cc = Math.max(0, Math.floor(this.game.creditCoins || 0));
             const after = cc - price;
 
-            ctx.font = cfg.titleFont;
-            ctx.fillStyle = 'white';
-            ctx.fillText('Confirm purchase', headerX, headerY + 30);
+            this._drawModalHeader(ctx, panel, `Buy ${item.label}?`, 'FINAL CHECK');
 
             this._drawModalSpritePreview(ctx, panel, item);
 
             let y = contentTop;
 
-            ctx.font = cfg.bodyFont;
-            ctx.fillStyle = 'rgba(255,255,255,0.92)';
-            ctx.fillText(`Buy ${item.label}?`, contentX, y);
-            y += 30;
+            y += this._drawModalPurchaseSummary(ctx, {
+                x: contentX,
+                y,
+                w: contentW,
+                price,
+                balance: cc,
+                after,
+                heading: 'PAYMENT BREAKDOWN',
+                priceLabel: 'Price',
+            }) + 10;
 
-            ctx.fillStyle = 'rgba(255,255,255,0.88)';
-            ctx.fillText(`Cost: ${price} cc`, contentX, y);
-            y += 30;
-
-            ctx.fillStyle = 'rgba(255,255,255,0.80)';
-            ctx.fillText(`Your balance: ${cc} cc`, contentX, y);
-            y += 30;
-
-            ctx.fillStyle = (after < 0) ? 'rgba(255,80,80,0.95)' : 'rgba(255,255,255,0.80)';
-            ctx.fillText(`After purchase: ${after} cc`, contentX, y);
+            this._drawModalChromaIncludedNote(ctx, { item, x: contentX, y });
 
             this._drawModalButtons(ctx);
             ctx.restore();
@@ -3467,16 +4155,23 @@ export class Wardrobe extends BaseMenu {
         ctx.fillStyle = hovered ? c.bgHover : c.bg;
         ctx.strokeStyle = hovered ? c.strokeHover : c.stroke;
         ctx.lineWidth = hovered ? 3 : 2;
-
         this._roundRect(ctx, r.x, r.y, r.w, r.h, c.radius);
         ctx.fill();
         ctx.stroke();
 
-        ctx.font = c.font;
-        ctx.fillStyle = c.fg;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('×', r.x + r.w / 2, r.y + r.h / 2 + 1);
+        const cx = r.x + r.w / 2;
+        const cy = r.y + r.h / 2;
+        const d = 7;
+
+        ctx.strokeStyle = hovered ? 'yellow' : c.fg;
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(cx - d, cy - d);
+        ctx.lineTo(cx + d, cy + d);
+        ctx.moveTo(cx + d, cy - d);
+        ctx.lineTo(cx - d, cy + d);
+        ctx.stroke();
 
         ctx.restore();
     }
@@ -3486,23 +4181,44 @@ export class Wardrobe extends BaseMenu {
 
         const sw = this.width;
         const sh = this.height;
-        const boxPad = pcfg.pad;
-
-        const boxW = Math.ceil(sw + boxPad * 2);
-        const boxH = Math.ceil(sh + boxPad * 2);
-
-        const rightPad = this.UI.modal.pad;
-        const topPad = this.UI.modal.pad + this.UI.modal.headerH + 18;
-        const boxX = Math.floor(panel.x + panel.w - rightPad - boxW);
-        const boxY = Math.floor(panel.y + topPad);
+        const { x: boxX, y: boxY, w: boxW, h: boxH, boxPad } = this._getModalPreviewBoxRect(panel);
 
         ctx.save();
-        ctx.fillStyle = pcfg.boxFill;
+        const boxFill = this._makeLinearGradient(ctx, boxX, boxY, boxX, boxY + boxH, [
+            [0, pcfg.boxFill],
+            [0.58, 'rgba(32, 24, 44, 0.98)'],
+            [1, pcfg.boxFillBottom],
+        ]);
+        ctx.fillStyle = boxFill || pcfg.boxFill;
         ctx.strokeStyle = pcfg.boxStroke;
         ctx.lineWidth = 2;
         this._roundRect(ctx, boxX, boxY, boxW, boxH, pcfg.radius);
         ctx.fill();
         ctx.stroke();
+
+        ctx.save();
+        this._roundRect(ctx, boxX + 6, boxY + 6, boxW - 12, boxH - 12, Math.max(8, pcfg.radius - 6));
+        ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.restore();
+
+        if (pcfg.glowEnabled) {
+            ctx.save();
+            const glowX = boxX + boxW / 2;
+            const glowY = boxY + boxH * 0.82;
+            const glowR = Math.min(boxW, boxH) * 0.31;
+
+            ctx.translate(glowX, glowY);
+            ctx.scale(1.45, 0.34);
+            ctx.shadowColor = `rgba(255, 218, 65, ${pcfg.glowAlpha})`;
+            ctx.shadowBlur = 18;
+            ctx.fillStyle = `rgba(255, 218, 65, ${pcfg.glowAlpha * 0.55})`;
+            ctx.beginPath();
+            ctx.arc(0, 0, glowR, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
 
         const { skinImg, overlays } = this._buildModalPreviewPose(item);
         const sx = this.frameX * sw;
@@ -3515,14 +4231,13 @@ export class Wardrobe extends BaseMenu {
 
             let previewHueDeg = 0;
             const owned = this._isItemOwned(item);
-            if (!owned && item?.kind === 'cosmetic' && item.key !== 'none') {
+            if (item?.kind === 'cosmetic' && item.key !== 'none') {
                 const ccfg = getCosmeticChromaConfig(item.slot, item.key);
                 if (ccfg && Array.isArray(ccfg.variants) && ccfg.variants.length > 1) {
-                    const resolved = resolveCosmeticChromaVariant(
-                        item.slot,
-                        item.key,
-                        this.modal?.previewChromaVariantId || ccfg.default
-                    );
+                    const variantId = this.modal?.previewChromaVariantId ||
+                        (owned ? this._getCosmeticChromaVariantId(item.slot, item.key) : null) ||
+                        ccfg.default;
+                    const resolved = resolveCosmeticChromaVariant(item.slot, item.key, variantId);
                     previewHueDeg = Number.isFinite(resolved?.deg) ? resolved.deg : 0;
                 }
             }
@@ -3534,12 +4249,13 @@ export class Wardrobe extends BaseMenu {
 
         ctx.restore();
 
-        const owned = this._isItemOwned(item);
-        if (!owned && item?.kind === 'cosmetic' && item.key !== 'none') {
+        if (item?.kind === 'cosmetic' && item.key !== 'none') {
             const ccfg = getCosmeticChromaConfig(item.slot, item.key);
             if (ccfg && Array.isArray(ccfg.variants) && ccfg.variants.length > 1) {
+                const ownedItem = this._isItemOwned(item);
                 const currentId =
                     this.modal?.previewChromaVariantId ||
+                    (ownedItem ? this._getCosmeticChromaVariantId(item.slot, item.key) : null) ||
                     resolveCosmeticChromaVariant(item.slot, item.key, ccfg.default)?.id ||
                     ccfg.variants[0]?.id;
 
@@ -3573,19 +4289,35 @@ export class Wardrobe extends BaseMenu {
             const hovered = (dir === -1) ? !!this.modal.hoverNavLeft : !!this.modal.hoverNavRight;
 
             ctx.save();
-            ctx.fillStyle = hovered ? ncfg.bgHover : ncfg.bg;
-            ctx.strokeStyle = hovered ? ncfg.strokeHover : ncfg.stroke;
-            ctx.lineWidth = hovered ? 3 : 2;
+            ctx.shadowColor = hovered ? 'rgba(255, 218, 65, 0.36)' : 'rgba(0,0,0,0.35)';
+            ctx.shadowBlur = hovered ? 10 : 5;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 3;
 
             this._roundRect(ctx, rect.x, rect.y, rect.w, rect.h, ncfg.radius);
+            ctx.fillStyle = hovered ? ncfg.bgHover : ncfg.bg;
             ctx.fill();
+            ctx.strokeStyle = hovered ? ncfg.strokeHover : ncfg.stroke;
+            ctx.lineWidth = hovered ? 3 : 2;
             ctx.stroke();
 
-            ctx.fillStyle = ncfg.fg;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.font = 'bold 24px Arial';
-            ctx.fillText(dir === -1 ? '‹' : '›', rect.x + rect.w / 2, rect.y + rect.h / 2 + 1);
+            const cx = rect.x + rect.w / 2;
+            const cy = rect.y + rect.h / 2;
+            const tipX = cx + dir * 6;
+            const backX = cx - dir * 5;
+            const topY = cy - 9;
+            const bottomY = cy + 9;
+
+            ctx.shadowColor = 'transparent';
+            ctx.strokeStyle = hovered ? 'yellow' : ncfg.fg;
+            ctx.lineWidth = 3.2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(backX, topY);
+            ctx.lineTo(tipX, cy);
+            ctx.lineTo(backX, bottomY);
+            ctx.stroke();
 
             ctx.restore();
         };
@@ -3605,6 +4337,7 @@ export class Wardrobe extends BaseMenu {
             const b = btns[i];
             const isDisabled = !!b.disabled;
             const isFocused = (!isDisabled && i === focus);
+            const isPositive = b.action === 'buy' || b.action === 'yes';
 
             ctx.save();
 
@@ -3613,9 +4346,20 @@ export class Wardrobe extends BaseMenu {
                 ctx.strokeStyle = 'rgba(255,255,255,0.10)';
                 ctx.lineWidth = 2;
             } else {
-                ctx.fillStyle = isFocused ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.25)';
+                const fill = isFocused && isPositive
+                    ? this._makeLinearGradient(ctx, b.x, b.y, b.x, b.y + b.h, [
+                        [0, 'rgba(255, 230, 92, 0.34)'],
+                        [1, 'rgba(255, 172, 36, 0.24)'],
+                    ])
+                    : null;
+
+                ctx.fillStyle = fill || (isFocused ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.25)');
                 ctx.strokeStyle = isFocused ? 'rgba(255,255,0,0.95)' : 'rgba(255,255,255,0.20)';
                 ctx.lineWidth = isFocused ? 3 : 2;
+                ctx.shadowColor = isFocused ? 'rgba(255, 218, 65, 0.28)' : 'rgba(0,0,0,0.22)';
+                ctx.shadowBlur = isFocused ? 16 : 7;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 4;
             }
 
             this._roundRect(ctx, b.x, b.y, b.w, b.h, 14);
@@ -3623,6 +4367,10 @@ export class Wardrobe extends BaseMenu {
             ctx.stroke();
 
             ctx.font = cfg.btnFont;
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 1;
+            ctx.shadowOffsetY = 1;
+            ctx.shadowColor = 'rgba(0,0,0,0.60)';
             ctx.fillStyle = isDisabled ? 'rgba(255,255,255,0.45)' : (isFocused ? 'yellow' : 'white');
 
             ctx.textAlign = 'center';

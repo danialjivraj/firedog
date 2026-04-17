@@ -136,7 +136,8 @@ describe('Cutscene', () => {
     describe('characterColors membership', () => {
         it('has known character and token keys', () => {
             expect(cutscene.characterColors[cutscene.firedog]).toBeDefined();
-            expect(cutscene.characterColors[cutscene.coinText]).toBeDefined();
+            expect(cutscene.characterColors[cutscene.coinsLabel]).toBe('orange');
+            expect(cutscene.characterColors[cutscene.creditCoinsLabel]).toBe('#aeaeaf');
         });
 
         it('does not include unknown strings', () => {
@@ -1112,11 +1113,34 @@ describe('Cutscene', () => {
         let ctx;
 
         beforeEach(() => {
+            const fillStyles = [];
+
             ctx = {
-                fillStyle: '',
+                save: jest.fn(),
+                restore: jest.fn(),
+                translate: jest.fn(),
+                scale: jest.fn(),
+                beginPath: jest.fn(),
+                arc: jest.fn(),
+                fill: jest.fn(),
+                stroke: jest.fn(),
+
+                strokeStyle: '',
+                lineWidth: 1,
+                shadowColor: '',
+                shadowBlur: 0,
+                shadowOffsetX: 0,
+                shadowOffsetY: 0,
                 fillText: jest.fn(),
                 measureText: jest.fn((text) => ({ width: String(text).length * 10 })),
             };
+
+            Object.defineProperty(ctx, 'fillStyle', {
+                configurable: true,
+                get: () => fillStyles[fillStyles.length - 1] || '',
+                set: (value) => fillStyles.push(value),
+            });
+            ctx.__fillStyles = fillStyles;
         });
 
         it('renders each typed character', () => {
@@ -1184,6 +1208,173 @@ describe('Cutscene', () => {
 
             const punctuationCallIndex = ctx.fillText.mock.calls.findIndex(call => call[0] === '!');
             expect(punctuationCallIndex).toBeGreaterThan(-1);
+        });
+
+        it('renders the coin icon placeholder as an inline HUD coin icon', () => {
+            const fullDialogue = `You earned ${cutscene.coinIcon}.`;
+            cutscene.dialogue = [{
+                character: 'Narrator',
+                dialogue: fullDialogue,
+                images: [],
+            }];
+            cutscene.dialogueIndex = 0;
+
+            cutscene.drawDialogueTextWrapped(
+                ctx,
+                'Narrator: ',
+                fullDialogue,
+                fullDialogue,
+                cutscene.buildColorSpans(fullDialogue)
+            );
+
+            const drawnText = ctx.fillText.mock.calls.map(call => call[0]).join('');
+
+            expect(drawnText).toBe('Youearned.');
+            expect(ctx.arc).toHaveBeenCalled();
+        });
+
+        it('renders the shared coin icon before a coin amount', () => {
+            const fullDialogue = `You have ${cutscene.coinIcon}50.`;
+
+            cutscene.dialogue = [{
+                character: 'Narrator',
+                dialogue: fullDialogue,
+                images: [],
+            }];
+            cutscene.dialogueIndex = 0;
+
+            cutscene.drawDialogueTextWrapped(
+                ctx,
+                'Narrator: ',
+                fullDialogue,
+                fullDialogue,
+                cutscene.buildColorSpans(fullDialogue)
+            );
+
+            const drawnText = ctx.fillText.mock.calls.map(call => call[0]).join('');
+            const firstDigitCall = ctx.fillText.mock.calls.find(call => call[0] === '5');
+            const iconTranslateCall = ctx.translate.mock.calls[0];
+
+            expect(drawnText).toBe('Youhave50.');
+            expect(iconTranslateCall[0]).toBeLessThan(firstDigitCall[1]);
+            expect(ctx.arc).toHaveBeenCalled();
+        });
+
+        it('reveals a coin amount one visual token at a time', () => {
+            const fullDialogue = `You have ${cutscene.coinIcon}50.`;
+            const iconStart = fullDialogue.indexOf(cutscene.coinIcon);
+
+            cutscene.dialogue = [{
+                character: 'Narrator',
+                dialogue: fullDialogue,
+                images: [],
+            }];
+            cutscene.dialogueIndex = 0;
+
+            // partial stops right after the icon char: icon visible, digits not yet
+            cutscene.drawDialogueTextWrapped(
+                ctx,
+                'Narrator: ',
+                fullDialogue,
+                fullDialogue.slice(0, iconStart + 1),
+                cutscene.buildColorSpans(fullDialogue)
+            );
+
+            expect(ctx.arc).toHaveBeenCalled();
+            expect(ctx.fillText.mock.calls.some(call => call[0] === '5')).toBe(false);
+
+            ctx.fillText.mockClear();
+            ctx.arc.mockClear();
+            ctx.translate.mockClear();
+
+            // partial includes icon + first digit: icon + '5' visible, '0' not yet
+            cutscene.drawDialogueTextWrapped(
+                ctx,
+                'Narrator: ',
+                fullDialogue,
+                fullDialogue.slice(0, iconStart + 2),
+                cutscene.buildColorSpans(fullDialogue)
+            );
+
+            expect(ctx.arc).toHaveBeenCalled();
+            expect(ctx.fillText.mock.calls.some(call => call[0] === '5')).toBe(true);
+            expect(ctx.fillText.mock.calls.some(call => call[0] === '0')).toBe(false);
+        });
+
+        it('renders credit coins as a silver inline HUD coin icon', () => {
+            const fullDialogue = `Any leftover will then be converted into ${cutscene.creditCoinIcon}${cutscene.creditCoinsLabel}.`;
+
+            cutscene.dialogue = [{
+                character: 'Narrator',
+                dialogue: fullDialogue,
+                images: [],
+            }];
+            cutscene.dialogueIndex = 0;
+
+            cutscene.drawDialogueTextWrapped(
+                ctx,
+                'Narrator: ',
+                fullDialogue,
+                fullDialogue,
+                cutscene.buildColorSpans(fullDialogue)
+            );
+
+            const drawnText = ctx.fillText.mock.calls.map(call => call[0]).join('');
+
+            expect(drawnText).toBe('AnyleftoverwillthenbeconvertedintoCreditCoins.');
+            expect(ctx.__fillStyles).toContain('#cfd3db');
+            expect(ctx.arc).toHaveBeenCalled();
+        });
+
+        it('renders coin label text directly adjacent to its icon via placeholder characters', () => {
+            const fullDialogue = `Any leftover ${cutscene.coinIcon}${cutscene.coinsLabel} will then be converted into ${cutscene.creditCoinIcon}${cutscene.creditCoinsLabel}.`;
+
+            cutscene.dialogue = [{
+                character: 'Narrator',
+                dialogue: fullDialogue,
+                images: [],
+            }];
+            cutscene.dialogueIndex = 0;
+
+            cutscene.drawDialogueTextWrapped(
+                ctx,
+                'Narrator: ',
+                fullDialogue,
+                fullDialogue,
+                cutscene.buildColorSpans(fullDialogue)
+            );
+
+            const drawnText = ctx.fillText.mock.calls.map(call => call[0]).join('');
+
+            // label text is flush against its icon
+            expect(drawnText).toContain('leftoverCoins');
+            expect(drawnText).toContain('intoCreditCoins.');
+            // both gold and silver coin icons drawn
+            expect(ctx.__fillStyles).toContain('#F2AF2F');
+            expect(ctx.__fillStyles).toContain('#cfd3db');
+            expect(ctx.arc).toHaveBeenCalledTimes(4); // 2 arcs per icon (outer + inner circle)
+        });
+
+        it('does not turn coin-like text inside another word into an icon', () => {
+            cutscene.dialogue = [{
+                character: 'Narrator',
+                dialogue: "This can't be a coincidence.",
+                images: [],
+            }];
+            cutscene.dialogueIndex = 0;
+
+            cutscene.drawDialogueTextWrapped(
+                ctx,
+                'Narrator: ',
+                "This can't be a coincidence.",
+                "This can't be a coincidence.",
+                cutscene.buildColorSpans("This can't be a coincidence.")
+            );
+
+            const drawnText = ctx.fillText.mock.calls.map(call => call[0]).join('');
+
+            expect(drawnText).toContain('coincidence');
+            expect(ctx.arc).not.toHaveBeenCalled();
         });
     });
 

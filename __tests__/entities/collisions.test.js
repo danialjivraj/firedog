@@ -263,8 +263,10 @@ function makeGameAndLogic() {
     };
 
     const player = {
+        lives: 3,
+        maxLives: 5,
         energy: 0,
-        previousLives: game.lives,
+        previousLives: 3,
 
         isUnderwater: false,
 
@@ -321,6 +323,21 @@ function makeGameAndLogic() {
         width: 100,
         height: 90,
     };
+
+    Object.defineProperties(game, {
+        lives: {
+            configurable: true,
+            enumerable: true,
+            get: () => player.lives,
+            set: (value) => { player.lives = value; },
+        },
+        maxLives: {
+            configurable: true,
+            enumerable: true,
+            get: () => player.maxLives,
+            set: (value) => { player.maxLives = value; },
+        },
+    });
 
     game.player = player;
 
@@ -645,6 +662,12 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
             expect(ctx.game.particles.unshift).toHaveBeenCalled();
             expect(ctx.game.coins).toBe(39);
             expect(ctx.game.lives).toBe(2);
+            expect(ctx.game.floatingMessages[0].args[0]).toBe('-10');
+            expect(ctx.game.floatingMessages[0].args[3]).toMatchObject({
+                iconType: 'coin',
+                iconPosition: 'left',
+                coinIconLoss: true,
+            });
             randSpy.mockRestore();
         });
     });
@@ -2310,6 +2333,10 @@ describe('CollisionLogic.handlePowerCollisions — powerUps + powerDowns', () =>
 
         expect(ctx.game.floatingMessages.length).toBe(1);
         expect(ctx.game.floatingMessages[0].args[0]).toBe('+10');
+        expect(ctx.game.floatingMessages[0].args[3]).toMatchObject({
+            iconType: 'coin',
+            iconPosition: 'left',
+        });
     });
 
     test('RedPotion: activates red potion + timer, plays sound', () => {

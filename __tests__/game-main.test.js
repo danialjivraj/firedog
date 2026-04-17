@@ -299,8 +299,8 @@ describe('Game class (game-main.js)', () => {
     expect(game.width).toBe(1920);
     expect(game.height).toBe(689);
     expect(game.coins).toBe(0);
-    expect(game.lives).toBe(5);
-    expect(game.maxLives).toBe(10);
+    expect(game.player.lives).toBe(5);
+    expect(game.player.maxLives).toBe(10);
     expect(game.powerUpSpawnMultiplier).toBe(1);
     expect(game.powerDownSpawnMultiplier).toBe(1);
     expect(game.menu.main).toBeDefined();
@@ -479,7 +479,7 @@ describe('Game class (game-main.js)', () => {
         powerUpIndex: 1,
         powerDownIndex: 0,
       });
-      expect(g2.lives).toBe(7);
+      expect(g2.player.lives).toBe(7);
       expect(g2.powerUpSpawnMultiplier).toBe(0.5);
       expect(g2.powerDownSpawnMultiplier).toBe(0);
       expect(g2.glacikalDefeated).toBe(false);
@@ -2159,14 +2159,14 @@ describe('Game class (game-main.js)', () => {
       expect(game.noDamageDuringTutorial).toBe(false);
     });
 
-    it('sets gameOver when time > maxTime while underwater', () => {
+    it('sets gameOver when time > maxTimeUnderwater while underwater', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
       game.menu.pause.isPaused = false;
       game.tutorial.tutorialPause = false;
       game.cabin = { isFullyVisible: false };
       game.player = { update: () => { }, isUnderwater: true, x: 0, width: 0 };
       game.background = { update: () => { }, totalDistanceTraveled: 0 };
-      game.time = game.maxTime + 1;
+      game.time = game.maxTimeUnderwater + 1;
       game.update(10);
       expect(game.gameOver).toBe(true);
     });
