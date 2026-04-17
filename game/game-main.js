@@ -560,10 +560,10 @@ export class Game {
             this.saveGameState();
 
             const t = formatTimeMs(newMs, 2);
-            this.showRecordToast([
+            this._pendingClearToast = [
                 [{ text: "NEW RECORD!", fill: "yellow" }],
                 [{ text: "MAP CLEARED IN ", fill: "yellow" }, { text: t, fill: "orange" }],
-            ]);
+            ];
         }
     }
 

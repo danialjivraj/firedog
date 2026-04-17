@@ -1200,11 +1200,10 @@ describe('Game class (game-main.js)', () => {
       );
     });
 
-    it('updateBestFullClearRecord() triggers a toast with the expected text (default delay)', () => {
+    it('updateBestFullClearRecord() stores a pending toast with the expected text (default delay)', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
 
       game.saveGameState = jest.fn();
-      jest.spyOn(game, 'showRecordToast').mockImplementation(() => { });
       formatTimeMs.mockClear();
 
       game.winningCoins = 100;
@@ -1216,7 +1215,7 @@ describe('Game class (game-main.js)', () => {
       game.updateBestFullClearRecord();
 
       expect(formatTimeMs).toHaveBeenCalledWith(5000, 2);
-      expect(game.showRecordToast).toHaveBeenCalledWith(
+      expect(game._pendingClearToast).toEqual(
         [
           [{ text: 'NEW RECORD!', fill: 'yellow' }],
           [{ text: 'MAP CLEARED IN ', fill: 'yellow' }, { text: '07:30.95', fill: 'orange' }],

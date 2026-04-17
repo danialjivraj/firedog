@@ -79,6 +79,9 @@ export class PenguiniCutscene extends Cutscene {
                 setTimeout(() => {
                     this.game.currentMenu = this.game.menu.gameOver;
                 }, 20);
+            } else if (this.game._pendingClearToast) {
+                this.game.showRecordToast(this.game._pendingClearToast);
+                this.game._pendingClearToast = null;
             }
 
             this.removeEventListeners();
