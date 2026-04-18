@@ -212,7 +212,7 @@ describe('Enemy (base class)', () => {
     const bx = e.x;
     const by = e.y;
 
-    e.update(16);
+    e.update(13.333);
 
     expect(e.x).toBe(bx - (e.speedX + game.speed));
     expect(e.y).toBe(by + e.speedY);
@@ -222,7 +222,7 @@ describe('Enemy (base class)', () => {
     game.cabin.isFullyVisible = true;
     Object.assign(e, { x: 200, y: 80, speedX: 4, speedY: 6 });
 
-    e.update(0);
+    e.update(13.333);
 
     expect(e.x).toBe(200 - 4);
     expect(e.y).toBe(80 - 6);
@@ -454,7 +454,7 @@ describe('FlyingEnemy', () => {
     fe.va = Math.PI / 2;
     fe.angle = 0;
 
-    fe.update(16);
+    fe.update(13.333);
 
     expect(fe.y).toBeCloseTo(oldY + Math.sin(fe.va));
   });
@@ -489,7 +489,7 @@ describe('GroundEnemy / MovingGroundEnemy / ImmobileGroundEnemy', () => {
 
     const bx = inst.x;
     inst.speedX = 0;
-    inst.update(16);
+    inst.update(13.333);
 
     expect(inst.x).toBe(bx - game.speed);
   });
@@ -575,7 +575,7 @@ describe('VerticalEnemy', () => {
 
   it('update() increments y by speedY twice (base update + subclass update)', () => {
     ve.speedY = 4;
-    ve.update(16);
+    ve.update(13.333);
     expect(ve.y).toBe(8);
   });
 });
@@ -607,7 +607,7 @@ describe('FallingEnemy', () => {
   it('update() moves downward by speedY (in addition to base update)', () => {
     fe.speedY = 4;
     const oy = fe.y;
-    fe.update(16);
+    fe.update(13.333);
     expect(fe.y).toBe(oy + 4);
   });
 });
@@ -634,7 +634,7 @@ describe('UnderwaterEnemy', () => {
 
   it('oscillates y by sin(angle) after base update', () => {
     const baseY = ue.y;
-    ue.update(16);
+    ue.update(13.333);
     expect(ue.y).toBeCloseTo(baseY + Math.sin(ue.va));
   });
 });
@@ -672,7 +672,7 @@ describe('BeeInstances', () => {
   it('when player is outside chaseDistance, drifts left by speedX + currentSpeed (plus base scrolling)', () => {
     const ox = bee.x;
     bee.passedPlayer = false;
-    bee.update(16);
+    bee.update(13.333);
     expect(bee.x).toBeCloseTo(ox - (bee.speedX + bee.currentSpeed));
   });
 
@@ -737,7 +737,7 @@ describe('Projectile & subclasses', () => {
   it('LeafAttack rotates over time and draw() does not throw', () => {
     const l = new LeafAttack(game, 10, 20, 30, 40, 2, 'img', 5, 0.01);
 
-    l.update(16);
+    l.update(13.333);
     expect(l.rotation).toBeGreaterThan(0);
 
     expect(() => l.draw(ctx)).not.toThrow();
@@ -759,7 +759,7 @@ describe('Projectile & subclasses', () => {
     const yb = new YellowBeam(game, 10, 20);
     const oldY = yb.y;
 
-    yb.update(16);
+    yb.update(13.333);
 
     expect(yb.y).toBe(oldY - 10);
   });
@@ -1282,7 +1282,7 @@ describe('Map 5 Enemies', () => {
     rf.x = game.player.x + 100;
     rf.darkLaserTimer = 3000;
 
-    rf.update(3000);
+    rf.update(225);
 
     expect(game.enemies.some((e) => e instanceof DarkLaser)).toBe(true);
   });
@@ -1292,7 +1292,7 @@ describe('Map 5 Enemies', () => {
     pf.x = game.player.x + 100;
     pf.iceballTimer = 2000;
 
-    pf.update(2000);
+    pf.update(150);
 
     expect(game.enemies.some((e) => e instanceof BerriflyIceBall)).toBe(true);
   });
