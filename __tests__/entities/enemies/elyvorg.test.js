@@ -347,7 +347,7 @@ describe("elyvorg.js entities – behavior coverage", () => {
             g.incrementMovement = 7;
 
             const start = g.x;
-            g.update(0);
+            g.update(13.333);
 
             expect(g.x).toBe(start + 7);
         });
@@ -395,7 +395,7 @@ describe("elyvorg.js entities – behavior coverage", () => {
             mockGame.player.y = 200;
             mockGame.player.isSlowed = true;
 
-            aura.update(0);
+            aura.update(13.333);
 
             expect(aura.y).toBe(100);
             expect(aura.rotationAngle).toBeGreaterThan(0);
@@ -409,13 +409,13 @@ describe("elyvorg.js entities – behavior coverage", () => {
 
             mockGame.player.x = 300;
             const before = aura.rotationAngle;
-            aura.update(16);
+            aura.update(13.333);
 
             expect(aura.rotationAngle).toBeCloseTo(before + aura.rotationSpeed);
             expect(aura.shouldInvert).toBe(true);
 
             mockGame.player.x = 0;
-            aura.update(16);
+            aura.update(13.333);
             expect(aura.shouldInvert).toBe(false);
         });
 
@@ -439,7 +439,7 @@ describe("elyvorg.js entities – behavior coverage", () => {
             ew.rotationAngle = 0;
 
             const before = ew.rotationAngle;
-            ew.update(0);
+            ew.update(13.333);
 
             expect(ew.rotationAngle).toBeCloseTo(before + ew.rotationSpeed);
         });
@@ -1254,7 +1254,7 @@ describe("elyvorg.js entities – behavior coverage", () => {
 
             boss.x = mockGame.width - 1;
 
-            boss.runningAway(0, "elyvorg");
+            boss.runningAway(13.333, "elyvorg");
 
             expect(mockGame.background.totalDistanceTraveled).toBe(mockGame.maxDistance - 6);
             expect(boss.markedForDeletion).toBe(true);
@@ -1270,7 +1270,7 @@ describe("elyvorg.js entities – behavior coverage", () => {
             boss.x = mockGame.player.x;
             mockGame.enemies = [];
 
-            boss.runLogic();
+            boss.runLogic(13.333);
 
             expect(mockGame.enemies.some((e) => e instanceof PurpleSlash)).toBe(true);
         });

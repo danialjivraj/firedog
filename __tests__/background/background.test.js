@@ -1552,8 +1552,8 @@ describe('RaindropSplashAnimation', () => {
         game.speed = 10;
         splash.x = 50;
 
-        splash.update(1);
-        expect(splash.x).toBe(30);
+        splash.update(13.333);
+        expect(splash.x).toBeCloseTo(30);
     });
 
     test('draw renders only while currentFrame < maxFrames', () => {

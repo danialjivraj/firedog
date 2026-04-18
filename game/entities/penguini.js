@@ -1,3 +1,5 @@
+import { BASE_FRAME_MS } from '../config/constants.js';
+
 export class Penguini {
     constructor(game, width, height, image, maxFrame) {
         this.frameX = 0;
@@ -28,7 +30,8 @@ export class Penguini {
             this.frameTimer += deltaTime;
         }
         if (!this.game.cabin.isFullyVisible) {
-            this.x -= this.game.speed;
+            const dt = deltaTime / BASE_FRAME_MS;
+            this.x -= this.game.speed * dt;
 
             if (this.x <= this.game.fixedPenguinX) {
                 this.isFullyVisible = true;

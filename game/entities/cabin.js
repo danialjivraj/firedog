@@ -1,3 +1,5 @@
+import { BASE_FRAME_MS } from '../config/constants.js';
+
 export class Cabin {
     constructor(game, cabinImageId, width, height, y) {
         this.frameX = 0;
@@ -19,7 +21,8 @@ export class Cabin {
     }
     update(deltaTime) {
         if (!this.isFullyVisible) {
-            this.x -= this.game.speed;
+            const dt = deltaTime / BASE_FRAME_MS;
+            this.x -= this.game.speed * dt;
 
             if (this.frameTimer > this.frameInterval) {
                 this.frameTimer = 0;

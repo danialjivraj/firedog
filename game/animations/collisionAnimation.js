@@ -1,5 +1,6 @@
 import { Skulnap } from "../entities/enemies/enemies.js";
 import { FloatingMessage } from "./floatingMessages.js";
+import { BASE_FRAME_MS } from '../config/constants.js';
 
 export class Collision {
     constructor(
@@ -51,9 +52,10 @@ export class Collision {
     }
 
     update(deltaTime) {
-        this.x -= this.game.speed;
+        const dt = deltaTime / BASE_FRAME_MS;
+        this.x -= this.game.speed * dt;
 
-        if (this.clipRect) this.clipRect.x -= this.game.speed;
+        if (this.clipRect) this.clipRect.x -= this.game.speed * dt;
 
         if (this.frameTimer > this.frameInterval) {
             this.frameX++;
@@ -504,11 +506,12 @@ export class DisintegrateCollision {
     }
 
     update(deltaTime) {
+        const dt = deltaTime / BASE_FRAME_MS;
         if (this.followTarget) {
             this.x = this.followTarget.x + this.followTarget.width * 0.5;
             this.y = this.followTarget.y + this.followTarget.height * 0.5;
         } else {
-            this.x -= this.game.speed;
+            this.x -= this.game.speed * dt;
         }
 
         this.timer += deltaTime;
@@ -529,6 +532,8 @@ export class DisintegrateCollision {
 
             shard.offsetX = dx;
             shard.offsetY = dy;
+
+            shard.rotation += shard.spin * dt;
 
             shard.alpha = 1 - t * 1.1;
             shard.scale = 1 - t * 0.85;
@@ -824,11 +829,12 @@ export class NuclearDisintegrationCollision {
     }
 
     update(deltaTime) {
+        const dtScale = deltaTime / BASE_FRAME_MS;
         if (this.followTarget) {
             this.x = this.followTarget.x + this.followTarget.width * 0.5;
             this.y = this.followTarget.y + this.followTarget.height * 0.5;
         } else {
-            this.x -= this.game.speed;
+            this.x -= this.game.speed * dtScale;
         }
 
         this.timer += deltaTime;
@@ -870,8 +876,8 @@ export class NuclearDisintegrationCollision {
             p.x += (p.vx + Math.sin(this.timer * 0.006 + p.pulse) * p.drift) * dt;
             p.y += (p.vy + Math.cos(this.timer * 0.004 + p.pulse) * p.drift * 0.35) * dt;
 
-            p.vx *= 0.992;
-            p.vy *= 0.992;
+            p.vx *= Math.pow(0.992, dtScale);
+            p.vy *= Math.pow(0.992, dtScale);
 
             const localAlpha = Math.max(0, (1 - t * 0.85) * p.baseAlpha);
             p.alpha = localAlpha * globalFadeAlpha;
@@ -1024,7 +1030,8 @@ export class GhostFadeOut {
     }
 
     update(deltaTime) {
-        this.x -= this.game.speed;
+        const dt = deltaTime / BASE_FRAME_MS;
+        this.x -= this.game.speed * dt;
 
         this.timer += deltaTime;
         const t = Math.min(1, this.timer / this.duration);
@@ -1347,7 +1354,7 @@ export class BallParticleBurstCollision {
     }
 
     update(deltaTime) {
-        const dt = deltaTime / 16.6667;
+        const dt = deltaTime / BASE_FRAME_MS;
 
         if (this.followTarget && !this.followTarget.markedForDeletion) {
             const { cx, cy } = this._centerFromTarget(this.followTarget);

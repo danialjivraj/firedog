@@ -1,4 +1,5 @@
 import { EnemyBoss, ImmobileGroundEnemy, Projectile, FallingEnemy, BurrowingGroundEnemy } from "./enemies.js";
+import { BASE_FRAME_MS } from "../../config/constants.js";
 import { IcyStormBallCollision, PointyIcicleShardCollision } from "../../animations/collisionAnimation.js";
 
 export class IceTrail extends ImmobileGroundEnemy {
@@ -28,7 +29,8 @@ export class PointyIcicleShard extends FallingEnemy {
     }
 
     update(deltaTime) {
-        this.y += this.speedY;
+        const dt = deltaTime / BASE_FRAME_MS;
+        this.y += this.speedY * dt;
         this.advanceFrame(deltaTime);
 
         const groundHitY = this.game.height - this.game.groundMargin - this.height;
@@ -96,6 +98,7 @@ export class IceSpider extends FallingEnemy {
     }
 
     update(deltaTime) {
+        const dt = deltaTime / BASE_FRAME_MS;
         const groundY = this.game.height - this.height - this.game.groundMargin;
 
         const spiderCenterX = this.x + this.width / 2;
@@ -105,7 +108,7 @@ export class IceSpider extends FallingEnemy {
             if (this.state === "falling") {
                 this.shouldInvert = playerCenterX > spiderCenterX;
 
-                this.y += this.speedY;
+                this.y += this.speedY * dt;
                 if (this.y >= groundY) {
                     this.y = groundY;
                     this.speedY = 0;
@@ -113,7 +116,7 @@ export class IceSpider extends FallingEnemy {
                 }
             } else {
                 this.speedX = -this.chaseSpeed;
-                this.x += this.speedX;
+                this.x += this.speedX * dt;
                 this.shouldInvert = false;
             }
 
@@ -128,7 +131,7 @@ export class IceSpider extends FallingEnemy {
         if (this.state === "falling") {
             this.shouldInvert = playerCenterX > spiderCenterX;
 
-            this.y += this.speedY;
+            this.y += this.speedY * dt;
 
             if (this.y >= groundY) {
                 this.y = groundY;
@@ -138,7 +141,7 @@ export class IceSpider extends FallingEnemy {
         } else if (this.state === "chasing") {
             const dir = playerCenterX > spiderCenterX ? 1 : -1;
             this.speedX = dir * this.chaseSpeed;
-            this.x += this.speedX;
+            this.x += this.speedX * dt;
 
             this.shouldInvert = this.speedX > 0;
         }
@@ -215,7 +218,8 @@ export class IceSlash extends Projectile {
     }
 
     update(deltaTime) {
-        this.x += this.speedX;
+        const dt = deltaTime / BASE_FRAME_MS;
+        this.x += this.speedX * dt;
         this.advanceFrame(deltaTime);
 
         const offLeft = this.x + this.width < 0;
@@ -341,7 +345,7 @@ export class SpinningIceBalls extends Projectile {
             return;
         }
 
-        const step = deltaTime / 16.6667;
+        const step = deltaTime / BASE_FRAME_MS;
         this.rotationAngle += this.rotationSpeed * step;
 
         if (this.phase === "emerge") {
@@ -370,7 +374,7 @@ export class SpinningIceBalls extends Projectile {
                 }
             }
         } else {
-            this.x += this.speedX;
+            this.x += this.speedX * step;
         }
 
         this.advanceFrame(deltaTime);
@@ -730,7 +734,7 @@ export class Glacikal extends EnemyBoss {
     }
 
     jumpLogic(deltaTime) {
-        const scale = deltaTime / 16.6667;
+        const scale = deltaTime / BASE_FRAME_MS;
         this.speedY = 0;
 
         if (this.jumpPhase === "ascend") {
@@ -864,7 +868,8 @@ export class Glacikal extends EnemyBoss {
     }
 
     runLogic(deltaTime) {
-        this.x += this.runningDirection;
+        const dt = deltaTime / BASE_FRAME_MS;
+        this.x += this.runningDirection * dt;
 
         if (this.runStopAtTheMiddle && this.isInTheMiddle) {
             this.backToIdleSetUp();

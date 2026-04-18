@@ -97,7 +97,7 @@ describe('PowerUp & PowerDown subclasses (merged)', () => {
 
             test('update moves left when cabin not visible and animation wraps when needed', () => {
                 const start = red.x;
-                red.update(16);
+                red.update(13.333);
                 expect(red.x).toBe(start - game.speed);
                 red.frameTimer = red.frameInterval + 1;
                 red.frameX = red.maxFrame;
@@ -177,7 +177,7 @@ describe('PowerUp & PowerDown subclasses (merged)', () => {
 
             test('update moves left when cabin not visible', () => {
                 const start = blue.x;
-                blue.update(16);
+                blue.update(13.333);
                 expect(blue.x).toBe(start - game.speed);
             });
 
@@ -280,7 +280,7 @@ describe('PowerUp & PowerDown subclasses (merged)', () => {
 
             test('update moves left when cabin not visible', () => {
                 const start = hg.x;
-                hg.update(16);
+                hg.update(13.333);
                 expect(hg.x).toBe(start - game.speed);
             });
 
@@ -374,7 +374,7 @@ describe('PowerUp & PowerDown subclasses (merged)', () => {
 
             test('update moves left when cabin not visible', () => {
                 const start = hl.x;
-                hl.update(16);
+                hl.update(13.333);
                 expect(hl.x).toBe(start - game.speed);
             });
 
@@ -465,7 +465,7 @@ describe('PowerUp & PowerDown subclasses (merged)', () => {
 
             test('update moves left when cabin not visible', () => {
                 const start = coin.x;
-                coin.update(16);
+                coin.update(13.333);
                 expect(coin.x).toBe(start - game.speed);
             });
 
@@ -552,7 +552,7 @@ describe('PowerUp & PowerDown subclasses (merged)', () => {
 
             test('update moves left when cabin not visible', () => {
                 const start = tank.x;
-                tank.update(16);
+                tank.update(13.333);
                 expect(tank.x).toBe(start - game.speed);
             });
 
@@ -649,7 +649,7 @@ describe('PowerUp & PowerDown subclasses (merged)', () => {
 
             test('update moves left when cabin not visible', () => {
                 const startX = iceDrink.x;
-                iceDrink.update(16);
+                iceDrink.update(13.333);
                 expect(iceDrink.x).toBe(startX - game.speed);
             });
 
@@ -750,7 +750,7 @@ describe('PowerUp & PowerDown subclasses (merged)', () => {
             test('update moves left when cabin not visible', () => {
                 const startX = iceCube.x;
                 game.cabin.isFullyVisible = false;
-                iceCube.update(16);
+                iceCube.update(13.333);
                 expect(iceCube.x).toBe(startX - game.speed);
             });
 
@@ -850,7 +850,7 @@ describe('PowerUp & PowerDown subclasses (merged)', () => {
 
             test('update moves left and animation increments frameTimer when below interval', () => {
                 const startX = cauldron.x;
-                cauldron.update(20);
+                cauldron.update(13.333);
                 expect(cauldron.x).toBe(startX - game.speed);
                 cauldron.frameInterval = 1000;
                 cauldron.frameTimer = 0;
@@ -930,7 +930,7 @@ describe('PowerUp & PowerDown subclasses (merged)', () => {
             test('update moves left when cabin not visible', () => {
                 hole.x = 500;
                 game.cabin.isFullyVisible = false;
-                hole.update(16);
+                hole.update(13.333);
                 expect(hole.x).toBe(500 - game.speed);
             });
 
@@ -1078,7 +1078,7 @@ describe('PowerUp & PowerDown subclasses (merged)', () => {
             test('update moves left when cabin not visible', () => {
                 const startX = confuse.x;
                 game.cabin.isFullyVisible = false;
-                confuse.update(16);
+                confuse.update(13.333);
                 expect(confuse.x).toBe(startX - game.speed);
             });
 
@@ -1186,7 +1186,7 @@ describe('PowerUp & PowerDown subclasses (merged)', () => {
             test('update moves left when cabin not visible', () => {
                 const startX = skull.x;
                 game.cabin.isFullyVisible = false;
-                skull.update(16);
+                skull.update(13.333);
                 expect(skull.x).toBe(startX - game.speed);
             });
 
@@ -1292,7 +1292,7 @@ describe('PowerUp & PowerDown subclasses (merged)', () => {
             test('update moves left when cabin not visible', () => {
                 const startX = tank.x;
                 game.cabin.isFullyVisible = false;
-                tank.update(16);
+                tank.update(13.333);
                 expect(tank.x).toBe(startX - game.speed);
             });
 

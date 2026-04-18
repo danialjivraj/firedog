@@ -1,3 +1,5 @@
+import { BASE_FRAME_MS } from '../config/constants.js';
+
 class Power {
     constructor(game) {
         this.game = game;
@@ -10,9 +12,10 @@ class Power {
     }
 
     update(deltaTime) {
+        const dt = deltaTime / BASE_FRAME_MS;
         const cabinVisible = this.game.cabin?.isFullyVisible === true;
         if (!cabinVisible) {
-            this.x -= this.game.speed;
+            this.x -= this.game.speed * dt;
         }
         if (this.frameTimer > this.frameInterval) {
             this.frameTimer = 0;

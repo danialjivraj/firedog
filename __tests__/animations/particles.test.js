@@ -129,7 +129,7 @@ describe('Dust', () => {
         dust.update();
 
         expect(dust.x).toBeCloseTo(ix - (speedX + game.speed));
-        expect(dust.y).toBeCloseTo(iy - speedY);
+        expect(dust.y).toBeCloseTo(iy - speedY - 2);
         expect(dust.size).toBeCloseTo(isz * 0.97);
         expect(dust.markedForDeletion).toBe(false);
     });
@@ -141,7 +141,7 @@ describe('Dust', () => {
         dust.draw(ctx);
 
         expect(ctx.drawImage).toHaveBeenCalledTimes(2);
-        expect(dust.y).toBeCloseTo(afterY - 2);
+        expect(dust.y).toBeCloseTo(afterY);
     });
 
     it('draw() does not move bubble up when game is paused', () => {
@@ -201,7 +201,7 @@ describe('Dust', () => {
             size,
             size
         );
-        expect(dust.y).toBeCloseTo(py - 2);
+        expect(dust.y).toBeCloseTo(py);
     });
 
     it('draw() on land draws this.image and does not apply underwater lift', () => {
@@ -292,7 +292,7 @@ describe('Bubble', () => {
 
         bubble.draw(ctx);
 
-        expect(bubble.y).toBeCloseTo(yAfter - 2);
+        expect(bubble.y).toBeCloseTo(yAfter);
     });
 
     it('draw() does nothing when createBubble=false underwater', () => {
@@ -1393,7 +1393,7 @@ describe('DashFireArc', () => {
 
         p.update();
 
-        expect(p.speedX).toBeCloseTo(1.144, 3);
+        expect(p.speedX).toBeCloseTo(1.12, 3);
 
         Math.random.mockRestore();
     });

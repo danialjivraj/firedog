@@ -1,4 +1,5 @@
 import { preShake, postShake } from '../animations/shake.js';
+import { BASE_FRAME_MS } from '../config/constants.js';
 import { fadeInAndOut } from '../animations/fading.js';
 import {
     COSMETIC_LAYER_ORDER,
@@ -19,6 +20,9 @@ export class Cutscene {
         this.dialogueIndex = 0;
         this.textIndex = 0;
         this.textBoxBackgroundOpacity = 0.65;
+
+        // typing advance timer
+        this._textAdvanceAccum = 0;
 
         // sfx typing/pause
         this.lastSoundPlayed = false;
@@ -1244,6 +1248,7 @@ export class Cutscene {
                         this.playSound2OnDotPause = true;
                     }
                     this.textIndex--;
+                    this._textAdvanceAccum = BASE_FRAME_MS;
                     this.pause = true;
                     this.continueDialogue = true;
                     this.isEnterPressed = false;
@@ -1257,6 +1262,7 @@ export class Cutscene {
                                 this.playSound2OnDotPause = true;
                             }
                             this.textIndex--;
+                            this._textAdvanceAccum = BASE_FRAME_MS;
                             this.pause = true;
                             this.continueDialogue = true;
                             this.isEnterPressed = false;
@@ -1280,7 +1286,11 @@ export class Cutscene {
         if (this.textIndex < dialogue.length) {
             if (!this.game.menu.pause.isPaused) {
                 this.playEightBitSound('bit1');
-                this.textIndex++;
+                this._textAdvanceAccum += (this.game.deltaTime ?? BASE_FRAME_MS);
+                if (this._textAdvanceAccum >= BASE_FRAME_MS) {
+                    this._textAdvanceAccum -= BASE_FRAME_MS;
+                    this.textIndex++;
+                }
             } else {
                 this.game.audioHandler.cutsceneDialogue.stopSound('bit1');
             }

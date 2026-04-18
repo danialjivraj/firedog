@@ -1510,8 +1510,9 @@ export class RaindropSplashAnimation {
         } else {
             this.markedForDeletion = true;
         }
+        const dt = deltaTime / BASE_FRAME_MS;
         this.groundSpeed = this.game.speed * this.bgSpeed;
-        this.x -= this.groundSpeed;
+        this.x -= this.groundSpeed * dt;
     }
 
     draw(context) {

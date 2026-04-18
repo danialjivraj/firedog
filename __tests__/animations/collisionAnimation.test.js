@@ -167,19 +167,19 @@ describe('Collision', () => {
 
   test('update scrolls left with game speed and accumulates time until frame interval passes', () => {
     const c = new Collision(game, 100, 100, 'testImage', 10, 10, 1, 10);
-
+    // x starts at 100 - 10/2 = 95; game.speed = 5
     c.update(50);
-    expect(c.x).toBe(90);
+    expect(c.x).toBeCloseTo(95 - 5 * (50 / 13.333), 1);
     expect(c.frameX).toBe(0);
     expect(c.frameTimer).toBe(50);
 
     c.update(60);
-    expect(c.x).toBe(85);
+    expect(c.x).toBeCloseTo(95 - 5 * (110 / 13.333), 1);
     expect(c.frameX).toBe(0);
     expect(c.frameTimer).toBe(110);
 
     c.update(1);
-    expect(c.x).toBe(80);
+    expect(c.x).toBeCloseTo(95 - 5 * (111 / 13.333), 1);
     expect(c.frameX).toBe(1);
     expect(c.frameTimer).toBe(0);
     expect(c.markedForDeletion).toBe(false);
@@ -199,8 +199,8 @@ describe('Collision', () => {
     const clipRect = { x: 50, h: 100 };
     const c = new Collision(game, 0, 0, 'testImage', 10, 10, 10, 10, 10, 10, clipRect);
 
-    c.update(0);
-    expect(clipRect.x).toBe(45);
+    c.update(13.333);
+    expect(clipRect.x).toBeCloseTo(45);
   });
 
   test('marks for deletion after advancing beyond maxFrame', () => {
@@ -600,9 +600,9 @@ describe('DisintegrateCollision', () => {
     const d = new DisintegrateCollision(game, source);
     const initialX = d.x;
 
-    d.update(100);
+    d.update(13.333);
 
-    expect(d.x).toBe(initialX - game.speed);
+    expect(d.x).toBeCloseTo(initialX - game.speed);
 
     const t = Math.min(1, d.timer / d.duration);
     const expectedAlpha = 1 - t * 1.1;
@@ -712,12 +712,12 @@ describe('GhostFadeOut', () => {
     const ghost = new GhostFadeOut(game, enemy);
     const initialX = ghost.x;
 
-    ghost.update(100);
-    expect(ghost.x).toBe(initialX - game.speed);
+    ghost.update(13.333);
+    expect(ghost.x).toBeCloseTo(initialX - game.speed);
     expect(ghost.alpha).toBeLessThan(1);
     expect(ghost.markedForDeletion).toBe(false);
 
-    ghost.update(400);
+    ghost.update(450);
     expect(ghost.markedForDeletion).toBe(true);
   });
 
@@ -909,7 +909,7 @@ describe('BallParticleBurstCollision', () => {
     const game = { speed: 10 };
     const burst = new BallParticleBurstCollision(game, 100, 0, { duration: 999, count: 1, scrollsWithWorld: true });
 
-    burst.update(16.6667);
+    burst.update(13.333);
     expect(burst.x).toBeCloseTo(90, 2);
   });
 
@@ -917,7 +917,7 @@ describe('BallParticleBurstCollision', () => {
     const game = { speed: 10 };
     const burst = new BallParticleBurstCollision(game, 100, 0, { duration: 999, count: 1, scrollsWithWorld: false });
 
-    burst.update(16.6667);
+    burst.update(13.333);
     expect(burst.x).toBeCloseTo(100, 2);
   });
 

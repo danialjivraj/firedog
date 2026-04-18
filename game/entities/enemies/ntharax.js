@@ -1,4 +1,5 @@
 import { Enemy, EnemyBoss, BurrowingGroundEnemy, Barrier, Projectile, FallingEnemy } from "./enemies.js";
+import { BASE_FRAME_MS } from "../../config/constants.js";
 import {
     DisintegrateCollision,
     HealingStarBurstCollision,
@@ -6355,12 +6356,13 @@ export class NTharax extends EnemyBoss {
         this._wasRunningLastFrame = runningNow;
     }
 
-    runLogic() {
+    runLogic(deltaTime) {
+        const dt = deltaTime / BASE_FRAME_MS;
         if (this.mode2RunToMiddle) {
             const tx = this.mode2MiddleTargetX;
             const step = this.runningDirection;
 
-            this.x += step;
+            this.x += step * dt;
 
             if ((step > 0 && this.x >= tx) || (step < 0 && this.x <= tx)) {
                 this.x = tx;
@@ -6374,7 +6376,7 @@ export class NTharax extends EnemyBoss {
             return;
         }
 
-        this.x += this.runningDirection;
+        this.x += this.runningDirection * dt;
 
         if (this.runStopAtTheMiddle && this.isInTheMiddle) {
             this.stopRunSFX();
@@ -6709,7 +6711,7 @@ export class NTharax extends EnemyBoss {
                         if (!this.mode2RunToMiddle) {
                             this.edgeConstraintLogic("ntharax");
                         }
-                        this.runLogic();
+                        this.runLogic(deltaTime);
                     } else if (this.state === "jump") {
                         this.jumpLogic(deltaTime);
                     } else if (this.state === "dive") {

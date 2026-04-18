@@ -76,16 +76,16 @@ describe('Penguini', () => {
 
         test('moves left until cabin is visible then snaps & stops', () => {
             const startX = penguini.x;
-            penguini.update(0);
-            expect(penguini.x).toBe(startX - game.speed);
+            penguini.update(13.333);
+            expect(penguini.x).toBeCloseTo(startX - game.speed);
 
             penguini.x = game.fixedPenguinX + game.speed - 1;
-            penguini.update(0);
+            penguini.update(13.333);
             expect(penguini.isFullyVisible).toBe(true);
             expect(penguini.x).toBe(game.fixedPenguinX);
 
             const prev = penguini.x;
-            penguini.update(0);
+            penguini.update(13.333);
             expect(penguini.x).toBe(prev);
         });
 
@@ -99,7 +99,7 @@ describe('Penguini', () => {
                 game.talkToPenguin = true;
                 game.player.x = 190;
                 penguini.showEnterToTalkToPenguini = false;
-                penguini.update(0);
+                penguini.update(13.333);
                 expect(game.player.x).toBe(185);
                 expect(penguini.showEnterToTalkToPenguini).toBe(true);
             });
@@ -107,7 +107,7 @@ describe('Penguini', () => {
             test('when notEnoughCoins & close enough, clamps similarly', () => {
                 game.notEnoughCoins = true;
                 game.player.x = 200;
-                penguini.update(0);
+                penguini.update(13.333);
                 expect(game.player.x).toBe(185);
                 expect(penguini.showEnterToTalkToPenguini).toBe(true);
             });

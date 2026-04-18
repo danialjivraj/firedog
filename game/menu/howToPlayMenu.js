@@ -1,4 +1,5 @@
 import { BaseMenu } from './baseMenu.js';
+import { BASE_FRAME_MS } from '../config/constants.js';
 import { screenColourFadeIn, screenColourFadeOut } from '../animations/screenColourFade.js';
 import { BluePotion, HealthLive, Cauldron, BlackHole, IceDrink, RedPotion } from '../entities/powerUpAndDown.js';
 import { PoisonBubbles, IceCrystalBubbles } from '../animations/particles.js';
@@ -1722,7 +1723,7 @@ export class HowToPlayMenu extends BaseMenu {
                 }
                 const s = this._demoRollingSeq;
                 const dt = Math.max(0, this._dt());
-                const dtScale = dt / 16;
+                const dtScale = dt / BASE_FRAME_MS;
                 const groundY = this.game.height - this.game.groundMargin;
                 const playerCX = this.game.width / 2 - 10;
                 const playerTopY = groundY - FH;
@@ -1800,7 +1801,7 @@ export class HowToPlayMenu extends BaseMenu {
                 }
                 const s = this._demoDivingSeq;
                 const dt = Math.max(0, this._dt());
-                const dtScale = dt / 16;
+                const dtScale = dt / BASE_FRAME_MS;
                 const groundY = this.game.height - this.game.groundMargin;
                 const groundTopY = groundY - FH;
                 const playerCX = this.game.width / 2;
@@ -2326,7 +2327,7 @@ export class HowToPlayMenu extends BaseMenu {
         const d = this._demoDash;
         const dt = Math.max(0, Number(deltaTime) || 0);
         const dtSec = dt / 1000;
-        const dtScale = dt / 16;
+        const dtScale = dt / BASE_FRAME_MS;
 
         d.waitMs = Math.max(0, this._num(cfg?.waitMs, d.waitMs || 1000));
         d.betweenMs = Math.max(0, this._num(cfg?.betweenMs, d.betweenMs || 500));
@@ -2937,7 +2938,7 @@ export class HowToPlayMenu extends BaseMenu {
                 const y = goingDown ? (o.downY ?? o.y ?? 0) : (o.upY ?? o.y ?? 0);
 
                 const dt = Math.max(0, this._dt());
-                const dtScale = dt / 16;
+                const dtScale = dt / BASE_FRAME_MS;
                 const GAME_SPEED = this.game.normalSpeed ?? 6;
 
                 const isRolling = state === 'ROLLING';

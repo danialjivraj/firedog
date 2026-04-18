@@ -1,4 +1,5 @@
 import { EnemyBoss, Barrier, Projectile, GroundEnemy, FallingEnemy, ImmobileGroundEnemy } from "./enemies.js";
+import { BASE_FRAME_MS } from "../../config/constants.js";
 import { MeteorExplosionCollision, DarkExplosionCollision, PoisonDropGroundCollision, GhostFadeOut } from "../../animations/collisionAnimation.js";
 import { PurpleWarningIndicator } from "../../animations/damageIndicator.js";
 
@@ -113,7 +114,8 @@ export class GhostElyvorg extends GroundEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        this.x += this.incrementMovement;
+        const dt = deltaTime / BASE_FRAME_MS;
+        this.x += this.incrementMovement * dt;
     }
     draw(context) {
         if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
@@ -155,10 +157,11 @@ export class GravitationalAura extends Projectile {
 
     update(deltaTime) {
         super.update(deltaTime);
+        const dt = deltaTime / BASE_FRAME_MS;
 
-        this.rotationAngle += this.rotationSpeed;
+        this.rotationAngle += this.rotationSpeed * dt;
 
-        this.y -= this.speedX;
+        this.y -= this.speedX * dt;
         this.shouldInvert = this.game.player.x + this.game.player.width / 2 > this.x + this.width / 2;
 
         if (this.elyvorg) {
@@ -170,7 +173,7 @@ export class GravitationalAura extends Projectile {
             }
             const deltaX = targetX - this.x;
             const followSpeed = 0.1;
-            this.x += deltaX * followSpeed;
+            this.x += deltaX * followSpeed * dt;
         }
 
         if (this.y <= 100) {
@@ -186,9 +189,9 @@ export class GravitationalAura extends Projectile {
             const pushbackDistancePlayer = 50;
             const playerPushbackX = this.player.x - directionXPlayer * pushbackDistancePlayer;
             if (this.player.isSlowed) {
-                this.player.x += (playerPushbackX - this.player.x) * 0.08;
+                this.player.x += (playerPushbackX - this.player.x) * 0.08 * dt;
             } else {
-                this.player.x += (playerPushbackX - this.player.x) * 0.12;
+                this.player.x += (playerPushbackX - this.player.x) * 0.12 * dt;
             }
         }
     }
@@ -224,7 +227,8 @@ export class ElectricWheel extends Projectile {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        this.rotationAngle += this.rotationSpeed;
+        const dt = deltaTime / BASE_FRAME_MS;
+        this.rotationAngle += this.rotationSpeed * dt;
     }
 
     draw(context) {
@@ -258,6 +262,7 @@ export class InkBomb extends Projectile {
 
     update(deltaTime) {
         super.update(deltaTime);
+        const dt = deltaTime / BASE_FRAME_MS;
 
         if (!this.soundPlayed) {
             this.game.audioHandler.enemySFX.playSound('elyvorg_ink_bomb_sound', false, true);
@@ -265,13 +270,13 @@ export class InkBomb extends Projectile {
         }
 
         if (this.scale < this.targetScale) {
-            this.scale += this.scaleSpeed;
+            this.scale += this.scaleSpeed * dt;
         } else {
             this.scale = this.targetScale;
         }
 
         if (!this.stopMoving && this.y > this.stopY) {
-            this.y -= this.verticalSpeed;
+            this.y -= this.verticalSpeed * dt;
         } else {
             if (!this.throwSoundPlayed) {
                 this.throwSoundPlayed = true;
@@ -317,15 +322,16 @@ export class PurpleFireball extends Projectile {
 
     update(deltaTime) {
         super.update(deltaTime);
+        const dt = deltaTime / BASE_FRAME_MS;
 
-        const sizeChange = this.size + this.growthRate > this.maxSize
+        const sizeChange = this.size + this.growthRate * dt > this.maxSize
             ? this.maxSize - this.size
-            : this.growthRate;
+            : this.growthRate * dt;
 
         this.size += sizeChange;
         this.y -= sizeChange / 2;
 
-        this.rotationAngle += this.rotationSpeed;
+        this.rotationAngle += this.rotationSpeed * dt;
     }
 
     draw(context) {
@@ -525,25 +531,27 @@ export class ChargeIndicatorBalls {
             }
         }
 
+        const dt = deltaTime / BASE_FRAME_MS;
+
         for (const p of this.particles) {
             p.age += deltaTime;
 
             p.wobble += p.wobbleSpeed * deltaTime;
             const wobbleX = Math.sin(p.wobble) * 0.35;
 
-            p.x += p.vx + wobbleX;
-            p.y += p.vy;
+            p.x += (p.vx + wobbleX) * dt;
+            p.y += p.vy * dt;
 
             const t = Math.min(1, p.age / p.life);
             p.a = 0.9 * (1 - t);
 
-            if (t > 0.6) p.r *= 0.995;
+            if (t > 0.6) p.r *= 1 - 0.005 * dt;
 
             if (this.boss) {
                 const dx = bossCx - p.x;
                 const dy = bossCy - p.y;
-                p.x += dx * 0.003;
-                p.y += dy * 0.003;
+                p.x += dx * 0.003 * dt;
+                p.y += dy * 0.003 * dt;
             }
         }
 
@@ -1819,7 +1827,8 @@ export class Elyvorg extends EnemyBoss {
                 this.electricWheel.y = this.y - 20;
             }
         } else if (this.electricWheelThrown && this.isElectricWheelActive) {
-            this.electricWheel.x += this.electricWheel.incrementMovement;
+            const dt = deltaTime / BASE_FRAME_MS;
+            this.electricWheel.x += this.electricWheel.incrementMovement * dt;
         }
 
         if (this.isElectricWheelActive && !this.electricWheel.markedForDeletion) {
@@ -1846,8 +1855,9 @@ export class Elyvorg extends EnemyBoss {
         }
     }
 
-    runLogic() {
-        this.x += this.runningDirection;
+    runLogic(deltaTime) {
+        const dt = deltaTime / BASE_FRAME_MS;
+        this.x += this.runningDirection * dt;
         if (this.runStopAtTheMiddle && this.isInTheMiddle) {
             this.backToIdleSetUp();
             this.runStopAtTheMiddle = false;
@@ -2057,7 +2067,7 @@ export class Elyvorg extends EnemyBoss {
                     } else if (this.state === "run") {
                         this.runAnimation.update(deltaTime);
                         this.edgeConstraintLogic("elyvorg");
-                        this.runLogic();
+                        this.runLogic(deltaTime);
                     } else if (this.state === "jump") {
                         this.jumpAnimation.update(deltaTime);
                         this.jumpLogic();

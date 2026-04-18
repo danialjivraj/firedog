@@ -47,10 +47,10 @@ describe('Cabin', () => {
     describe('update()', () => {
         test('moves left by game.speed and accumulates frameTimer when below interval', () => {
             cabin.frameTimer = 0;
-            cabin.update(100);
+            cabin.update(13.333);
 
-            expect(cabin.x).toBe(game.width - game.speed);
-            expect(cabin.frameTimer).toBe(100);
+            expect(cabin.x).toBeCloseTo(game.width - game.speed);
+            expect(cabin.frameTimer).toBeCloseTo(13.333);
             expect(cabin.frameX).toBe(0);
         });
 
@@ -74,7 +74,7 @@ describe('Cabin', () => {
 
         test('becomes fully visible and snaps x when crossing fixedCabinX', () => {
             cabin.x = game.fixedCabinX + game.speed - 1;
-            cabin.update(10);
+            cabin.update(13.333);
 
             expect(cabin.isFullyVisible).toBe(true);
             expect(cabin.x).toBe(game.fixedCabinX);
