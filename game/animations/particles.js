@@ -728,8 +728,8 @@ export class DashFireArc extends Particle {
 
         if (this.game.menu.pause.isPaused) return;
 
-        const dt = this.game.deltaTime ?? 16;
-        const dtScale = dt / 16;
+        const dt = this.game.deltaTime ?? 13.333;
+        const dtScale = dt / 13.333;
         this.age += dt;
 
         const p = this.game.player;

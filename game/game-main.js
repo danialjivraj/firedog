@@ -1300,13 +1300,14 @@ window.addEventListener("load", function () {
     canvas.height = 689;
 
     const game = new Game(canvas, canvas.width, canvas.height);
+    const PHYSICS_STEP = 1000 / 75;
+    let physicsAccumulator = 0;
     let lastTime = 0;
     let fadingInInitiated = false;
 
     function animate(timeStamp) {
         const deltaTime = timeStamp - lastTime;
         lastTime = timeStamp;
-        game.deltaTime = deltaTime;
 
         game.metaToasts.forEach((t) => t.update(deltaTime));
         game.metaToasts = game.metaToasts.filter((t) => !t.markedForDeletion);
@@ -1356,7 +1357,12 @@ window.addEventListener("load", function () {
             game.metaToasts.forEach((t) => t.draw(ctx));
             game.coinConvertToasts.forEach((t) => t.draw(ctx));
         } else if (game.isPlayerInGame) {
-            game.update(deltaTime);
+            physicsAccumulator += Math.min(deltaTime, PHYSICS_STEP * 3);
+            while (physicsAccumulator >= PHYSICS_STEP) {
+                game.deltaTime = PHYSICS_STEP;
+                game.update(PHYSICS_STEP);
+                physicsAccumulator -= PHYSICS_STEP;
+            }
 
             const canShake =
                 game.shakeActive &&
