@@ -464,7 +464,7 @@ export class Player {
         this.updateFrozen(deltaTime);
         if (!this.currentState.deathAnimation) {
             this.playerSFXAudios();
-            this.currentState.handleInput(input);
+            this.currentState.handleInput(input, deltaTime);
             this.underwaterGravityAndIndicator();
 
             this.spriteAnimation(deltaTime);
@@ -781,7 +781,7 @@ export class Player {
             this.game.enemyInterval = 100;
 
             this.energyInterval = 70;
-            this.energy = Math.min(100, this.energy + 0.1);
+            this.energy = Math.min(100, this.energy + 0.1 * (deltaTime / 13.333));
         } else {
             this.game.enemyInterval = 1000;
             this.energyInterval = 70;
@@ -802,7 +802,7 @@ export class Player {
             }
 
             if (!this.isEnergyExhausted) {
-                this.energy = Math.max(0, this.energy - 0.1);
+                this.energy = Math.max(0, this.energy - 0.1 * (deltaTime / 13.333));
                 if (this.poisonTimer <= 0) {
                     this.isPoisonedActive = false;
                     this.energyInterval = 100;
@@ -825,10 +825,10 @@ export class Player {
         }
     }
 
-    drainEnergy() {
+    drainEnergy(deltaTime = 13.333) {
         if (this.isBluePotionActive) return;
 
-        const energyDrainAmount = 0.4;
+        const energyDrainAmount = 0.4 * (deltaTime / 13.333);
         this.energy = Math.max(0, this.energy - energyDrainAmount);
         if (this.energy <= 0) {
             this.isEnergyExhausted = true;

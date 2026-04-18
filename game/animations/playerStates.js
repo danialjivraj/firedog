@@ -122,7 +122,7 @@ export class Sitting extends State {
         const player = this.game.player;
         setAnim(player, { x: 0, max: 4, y: 5 });
     }
-    handleInput(input) {
+    handleInput(input, deltaTime) {
         this.gameOver();
 
         const player = this.game.player;
@@ -155,7 +155,7 @@ export class Running extends State {
         setAnim(player, { x: 0, max: 8, y: 3 });
     }
 
-    handleInput(input) {
+    handleInput(input, deltaTime) {
         this.gameOver();
 
         const player = this.game.player;
@@ -233,7 +233,7 @@ export class Jumping extends State {
         setAnim(player, { x: 0, max: 6, y: 1 });
     }
 
-    handleInput(input) {
+    handleInput(input, deltaTime) {
         this.gameOver();
 
         const player = this.game.player;
@@ -287,7 +287,7 @@ export class Falling extends State {
         const player = this.game.player;
         setAnim(player, { x: 0, max: 6, y: 2 });
     }
-    handleInput(input) {
+    handleInput(input, deltaTime) {
         this.gameOver();
 
         const player = this.game.player;
@@ -363,7 +363,7 @@ export class Rolling extends State {
         setAnim(player, { x: 0, max: 6, y: 6 });
     }
 
-    handleInput(input) {
+    handleInput(input, deltaTime) {
         this.gameOver();
 
         const player = this.game.player;
@@ -371,7 +371,7 @@ export class Rolling extends State {
         if (player.tryStartDash(input)) return;
 
         if (!player.isEnergyExhausted) {
-            player.drainEnergy();
+            player.drainEnergy(deltaTime);
 
             if (
                 player.isSpace &&
