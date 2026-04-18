@@ -3,16 +3,17 @@ class Particle {
         this.game = game;
         this.markedForDeletion = false;
     }
-    update() {
+    update(deltaTime) {
+        const dt = (deltaTime ?? 13.333) / 13.333;
         const cabinFullyVisible = !!this.game.cabin?.isFullyVisible;
         const bossVisible = !!this.game.isBossVisible;
         if (cabinFullyVisible || bossVisible) {
-            this.x -= this.speedX;
+            this.x -= this.speedX * dt;
         } else {
-            this.x -= this.speedX + this.game.speed;
+            this.x -= (this.speedX + this.game.speed) * dt;
         }
-        this.y -= this.speedY;
-        this.size *= 0.97;
+        this.y -= this.speedY * dt;
+        this.size *= Math.pow(0.97, dt);
         if (this.size < 0.5) this.markedForDeletion = true;
     }
 }
@@ -39,6 +40,14 @@ export class Dust extends Particle {
         this.createDust = Math.random() > 0.6;
     }
 
+    update(deltaTime) {
+        super.update(deltaTime);
+        if (!this.game.menu.pause.isPaused && this.createBubble && this.isUnderwater) {
+            const dt = (deltaTime ?? 13.333) / 13.333;
+            this.y -= 2 * dt;
+        }
+    }
+
     draw(context) {
         if (this.isUnderwater === true) {
             if (this.createBubble) {
@@ -49,12 +58,6 @@ export class Dust extends Particle {
             }
         } else {
             context.drawImage(this.image, this.x - this.size, this.y - this.size / 1.3, this.size, this.size);
-        }
-
-        if (!this.game.menu.pause.isPaused && this.createBubble) {
-            if (this.isUnderwater === true) {
-                this.y -= 2;
-            }
         }
     }
 }
@@ -91,6 +94,14 @@ export class Bubble extends Particle {
         this.createBubble = Math.random() > 0.9;
     }
 
+    update(deltaTime) {
+        super.update(deltaTime);
+        if (!this.game.menu.pause.isPaused && this.createBubble && this.isUnderwater) {
+            const dt = (deltaTime ?? 13.333) / 13.333;
+            this.y -= 2 * dt;
+        }
+    }
+
     draw(context) {
         if (this.isUnderwater === true) {
             if (this.createBubble) {
@@ -98,12 +109,6 @@ export class Bubble extends Particle {
             }
         } else {
             context.drawImage(this.image, this.x - this.size, this.y - this.size / 1.3, this.size, this.size);
-        }
-
-        if (!this.game.menu.pause.isPaused && this.createBubble) {
-            if (this.isUnderwater === true) {
-                this.y -= 2;
-            }
         }
     }
 }
@@ -120,14 +125,15 @@ export class Splash extends Particle {
         this.imageId = resolveFireSplashImageId(this.game.player);
     }
 
-    update() {
-        super.update();
+    update(deltaTime) {
+        super.update(deltaTime);
+        const dt = (deltaTime ?? 13.333) / 13.333;
         if (this.game.player.isUnderwater) {
-            this.y -= this.gravity * 0.6;
+            this.y -= this.gravity * 0.6 * dt;
         } else {
-            this.y += this.gravity;
+            this.y += this.gravity * dt;
         }
-        this.gravity += 0.1;
+        this.gravity += 0.1 * dt;
     }
 
     draw(context) {
@@ -150,13 +156,14 @@ export class Fire extends Particle {
         this.imageId = resolveFireSplashImageId(this.game.player);
     }
 
-    update() {
-        super.update();
+    update(deltaTime) {
+        super.update(deltaTime);
+        const dt = (deltaTime ?? 13.333) / 13.333;
         if (this.game.player.isUnderwater) {
-            this.y = this.y - 4;
+            this.y -= 4 * dt;
         }
-        this.angle += this.va;
-        this.x += Math.sin(this.angle * 5);
+        this.angle += this.va * dt;
+        this.x += Math.sin(this.angle * 5) * dt;
     }
 
     draw(context) {
@@ -262,9 +269,10 @@ export class Fireball extends Particle {
 
         if (this.x > this.game.width || this.x + this.size < 0) this.markedForDeletion = true;
 
-        const sizeChange = this.size + this.growthRate > this.maxSize
+        const growthStep = this.growthRate * dt;
+        const sizeChange = this.size + growthStep > this.maxSize
             ? this.maxSize - this.size
-            : this.growthRate;
+            : growthStep;
 
         this.size += sizeChange;
         this.y -= sizeChange / 2;
@@ -325,10 +333,11 @@ export class CoinLoss extends Particle {
         this.gravity = 0;
         this.image = document.getElementById('singleCoin');
     }
-    update() {
-        super.update();
-        this.gravity += 0.14;
-        this.y += this.gravity;
+    update(deltaTime) {
+        super.update(deltaTime);
+        const dt = (deltaTime ?? 13.333) / 13.333;
+        this.gravity += 0.14 * dt;
+        this.y += this.gravity * dt;
     }
     draw(context) {
         context.drawImage(this.image, this.x, this.y, this.size, this.size);
@@ -351,21 +360,22 @@ class FloatingBubbleEffect extends Particle {
         this.fadeSpeed = 0.012 + Math.random() * 0.01;
     }
 
-    update() {
+    update(deltaTime) {
+        const dt = (deltaTime ?? 13.333) / 13.333;
         const cabinFullyVisible = !!this.game.cabin?.isFullyVisible;
         const bossVisible = !!this.game.isBossVisible;
         if (cabinFullyVisible || bossVisible) {
-            this.x -= this.game.speed * (this.parallax ?? 0.0);
+            this.x -= this.game.speed * (this.parallax ?? 0.0) * dt;
         } else {
-            this.x -= this.game.speed * (this.parallax ?? 0.2);
+            this.x -= this.game.speed * (this.parallax ?? 0.2) * dt;
         }
 
-        this.swayAngle += this.swaySpeed;
-        this.x += Math.sin(this.swayAngle) * this.swayAmount;
-        this.y += this.speedY;
+        this.swayAngle += this.swaySpeed * dt;
+        this.x += Math.sin(this.swayAngle) * this.swayAmount * dt;
+        this.y += this.speedY * dt;
 
-        this.size *= 0.992;
-        this.life -= this.fadeSpeed;
+        this.size *= Math.pow(0.992, dt);
+        this.life -= this.fadeSpeed * dt;
 
         if (this.size < 2 || this.life <= 0) this.markedForDeletion = true;
     }
@@ -420,8 +430,8 @@ export class IceCrystalBubbles extends FloatingBubbleEffect {
         this.alpha = 1;
     }
 
-    update() {
-        super.update();
+    update(deltaTime) {
+        super.update(deltaTime);
         this.alpha = this.life;
     }
     draw(ctx) {
@@ -454,7 +464,8 @@ export class SpinningChicks extends Particle {
         this.TWO_PI = Math.PI * 2;
     }
 
-    update() {
+    update(deltaTime) {
+        const dt = (deltaTime ?? 13.333) / 13.333;
         const player = this.game.player;
 
         if (!player.isConfused || this.game.gameOver) {
@@ -462,8 +473,8 @@ export class SpinningChicks extends Particle {
             return;
         }
         if (!this.game.menu.pause.isPaused) {
-            this.baseAngle += this.angularSpeed;
-            this.rockPhase += this.rockSpeed;
+            this.baseAngle += this.angularSpeed * dt;
+            this.rockPhase += this.rockSpeed * dt;
         }
 
         const isSitting = player.currentState === player.states[0];
@@ -594,21 +605,22 @@ export class DashGhost extends Particle {
         }
     }
 
-    update() {
+    update(deltaTime) {
         if (this.markedForDeletion) return;
 
+        const dt = (deltaTime ?? 13.333) / 13.333;
         const cabinFullyVisible = !!this.game.cabin?.isFullyVisible;
         const bossVisible = !!this.game.isBossVisible;
 
         if (cabinFullyVisible || bossVisible) {
-            this.x -= this.speedX;
+            this.x -= this.speedX * dt;
         } else {
-            this.x -= this.speedX + this.game.speed;
+            this.x -= (this.speedX + this.game.speed) * dt;
         }
-        this.y -= this.speedY;
+        this.y -= this.speedY * dt;
 
-        this.life -= this.fadeSpeed;
-        this.scale *= this.shrink;
+        this.life -= this.fadeSpeed * dt;
+        this.scale *= Math.pow(this.shrink, dt);
 
         if (this.life <= 0.02) this.markedForDeletion = true;
     }
@@ -725,12 +737,12 @@ export class DashFireArc extends Particle {
         this._dashScrollSpeed = (this.game.normalSpeed ?? 6) * 3;
     }
 
-    update() {
-        super.update();
+    update(deltaTime) {
+        super.update(deltaTime);
 
         if (this.game.menu.pause.isPaused) return;
 
-        const dt = this.game.deltaTime ?? 13.333;
+        const dt = deltaTime ?? 13.333;
         const dtScale = dt / 13.333;
         this.age += dt;
 
@@ -768,11 +780,11 @@ export class DashFireArc extends Particle {
         this.speedY *= this.damp;
 
         if (p.isUnderwater) {
-            this.y -= 0.35;
+            this.y -= 0.35 * dtScale;
         }
 
-        this.angle += this.va;
-        this.x += Math.sin(this.angle * 4) * this.wobbleAmp;
+        this.angle += this.va * dtScale;
+        this.x += Math.sin(this.angle * 4) * this.wobbleAmp * dtScale;
     }
 
     draw(ctx) {

@@ -717,7 +717,7 @@ export class Game {
             });
             // handle particles behind the player
             this.behindPlayerParticles.forEach((behindPlayerParticle) => {
-                behindPlayerParticle.update();
+                behindPlayerParticle.update(deltaTime);
             });
             // handle particles
             this.particles.forEach((particle) => {
@@ -1300,8 +1300,6 @@ window.addEventListener("load", function () {
     canvas.height = 689;
 
     const game = new Game(canvas, canvas.width, canvas.height);
-    const PHYSICS_STEP = 1000 / 75;
-    let physicsAccumulator = 0;
     let lastTime = 0;
     let fadingInInitiated = false;
 
@@ -1357,12 +1355,8 @@ window.addEventListener("load", function () {
             game.metaToasts.forEach((t) => t.draw(ctx));
             game.coinConvertToasts.forEach((t) => t.draw(ctx));
         } else if (game.isPlayerInGame) {
-            physicsAccumulator += Math.min(deltaTime, PHYSICS_STEP * 3);
-            while (physicsAccumulator >= PHYSICS_STEP) {
-                game.deltaTime = PHYSICS_STEP;
-                game.update(PHYSICS_STEP);
-                physicsAccumulator -= PHYSICS_STEP;
-            }
+            game.deltaTime = deltaTime;
+            game.update(deltaTime);
 
             const canShake =
                 game.shakeActive &&
