@@ -252,11 +252,13 @@ export class Fireball extends Particle {
         ctx.restore();
     }
 
-    update() {
-        if (this.initialDirection === 'right') this.x += this.speedX;
-        else if (this.initialDirection === 'left') this.x -= this.speedX;
+    update(deltaTime) {
+        const dt = (deltaTime ?? 13.333) / 13.333;
 
-        this.y += this.verticalMovement;
+        if (this.initialDirection === 'right') this.x += this.speedX * dt;
+        else if (this.initialDirection === 'left') this.x -= this.speedX * dt;
+
+        this.y += this.verticalMovement * dt;
 
         if (this.x > this.game.width || this.x + this.size < 0) this.markedForDeletion = true;
 
@@ -267,7 +269,7 @@ export class Fireball extends Particle {
         this.size += sizeChange;
         this.y -= sizeChange / 2;
 
-        this.rotationAngle += this.rotationSpeed;
+        this.rotationAngle += this.rotationSpeed * dt;
 
         this._cachedSpecks = this.makeSpecks();
     }
