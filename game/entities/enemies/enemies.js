@@ -1,4 +1,5 @@
 import { fadeInAndOut } from "../../animations/fading.js";
+import { BASE_FRAME_MS } from "../../config/constants.js";
 
 // helpers
 const dist = (x1, y1, x2, y2) => Math.hypot(x2 - x1, y2 - y1);
@@ -112,7 +113,7 @@ export class Enemy {
     }
 
     update(deltaTime) {
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         if (!this.game.cabin.isFullyVisible) {
             this.x -= (this.speedX + this.game.speed) * dt;
             this.y += this.speedY * dt;
@@ -270,7 +271,7 @@ export class EnemyBoss extends Enemy {
     runningAway(deltaTime, bossId) {
         this.runningDirection = 10;
         this.state = "run";
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
 
         if (this.runAnimation) {
             this.runAnimation.x = this.x;
@@ -549,7 +550,7 @@ export class FlyingEnemy extends Enemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.angle += this.va * dt;
         this.y += Math.sin(this.angle) * dt;
     }
@@ -622,7 +623,7 @@ export class VerticalEnemy extends Enemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.y += this.speedY * dt;
     }
 }
@@ -659,7 +660,7 @@ export class UnderwaterEnemy extends Enemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.angle += this.va * dt;
         this.y += Math.sin(this.angle) * dt;
     }
@@ -682,7 +683,7 @@ export class BeeInstances extends FlyingEnemy {
 
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         const distanceToPlayer = this.getDistanceToPlayer();
 
         if (!this.passedPlayer) {
@@ -1074,7 +1075,7 @@ export class UndergroundEnemy extends BurrowingGroundEnemy {
     }
 
     update(deltaTime) {
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         if (!this.game.cabin.isFullyVisible) {
             this.x -= this.game.speed * dt;
             this.centerX -= this.game.speed * dt;
@@ -1139,7 +1140,7 @@ export class WindAttack extends Projectile {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.y += this.speedX * dt;
 
         const dx = this.player.x - this.x;
@@ -1231,7 +1232,7 @@ export class BrambleLeafAttack extends LeafAttack {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x -= this.fallSpeedX * dt;
         this.y += this.fallSpeedY * dt;
         if (this.y > this.game.height) this.markedForDeletion = true;
@@ -1267,7 +1268,7 @@ export class PoisonousOrb extends Projectile {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x += Math.cos(this.angle) * this.orbSpeed * dt;
         this.y += Math.sin(this.angle) * this.orbSpeed * dt;
         this.rotation += this.rotationSpeed * dt;
@@ -1299,7 +1300,7 @@ export class ScorpionPoison extends Projectile {
     update(deltaTime) {
         super.update(deltaTime);
         this.age += deltaTime;
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.y += this.velY * dt;
     }
 
@@ -1349,7 +1350,7 @@ export class FrozenShard extends Projectile {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         if (this.size < this.maxSize) {
             const sizeChange = Math.min(this.growthRate * dt, this.maxSize - this.size);
             this.size += sizeChange;
@@ -1384,7 +1385,7 @@ export class BerriflyIceBall extends Projectile {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         const sizeChange = this.size + this.growthRate * dt > this.maxSize ? this.maxSize - this.size : this.growthRate * dt;
         this.size += sizeChange;
         this.y -= sizeChange / 2;
@@ -1442,7 +1443,7 @@ export class YellowBeam extends Projectile {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.y += this.speedY * dt;
     }
 }
@@ -1455,7 +1456,7 @@ export class PurpleLaser extends Projectile {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x += Math.cos(this.angle) * this.laserSpeed * dt;
         this.y += Math.sin(this.angle) * this.laserSpeed * dt;
     }
@@ -1482,7 +1483,7 @@ export class GlowOrb extends Projectile {
     update(deltaTime) {
         super.update(deltaTime);
         this.pulseTimer += deltaTime;
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         if (this.angle !== undefined) {
             this.x += Math.cos(this.angle) * this.orbSpeed * dt;
             this.y += Math.sin(this.angle) * this.orbSpeed * dt;
@@ -1566,7 +1567,7 @@ export class LavaBall extends Projectile {
     update(deltaTime) {
         super.update(deltaTime);
         if (this.speedX < 0 && this.x > this.game.width) this.markedForDeletion = true;
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         if (this.size < 40) {
             const grow = Math.min(2 * dt, 40 - this.size);
             this.x -= grow / 2;
@@ -1623,7 +1624,7 @@ export class Goblin extends MovingGroundEnemy {
 
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
 
         const playerDistance = Math.abs(this.game.player.x - this.x);
         const player = this.game.player;
@@ -1745,7 +1746,7 @@ export class Vertibat extends VerticalEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x += this.amplitude * Math.sin(this.angle) * dt;
         this.angle += this.va * dt;
         this.playSoundOnce('batPitch');
@@ -1763,7 +1764,7 @@ export class Geargle extends VerticalEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x += this.amplitude * Math.sin(this.angle) * dt;
         this.angle += this.va * dt;
         this.playSoundOnce('helicopterSound');
@@ -1801,7 +1802,7 @@ export class MeatSoldier extends MovingGroundEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         if (this.playSoundOnce) {
             this.playSoundOnce = false;
             this.game.audioHandler.enemySFX.playSound('meatSoldierSound');
@@ -1844,7 +1845,7 @@ export class Skulnap extends MovingGroundEnemy {
         }
 
         if (this.state === 'running') {
-            const dt = deltaTime / 13.333;
+            const dt = deltaTime / BASE_FRAME_MS;
             this.x -= this.runningSpeed * dt;
             this.y = this.game.height - this.height - this.game.groundMargin + 5;
             this.advanceFrame(deltaTime);
@@ -1886,7 +1887,7 @@ export class Abyssaw extends FlyingEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x -= Math.cos(this.angle) * this.radius * dt;
         this.y += Math.sin(this.angle) * this.radius * dt;
 
@@ -1922,7 +1923,7 @@ export class GlidoSpike extends FlyingEnemy {
         const playerDistance = Math.abs(this.game.player.x - this.x);
 
         if (this.state === 'walk') {
-            const dt = deltaTime / 13.333;
+            const dt = deltaTime / BASE_FRAME_MS;
             this.x -= dt;
             this.attackCooldown += deltaTime;
             if (playerDistance <= 1200 && this.frameX == 24 && this.attackCooldown >= this.attackCooldownDuration) {
@@ -2035,7 +2036,7 @@ export class Skelly extends MovingGroundEnemy {
         }
 
         if (this.isJumping) {
-            const dt = deltaTime / 13.333;
+            const dt = deltaTime / BASE_FRAME_MS;
             const progress = (this.game.hiddenTime - this.jumpStartTime) / (this.jumpDuration * 1000);
             if (progress < 1) {
                 this.y = this.groundY - this.jumpHeight * Math.sin(progress * Math.PI);
@@ -2057,7 +2058,7 @@ export class Silknoir extends ClimbingEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.y += this.speedY * Math.sin(this.angle) * dt;
         this.angle += this.va * dt;
     }
@@ -2075,7 +2076,7 @@ export class WalterTheGhost extends FlyingEnemy {
 
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.va = Math.random() * 0.09 + 0.01;
         this.y += 1.5 * Math.sin(this.angle) * this.curve * dt;
         this.angle += 0.005 * dt;
@@ -2122,7 +2123,7 @@ export class Ben extends VerticalEnemy {
 
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.playIfOnScreen('verticalGhostSound');
 
         const distanceToPlayer = this.getDistanceToPlayer();
@@ -2161,7 +2162,7 @@ export class Aura extends FlyingEnemy {
 
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.playIfOnScreen('auraSoundEffect', true);
 
         const distanceToPlayer = this.getDistanceToPlayer();
@@ -2236,7 +2237,7 @@ export class Razorfin extends UnderwaterEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x -= 3 * dt;
         if (this.frameX === 1 && this.isOnScreen()) this.game.audioHandler.enemySFX.playSound('crunchSound');
     }
@@ -2255,7 +2256,7 @@ export class Jellion extends UnderwaterEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x -= 3 * dt;
         this.sinAngle += this.sinSpeed * dt;
         this.y = this.baseY + this.amplitude * Math.sin(this.sinAngle);
@@ -2275,7 +2276,7 @@ export class SkeletonFish extends UnderwaterEnemy {
 
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
 
         const distanceToPlayer = this.getDistanceToPlayer();
         if (!this.passedPlayer) {
@@ -2322,7 +2323,7 @@ export class SpearFish extends MovingGroundEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x -= 4 * dt;
         this.game.audioHandler.enemySFX.playSound('stepWaterSound');
     }
@@ -2338,7 +2339,7 @@ export class JetFish extends UnderwaterEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x -= 9 * dt;
         this.playIfOnScreen('rocketLauncherSound');
     }
@@ -2400,7 +2401,7 @@ export class Voltzeel extends FallingEnemy {
 
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
 
         const distanceToPlayer = Math.abs(this.y - this.game.player.y);
 
@@ -2553,7 +2554,7 @@ export class Sluggie extends MovingGroundEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x -= this.xSpeed * dt;
     }
 }
@@ -2591,7 +2592,7 @@ export class KarateCroco extends MovingGroundEnemy {
         }
 
         if (this.state === 'flykick') {
-            const dt = deltaTime / 13.333;
+            const dt = deltaTime / BASE_FRAME_MS;
             this.playSoundOnce('ahhhSound', false, true);
             this.x -= 14 * dt;
             if (this.flykickFrameX < 3) {
@@ -2662,7 +2663,7 @@ export class Bramble extends ClimbingEnemy {
 
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         const maxY = this.game.height * 0.75 - this.height;
         if (this.y > maxY && this.speedY > 0) {
             this.y = maxY;
@@ -2744,7 +2745,7 @@ export class Snailey extends MovingGroundEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x -= this.xSpeed * dt;
     }
 }
@@ -2841,7 +2842,7 @@ export class LeafSlug extends MovingGroundEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x -= this.xSpeed * dt;
         this.playIfOnScreen('leafSlugSound');
     }
@@ -2926,7 +2927,7 @@ export class Eggry extends ImmobileGroundEnemy {
         }
 
         if (this.isJumping) {
-            const dt = deltaTime / 13.333;
+            const dt = deltaTime / BASE_FRAME_MS;
             const progress = (this.game.hiddenTime - this.jumpStartTime) / (this.jumpDuration * 1000);
             if (progress < 1) {
                 this.y = this.groundY - this.jumpHeight * Math.sin(progress * Math.PI);
@@ -2967,7 +2968,7 @@ export class Strawspider extends ClimbingEnemy {
 
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.swingAngle += this.swingSpeed * deltaTime;
         const swingOffsetX = Math.sin(this.swingAngle) * this.swingAmplitude;
         this.x += swingOffsetX * dt;
@@ -3006,7 +3007,7 @@ export class Toxwing extends VerticalEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x += this.amplitude * Math.sin(this.angle) * dt;
         this.angle += this.va * dt;
         this.playSoundOnce('batPitch');
@@ -3070,7 +3071,7 @@ export class Venarach extends ClimbingEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.y += this.speedY * Math.sin(this.angle) * dt;
         this.angle += this.va * dt;
     }
@@ -3090,7 +3091,7 @@ export class LarvoxMini extends MovingGroundEnemy {
         this.groundY = game.height - (70 * 0.6) - game.groundMargin;
     }
     update(deltaTime) {
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         if (!this.grounded) {
             if (!this.game.cabin.isFullyVisible) this.x -= this.game.speed * dt;
             this.x += this.vx * dt;
@@ -3124,7 +3125,7 @@ export class Larvox extends MovingGroundEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x -= this.xSpeed * dt;
         if (!this.spawned && this.lives <= 0) {
             this.spawned = true;
@@ -3146,7 +3147,7 @@ export class Venoblitz extends MovingGroundEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x -= this.xSpeed * dt;
     }
 }
@@ -3162,7 +3163,7 @@ export class Virefly extends FlyingEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.t1 += 0.07 * dt;
         this.t2 += 0.13 * dt;
         this.t3 += 0.031 * dt;
@@ -3328,7 +3329,7 @@ export class Toxhop extends MovingGroundEnemy {
 
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
 
         this.playSoundOnce('frogSound', false, true);
 
@@ -3350,7 +3351,7 @@ export class Cactrix extends MovingGroundEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x -= this.xSpeed * dt;
     }
 }
@@ -3374,7 +3375,7 @@ export class Volcanurtle extends MovingGroundEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x -= this.xSpeed * dt;
         this.playSoundOnce('volcanurtleSound');
     }
@@ -3414,7 +3415,7 @@ export class VolcanicBubble extends Projectile {
             this.driftInterval = 400 + Math.random() * 400;
             this.driftTimer = 0;
         }
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.driftX += (this.targetDriftX - this.driftX) * 0.035 * dt;
         this.x += this.driftX * dt;
         this.y -= (1.7 + 0.4 * Math.abs(Math.sin(this.age * 0.0013 + this.pulsePhase))) * dt;
@@ -3563,7 +3564,7 @@ export class Bloburn extends VerticalEnemy {
 
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.playIfOnScreen('bloburnSound');
         this.rotation += this.rotationSpeed * dt;
 
@@ -3611,7 +3612,7 @@ export class Scorble extends MovingGroundEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x -= this.xSpeed * dt;
     }
 }
@@ -3691,7 +3692,7 @@ export class IceSilknoir extends ClimbingEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.y += this.speedY * Math.sin(this.angle) * dt;
         this.angle += this.va * dt;
     }
@@ -3709,7 +3710,7 @@ export class CrystalWasp extends FlyingEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.playSoundOnce('buzzingFly');
 
         if (this.lockedAngle !== null) {
@@ -3763,7 +3764,7 @@ export class Globby extends MovingGroundEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x -= this.xSpeed * dt;
         this.playIfOnScreen('globbySound');
     }
@@ -3783,7 +3784,7 @@ export class CryopedeMini extends MovingGroundEnemy {
         this.loopingSoundId = 'cryopedeWalkingSound';
     }
     update(deltaTime) {
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         if (!this.grounded) {
             if (!this.game.cabin.isFullyVisible) this.x -= this.game.speed * dt;
             this.x += this.vx * dt;
@@ -3823,7 +3824,7 @@ export class Cryopede extends MovingGroundEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x -= this.xSpeed * dt;
         this.playIfOnScreen('cryopedeWalkingSound');
         if (!this.spawned && this.lives <= 0) {
@@ -3912,7 +3913,7 @@ export class Golex extends MovingGroundEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.playSoundOnce('golexAppearingSound');
         switch (this._phase % 4) {
             case 0:
@@ -3948,7 +3949,7 @@ export class Runespider extends MovingGroundEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x -= this.xSpeed * dt;
         this.playIfOnScreen('runespiderWalkingSound');
     }
@@ -3969,7 +3970,7 @@ export class OozelMini extends MovingGroundEnemy {
         this.loopingSoundId = 'slimyWalkSound';
     }
     update(deltaTime) {
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         if (!this.grounded) {
             if (!this.game.cabin.isFullyVisible) this.x -= this.game.speed * dt;
             this.x += this.vx * dt;
@@ -4010,7 +4011,7 @@ export class Oozel extends MovingGroundEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         if (this.state === 'falling') {
             this.playSoundOnce('oozelFallingSound');
             this.y += this.speedY * dt;
@@ -4043,7 +4044,7 @@ export class Voidserp extends MovingGroundEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x -= this.xSpeed * dt;
         this.playIfOnScreen('voidserpSound');
     }
@@ -4059,7 +4060,7 @@ export class Sigilfly extends FlyingEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         if (this.lockedAngle !== null) {
             moveAlongAngle(this, this.lockedAngle, this.speed, dt);
         } else {
@@ -4145,7 +4146,7 @@ export class Runecko extends MovingGroundEnemy {
                 this.landTime = 0;
             }
 
-            const dt = deltaTime / 13.333;
+            const dt = deltaTime / BASE_FRAME_MS;
             this.x -= 14 * dt;
         } else if (this.state === 'land') {
             this.landTime += deltaTime;
@@ -4329,7 +4330,7 @@ export class Johnny extends FlyingEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.game.audioHandler.enemySFX.playSound('johnnyAlienSound');
 
         if (!this.passedPlayer) {
@@ -4356,7 +4357,7 @@ export class Spindle extends MovingGroundEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x -= this.xSpeed * dt;
         this.playIfOnScreen('runespiderWalkingSound');
     }
@@ -4510,7 +4511,7 @@ export class Nebulure extends ImmobileGroundEnemy {
         const dx = (this.x + this.width / 2) - this.game.player.x;
         if (dx <= 0) return;
 
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.game.player.x += dx * 0.008 * dt;
     }
     draw(context) {
@@ -4577,7 +4578,7 @@ export class Lancer extends UnderwaterEnemy {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x -= 11 * dt;
         this.playIfOnScreen('rocketLauncherSound');
     }
@@ -4603,7 +4604,7 @@ export class Astraider extends MovingGroundEnemy {
 
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
         this.x -= this.xSpeed * dt;
         this.shotTimer += deltaTime;
         if (this.shotTimer >= this.shotCooldown && this.isOnScreen()) this.throwOrb();
@@ -4662,7 +4663,7 @@ export class Frogula extends ImmobileGroundEnemy {
                 this.jumpFrameTimer = 0;
             }
 
-            const dt = deltaTime / 13.333;
+            const dt = deltaTime / BASE_FRAME_MS;
             this.jumpVY += this.jumpGravity * dt;
             this.x -= this.jumpVX * dt;
             this.y += this.jumpVY * dt;

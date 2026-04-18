@@ -1,3 +1,5 @@
+import { BASE_FRAME_MS } from '../config/constants.js';
+
 export class Layer {
     constructor(game, bgSpeed, imageOrImages, meta = {}) {
         this.game = game;
@@ -132,9 +134,10 @@ export class Layer {
         return { currentImg: baseCurrent, nextImg: baseNext };
     }
 
-    update() {
+    update(deltaTime = BASE_FRAME_MS) {
+        const dt = deltaTime / BASE_FRAME_MS;
         this.groundSpeed = this.game.speed * this.bgSpeed;
-        this.x -= this.groundSpeed;
+        this.x -= this.groundSpeed * dt;
 
         while (this.x <= -this.game.width) {
             this.x += this.game.width;
@@ -178,16 +181,17 @@ export class MovingLayer extends Layer {
     }
 
     update(deltaTime) {
+        const dt = deltaTime / BASE_FRAME_MS;
         this.groundSpeed = this.game.speed * this.bgSpeed;
 
         const axisSpeed = this.axis === 'x'
             ? this.baseScrollSpeed + this.groundSpeed
             : this.baseScrollSpeed;
 
-        if (this.direction === 'left') this.x -= axisSpeed;
-        else if (this.direction === 'right') this.x += axisSpeed;
-        else if (this.direction === 'up') this.y -= axisSpeed;
-        else if (this.direction === 'down') this.y += axisSpeed;
+        if (this.direction === 'left') this.x -= axisSpeed * dt;
+        else if (this.direction === 'right') this.x += axisSpeed * dt;
+        else if (this.direction === 'up') this.y -= axisSpeed * dt;
+        else if (this.direction === 'down') this.y += axisSpeed * dt;
 
         if (this.axis === 'x') {
             while (this.x <= -this.game.width) {
@@ -405,7 +409,8 @@ export class Background {
         const tutorialBlocksScroll = this.game.isTutorialActive && activeMap === 'Map1';
 
         if (lastGroundLayer && !tutorialBlocksScroll) {
-            this.totalDistanceTraveled += this.game.speed / 1000;
+            const dt = deltaTime / BASE_FRAME_MS;
+            this.totalDistanceTraveled += (this.game.speed / 1000) * dt;
             this.totalDistanceTraveled = parseFloat(this.totalDistanceTraveled.toFixed(2));
         }
 
@@ -985,8 +990,8 @@ export class ZabbyFlyBy extends EntityAnimation {
 
         this._active = false;
 
-        this._minSpeed = options.minSpeed ?? 1.6;
-        this._maxSpeed = options.maxSpeed ?? 2.6;
+        this._minSpeed = options.minSpeed ?? 1.28;
+        this._maxSpeed = options.maxSpeed ?? 2.08;
         this._maxAngleRad = options.maxAngleRad ?? Math.PI / 24;
         this._offscreenPad = options.offscreenPad ?? 40;
 
@@ -1068,7 +1073,7 @@ export class ZabbyFlyBy extends EntityAnimation {
     update(deltaTime) {
         if (!this._active || !this.image) return;
 
-        const dt = deltaTime / 16.67;
+        const dt = deltaTime / BASE_FRAME_MS;
 
         this.x += this.speed * this.directionX * dt;
         this.y += this.speed * this.directionY * dt;
@@ -1557,14 +1562,14 @@ export class SnowflakeAnimation {
     }
 
     update(deltaTime) {
-        const dt = deltaTime / 16.67;
-        const playerParallax = this.game.cabin.isFullyVisible ? 0 : (this.game.speed / 400) * dt;
+        const dt = deltaTime / BASE_FRAME_MS;
+        const playerParallax = this.game.cabin.isFullyVisible ? 0 : (this.game.speed / 500) * dt;
 
         for (let i = 0; i < this.flakes.length; i++) {
             const f = this.flakes[i];
 
-            f.y += f.speed * 120 * dt;
-            f.x += f.drift * 50 * dt - playerParallax;
+            f.y += f.speed * 96 * dt;
+            f.x += f.drift * 40 * dt - playerParallax;
 
             const stopThreshold = f.stopAbove
                 ? this.game.height - 40
@@ -1750,9 +1755,9 @@ export class StarField extends EntityAnimation {
         this.stars = [];
 
         this.layers = [
-            { speed: 0.015, scale: 0.2, count: 320 },
-            { speed: 0.03, scale: 0.5, count: 50 },
-            { speed: 0.05, scale: 0.75, count: 30 },
+            { speed: 0.012, scale: 0.2, count: 320 },
+            { speed: 0.024, scale: 0.5, count: 50 },
+            { speed: 0.04, scale: 0.75, count: 30 },
         ];
 
         this.starBaseRadius = 2;
@@ -1811,7 +1816,7 @@ export class StarField extends EntityAnimation {
 
     update(deltaTime) {
         const width = this.game.width;
-        const dt = deltaTime / 16.67;
+        const dt = deltaTime / BASE_FRAME_MS;
 
         const top = this.top;
         const bottom = this.top + this.height;
@@ -1856,12 +1861,12 @@ export class ShootingStar extends EntityAnimation {
         this.starsAngleRadFlipped = this.degreesToRads(180 - this.starsAngleDeg);
 
         this.shootingStarSpeed = {
-            min: 15,
-            max: 20,
+            min: 12,
+            max: 16,
         };
 
-        this.shootingStarOpacityDelta = 0.01;
-        this.trailLengthDelta = 0.01;
+        this.shootingStarOpacityDelta = 0.008;
+        this.trailLengthDelta = 0.008;
 
         this.shootingStarEmittingInterval = 5000;
         this.shootingStarLifeTime = 500;
@@ -1951,7 +1956,7 @@ export class ShootingStar extends EntityAnimation {
     }
 
     update(deltaTime) {
-        const dt = deltaTime / 16.67;
+        const dt = deltaTime / BASE_FRAME_MS;
 
         this.spawnTimer += deltaTime;
         if (this.spawnTimer >= this.shootingStarEmittingInterval) {
@@ -2258,12 +2263,14 @@ export class DragonSilhouette extends EntityAnimation {
     }
 
     _updateDragon(dragon, deltaTime) {
-        dragon.x += dragon.speedX * dragon.direction;
-        dragon.y += dragon.speedY;
+        const dt = deltaTime / BASE_FRAME_MS;
+
+        dragon.x += dragon.speedX * dragon.direction * dt;
+        dragon.y += dragon.speedY * dt;
 
         dragon.va = (Math.random() * 0.1 + 0.1) * dragon.speedX;
-        dragon.angle += dragon.va;
-        dragon.y += Math.sin(dragon.angle) * dragon.speedX * this.scale;
+        dragon.angle += dragon.va * dt;
+        dragon.y += Math.sin(dragon.angle) * dragon.speedX * this.scale * dt;
 
         this._advanceDragonFrame(dragon, deltaTime);
 
@@ -2276,12 +2283,14 @@ export class DragonSilhouette extends EntityAnimation {
     }
 
     update(deltaTime) {
-        this.x += this.speedX * this.direction;
-        this.y += this.speedY;
+        const dt = deltaTime / BASE_FRAME_MS;
+
+        this.x += this.speedX * this.direction * dt;
+        this.y += this.speedY * dt;
 
         this.va = (Math.random() * 0.1 + 0.1) * this.speedX;
-        this.angle += this.va;
-        this.y += Math.sin(this.angle) * this.speedX * this.scale;
+        this.angle += this.va * dt;
+        this.y += Math.sin(this.angle) * this.speedX * this.scale * dt;
 
         this.advanceFrame(deltaTime);
 

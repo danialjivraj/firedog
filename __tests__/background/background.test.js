@@ -801,19 +801,19 @@ describe('Background', () => {
             bg.totalDistanceTraveled = 0;
             game.isTutorialActive = false;
             game.currentMap = 'Map1';
-            bg.update(1);
+            bg.update(13.333);
             expect(bg.totalDistanceTraveled).toBeCloseTo(0.2);
 
             bg.totalDistanceTraveled = 0;
             game.isTutorialActive = true;
             game.currentMap = 'Map1';
-            bg.update(1);
+            bg.update(13.333);
             expect(bg.totalDistanceTraveled).toBe(0);
 
             bg.totalDistanceTraveled = 0;
             game.isTutorialActive = true;
             game.currentMap = 'Map2';
-            bg.update(1);
+            bg.update(13.333);
             expect(bg.totalDistanceTraveled).toBeCloseTo(0.2);
         });
     });
@@ -1600,8 +1600,8 @@ describe('SnowflakeAnimation', () => {
         const snow = new SnowflakeAnimation(game, 1);
         snow.flakes = [{ x: 100, y: 100, r: 1.5, speed: 0, drift: 0, opacity: 1, stopAbove: true }];
 
-        snow.update(16.67);
-        expect(snow.flakes[0].x).toBeCloseTo(99.75, 5);
+        snow.update(13.333);
+        expect(snow.flakes[0].x).toBeCloseTo(99.8, 5);
     });
 
     test('does not apply player parallax when cabin is fully visible', () => {
@@ -1610,8 +1610,8 @@ describe('SnowflakeAnimation', () => {
 
         game.cabin.isFullyVisible = true;
 
-        snow.update(16.67);
-        expect(snow.flakes[0].x).toBeCloseTo(105, 5);
+        snow.update(13.333);
+        expect(snow.flakes[0].x).toBeCloseTo(104, 5);
     });
 
     test('respawns a flake when passing stop threshold (stopAbove=true)', () => {
@@ -1928,7 +1928,7 @@ describe('DragonSilhouette', () => {
         const dragon = new DragonSilhouette(game, 1, 0.5);
         const resetSpy = jest.spyOn(dragon, 'resetPosition');
 
-        dragon.x = -dragon.width - 1;
+        dragon.x = -dragon.width - 200;
         dragon.update(16);
 
         expect(resetSpy).toHaveBeenCalled();

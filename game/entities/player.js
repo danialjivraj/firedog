@@ -1,4 +1,5 @@
 import { getDefaultKeyBindings } from '../config/keyBindings.js';
+import { BASE_FRAME_MS } from '../config/constants.js';
 import { getConfiguredLivesFromIndex } from '../config/difficultySettings.js';
 import {
     getSkinElement,
@@ -781,7 +782,7 @@ export class Player {
             this.game.enemyInterval = 100;
 
             this.energyInterval = 70;
-            this.energy = Math.min(100, this.energy + 0.1 * (deltaTime / 13.333));
+            this.energy = Math.min(100, this.energy + 0.1 * (deltaTime / BASE_FRAME_MS));
         } else {
             this.game.enemyInterval = 1000;
             this.energyInterval = 70;
@@ -802,7 +803,7 @@ export class Player {
             }
 
             if (!this.isEnergyExhausted) {
-                this.energy = Math.max(0, this.energy - 0.1 * (deltaTime / 13.333));
+                this.energy = Math.max(0, this.energy - 0.1 * (deltaTime / BASE_FRAME_MS));
                 if (this.poisonTimer <= 0) {
                     this.isPoisonedActive = false;
                     this.energyInterval = 100;
@@ -825,10 +826,10 @@ export class Player {
         }
     }
 
-    drainEnergy(deltaTime = 13.333) {
+    drainEnergy(deltaTime = BASE_FRAME_MS) {
         if (this.isBluePotionActive) return;
 
-        const energyDrainAmount = 0.4 * (deltaTime / 13.333);
+        const energyDrainAmount = 0.4 * (deltaTime / BASE_FRAME_MS);
         this.energy = Math.max(0, this.energy - energyDrainAmount);
         if (this.energy <= 0) {
             this.isEnergyExhausted = true;
@@ -1212,7 +1213,7 @@ export class Player {
     playerHorizontalMovement(input, deltaTime) {
         if (this.isFrozen) return;
 
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
 
         if (this.isDashing) {
             this.x += this.dashVelocity * dt;
@@ -1357,7 +1358,7 @@ export class Player {
     playerVerticalMovement(input, deltaTime) {
         if (this.isFrozen) return;
 
-        const dt = deltaTime / 13.333;
+        const dt = deltaTime / BASE_FRAME_MS;
 
         if (this.isSpace) {
             const weightRatio = this.weight / this.baseWeight;
@@ -1413,7 +1414,7 @@ export class Player {
     firedogMeetsElyvorg(input) {
         const left = this._moveLeft(input);
         const right = this._moveRight(input);
-        const dt = (this.game.deltaTime ?? 13.333) / 13.333;
+        const dt = (this.game.deltaTime ?? BASE_FRAME_MS) / BASE_FRAME_MS;
 
         if (this.game.isBossVisible && this.currentState === this.states[4]) {
             if (this.facingRight) {
@@ -1461,7 +1462,7 @@ export class Player {
         }
 
         if (this.currentState.deathAnimation && (this.isUnderwater || this.isSpace) && !this.onGround()) {
-            const dt = (this.game.deltaTime ?? 13.333) / 13.333;
+            const dt = (this.game.deltaTime ?? BASE_FRAME_MS) / BASE_FRAME_MS;
             this.y += 2 * dt;
         }
     }
