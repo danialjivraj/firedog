@@ -68,6 +68,7 @@ export class Reset {
         this.game.cabins = [];
         this.game.penguins = [];
         this.game.recordToasts = [];
+        this.game.coinConvertToasts = [];
         // cutscene
         this.game.clearCutsceneState();
         // cabin

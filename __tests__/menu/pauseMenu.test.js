@@ -27,7 +27,8 @@ describe('PauseMenu', () => {
             exitCutsceneToMainMenu: jest.fn(),
             goToMainMenuWithSavingAnimation: jest.fn(),
 
-            maybeAnnounceGiftSkins: jest.fn(),
+            announceGiftSkins: jest.fn(),
+            announceEndCutsceneRewards: jest.fn(),
 
             ignoreCutsceneInputUntil: 0,
 
@@ -314,7 +315,7 @@ describe('PauseMenu', () => {
             expect(game.nav.clear).toHaveBeenCalled();
             expect(game.setMenuRoot).toHaveBeenCalledWith(game.menu.main, 0);
 
-            expect(game.maybeAnnounceGiftSkins).toHaveBeenCalledWith({ delayMs: 450 });
+            expect(game.announceEndCutsceneRewards).toHaveBeenCalledWith({ delayMs: 450 });
             expect(game.goToMainMenuWithSavingAnimation).toHaveBeenCalledWith(4000);
 
             expect(game.menu.main.activateMenu).not.toHaveBeenCalled();

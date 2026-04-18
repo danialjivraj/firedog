@@ -49,7 +49,7 @@ export class PauseMenu extends BaseMenu {
             this.game.nav.clear();
             this.game.setMenuRoot(this.game.menu.main, 0);
             if (leavingEndCutscene) {
-                this.game.maybeAnnounceGiftSkins({ delayMs: 450 });
+                this.game.announceEndCutsceneRewards({ delayMs: 450 });
                 this.game.goToMainMenuWithSavingAnimation(4000);
             } else {
                 this.game.menu.main.activateMenu();

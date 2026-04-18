@@ -1086,7 +1086,7 @@ describe('Game class (game-main.js)', () => {
     });
   });
 
-  describe('maybeAnnounceGiftSkins()', () => {
+  describe('announceGiftSkins()', () => {
     it('returns false and does nothing when no gift flags are set', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
 
@@ -1098,7 +1098,7 @@ describe('Game class (game-main.js)', () => {
       const toastSpy = jest.spyOn(game, 'showMetaToast').mockImplementation(() => { });
       const saveSpy = jest.spyOn(game, 'saveGameState').mockImplementation(() => { });
 
-      const out = game.maybeAnnounceGiftSkins({ delayMs: 123 });
+      const out = game.announceGiftSkins({ delayMs: 123 });
 
       expect(out).toBe(false);
       expect(toastSpy).not.toHaveBeenCalled();
@@ -1116,7 +1116,7 @@ describe('Game class (game-main.js)', () => {
       const toastSpy = jest.spyOn(game, 'showMetaToast').mockImplementation(() => { });
       const saveSpy = jest.spyOn(game, 'saveGameState').mockImplementation(() => { });
 
-      const out1 = game.maybeAnnounceGiftSkins({ delayMs: 450 });
+      const out1 = game.announceGiftSkins({ delayMs: 450 });
 
       expect(out1).toBe(true);
       expect(game._announcedGiftSkins.iceBreakerSkin).toBe(true);
@@ -1138,7 +1138,7 @@ describe('Game class (game-main.js)', () => {
       toastSpy.mockClear();
       saveSpy.mockClear();
 
-      const out2 = game.maybeAnnounceGiftSkins({ delayMs: 450 });
+      const out2 = game.announceGiftSkins({ delayMs: 450 });
       expect(out2).toBe(false);
       expect(toastSpy).not.toHaveBeenCalled();
       expect(saveSpy).not.toHaveBeenCalled();
@@ -1155,7 +1155,7 @@ describe('Game class (game-main.js)', () => {
       const toastSpy = jest.spyOn(game, 'showMetaToast').mockImplementation(() => { });
       const saveSpy = jest.spyOn(game, 'saveGameState').mockImplementation(() => { });
 
-      const out = game.maybeAnnounceGiftSkins({ delayMs: 1 });
+      const out = game.announceGiftSkins({ delayMs: 1 });
 
       expect(out).toBe(true);
       expect(toastSpy).toHaveBeenCalledTimes(3);
@@ -1410,7 +1410,7 @@ describe('Game class (game-main.js)', () => {
       expect(game.canSelect).toBe(true);
     });
 
-    it('calls maybeAnnounceGiftSkins({ delayMs: 450 }) when ending an end-cutscene and player is in cabin', () => {
+    it('calls announceGiftSkins({ delayMs: 450 }) when ending an end-cutscene and player is in cabin', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
 
       game.isEndCutscene = true;
@@ -1420,14 +1420,14 @@ describe('Game class (game-main.js)', () => {
       game.background = { constructor: { name: 'NotMap7' }, totalDistanceTraveled: game.maxDistance };
       game.resetInstance = { reset: jest.fn() };
 
-      const giftSpy = jest.spyOn(game, 'maybeAnnounceGiftSkins').mockReturnValue(false);
+      const giftSpy = jest.spyOn(game, 'announceGiftSkins').mockReturnValue(false);
 
       game.endCutscene();
 
       expect(giftSpy).toHaveBeenCalledWith({ delayMs: 450 });
     });
 
-    it('does not call maybeAnnounceGiftSkins when not ending an end-cutscene', () => {
+    it('does not call announceGiftSkins when not ending an end-cutscene', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
 
       game.isEndCutscene = false;
@@ -1437,7 +1437,7 @@ describe('Game class (game-main.js)', () => {
       game.background = { constructor: { name: 'NotMap7' }, totalDistanceTraveled: game.maxDistance };
       game.resetInstance = { reset: jest.fn() };
 
-      const giftSpy = jest.spyOn(game, 'maybeAnnounceGiftSkins').mockReturnValue(false);
+      const giftSpy = jest.spyOn(game, 'announceGiftSkins').mockReturnValue(false);
 
       game.endCutscene();
 

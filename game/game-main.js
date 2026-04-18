@@ -85,6 +85,7 @@ import {
 import { BossManager } from "./entities/enemies/bossManager.js";
 import { SKINS } from "./config/skinsAndCosmetics.js";
 import { MenuNavigator } from "./menu/menuNavigator.js";
+import { CoinConvertToast } from "./animations/coinConvertToast.js";
 
 export class Game {
     constructor(canvas, width, height) {
@@ -117,7 +118,9 @@ export class Game {
         this.ownedSkins = {};
         this.ownedCosmetics = {};
         this.metaToasts = [];
+        this.coinConvertToasts = [];
         this._announcedGiftSkins = {};
+        this._pendingCoinConvertAmount = 0;
         // player/audio handlers/menus/etc classes and vars...
         this.player = new Player(this);
         this.player.currentState = this.player.states[0];
@@ -274,7 +277,21 @@ export class Game {
         }, Math.max(0, delayMs));
     }
 
-    maybeAnnounceGiftSkins({ delayMs = 450 } = {}) {
+    announceEndCutsceneRewards({ delayMs = 450 } = {}) {
+        this.announceGiftSkins({ delayMs });
+        this.showCoinConvertToast();
+    }
+
+    showCoinConvertToast() {
+        if (this._pendingCoinConvertAmount <= 0) return;
+        const amount = this._pendingCoinConvertAmount;
+        this._pendingCoinConvertAmount = 0;
+        setTimeout(() => {
+            this.coinConvertToasts.push(new CoinConvertToast(this, amount));
+        }, 600);
+    }
+
+    announceGiftSkins({ delayMs = 450 } = {}) {
         const giftSkins = [
             { key: 'iceBreakerSkin', flag: 'glacikalDefeated' },
             { key: 'infernalSkin', flag: 'elyvorgDefeated' },
@@ -335,7 +352,7 @@ export class Game {
             this.reset();
             this.isPlayerInGame = false;
             if (wasEndCutscene) {
-                this.maybeAnnounceGiftSkins({ delayMs: 450 });
+                this.announceEndCutsceneRewards({ delayMs: 450 });
             }
             if (!(this.background instanceof Map7)) {
                 this.canSelectForestMap = false;
@@ -872,10 +889,9 @@ export class Game {
                 const coinsNow = Math.max(0, Math.floor(this.coins));
                 if (coinsNow > 0) {
                     const MAX_CC = 999;
-                    this.creditCoins = Math.min(
-                        MAX_CC,
-                        Math.max(0, Math.floor(this.creditCoins || 0)) + coinsNow
-                    );
+                    const before = Math.max(0, Math.floor(this.creditCoins || 0));
+                    this.creditCoins = Math.min(MAX_CC, before + coinsNow);
+                    this._pendingCoinConvertAmount = this.creditCoins - before;
                     this.saveGameState();
                 }
 
@@ -1294,6 +1310,9 @@ window.addEventListener("load", function () {
         game.metaToasts.forEach((t) => t.update(deltaTime));
         game.metaToasts = game.metaToasts.filter((t) => !t.markedForDeletion);
 
+        game.coinConvertToasts.forEach((t) => t.update(deltaTime));
+        game.coinConvertToasts = game.coinConvertToasts.filter((t) => !t.markedForDeletion);
+
         if (
             game.cutsceneActive &&
             !game.talkToPenguin &&
@@ -1316,6 +1335,7 @@ window.addEventListener("load", function () {
             } else {
                 game.currentCutscene.draw(ctx);
                 game.metaToasts.forEach((t) => t.draw(ctx));
+                game.coinConvertToasts.forEach((t) => t.draw(ctx));
 
                 if (game.menu.pause.isPaused && game.currentMenu) {
                     game.currentMenu.menuActive = true;
@@ -1323,6 +1343,7 @@ window.addEventListener("load", function () {
                     game.currentMenu.update(deltaTime);
 
                     game.metaToasts.forEach((t) => t.draw(ctx));
+                    game.coinConvertToasts.forEach((t) => t.draw(ctx));
                 }
             }
         } else if (game.currentMenu && game.currentMenu.menuInGame === false) {
@@ -1332,6 +1353,7 @@ window.addEventListener("load", function () {
             game.currentMenu.update(deltaTime);
 
             game.metaToasts.forEach((t) => t.draw(ctx));
+            game.coinConvertToasts.forEach((t) => t.draw(ctx));
         } else if (game.isPlayerInGame) {
             game.update(deltaTime);
 
@@ -1359,6 +1381,7 @@ window.addEventListener("load", function () {
             }
 
             game.metaToasts.forEach((t) => t.draw(ctx));
+            game.coinConvertToasts.forEach((t) => t.draw(ctx));
         }
 
         requestAnimationFrame(animate);
