@@ -469,7 +469,7 @@ export class Player {
 
             this.spriteAnimation(deltaTime);
             this.playerHorizontalMovement(input, deltaTime);
-            this.playerVerticalMovement(input);
+            this.playerVerticalMovement(input, deltaTime);
 
             this.collisionWithEnemies(deltaTime);
             this.collisionWithPowers();
@@ -1212,8 +1212,10 @@ export class Player {
     playerHorizontalMovement(input, deltaTime) {
         if (this.isFrozen) return;
 
+        const dt = deltaTime / 13.333;
+
         if (this.isDashing) {
-            this.x += this.dashVelocity;
+            this.x += this.dashVelocity * dt;
 
             if (this.x < 0) this.x = 0;
             if (this.x > this.game.width - this.width) {
@@ -1234,7 +1236,7 @@ export class Player {
         const right = this._moveRight(input);
         const left = this._moveLeft(input);
 
-        this.x += this.speed;
+        this.x += this.speed * dt;
 
         if (right && this.currentState !== this.states[6]) {
             this.speed = this.maxSpeed;
@@ -1352,18 +1354,20 @@ export class Player {
         this.prevAxis = axis;
     }
 
-    playerVerticalMovement(input) {
+    playerVerticalMovement(input, deltaTime) {
         if (this.isFrozen) return;
+
+        const dt = deltaTime / 13.333;
 
         if (this.isSpace) {
             const weightRatio = this.weight / this.baseWeight;
             const spaceGravity = 0.07 * (this.isSlowed ? weightRatio * 1.3 : weightRatio);
             const fallClamp = 3;
 
-            this.y += this.vy;
+            this.y += this.vy * dt;
 
             if (this.vy < fallClamp) {
-                this.vy += spaceGravity;
+                this.vy += spaceGravity * dt;
             }
 
             const minY = 0;
@@ -1381,9 +1385,9 @@ export class Player {
             return;
         }
 
-        this.y += this.vy;
+        this.y += this.vy * dt;
         if (!this.onGround()) {
-            this.vy += this.weight;
+            this.vy += this.weight * dt;
         } else {
             this.vy = 0;
         }
@@ -1391,7 +1395,7 @@ export class Player {
         if (this.isUnderwater) {
             if (this.game.input.isRollAttack(input) && this._jump(input) && this.currentState === this.states[4]) {
                 this.buoyancy -= 1;
-                this.y -= 4;
+                this.y -= 4 * dt;
             }
             if (this.buoyancy < 1) {
                 this.buoyancy = 1;
@@ -1409,17 +1413,18 @@ export class Player {
     firedogMeetsElyvorg(input) {
         const left = this._moveLeft(input);
         const right = this._moveRight(input);
+        const dt = (this.game.deltaTime ?? 13.333) / 13.333;
 
         if (this.game.isBossVisible && this.currentState === this.states[4]) {
             if (this.facingRight) {
                 if (!(this.game.input.isRollAttack(input) && !left && !right)) {
-                    if (left) this.x -= 6;
-                    else this.x += 6;
+                    if (left) this.x -= 6 * dt;
+                    else this.x += 6 * dt;
                 }
             } else if (this.facingLeft) {
                 if (!(this.game.input.isRollAttack(input) && !left && !right)) {
-                    if (right) this.x += 6;
-                    else this.x -= 6;
+                    if (right) this.x += 6 * dt;
+                    else this.x -= 6 * dt;
                 }
             }
         }
@@ -1431,7 +1436,7 @@ export class Player {
                     this.setToRunOnce = false;
                     this.setState(1, 1);
                 }
-                this.x -= 6;
+                this.x -= 6 * dt;
             } else if (this.setToStandingOnce) {
                 setTimeout(() => {
                     this.game.input.keys = [];
@@ -1456,7 +1461,8 @@ export class Player {
         }
 
         if (this.currentState.deathAnimation && (this.isUnderwater || this.isSpace) && !this.onGround()) {
-            this.y += 2;
+            const dt = (this.game.deltaTime ?? 13.333) / 13.333;
+            this.y += 2 * dt;
         }
     }
 

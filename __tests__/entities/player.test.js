@@ -974,18 +974,18 @@ describe('Player', () => {
             player.dashVelocity = 500;
 
             player.x = 100;
-            player.playerHorizontalMovement([], 16);
+            player.playerHorizontalMovement([], 13.333);
             expect(player.x).toBe(600);
             expect(player.speed).toBe(500);
             expect(player.vx).toBe(500);
 
             player.x = game.width - player.width - 10;
-            player.playerHorizontalMovement([], 16);
+            player.playerHorizontalMovement([], 13.333);
             expect(player.x).toBe(game.width - player.width);
 
             player.dashVelocity = -9999;
             player.x = 5;
-            player.playerHorizontalMovement([], 16);
+            player.playerHorizontalMovement([], 13.333);
             expect(player.x).toBe(0);
         });
     });
@@ -998,7 +998,7 @@ describe('Player', () => {
             const initialY = player.y;
             game.input.keys = ['w'];
             game.input.isRollAttack.mockReturnValue(true);
-            player.playerVerticalMovement(game.input.keys);
+            player.playerVerticalMovement(game.input.keys, 13.333);
             expect(player.buoyancy).toBe(3);
             expect(player.y).toBe(initialY - 4);
         });
@@ -1059,23 +1059,23 @@ describe('Player', () => {
     describe('playerHorizontalMovement', () => {
         test('pressing "d" sets speed to maxSpeed', () => {
             player.currentState = player.states[1];
-            player.playerHorizontalMovement(['d']);
+            player.playerHorizontalMovement(['d'], 13.333);
             expect(player.speed).toBe(player.maxSpeed);
         });
 
         test('pressing "a" sets speed negative', () => {
             player.currentState = player.states[1];
-            player.playerHorizontalMovement(['a']);
+            player.playerHorizontalMovement(['a'], 13.333);
             expect(player.speed).toBeCloseTo(-player.maxSpeed * 1.3);
         });
 
         test('clamps x within bounds', () => {
             player.x = -5;
             player.currentState = player.states[1];
-            player.playerHorizontalMovement([]);
+            player.playerHorizontalMovement([], 13.333);
             expect(player.x).toBe(0);
             player.x = 1000;
-            player.playerHorizontalMovement([]);
+            player.playerHorizontalMovement([], 13.333);
             expect(player.x).toBe(1000);
         });
     });
@@ -1086,12 +1086,12 @@ describe('Player', () => {
             player.y = 100;
             player.vy = 0;
 
-            player.playerVerticalMovement([]);
+            player.playerVerticalMovement([], 13.333);
             expect(player.y).toBe(100);
             expect(player.vy).toBeCloseTo(0.07);
 
             player.vy = 3;
-            player.playerVerticalMovement([]);
+            player.playerVerticalMovement([], 13.333);
             expect(player.vy).toBe(3);
         });
 
@@ -1100,14 +1100,14 @@ describe('Player', () => {
 
             player.y = -10;
             player.vy = -1;
-            player.playerVerticalMovement([]);
+            player.playerVerticalMovement([], 13.333);
             expect(player.y).toBe(0);
             expect(player.vy).toBe(0);
 
             player.y = game.height;
             player.vy = 5;
             player.canSpaceDoubleJump = true;
-            player.playerVerticalMovement([]);
+            player.playerVerticalMovement([], 13.333);
             expect(player.y).toBe(game.height - player.height - game.groundMargin);
             expect(player.vy).toBe(0);
             expect(player.canSpaceDoubleJump).toBe(false);
@@ -1119,7 +1119,7 @@ describe('Player', () => {
             const initialY = player.y;
             const initialVy = player.vy;
 
-            player.playerVerticalMovement([]);
+            player.playerVerticalMovement([], 13.333);
 
             expect(player.y).toBe(initialY);
             expect(player.vy).toBe(initialVy);

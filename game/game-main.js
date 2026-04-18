@@ -1306,6 +1306,7 @@ window.addEventListener("load", function () {
     function animate(timeStamp) {
         const deltaTime = timeStamp - lastTime;
         lastTime = timeStamp;
+        game.deltaTime = deltaTime;
 
         game.metaToasts.forEach((t) => t.update(deltaTime));
         game.metaToasts = game.metaToasts.filter((t) => !t.markedForDeletion);
