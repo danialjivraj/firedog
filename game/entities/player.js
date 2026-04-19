@@ -59,6 +59,7 @@ export class Player {
         // collision
         this.collisionCooldowns = {};
         this.collisionLogic = new CollisionLogic(this.game);
+        this._enemiesHitSet = new Set();
         // underwater vars
         this.isUnderwater = false;
         this.wasUnderwaterCriticalRedPhaseOn = false;
@@ -341,10 +342,10 @@ export class Player {
         this.vy = 0;
         // state sanity
         if (
-            this.currentState === this.states[PlayerState.STUNNED] || // stunned
-            this.currentState === this.states[PlayerState.HIT]    // hit
+            this.currentState === this.states[PlayerState.STUNNED] ||
+            this.currentState === this.states[PlayerState.HIT]
         ) {
-            this.setState(PlayerState.STANDING, 0); // standing
+            this.setState(PlayerState.STANDING, 0);
         }
         // audio cleanup
         const sfx = this.game.audioHandler.firedogSFX;
@@ -354,19 +355,23 @@ export class Player {
         sfx.stopSound('rollingUnderwaterSFX');
         sfx.stopSound('frozenSound');
         // particles cleanup
-        this.game.particles = this.game.particles.filter(p =>
-            !(
-                p.constructor.name === 'PoisonBubbles' ||
-                p.constructor.name === 'IceCrystalBubbles' ||
-                p.constructor.name === 'SpinningChicks'
-            )
-        );
+        let pw = 0;
+        for (let i = 0; i < this.game.particles.length; i++) {
+            if (!this.game.particles[i]._isStatusParticle) {
+                if (i !== pw) this.game.particles[pw] = this.game.particles[i];
+                pw++;
+            }
+        }
+        this.game.particles.length = pw;
         // collisions
-        this.game.collisions = this.game.collisions.filter(c =>
-            !(
-                c.constructor.name === 'TunnelVision'
-            )
-        );
+        let cw = 0;
+        for (let i = 0; i < this.game.collisions.length; i++) {
+            if (!this.game.collisions[i]._isTunnelVision) {
+                if (i !== cw) this.game.collisions[cw] = this.game.collisions[i];
+                cw++;
+            }
+        }
+        this.game.collisions.length = cw;
     }
 
     updateFrozen(deltaTime) {
@@ -512,21 +517,29 @@ export class Player {
 
     getCurrentCosmeticImagesInOrder() {
         const menu = this.game.menu.wardrobe;
+        const version = menu.cosmeticVersion;
+        if (this._cosmeticCacheVersion === version && this._cosmeticCache) {
+            return this._cosmeticCache;
+        }
 
-        return COSMETIC_LAYER_ORDER
-            .map(slot => {
-                const key = menu.getCurrentCosmeticKey?.(slot) || 'none';
-                if (!key || key === 'none') return null;
+        const result = [];
+        for (let i = 0; i < COSMETIC_LAYER_ORDER.length; i++) {
+            const slot = COSMETIC_LAYER_ORDER[i];
+            const key = menu.getCurrentCosmeticKey?.(slot) || 'none';
+            if (!key || key === 'none') continue;
 
-                const img = getCosmeticElement(slot, key);
-                if (!img) return null;
+            const img = getCosmeticElement(slot, key);
+            if (!img) continue;
 
-                const chromaState = menu.getCurrentCosmeticsChromaState?.() || {};
-                const hueDeg = getCosmeticChromaDegFromState(slot, key, chromaState);
+            const chromaState = menu.getCurrentCosmeticsChromaState?.() || {};
+            const hueDeg = getCosmeticChromaDegFromState(slot, key, chromaState);
 
-                return { slot, key, img, hueDeg };
-            })
-            .filter(Boolean);
+            result.push({ slot, key, img, hueDeg });
+        }
+
+        this._cosmeticCache = result;
+        this._cosmeticCacheVersion = version;
+        return result;
     }
 
     getTintedFrameCanvas(img, sx, sy, sw, sh, dw, dh, tint, hueDeg = null) {
@@ -869,12 +882,12 @@ export class Player {
 
             if (redActive) {
                 for (let i = -6; i <= 0; i++) {
-                    this.game.behindPlayerParticles.unshift(
+                    this.game.behindPlayerParticles.push(
                         new Fireball(this.game, baseX, baseY, 'redPotionFireball', fireballDirection, i)
                     );
                 }
             } else {
-                this.game.behindPlayerParticles.unshift(
+                this.game.behindPlayerParticles.push(
                     new Fireball(this.game, baseX, baseY, 'fireball', fireballDirection)
                 );
             }
@@ -1133,11 +1146,11 @@ export class Player {
             lineLeft + Math.random() * (lineRight - lineLeft) + (Math.random() * jitter - jitter / 2);
 
         const spawnPoisonBubbles = (kind) => {
-            this.game.particles.unshift(new PoisonBubbles(this.game, pickX(), spawnY, kind));
+            this.game.particles.push(new PoisonBubbles(this.game, pickX(), spawnY, kind));
         };
 
         const spawnIceCrystal = () => {
-            this.game.particles.unshift(new IceCrystalBubbles(this.game, pickX(), spawnY));
+            this.game.particles.push(new IceCrystalBubbles(this.game, pickX(), spawnY));
         };
 
         if (this.isPoisonedActive && this.isSlowed) {
@@ -1154,7 +1167,7 @@ export class Player {
             spawnIceCrystal();
         }
 
-        if (!this.game.particles.some(p => p instanceof SpinningChicks)) {
+        if (!this.game.particles.some(p => p._isSpinningChicks)) {
             this.game.particles.push(new SpinningChicks(this.game));
         }
     }
@@ -1531,14 +1544,15 @@ export class Player {
     }
 
     collisionWithEnemies(deltaTime) {
-        const enemiesHit = new Set(); // keeps track of enemies already hit by red-potion fireballs
+        this._enemiesHitSet.clear();
 
-        this.game.enemies.forEach(enemy => {
-            this.collisionLogic.handleFiredogCollisionWithEnemy(enemy);
-            this.collisionLogic.handleFireballCollisionWithEnemy(enemy, enemiesHit);
-            this.collisionLogic.collisionAnimationFollowsEnemy(enemy);
-        });
+        const enemies = this.game.enemies;
+        for (let i = 0; i < enemies.length; i++) {
+            this.collisionLogic.handleFiredogCollisionWithEnemy(enemies[i]);
+            this.collisionLogic.handleFireballCollisionWithEnemy(enemies[i], this._enemiesHitSet);
+        }
 
+        this.collisionLogic.updateAllCollisionAnimationPositions();
         this.collisionLogic.updateCollisionCooldowns(deltaTime);
     }
 

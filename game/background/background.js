@@ -181,7 +181,7 @@ export class Background {
         if (lastGroundLayer && !tutorialBlocksScroll) {
             const dt = normalizeDelta(deltaTime);
             this.totalDistanceTraveled += (this.game.speed / 1000) * dt;
-            this.totalDistanceTraveled = parseFloat(this.totalDistanceTraveled.toFixed(2));
+            this.totalDistanceTraveled = Math.round(this.totalDistanceTraveled * 100) / 100;
         }
 
         if (!tutorialBlocksScroll && lastGroundLayer) {

@@ -297,7 +297,7 @@ export class TipRenderer {
 
         context.save();
 
-        context.font = '18px ' + this.ui.fontFamily;
+        context.font = this.ui._font18;
         context.fillStyle = this.game.fontColor;
         context.textAlign = 'left';
 

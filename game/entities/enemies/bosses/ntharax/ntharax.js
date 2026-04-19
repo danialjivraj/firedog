@@ -2219,11 +2219,14 @@ export class NTharax extends EnemyBoss {
                 }
             }
 
-            const activeSpikes =
-                this.kneelSpikes &&
-                this.kneelSpikes.filter(s => s && !s.markedForDeletion);
+            let _activeCount = 0;
+            if (this.kneelSpikes) {
+                for (let _i = 0; _i < this.kneelSpikes.length; _i++) {
+                    if (this.kneelSpikes[_i] && !this.kneelSpikes[_i].markedForDeletion) _activeCount++;
+                }
+            }
 
-            if (!activeSpikes || activeSpikes.length === 0) {
+            if (_activeCount === 0) {
                 this.kneelPhase = "returning";
                 this.kneelFrameTimer = 0;
                 this.kneelAnimation.frameX = max;
@@ -3296,11 +3299,25 @@ export class NTharax extends EnemyBoss {
             for (let i = 0; i < this.healingStarBursts.length; i++) {
                 this.healingStarBursts[i].update(deltaTime);
             }
-            this.healingStarBursts = this.healingStarBursts.filter((b) => !b.markedForDeletion);
+            let _hw = 0;
+            for (let _hi = 0; _hi < this.healingStarBursts.length; _hi++) {
+                if (!this.healingStarBursts[_hi].markedForDeletion) {
+                    if (_hi !== _hw) this.healingStarBursts[_hw] = this.healingStarBursts[_hi];
+                    _hw++;
+                }
+            }
+            this.healingStarBursts.length = _hw;
         }
 
         if (this.undergroundTentacles && this.undergroundTentacles.length > 0) {
-            this.undergroundTentacles = this.undergroundTentacles.filter((t) => !t.markedForDeletion);
+            let _tw = 0;
+            for (let _ti = 0; _ti < this.undergroundTentacles.length; _ti++) {
+                if (!this.undergroundTentacles[_ti].markedForDeletion) {
+                    if (_ti !== _tw) this.undergroundTentacles[_tw] = this.undergroundTentacles[_ti];
+                    _tw++;
+                }
+            }
+            this.undergroundTentacles.length = _tw;
         }
 
         this.updateExplodePush(deltaTime);

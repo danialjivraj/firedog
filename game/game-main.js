@@ -1,9 +1,7 @@
 import { Player } from "./entities/player.js";
 import { DistortionEffect } from "./animations/distortion.js";
-import { SpinningChicks } from "./animations/particles.js";
 import { AnimatedToast } from "./interface/animatedToast.js";
 import { formatTimeMs } from "./utils/formatTime.js";
-import { ImmobileGroundEnemy } from "./entities/enemies/enemies.js";
 import { POWER_UP_SPAWN_CONFIG, POWER_DOWN_SPAWN_CONFIG } from "./config/itemSpawnConfig.js";
 import { PENGUIN_CUTSCENES, END_CUTSCENES, BOSS_CUTSCENE_CONFIGS, CABIN_ENTRANCE_OVERRIDES } from "./config/cutsceneConfig.js";
 // ingame
@@ -647,41 +645,71 @@ export class Game {
         this.particles.forEach(p => p.update(deltaTime));
 
         if (this.particles.length > this.maxParticles) {
-            const keep = [];
-            const evictable = [];
-            for (const p of this.particles) {
-                if (p instanceof SpinningChicks) keep.push(p);
-                else evictable.push(p);
+            let keepCount = 0;
+            for (let i = 0; i < this.particles.length; i++) {
+                if (this.particles[i]._isSpinningChicks) {
+                    if (i !== keepCount) {
+                        const tmp = this.particles[keepCount];
+                        this.particles[keepCount] = this.particles[i];
+                        this.particles[i] = tmp;
+                    }
+                    keepCount++;
+                }
             }
-            const roomForEvictable = Math.max(0, this.maxParticles - keep.length);
-            this.particles = keep.concat(evictable.slice(0, roomForEvictable));
+            const limit = Math.max(keepCount, this.maxParticles);
+            if (this.particles.length > limit) {
+                this.particles.length = limit;
+            }
         }
 
         this.collisions.forEach(c => c.update(deltaTime));
     }
 
     _cleanupEntities() {
-        const removedEnemies = this.enemies.filter(e => e.markedForDeletion);
-        this.enemies = this.enemies.filter(e => !e.markedForDeletion);
-        for (const enemy of removedEnemies) {
-            if (!enemy.loopingSoundId) continue;
-            if (this.enemies.some(e => e.loopingSoundId === enemy.loopingSoundId)) continue;
-            if (enemy.loopingSoundFadeOut) {
-                if (this.audioHandler.enemySFX.isPlaying(enemy.loopingSoundId)) {
-                    this.audioHandler.enemySFX.fadeOutAndStop(enemy.loopingSoundId, LOOPING_SOUND_FADE_OUT_MS);
+        // handle enemy looping sounds before removal
+        for (let i = this.enemies.length - 1; i >= 0; i--) {
+            const enemy = this.enemies[i];
+            if (!enemy.markedForDeletion) continue;
+            if (enemy.loopingSoundId) {
+                let soundStillNeeded = false;
+                for (let j = 0; j < this.enemies.length; j++) {
+                    if (j !== i && !this.enemies[j].markedForDeletion &&
+                        this.enemies[j].loopingSoundId === enemy.loopingSoundId) {
+                        soundStillNeeded = true;
+                        break;
+                    }
                 }
-            } else {
-                this.audioHandler.enemySFX.stopSound(enemy.loopingSoundId);
+                if (!soundStillNeeded) {
+                    if (enemy.loopingSoundFadeOut) {
+                        if (this.audioHandler.enemySFX.isPlaying(enemy.loopingSoundId)) {
+                            this.audioHandler.enemySFX.fadeOutAndStop(enemy.loopingSoundId, LOOPING_SOUND_FADE_OUT_MS);
+                        }
+                    } else {
+                        this.audioHandler.enemySFX.stopSound(enemy.loopingSoundId);
+                    }
+                }
             }
         }
 
-        this.powerUps = this.powerUps.filter(p => !p.markedForDeletion);
-        this.powerDowns = this.powerDowns.filter(p => !p.markedForDeletion);
-        this.behindPlayerParticles = this.behindPlayerParticles.filter(p => !p.markedForDeletion);
-        this.particles = this.particles.filter(p => !p.markedForDeletion);
-        this.collisions = this.collisions.filter(c => !c.markedForDeletion);
-        this.floatingMessages = this.floatingMessages.filter(m => !m.markedForDeletion);
-        this.animatedToasts = this.animatedToasts.filter(t => !t.markedForDeletion);
+        Game._removeDeleted(this.enemies);
+        Game._removeDeleted(this.powerUps);
+        Game._removeDeleted(this.powerDowns);
+        Game._removeDeleted(this.behindPlayerParticles);
+        Game._removeDeleted(this.particles);
+        Game._removeDeleted(this.collisions);
+        Game._removeDeleted(this.floatingMessages);
+        Game._removeDeleted(this.animatedToasts);
+    }
+
+    static _removeDeleted(arr) {
+        let write = 0;
+        for (let read = 0; read < arr.length; read++) {
+            if (!arr[read].markedForDeletion) {
+                if (read !== write) arr[write] = arr[read];
+                write++;
+            }
+        }
+        arr.length = write;
     }
 
     _checkPenguinCutscene() {
@@ -808,7 +836,9 @@ export class Game {
             this._fillScreen(context, `rgba(${r}, ${g}, ${b}, ${effect.opacity})`);
         }
 
-        this._fillScreen(context, `rgba(0, 0, 50, ${this.invisibleColourOpacity})`);
+        if (this.invisibleColourOpacity > 0) {
+            this._fillScreen(context, `rgba(0, 0, 50, ${this.invisibleColourOpacity})`);
+        }
 
         this.cutscenes.forEach(c => c.draw(context));
 
@@ -843,11 +873,12 @@ export class Game {
                     const newEnemy = new type(this);
                     let collision = false;
 
-                    for (const existingEnemy of this.enemies) {
+                    for (let i = 0; i < this.enemies.length; i++) {
+                        const existingEnemy = this.enemies[i];
                         if (
-                            existingEnemy instanceof type ||
-                            (newEnemy instanceof ImmobileGroundEnemy &&
-                                existingEnemy instanceof ImmobileGroundEnemy &&
+                            existingEnemy.constructor === type ||
+                            (newEnemy._isImmobileGround &&
+                                existingEnemy._isImmobileGround &&
                                 Math.abs(newEnemy.x - existingEnemy.x) <
                                 (newEnemy.width + existingEnemy.width) / 2)
                         ) {
@@ -895,9 +926,9 @@ export class Game {
 
     updateGlobalOverlays(deltaTime) {
         this.metaToasts.forEach(t => t.update(deltaTime));
-        this.metaToasts = this.metaToasts.filter(t => !t.markedForDeletion);
+        Game._removeDeleted(this.metaToasts);
         this.coinConvertToasts.forEach(t => t.update(deltaTime));
-        this.coinConvertToasts = this.coinConvertToasts.filter(t => !t.markedForDeletion);
+        Game._removeDeleted(this.coinConvertToasts);
     }
 
     // ------------------------------------------------------------ Saving logic  ------------------------------------------------------------

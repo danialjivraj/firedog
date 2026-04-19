@@ -8,6 +8,13 @@ export class UI {
         this.game = game;
         this.fontSize = 30;
         this.fontFamily = 'Love Ya Like A Sister';
+        this.fontString = this.fontSize + 'px ' + this.fontFamily;
+        this._font18 = '18px ' + this.fontFamily;
+        this._font22 = '22px ' + this.fontFamily;
+        this._font29 = '29px ' + this.fontFamily;
+        this._font30 = this.fontSize + 'px ' + this.fontFamily;
+        this._font36 = (this.fontSize * 1.2) + 'px ' + this.fontFamily;
+        this._font60 = (this.fontSize * 2) + 'px ' + this.fontFamily;
         this.barWidth = 500;
 
         this.topLeftYShift = 0;
@@ -156,7 +163,7 @@ export class UI {
         context.shadowOffsetY = 2;
         context.shadowColor = 'white';
         context.shadowBlur = 0;
-        context.font = this.fontSize + 'px ' + this.fontFamily;
+        context.font = this.fontString;
         context.textAlign = 'left';
         context.fillStyle = this.game.fontColor;
 
@@ -195,8 +202,8 @@ export class UI {
         glowColor = null,
         glowBlur = 0,
     } = {}) {
-        const xFont = '22px ' + this.fontFamily;
-        const valueFont = '29px ' + this.fontFamily;
+        const xFont = this._font22;
+        const valueFont = this._font29;
 
         context.save();
         context.textAlign = 'left';
@@ -274,7 +281,10 @@ export class UI {
         }
 
         const isBlinkingLostLife = now < this.lifeBlinkEndTime && this.lifeBlinkIndex >= curr;
-        const isGainingLife = [...this.lifeGainEndTimes.values()].some((endTime) => now < endTime);
+        let isGainingLife = false;
+        for (const endTime of this.lifeGainEndTimes.values()) {
+            if (now < endTime) { isGainingLife = true; break; }
+        }
 
         if (hudStyle === 'legacy') {
             let gainMaxIndex = -1;
@@ -377,7 +387,8 @@ export class UI {
             context.shadowBlur = 18;
             context.drawImage(this.livesImage, -iconSize / 2, -iconSize / 2, iconSize, iconSize);
         } else if (isGainingLife) {
-            const activeEndTime = Math.max(...this.lifeGainEndTimes.values());
+            let activeEndTime = 0;
+            for (const et of this.lifeGainEndTimes.values()) { if (et > activeEndTime) activeEndTime = et; }
             const t = 1 - (activeEndTime - now) / this.lifeGainDuration;
             const pop = 1.35 - 0.35 * t;
             const pulse = 1 + 0.08 * Math.sin(t * Math.PI * 6);
@@ -408,7 +419,8 @@ export class UI {
             textGlowColor = 'red';
             textGlowBlur = 14;
         } else if (isGainingLife) {
-            const activeEndTime = Math.max(...this.lifeGainEndTimes.values());
+            let activeEndTime = 0;
+            for (const et of this.lifeGainEndTimes.values()) { if (et > activeEndTime) activeEndTime = et; }
             const t = 1 - (activeEndTime - now) / this.lifeGainDuration;
             textScale = 1 + 0.12 * Math.sin(t * Math.PI * 6);
             textGlowColor = 'lime';
@@ -441,7 +453,7 @@ export class UI {
         const barY = 10;
 
         context.save();
-        context.font = '18px ' + this.fontFamily;
+        context.font = this._font18;
         context.fillStyle = this.game.fontColor;
         context.textAlign = 'left';
         context.fillText(Math.floor(percentage) + '%', barX + this.barWidth + 5, barY + barHeight);
@@ -976,7 +988,7 @@ export class UI {
     }
 
     timer(context) {
-        context.font = this.fontSize * 1 + 'px ' + this.fontFamily;
+        context.font = this._font30;
         let formattedTime;
         let time;
         const player = this.game.player;
@@ -1126,12 +1138,12 @@ export class UI {
             context.shadowColor = 'white';
             context.textAlign = 'center';
 
-            context.font = this.fontSize * 2 + 'px ' + this.fontFamily;
+            context.font = this._font60;
             context.fillText(blueFireTime, this.game.width / 2 + offsetX, 90 + offsetY);
 
             const textMetrics = context.measureText(blueFireTime);
             const blueFireTimeWidth = textMetrics.width;
-            context.font = this.fontSize * 1.2 + 'px ' + this.fontFamily;
+            context.font = this._font36;
             context.fillText(' s', this.game.width / 2 + offsetX + blueFireTimeWidth / 2 + 5, 90 + offsetY);
 
             context.restore();
@@ -1166,7 +1178,7 @@ export class UI {
         const iconD = 24;
         const paddingL = 10;
         const gap = 11;
-        const font = '29px ' + this.fontFamily;
+        const font = this._font29;
 
         context.font = font;
         const coinText = '' + this.game.coins;
@@ -1213,7 +1225,7 @@ export class UI {
         const iconD = 24;
         const paddingL = 10;
         const gap = 11;
-        const font = '29px ' + this.fontFamily;
+        const font = this._font29;
 
         context.font = font;
         // Clock icon
@@ -1350,7 +1362,7 @@ export class UI {
         context.shadowOffsetY = 2;
         context.shadowColor = 'white';
         context.shadowBlur = 0;
-        context.font = this.fontSize + 'px ' + this.fontFamily;
+        context.font = this.fontString;
         context.textAlign = 'left';
         context.fillStyle = this.game.fontColor;
 

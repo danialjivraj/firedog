@@ -148,6 +148,7 @@ export class Wardrobe extends BaseMenu {
         this.activeTabIndex = 0;
         this.backgroundImage = document.getElementById('skinStage');
 
+        this.cosmeticVersion = 0;
         this.currentSkinKey = 'defaultSkin';
         this.currentCosmetics = {
             [COSMETIC_SLOTS.HEAD]: 'none',
@@ -506,6 +507,7 @@ export class Wardrobe extends BaseMenu {
             out[slot] = (perSlot && typeof perSlot === 'object') ? { ...perSlot } : {};
         }
         this.currentCosmeticsChroma = out;
+        this.cosmeticVersion++;
     }
 
     _getCosmeticChromaVariantId(slot, cosmeticKey) {
@@ -534,6 +536,7 @@ export class Wardrobe extends BaseMenu {
             this.currentCosmeticsChroma[safeSlot] = {};
         }
         this.currentCosmeticsChroma[safeSlot][key] = resolved.id;
+        this.cosmeticVersion++;
         return true;
     }
 
@@ -832,6 +835,7 @@ export class Wardrobe extends BaseMenu {
         const prevKey = this.currentCosmetics?.[safeSlot] || 'none';
 
         // equip new
+        this.cosmeticVersion++;
         this.currentCosmetics[safeSlot] = key;
         if (safeSlot in this.currentCosmeticEls) {
             this.currentCosmeticEls[safeSlot] = (key === 'none') ? null : getCosmeticElement(safeSlot, key);

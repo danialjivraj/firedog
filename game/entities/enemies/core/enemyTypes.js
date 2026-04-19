@@ -50,6 +50,7 @@ export class MovingGroundEnemy extends GroundEnemy {
 export class ImmobileGroundEnemy extends GroundEnemy {
     constructor(game, w, h, m, id) {
         super(game, w, h, m, id);
+        this._isImmobileGround = true;
     }
 }
 
@@ -263,9 +264,12 @@ export class BurrowingGroundEnemy extends ImmobileGroundEnemy {
         const minCenter = halfW;
         const maxCenter = this.game.width - halfW;
 
-        const others = this.game.enemies.filter(
-            (e) => e instanceof this.constructor && e !== this && !e.markedForDeletion
-        );
+        const others = [];
+        const ctor = this.constructor;
+        for (let i = 0; i < this.game.enemies.length; i++) {
+            const e = this.game.enemies[i];
+            if (e.constructor === ctor && e !== this && !e.markedForDeletion) others.push(e);
+        }
 
         const minGap = this.width + 4;
 

@@ -82,15 +82,15 @@ describe('InkSplash', () => {
             expect(game.collisions).toContain(splash);
           });
 
-        it('removes itself at or after 7000ms elapsed', () => {
+        it('marks itself for deletion at or after 7000ms elapsed', () => {
             // exactly 7000ms
             splash.update(7000);
-            expect(game.collisions).not.toContain(splash);
+            expect(splash.markedForDeletion).toBe(true);
 
-            game.collisions = [splash];
+            splash.markedForDeletion = false;
             splash.elapsedTime = 0;
             splash.update(8000);
-            expect(game.collisions).not.toContain(splash);
+            expect(splash.markedForDeletion).toBe(true);
         });
     });
 

@@ -1,6 +1,7 @@
 export class TunnelVision {
     constructor(game, options = {}) {
         this.game = game;
+        this._isTunnelVision = true;
 
         const defaults = {
             fadeInMs: 2000,
@@ -103,7 +104,7 @@ export class TunnelVision {
             return;
         }
 
-        this.game.collisions = this.game.collisions.filter(col => col !== this);
+        this.markedForDeletion = true;
         this.game.player.isBlackHoleActive = false;
         this.game.player.blackHoleTimer = 0;
         this.game.player.blackHoleDuration = 0;

@@ -1657,14 +1657,14 @@ describe('Player', () => {
 
         test('stops relevant SFX and removes status particles + tunnel vision collisions', () => {
             game.particles = [
-                { constructor: { name: 'PoisonBubbles' } },
-                { constructor: { name: 'IceCrystalBubbles' } },
-                { constructor: { name: 'SpinningChicks' } },
+                { constructor: { name: 'PoisonBubbles' }, _isStatusParticle: true },
+                { constructor: { name: 'IceCrystalBubbles' }, _isStatusParticle: true },
+                { constructor: { name: 'SpinningChicks' }, _isStatusParticle: true },
                 { constructor: { name: 'SomeOtherParticle' } },
             ];
 
             game.collisions = [
-                { constructor: { name: 'TunnelVision' } },
+                { constructor: { name: 'TunnelVision' }, _isTunnelVision: true },
                 { constructor: { name: 'OtherCollision' } },
             ];
 

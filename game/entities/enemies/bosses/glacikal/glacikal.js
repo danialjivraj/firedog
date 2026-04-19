@@ -367,7 +367,10 @@ export class Glacikal extends EnemyBoss {
     }
 
     spawnIcyStormBalls(count) {
-        const current = this.game.enemies.filter((e) => e instanceof IcyStormBall).length;
+        let current = 0;
+        for (let i = 0; i < this.game.enemies.length; i++) {
+            if (this.game.enemies[i].constructor === IcyStormBall) current++;
+        }
         const capacity = this.icyStormMaxOnScreen - current;
         if (capacity <= 0) return;
 

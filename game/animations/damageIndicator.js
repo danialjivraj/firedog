@@ -28,7 +28,7 @@ export class BaseIndicator {
             const fadeProgress = Math.min(1, (this.elapsedTime - fadeStartTime) / fadeDuration);
             this.alpha = this.initialOpacity * (1 - fadeProgress);
         } else if (this.elapsedTime >= 2000) {
-            this.game.collisions = this.game.collisions.filter(c => c !== this);
+            this.markedForDeletion = true;
         }
     }
 

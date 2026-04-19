@@ -347,7 +347,7 @@ function makeGameAndLogic() {
     const logic = new CollisionLogic(game);
 
     jest.spyOn(game.collisions, 'push');
-    jest.spyOn(game.particles, 'unshift');
+    jest.spyOn(game.particles, 'push');
     jest.spyOn(game.floatingMessages, 'push');
     jest.spyOn(logic, 'startFrozen').mockImplementation(() => {});
 
@@ -647,7 +647,7 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
 
             if (s.isInvisible && !s.isDashing) {
                 expectNoCollisions(ctx);
-                expect(ctx.game.particles.unshift).not.toHaveBeenCalled();
+                expect(ctx.game.particles.push).toHaveBeenCalledTimes(0);
                 expectNoDamage(ctx);
                 randSpy.mockRestore();
                 return;
@@ -662,7 +662,7 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
             }
 
             expectNoCollisions(ctx);
-            expect(ctx.game.particles.unshift).toHaveBeenCalled();
+            expect(ctx.game.particles.push).toHaveBeenCalled();
             expect(ctx.game.coins).toBe(39);
             expect(ctx.game.lives).toBe(2);
             expect(ctx.game.floatingMessages[0].args[0]).toBe('-10');
@@ -1660,7 +1660,7 @@ describe('CollisionLogic.handleNormalCollision — invincible player', () => {
 
             if (!s.isDashing) {
                 expectCollisionCounts(ctx, [[ExpectedCollisionClass, 1]]);
-                expect(ctx.game.particles.unshift).not.toHaveBeenCalled();
+                expect(ctx.game.particles.push).toHaveBeenCalledTimes(0);
             } else {
                 expectCollisionCounts(ctx, [[ExpectedCollisionClass, 1]]);
             }
@@ -1788,7 +1788,7 @@ describe('CollisionLogic.handleRollingOrDivingCollision — invincible player', 
             runRollDiveScenario(ctx, enemy, s);
 
             expectCollisionCounts(ctx, [[ExpectedCollisionClass, 1]]);
-            expect(ctx.game.particles.unshift).not.toHaveBeenCalled();
+            expect(ctx.game.particles.push).toHaveBeenCalledTimes(0);
             expectNoDamage(ctx);
         });
     });

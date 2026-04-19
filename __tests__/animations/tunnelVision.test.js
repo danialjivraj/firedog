@@ -198,7 +198,7 @@ describe('TunnelVision', () => {
                 tv.update(6000);
                 tv.update(6000);
 
-                expect(game.collisions).not.toContain(tv);
+                expect(tv.markedForDeletion).toBe(true);
                 expect(game.player.isBlackHoleActive).toBe(false);
 
                 expect(tv.alpha).toBe(1.0);
@@ -207,10 +207,10 @@ describe('TunnelVision', () => {
         });
 
         describe('completion (t ≥ endTime)', () => {
-            it('removes itself from collisions and deactivates black hole', () => {
+            it('marks itself for deletion and deactivates black hole', () => {
                 tv.update(15000 + 9000 + 1);
 
-                expect(game.collisions).not.toContain(tv);
+                expect(tv.markedForDeletion).toBe(true);
                 expect(game.player.isBlackHoleActive).toBe(false);
             });
         });

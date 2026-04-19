@@ -776,6 +776,7 @@ describe("elyvorg.js entities – behavior coverage", () => {
         it("fireballThrownWhileInIdle switches to jump when a nearby fireball is detected", () => {
             boss.state = "idle";
             mockGame.behindPlayerParticles.push({
+                _isFireball: true,
                 x: boss.x,
                 y: boss.y,
                 maxSize: boss.height,

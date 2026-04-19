@@ -24,10 +24,10 @@ const setAnim = (player, { x = 0, max, y }) => {
     player.frameY = y;
 };
 
-const spawnDust = (game, x, y) => game.particles.unshift(new Dust(game, x, y));
-const spawnBubble = (game, x, y) => game.particles.unshift(new Bubble(game, x, y));
-const spawnFire = (game, x, y) => game.particles.unshift(new Fire(game, x, y));
-const spawnIceCrystal = (game, x, y) => game.particles.unshift(new IceCrystal(game, x, y));
+const spawnDust = (game, x, y) => game.particles.push(new Dust(game, x, y));
+const spawnBubble = (game, x, y) => game.particles.push(new Bubble(game, x, y));
+const spawnFire = (game, x, y) => game.particles.push(new Fire(game, x, y));
+const spawnIceCrystal = (game, x, y) => game.particles.push(new IceCrystal(game, x, y));
 
 const spawnDashGhost = (game, player) => {
     const skinImg = player.getCurrentSkinImage();
@@ -38,7 +38,7 @@ const spawnDashGhost = (game, player) => {
     const sx = player.frameX * player.width;
     const sy = player.frameY * player.height;
 
-    game.behindPlayerParticles.unshift(
+    game.behindPlayerParticles.push(
         new DashGhost(game, {
             skinImg,
             layers,
@@ -61,7 +61,7 @@ const spawnDashFireArc = (game, player, count = 1) => {
     const y = player.y + player.height * 0.52;
 
     for (let i = 0; i < count; i++) {
-        game.particles.unshift(new DashFireArc(game, x, y, facingRight, game.cabin.isFullyVisible || game.isBossVisible));
+        game.particles.push(new DashFireArc(game, x, y, facingRight, game.cabin.isFullyVisible || game.isBossVisible));
     }
 };
 
@@ -496,7 +496,7 @@ export class Diving extends State {
             if (jump(this.game, input)) player.setState(PlayerState.JUMPING, 1);
             else player.setState(PlayerState.RUNNING, 1);
             for (let i = 0; i < numberOfParticles; i++) {
-                this.game.particles.unshift(
+                this.game.particles.push(
                     new Splash(this.game, player.x + player.width * -0.1, player.y)
                 );
             }

@@ -72,7 +72,14 @@ export class RaindropAnimation {
         }
 
         this.splashes.forEach(splash => splash.update(deltaTime));
-        this.splashes = this.splashes.filter(splash => !splash.markedForDeletion);
+        let _sw = 0;
+        for (let _si = 0; _si < this.splashes.length; _si++) {
+            if (!this.splashes[_si].markedForDeletion) {
+                if (_si !== _sw) this.splashes[_sw] = this.splashes[_si];
+                _sw++;
+            }
+        }
+        this.splashes.length = _sw;
 
         if (this.isRaining) {
             this.raindrops.forEach(d => { if (!d.active) { Object.assign(d, this.makeRaindrop(false)); d.active = true; } });

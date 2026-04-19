@@ -2551,7 +2551,7 @@ describe('Game class (game-main.js)', () => {
       game.player.isUnderwater = true;
       game.player.isInvisible = false;
       game.draw(ctx);
-      expect(ctx.fillRect).toHaveBeenCalledTimes(2);
+      expect(ctx.fillRect).toHaveBeenCalledTimes(1);
     });
 
     it('draws poison overlay when boss fight poison screen effect is active', () => {
@@ -2573,12 +2573,13 @@ describe('Game class (game-main.js)', () => {
 
       game.draw(ctx);
 
-      expect(ctx.fillRect).toHaveBeenCalledTimes(2);
+      expect(ctx.fillRect).toHaveBeenCalledTimes(1);
     });
 
     it('draws invisible overlay when player.isInvisible is true', () => {
       game.player.isUnderwater = false;
       game.player.isInvisible = true;
+      game.invisibleColourOpacity = 0.5;
       game.draw(ctx);
       expect(ctx.fillRect).toHaveBeenCalledTimes(1);
     });

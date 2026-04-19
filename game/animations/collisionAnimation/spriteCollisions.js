@@ -81,6 +81,7 @@ export class CollisionAnimation extends Collision {
 export class Blood extends Collision {
     constructor(game, x, y, enemy) {
         super(game, x, y, 'blood', 70.571428571428571428571428571429, 100, 6, 20);
+        this._isBlood = true;
         this.enemy = enemy;
     }
 
@@ -156,6 +157,7 @@ export class ExplosionCollisionAnimation extends Collision {
 export class ElectricityCollision extends Collision {
     constructor(game, x, y) {
         super(game, x, y, 'electricityCollision', 215.25, 200, 7, 20);
+        this._isElectricityCollision = true;
     }
 
     updatePosition(enemy) {
@@ -463,7 +465,14 @@ export class HealingStarBurstCollision {
             }
         }
 
-        this.stars = this.stars.filter(s => !s.markedForDeletion);
+        let sw = 0;
+        for (let si = 0; si < this.stars.length; si++) {
+            if (!this.stars[si].markedForDeletion) {
+                if (si !== sw) this.stars[sw] = this.stars[si];
+                sw++;
+            }
+        }
+        this.stars.length = sw;
 
         if (this.spawned >= this.totalStars && this.stars.length === 0) {
             this.finished = true;

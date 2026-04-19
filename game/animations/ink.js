@@ -30,7 +30,7 @@ export class InkSplash {
       this.alpha = 1.0 - fadeProgress;
     } else if (this.elapsedTime >= 7000) {
       // after 7 seconds, removes the ink splash
-      this.game.collisions = this.game.collisions.filter(collision => collision !== this);
+      this.markedForDeletion = true;
     }
   }
 

@@ -370,12 +370,13 @@ export class Elyvorg extends EnemyBoss {
 
     fireballThrownWhileInIdle() {
         let isFireballInRange = false;
-        for (const fireball of this.game.behindPlayerParticles) {
-            const fireballDistance = Math.sqrt(
-                Math.pow(fireball.x - this.x, 2) +
-                Math.pow(fireball.y - this.y, 2)
-            );
-            if (fireballDistance <= 400 && fireball.y + fireball.maxSize > this.y) {
+        const particles = this.game.behindPlayerParticles;
+        for (let i = 0; i < particles.length; i++) {
+            const fireball = particles[i];
+            if (!fireball._isFireball) continue;
+            const dx = fireball.x - this.x;
+            const dy = fireball.y - this.y;
+            if (dx * dx + dy * dy <= 160000 && fireball.y + fireball.maxSize > this.y) {
                 isFireballInRange = true;
                 break;
             }

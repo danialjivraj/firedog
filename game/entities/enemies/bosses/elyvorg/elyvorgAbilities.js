@@ -210,6 +210,7 @@ export class GravitationalAura extends Projectile {
 export class ElectricWheel extends Projectile {
     constructor(game, x, y) {
         super(game, x, y, 215, 200, 1, 'electricWheel', 0, 30);
+        this._isElectricWheel = true;
         this.lives = 50;
         this.rotationAngle = 0;
         this.rotationSpeed = 0.06;

@@ -64,14 +64,14 @@ describe('BaseIndicator', () => {
             expect(indicator.alpha).toBeCloseTo(expectedAlpha);
         });
 
-        test('removes indicator after fade end', () => {
+        test('marks indicator for deletion after fade end', () => {
             game.isPlayerInGame = true;
             game.collisions = [indicator];
 
             indicator.elapsedTime = 2000;
             indicator.update(0);
 
-            expect(game.collisions).not.toContain(indicator);
+            expect(indicator.markedForDeletion).toBe(true);
         });
     });
 

@@ -375,7 +375,11 @@ export class Barrier extends Enemy {
         this.images = images;
         this.lives = lives;
 
-        this.image = document.getElementById(this.images[this.images.length - 1]);
+        this._imageCache = {};
+        for (const id of images) {
+            this._imageCache[id] = document.getElementById(id);
+        }
+        this.image = this._imageCache[this.images[this.images.length - 1]];
         this.maxFrame = 0;
 
         this.setFps(0);
@@ -488,7 +492,7 @@ export class Barrier extends Enemy {
         const imageIndex = Math.max(0, Math.min(this.lives - 1, this.images.length - 1));
         const imageName = this.images[imageIndex];
 
-        const img = document.getElementById(imageName);
+        const img = this._imageCache[imageName];
         this.image = img;
 
         context.drawImage(

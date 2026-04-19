@@ -38,6 +38,8 @@ export class Dust extends Particle {
         this.speedY = Math.random();
         this.isUnderwater = this.game.player.isUnderwater;
         this.image = document.getElementById(this.isUnderwater ? 'bubble' : 'dust_black');
+        this._bubbleImg = document.getElementById('bubble');
+        this._dustImg = document.getElementById('dust_black');
         this.createBubble = Math.random() > 0.9;
         this.createDust = Math.random() > 0.6;
     }
@@ -53,10 +55,10 @@ export class Dust extends Particle {
     draw(context) {
         if (this.isUnderwater === true) {
             if (this.createBubble) {
-                context.drawImage(document.getElementById('bubble'), this.x - this.size, this.y - this.size / 1.3, this.size, this.size);
+                context.drawImage(this._bubbleImg, this.x - this.size, this.y - this.size / 1.3, this.size, this.size);
             }
             if (this.createDust) {
-                context.drawImage(document.getElementById('dust_black'), this.x - this.size, this.y - this.size / 1.3, this.size, this.size);
+                context.drawImage(this._dustImg, this.x - this.size, this.y - this.size / 1.3, this.size, this.size);
             }
         } else {
             context.drawImage(this.image, this.x - this.size, this.y - this.size / 1.3, this.size, this.size);
@@ -183,6 +185,7 @@ export class Fire extends Particle {
 export class Fireball extends Particle {
     constructor(game, x, y, image, initialDirection, verticalMovement = 0) {
         super(game);
+        this._isFireball = true;
         this.image = document.getElementById(image);
         this.redPotionModeOrNot();
         this.initialSize = 10;
@@ -386,6 +389,7 @@ class FloatingBubbleEffect extends Particle {
 export class PoisonBubbles extends FloatingBubbleEffect {
     constructor(game, x, y, kind = 'poison') {
         super(game, x, y);
+        this._isStatusParticle = true;
         this.kind = kind;
 
         this.speedX = (Math.random() * 0.6 - 0.3);
@@ -428,6 +432,7 @@ export class PoisonBubbles extends FloatingBubbleEffect {
 export class IceCrystalBubbles extends FloatingBubbleEffect {
     constructor(game, x, y) {
         super(game, x, y, { size: Math.random() * 25 + 10 });
+        this._isStatusParticle = true;
         this.image = document.getElementById('ice_crystal');
         this.alpha = 1;
     }
@@ -449,6 +454,8 @@ export class IceCrystalBubbles extends FloatingBubbleEffect {
 export class SpinningChicks extends Particle {
     constructor(game) {
         super(game);
+        this._isSpinningChicks = true;
+        this._isStatusParticle = true;
         this.count = 4;
         this.radiusX = 36;
         this.radiusY = 10;

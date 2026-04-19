@@ -9,7 +9,7 @@ import {
 } from '../animations/collisionAnimation/spriteCollisions.js';
 import { GhostFadeOut, DisintegrateCollision, BallParticleBurstCollision } from '../animations/collisionAnimation/proceduralCollisions.js';
 import { FloatingMessage } from '../animations/floatingMessages.js';
-import { Fireball, CoinLoss } from '../animations/particles.js';
+import { CoinLoss } from '../animations/particles.js';
 import {
     AngryBee, Bee, Skulnap, PoisonSpit, Goblin, Sluggie, Voltzeel, Gloomlet, EnemyBoss, Barrier,
     Aura, KarateCroco, SpearFish, LilHornet, Cactrix, BerriflyIceBall, Garry, InkBeam, VolcanoWasp, VolcanicBubble,
@@ -879,14 +879,16 @@ export class CollisionLogic {
         if (enemy.grounded === false) return;
         if (enemy.x >= this.game.width) return;
 
-        this.game.behindPlayerParticles.forEach(fireball => {
-            if (!(fireball instanceof Fireball)) return;
+        const particles = this.game.behindPlayerParticles;
+        for (let i = 0; i < particles.length; i++) {
+            const fireball = particles[i];
+            if (!fireball._isFireball) continue;
 
             const fireballRect = this.getFireballRect(fireball);
-            if (!this.enemyHitsRect(enemy, fireballRect)) return;
+            if (!this.enemyHitsRect(enemy, fireballRect)) continue;
 
             this.handleSpecificFireballCollisions(fireball, enemy, enemiesHit);
-        });
+        }
     }
 
     handleSpecificFireballCollisions(fireball, enemy, enemiesHit) {
@@ -925,32 +927,42 @@ export class CollisionLogic {
     }
 
     // follow collision animations
-    collisionAnimationFollowsEnemy(enemy) {
+    updateAllCollisionAnimationPositions() {
         const player = this.game.player;
+        const collisions = this.game.collisions;
+        const enemies = this.game.enemies;
 
-        this.game.collisions.forEach(collision => {
-            if (collision instanceof ElectricityCollision && enemy instanceof ElectricWheel) {
-                const overlaps =
-                    collision.x < player.x + player.width &&
-                    collision.x + collision.width > player.x &&
-                    collision.y < player.y + player.height &&
-                    collision.y + collision.height > player.y;
+        for (let i = 0; i < collisions.length; i++) {
+            const collision = collisions[i];
 
-                if (overlaps) collision.updatePositionWhereCollisionHappened(collision.x, collision.y);
-                else collision.updatePosition(enemy);
-            } else if (collision instanceof Blood && collision.enemy === enemy) {
-                collision.updatePosition(enemy);
+            if (collision._isElectricityCollision) {
+                // find the electric wheel enemy it tracks
+                for (let j = 0; j < enemies.length; j++) {
+                    const enemy = enemies[j];
+                    if (!enemy._isElectricWheel) continue;
+
+                    const overlaps =
+                        collision.x < player.x + player.width &&
+                        collision.x + collision.width > player.x &&
+                        collision.y < player.y + player.height &&
+                        collision.y + collision.height > player.y;
+
+                    if (overlaps) collision.updatePositionWhereCollisionHappened(collision.x, collision.y);
+                    else collision.updatePosition(enemy);
+                    break;
+                }
+            } else if (collision._isBlood && collision.enemy) {
+                collision.updatePosition(collision.enemy);
             }
-        });
+        }
     }
 
     // cooldowns
     updateCollisionCooldowns(deltaTime) {
-        const player = this.game.player;
-        Object.keys(player.collisionCooldowns).forEach(enemyId => {
-            player.collisionCooldowns[enemyId] =
-                Math.max(0, player.collisionCooldowns[enemyId] - deltaTime);
-        });
+        const cooldowns = this.game.player.collisionCooldowns;
+        for (const enemyId in cooldowns) {
+            cooldowns[enemyId] = Math.max(0, cooldowns[enemyId] - deltaTime);
+        }
     }
 
     // ------------------------------------------------------------------
@@ -1009,7 +1021,7 @@ export class CollisionLogic {
                         minCoinsToSteal;
 
                     for (let i = 0; i < coinsToSteal; i++) {
-                        this.game.particles.unshift(
+                        this.game.particles.push(
                             new CoinLoss(this.game, player.x + player.width * -0.1, player.y)
                         );
                     }
