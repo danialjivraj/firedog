@@ -15,6 +15,7 @@ window.addEventListener("load", function () {
     function animate(timeStamp) {
         const deltaTime = timeStamp - lastTime;
         lastTime = timeStamp;
+        game.deltaTime = deltaTime;
 
         game.updateGlobalOverlays(deltaTime);
 
@@ -61,7 +62,6 @@ window.addEventListener("load", function () {
             }
 
             case GameState.GAMEPLAY: {
-                game.deltaTime = deltaTime;
                 game.update(deltaTime);
 
                 const canShake =
