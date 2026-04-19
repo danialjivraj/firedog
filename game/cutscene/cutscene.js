@@ -339,7 +339,16 @@ export class Cutscene {
     }
 
     endsWithEllipsisPlusTerminal(partial) {
-        return /\.\.\.[\)\]\}»"'’”!?]$/u.test(partial);
+        return /\.\.\.[\)\]\}»”’’”!?]$/u.test(partial);
+    }
+
+    isEllipsisStop(dialogue, textIndex) {
+        const partial = dialogue.substring(0, textIndex + 1);
+        if (this.endsWithEllipsisPlusTerminal(partial)) return true;
+        if (!partial.endsWith('...')) return false;
+        const nextChar = dialogue[textIndex + 1];
+        if (nextChar && this.isTerminalChar(nextChar)) return false;
+        return !this.ellipsisFollowedOnlyByTerminalPunct(dialogue, textIndex - 2);
     }
 
     isTerminalChar(ch) {
@@ -1242,7 +1251,7 @@ export class Cutscene {
             }
 
             if (!this.lastSoundPlayed && partialText !== dialogue && this.game.menu.pause.isPaused === false) {
-                if (this.endsWithEllipsisPlusTerminal(partialText)) {
+                if (this.isEllipsisStop(dialogue, this.textIndex)) {
                     if (!this.playSound2OnDotPause) {
                         this.playEightBitSound('bit2');
                         this.playSound2OnDotPause = true;
@@ -1250,20 +1259,6 @@ export class Cutscene {
                     this.pause = true;
                     this.continueDialogue = true;
                     this.isEnterPressed = false;
-                } else if (partialText.endsWith('...')) {
-                    const nextChar = dialogue[this.textIndex + 1];
-                    if (!(nextChar && this.isTerminalChar(nextChar))) {
-                        const ellipsisStart = this.textIndex - 2;
-                        if (!this.ellipsisFollowedOnlyByTerminalPunct(dialogue, ellipsisStart)) {
-                            if (!this.playSound2OnDotPause) {
-                                this.playEightBitSound('bit2');
-                                this.playSound2OnDotPause = true;
-                            }
-                            this.pause = true;
-                            this.continueDialogue = true;
-                            this.isEnterPressed = false;
-                        }
-                    }
                 }
             }
         }
@@ -1283,9 +1278,11 @@ export class Cutscene {
             if (!this.game.menu.pause.isPaused && !this.pause) {
                 this.playEightBitSound('bit1');
                 this._textAdvanceAccum += (this.game.deltaTime ?? BASE_FRAME_MS);
-                if (this._textAdvanceAccum >= BASE_FRAME_MS) {
+                while (this._textAdvanceAccum >= BASE_FRAME_MS) {
                     this._textAdvanceAccum -= BASE_FRAME_MS;
                     this.textIndex++;
+                    if (this.textIndex >= dialogue.length) break;
+                    if (this.isEllipsisStop(dialogue, this.textIndex)) break;
                 }
             } else {
                 this.game.audioHandler.cutsceneDialogue.stopSound('bit1');
