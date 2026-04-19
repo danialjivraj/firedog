@@ -570,7 +570,7 @@ export class Game {
             }
         }
 
-        this._updateScreenEffects();
+        this._updateScreenEffects(deltaTime);
     }
 
     _updateBossTimers(deltaTime) {
@@ -759,13 +759,13 @@ export class Game {
         }
     }
 
-    _updateScreenEffects() {
-        this.bossManager.updateScreenEffect();
+    _updateScreenEffects(deltaTime) {
+        this.bossManager.updateScreenEffect(deltaTime);
 
         if (this.player.isInvisible) {
-            this.invisibleColourOpacity = screenColourFadeIn(this.invisibleColourOpacity, 0.014);
+            this.invisibleColourOpacity = screenColourFadeIn(this.invisibleColourOpacity, 0.014, deltaTime);
         } else {
-            this.invisibleColourOpacity = screenColourFadeOut(this.invisibleColourOpacity);
+            this.invisibleColourOpacity = screenColourFadeOut(this.invisibleColourOpacity, deltaTime);
         }
     }
 

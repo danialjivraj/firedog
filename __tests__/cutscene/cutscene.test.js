@@ -1853,7 +1853,7 @@ describe('Cutscene', () => {
             cutscene.draw(context);
 
             expect(cutscene.pause).toBe(true);
-            expect(cutscene.textIndex).toBe(1);
+            expect(cutscene.textIndex).toBe(0);
         });
 
         it('plays bit1 via playEightBitSound when typing and menu is not paused', () => {

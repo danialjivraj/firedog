@@ -142,10 +142,11 @@ export class HowToPlayMenu extends BaseMenu {
     }
 
     _drawInvisibleTintInternal(isInvisible) {
+        const dt = this._dt();
         if (isInvisible) {
-            this._demoInvisibleColourOpacity = screenColourFadeIn(this._demoInvisibleColourOpacity, 0.014);
+            this._demoInvisibleColourOpacity = screenColourFadeIn(this._demoInvisibleColourOpacity, 0.014, dt);
         } else {
-            this._demoInvisibleColourOpacity = screenColourFadeOut(this._demoInvisibleColourOpacity);
+            this._demoInvisibleColourOpacity = screenColourFadeOut(this._demoInvisibleColourOpacity, dt);
         }
     }
 

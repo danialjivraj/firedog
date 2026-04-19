@@ -300,7 +300,7 @@ export class BossManager {
         game.UI.dismissTip();
     }
 
-    updateScreenEffect() {
+    updateScreenEffect(deltaTime) {
         const effect = this.state.screenEffect;
 
         if (
@@ -322,9 +322,9 @@ export class BossManager {
         }
 
         if (this.bossInFight && effect.active) {
-            effect.opacity = screenColourFadeIn(effect.opacity, effect.fadeInSpeed ?? 0.00298);
+            effect.opacity = screenColourFadeIn(effect.opacity, effect.fadeInSpeed ?? 0.00298, deltaTime);
         } else {
-            effect.opacity = screenColourFadeOut(effect.opacity);
+            effect.opacity = screenColourFadeOut(effect.opacity, deltaTime);
         }
     }
 
