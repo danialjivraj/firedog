@@ -1247,8 +1247,6 @@ export class Cutscene {
                         this.playEightBitSound('bit2');
                         this.playSound2OnDotPause = true;
                     }
-                    this.textIndex--;
-                    this._textAdvanceAccum = BASE_FRAME_MS;
                     this.pause = true;
                     this.continueDialogue = true;
                     this.isEnterPressed = false;
@@ -1261,8 +1259,6 @@ export class Cutscene {
                                 this.playEightBitSound('bit2');
                                 this.playSound2OnDotPause = true;
                             }
-                            this.textIndex--;
-                            this._textAdvanceAccum = BASE_FRAME_MS;
                             this.pause = true;
                             this.continueDialogue = true;
                             this.isEnterPressed = false;
@@ -1284,12 +1280,13 @@ export class Cutscene {
 
         // sound + advance typing
         if (this.textIndex < dialogue.length) {
-            if (!this.game.menu.pause.isPaused) {
+            if (!this.game.menu.pause.isPaused && !this.pause) {
                 this.playEightBitSound('bit1');
                 this._textAdvanceAccum += (this.game.deltaTime ?? BASE_FRAME_MS);
-                if (this._textAdvanceAccum >= BASE_FRAME_MS) {
+                while (this._textAdvanceAccum >= BASE_FRAME_MS) {
                     this._textAdvanceAccum -= BASE_FRAME_MS;
                     this.textIndex++;
+                    if (this.textIndex >= dialogue.length) break;
                 }
             } else {
                 this.game.audioHandler.cutsceneDialogue.stopSound('bit1');
