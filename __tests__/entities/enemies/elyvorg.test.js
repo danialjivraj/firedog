@@ -1188,7 +1188,7 @@ describe("elyvorg.js entities – behavior coverage", () => {
             boss.runStateCounter = boss.runStateCounterLimit + 1;
             boss.isInTheMiddle = false;
 
-            boss.stateRandomiser();
+            boss.stateRandomiser(16);
 
             expect(boss.state).toBe("run");
         });

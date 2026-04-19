@@ -1,5 +1,5 @@
 ﻿import { EnemyBoss } from "../../enemies.js";
-import { normalizeDelta } from "../../../../config/constants.js";
+import { normalizeDelta, BASE_FRAME_MS } from "../../../../config/constants.js";
 export * from "./glacikalAbilities.js";
 import {
     IceTrail, PointyIcicleShard, UndergroundIcicle, IceSpider,
@@ -22,7 +22,7 @@ export class Glacikal extends EnemyBoss {
         this.runAnimation.setFps(10);
         this.runningDirection = 0;
         this.runStateCounter = 0;
-        this.runStateCounterLimit = 5;
+        this.runStateCounterLimit = 5 * BASE_FRAME_MS;
         this.runStopAtTheMiddle = false;
         this.iceTrailTimer = 0;
         this.iceTrailNextSpawn = 0;
@@ -645,11 +645,11 @@ export class Glacikal extends EnemyBoss {
             anim.frameX === anim.maxFrame
         ) {
             this.stateRandomiserTimer = 0;
-            this.stateRandomiser();
+            this.stateRandomiser(deltaTime);
         }
     }
 
-    stateRandomiser() {
+    stateRandomiser(deltaTime) {
         const allStates = [
             "run",
             "jump",
@@ -668,7 +668,7 @@ export class Glacikal extends EnemyBoss {
             return;
         }
 
-        this.runStateCounter++;
+        this.runStateCounter += deltaTime;
 
         this.shouldInvert = this.game.player.x + this.game.player.width / 2 > this.x + this.width / 2;
 
@@ -678,7 +678,7 @@ export class Glacikal extends EnemyBoss {
         ) {
             this.runStopAtTheMiddle = false;
             this.runStateCounter = 0;
-            this.runStateCounterLimit = Math.floor(4 + Math.random() * 3);
+            this.runStateCounterLimit = (4 + Math.random() * 3) * BASE_FRAME_MS;
 
             this.runningDirection = this.shouldInvert ? 10 : -10;
             this.enterState("run");
@@ -794,7 +794,7 @@ export class Glacikal extends EnemyBoss {
                 if (this.state === "idle") {
                     this.edgeConstraintLogic("glacikal");
                     if (this.frameX === this.maxFrame) {
-                        this.stateRandomiser();
+                        this.stateRandomiser(deltaTime);
                     }
                 } else if (this.state === "run") {
                     this.runAnimation.update(deltaTime);

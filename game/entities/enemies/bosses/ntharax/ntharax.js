@@ -1,5 +1,5 @@
 ﻿import { EnemyBoss } from "../../enemies.js";
-import { normalizeDelta } from "../../../../config/constants.js";
+import { normalizeDelta, BASE_FRAME_MS } from "../../../../config/constants.js";
 import { HealingStarBurstCollision } from "../../../../animations/collisionAnimation/spriteCollisions.js";
 import { DisintegrateCollision } from "../../../../animations/collisionAnimation/proceduralCollisions.js";
 export * from "./ntharaxAbilities.js";
@@ -154,7 +154,7 @@ export class NTharax extends EnemyBoss {
 
         this.runningDirection = 0;
         this.runStateCounter = 0;
-        this.runStateCounterLimit = 5;
+        this.runStateCounterLimit = 5 * BASE_FRAME_MS;
         this.runStopAtTheMiddle = false;
         this._runSfxPlaying = false;
         this._wasRunningLastFrame = false;
@@ -219,7 +219,7 @@ export class NTharax extends EnemyBoss {
         this.kameHoldDuration = 650;
 
         this.flyStateCounter = 0;
-        this.flyStateThreshold = Math.floor(Math.random() * 6) + 15; // 15 to 20
+        this.flyStateThreshold = (Math.random() * 6 + 15) * BASE_FRAME_MS; // 15 to 20
 
         // ball
         this.ballAnimation = new EnemyBoss(game, 189, 240, 6, "ntharaxBall");
@@ -390,7 +390,7 @@ export class NTharax extends EnemyBoss {
         this.healingStarBursts = [];
 
         this.healStateCounter = 0;
-        this.healStateCounterLimit = Math.floor(12 + Math.random() * 4); // 12 to 15
+        this.healStateCounterLimit = (12 + Math.random() * 4) * BASE_FRAME_MS; // 12 to 15
 
         // anchors
         this.stateAnchors = {
@@ -2920,7 +2920,7 @@ export class NTharax extends EnemyBoss {
         }
     }
 
-    stateRandomiser() {
+    stateRandomiser(deltaTime) {
         if (this.isTransforming || this.state === "transform") return;
 
         const allStates = [
@@ -2952,9 +2952,9 @@ export class NTharax extends EnemyBoss {
             return;
         }
 
-        this.runStateCounter++;
-        this.flyStateCounter++;
-        this.healStateCounter++;
+        this.runStateCounter += deltaTime;
+        this.flyStateCounter += deltaTime;
+        this.healStateCounter += deltaTime;
 
         if (this.state !== "fly") {
             this.shouldInvert =
@@ -2967,7 +2967,7 @@ export class NTharax extends EnemyBoss {
             this.state !== "healing"
         ) {
             this.healStateCounter = 0;
-            this.healStateCounterLimit = Math.floor(12 + Math.random() * 4); // 12 to 15
+            this.healStateCounterLimit = (12 + Math.random() * 4) * BASE_FRAME_MS; // 12 to 15
 
             this.state = "healing";
             this.healingStarted = false;
@@ -2990,7 +2990,7 @@ export class NTharax extends EnemyBoss {
             this.state = "fly";
 
             this.flyStateCounter = 0;
-            this.flyStateThreshold = Math.floor(Math.random() * 6) + 15;
+            this.flyStateThreshold = (Math.random() * 6 + 15) * BASE_FRAME_MS;
 
             this.flyStarted = false;
             this.flyPhase = "idle";
@@ -3017,7 +3017,7 @@ export class NTharax extends EnemyBoss {
         ) {
             this.runStopAtTheMiddle = false;
             this.runStateCounter = 0;
-            this.runStateCounterLimit = Math.floor(4 + Math.random() * 3);
+            this.runStateCounterLimit = (4 + Math.random() * 3) * BASE_FRAME_MS;
 
             const step = this.getRunStep();
             this.runningDirection = this.shouldInvert ? step : -step;
@@ -3238,7 +3238,7 @@ export class NTharax extends EnemyBoss {
                             return;
                         }
                         this.edgeConstraintLogic("ntharax");
-                        if (this.frameX === this.maxFrame) this.stateRandomiser();
+                        if (this.frameX === this.maxFrame) this.stateRandomiser(deltaTime);
                     } else if (this.state === "run") {
                         this.runAnimation.x = this.x;
                         this.runAnimation.y = this.y;

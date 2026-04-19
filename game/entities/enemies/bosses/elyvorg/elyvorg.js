@@ -1,5 +1,5 @@
 ﻿import { EnemyBoss } from "../../enemies.js";
-import { normalizeDelta } from "../../../../config/constants.js";
+import { normalizeDelta, BASE_FRAME_MS } from "../../../../config/constants.js";
 import { DarkExplosionCollision } from "../../../../animations/collisionAnimation/spriteCollisions.js";
 import { GhostFadeOut } from "../../../../animations/collisionAnimation/proceduralCollisions.js";
 import { PurpleWarningIndicator } from "../../../../animations/damageIndicator.js";
@@ -36,12 +36,12 @@ export class Elyvorg extends EnemyBoss {
         this.runAnimation.frameX = 0;
         this.runningDirection = 0; // switches between 10 and -10
         this.runStateCounter = 0;
-        this.runStateCounterLimit = 5;
+        this.runStateCounterLimit = 5 * BASE_FRAME_MS;
         this.runStopAtTheMiddle = false;
         this.isSlashActive = false;
         this.slashAttackOnce = false;
-        this.slashAttackStateCounter = 15;
-        this.slashAttackStateCounterLimit = 20;
+        this.slashAttackStateCounter = 15 * BASE_FRAME_MS;
+        this.slashAttackStateCounterLimit = 20 * BASE_FRAME_MS;
         this.slashChargeWarned = false;
         // jump
         this.jumpAnimation = new EnemyBoss(game, 153.25, 180, 11, 'elyvorgJump');
@@ -64,11 +64,11 @@ export class Elyvorg extends EnemyBoss {
         this.electricWheelThrown = false;
         this.isElectricWheelActive = false;
         this.playElectricWarningSoundOnce = true;
-        this.electricWheelStateCounter = 9;
-        this.electricWheelStateCounterLimit = 15;
+        this.electricWheelStateCounter = 9 * BASE_FRAME_MS;
+        this.electricWheelStateCounterLimit = 15 * BASE_FRAME_MS;
         this.electricWheelActivateStateCounterDeltaTime = false;
         this.electricWheelStateCounterDeltaTime = 0;
-        this.electricWheelStateCounterLimitDeltaTime = 2;
+        this.electricWheelStateCounterLimitDeltaTime = 2 * BASE_FRAME_MS;
         this.electricWheelTimer = 0;
         this.electricWheelCooldown = Math.floor(Math.random() * 5001) + 5000; // 5 to 10 seconds
         // recharge
@@ -132,7 +132,7 @@ export class Elyvorg extends EnemyBoss {
         this.thunderGroup2Delay = 1000;
         this.thunderGroup2Timer = 0;
         this.thunderStateCounter = 0;
-        this.thunderStateCounterLimit = Math.floor(Math.random() * 6) + 15;
+        this.thunderStateCounterLimit = (Math.random() * 6 + 15) * BASE_FRAME_MS;
         // teleport
         this.teleportPhase = 'none';
         this.teleportTimer = 0;
@@ -1057,7 +1057,7 @@ export class Elyvorg extends EnemyBoss {
             this.isSlashActive = true;
             this.slashAttackOnce = false;
             this.slashAttackStateCounter = 0;
-            this.slashAttackStateCounterLimit = Math.floor(Math.random() * 6) + 20; // 20 to 25
+            this.slashAttackStateCounterLimit = (Math.random() * 6 + 20) * BASE_FRAME_MS; // 20 to 25
             this.slashChargeWarned = false;
         }
         if (this.isSlashActive) {
@@ -1076,12 +1076,12 @@ export class Elyvorg extends EnemyBoss {
     rechargeLogic(deltaTime) {
         this.stateRandomiserTimer += deltaTime;
         if (this.stateRandomiserTimer >= this.stateRandomiserCooldown && this.rechargeAnimation.frameX === this.rechargeAnimation.maxFrame) {
-            this.stateRandomiser();
+            this.stateRandomiser(deltaTime);
             this.stateRandomiserTimer = 0;
         }
     }
 
-    stateRandomiser() {
+    stateRandomiser(deltaTime) {
         const allStates = [
             'run',
             'jump',
@@ -1106,14 +1106,14 @@ export class Elyvorg extends EnemyBoss {
             return;
         }
 
-        this.runStateCounter++;
-        this.electricWheelStateCounter++;
-        this.slashAttackStateCounter++;
-        this.thunderStateCounter++;
+        this.runStateCounter += deltaTime;
+        this.electricWheelStateCounter += deltaTime;
+        this.slashAttackStateCounter += deltaTime;
+        this.thunderStateCounter += deltaTime;
         if (this.electricWheelActivateStateCounterDeltaTime) {
-            this.electricWheelStateCounterDeltaTime++;
+            this.electricWheelStateCounterDeltaTime += deltaTime;
         }
-        if (this.slashAttackStateCounter === this.slashAttackStateCounterLimit - 1 && !this.slashChargeWarned) {
+        if (this.slashAttackStateCounter >= this.slashAttackStateCounterLimit - BASE_FRAME_MS && !this.slashChargeWarned) {
             this.game.collisions.push(new ChargeIndicatorBalls(this.game, this));
             this.slashChargeWarned = true;
             this.game.audioHandler.enemySFX.playSound('elyvorg_slash_warning_sound');
@@ -1138,7 +1138,7 @@ export class Elyvorg extends EnemyBoss {
             (this.isElectricWheelActive && this.electricWheelThrown === false && this.isInTheMiddle && this.previousState !== 'run')) {
             this.runStopAtTheMiddle = false;
             this.runStateCounter = 0;
-            this.runStateCounterLimit = Math.floor(4 + Math.random() * 3); // 4 to 6
+            this.runStateCounterLimit = (4 + Math.random() * 3) * BASE_FRAME_MS; // 4 to 6
             this.runningDirection = this.shouldInvert ? 10 : -10;
             this.state = 'run';
             this.startRunSFX();
@@ -1149,7 +1149,7 @@ export class Elyvorg extends EnemyBoss {
         } else if (this.electricWheelStateCounterDeltaTime >= this.electricWheelStateCounterLimitDeltaTime && this.isInTheMiddle === false) {
             this.electricWheelActivateStateCounterDeltaTime = false;
             this.electricWheelStateCounterDeltaTime = 0;
-            this.electricWheelStateCounterLimitDeltaTime = Math.floor(Math.random() * 4) + 1; // 1 to 4
+            this.electricWheelStateCounterLimitDeltaTime = (Math.random() * 4 + 1) * BASE_FRAME_MS; // 1 to 4
             this.playElectricWarningSoundOnce = true;
             this.electricWheelTimer = 0;
             this.electricWheelStateCounter = 0;
@@ -1160,7 +1160,7 @@ export class Elyvorg extends EnemyBoss {
             return;
         } else if (this.thunderStateCounter >= this.thunderStateCounterLimit) {
             this.thunderStateCounter = 0;
-            this.thunderStateCounterLimit = Math.floor(Math.random() * 6) + 15; // 15 to 20
+            this.thunderStateCounterLimit = (Math.random() * 6 + 15) * BASE_FRAME_MS; // 15 to 20
             this.state = 'thunder';
             this.thunderAnimation.x = this.x;
             this.thunderAnimation.y = this.y;
@@ -1244,7 +1244,7 @@ export class Elyvorg extends EnemyBoss {
                     if (this.state === "idle") {
                         this.fireballThrownWhileInIdle();
                         this.edgeConstraintLogic("elyvorg");
-                        this.stateRandomiser();
+                        this.stateRandomiser(deltaTime);
                     } else if (this.state === "recharge") {
                         this.rechargeAnimation.update(deltaTime);
                         this.rechargeLogic(deltaTime);

@@ -884,7 +884,7 @@ describe('Glacikal stateRandomiser', () => {
         boss.isInTheMiddle = false;
         game.player.x = 999;
 
-        boss.stateRandomiser();
+        boss.stateRandomiser(16);
         expect(boss.state).toBe('run');
         expect(boss.runningDirection).toBe(10);
     });
