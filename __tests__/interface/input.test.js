@@ -120,8 +120,6 @@ describe('InputHandler', () => {
     ih.game = game;
 
     ih.keys = [];
-    ih.arrowUpPressed = false;
-    ih.arrowDownPressed = false;
     ih.isJumpKeyPressed = false;
   });
 
@@ -441,16 +439,6 @@ describe('InputHandler', () => {
       expect(ih.keys).toEqual([]);
     });
 
-    test('arrowup and arrowdown keyup reset flags', () => {
-      ih.arrowUpPressed = true;
-      ih.arrowDownPressed = true;
-
-      keyUp('arrowup');
-      keyUp('arrowdown');
-
-      expect(ih.arrowUpPressed).toBe(false);
-      expect(ih.arrowDownPressed).toBe(false);
-    });
   });
 
   describe('mouse handling', () => {

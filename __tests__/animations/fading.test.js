@@ -1,4 +1,4 @@
-import { fadeIn, fadeOut, fadeInAndOut } from '../../game/animations/fading';
+import { fadeIn, fadeInAndOut } from '../../game/animations/fading';
 
 describe('fading animations', () => {
     let element;
@@ -34,17 +34,6 @@ describe('fading animations', () => {
 
             jest.advanceTimersByTime(100 + 16);
             expect(parseFloat(element.style.opacity)).toBeCloseTo(1, 1);
-            expect(callback).toHaveBeenCalledTimes(1);
-        });
-    });
-
-    describe('fadeOut()', () => {
-        it('ramps opacity from 1→0 over the duration and calls callback', () => {
-            element.style.opacity = 1;
-            fadeOut(element, 120, callback);
-
-            jest.advanceTimersByTime(120 + 16);
-            expect(parseFloat(element.style.opacity)).toBeLessThanOrEqual(0.1);
             expect(callback).toHaveBeenCalledTimes(1);
         });
     });
@@ -100,7 +89,6 @@ describe('fading animations – edge cases', () => {
 
     it('does not throw when no callback is provided', () => {
         expect(() => fadeIn(element, 50)).not.toThrow();
-        expect(() => fadeOut(element, 50)).not.toThrow();
         expect(() => fadeInAndOut(element, 50, 20, 50)).not.toThrow();
 
         jest.runAllTimers();
@@ -109,17 +97,13 @@ describe('fading animations – edge cases', () => {
 
     it('handles zero duration by immediately setting final opacity and (if provided) calling callback', () => {
         const cbIn = jest.fn();
-        const cbOut = jest.fn();
 
         fadeIn(element, 0, cbIn);
-        fadeOut(element, 0, cbOut);
 
         jest.runAllTimers();
 
         expect(parseFloat(element.style.opacity)).toBeCloseTo(1, 1);
         expect(cbIn).toHaveBeenCalledTimes(1);
-
-        expect(cbOut).toHaveBeenCalledTimes(1);
     });
 
     it('queues two fadeIns back‑to‑back (second still runs)', () => {

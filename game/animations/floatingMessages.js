@@ -1,4 +1,4 @@
-import { drawCoinIcon } from '../interface/hudIcons.js';
+import { drawCoinIcon } from '../interface/coinIcon.js';
 
 export class FloatingMessage {
     constructor(value, x, y, options = {}) {

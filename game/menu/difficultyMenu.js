@@ -204,23 +204,9 @@ export class DifficultyMenu extends BaseMenu {
     draw(context) {
         if (!this.menuActive) return;
 
+        this.drawBackdrop(context);
+
         context.save();
-
-        if (!this.menuInGame) {
-            context.drawImage(this.backgroundImage, 0, 0, this.game.width, this.game.height);
-        } else {
-            const isPause = !!this.game.menu.pause?.isPaused;
-            const isGameOver =
-                !!this.game.gameOver ||
-                !!this.game.notEnoughCoins ||
-                !!this.game.menu.gameOver?.menuActive;
-
-            if (isPause || isGameOver) {
-                const alpha = isPause ? 0.7 : (this.game.notEnoughCoins ? 0.5 : 0.2);
-                context.fillStyle = `rgba(0, 0, 0, ${alpha})`;
-                context.fillRect(0, 0, this.game.width, this.game.height);
-            }
-        }
 
         const {
             centerX,

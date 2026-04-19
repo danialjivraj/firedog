@@ -1,22 +1,14 @@
 import {
     SavingOrDeletingAnimation,
-    SavingAnimation,
-    SavingBookAnimation,
-    DeleteProgressAnimation,
-    DeleteProgressBookAnimation,
 } from '../../game/animations/savingAnimation';
-import { isLocalNight } from '../../game/config/timeOfDay.js';
+import { isLocalNight } from '../../game/utils/timeOfDay.js';
 
-jest.mock('../../game/config/timeOfDay.js', () => ({
+jest.mock('../../game/utils/timeOfDay.js', () => ({
     isLocalNight: jest.fn(() => false),
 }));
 
 const fakeImages = {
     foobar: {},
-    savingAnimation: {},
-    savingBookAnimation: {},
-    deleteProgressAnimation: {},
-    deleteProgressBookAnimation: {},
 };
 
 beforeAll(() => {
@@ -159,55 +151,3 @@ describe('SavingOrDeletingAnimation (base class)', () => {
     });
 });
 
-describe('Subclass constructors', () => {
-    const GW = 500, GH = 300;
-    let game;
-
-    beforeEach(() => {
-        game = { width: GW, height: GH };
-    });
-
-    it('constructs SavingAnimation with correct dimensions, sprite, frame count, and position', () => {
-        const sa = new SavingAnimation({ ...game, debug: false, map2Unlocked: false, map3Unlocked: false });
-        expect(sa.width).toBeCloseTo(177.66666666666666);
-        expect(sa.height).toBe(60);
-        expect(sa.image).toBe(fakeImages.savingAnimation);
-        expect(sa.maxFrame).toBe(2);
-        expect(sa.fps).toBe(3);
-        expect(sa.x).toBeCloseTo(GW - sa.width - 30);
-        expect(sa.y).toBeCloseTo(GH - 60);
-    });
-
-    it('constructs SavingBookAnimation with correct geometry and sprite', () => {
-        const sb = new SavingBookAnimation(game);
-        expect(sb.width).toBe(192);
-        expect(sb.height).toBe(152);
-        expect(sb.image).toBe(fakeImages.savingBookAnimation);
-        expect(sb.maxFrame).toBe(8);
-        expect(sb.fps).toBe(8);
-        expect(sb.x).toBe(GW - 192 - 45);
-        expect(sb.y).toBe(GH - 152 - 35);
-    });
-
-    it('constructs DeleteProgressAnimation with correct geometry and sprite', () => {
-        const dp = new DeleteProgressAnimation(game);
-        expect(dp.width).toBeCloseTo(179.33333333333334);
-        expect(dp.height).toBe(100);
-        expect(dp.image).toBe(fakeImages.deleteProgressAnimation);
-        expect(dp.maxFrame).toBe(2);
-        expect(dp.fps).toBe(2);
-        expect(dp.x).toBeCloseTo(GW - dp.width - 45);
-        expect(dp.y).toBe(GH - 100);
-    });
-
-    it('constructs DeleteProgressBookAnimation with correct geometry and sprite', () => {
-        const db = new DeleteProgressBookAnimation(game);
-        expect(db.width).toBe(194);
-        expect(db.height).toBe(154);
-        expect(db.image).toBe(fakeImages.deleteProgressBookAnimation);
-        expect(db.maxFrame).toBe(5);
-        expect(db.fps).toBe(5);
-        expect(db.x).toBe(GW - 194 - 45);
-        expect(db.y).toBe(GH - 154 - 85);
-    });
-});

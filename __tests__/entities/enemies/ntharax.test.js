@@ -122,18 +122,7 @@ jest.mock("../../../game/entities/enemies/enemies.js", () => {
   return { Enemy, EnemyBoss, BurrowingGroundEnemy, Barrier, Projectile, FallingEnemy };
 });
 
-jest.mock("../../../game/animations/collisionAnimation.js", () => {
-  class DisintegrateCollision {
-    constructor(game, target, opts) {
-      this.game = game;
-      this.target = target;
-      this.opts = opts;
-      this.markedForDeletion = false;
-    }
-    update() { }
-    draw() { }
-  }
-
+jest.mock("../../../game/animations/collisionAnimation/spriteCollisions.js", () => {
   class HealingStarBurstCollision {
     constructor(game, target, opts) {
       this.game = game;
@@ -153,7 +142,22 @@ jest.mock("../../../game/animations/collisionAnimation.js", () => {
     constructor() { }
   }
 
-  return { DisintegrateCollision, HealingStarBurstCollision, AsteroidExplosionCollision };
+  return { HealingStarBurstCollision, AsteroidExplosionCollision };
+});
+
+jest.mock("../../../game/animations/collisionAnimation/proceduralCollisions.js", () => {
+  class DisintegrateCollision {
+    constructor(game, target, opts) {
+      this.game = game;
+      this.target = target;
+      this.opts = opts;
+      this.markedForDeletion = false;
+    }
+    update() { }
+    draw() { }
+  }
+
+  return { DisintegrateCollision };
 });
 
 beforeAll(() => {
@@ -240,7 +244,7 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-import { NTharax } from "../../../game/entities/enemies/ntharax.js";
+import { NTharax } from "../../../game/entities/enemies/bosses/ntharax/ntharax.js";
 
 const createBoss = (gameOverrides = {}) => {
   const game = makeGame(gameOverrides);

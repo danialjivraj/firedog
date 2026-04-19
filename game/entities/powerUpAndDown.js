@@ -1,4 +1,4 @@
-import { BASE_FRAME_MS } from '../config/constants.js';
+﻿import { normalizeDelta } from '../config/constants.js';
 
 class Power {
     constructor(game) {
@@ -12,7 +12,7 @@ class Power {
     }
 
     update(deltaTime) {
-        const dt = deltaTime / BASE_FRAME_MS;
+        const dt = normalizeDelta(deltaTime);
         const cabinVisible = this.game.cabin?.isFullyVisible === true;
         if (!cabinVisible) {
             this.x -= this.game.speed * dt;

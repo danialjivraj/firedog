@@ -3,9 +3,20 @@ import { BaseMenu } from "./baseMenu.js";
 export class GameOverMenu extends BaseMenu {
     constructor(game) {
         super(game, ['Retry', 'Settings', 'Back to Main Menu'], '');
-        this.game = game;
         this.positionOffset = 160;
         this.menuInGame = true;
+    }
+
+    activateMenu(selectedOption = 0) {
+        this.menuOptions = this.game.hasActiveBoss
+            ? ['Retry Final Boss', 'Retry', 'Settings', 'Back to Main Menu']
+            : ['Retry', 'Settings', 'Back to Main Menu'];
+
+        this.title = this.game.notEnoughCoins
+            ? "You don't have enough coins!"
+            : "Game Over!";
+
+        super.activateMenu(selectedOption);
     }
 
     handleMenuSelection() {
@@ -53,18 +64,7 @@ export class GameOverMenu extends BaseMenu {
     }
 
     draw(context) {
-        if (this.game.hasActiveBoss) {
-            this.menuOptions = ['Retry Final Boss', 'Retry', 'Settings', 'Back to Main Menu'];
-        } else {
-            this.menuOptions = ['Retry', 'Settings', 'Back to Main Menu'];
-        }
-
-        this.title = this.game.notEnoughCoins
-            ? "You don't have enough coins!"
-            : "Game Over!";
-
         this.game.menu.pause.canEscape = false;
-
         super.draw(context);
     }
 }

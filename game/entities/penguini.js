@@ -1,23 +1,18 @@
-import { BASE_FRAME_MS } from '../config/constants.js';
+﻿import { normalizeDelta } from '../config/constants.js';
 
 export class Penguini {
     constructor(game, width, height, image, maxFrame) {
         this.frameX = 0;
-        this.frameY = 0;
         this.fps = 40;
         this.frameInterval = 1000 / this.fps;
         this.frameTimer = 0;
-        this.markedForDeletion = false;
         this.game = game;
         this.width = width;
         this.height = height;
         this.image = document.getElementById(image);
         this.maxFrame = maxFrame;
-        this.frameWidth = width;
-        this.frameHeight = height;
         this.x = this.game.width;
         this.y = this.game.height - this.height - this.game.groundMargin - 10;
-        this.isFullyVisible = false;
         this.showPressEnterImage = document.getElementById('enterToTalkToPenguini');
         this.showEnterToTalkToPenguini = false;
     }
@@ -29,18 +24,14 @@ export class Penguini {
         } else {
             this.frameTimer += deltaTime;
         }
-        if (!this.game.cabin.isFullyVisible) {
-            const dt = deltaTime / BASE_FRAME_MS;
-            this.x -= this.game.speed * dt;
 
-            if (this.x <= this.game.fixedPenguinX) {
-                this.isFullyVisible = true;
-                this.x = this.game.fixedPenguinX;
-            }
+        if (!this.game.cabin.isFullyVisible) {
+            const dt = normalizeDelta(deltaTime);
+            this.x -= this.game.speed * dt;
         }
 
-        if ((this.game.talkToPenguin || this.game.notEnoughCoins) && this.game.penguini && this.game.player.x + this.game.player.width >= this.game.penguini.x + 10) {
-            this.game.player.x = this.game.penguini.x + 10 - this.game.player.width;
+        if ((this.game.talkToPenguin || this.game.notEnoughCoins) && this.game.player.x + this.game.player.width >= this.x + 10) {
+            this.game.player.x = this.x + 10 - this.game.player.width;
             this.showEnterToTalkToPenguini = true;
         } else {
             this.game.enterToTalkToPenguin = false;
@@ -51,22 +42,17 @@ export class Penguini {
         if (this.game.debug) context.strokeRect(this.x, this.y, this.width, this.height);
         context.drawImage(
             this.image,
-            this.frameX * this.frameWidth,
-            this.frameY * this.frameHeight,
-            this.frameWidth,
-            this.frameHeight,
+            this.frameX * this.width,
+            0,
+            this.width,
+            this.height,
             this.x,
             this.y,
             this.width,
             this.height
         );
 
-        const isMap7 =
-            this.game.currentMap === 'Map7' ||
-            (this.game.background &&
-                this.game.background.constructor &&
-                this.game.background.constructor.name === 'Map7');
-
+        const isMap7 = this.game.currentMap === 'Map7';
         const yPosition = this.y - (isMap7 ? 235 : 170);
 
         if (this.showEnterToTalkToPenguini && this.game.talkToPenguinOneTimeOnly) {

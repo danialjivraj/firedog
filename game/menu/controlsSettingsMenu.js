@@ -1,7 +1,7 @@
-import { BaseMenu } from './baseMenu.js';
+import { ScrollableMenu } from './scrollableMenu.js';
 import { getDefaultKeyBindings, normalizeKey, keyLabel } from '../config/keyBindings.js';
 
-export class ControlsSettingsMenu extends BaseMenu {
+export class ControlsSettingsMenu extends ScrollableMenu {
     constructor(game) {
         const actionOrder = [
             'jump',
@@ -41,16 +41,10 @@ export class ControlsSettingsMenu extends BaseMenu {
 
         this.rowHeight = 60;
         this.listPadding = 20;
-        this.scrollY = 0;
-        this.targetScrollY = 0;
-        this.scrollMax = 0;
-        this.scrollEase = 0.18;
 
+        // override ScrollableMenu defaults
         this.barWidth = 10;
         this.barTrackAlpha = 0.25;
-        this.draggingBar = false;
-        this.dragStartMouseY = 0;
-        this.dragStartScrollY = 0;
 
         this.onGlobalKeyDown = this.onGlobalKeyDown.bind(this);
         document.addEventListener('keydown', this.onGlobalKeyDown, true);
@@ -80,34 +74,18 @@ export class ControlsSettingsMenu extends BaseMenu {
     }
 
     draw(context) {
-        context.save();
-        if (!this.menuInGame) {
-            context.drawImage(this.backgroundImage, 0, 0, this.game.width, this.game.height);
-        } else {
-            const isPause = !!this.game.menu.pause?.isPaused;
-            const isGameOver =
-                !!this.game.gameOver ||
-                !!this.game.notEnoughCoins ||
-                !!this.game.menu.gameOver?.menuActive;
-
-            if (isPause || isGameOver) {
-                const alpha = isPause ? 0.7 : (this.game.notEnoughCoins ? 0.5 : 0.2);
-                context.fillStyle = `rgba(0, 0, 0, ${alpha})`;
-                context.fillRect(0, 0, this.game.width, this.game.height);
-            }
-        }
+        this.drawBackdrop(context);
 
         if (this.showStarsSticker && this.menuInGame === false) {
             this.drawStarsSticker(context);
         }
 
-        context.font = 'bold 46px Love Ya Like A Sister';
-        context.fillStyle = 'white';
+        this.drawTitle(context);
+
+        context.save();
         context.shadowColor = 'black';
         context.shadowOffsetX = 3;
         context.shadowOffsetY = 3;
-        context.textAlign = 'center';
-        context.fillText(this.title, this.game.width / 2, this.game.height / 2 - this.positionOffset);
 
         const listTop = this.game.height / 2 - this.positionOffset + this.menuOptionsPositionOffset;
         const listLeftLabelX = this.centerX - 40;
@@ -138,7 +116,6 @@ export class ControlsSettingsMenu extends BaseMenu {
 
         const contentH = this.keybindCount * this.rowHeight + this.listPadding * 2;
         this.scrollMax = Math.max(0, contentH - listHeight);
-        this.scrollY += (this.targetScrollY - this.scrollY) * this.scrollEase;
 
         context.save();
         context.beginPath();
@@ -242,7 +219,7 @@ export class ControlsSettingsMenu extends BaseMenu {
 
     update(dt) {
         super.update(dt);
-        this.targetScrollY = Math.max(0, Math.min(this.targetScrollY, this.scrollMax));
+        this.tickScroll();
     }
 
     handleKeyDown(event) {
@@ -353,7 +330,7 @@ export class ControlsSettingsMenu extends BaseMenu {
     }
     handleMouseUp() { this.draggingBar = false; }
 
-    handleMouseClick(event) {
+    handleMouseClick(_event) {
         if (this.waitingForKey) return;
         if (!this.menuActive || !this.game.canSelect || !this.game.canSelectForestMap) return;
         this.handleMenuSelection();
@@ -434,17 +411,6 @@ export class ControlsSettingsMenu extends BaseMenu {
         this.game.saveGameState();
     }
 
-    // helpers
-    canvasMouse(event) {
-        const rect = this.game.canvas.getBoundingClientRect();
-        const scaleX = this.game.canvas.width / rect.width;
-        const scaleY = this.game.canvas.height / rect.height;
-        return {
-            mouseX: (event.clientX - rect.left) * scaleX,
-            mouseY: (event.clientY - rect.top) * scaleY,
-        };
-    }
-
     setSelected(idx) {
         if (idx !== this.selectedOption) {
             this.selectedOption = idx;
@@ -471,12 +437,4 @@ export class ControlsSettingsMenu extends BaseMenu {
         this.targetScrollY = Math.max(0, Math.min(this.targetScrollY, this.scrollMax));
     }
 
-    updateScrollFromThumb(mouseY) {
-        if (!this.barRect) return;
-        const { y, h, thumbH } = this.barRect;
-        const travel = h - thumbH;
-        let t = (mouseY - y - thumbH / 2) / travel;
-        t = Math.max(0, Math.min(1, t));
-        this.targetScrollY = t * this.scrollMax;
-    }
 }

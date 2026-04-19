@@ -1,14 +1,18 @@
-import { BossManager } from '../../../game/entities/enemies/bossManager.js';
+import { BossManager } from '../../../game/entities/enemies/bosses/bossManager.js';
 
-jest.mock('../../../game/entities/enemies/elyvorg.js', () => ({
+jest.mock('../../../game/utils/formatTime.js', () => ({
+    formatTimeMs: jest.fn(() => '07:30.95'),
+}));
+
+jest.mock('../../../game/entities/enemies/bosses/elyvorg/elyvorg.js', () => ({
     Elyvorg: jest.fn().mockImplementation((game) => ({ game, name: 'mockElyvorg' })),
 }));
 
-jest.mock('../../../game/entities/enemies/glacikal.js', () => ({
+jest.mock('../../../game/entities/enemies/bosses/glacikal/glacikal.js', () => ({
     Glacikal: jest.fn().mockImplementation((game) => ({ game, name: 'mockGlacikal' })),
 }));
 
-jest.mock('../../../game/entities/enemies/ntharax.js', () => ({
+jest.mock('../../../game/entities/enemies/bosses/ntharax/ntharax.js', () => ({
     NTharax: jest.fn().mockImplementation((game) => ({ game, name: 'mockNTharax' })),
 }));
 
@@ -341,7 +345,7 @@ describe('BossManager', () => {
         });
 
         it('spawns Elyvorg for Map7 when gate is reached and no enemies are present', () => {
-            const { Elyvorg } = require('../../../game/entities/enemies/elyvorg.js');
+            const { Elyvorg } = require('../../../game/entities/enemies/bosses/elyvorg/elyvorg.js');
 
             game.currentMap = 'Map7';
             game.enemies = [];
@@ -361,7 +365,7 @@ describe('BossManager', () => {
         });
 
         it('spawns Glacikal for BonusMap1 when gate is reached and no enemies are present', () => {
-            const { Glacikal } = require('../../../game/entities/enemies/glacikal.js');
+            const { Glacikal } = require('../../../game/entities/enemies/bosses/glacikal/glacikal.js');
 
             game.currentMap = 'BonusMap1';
             game.enemies = [];
@@ -378,7 +382,7 @@ describe('BossManager', () => {
         });
 
         it('spawns NTharax for BonusMap3 when gate is reached and no enemies are present', () => {
-            const { NTharax } = require('../../../game/entities/enemies/ntharax.js');
+            const { NTharax } = require('../../../game/entities/enemies/bosses/ntharax/ntharax.js');
 
             game.currentMap = 'BonusMap3';
             game.enemies = [];
@@ -546,6 +550,162 @@ describe('BossManager', () => {
             expect(effect.stack).toHaveLength(0);
             expect(effect.currentId).toBeNull();
             expect(effect.active).toBe(false);
+        });
+    });
+
+    describe('resetBossTimer', () => {
+        it('clears bossTime and boss-fight tracking flags', () => {
+            manager.bossTime = 123.45;
+            manager._bossFightWasActive = true;
+            manager._bossDefeatRecorded = true;
+
+            manager.resetBossTimer();
+
+            expect(manager.bossTime).toBe(0);
+            expect(manager._bossFightWasActive).toBe(false);
+            expect(manager._bossDefeatRecorded).toBe(false);
+        });
+    });
+
+    describe('updateBossTimers', () => {
+        it('increments bossTime while boss fight is active and game is not over', () => {
+            jest.spyOn(manager, 'bossInFight', 'get').mockReturnValue(true);
+            manager._bossFightWasActive = true;
+            game.gameOver = false;
+            manager.bossTime = 0;
+
+            manager.updateBossTimers(10);
+            expect(manager.bossTime).toBe(10);
+
+            manager.updateBossTimers(5);
+            expect(manager.bossTime).toBe(15);
+        });
+
+        it('resets bossTime and defeat guard when a boss fight begins', () => {
+            jest.spyOn(manager, 'bossInFight', 'get').mockReturnValue(true);
+            manager.bossTime = 999;
+            manager._bossDefeatRecorded = true;
+            manager._bossFightWasActive = false;
+            game.gameOver = false;
+
+            manager.updateBossTimers(1);
+
+            expect(manager._bossFightWasActive).toBe(true);
+            expect(manager._bossDefeatRecorded).toBe(false);
+            expect(manager.bossTime).toBe(1);
+        });
+
+        it('clears _bossFightWasActive when a boss fight ends', () => {
+            jest.spyOn(manager, 'bossInFight', 'get').mockReturnValue(false);
+            manager._bossFightWasActive = true;
+
+            manager.updateBossTimers(1);
+
+            expect(manager._bossFightWasActive).toBe(false);
+        });
+
+        it('does not increment bossTime when game is over', () => {
+            jest.spyOn(manager, 'bossInFight', 'get').mockReturnValue(true);
+            manager._bossFightWasActive = true;
+            game.gameOver = true;
+            manager.bossTime = 50;
+
+            manager.updateBossTimers(10);
+
+            expect(manager.bossTime).toBe(50);
+        });
+    });
+
+    describe('onBossDefeated', () => {
+        beforeEach(() => {
+            game.hasMetWinningCoins = jest.fn(() => true);
+            game.saveGameState = jest.fn();
+            game.showAnimatedToast = jest.fn();
+            game.currentMap = 'Map1';
+            game.records = {
+                Map1: { clearMs: null, bossMs: null },
+            };
+            manager.bossTime = 1234.9;
+            manager._bossDefeatRecorded = false;
+        });
+
+        it('records a new best bossMs when eligible and persists via saveGameState()', () => {
+            manager.onBossDefeated('any');
+
+            expect(manager._bossDefeatRecorded).toBe(true);
+            expect(game.records.Map1.bossMs).toBe(1234);
+            expect(game.saveGameState).toHaveBeenCalledTimes(1);
+        });
+
+        it('does not overwrite an existing bossMs with a slower time', () => {
+            game.records.Map1.bossMs = 500;
+            manager.bossTime = 999;
+
+            manager.onBossDefeated('any');
+
+            expect(game.records.Map1.bossMs).toBe(500);
+            expect(game.saveGameState).not.toHaveBeenCalled();
+        });
+
+        it('guards against duplicate calls via _bossDefeatRecorded', () => {
+            manager._bossDefeatRecorded = true;
+
+            manager.onBossDefeated('any');
+
+            expect(game.records.Map1.bossMs).toBeNull();
+            expect(game.saveGameState).not.toHaveBeenCalled();
+        });
+
+        it('does nothing when winning coins requirement is not met', () => {
+            game.hasMetWinningCoins.mockReturnValue(false);
+
+            manager.onBossDefeated('any');
+
+            expect(manager._bossDefeatRecorded).toBe(true);
+            expect(game.records.Map1.bossMs).toBeNull();
+            expect(game.saveGameState).not.toHaveBeenCalled();
+        });
+
+        it('does nothing when currentMap/records entry is missing', () => {
+            game.currentMap = null;
+
+            expect(() => manager.onBossDefeated('any')).not.toThrow();
+            expect(game.saveGameState).not.toHaveBeenCalled();
+        });
+
+        it('clamps negative bossTime to 0', () => {
+            manager.bossTime = -50;
+
+            manager.onBossDefeated('any');
+
+            expect(game.records.Map1.bossMs).toBe(0);
+            expect(game.saveGameState).toHaveBeenCalledTimes(1);
+        });
+
+        it('triggers a toast with the expected text and 1000ms delay for a new record', () => {
+            manager.onBossDefeated('any');
+
+            expect(game.showAnimatedToast).toHaveBeenCalledWith(
+                [
+                    [{ text: 'NEW RECORD!', fill: 'yellow' }],
+                    [{ text: 'FINAL BOSS BEATEN IN ', fill: 'yellow' }, { text: '07:30.95', fill: 'orange' }],
+                ],
+                1000
+            );
+        });
+    });
+
+    describe('resetState', () => {
+        it('also resets boss timer fields', () => {
+            manager.bossTime = 500;
+            manager._bossFightWasActive = true;
+            manager._bossDefeatRecorded = true;
+
+            manager.resetState();
+
+            expect(manager.bossTime).toBe(0);
+            expect(manager._bossFightWasActive).toBe(false);
+            expect(manager._bossDefeatRecorded).toBe(false);
         });
     });
 });

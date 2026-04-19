@@ -34,7 +34,7 @@ jest.mock('../../game/entities/powerUpAndDown.js', () => {
     };
 });
 
-jest.mock('../../game/animations/collisionAnimation.js', () => {
+jest.mock('../../game/animations/collisionAnimation/spriteCollisions.js', () => {
     class CollisionAnimation { constructor(...args) { this.args = args; } }
     class ExplosionCollisionAnimation { constructor(...args) { this.args = args; } }
     class PoisonSpitSplash { constructor(...args) { this.args = args; } }
@@ -51,8 +51,6 @@ jest.mock('../../game/animations/collisionAnimation.js', () => {
     class PointyIcicleShardCollision { constructor(...args) { this.args = args; } }
     class UndergroundIcicleCollision { constructor(...args) { this.args = args; } }
     class PurpleThunderCollision { constructor(...args) { this.args = args; } }
-    class GhostFadeOut { constructor(...args) { this.args = args; } }
-    class DisintegrateCollision { constructor(...args) { this.args = args; } }
     class DarkExplosionCollision { constructor(...args) { this.args = args; } }
     class HealingStarBurstCollision {
         constructor(...args) { this.args = args; }
@@ -60,7 +58,6 @@ jest.mock('../../game/animations/collisionAnimation.js', () => {
     }
     class AsteroidExplosionCollision { constructor(...args) { this.args = args; } }
     class GalacticSpikeCollision { constructor(...args) { this.args = args; } }
-    class BallParticleBurstCollision { constructor(...args) { this.args = args; } }
     class PurpleFireballCollision { constructor(...args) { this.args = args; } }
     class RedFireballCollision { constructor(...args) { this.args = args; } }
     class PoisonousOrbCollision { constructor(...args) { this.args = args; } }
@@ -82,17 +79,21 @@ jest.mock('../../game/animations/collisionAnimation.js', () => {
         PointyIcicleShardCollision,
         UndergroundIcicleCollision,
         PurpleThunderCollision,
-        GhostFadeOut,
-        DisintegrateCollision,
         DarkExplosionCollision,
         HealingStarBurstCollision,
         AsteroidExplosionCollision,
         GalacticSpikeCollision,
-        BallParticleBurstCollision,
         PurpleFireballCollision,
         RedFireballCollision,
         PoisonousOrbCollision,
     };
+});
+
+jest.mock('../../game/animations/collisionAnimation/proceduralCollisions.js', () => {
+    class GhostFadeOut { constructor(...args) { this.args = args; } }
+    class DisintegrateCollision { constructor(...args) { this.args = args; } }
+    class BallParticleBurstCollision { constructor(...args) { this.args = args; } }
+    return { GhostFadeOut, DisintegrateCollision, BallParticleBurstCollision };
 });
 
 jest.mock('../../game/animations/floatingMessages.js', () => ({
@@ -114,7 +115,7 @@ jest.mock('../../game/animations/ink.js', () => ({
     },
 }));
 
-import { CollisionLogic } from '../../game/entities/player.js';
+import { CollisionLogic } from '../../game/entities/playerCollision.js';
 import { Fireball } from '../../game/animations/particles.js';
 
 import {
@@ -148,16 +149,16 @@ import {
 import {
     Elyvorg, GhostElyvorg, BlueArrow, YellowArrow, GreenArrow, CyanArrow, PurpleBarrier, ElectricWheel, GravitationalAura,
     InkBomb, PurpleFireball, PoisonDrop, MeteorAttack, PurpleSlash, PurpleThunder, PurpleLaserBeam,
-} from '../../game/entities/enemies/elyvorg.js';
+} from '../../game/entities/enemies/bosses/elyvorg/elyvorg.js';
 
 import {
     IceTrail, IcyStormBall, IceSlash, SpinningIceBalls, PointyIcicleShard, Glacikal, UndergroundIcicle,
-} from '../../game/entities/enemies/glacikal.js';
+} from '../../game/entities/enemies/bosses/glacikal/glacikal.js';
 
 import {
     NTharax, HealingBarrier, GalacticSpike, PurpleBallOrb, AntennaeTentacle, YellowBeamOrb, BlackBeamOrb,
     PurpleBeamOrb, PurpleAsteroid, BlueAsteroid, GroundShockwaveRing, LaserBall,
-} from '../../game/entities/enemies/ntharax.js';
+} from '../../game/entities/enemies/bosses/ntharax/ntharax.js';
 
 import { InkSplash } from '../../game/animations/ink.js';
 
@@ -178,17 +179,19 @@ import {
     PointyIcicleShardCollision,
     UndergroundIcicleCollision,
     PurpleThunderCollision,
-    GhostFadeOut,
-    DisintegrateCollision,
     DarkExplosionCollision,
     AsteroidExplosionCollision,
     GalacticSpikeCollision,
-    BallParticleBurstCollision,
     PurpleFireballCollision,
     RedFireballCollision,
     HealingStarBurstCollision,
     PoisonousOrbCollision,
-} from '../../game/animations/collisionAnimation.js';
+} from '../../game/animations/collisionAnimation/spriteCollisions.js';
+import {
+    GhostFadeOut,
+    DisintegrateCollision,
+    BallParticleBurstCollision,
+} from '../../game/animations/collisionAnimation/proceduralCollisions.js';
 
 // -----------------------------------------------------------------------------
 // Scenarios

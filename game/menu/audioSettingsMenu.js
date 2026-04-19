@@ -91,20 +91,6 @@ export class AudioSettingsMenu extends BaseMenu {
         return 60;
     }
 
-    _canInteract() {
-        return this.menuActive && this.game.canSelect && this.game.canSelectForestMap;
-    }
-
-    _getMouse(event) {
-        const rect = this.game.canvas.getBoundingClientRect();
-        const scaleX = this.game.canvas.width / rect.width;
-        const scaleY = this.game.canvas.height / rect.height;
-        return {
-            x: (event.clientX - rect.left) * scaleX,
-            y: (event.clientY - rect.top) * scaleY,
-        };
-    }
-
     _getActiveTabData() {
         return this.tabData[this.activeTab];
     }
@@ -123,6 +109,23 @@ export class AudioSettingsMenu extends BaseMenu {
 
     _displayTabLabel(tabKey) {
         return tabKey === 'INGAME' ? 'IN-GAME' : tabKey;
+    }
+
+    getNavState() {
+        return {
+            selectedOption: this.selectedOption ?? 0,
+            activeTab: this.activeTab,
+            menuInGame: this.menuInGame,
+        };
+    }
+
+    activateFromNav(state = {}) {
+        const tab = state.activeTab ?? null;
+        this.activateMenu({
+            inGame: state.menuInGame ?? this.menuInGame,
+            selectedOption: state.selectedOption ?? 0,
+            tab,
+        });
     }
 
     activateMenu(arg = 0) {
@@ -146,12 +149,12 @@ export class AudioSettingsMenu extends BaseMenu {
 
         this.showStarsSticker = !this.menuInGame;
 
+        const requestedTab = opts?.tab;
         const defaultTab =
             shouldBeCutscene ? 'CUTSCENE'
                 : this.menuInGame ? 'INGAME'
                     : 'MENU';
-
-        this.setTab(defaultTab);
+        this.setTab(requestedTab ?? defaultTab);
 
         super.activateMenu(selectedOption);
         this.clampSelection();
@@ -489,42 +492,21 @@ export class AudioSettingsMenu extends BaseMenu {
     draw(context) {
         if (!this.menuActive) return;
 
+        this.drawBackdrop(context);
+        this.drawTitle(context);
+
         context.save();
 
-        if (!this.menuInGame) {
-            context.drawImage(this.backgroundImage, 0, 0, this.game.width, this.game.height);
-        } else {
-            const isPause = !!this.game.menu.pause.isPaused;
-            const isGameOver =
-                !!this.game.gameOver ||
-                !!this.game.notEnoughCoins ||
-                !!this.game.menu.gameOver.menuActive;
-
-            if (isPause || isGameOver) {
-                const alpha = isPause ? 0.7 : (this.game.notEnoughCoins ? 0.5 : 0.2);
-                context.fillStyle = `rgba(0, 0, 0, ${alpha})`;
-                context.fillRect(0, 0, this.game.width, this.game.height);
-            }
-        }
-
-        const centerY = this.game.height / 2;
-
-        // title
-        context.font = 'bold 46px Love Ya Like A Sister';
-        context.fillStyle = 'white';
-        context.shadowColor = 'black';
-        context.shadowOffsetX = 3;
-        context.shadowOffsetY = 3;
-        context.textAlign = 'center';
-        context.fillText(this.title, this.game.width / 2, centerY - this.positionOffset);
-
         // tabs
+        const centerY = this.game.height / 2;
         const titleY = centerY - this.positionOffset;
         const tabY = titleY + this.tabOffsetY;
         const tabSpacing = 260;
         const startX = this.game.width / 2 - tabSpacing;
         const resetRect = this._getHeaderResetRect();
 
+        context.textAlign = 'center';
+        context.shadowColor = 'black';
         context.shadowOffsetX = 2;
         context.shadowOffsetY = 2;
 
@@ -549,6 +531,10 @@ export class AudioSettingsMenu extends BaseMenu {
         this.drawResetIconButton(context, resetRect, this.hoveredHeaderAction === 'reset');
 
         // options + sliders
+        context.shadowColor = 'black';
+        context.shadowOffsetX = 3;
+        context.shadowOffsetY = 3;
+        context.shadowBlur = 3;
         context.textAlign = 'right';
 
         for (let i = 0; i < this.menuOptions.length; i++) {
@@ -785,7 +771,7 @@ export class AudioSettingsMenu extends BaseMenu {
     handleMouseMove(event) {
         if (!this._canInteract()) return;
 
-        const { x: mouseX, y: mouseY } = this._getMouse(event);
+        const { mouseX, mouseY } = this.canvasMouse(event);
 
         const hitTab = this._hitTestTab(mouseX, mouseY);
         const overReset = this._hitTestHeaderReset(mouseX, mouseY);
@@ -809,7 +795,7 @@ export class AudioSettingsMenu extends BaseMenu {
         if (!this._canInteract()) return;
         if (this.draggingSliderActive) return;
 
-        const { x: mouseX, y: mouseY } = this._getMouse(event);
+        const { mouseX, mouseY } = this.canvasMouse(event);
 
         const hitTab = this._hitTestTab(mouseX, mouseY);
         if (hitTab) {
@@ -871,7 +857,7 @@ export class AudioSettingsMenu extends BaseMenu {
         if (!this.menuActive) return;
         if (this.isHeaderSelected()) return;
 
-        const { x: mouseX, y: mouseY } = this._getMouse(event);
+        const { mouseX, mouseY } = this.canvasMouse(event);
 
         for (let i = 0; i < this.menuOptions.length; i++) {
             if (this.volumeLevels[i] === null) continue;

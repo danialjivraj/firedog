@@ -1,4 +1,4 @@
-import { isLocalNight } from '../config/timeOfDay.js';
+import { isLocalNight } from '../utils/timeOfDay.js';
 
 export class SavingOrDeletingAnimation {
     constructor(game, width, height, imageId, maxFrame, x, y, fps) {

@@ -1,7 +1,7 @@
 import { EnemyLore } from '../../game/menu/enemyLore.js';
-import { isLocalNight } from '../../game/config/timeOfDay.js';
+import { isLocalNight } from '../../game/utils/timeOfDay.js';
 
-jest.mock('../../game/config/timeOfDay.js', () => ({
+jest.mock('../../game/utils/timeOfDay.js', () => ({
     isLocalNight: jest.fn(() => false),
 }));
 

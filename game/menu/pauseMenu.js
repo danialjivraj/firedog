@@ -3,9 +3,7 @@ import { BaseMenu } from "./baseMenu.js";
 export class PauseMenu extends BaseMenu {
     constructor(game) {
         super(game, ["Resume", "Restart", "Settings", "Back to Main Menu"], "Paused");
-        this.game = game;
         this.positionOffset = 180;
-        this.selectedOption = 0;
         this.isPaused = false;
         this.menuInGame = true;
         this.canEscape = false;

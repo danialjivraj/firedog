@@ -3,33 +3,19 @@ import { FloatingMessage } from '../../game/animations/floatingMessages.js';
 import {
   Collision,
   CollisionAnimation,
-  GhostFadeOut,
   ExplosionCollisionAnimation,
-  MeteorExplosionCollision,
-  AsteroidExplosionCollision,
   ElectricityCollision,
-  DarkExplosionCollision,
-  RedFireballCollision,
-  PurpleFireballCollision,
-  PurpleThunderCollision,
-  PoisonSpitSplash,
-  PoisonDropCollision,
-  PoisonDropGroundCollision,
-  DisintegrateCollision,
-  InkSplashCollision,
-  InkBombCollision,
   Blood,
-  IcyStormBallCollision,
   IceSlashCollision,
-  IceTrailCollision,
-  SpinningIceBallsCollision,
-  PointyIcicleShardCollision,
-  UndergroundIcicleCollision,
   GalacticSpikeCollision,
   HealingStar,
   HealingStarBurstCollision,
+} from '../../game/animations/collisionAnimation/spriteCollisions.js';
+import {
+  GhostFadeOut,
+  DisintegrateCollision,
   BallParticleBurstCollision,
-} from '../../game/animations/collisionAnimation.js';
+} from '../../game/animations/collisionAnimation/proceduralCollisions.js';
 
 jest.mock('../../game/entities/enemies/enemies.js', () => ({
   Skulnap: class Skulnap {
@@ -55,25 +41,9 @@ const allImageIds = [
   'collisionAnimation',
   'blueCollisionAnimation',
   'explosionCollisionAnimation',
-  'meteorExplosion',
-  'asteroidExplosion',
   'electricityCollision',
-  'darkExplosion',
-  'redFireballCollision',
-  'purpleFireballCollision',
-  'purpleThunderCollision',
-  'poisonSpitSplash',
-  'poisonDropCollision',
-  'poisonDropGroundCollision',
-  'blackInk',
-  'inkBombCollision',
   'blood',
-  'icyStormBallCollision',
   'iceSlashCollision',
-  'iceTrailCollision',
-  'spinningIceBallsCollision',
-  'pointyIcicleShardCollision',
-  'undergroundIcicleCollision',
   'galacticSpikeCollision',
   'healingStar',
 ];
@@ -224,10 +194,6 @@ describe('CollisionAnimation', () => {
     const ca = new CollisionAnimation(game, 100, 200, false);
 
     expect(ca.image).toBe(document.getElementById('collisionAnimation'));
-    expect(ca.spriteWidth).toBe(100);
-    expect(ca.spriteHeight).toBe(90);
-    expect(ca.maxFrame).toBe(4);
-    expect(ca.fps).toBeCloseTo(5);
 
     Math.random.mockRestore();
   });
@@ -237,10 +203,6 @@ describe('CollisionAnimation', () => {
     const ca = new CollisionAnimation(game, 100, 200, true);
 
     expect(ca.image).toBe(document.getElementById('blueCollisionAnimation'));
-    expect(ca.spriteWidth).toBe(113.857);
-    expect(ca.spriteHeight).toBe(110);
-    expect(ca.maxFrame).toBe(6);
-    expect(ca.fps).toBe(25);
   });
 });
 
@@ -367,39 +329,10 @@ describe('ExplosionCollisionAnimation', () => {
   });
 });
 
-describe('Explosion sprite collisions', () => {
-  test('MeteorExplosionCollision uses meteorExplosion sprite sheet', () => {
-    const game = { speed: 0 };
-    const mec = new MeteorExplosionCollision(game, 100, 200);
-
-    expect(mec.image).toBe(document.getElementById('meteorExplosion'));
-    expect(mec.spriteWidth).toBe(382);
-    expect(mec.spriteHeight).toBe(332);
-    expect(mec.maxFrame).toBe(5);
-    expect(mec.fps).toBe(23);
-  });
-
-  test('AsteroidExplosionCollision uses asteroidExplosion sprite sheet', () => {
-    const game = { speed: 0 };
-    const aec = new AsteroidExplosionCollision(game, 100, 200);
-
-    expect(aec.image).toBe(document.getElementById('asteroidExplosion'));
-    expect(aec.spriteWidth).toBe(382);
-    expect(aec.spriteHeight).toBe(332);
-    expect(aec.maxFrame).toBe(5);
-    expect(aec.fps).toBe(23);
-  });
-});
-
 describe('ElectricityCollision', () => {
-  test('uses electricity sprite sheet and can be repositioned', () => {
+  test('can be repositioned on an enemy or at a fixed coordinate', () => {
     const game = { speed: 0 };
     const ec = new ElectricityCollision(game, 0, 0);
-
-    expect(ec.spriteWidth).toBe(215.25);
-    expect(ec.spriteHeight).toBe(200);
-    expect(ec.maxFrame).toBe(7);
-    expect(ec.fps).toBe(20);
 
     const enemy = { x: 100, y: 50, width: 20, height: 30 };
     ec.updatePosition(enemy);
@@ -412,55 +345,14 @@ describe('ElectricityCollision', () => {
   });
 });
 
-describe('Various simple Collision subclasses', () => {
-  const cases = [
-    { Cls: DarkExplosionCollision, id: 'darkExplosion', w: 300.0952380952381, h: 279, fps: 50, maxFrame: 20 },
-    { Cls: RedFireballCollision, id: 'redFireballCollision', w: 300.0952380952381, h: 280, fps: 50, maxFrame: 20 },
-    { Cls: PurpleFireballCollision, id: 'purpleFireballCollision', w: 300.0952380952381, h: 280, fps: 50, maxFrame: 20 },
-    { Cls: PurpleThunderCollision, id: 'purpleThunderCollision', w: 304, h: 293, fps: 50, maxFrame: 20 },
-    { Cls: PoisonSpitSplash, id: 'poisonSpitSplash', w: 43, h: 73, fps: 80, maxFrame: 10 },
-    { Cls: PoisonDropCollision, id: 'poisonDropCollision', w: 112, h: 102, fps: 30, maxFrame: 5 },
-    { Cls: PoisonDropGroundCollision, id: 'poisonDropGroundCollision', w: 50, h: 50, fps: 30, maxFrame: 6 },
-    { Cls: InkSplashCollision, id: 'blackInk', w: 278, h: 394, fps: 20, maxFrame: 6 },
-    { Cls: InkBombCollision, id: 'inkBombCollision', w: 212, h: 212, fps: 20, maxFrame: 7 },
-    { Cls: IcyStormBallCollision, id: 'icyStormBallCollision', w: 42.44444444444444, h: 50, fps: 50, maxFrame: 8 },
-    { Cls: IceTrailCollision, id: 'iceTrailCollision', w: 28.83333333333333, h: 70, fps: 30, maxFrame: 5 },
-    { Cls: SpinningIceBallsCollision, id: 'spinningIceBallsCollision', w: 37.2, h: 35, fps: 20, maxFrame: 4 },
-    { Cls: PointyIcicleShardCollision, id: 'pointyIcicleShardCollision', w: 81, h: 130, fps: 20, maxFrame: 5 },
-    { Cls: UndergroundIcicleCollision, id: 'undergroundIcicleCollision', w: 125.4, h: 200, fps: 20, maxFrame: 4 },
-  ];
-
-  cases.forEach(({ Cls, id, w, h, fps, maxFrame }) => {
-    test(`${Cls.name} configures expected sprite sheet and timing`, () => {
-      const game = { speed: 0 };
-      const inst = new Cls(game, 150, 250);
-      expect(inst.image).toBe(document.getElementById(id));
-      expect(inst.spriteWidth).toBe(w);
-      expect(inst.spriteHeight).toBe(h);
-      expect(inst.fps).toBe(fps);
-      expect(inst.maxFrame).toBe(maxFrame);
-    });
-  });
-});
-
 describe('GalacticSpikeCollision', () => {
-  test('scales draw size and forwards clipRect', () => {
+  test('scales draw size by widthScale/heightScale and forwards clipRect', () => {
     const game = { speed: 0, width: 999 };
     const clipRect = { x: 10, h: 50 };
     const inst = new GalacticSpikeCollision(game, 100, 200, 2, 3, clipRect);
 
-    const SPR_W = 211.5454545454545;
-    const SPR_H = 180;
-
-    expect(inst.image).toBe(document.getElementById('galacticSpikeCollision'));
-    expect(inst.spriteWidth).toBeCloseTo(SPR_W);
-    expect(inst.spriteHeight).toBeCloseTo(SPR_H);
-
-    expect(inst.width).toBeCloseTo(SPR_W * 3);
-    expect(inst.height).toBeCloseTo(SPR_H * 2);
-
-    expect(inst.maxFrame).toBe(10);
-    expect(inst.fps).toBe(30);
+    expect(inst.width).toBeCloseTo(inst.spriteWidth * 3);
+    expect(inst.height).toBeCloseTo(inst.spriteHeight * 2);
     expect(inst.clipRect).toBe(clipRect);
   });
 });

@@ -4,8 +4,8 @@ jest.mock('../game/animations/fading.js', () => ({
   }),
 }));
 
-jest.mock('../game/animations/recordToast.js', () => ({
-  RecordToast: jest.fn().mockImplementation((game, text, opts) => ({
+jest.mock('../game/interface/animatedToast.js', () => ({
+  AnimatedToast: jest.fn().mockImplementation((game, text, opts) => ({
     game,
     text,
     opts,
@@ -15,11 +15,11 @@ jest.mock('../game/animations/recordToast.js', () => ({
   })),
 }));
 
-jest.mock('../game/config/formatTime.js', () => ({
+jest.mock('../game/utils/formatTime.js', () => ({
   formatTimeMs: jest.fn((ms) => `07:30.95`),
 }));
 
-jest.mock('../game/cutscene/elyvorgCutscenes.js', () => {
+jest.mock('../game/cutscene/ingameCutscenes/elyvorgCutscenes.js', () => {
   class BaseMockCutscene {
     constructor(game) { this.game = game; }
     displayDialogue() { }
@@ -58,7 +58,7 @@ jest.mock('../game/cutscene/storyCutscenes.js', () => {
 });
 
 import { getDefaultKeyBindings } from '../game/config/keyBindings.js';
-import { Map7, Map3, BonusMap1 } from '../game/background/background.js';
+import { Map7, Map3, BonusMap1 } from '../game/background/maps.js';
 import {
   RedPotion,
   BluePotion,
@@ -83,19 +83,19 @@ import {
   Map1PenguinIngameCutscene, Map2PenguinIngameCutscene,
   Map3PenguinIngameCutscene, Map4PenguinIngameCutscene,
   Map5PenguinIngameCutscene, Map7PenguinIngameCutscene
-} from '../game/cutscene/penguiniCutscenes.js';
+} from '../game/cutscene/ingameCutscenes/penguiniCutscenes.js';
 import {
   Map7ElyvorgIngameCutsceneBeforeFight,
   Map7ElyvorgIngameCutsceneAfterFight
-} from '../game/cutscene/elyvorgCutscenes.js';
+} from '../game/cutscene/ingameCutscenes/elyvorgCutscenes.js';
 import {
   BonusMap1GlacikalIngameCutsceneBeforeFight,
   BonusMap1GlacikalIngameCutsceneAfterFight
-} from '../game/cutscene/glacikalCutscenes.js';
+} from '../game/cutscene/ingameCutscenes/glacikalCutscenes.js';
 import { DistortionEffect } from '../game/animations/distortion.js';
 import { SpinningChicks } from '../game/animations/particles.js';
-import { RecordToast } from '../game/animations/recordToast.js';
-import { formatTimeMs } from '../game/config/formatTime.js';
+import { AnimatedToast } from '../game/interface/animatedToast.js';
+import { formatTimeMs } from '../game/utils/formatTime.js';
 
 beforeAll(() => {
   jest.spyOn(console, 'error').mockImplementation(() => { });
@@ -646,14 +646,14 @@ describe('Game class (game-main.js)', () => {
         const game = new Game(canvas, canvas.width, canvas.height);
 
         game.bossTime = 123.45;
-        game._bossFightWasActive = true;
-        game._bossDefeatRecorded = true;
+        game.bossManager._bossFightWasActive = true;
+        game.bossManager._bossDefeatRecorded = true;
 
         game.resetBossTimer();
 
         expect(game.bossTime).toBe(0);
-        expect(game._bossFightWasActive).toBe(false);
-        expect(game._bossDefeatRecorded).toBe(false);
+        expect(game.bossManager._bossFightWasActive).toBe(false);
+        expect(game.bossManager._bossDefeatRecorded).toBe(false);
       });
     });
 
@@ -669,11 +669,11 @@ describe('Game class (game-main.js)', () => {
         game.bossTime = 1234.9; // floors
         game.records.Map1.bossMs = null;
 
-        game._bossDefeatRecorded = false;
+        game.bossManager._bossDefeatRecorded = false;
 
         game.onBossDefeated('any');
 
-        expect(game._bossDefeatRecorded).toBe(true);
+        expect(game.bossManager._bossDefeatRecorded).toBe(true);
         expect(game.records.Map1.bossMs).toBe(1234);
         expect(game.saveGameState).toHaveBeenCalledTimes(1);
       });
@@ -689,7 +689,7 @@ describe('Game class (game-main.js)', () => {
         game.records.Map1.bossMs = 500;
         game.bossTime = 999;
 
-        game._bossDefeatRecorded = false;
+        game.bossManager._bossDefeatRecorded = false;
 
         game.onBossDefeated('any');
 
@@ -707,7 +707,7 @@ describe('Game class (game-main.js)', () => {
         game.records.Map1.bossMs = null;
         game.bossTime = 100;
 
-        game._bossDefeatRecorded = true; // already recorded
+        game.bossManager._bossDefeatRecorded = true; // already recorded
 
         game.onBossDefeated('any');
 
@@ -726,11 +726,11 @@ describe('Game class (game-main.js)', () => {
         game.records.Map1.bossMs = null;
         game.bossTime = 100;
 
-        game._bossDefeatRecorded = false;
+        game.bossManager._bossDefeatRecorded = false;
 
         game.onBossDefeated('any');
 
-        expect(game._bossDefeatRecorded).toBe(true); // still set before eligibility checks
+        expect(game.bossManager._bossDefeatRecorded).toBe(true); // still set before eligibility checks
         expect(game.records.Map1.bossMs).toBeNull();
         expect(game.saveGameState).not.toHaveBeenCalled();
       });
@@ -745,7 +745,7 @@ describe('Game class (game-main.js)', () => {
         game.currentMap = null;
         game.bossTime = 100;
 
-        game._bossDefeatRecorded = false;
+        game.bossManager._bossDefeatRecorded = false;
         expect(() => game.onBossDefeated('any')).not.toThrow();
         expect(game.saveGameState).not.toHaveBeenCalled();
 
@@ -765,7 +765,7 @@ describe('Game class (game-main.js)', () => {
         game.records.Map1.bossMs = null;
         game.bossTime = -50;
 
-        game._bossDefeatRecorded = false;
+        game.bossManager._bossDefeatRecorded = false;
 
         game.onBossDefeated('any');
 
@@ -894,14 +894,14 @@ describe('Game class (game-main.js)', () => {
           .mockReturnValue(true);
 
         game.bossTime = 999;
-        game._bossDefeatRecorded = true;
-        game._bossFightWasActive = false;
+        game.bossManager._bossDefeatRecorded = true;
+        game.bossManager._bossFightWasActive = false;
         game.gameOver = false;
 
         game.update(1);
 
-        expect(game._bossFightWasActive).toBe(true);
-        expect(game._bossDefeatRecorded).toBe(false);
+        expect(game.bossManager._bossFightWasActive).toBe(true);
+        expect(game.bossManager._bossDefeatRecorded).toBe(false);
 
         expect(game.bossTime).toBe(1);
 
@@ -915,11 +915,11 @@ describe('Game class (game-main.js)', () => {
           .spyOn(game.bossManager, 'bossInFight', 'get')
           .mockReturnValue(false);
 
-        game._bossFightWasActive = true;
+        game.bossManager._bossFightWasActive = true;
 
         game.update(1);
 
-        expect(game._bossFightWasActive).toBe(false);
+        expect(game.bossManager._bossFightWasActive).toBe(false);
 
         fightSpy.mockRestore();
       });
@@ -965,29 +965,29 @@ describe('Game class (game-main.js)', () => {
     });
   });
 
-  describe('record toast (showRecordToast)', () => {
+  describe('record toast (showAnimatedToast)', () => {
     beforeEach(() => jest.useFakeTimers());
     afterEach(() => jest.useRealTimers());
 
-    it('schedules a RecordToast after the delay and plays the new record sound', () => {
+    it('schedules a AnimatedToast after the delay and plays the new record sound', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
 
-      game.recordToasts = [];
+      game.animatedToasts = [];
       jest.spyOn(game.audioHandler.mapSoundtrack, 'playSound').mockImplementation(() => { });
 
-      game.showRecordToast('HELLO', 200);
+      game.showAnimatedToast('HELLO', 200);
 
-      expect(game.recordToasts).toHaveLength(0);
+      expect(game.animatedToasts).toHaveLength(0);
 
       jest.advanceTimersByTime(199);
-      expect(game.recordToasts).toHaveLength(0);
+      expect(game.animatedToasts).toHaveLength(0);
 
       jest.advanceTimersByTime(1);
 
-      expect(RecordToast).toHaveBeenCalledTimes(1);
-      expect(RecordToast).toHaveBeenCalledWith(game, 'HELLO', { y: 100 });
+      expect(AnimatedToast).toHaveBeenCalledTimes(1);
+      expect(AnimatedToast).toHaveBeenCalledWith(game, 'HELLO', { y: 100 });
 
-      expect(game.recordToasts).toHaveLength(1);
+      expect(game.animatedToasts).toHaveLength(1);
 
       expect(game.audioHandler.mapSoundtrack.playSound).toHaveBeenCalledWith(
         'newRecordSound',
@@ -999,39 +999,39 @@ describe('Game class (game-main.js)', () => {
     it('clears a previous pending toast when called again (only latest one shows)', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
 
-      game.recordToasts = [];
+      game.animatedToasts = [];
       jest.spyOn(game.audioHandler.mapSoundtrack, 'playSound').mockImplementation(() => { });
-      RecordToast.mockClear();
+      AnimatedToast.mockClear();
 
-      game.showRecordToast('A', 500);
-      game.showRecordToast('B', 200);
+      game.showAnimatedToast('A', 500);
+      game.showAnimatedToast('B', 200);
 
       jest.advanceTimersByTime(200);
 
-      expect(RecordToast).toHaveBeenCalledTimes(1);
-      expect(RecordToast).toHaveBeenLastCalledWith(game, 'B', { y: 100 });
-      expect(game.recordToasts).toHaveLength(1);
+      expect(AnimatedToast).toHaveBeenCalledTimes(1);
+      expect(AnimatedToast).toHaveBeenLastCalledWith(game, 'B', { y: 100 });
+      expect(game.animatedToasts).toHaveLength(1);
 
       jest.advanceTimersByTime(500);
-      expect(RecordToast).toHaveBeenCalledTimes(1);
-      expect(game.recordToasts).toHaveLength(1);
+      expect(AnimatedToast).toHaveBeenCalledTimes(1);
+      expect(game.animatedToasts).toHaveLength(1);
     });
 
     it('clamps negative delay to 0 (fires immediately on next tick)', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
 
-      game.recordToasts = [];
+      game.animatedToasts = [];
       jest.spyOn(game.audioHandler.mapSoundtrack, 'playSound').mockImplementation(() => { });
-      RecordToast.mockClear();
+      AnimatedToast.mockClear();
 
-      game.showRecordToast('NOW', -999);
+      game.showAnimatedToast('NOW', -999);
 
-      expect(game.recordToasts).toHaveLength(0);
+      expect(game.animatedToasts).toHaveLength(0);
 
       jest.advanceTimersByTime(0);
 
-      expect(RecordToast).toHaveBeenCalledTimes(1);
-      expect(game.recordToasts).toHaveLength(1);
+      expect(AnimatedToast).toHaveBeenCalledTimes(1);
+      expect(game.animatedToasts).toHaveLength(1);
     });
   });
 
@@ -1042,12 +1042,12 @@ describe('Game class (game-main.js)', () => {
     beforeEach(() => jest.useFakeTimers());
     afterEach(() => jest.useRealTimers());
 
-    it('schedules a RecordToast into metaToasts and plays the new record sound', () => {
+    it('schedules a AnimatedToast into metaToasts and plays the new record sound', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
 
       game.metaToasts = [];
       jest.spyOn(game.audioHandler.mapSoundtrack, 'playSound').mockImplementation(() => { });
-      RecordToast.mockClear();
+      AnimatedToast.mockClear();
 
       game.showMetaToast('HELLO META', 200);
 
@@ -1058,8 +1058,8 @@ describe('Game class (game-main.js)', () => {
 
       jest.advanceTimersByTime(1);
 
-      expect(RecordToast).toHaveBeenCalledTimes(1);
-      expect(RecordToast).toHaveBeenCalledWith(game, 'HELLO META', { y: 100 });
+      expect(AnimatedToast).toHaveBeenCalledTimes(1);
+      expect(AnimatedToast).toHaveBeenCalledWith(game, 'HELLO META', { y: 100 });
       expect(game.metaToasts).toHaveLength(1);
 
       expect(game.audioHandler.mapSoundtrack.playSound).toHaveBeenCalledWith(
@@ -1074,14 +1074,14 @@ describe('Game class (game-main.js)', () => {
 
       game.metaToasts = [];
       jest.spyOn(game.audioHandler.mapSoundtrack, 'playSound').mockImplementation(() => { });
-      RecordToast.mockClear();
+      AnimatedToast.mockClear();
 
       game.showMetaToast('NOW', -500);
 
       expect(game.metaToasts).toHaveLength(0);
       jest.advanceTimersByTime(0);
 
-      expect(RecordToast).toHaveBeenCalledTimes(1);
+      expect(AnimatedToast).toHaveBeenCalledTimes(1);
       expect(game.metaToasts).toHaveLength(1);
     });
   });
@@ -1178,7 +1178,7 @@ describe('Game class (game-main.js)', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
 
       game.saveGameState = jest.fn();
-      jest.spyOn(game, 'showRecordToast').mockImplementation(() => { });
+      jest.spyOn(game, 'showAnimatedToast').mockImplementation(() => { });
       formatTimeMs.mockClear();
 
       game.winningCoins = 100;
@@ -1186,12 +1186,12 @@ describe('Game class (game-main.js)', () => {
       game.currentMap = 'Map1';
       game.records.Map1.bossMs = null;
       game.bossTime = 1234.9;
-      game._bossDefeatRecorded = false;
+      game.bossManager._bossDefeatRecorded = false;
 
       game.onBossDefeated('any');
 
       expect(formatTimeMs).toHaveBeenCalledWith(1234, 2);
-      expect(game.showRecordToast).toHaveBeenCalledWith(
+      expect(game.showAnimatedToast).toHaveBeenCalledWith(
         [
           [{ text: 'NEW RECORD!', fill: 'yellow' }],
           [{ text: 'FINAL BOSS BEATEN IN ', fill: 'yellow' }, { text: '07:30.95', fill: 'orange' }],
@@ -1394,6 +1394,7 @@ describe('Game class (game-main.js)', () => {
       game.player.width = 50;
       game.cabin = { x: 100, width: 200 };
       game.background = new Map7(game);
+      game.currentMap = 'Map7';
       game.resetInstance = { reset: jest.fn() };
       game.menu.main.showSavingSprite = false;
       game.canSelect = true;
@@ -1483,138 +1484,28 @@ describe('Game class (game-main.js)', () => {
       jest.useRealTimers();
     });
 
-    it('moves to the correct map selection after Map1 end cutscene', () => {
+    it.each([
+      ['Map1',      0, 1],
+      ['Map2',      1, 2],
+      ['Map3',      2, 3],
+      ['Map4',      3, 4],
+      ['Map5',      4, 5],
+      ['Map6',      5, 6],
+      ['BonusMap1', 6, 1],
+      ['BonusMap2', 7, 9],
+      ['BonusMap3', 4, 3],
+    ])('moves to correct map selection after %s end cutscene (index %i → %i)', (mapName, startIdx, expectedIdx) => {
       game.background = {
-        constructor: { name: 'Map1' },
+        constructor: { name: mapName },
         totalDistanceTraveled: game.maxDistance
       };
-      game.currentMap = 'Map1';
-      forestMapMenu.selectedCircleIndex = 0;
+      game.currentMap = mapName;
+      forestMapMenu.selectedCircleIndex = startIdx;
 
       game.endCutscene();
       jest.advanceTimersByTime(4000);
 
-      expect(forestMapMenu.selectedCircleIndex).toBe(1);
-      expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
-    });
-
-    it('moves to the correct map selection after Map2 end cutscene', () => {
-      game.background = {
-        constructor: { name: 'Map2' },
-        totalDistanceTraveled: game.maxDistance
-      };
-      game.currentMap = 'Map2';
-      forestMapMenu.selectedCircleIndex = 1;
-
-      game.endCutscene();
-      jest.advanceTimersByTime(4000);
-
-      expect(forestMapMenu.selectedCircleIndex).toBe(2);
-      expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
-    });
-
-    it('moves to the correct map selection after Map3 end cutscene', () => {
-      game.background = {
-        constructor: { name: 'Map3' },
-        totalDistanceTraveled: game.maxDistance
-      };
-      game.currentMap = 'Map3';
-      forestMapMenu.selectedCircleIndex = 2;
-
-      game.endCutscene();
-      jest.advanceTimersByTime(4000);
-
-      expect(forestMapMenu.selectedCircleIndex).toBe(3);
-      expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
-    });
-
-    it('moves to the correct map selection after Map4 end cutscene', () => {
-      game.background = {
-        constructor: { name: 'Map4' },
-        totalDistanceTraveled: game.maxDistance
-      };
-      game.currentMap = 'Map4';
-      forestMapMenu.selectedCircleIndex = 3;
-
-      game.endCutscene();
-      jest.advanceTimersByTime(4000);
-
-      expect(forestMapMenu.selectedCircleIndex).toBe(4);
-      expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
-    });
-
-    it('moves to the correct map selection after Map5 end cutscene', () => {
-      game.background = {
-        constructor: { name: 'Map5' },
-        totalDistanceTraveled: game.maxDistance
-      };
-      game.currentMap = 'Map5';
-      forestMapMenu.selectedCircleIndex = 4;
-
-      game.endCutscene();
-      jest.advanceTimersByTime(4000);
-
-      expect(forestMapMenu.selectedCircleIndex).toBe(5);
-      expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
-    });
-
-    it('moves to the correct map selection after Map6 end cutscene', () => {
-      game.background = {
-        constructor: { name: 'Map6' },
-        totalDistanceTraveled: game.maxDistance
-      };
-      game.currentMap = 'Map6';
-      forestMapMenu.selectedCircleIndex = 5;
-
-      game.endCutscene();
-      jest.advanceTimersByTime(4000);
-
-      expect(forestMapMenu.selectedCircleIndex).toBe(6);
-      expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
-    });
-
-    it('moves to the correct map selection after BonusMap1 end cutscene', () => {
-      game.background = {
-        constructor: { name: 'BonusMap1' },
-        totalDistanceTraveled: game.maxDistance
-      };
-      game.currentMap = 'BonusMap1';
-      forestMapMenu.selectedCircleIndex = 6;
-
-      game.endCutscene();
-      jest.advanceTimersByTime(4000);
-
-      expect(forestMapMenu.selectedCircleIndex).toBe(1);
-      expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
-    });
-
-    it('moves to the correct map selection after BonusMap2 end cutscene', () => {
-      game.background = {
-        constructor: { name: 'BonusMap2' },
-        totalDistanceTraveled: game.maxDistance
-      };
-      game.currentMap = 'BonusMap2';
-      forestMapMenu.selectedCircleIndex = 7;
-
-      game.endCutscene();
-      jest.advanceTimersByTime(4000);
-
-      expect(forestMapMenu.selectedCircleIndex).toBe(9);
-      expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
-    });
-
-    it('moves to the correct map selection after BonusMap3 end cutscene', () => {
-      game.background = {
-        constructor: { name: 'BonusMap3' },
-        totalDistanceTraveled: game.maxDistance
-      };
-      game.currentMap = 'BonusMap3';
-      forestMapMenu.selectedCircleIndex = 4;
-
-      game.endCutscene();
-      jest.advanceTimersByTime(4000);
-
-      expect(forestMapMenu.selectedCircleIndex).toBe(3);
+      expect(forestMapMenu.selectedCircleIndex).toBe(expectedIdx);
       expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
     });
   });
@@ -1774,35 +1665,49 @@ describe('Game class (game-main.js)', () => {
   // ------------------------------------------------------------
   // Cabin & Penguin spawning
   // ------------------------------------------------------------
-  describe('addCabin() / addPenguin()', () => {
+  describe('cabin and penguin activation (via _updateSpawnTimers)', () => {
     let game;
 
     beforeEach(() => {
       game = new Game(canvas, canvas.width, canvas.height);
-      game.cabin = { width: 50 };
+      game.cabin = { width: 50, isFullyVisible: false };
       game.penguini = { width: 40 };
       game.background = { totalDistanceTraveled: game.maxDistance };
       game.cabinAppeared = false;
       game.penguinAppeared = false;
-      game.cabins = [];
-      game.penguins = [];
+      game.nonEnemyTimer = game.nonEnemyInterval + 1;
+      game.enemyTimer = 0;
+      jest.spyOn(game, 'addEnemy').mockImplementation(() => {});
+      jest.spyOn(game, 'addPowerUp').mockImplementation(() => {});
+      jest.spyOn(game, 'addPowerDown').mockImplementation(() => {});
     });
 
-    it('addCabin() pushes cabin and sets flags only once', () => {
-      game.addCabin();
-      game.addCabin();
-      expect(game.cabins).toHaveLength(1);
+    it('activates cabin and sets fixedCabinX on first timer fire', () => {
+      game._updateSpawnTimers(16, false);
       expect(game.cabinAppeared).toBe(true);
       expect(game.fixedCabinX).toBe(game.width - game.cabin.width);
     });
 
-    it('addPenguin() pushes penguin and sets flags only once', () => {
-      game.addPenguin();
-      game.addPenguin();
-      expect(game.penguins).toHaveLength(1);
+    it('does not re-activate cabin on subsequent timer fires', () => {
+      game._updateSpawnTimers(16, false);
+      game.cabin.width = 999;
+      game.nonEnemyTimer = game.nonEnemyInterval + 1;
+      game._updateSpawnTimers(16, false);
+      expect(game.fixedCabinX).toBe(game.width - 50);
+    });
+
+    it('activates penguin, sets fixedPenguinX and talkToPenguin on first timer fire', () => {
+      game._updateSpawnTimers(16, false);
       expect(game.penguinAppeared).toBe(true);
       expect(game.fixedPenguinX).toBe(game.width - game.cabin.width - 100);
       expect(game.talkToPenguin).toBe(true);
+    });
+
+    it('does not activate if background distance is below maxDistance', () => {
+      game.background.totalDistanceTraveled = game.maxDistance - 1;
+      game._updateSpawnTimers(16, false);
+      expect(game.cabinAppeared).toBe(false);
+      expect(game.penguinAppeared).toBe(false);
     });
   });
 
@@ -2207,7 +2112,7 @@ describe('Game class (game-main.js)', () => {
   });
 
   describe('tutorial gating of spawns on Map1', () => {
-    it('does not add enemies/powerups/powerdowns when tutorial is active on Map1; still adds cabin/penguin', () => {
+    it('does not add enemies/powerups/powerdowns when tutorial is active on Map1; still activates cabin/penguin', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
 
       game.enemyTimer = game.enemyInterval + 1;
@@ -2219,22 +2124,23 @@ describe('Game class (game-main.js)', () => {
       const addEnemy = jest.spyOn(game, 'addEnemy').mockImplementation(() => { });
       const addPowerUp = jest.spyOn(game, 'addPowerUp').mockImplementation(() => { });
       const addPowerDown = jest.spyOn(game, 'addPowerDown').mockImplementation(() => { });
-      const addCabin = jest.spyOn(game, 'addCabin').mockImplementation(() => { });
-      const addPenguin = jest.spyOn(game, 'addPenguin').mockImplementation(() => { });
 
       game.menu.pause.isPaused = false;
       game.tutorial.tutorialPause = false;
-      game.background = { update: () => { }, totalDistanceTraveled: 0, constructor: { name: 'Map1' } };
+      game.background = { update: () => { }, totalDistanceTraveled: game.maxDistance, constructor: { name: 'Map1' } };
       game.player = { update: () => { }, isUnderwater: false, x: 0, width: 0 };
-      game.cabin = { isFullyVisible: false };
+      game.cabin = { width: 50, isFullyVisible: false, update: jest.fn() };
+      game.penguini = { width: 40, update: jest.fn() };
+      game.cabinAppeared = false;
+      game.penguinAppeared = false;
 
       game.update(16);
 
       expect(addEnemy).not.toHaveBeenCalled();
       expect(addPowerUp).not.toHaveBeenCalled();
       expect(addPowerDown).not.toHaveBeenCalled();
-      expect(addCabin).toHaveBeenCalled();
-      expect(addPenguin).toHaveBeenCalled();
+      expect(game.cabinAppeared).toBe(true);
+      expect(game.penguinAppeared).toBe(true);
     });
   });
 
@@ -2242,102 +2148,29 @@ describe('Game class (game-main.js)', () => {
   // Cutscene triggering during update()
   // ------------------------------------------------------------
   describe('update() cutscene triggering', () => {
-    it('triggers in-game penguin cutscene on Map1 when flags are set', () => {
+    it.each([
+      ['Map1', Map1PenguinIngameCutscene],
+      ['Map2', Map2PenguinIngameCutscene],
+      ['Map3', Map3PenguinIngameCutscene],
+      ['Map4', Map4PenguinIngameCutscene],
+      ['Map5', Map5PenguinIngameCutscene],
+      ['Map7', Map7PenguinIngameCutscene],
+    ])('triggers in-game penguin cutscene on %s when flags are set', (mapName, CutsceneCls) => {
       const game = new Game(canvas, canvas.width, canvas.height);
       jest.spyOn(game, 'startCutscene');
       game.talkToPenguin = true;
       game.talkToPenguinOneTimeOnly = true;
       game.enterToTalkToPenguin = true;
-      game.background = { constructor: { name: 'Map1' }, update: () => { } };
-      game.currentMap = 'Map1';
+      game.background = { constructor: { name: mapName }, update: () => { } };
+      game.currentMap = mapName;
       game.player = { update: () => { } };
       game.menu.pause.isPaused = false;
       game.tutorial.tutorialPause = false;
       game.cabin = { isFullyVisible: false };
       game.update(0);
       expect(game.startCutscene).toHaveBeenCalled();
-      expect(game.cutscenes.some(c => c instanceof Map1PenguinIngameCutscene)).toBe(true);
+      expect(game.cutscenes.some(c => c instanceof CutsceneCls)).toBe(true);
       expect(game.enterToTalkToPenguin).toBe(false);
-    });
-
-    it('triggers in-game penguin cutscene on Map2 when flags are set', () => {
-      const game = new Game(canvas, canvas.width, canvas.height);
-      jest.spyOn(game, 'startCutscene');
-      game.talkToPenguin = true;
-      game.talkToPenguinOneTimeOnly = true;
-      game.enterToTalkToPenguin = true;
-      game.background = { constructor: { name: 'Map2' }, update: () => { } };
-      game.currentMap = 'Map2';
-      game.player = { update: () => { } };
-      game.menu.pause.isPaused = false;
-      game.tutorial.tutorialPause = false;
-      game.cabin = { isFullyVisible: false };
-      game.update(0);
-      expect(game.cutscenes.some(c => c instanceof Map2PenguinIngameCutscene)).toBe(true);
-    });
-
-    it('triggers in-game penguin cutscene on Map3 when flags are set', () => {
-      const game = new Game(canvas, canvas.width, canvas.height);
-      jest.spyOn(game, 'startCutscene');
-      game.talkToPenguin = true;
-      game.talkToPenguinOneTimeOnly = true;
-      game.enterToTalkToPenguin = true;
-      game.background = { constructor: { name: 'Map3' }, update: () => { } };
-      game.currentMap = 'Map3';
-      game.player = { update: () => { } };
-      game.menu.pause.isPaused = false;
-      game.tutorial.tutorialPause = false;
-      game.cabin = { isFullyVisible: false };
-      game.update(0);
-      expect(game.cutscenes.some(c => c instanceof Map3PenguinIngameCutscene)).toBe(true);
-    });
-
-    it('triggers in-game penguin cutscene on Map4 when flags are set', () => {
-      const game = new Game(canvas, canvas.width, canvas.height);
-      jest.spyOn(game, 'startCutscene');
-      game.talkToPenguin = true;
-      game.talkToPenguinOneTimeOnly = true;
-      game.enterToTalkToPenguin = true;
-      game.background = { constructor: { name: 'Map4' }, update: () => { } };
-      game.currentMap = 'Map4';
-      game.player = { update: () => { } };
-      game.menu.pause.isPaused = false;
-      game.tutorial.tutorialPause = false;
-      game.cabin = { isFullyVisible: false };
-      game.update(0);
-      expect(game.cutscenes.some(c => c instanceof Map4PenguinIngameCutscene)).toBe(true);
-    });
-
-    it('triggers in-game penguin cutscene on Map5 when flags are set', () => {
-      const game = new Game(canvas, canvas.width, canvas.height);
-      jest.spyOn(game, 'startCutscene');
-      game.talkToPenguin = true;
-      game.talkToPenguinOneTimeOnly = true;
-      game.enterToTalkToPenguin = true;
-      game.background = { constructor: { name: 'Map5' }, update: () => { } };
-      game.currentMap = 'Map5';
-      game.player = { update: () => { } };
-      game.menu.pause.isPaused = false;
-      game.tutorial.tutorialPause = false;
-      game.cabin = { isFullyVisible: false };
-      game.update(0);
-      expect(game.cutscenes.some(c => c instanceof Map5PenguinIngameCutscene)).toBe(true);
-    });
-
-    it('triggers in-game penguin cutscene on Map7 when flags are set', () => {
-      const game = new Game(canvas, canvas.width, canvas.height);
-      jest.spyOn(game, 'startCutscene');
-      game.talkToPenguin = true;
-      game.talkToPenguinOneTimeOnly = true;
-      game.enterToTalkToPenguin = true;
-      game.background = { constructor: { name: 'Map7' }, update: () => { } };
-      game.currentMap = 'Map7';
-      game.player = { update: () => { } };
-      game.menu.pause.isPaused = false;
-      game.tutorial.tutorialPause = false;
-      game.cabin = { isFullyVisible: false };
-      game.update(0);
-      expect(game.cutscenes.some(c => c instanceof Map7PenguinIngameCutscene)).toBe(true);
     });
 
     it('triggers Elyvorg pre-fight cutscene on Map7 via bossManager state', () => {
@@ -2567,8 +2400,6 @@ describe('Game class (game-main.js)', () => {
 
       game.update(0);
 
-      expect(game.enterCabin).toBe(290);
-      expect(game.openDoor).toBe('submarineDoorOpening');
       expect(playSpy).toHaveBeenCalledWith('submarineDoorOpening');
     });
 
@@ -2591,7 +2422,7 @@ describe('Game class (game-main.js)', () => {
         game.background = { constructor: { name }, update: () => { } };
         game.currentMap = name;
         game.cabin = { isFullyVisible: true, x: 100, width: 1000 };
-        game.player = { update: () => { }, x: 500, width: 10 };
+        game.player = { update: () => { }, x: 660, width: 10 };
         game.menu.pause.isPaused = false;
         game.tutorial.tutorialPause = false;
         game.update(0);
@@ -2681,8 +2512,10 @@ describe('Game class (game-main.js)', () => {
     beforeEach(() => {
       game = new Game(canvas, canvas.width, canvas.height);
       game.background = { draw: jest.fn() };
-      game.cabins = [{ draw: jest.fn() }];
-      game.penguins = [{ draw: jest.fn() }];
+      game.cabinAppeared = true;
+      game.cabin = { draw: jest.fn() };
+      game.penguinAppeared = true;
+      game.penguini = { draw: jest.fn() };
       game.powerUps = [{ draw: jest.fn() }];
       game.powerDowns = [{ draw: jest.fn() }];
       game.behindPlayerParticles = [{ draw: jest.fn() }];
@@ -2692,7 +2525,7 @@ describe('Game class (game-main.js)', () => {
       game.collisions = [{ draw: jest.fn() }];
       game.floatingMessages = [{ draw: jest.fn() }];
       game.cutscenes = [{ draw: jest.fn() }];
-      game.recordToasts = [];
+      game.animatedToasts = [];
       game.tutorial = { draw: jest.fn() };
       game.UI = { draw: jest.fn() };
       ctx.clearRect.mockClear();
@@ -2704,7 +2537,7 @@ describe('Game class (game-main.js)', () => {
       expect(ctx.clearRect).toHaveBeenCalledWith(0, 0, game.width, game.height);
       expect(game.background.draw).toHaveBeenCalledWith(ctx);
       [
-        game.cabins[0], game.penguins[0], game.powerUps[0], game.powerDowns[0],
+        game.cabin, game.penguini, game.powerUps[0], game.powerDowns[0],
         game.behindPlayerParticles[0], game.player, game.enemies[0],
         game.particles[0], game.collisions[0], game.floatingMessages[0],
         game.cutscenes[0]
@@ -2770,8 +2603,6 @@ describe('Game class (game-main.js)', () => {
 
       game.update(0);
 
-      expect(game.enterCabin).toBe(570);
-      expect(game.openDoor).toBe('walkingCutsceneSound');
       expect(game.audioHandler.cutsceneSFX.playSound)
         .toHaveBeenCalledWith('walkingCutsceneSound');
     });
@@ -2794,8 +2625,6 @@ describe('Game class (game-main.js)', () => {
 
       game.update(0);
 
-      expect(game.enterCabin).toBe(290);
-      expect(game.openDoor).toBe('doorOpening');
       expect(game.audioHandler.cutsceneSFX.playSound)
         .toHaveBeenCalledWith('doorOpening');
     });

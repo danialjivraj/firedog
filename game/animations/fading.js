@@ -24,31 +24,6 @@ export function fadeIn(element, duration, callback) {
   requestAnimationFrame(animate);
 }
 
-export function fadeOut(element, duration, callback) {
-  let start;
-  const fadeOutDuration = duration;
-
-  function animate(timeStamp) {
-    if (!start) start = timeStamp;
-
-    const elapsed = timeStamp - start;
-    const progress = elapsed / fadeOutDuration;
-
-    if (progress <= 1) {
-      const opacity = 1 - progress;
-      element.style.opacity = opacity;
-
-      requestAnimationFrame(animate);
-    } else {
-      if (callback) {
-        callback();
-      }
-    }
-  }
-
-  requestAnimationFrame(animate);
-}
-
 export function fadeInAndOut(element, fadeOutDuration, blackScreenDuration, fadeInDuration, callback) {
   let startFadeOut;
 

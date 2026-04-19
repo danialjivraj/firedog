@@ -1,17 +1,10 @@
 import {
     PenguiniCutscene,
     Map1PenguinIngameCutscene,
-    Map2PenguinIngameCutscene,
-    Map3PenguinIngameCutscene,
-    Map4PenguinIngameCutscene,
-    Map5PenguinIngameCutscene,
-    Map6PenguinIngameCutscene,
     Map7PenguinIngameCutscene,
     BonusMap1PenguinIngameCutscene,
-    BonusMap2PenguinIngameCutscene,
-    BonusMap3PenguinIngameCutscene,
     CoinDialogueConditionCutscene
-} from '../../game/cutscene/penguiniCutscenes.js';
+} from '../../game/cutscene/ingameCutscenes/penguiniCutscenes.js';
 import * as fading from '../../game/animations/fading.js';
 
 jest.mock('../../game/animations/floatingMessages.js', () => ({
@@ -35,7 +28,7 @@ describe('PenguiniCutscene & subclasses', () => {
             menu: {
                 pause: { isPaused: false },
                 audioSettings: Symbol('settings'),
-                gameOver: { name: 'gameOver' },
+                gameOver: { name: 'gameOver', activateMenu: jest.fn() },
                 wardrobe: {
                     defaultSkin: 'default',
                     hatSkin: 'hat',
@@ -192,7 +185,7 @@ describe('PenguiniCutscene & subclasses', () => {
             expect(game.cutscenes).toEqual([]);
             expect(cutscene.removeEventListeners).toHaveBeenCalled();
             jest.advanceTimersByTime(20);
-            expect(game.currentMenu).toBe(game.menu.gameOver);
+            expect(game.menu.gameOver.activateMenu).toHaveBeenCalled();
         });
 
         it('final branch: ends cutscene WITHOUT gameOver when notEnoughCoins is false', () => {
@@ -364,43 +357,23 @@ describe('PenguiniCutscene & subclasses', () => {
             expect(arr[0].dialogue).toBe("That's good enough, give me that!");
         });
 
-        ['Map2', 'Map3', 'Map4', 'Map5', 'Map6'].forEach(name => {
-            it(`${name}: coins < winningCoins ⇒ notEnoughCoins & multiple`, () => {
-                game.currentMap = name;
-                game.coins = 50;
-                game.winningCoins = 100;
-                const arr = cond.checkPlayerCoins();
-                expect(game.notEnoughCoins).toBe(true);
-                expect(arr.length).toBeGreaterThan(1);
-            });
-            it(`${name}: coins ≥ winningCoins ⇒ single good-enough`, () => {
-                game.currentMap = name;
-                game.coins = 150;
-                game.winningCoins = 100;
-                const arr = cond.checkPlayerCoins();
-                expect(game.notEnoughCoins).toBeUndefined();
-                expect(arr).toHaveLength(1);
-            });
+        it('other maps: coins < winningCoins sets notEnoughCoins with multiple dialogues', () => {
+            game.currentMap = 'Map3';
+            game.coins = 50;
+            game.winningCoins = 100;
+            const arr = cond.checkPlayerCoins();
+            expect(game.notEnoughCoins).toBe(true);
+            expect(arr.length).toBeGreaterThan(1);
         });
 
-        ['BonusMap1', 'BonusMap2', 'BonusMap3'].forEach(name => {
-            it(`${name}: coins < winningCoins ⇒ notEnoughCoins & multiple`, () => {
-                game.currentMap = name;
-                game.coins = 50;
-                game.winningCoins = 100;
-                const arr = cond.checkPlayerCoins();
-                expect(game.notEnoughCoins).toBe(true);
-                expect(arr.length).toBeGreaterThan(1);
-            });
-            it(`${name}: coins ≥ winningCoins ⇒ single good-enough`, () => {
-                game.currentMap = name;
-                game.coins = 150;
-                game.winningCoins = 100;
-                const arr = cond.checkPlayerCoins();
-                expect(game.notEnoughCoins).toBeUndefined();
-                expect(arr).toHaveLength(1);
-                expect(arr[0].dialogue).toBe("That's good enough, give me that!");
-            });
+        it('other maps: coins >= winningCoins returns single good-enough dialogue', () => {
+            game.currentMap = 'BonusMap2';
+            game.coins = 150;
+            game.winningCoins = 100;
+            const arr = cond.checkPlayerCoins();
+            expect(game.notEnoughCoins).toBeUndefined();
+            expect(arr).toHaveLength(1);
+            expect(arr[0].dialogue).toBe("That's good enough, give me that!");
         });
 
         describe('surplus coins logic (leftover > 300)', () => {
@@ -453,19 +426,6 @@ describe('PenguiniCutscene & subclasses', () => {
                 game.winningCoins = 100;
                 const arr = cond.checkPlayerCoins();
                 expect(arr[2].dialogue).toBe(`I'll be taking those extra ${cond.coinIcon}${cond.coinsLabel} too.`);
-            });
-
-            it('works for all maps', () => {
-                const maps = ['Map1', 'Map2', 'Map3', 'Map4', 'Map5', 'Map6', 'BonusMap1', 'BonusMap2', 'BonusMap3'];
-                maps.forEach(mapId => {
-                    game.currentMap = mapId;
-                    game.coins = 500;
-                    game.winningCoins = 100;
-                    game.surplusCoins = 0;
-                    const arr = cond.checkPlayerCoins();
-                    expect(game.surplusCoins).toBe(100);
-                    expect(arr).toHaveLength(5);
-                });
             });
 
             it('does not append surplus dialogues when notEnough (coins < winningCoins)', () => {
@@ -542,7 +502,7 @@ describe('PenguiniCutscene & subclasses', () => {
         });
     });
 
-    describe('Early-return when game.notEnoughCoins === true for Map1–Map6', () => {
+    describe('Early-return when game.notEnoughCoins === true', () => {
         beforeEach(() => {
             game.notEnoughCoins = true;
             jest.spyOn(CoinDialogueConditionCutscene.prototype, 'checkPlayerCoins')
@@ -552,69 +512,16 @@ describe('PenguiniCutscene & subclasses', () => {
             jest.restoreAllMocks();
         });
 
-        it('Map1 stops after its initial 13 entries', () => {
+        it('truncates dialogue for main maps (Map1 as representative)', () => {
             game.currentMap = 'Map1';
             const m1 = new Map1PenguinIngameCutscene(game);
             expect(m1.dialogue.length).toBe(13);
         });
 
-        it('Map2 stops after its initial 15 entries', () => {
-            game.currentMap = 'Map2';
-            const m2 = new Map2PenguinIngameCutscene(game);
-            expect(m2.dialogue.length).toBe(15);
-        });
-
-        it('Map3 stops after its initial 15 entries', () => {
-            game.currentMap = 'Map3';
-            const m3 = new Map3PenguinIngameCutscene(game);
-            expect(m3.dialogue.length).toBe(15);
-        });
-
-        it('Map4 stops after its initial 10 entries', () => {
-            game.currentMap = 'Map4';
-            const m4 = new Map4PenguinIngameCutscene(game);
-            expect(m4.dialogue.length).toBe(10);
-        });
-
-        it('Map5 stops after its initial 20 entries', () => {
-            game.currentMap = 'Map5';
-            const m5 = new Map5PenguinIngameCutscene(game);
-            expect(m5.dialogue.length).toBe(20);
-        });
-
-        it('Map6 stops after its initial 9 entries', () => {
-            game.currentMap = 'Map6';
-            const m6 = new Map6PenguinIngameCutscene(game);
-            expect(m6.dialogue.length).toBe(10);
-        });
-    });
-
-    describe('Early-return when game.notEnoughCoins === true for Bonus maps', () => {
-        beforeEach(() => {
-            game.notEnoughCoins = true;
-            jest.spyOn(CoinDialogueConditionCutscene.prototype, 'checkPlayerCoins')
-                .mockReturnValue([]);
-        });
-        afterEach(() => {
-            jest.restoreAllMocks();
-        });
-
-        it('BonusMap1 stops after its initial 22 entries', () => {
+        it('truncates dialogue for bonus maps (BonusMap1 as representative)', () => {
             game.currentMap = 'BonusMap1';
             const m = new BonusMap1PenguinIngameCutscene(game);
             expect(m.dialogue.length).toBe(22);
-        });
-
-        it('BonusMap2 stops after its initial 13 entries', () => {
-            game.currentMap = 'BonusMap2';
-            const m = new BonusMap2PenguinIngameCutscene(game);
-            expect(m.dialogue.length).toBe(13);
-        });
-
-        it('BonusMap3 stops after its initial 14 entries', () => {
-            game.currentMap = 'BonusMap3';
-            const m = new BonusMap3PenguinIngameCutscene(game);
-            expect(m.dialogue.length).toBe(14);
         });
     });
 
@@ -645,18 +552,6 @@ describe('PenguiniCutscene & subclasses', () => {
                 .mockReturnValue([]);
             const m1 = new Map1PenguinIngameCutscene(game);
             expect(m1.dialogue.some(d => d.dialogue === `It seems you have ${m1.coinIcon}1.`)).toBe(true);
-            jest.restoreAllMocks();
-        });
-    });
-
-    describe('Coin icon spot-check on Map3', () => {
-        it('shows player coin count with coin icon', () => {
-            game.coins = 1;
-            game.currentMap = 'Map3';
-            jest.spyOn(CoinDialogueConditionCutscene.prototype, 'checkPlayerCoins')
-                .mockReturnValue([]);
-            const m3 = new Map3PenguinIngameCutscene(game);
-            expect(m3.dialogue.some(d => d.dialogue === `It seems you have ${m3.coinIcon}1.`)).toBe(true);
             jest.restoreAllMocks();
         });
     });

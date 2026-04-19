@@ -5,7 +5,6 @@ export class InterfaceMenu extends BaseMenu {
         super(game, ["Compact UI", "Legacy UI", "Go Back"], "Interface Settings");
 
         this.menuInGame = false;
-        this.showStarsSticker = false;
 
         this._basePositionOffset = this.positionOffset;
         this._baseMenuOptionsPositionOffset = this.menuOptionsPositionOffset;
@@ -29,6 +28,7 @@ export class InterfaceMenu extends BaseMenu {
             : this._toIndex(arg, this._currentStyleIndex());
 
         this.menuInGame = inGame;
+        this.showStarsSticker = !inGame;
         this.positionOffset = this._basePositionOffset;
         this.menuOptionsPositionOffset = this._baseMenuOptionsPositionOffset;
 
@@ -47,17 +47,6 @@ export class InterfaceMenu extends BaseMenu {
         return {
             selectedOption: this.selectedOption ?? 0,
             menuInGame: this.menuInGame,
-        };
-    }
-
-    _canvasMouse(event) {
-        const rect = this.game.canvas.getBoundingClientRect();
-        const scaleX = this.game.canvas.width / rect.width;
-        const scaleY = this.game.canvas.height / rect.height;
-
-        return {
-            mouseX: (event.clientX - rect.left) * scaleX,
-            mouseY: (event.clientY - rect.top) * scaleY,
         };
     }
 
@@ -151,7 +140,7 @@ export class InterfaceMenu extends BaseMenu {
     handleMouseMove(event) {
         if (!this.menuActive || !this.game.canSelect || !this.game.canSelectForestMap) return;
 
-        const { mouseX, mouseY } = this._canvasMouse(event);
+        const { mouseX, mouseY } = this.canvasMouse(event);
         const cards = this._cardRects();
         const back = this._backRect();
 
@@ -166,7 +155,7 @@ export class InterfaceMenu extends BaseMenu {
         event.preventDefault();
         event.stopImmediatePropagation();
 
-        const { mouseX, mouseY } = this._canvasMouse(event);
+        const { mouseX, mouseY } = this.canvasMouse(event);
         const cards = this._cardRects();
         const back = this._backRect();
 
@@ -202,23 +191,6 @@ export class InterfaceMenu extends BaseMenu {
 
         this.game.audioHandler.menu.playSound("optionSelectedSound", false, true);
         this.game.goBackMenu();
-    }
-
-    _drawBackdrop(context) {
-        context.save();
-        if (!this.menuInGame) {
-            context.drawImage(this.backgroundImage, 0, 0, this.game.width, this.game.height);
-        } else {
-            const isPause = !!this.game.menu.pause?.isPaused;
-            const isGameOver = !!this.game.gameOver || !!this.game.menu.gameOver?.menuActive || !!this.game.notEnoughCoins;
-
-            if (isPause || isGameOver) {
-                const alpha = isPause ? 0.7 : (this.game.notEnoughCoins ? 0.5 : 0.2);
-                context.fillStyle = `rgba(0, 0, 0, ${alpha})`;
-                context.fillRect(0, 0, this.game.width, this.game.height);
-            }
-        }
-        context.restore();
     }
 
     _fillRoundedPanel(context, x, y, w, h, radius, borderWidth, borderColor, fillColor) {
@@ -340,18 +312,8 @@ export class InterfaceMenu extends BaseMenu {
     draw(context) {
         if (!this.menuActive) return;
 
-        this._drawBackdrop(context);
-
-        context.save();
-        context.font = 'bold 46px Love Ya Like A Sister';
-        context.fillStyle = 'white';
-        context.shadowColor = 'black';
-        context.shadowOffsetX = 3;
-        context.shadowOffsetY = 3;
-        context.textAlign = 'center';
-        context.fillText(this.title, this.game.width / 2, 96);
-
-        context.restore();
+        this.drawBackdrop(context);
+        this.drawTitle(context, 96);
 
         const cards = this._cardRects();
         const activeStyle = this.game.uiLayoutStyle === "legacy" ? "legacy" : "compact";
@@ -373,5 +335,9 @@ export class InterfaceMenu extends BaseMenu {
         context.shadowOffsetY = 2;
         context.fillText('Go Back', back.x + back.w / 2, back.y + back.h / 2);
         context.restore();
+
+        if (this.showStarsSticker && !this.menuInGame) {
+            this.drawStarsSticker(context);
+        }
     }
 }

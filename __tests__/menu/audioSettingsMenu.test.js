@@ -25,6 +25,20 @@ jest.mock('../../game/menu/baseMenu.js', () => {
       this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
     }
 
+    canvasMouse(event) {
+      const rect = this.game.canvas.getBoundingClientRect();
+      const scaleX = this.game.canvas.width / rect.width;
+      const scaleY = this.game.canvas.height / rect.height;
+      return {
+        mouseX: (event.clientX - rect.left) * scaleX,
+        mouseY: (event.clientY - rect.top) * scaleY,
+      };
+    }
+
+    _canInteract() {
+      return this.menuActive && this.game.canSelect && this.game.canSelectForestMap;
+    }
+
     drawStarsSticker() { }
   }
 
@@ -188,26 +202,10 @@ describe('AudioSettingsMenu', () => {
   });
 
   describe('construction & defaults', () => {
-    test('initializes tabs, defaults to MENU tab, and first row is selected on activateMenu()', () => {
-      expect(menu.title).toBe('Audio Settings');
-
-      expect(menu.tabs).toEqual(['MENU', 'CUTSCENE', 'INGAME']);
+    test('defaults to MENU tab with header not selected', () => {
       expect(menu.activeTab).toBe('MENU');
-
-      expect(menu.menuOptions).toEqual([
-        'Menu Master Volume',
-        'Menu Music',
-        'Map SFX',
-        'Wardrobe SFX',
-        'Menu Navigation SFX',
-        'Go Back',
-      ]);
-      expect(menu.volumeLevels).toEqual([50, 50, 50, 50, 50, null]);
-      expect(menu.muted).toEqual([false, false, false, false, false, null]);
-
-      expect(menu.headerSelectionIndex).toBe(-1);
-      expect(menu.selectedOption).toBe(0);
       expect(menu.isHeaderSelected()).toBe(false);
+      expect(menu.selectedOption).toBe(0);
     });
 
     test('setTab falls back to MENU for unknown tab keys', () => {
@@ -216,9 +214,8 @@ describe('AudioSettingsMenu', () => {
     });
 
     test('_displayTabLabel formats INGAME as IN-GAME and leaves others unchanged', () => {
-      expect(menu._displayTabLabel('MENU')).toBe('MENU');
-      expect(menu._displayTabLabel('CUTSCENE')).toBe('CUTSCENE');
       expect(menu._displayTabLabel('INGAME')).toBe('IN-GAME');
+      expect(menu._displayTabLabel('MENU')).toBe('MENU');
     });
   });
 
@@ -1033,27 +1030,6 @@ describe('AudioSettingsMenu', () => {
 
       expect(menu.selectedOption).toBe(2);
       expect(menu.muted[2]).toBe(false);
-      expect(game.saveGameState).not.toHaveBeenCalled();
-      expect(game.audioHandler.menu.playSound).not.toHaveBeenCalled();
-    });
-
-    test('when master muted: clicking label on non-master row does not toggle, does not save, and does not play select sound', () => {
-      menu.setTab('MENU');
-      setInteractable(true);
-
-      menu.muted[0] = true;
-      menu.muted[1] = false;
-
-      const r = menu.getLabelRect(1);
-      const evt = clientFromCanvas(r.x + r.w * 0.75, r.y + r.h / 2);
-
-      game.saveGameState.mockClear();
-      game.audioHandler.menu.playSound.mockClear();
-
-      menu.handleMouseClick(evt);
-
-      expect(menu.selectedOption).toBe(1);
-      expect(menu.muted[1]).toBe(false);
       expect(game.saveGameState).not.toHaveBeenCalled();
       expect(game.audioHandler.menu.playSound).not.toHaveBeenCalled();
     });

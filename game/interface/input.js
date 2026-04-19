@@ -5,8 +5,6 @@ export class InputHandler {
         this.game = game;
 
         this.keys = [];
-        this.arrowUpPressed = false;
-        this.arrowDownPressed = false;
         this.isJumpKeyPressed = false;
 
         this._defaultBindings = getDefaultKeyBindings();
@@ -100,9 +98,9 @@ export class InputHandler {
                 e.preventDefault();
             }
 
-            if (lowercaseKey === 'm') {
-                //this.game.debug = !this.game.debug;
-            }
+            // if (lowercaseKey === 'm') {
+            //     this.game.debug = !this.game.debug;
+            // }
 
             if (
                 lowercaseKey === jumpNorm &&
@@ -175,10 +173,6 @@ export class InputHandler {
             if (this.isMappedGameplayKey(lowercaseKey)) {
                 const idx = this.keys.indexOf(lowercaseKey);
                 if (idx !== -1) this.keys.splice(idx, 1);
-            } else if (lowercaseKey === 'arrowup') {
-                this.arrowUpPressed = false;
-            } else if (lowercaseKey === 'arrowdown') {
-                this.arrowDownPressed = false;
             }
         });
 
@@ -209,7 +203,7 @@ export class InputHandler {
         });
 
         document.addEventListener('auxclick', (event) => {
-            if (event.button === 4 || event.button === 4) {
+            if (event.button === 3 || event.button === 4) {
                 event.preventDefault();
             }
         });
@@ -236,6 +230,10 @@ export class InputHandler {
                 }
             }
         });
+    }
+
+    clearAll() {
+        this.keys = [];
     }
 
     // helpers

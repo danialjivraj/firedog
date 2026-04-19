@@ -1,28 +1,11 @@
 import { Player } from "./entities/player.js";
-import { preShake, postShake } from './animations/shake.js';
 import { DistortionEffect } from "./animations/distortion.js";
 import { SpinningChicks } from "./animations/particles.js";
-import { RecordToast } from "./animations/recordToast.js";
-import { formatTimeMs } from "./config/formatTime.js";
-import {
-    Goblin,
-    Dotter, Vertibat, Moonsect, Lunny, MeatSoldier, Skulnap, Abyssaw, GlidoSpike, Geargle,
-    DuskPlant, Silknoir, Skelly, WalterTheGhost, Ben, Gloomlet, Dolly,
-    Razorfin, SkeletonFish, SpearFish, JetFish, Piper, Jellion, Voltzeel, Garry,
-    Sluggie, BigGreener, Chiquita, Fofinha, LilHornet, KarateCroco, Bramble, Jerry, Vinelash,
-    Snailey, Citrifly, Berrifly, LazyMosquito, LeafSlug, Sunflora, Eggry, AngryBee, Bee, Strawspider,
-    Toxhop, Venflora, Virefly, Larvox, Venarach, Mycora, Toxwing, Venoblitz, Woxin,
-    Cactrix, Blazice, Magmapod, Volcanurtle, VolcanoWasp, Scorvex, EmberFly, Bloburn, Scorble, Lavaryn,
-    IceSilknoir, CrystalWasp, IcePlant, Globby, Cryopede, DrillIce, Frostling, Frobat,
-    Wardrake, Sigilfly, Mawrune, Golex, Voidserp, Oozel, Runecko, Runespider, Sigilash,
-    Plazer, Veynoculus, Crabula, Johnny, Spindle, Borion, Vespion, Nebulure, Oculith, Lancer, Astraider, Frogula,
-    ImmobileGroundEnemy,
-} from "./entities/enemies/enemies.js";
-import {
-    RedPotion, BluePotion, Hourglass, HealthLive, Coin, OxygenTank,
-    BlackHole, Cauldron, IceDrink, IceCube, Confuse, DeadSkull, CarbonDioxideTank,
-    RandomPower
-} from "./entities/powerUpAndDown.js";
+import { AnimatedToast } from "./interface/animatedToast.js";
+import { formatTimeMs } from "./utils/formatTime.js";
+import { ImmobileGroundEnemy } from "./entities/enemies/enemies.js";
+import { POWER_UP_SPAWN_CONFIG, POWER_DOWN_SPAWN_CONFIG } from "./config/itemSpawnConfig.js";
+import { PENGUIN_CUTSCENES, END_CUTSCENES, BOSS_CUTSCENE_CONFIGS, CABIN_ENTRANCE_OVERRIDES } from "./config/cutsceneConfig.js";
 // ingame
 import { Reset } from "./reset.js";
 import { PauseMenu } from "./menu/pauseMenu.js";
@@ -31,13 +14,12 @@ import { GameOverMenu } from "./menu/gameOverMenu.js";
 import { InputHandler } from "./interface/input.js";
 import { UI } from "./interface/UI.js";
 import { Tutorial } from "./interface/tutorial.js";
-import { Map3, Map7, BonusMap1, BonusMap3 } from "./background/background.js";
 // menus
 import { MainMenu } from "./menu/mainMenu.js";
 import { DifficultyMenu } from "./menu/difficultyMenu.js";
 import { ForestMapMenu } from "./menu/forestMap.js";
-import { HowToPlayMenu } from "./menu/howToPlayMenu.js";
-import { Wardrobe } from "./menu/wardrobeMenu.js";
+import { HowToPlayMenu } from "./menu/howToPlay/howToPlayMenu.js";
+import { Wardrobe } from "./menu/wardrobe/wardrobeMenu.js";
 import { RecordsMenu } from "./menu/recordsMenu.js";
 import { DeleteProgress, DeleteProgress2 } from "./menu/deleteProgress.js";
 import { SettingsMenu } from "./menu/settingsMenu.js";
@@ -53,39 +35,30 @@ import {
 // animations
 import { fadeIn } from "./animations/fading.js";
 import { screenColourFadeIn, screenColourFadeOut } from "./animations/screenColourFade.js";
-// cutscenes
-import {
-    Map1EndCutscene, Map2EndCutscene, Map3EndCutscene,
-    Map4EndCutscene, Map5EndCutscene, Map6EndCutscene, Map7EndCutscene,
-    BonusMap1EndCutscene, BonusMap2EndCutscene, BonusMap3EndCutscene
-} from "./cutscene/storyCutscenes.js";
-import {
-    Map1PenguinIngameCutscene, Map2PenguinIngameCutscene, Map3PenguinIngameCutscene,
-    Map4PenguinIngameCutscene, Map5PenguinIngameCutscene, Map6PenguinIngameCutscene, Map7PenguinIngameCutscene,
-    BonusMap1PenguinIngameCutscene, BonusMap2PenguinIngameCutscene, BonusMap3PenguinIngameCutscene,
-} from "./cutscene/penguiniCutscenes.js";
-import {
-    Map7ElyvorgIngameCutsceneBeforeFight,
-    Map7ElyvorgIngameCutsceneAfterFight
-} from "./cutscene/elyvorgCutscenes.js";
-import {
-    BonusMap1GlacikalIngameCutsceneBeforeFight,
-    BonusMap1GlacikalIngameCutsceneAfterFight
-} from "./cutscene/glacikalCutscenes.js";
-import {
-    BonusMap3NTharaxIngameCutsceneBeforeFight,
-    BonusMap3NTharaxIngameCutsceneAfterFight
-} from "./cutscene/ntharaxCutscene.js";
 import { EnemyLore } from "./menu/enemyLore.js";
 import {
     saveGameState as persistGameState,
     loadGameState as restoreGameState,
     clearSavedData as resetPersistedData
 } from "./persistence/gamePersistence.js";
-import { BossManager } from "./entities/enemies/bossManager.js";
-import { SKINS } from "./config/skinsAndCosmetics.js";
+import { BossManager } from "./entities/enemies/bosses/bossManager.js";
+import { SKINS, GIFT_SKINS } from "./config/skinsAndCosmetics.js";
 import { MenuNavigator } from "./menu/menuNavigator.js";
-import { CoinConvertToast } from "./animations/coinConvertToast.js";
+import { CoinConvertToast } from "./interface/coinConvertToast.js";
+import { getEnemySpawnConfig } from "./config/enemySpawnConfig.js";
+import {
+    NORMAL_SPEED, GROUND_MARGIN, MAX_TIME_UNDERWATER_MS,
+    MAX_PARTICLES, MAX_ENEMIES,
+    ENEMY_INTERVAL_MS, NON_ENEMY_INTERVAL_MS,
+    GameState, FULL_ENERGY,
+    ENEMY_SPAWN_DISTANCE_BUFFER, ITEM_SPAWN_DISTANCE_BUFFER,
+    MAX_CREDIT_COINS, TOAST_Y,
+    CABIN_COLLISION_OFFSET, PENGUIN_OFFSET_FROM_CABIN,
+    CUTSCENE_INPUT_DEBOUNCE_MS, LOOPING_SOUND_FADE_OUT_MS,
+    MAX_DISTANCE, WINNING_COINS,
+} from "./config/constants.js";
+
+export { GameState };
 
 export class Game {
     constructor(canvas, width, height) {
@@ -94,22 +67,22 @@ export class Game {
         this.height = height;
         // general
         this.speed = 0;
-        this.normalSpeed = 6;
-        this.groundMargin = 40;
-        this.maxDistance = 100;
-        this.winningCoins = 100;
+        this.normalSpeed = NORMAL_SPEED;
+        this.groundMargin = GROUND_MARGIN;
+        this.maxDistance = MAX_DISTANCE;
+        this.winningCoins = WINNING_COINS;
         this.coins = 0;
         this.notEnoughCoins = false;
         this.surplusCoins = 0;
         this.time = 0;
         this.hiddenTime = 0;
-        this.maxTimeUnderwater = 450000;
-        this.maxParticles = 210;
-        this.maxEnemies = 6;
+        this.maxTimeUnderwater = MAX_TIME_UNDERWATER_MS;
+        this.maxParticles = MAX_PARTICLES;
+        this.maxEnemies = MAX_ENEMIES;
         this.enemyTimer = 0;
-        this.enemyInterval = 1000;
+        this.enemyInterval = ENEMY_INTERVAL_MS;
         this.nonEnemyTimer = 0;
-        this.nonEnemyInterval = 1000;
+        this.nonEnemyInterval = NON_ENEMY_INTERVAL_MS;
         this.invisibleColourOpacity = 0;
         this.gameOver = false;
         this.debug = false;
@@ -210,16 +183,23 @@ export class Game {
         this.particles = [];
         this.collisions = [];
         this.floatingMessages = [];
-        this.cabins = [];
-        this.penguins = [];
         this.cutscenes = [];
-        this.recordToasts = [];
+        this.animatedToasts = [];
+        // cabin / penguin spawn state
+        this.cabinAppeared = false;
+        this.penguinAppeared = false;
+        this.fixedCabinX = 0;
+        this.fixedPenguinX = 0;
+        // deferred toasts
+        this._pendingClearToast = null;
+        this._animatedToastTimeoutId = null;
         // cutscene
         this.cutsceneActive = false;
         this.currentCutscene = null;
         this.enterDuringBackgroundTransition = true;
         this.isEndCutscene = false;
         this.fadingIn = false;
+        this.fadingInInitiated = false;
         this.waitForFadeInOpacity = false;
         this.ignoreCutsceneInputUntil = 0;
         this.pauseContext = 'gameplay';
@@ -229,9 +209,6 @@ export class Game {
         this.talkToPenguinOneTimeOnly = true;
         // boss
         this.bossManager = new BossManager(this);
-        this.bossTime = 0;
-        this._bossFightWasActive = false;
-        this._bossDefeatRecorded = false;
         // shake
         this.shakeActive = false;
         this.shakeTimer = 0;
@@ -270,9 +247,17 @@ export class Game {
         this.currentCutscene = cutscene;
     }
 
+    launchCutscene(CutsceneClass) {
+        const cutscene = new CutsceneClass(this);
+        this.startCutscene(cutscene);
+        cutscene.displayDialogue();
+        this.cutscenes.push(cutscene);
+        return cutscene;
+    }
+
     showMetaToast(text, delayMs = 200) {
         setTimeout(() => {
-            this.metaToasts.push(new RecordToast(this, text, { y: 100 }));
+            this.metaToasts.push(new AnimatedToast(this, text, { y: TOAST_Y }));
             this.audioHandler.mapSoundtrack.playSound('newRecordSound', false, true);
         }, Math.max(0, delayMs));
     }
@@ -292,29 +277,18 @@ export class Game {
     }
 
     announceGiftSkins({ delayMs = 450 } = {}) {
-        const giftSkins = [
-            { key: 'iceBreakerSkin', flag: 'glacikalDefeated' },
-            { key: 'infernalSkin', flag: 'elyvorgDefeated' },
-            { key: 'galaxySkin', flag: 'ntharaxDefeated' },
-        ];
-
         let announcedAny = false;
 
-        for (const gift of giftSkins) {
+        for (const gift of GIFT_SKINS) {
             if (!this[gift.flag]) continue;
             if (this._announcedGiftSkins[gift.key]) continue;
 
             this._announcedGiftSkins[gift.key] = true;
             announcedAny = true;
 
-            const label = SKINS?.[gift.key]?.label ?? gift.key;
-            const giftLabelColorByKey = {
-                iceBreakerSkin: "cyan",
-                infernalSkin: "orangered",
-                galaxySkin: "violet",
-            };
-
-            const labelFill = giftLabelColorByKey[gift.key] || "yellow";
+            const skin = SKINS[gift.key];
+            const label = skin?.label ?? gift.key;
+            const labelFill = skin?.giftColor ?? "yellow";
 
             this.showMetaToast([
                 [{ text: "NEW SKIN UNLOCKED!", fill: "yellow" }],
@@ -340,13 +314,10 @@ export class Game {
         this.currentCutscene = null;
         this.pauseContext = 'gameplay';
         this.currentMenu = null;
-        if (this.input) {
-            this.input.keys = [];
-            this.input.arrowUpPressed = false;
-            this.input.arrowDownPressed = false;
-        }
+        if (this.input) this.input.clearAll();
         if (
-            this.player.x + this.player.width >= this.cabin.x + 190 &&
+            this.cabin &&
+            this.player.x + this.player.width >= this.cabin.x + CABIN_COLLISION_OFFSET &&
             this.player.x <= this.cabin.x + this.cabin.width
         ) {
             this.reset();
@@ -354,7 +325,7 @@ export class Game {
             if (wasEndCutscene) {
                 this.announceEndCutsceneRewards({ delayMs: 450 });
             }
-            if (!(this.background instanceof Map7)) {
+            if (this.currentMap !== 'Map7') {
                 this.canSelectForestMap = false;
                 this.nav.root = this.menu.main;
                 this.nav.stack = [{ menu: this.menu.main, state: this.menu.main.getNavState() }];
@@ -370,39 +341,7 @@ export class Game {
                             ? this.background.constructor.name
                             : null;
 
-                    const targetIndexByMap = {
-                        Map1: 1,
-                        Map2: 2,
-                        Map3: 3,
-                        Map4: 4,
-                        Map5: 5,
-                        Map6: 6,
-                        BonusMap1: 1,
-                        BonusMap2: 9,
-                        BonusMap3: 3,
-                    };
-
-                    let nextIndex =
-                        bgName && bgName in targetIndexByMap
-                            ? targetIndexByMap[bgName]
-                            : this.menu.forestMap.selectedCircleIndex + 1;
-
-                    const maxIdx = this.menu.forestMap.circleOptions.length - 1;
-                    nextIndex = Math.max(0, Math.min(maxIdx, nextIndex));
-
-                    const isUnlocked = (idx) => {
-                        if (idx === 7) return !!this.bonusMap1Unlocked;
-                        if (idx === 8) return !!this.bonusMap2Unlocked;
-                        if (idx === 9) return !!this.bonusMap3Unlocked;
-                        if (idx >= 0 && idx <= 6) return !!this[`map${idx + 1}Unlocked`];
-                        return false;
-                    };
-
-                    if (isUnlocked(nextIndex)) {
-                        this.menu.forestMap.selectedCircleIndex = nextIndex;
-                    }
-
-                    this.audioHandler.menu.playSound("optionHoveredSound", false, true);
+                    this.menu.forestMap.selectNextAfterClear(bgName);
                 }, 4000);
             } else {
                 this.menu.main.showSavingSprite = true;
@@ -424,11 +363,7 @@ export class Game {
         this.currentMenu = null;
         this.cutscenes = [];
 
-        if (this.input) {
-            this.input.keys = [];
-            this.input.arrowUpPressed = false;
-            this.input.arrowDownPressed = false;
-        }
+        if (this.input) this.input.clearAll();
     }
 
     restartActiveCutscene() {
@@ -445,7 +380,7 @@ export class Game {
         this.startCutscene(fresh);
         fresh.displayDialogue();
 
-        this.ignoreCutsceneInputUntil = performance.now() + 250;
+        this.ignoreCutsceneInputUntil = performance.now() + CUTSCENE_INPUT_DEBOUNCE_MS;
     }
 
     exitCutsceneToMainMenu() {
@@ -503,15 +438,15 @@ export class Game {
         this.shakeDuration = 0;
     }
 
-    showRecordToast(text, delayMs = 200) {
-        if (this._recordToastTimeoutId) {
-            clearTimeout(this._recordToastTimeoutId);
-            this._recordToastTimeoutId = null;
+    showAnimatedToast(text, delayMs = 200) {
+        if (this._animatedToastTimeoutId) {
+            clearTimeout(this._animatedToastTimeoutId);
+            this._animatedToastTimeoutId = null;
         }
 
-        this._recordToastTimeoutId = setTimeout(() => {
-            this._recordToastTimeoutId = null;
-            this.recordToasts.push(new RecordToast(this, text, { y: 100 }));
+        this._animatedToastTimeoutId = setTimeout(() => {
+            this._animatedToastTimeoutId = null;
+            this.animatedToasts.push(new AnimatedToast(this, text, { y: TOAST_Y }));
             this.audioHandler.mapSoundtrack.playSound('newRecordSound', false, true);
         }, Math.max(0, delayMs));
     }
@@ -534,33 +469,11 @@ export class Game {
     }
 
     resetBossTimer() {
-        this.bossTime = 0;
-        this._bossFightWasActive = false;
-        this._bossDefeatRecorded = false;
+        this.bossManager.resetBossTimer();
     }
 
     onBossDefeated(bossId) {
-        if (this._bossDefeatRecorded) return;
-        this._bossDefeatRecorded = true;
-
-        if (!this.hasMetWinningCoins()) return;
-
-        const mapKey = this.currentMap;
-        if (!mapKey || !this.records || !this.records[mapKey]) return;
-
-        const newMs = Math.max(0, Math.floor(this.bossTime));
-        const prev = this.records[mapKey].bossMs;
-
-        if (prev == null || newMs < prev) {
-            this.records[mapKey].bossMs = newMs;
-            this.saveGameState();
-
-            const t = formatTimeMs(newMs, 2);
-            this.showRecordToast([
-                [{ text: "NEW RECORD!", fill: "yellow" }],
-                [{ text: "FINAL BOSS BEATEN IN ", fill: "yellow" }, { text: t, fill: "orange" }],
-            ], 1000);
-        }
+        this.bossManager.onBossDefeated(bossId);
     }
 
     updateBestFullClearRecord() {
@@ -588,6 +501,13 @@ export class Game {
         this.resetInstance.reset(opts);
     }
 
+    get bossTime() {
+        return this.bossManager.bossTime;
+    }
+    set bossTime(v) {
+        this.bossManager.bossTime = v;
+    }
+
     get hasActiveBoss() {
         return this.bossManager.hasActiveBoss;
     }
@@ -598,6 +518,21 @@ export class Game {
         return this.bossManager.bossInFight;
     }
 
+    get gameState() {
+        if (this.cutsceneActive && !this.talkToPenguin && !(this.boss && this.boss.talkToBoss)) {
+            return GameState.CUTSCENE;
+        }
+        if (this.currentMenu && this.currentMenu.menuInGame === false) {
+            return GameState.MENU;
+        }
+        if (this.isPlayerInGame) {
+            return GameState.GAMEPLAY;
+        }
+        return GameState.MENU;
+    }
+
+    // ------------------------------------------------------------ Update ------------------------------------------------------------
+
     update(deltaTime) {
         if (
             this.background &&
@@ -607,8 +542,7 @@ export class Game {
             this.currentMap = this.background.constructor.name;
         }
 
-        const tutorialMapActive =
-            this.isTutorialActive && this.currentMap === "Map1";
+        const tutorialMapActive = this.isTutorialActive && this.currentMap === "Map1";
         if (tutorialMapActive) {
             this.tutorial.update(deltaTime);
             this.noDamageDuringTutorial = true;
@@ -618,312 +552,231 @@ export class Game {
         }
 
         if (!this.menu.pause.isPaused && this.tutorial.tutorialPause === false) {
-            const fightActive = this.bossManager && this.bossManager.bossInFight;
-
-            if (fightActive && !this._bossFightWasActive) {
-                this.bossTime = 0;
-                this._bossDefeatRecorded = false;
-                this._bossFightWasActive = true;
-            }
-
-            if (fightActive && !this.gameOver) {
-                this.bossTime += deltaTime;
-            }
-
-            if (!fightActive && this._bossFightWasActive) {
-                this._bossFightWasActive = false;
-            }
-
-            if (this.cabin && this.cabin.isFullyVisible) {
-                if (!this._fullClearRecorded && this.hasMetWinningCoins()) {
-                    this._fullClearRecorded = true;
-                    this.updateBestFullClearRecord();
-                }
-            } else if (!this.gameOver) {
-                this.time += deltaTime;
-                if (this.time > this.maxTimeUnderwater && this.player.isUnderwater) {
-                    this.audioHandler.firedogSFX.playSound('gettingHit', false, true);
-                    this.gameOver = true;
-                }
-            } else {
-                this.speed = 0;
-            }
-
+            this._updateBossTimers(deltaTime);
+            this._updateGameTimers(deltaTime);
             if (this.background) this.background.update(deltaTime);
-
-            if (!this.cabin || !this.cabin.isFullyVisible) {
-                // enemy
-                if (this.enemyTimer > this.enemyInterval) {
-                    if (!tutorialMapActive) {
-                        this.addEnemy();
-                    }
-                    this.enemyTimer = 0;
-                } else {
-                    this.enemyTimer += deltaTime;
-                }
-                // other entities
-                if (this.nonEnemyTimer > this.nonEnemyInterval) {
-                    if (!tutorialMapActive) {
-                        this.addPowerUp();
-                        this.addPowerDown();
-                    }
-                    this.addCabin();
-                    this.addPenguin();
-                    this.nonEnemyTimer = 0;
-                } else {
-                    this.nonEnemyTimer += deltaTime;
-                }
-            }
-
-            this.hiddenTime += deltaTime; // hiddenTime doesn't stop when player dies
-
-            if (this.shakeActive && this.shakeDuration > 0) {
-                this.shakeTimer += deltaTime;
-                if (this.shakeTimer >= this.shakeDuration) {
-                    this.stopShake();
-                }
-            }
-
+            this._updateSpawnTimers(deltaTime, tutorialMapActive);
+            this.hiddenTime += deltaTime;
+            this._updateShakeTimer(deltaTime);
             this.player.update(this.input.keys, deltaTime);
             this.coins = Math.max(0, this.coins);
-
-            // handle power up
-            this.powerUps.forEach((powerUp) => {
-                powerUp.update(deltaTime);
-            });
-            // handle power down
-            this.powerDowns.forEach((powerDown) => {
-                powerDown.update(deltaTime);
-            });
-            // handle enemies
-            this.enemies.forEach((enemy) => {
-                enemy.update(deltaTime);
-            });
-            // handle messages
-            this.floatingMessages.forEach((message) => {
-                message.update(deltaTime);
-            });
-
-            // handle record toasts
-            this.recordToasts.forEach((t) => t.update(deltaTime));
-
-            // handle cabin
-            this.cabins.forEach((cabin) => {
-                cabin.update(deltaTime);
-            });
-            // handle penguin
-            this.penguins.forEach((penguin) => {
-                penguin.update(deltaTime);
-            });
-            // handle particles behind the player
-            this.behindPlayerParticles.forEach((behindPlayerParticle) => {
-                behindPlayerParticle.update(deltaTime);
-            });
-            // handle particles
-            this.particles.forEach((particle) => {
-                particle.update(deltaTime);
-            });
-            if (this.particles.length > this.maxParticles) {
-                const keep = [];
-                const evictable = [];
-                for (const p of this.particles) {
-                    if (p instanceof SpinningChicks) keep.push(p);
-                    else evictable.push(p);
-                }
-                const roomForEvictable = Math.max(0, this.maxParticles - keep.length);
-                this.particles = keep.concat(evictable.slice(0, roomForEvictable));
-            }
-            // handle collision sprites
-            this.collisions.forEach((collision) => {
-                collision.update(deltaTime);
-            });
-            // removes marked entities, stops looping sounds for enemy types no longer present
-            const removedEnemies = this.enemies.filter((e) => e.markedForDeletion);
-            this.enemies = this.enemies.filter((e) => !e.markedForDeletion);
-            for (const enemy of removedEnemies) {
-                if (!enemy.loopingSoundId) continue;
-                if (this.enemies.some((e) => e.loopingSoundId === enemy.loopingSoundId)) continue;
-                if (enemy.loopingSoundFadeOut) {
-                    if (this.audioHandler.enemySFX.isPlaying(enemy.loopingSoundId)) {
-                        this.audioHandler.enemySFX.fadeOutAndStop(enemy.loopingSoundId, 2000);
-                    }
-                } else {
-                    this.audioHandler.enemySFX.stopSound(enemy.loopingSoundId);
-                }
-            }
-            this.powerUps = this.powerUps.filter(
-                (powerUp) => !powerUp.markedForDeletion
-            );
-            this.powerDowns = this.powerDowns.filter(
-                (powerDown) => !powerDown.markedForDeletion
-            );
-            this.behindPlayerParticles = this.behindPlayerParticles.filter(
-                (behindPlayerParticle) => !behindPlayerParticle.markedForDeletion
-            );
-            this.particles = this.particles.filter(
-                (particle) => !particle.markedForDeletion
-            );
-            this.collisions = this.collisions.filter(
-                (collision) => !collision.markedForDeletion
-            );
-            this.floatingMessages = this.floatingMessages.filter(
-                (message) => !message.markedForDeletion
-            );
-            this.recordToasts = this.recordToasts.filter((t) => !t.markedForDeletion);
-
-            // penguin cutscenes
-            if (
-                this.talkToPenguin &&
-                this.talkToPenguinOneTimeOnly &&
-                this.enterToTalkToPenguin
-            ) {
-                this.enterToTalkToPenguin = false;
-                const mapCutsceneMapping = {
-                    Map1: Map1PenguinIngameCutscene,
-                    Map2: Map2PenguinIngameCutscene,
-                    Map3: Map3PenguinIngameCutscene,
-                    Map4: Map4PenguinIngameCutscene,
-                    Map5: Map5PenguinIngameCutscene,
-                    Map6: Map6PenguinIngameCutscene,
-                    Map7: Map7PenguinIngameCutscene,
-                    BonusMap1: BonusMap1PenguinIngameCutscene,
-                    BonusMap2: BonusMap2PenguinIngameCutscene,
-                    BonusMap3: BonusMap3PenguinIngameCutscene,
-                };
-                const mapConstructor = mapCutsceneMapping[this.currentMap];
-                if (mapConstructor) {
-                    const cutscene = new mapConstructor(this);
-                    this.startCutscene(cutscene);
-                    cutscene.displayDialogue();
-                    this.cutscenes.push(cutscene);
-                }
-            }
-
-            // boss in-game cutscenes (before/after fight)
-            if (
-                this.background &&
-                this.hasActiveBoss &&
-                this.isBossVisible &&
-                this.player.x <= 0
-            ) {
-                const boss = this.boss;
-
-                const configs = [
-                    {
-                        mapClass: BonusMap1,
-                        bossId: "glacikal",
-                        beforeCutscene: BonusMap1GlacikalIngameCutsceneBeforeFight,
-                        afterCutscene: BonusMap1GlacikalIngameCutsceneAfterFight,
-                    },
-                    {
-                        mapClass: BonusMap3,
-                        bossId: "ntharax",
-                        beforeCutscene: BonusMap3NTharaxIngameCutsceneBeforeFight,
-                        afterCutscene: BonusMap3NTharaxIngameCutsceneAfterFight,
-                    },
-                    {
-                        mapClass: Map7,
-                        bossId: "elyvorg",
-                        beforeCutscene: Map7ElyvorgIngameCutsceneBeforeFight,
-                        afterCutscene: Map7ElyvorgIngameCutsceneAfterFight,
-                    },
-                ];
-
-                for (const cfg of configs) {
-                    if (!(this.background instanceof cfg.mapClass)) continue;
-                    if (boss.id !== cfg.bossId) continue;
-
-                    if (boss.dialogueBeforeOnce) {
-                        boss.preFight = true;
-                        boss.postFight = false;
-                        boss.dialogueBeforeOnce = false;
-
-                        this.player.clearAllStatusEffects();
-                        this.player.energy = 100;
-                        const targetLives = this.menu.difficulty.getConfiguredLives();
-                        if (this.player.lives < targetLives) {
-                            this.player.lives = targetLives;
-                        }
-
-                        this.UI.dismissTip();
-
-                        const cutscene = new cfg.beforeCutscene(this);
-                        this.startCutscene(cutscene);
-                        cutscene.displayDialogue();
-                        this.cutscenes.push(cutscene);
-                        break;
-                    }
-
-                    if (boss.dialogueAfterOnce && boss.startAfterDialogueWhenAnimEnds) {
-                        boss.preFight = false;
-                        boss.postFight = true;
-                        boss.dialogueAfterOnce = false;
-                        boss.dialogueAfterLeaving = true;
-
-                        this.player.energy = 100;
-
-                        const cutscene = new cfg.afterCutscene(this);
-                        this.startCutscene(cutscene);
-                        cutscene.displayDialogue();
-                        this.cutscenes.push(cutscene);
-                        break;
-                    }
-                }
-            }
-
-            // end cutscenes after each map
-            this.enterCabin = 290;
-            this.openDoor = "doorOpening";
-            if (this.background instanceof Map3) {
-                this.openDoor = "submarineDoorOpening";
-            } else if (this.background instanceof Map7) {
-                this.enterCabin = 570;
-                this.openDoor = "walkingCutsceneSound";
-            }
-            if (
-                this.cabin &&
-                this.player.x + this.player.width >= this.cabin.x + this.enterCabin &&
-                this.player.x <= this.cabin.x + this.cabin.width &&
-                this.cabin.isFullyVisible
-            ) {
-                const coinsNow = Math.max(0, Math.floor(this.coins));
-                if (coinsNow > 0) {
-                    const MAX_CC = 999;
-                    const before = Math.max(0, Math.floor(this.creditCoins || 0));
-                    this.creditCoins = Math.min(MAX_CC, before + coinsNow);
-                    this._pendingCoinConvertAmount = this.creditCoins - before;
-                    this.saveGameState();
-                }
-
-                this.audioHandler.cutsceneSFX.playSound(this.openDoor);
-                this.audioHandler.firedogSFX.stopAllSounds();
-
-                const mapCutsceneMapping = {
-                    Map1: Map1EndCutscene,
-                    Map2: Map2EndCutscene,
-                    Map3: Map3EndCutscene,
-                    Map4: Map4EndCutscene,
-                    Map5: Map5EndCutscene,
-                    Map6: Map6EndCutscene,
-                    Map7: Map7EndCutscene,
-                    BonusMap1: BonusMap1EndCutscene,
-                    BonusMap2: BonusMap2EndCutscene,
-                    BonusMap3: BonusMap3EndCutscene,
-                };
-
-                const mapConstructor = mapCutsceneMapping[this.currentMap];
-                if (mapConstructor) {
-                    this.isEndCutscene = true;
-                    this.isPlayerInGame = false;
-                    const cutscene = new mapConstructor(this);
-                    this.startCutscene(cutscene);
-                    cutscene.displayDialogue();
-                }
-            }
+            this._updateEntities(deltaTime);
+            this._cleanupEntities();
+            this._checkPenguinCutscene();
+            this._checkBossCutscenes();
+            this._checkCabinEntrance();
             if (this.distortionActive || this.distortionEffect.amount > 0.01) {
                 this.distortionEffect.update(deltaTime);
             }
         }
+
+        this._updateScreenEffects();
+    }
+
+    _updateBossTimers(deltaTime) {
+        this.bossManager.updateBossTimers(deltaTime);
+    }
+
+    _updateGameTimers(deltaTime) {
+        if (this.cabin && this.cabin.isFullyVisible) {
+            if (!this._fullClearRecorded && this.hasMetWinningCoins()) {
+                this._fullClearRecorded = true;
+                this.updateBestFullClearRecord();
+            }
+        } else if (!this.gameOver) {
+            this.time += deltaTime;
+            if (this.time > this.maxTimeUnderwater && this.player.isUnderwater) {
+                this.audioHandler.firedogSFX.playSound('gettingHit', false, true);
+                this.gameOver = true;
+            }
+        } else {
+            this.speed = 0;
+        }
+    }
+
+    _updateSpawnTimers(deltaTime, tutorialMapActive) {
+        if (this.cabin && this.cabin.isFullyVisible) return;
+
+        if (this.enemyTimer > this.enemyInterval) {
+            if (!tutorialMapActive) this.addEnemy();
+            this.enemyTimer = 0;
+        } else {
+            this.enemyTimer += deltaTime;
+        }
+
+        if (this.nonEnemyTimer > this.nonEnemyInterval) {
+            if (!tutorialMapActive) {
+                this.addPowerUp();
+                this.addPowerDown();
+            }
+            if (this.background && this.background.totalDistanceTraveled >= this.maxDistance) {
+                if (!this.cabinAppeared) {
+                    this.cabinAppeared = true;
+                    this.fixedCabinX = this.width - this.cabin.width;
+                }
+                if (!this.penguinAppeared) {
+                    this.penguinAppeared = true;
+                    this.fixedPenguinX = this.width - this.cabin.width - PENGUIN_OFFSET_FROM_CABIN;
+                    this.talkToPenguin = true;
+                }
+            }
+            this.nonEnemyTimer = 0;
+        } else {
+            this.nonEnemyTimer += deltaTime;
+        }
+    }
+
+    _updateShakeTimer(deltaTime) {
+        if (this.shakeActive && this.shakeDuration > 0) {
+            this.shakeTimer += deltaTime;
+            if (this.shakeTimer >= this.shakeDuration) {
+                this.stopShake();
+            }
+        }
+    }
+
+    _updateEntities(deltaTime) {
+        this.powerUps.forEach(p => p.update(deltaTime));
+        this.powerDowns.forEach(p => p.update(deltaTime));
+        this.enemies.forEach(e => e.update(deltaTime));
+        this.floatingMessages.forEach(m => m.update(deltaTime));
+        this.animatedToasts.forEach(t => t.update(deltaTime));
+        if (this.cabinAppeared && this.cabin) this.cabin.update(deltaTime);
+        if (this.penguinAppeared && this.penguini) this.penguini.update(deltaTime);
+        this.behindPlayerParticles.forEach(p => p.update(deltaTime));
+        this.particles.forEach(p => p.update(deltaTime));
+
+        if (this.particles.length > this.maxParticles) {
+            const keep = [];
+            const evictable = [];
+            for (const p of this.particles) {
+                if (p instanceof SpinningChicks) keep.push(p);
+                else evictable.push(p);
+            }
+            const roomForEvictable = Math.max(0, this.maxParticles - keep.length);
+            this.particles = keep.concat(evictable.slice(0, roomForEvictable));
+        }
+
+        this.collisions.forEach(c => c.update(deltaTime));
+    }
+
+    _cleanupEntities() {
+        const removedEnemies = this.enemies.filter(e => e.markedForDeletion);
+        this.enemies = this.enemies.filter(e => !e.markedForDeletion);
+        for (const enemy of removedEnemies) {
+            if (!enemy.loopingSoundId) continue;
+            if (this.enemies.some(e => e.loopingSoundId === enemy.loopingSoundId)) continue;
+            if (enemy.loopingSoundFadeOut) {
+                if (this.audioHandler.enemySFX.isPlaying(enemy.loopingSoundId)) {
+                    this.audioHandler.enemySFX.fadeOutAndStop(enemy.loopingSoundId, LOOPING_SOUND_FADE_OUT_MS);
+                }
+            } else {
+                this.audioHandler.enemySFX.stopSound(enemy.loopingSoundId);
+            }
+        }
+
+        this.powerUps = this.powerUps.filter(p => !p.markedForDeletion);
+        this.powerDowns = this.powerDowns.filter(p => !p.markedForDeletion);
+        this.behindPlayerParticles = this.behindPlayerParticles.filter(p => !p.markedForDeletion);
+        this.particles = this.particles.filter(p => !p.markedForDeletion);
+        this.collisions = this.collisions.filter(c => !c.markedForDeletion);
+        this.floatingMessages = this.floatingMessages.filter(m => !m.markedForDeletion);
+        this.animatedToasts = this.animatedToasts.filter(t => !t.markedForDeletion);
+    }
+
+    _checkPenguinCutscene() {
+        if (!this.talkToPenguin || !this.talkToPenguinOneTimeOnly || !this.enterToTalkToPenguin) return;
+
+        this.enterToTalkToPenguin = false;
+        const CutsceneClass = PENGUIN_CUTSCENES[this.currentMap];
+        if (CutsceneClass) this.launchCutscene(CutsceneClass);
+    }
+
+    _checkBossCutscenes() {
+        if (!this.background || !this.hasActiveBoss || !this.isBossVisible || this.player.x > 0) return;
+
+        const boss = this.boss;
+
+        for (const cfg of BOSS_CUTSCENE_CONFIGS) {
+            if (this.currentMap !== cfg.mapName) continue;
+            if (boss.id !== cfg.bossId) continue;
+
+            if (boss.dialogueBeforeOnce) {
+                boss.preFight = true;
+                boss.postFight = false;
+                boss.dialogueBeforeOnce = false;
+
+                this.bossManager.preparePlayerForBossFight();
+
+                this.launchCutscene(cfg.beforeCutscene);
+                break;
+            }
+
+            if (boss.dialogueAfterOnce && boss.startAfterDialogueWhenAnimEnds) {
+                boss.preFight = false;
+                boss.postFight = true;
+                boss.dialogueAfterOnce = false;
+                boss.dialogueAfterLeaving = true;
+
+                this.player.energy = FULL_ENERGY;
+
+                this.launchCutscene(cfg.afterCutscene);
+                break;
+            }
+        }
+    }
+
+    _checkCabinEntrance() {
+        const overrides = CABIN_ENTRANCE_OVERRIDES[this.currentMap] || {};
+        const enterCabin = overrides.enterOffset ?? 290;
+        const openDoor = overrides.doorSound ?? "doorOpening";
+
+        if (
+            this.cabin &&
+            this.player.x + this.player.width >= this.cabin.x + enterCabin &&
+            this.player.x <= this.cabin.x + this.cabin.width &&
+            this.cabin.isFullyVisible
+        ) {
+            const coinsNow = Math.max(0, Math.floor(this.coins));
+            if (coinsNow > 0) {
+                const before = Math.max(0, Math.floor(this.creditCoins || 0));
+                this.creditCoins = Math.min(MAX_CREDIT_COINS, before + coinsNow);
+                this._pendingCoinConvertAmount = this.creditCoins - before;
+                this.saveGameState();
+            }
+
+            this.audioHandler.cutsceneSFX.playSound(openDoor);
+            this.audioHandler.firedogSFX.stopAllSounds();
+
+            const CutsceneClass = END_CUTSCENES[this.currentMap];
+            if (CutsceneClass) {
+                this.isEndCutscene = true;
+                this.isPlayerInGame = false;
+                const cutscene = new CutsceneClass(this);
+                this.startCutscene(cutscene);
+                cutscene.displayDialogue();
+            }
+        }
+    }
+
+    _updateScreenEffects() {
+        this.bossManager.updateScreenEffect();
+
+        if (this.player.isInvisible) {
+            this.invisibleColourOpacity = screenColourFadeIn(this.invisibleColourOpacity, 0.014);
+        } else {
+            this.invisibleColourOpacity = screenColourFadeOut(this.invisibleColourOpacity);
+        }
+    }
+
+    // ------------------------------------------------------------ Draw ------------------------------------------------------------
+
+    _fillScreen(ctx, style) {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.fillStyle = style;
+        ctx.fillRect(0, 0, this.width, this.height);
+        ctx.restore();
     }
 
     draw(context) {
@@ -931,252 +784,54 @@ export class Game {
 
         if (this.background) this.background.draw(context);
 
-        this.cabins.forEach((cabin) => {
-            cabin.draw(context);
-        });
-        this.penguins.forEach((penguin) => {
-            penguin.draw(context);
-        });
-        this.powerUps.forEach((powerUp) => {
-            powerUp.draw(context);
-        });
-        this.powerDowns.forEach((powerDown) => {
-            powerDown.draw(context);
-        });
-        this.behindPlayerParticles.forEach((behindPlayerParticle) => {
-            behindPlayerParticle.draw(context);
-        });
+        if (this.cabinAppeared && this.cabin) this.cabin.draw(context);
+        if (this.penguinAppeared && this.penguini) this.penguini.draw(context);
+        this.powerUps.forEach(p => p.draw(context));
+        this.powerDowns.forEach(p => p.draw(context));
+        this.behindPlayerParticles.forEach(p => p.draw(context));
 
-        this.player.draw(context); // player
+        this.player.draw(context);
 
-        this.enemies.forEach((enemy) => {
-            enemy.draw(context);
-        });
-        this.particles.forEach((particle) => {
-            particle.draw(context);
-        });
-        this.collisions.forEach((collision) => {
-            collision.draw(context);
-        });
-        this.floatingMessages.forEach((message) => {
-            message.draw(context);
-        });
-        this.recordToasts.forEach((t) => t.draw(context));
-
-        const fillScreen = (ctx, style) => {
-            ctx.save();
-            ctx.setTransform(1, 0, 0, 1, 0, 0);
-            ctx.fillStyle = style;
-            ctx.fillRect(0, 0, this.width, this.height);
-            ctx.restore();
-        };
+        this.enemies.forEach(e => e.draw(context));
+        this.particles.forEach(p => p.draw(context));
+        this.collisions.forEach(c => c.draw(context));
+        this.floatingMessages.forEach(m => m.draw(context));
+        this.animatedToasts.forEach(t => t.draw(context));
 
         if (this.player.isUnderwater === true) {
-            fillScreen(context, "rgba(0, 0, 50, 0.6)");
+            this._fillScreen(context, "rgba(0, 0, 50, 0.6)");
         }
 
         const effect = this.boss.screenEffect;
-
-        if (effect) {
-            if (
-                effect.colorLerpT != null &&
-                effect.colorLerpT < 1 &&
-                effect.fromRgb &&
-                effect.targetRgb
-            ) {
-                const speed = effect.colorLerpSpeed ?? 0.04;
-                effect.colorLerpT = Math.min(1, effect.colorLerpT + speed);
-                const t = effect.colorLerpT;
-
-                const [r0, g0, b0] = effect.fromRgb;
-                const [r1, g1, b1] = effect.targetRgb;
-
-                const r = Math.round(r0 + (r1 - r0) * t);
-                const g = Math.round(g0 + (g1 - g0) * t);
-                const b = Math.round(b0 + (b1 - b0) * t);
-
-                effect.rgb = [r, g, b];
-            }
-
-            if (this.bossInFight && effect.active) {
-                effect.opacity = screenColourFadeIn(
-                    effect.opacity,
-                    effect.fadeInSpeed ?? 0.00298
-                );
-            } else {
-                effect.opacity = screenColourFadeOut(effect.opacity);
-            }
-
-            if (effect.opacity > 0) {
-                const [r, g, b] = effect.rgb ?? [0, 0, 0];
-                fillScreen(context, `rgba(${r}, ${g}, ${b}, ${effect.opacity})`);
-            }
+        if (effect && effect.opacity > 0) {
+            const [r, g, b] = effect.rgb ?? [0, 0, 0];
+            this._fillScreen(context, `rgba(${r}, ${g}, ${b}, ${effect.opacity})`);
         }
 
-        if (this.player.isInvisible) {
-            this.invisibleColourOpacity = screenColourFadeIn(
-                this.invisibleColourOpacity,
-                0.014
-            );
-        } else {
-            this.invisibleColourOpacity = screenColourFadeOut(
-                this.invisibleColourOpacity
-            );
-        }
-        fillScreen(context, `rgba(0, 0, 50, ${this.invisibleColourOpacity})`);
+        this._fillScreen(context, `rgba(0, 0, 50, ${this.invisibleColourOpacity})`);
 
-        this.cutscenes.forEach((cutscene) => {
-            cutscene.draw(context);
-        });
+        this.cutscenes.forEach(c => c.draw(context));
 
-        // tutorial overlay only when Map1 tutorial is active
         if (this.isTutorialActive && this.currentMap === "Map1") {
             this.tutorial.draw(context);
         }
     }
 
+    // ------------------------------------------------------------ Entity Spawning ------------------------------------------------------------
+
     addEnemy() {
         if (
             this.gameOver ||
             (this.background &&
-                this.background.totalDistanceTraveled >= this.maxDistance - 5)
+                this.background.totalDistanceTraveled >= this.maxDistance - ENEMY_SPAWN_DISTANCE_BUFFER)
         ) {
             return;
         }
 
-        if (this.bossManager.spawnBossIfNeeded()) {
-            return;
-        }
+        if (this.bossManager.spawnBossIfNeeded()) return;
+        if (!this.bossManager.canSpawnNormalEnemies()) return;
 
-        if (!this.bossManager.canSpawnNormalEnemies()) {
-            return;
-        }
-
-        const enemyTypes = {
-            Map1: [
-                { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: Dotter, probability: 0.35, spawningDistance: 0 },
-                { type: Moonsect, probability: 0.3, spawningDistance: 0 },
-                { type: Geargle, probability: 0.2, spawningDistance: 0 },
-                { type: Lunny, probability: 0.3, spawningDistance: 0 },
-                { type: MeatSoldier, probability: 0.1, spawningDistance: 0 },
-                { type: Skulnap, probability: 0.25, spawningDistance: 50 },
-                { type: Abyssaw, probability: 0.06, spawningDistance: 100 },
-                { type: GlidoSpike, probability: 0.1, spawningDistance: 150 },
-            ],
-            Map2: [
-                { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: Vertibat, probability: 0.1, spawningDistance: 0 },
-                { type: DuskPlant, probability: 0.2, spawningDistance: 0 },
-                { type: Silknoir, probability: 0.4, spawningDistance: 0 },
-                { type: WalterTheGhost, probability: 0.2, spawningDistance: 0 },
-                { type: Ben, probability: 0.09, spawningDistance: 0 },
-                { type: Skelly, probability: 0.07, spawningDistance: 50 },
-                { type: Gloomlet, probability: 0.08, spawningDistance: 50 },
-                { type: Dolly, probability: 0.01, spawningDistance: 100 },
-            ],
-            Map3: [
-                { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: Razorfin, probability: 0.2, spawningDistance: 0 },
-                { type: SkeletonFish, probability: 0.2, spawningDistance: 0 },
-                { type: SpearFish, probability: 0.1, spawningDistance: 0 },
-                { type: JetFish, probability: 0.05, spawningDistance: 0 },
-                { type: Piper, probability: 0.2, spawningDistance: 50 },
-                { type: Jellion, probability: 0.09, spawningDistance: 70 },
-                { type: Voltzeel, probability: 0.08, spawningDistance: 100 },
-                { type: Garry, probability: 0.07, spawningDistance: 130 },
-            ],
-            Map4: [
-                { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: BigGreener, probability: 0.2, spawningDistance: 0 },
-                { type: Chiquita, probability: 0.2, spawningDistance: 0 },
-                { type: Fofinha, probability: 0.2, spawningDistance: 0 },
-                { type: Sluggie, probability: 0.3, spawningDistance: 0 },
-                { type: LilHornet, probability: 0.05, spawningDistance: 0 },
-                { type: KarateCroco, probability: 0.05, spawningDistance: 0 },
-                { type: Bramble, probability: 0.01, spawningDistance: 70 },
-                { type: Jerry, probability: 0.05, spawningDistance: 100 },
-                { type: Vinelash, probability: 0.04, spawningDistance: 120 },
-            ],
-            Map5: [
-                { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: Snailey, probability: 0.05, spawningDistance: 0 },
-                { type: Citrifly, probability: 0.2, spawningDistance: 0 },
-                { type: Berrifly, probability: 0.2, spawningDistance: 0 },
-                { type: LazyMosquito, probability: 0.2, spawningDistance: 0 },
-                { type: LeafSlug, probability: 0.15, spawningDistance: 0 },
-                { type: Sunflora, probability: 0.1, spawningDistance: 0 },
-                { type: Eggry, probability: 0.3, spawningDistance: 0 },
-                { type: this.background && this.background.isRaining ? AngryBee : Bee, probability: this.background && this.background.isRaining ? 0.06 : 0.07, spawningDistance: 0 },
-                { type: Strawspider, probability: 0.05, spawningDistance: 0 },
-            ],
-            Map6: [
-                { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: Larvox, probability: 0.2, spawningDistance: 0 },
-                { type: Venflora, probability: 0.1, spawningDistance: 0 },
-                { type: Venarach, probability: 0.2, spawningDistance: 0 },
-                { type: Venoblitz, probability: 0.05, spawningDistance: 0 },
-                { type: Virefly, probability: 0.08, spawningDistance: 0 },
-                { type: Toxwing, probability: 0.09, spawningDistance: 0 },
-                { type: Woxin, probability: 0.07, spawningDistance: 50 },
-                { type: Toxhop, probability: 0.07, spawningDistance: 100 },
-                { type: Mycora, probability: 0.04, spawningDistance: 150 },
-            ],
-            Map7: [
-                { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: EmberFly, probability: 0.2, spawningDistance: 0 },
-                { type: Scorble, probability: 0.1, spawningDistance: 0 },
-                { type: Blazice, probability: 0.07, spawningDistance: 0 },
-                { type: Cactrix, probability: 0.1, spawningDistance: 0 },
-                { type: Volcanurtle, probability: 0.1, spawningDistance: 0 },
-                { type: Bloburn, probability: 0.08, spawningDistance: 0 },
-                { type: VolcanoWasp, probability: 0.04, spawningDistance: 30 },
-                { type: Magmapod, probability: 0.08, spawningDistance: 100 },
-                { type: Scorvex, probability: 0.09, spawningDistance: 100 },
-                { type: Lavaryn, probability: 0.06, spawningDistance: 150 },
-            ],
-            BonusMap1: [
-                { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: IcePlant, probability: 0.2, spawningDistance: 0 },
-                { type: Cryopede, probability: 0.2, spawningDistance: 0 },
-                { type: IceSilknoir, probability: 0.1, spawningDistance: 0 },
-                { type: Frostling, probability: 0.06, spawningDistance: 0 },
-                { type: Frobat, probability: 0.2, spawningDistance: 0 },
-                { type: CrystalWasp, probability: 0.05, spawningDistance: 0 },
-                { type: Globby, probability: 0.07, spawningDistance: 50 },
-                { type: DrillIce, probability: 0.06, spawningDistance: 100 },
-            ],
-            BonusMap2: [
-                { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: Sigilfly, probability: 0.1, spawningDistance: 0 },
-                { type: Oozel, probability: 0.15, spawningDistance: 0 },
-                { type: Runespider, probability: 0.1, spawningDistance: 0 },
-                { type: Golex, probability: 0.07, spawningDistance: 0 },
-                { type: Voidserp, probability: 0.09, spawningDistance: 0 },
-                { type: Sigilash, probability: 0.05, spawningDistance: 0 },
-                { type: Mawrune, probability: 0.06, spawningDistance: 70 },
-                { type: Runecko, probability: 0.05, spawningDistance: 100 },
-                { type: Wardrake, probability: 0.04, spawningDistance: 150 },
-            ],
-            BonusMap3: [
-                { type: Goblin, probability: 0.05, spawningDistance: 0 },
-                { type: Nebulure, probability: 0.05, spawningDistance: 0 },
-                { type: Veynoculus, probability: 0.25, spawningDistance: 0 },
-                { type: Spindle, probability: 0.2, spawningDistance: 0 },
-                { type: Plazer, probability: 0.1, spawningDistance: 0 },
-                { type: Crabula, probability: 0.05, spawningDistance: 0 },
-                { type: Vespion, probability: 0.1, spawningDistance: 0 },
-                { type: Johnny, probability: 0.04, spawningDistance: 0 },
-                { type: Lancer, probability: 0.04, spawningDistance: 0 },
-                { type: Oculith, probability: 0.05, spawningDistance: 50 },
-                { type: Frogula, probability: 0.04, spawningDistance: 100 },
-                { type: Astraider, probability: 0.04, spawningDistance: 100 },
-                { type: Borion, probability: 0.04, spawningDistance: 150 },
-            ],
-        };
-
-        const currentMap = this.currentMap;
-        const enemiesForCurrentMap = enemyTypes[currentMap];
+        const enemiesForCurrentMap = getEnemySpawnConfig(this)[this.currentMap];
 
         if (enemiesForCurrentMap && this.enemies.length < this.maxEnemies) {
             for (const { type, probability, spawningDistance } of enemiesForCurrentMap) {
@@ -1219,7 +874,7 @@ export class Game {
         if (
             this.speed > 0 &&
             this.background &&
-            this.background.totalDistanceTraveled < this.maxDistance - 3
+            this.background.totalDistanceTraveled < this.maxDistance - ITEM_SPAWN_DISTANCE_BUFFER
         ) {
             for (const { type, chance, underwaterOnly } of entries) {
                 if (underwaterOnly && !this.player.isUnderwater) continue;
@@ -1229,56 +884,24 @@ export class Game {
     }
 
     addPowerUp() {
-        this._spawnItems(this.powerUps, [
-            { type: RandomPower, chance: 0.0025 },
-            { type: RedPotion, chance: 0.005 },
-            { type: BluePotion, chance: 0.005 },
-            { type: Hourglass, chance: 0.005 },
-            { type: HealthLive, chance: 0.005 },
-            { type: Coin, chance: 0.005 },
-            { type: OxygenTank, chance: 0.005, underwaterOnly: true },
-        ], this.powerUpSpawnMultiplier);
+        this._spawnItems(this.powerUps, POWER_UP_SPAWN_CONFIG, this.powerUpSpawnMultiplier);
     }
 
     addPowerDown() {
-        this._spawnItems(this.powerDowns, [
-            { type: RandomPower, chance: 0.0025 },
-            { type: IceDrink, chance: 0.005 },
-            { type: IceCube, chance: 0.005 },
-            { type: Cauldron, chance: 0.005 },
-            { type: BlackHole, chance: 0.005 },
-            { type: Confuse, chance: 0.005 },
-            { type: DeadSkull, chance: 0.005 },
-            { type: CarbonDioxideTank, chance: 0.005, underwaterOnly: true },
-        ], this.powerDownSpawnMultiplier);
+        this._spawnItems(this.powerDowns, POWER_DOWN_SPAWN_CONFIG, this.powerDownSpawnMultiplier);
     }
 
-    addCabin() {
-        if (
-            this.background &&
-            this.background.totalDistanceTraveled >= this.maxDistance &&
-            !this.cabinAppeared
-        ) {
-            this.cabins.push(this.cabin);
-            this.cabinAppeared = true;
-            this.fixedCabinX = this.width - this.cabin.width;
-        }
-    }
+    // ------------------------------------------------------------ Global Overlays ------------------------------------------------------------
 
-    addPenguin() {
-        if (
-            this.background &&
-            this.background.totalDistanceTraveled >= this.maxDistance &&
-            !this.penguinAppeared
-        ) {
-            this.penguins.push(this.penguini);
-            this.penguinAppeared = true;
-            this.fixedPenguinX = this.width - this.cabin.width - 100;
-            this.talkToPenguin = true;
-        }
+    updateGlobalOverlays(deltaTime) {
+        this.metaToasts.forEach(t => t.update(deltaTime));
+        this.metaToasts = this.metaToasts.filter(t => !t.markedForDeletion);
+        this.coinConvertToasts.forEach(t => t.update(deltaTime));
+        this.coinConvertToasts = this.coinConvertToasts.filter(t => !t.markedForDeletion);
     }
 
     // ------------------------------------------------------------ Saving logic  ------------------------------------------------------------
+
     saveGameState() {
         persistGameState(this);
     }
@@ -1291,101 +914,3 @@ export class Game {
         resetPersistedData(this);
     }
 }
-
-// ------------------------------------------------------------ Game Function ------------------------------------------------------------
-window.addEventListener("load", function () {
-    const canvas = document.getElementById("canvas1");
-    const ctx = canvas.getContext("2d");
-    canvas.width = 1920;
-    canvas.height = 689;
-
-    const game = new Game(canvas, canvas.width, canvas.height);
-    let lastTime = 0;
-    let fadingInInitiated = false;
-
-    function animate(timeStamp) {
-        const deltaTime = timeStamp - lastTime;
-        lastTime = timeStamp;
-
-        game.metaToasts.forEach((t) => t.update(deltaTime));
-        game.metaToasts = game.metaToasts.filter((t) => !t.markedForDeletion);
-
-        game.coinConvertToasts.forEach((t) => t.update(deltaTime));
-        game.coinConvertToasts = game.coinConvertToasts.filter((t) => !t.markedForDeletion);
-
-        if (
-            game.cutsceneActive &&
-            !game.talkToPenguin &&
-            !(game.boss && game.boss.talkToBoss)
-        ) {
-            if (game.fadingIn) {
-                if (!fadingInInitiated) {
-                    fadingInInitiated = true;
-                    game.waitForFadeInOpacity = true;
-                    canvas.style.opacity = 0;
-                    setTimeout(() => {
-                        game.fadingIn = false;
-                        fadingInInitiated = false;
-                        fadeIn(canvas, 1300, () => { });
-                    }, 1300);
-                    setTimeout(() => {
-                        game.waitForFadeInOpacity = false;
-                    }, 2700);
-                }
-            } else {
-                game.currentCutscene.draw(ctx);
-                game.metaToasts.forEach((t) => t.draw(ctx));
-                game.coinConvertToasts.forEach((t) => t.draw(ctx));
-
-                if (game.menu.pause.isPaused && game.currentMenu) {
-                    game.currentMenu.menuActive = true;
-                    game.currentMenu.draw(ctx);
-                    game.currentMenu.update(deltaTime);
-
-                    game.metaToasts.forEach((t) => t.draw(ctx));
-                    game.coinConvertToasts.forEach((t) => t.draw(ctx));
-                }
-            }
-        } else if (game.currentMenu && game.currentMenu.menuInGame === false) {
-            game.isPlayerInGame = false;
-            game.currentMenu.menuActive = true;
-            game.currentMenu.draw(ctx);
-            game.currentMenu.update(deltaTime);
-
-            game.metaToasts.forEach((t) => t.draw(ctx));
-            game.coinConvertToasts.forEach((t) => t.draw(ctx));
-        } else if (game.isPlayerInGame) {
-            game.deltaTime = deltaTime;
-            game.update(deltaTime);
-
-            const canShake =
-                game.shakeActive &&
-                !game.menu.pause.isPaused &&
-                game.tutorial.tutorialPause === false;
-
-            if (canShake) preShake(ctx);
-
-            game.draw(ctx);
-
-            if (canShake) postShake(ctx);
-
-            if (game.distortionActive || game.distortionEffect.amount > 0.01) {
-                game.distortionEffect.apply(ctx);
-            }
-
-            game.UI.draw(ctx);
-
-            if (game.currentMenu) {
-                game.currentMenu.menuActive = true;
-                game.currentMenu.draw(ctx);
-                game.currentMenu.update(deltaTime);
-            }
-
-            game.metaToasts.forEach((t) => t.draw(ctx));
-            game.coinConvertToasts.forEach((t) => t.draw(ctx));
-        }
-
-        requestAnimationFrame(animate);
-    }
-    animate(0);
-});

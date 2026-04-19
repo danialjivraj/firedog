@@ -1,5 +1,5 @@
 import { preShake, postShake } from '../animations/shake.js';
-import { BASE_FRAME_MS } from '../config/constants.js';
+import { BASE_FRAME_MS, MAP_DISPLAY_NAMES } from '../config/constants.js';
 import { fadeInAndOut } from '../animations/fading.js';
 import {
     COSMETIC_LAYER_ORDER,
@@ -8,7 +8,7 @@ import {
     getCosmeticChromaDegFromState,
     drawWithOptionalHue,
 } from '../config/skinsAndCosmetics.js';
-import { drawCoinIcon } from '../interface/hudIcons.js';
+import { drawCoinIcon } from '../interface/coinIcon.js';
 
 export class Cutscene {
     constructor(game) {
@@ -85,16 +85,16 @@ export class Cutscene {
         this.ntharax = "N'Tharax";
 
         // maps
-        this.lunarGlade = 'Lunar Glade';
-        this.nightfallPhantomGraves = 'Nightfall Phantom Graves';
-        this.coralAbyss = 'Coral Abyss';
-        this.verdantVine = 'Verdant Vine';
-        this.springlyLemony = 'Springly Lemony';
-        this.venomveilLake = 'Venomveil Lake';
-        this.infernalCraterPeak = 'Infernal Crater Peak';
-        this.iceboundCave = 'Icebound Cave';
-        this.crimsonFissure = 'Crimson Fissure';
-        this.cosmicRift = 'Cosmic Rift';
+        this.lunarGlade = MAP_DISPLAY_NAMES.Map1;
+        this.nightfallPhantomGraves = MAP_DISPLAY_NAMES.Map2;
+        this.coralAbyss = MAP_DISPLAY_NAMES.Map3;
+        this.verdantVine = MAP_DISPLAY_NAMES.Map4;
+        this.springlyLemony = MAP_DISPLAY_NAMES.Map5;
+        this.venomveilLake = MAP_DISPLAY_NAMES.Map6;
+        this.infernalCraterPeak = MAP_DISPLAY_NAMES.Map7;
+        this.iceboundCave = MAP_DISPLAY_NAMES.BonusMap1;
+        this.crimsonFissure = MAP_DISPLAY_NAMES.BonusMap2;
+        this.cosmicRift = MAP_DISPLAY_NAMES.BonusMap3;
 
         // phrases
         this.crypticToken = 'Cryptic Token';

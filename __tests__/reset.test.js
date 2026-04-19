@@ -1,8 +1,8 @@
 import { Reset } from '../game/reset.js';
 import { Player } from '../game/entities/player.js';
-import * as Maps from '../game/background/background.js';
+import * as Maps from '../game/background/maps.js';
 
-jest.mock('../game/background/background.js', () => ({
+jest.mock('../game/background/maps.js', () => ({
     Map1: class { },
     Map2: class { },
     Map3: class { },
@@ -54,8 +54,6 @@ describe('Reset', () => {
 
                 if (this.input) {
                     this.input.keys = [];
-                    this.input.arrowUpPressed = false;
-                    this.input.arrowDownPressed = false;
                 }
             }),
 
@@ -84,9 +82,6 @@ describe('Reset', () => {
 
             // records
             _fullClearRecorded: true,
-            bossTime: 123,
-            _bossFightWasActive: true,
-            _bossDefeatRecorded: true,
 
             // audio
             audioHandler: {
@@ -108,8 +103,6 @@ describe('Reset', () => {
             floatingMessages: [1],
             powerUps: [1],
             powerDowns: [1],
-            cabins: [1],
-            penguins: [1],
 
             // input
             input: { keys: ['A'] },
@@ -120,6 +113,7 @@ describe('Reset', () => {
 
             // penguin
             penguinAppeared: true,
+            penguini: { x: 999, showEnterToTalkToPenguini: true },
             talkToPenguin: true,
             enterToTalkToPenguin: true,
             talkToPenguinOneTimeOnly: false,
@@ -329,8 +323,6 @@ describe('Reset', () => {
                 'floatingMessages',
                 'powerUps',
                 'powerDowns',
-                'cabins',
-                'penguins',
                 'cutscenes',
             ].forEach((key) => expect(game[key]).toEqual([]));
         });
@@ -348,22 +340,17 @@ describe('Reset', () => {
             expect(game.cabin.x).toBe(game.width);
 
             expect(game.penguinAppeared).toBe(false);
+            expect(game.penguini.x).toBe(game.width);
+            expect(game.penguini.showEnterToTalkToPenguini).toBe(false);
             expect(game.talkToPenguin).toBe(false);
             expect(game.enterToTalkToPenguin).toBe(false);
             expect(game.talkToPenguinOneTimeOnly).toBe(true);
         });
 
-        it('delegates boss reset to bossManager.resetState() and clears boss-related flags', () => {
-            game.bossTime = 123;
-            game._bossFightWasActive = true;
-            game._bossDefeatRecorded = true;
-
+        it('delegates boss reset to bossManager.resetState()', () => {
             reset.reset();
 
             expect(game.bossManager.resetState).toHaveBeenCalledTimes(1);
-            expect(game.bossTime).toBe(0);
-            expect(game._bossFightWasActive).toBe(false);
-            expect(game._bossDefeatRecorded).toBe(false);
         });
 
         it('reapplies the current difficulty settings', () => {

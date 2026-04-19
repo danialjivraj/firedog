@@ -10,7 +10,7 @@ import {
     Standing,
     Dying,
     Dashing,
-} from '../../game/animations/playerStates';
+} from '../../game/entities/playerStates';
 
 jest.mock('../../game/animations/particles.js', () => {
     class Dust { constructor() { } }

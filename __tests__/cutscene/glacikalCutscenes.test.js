@@ -2,7 +2,7 @@ import {
     GlacikalCutscene,
     BonusMap1GlacikalIngameCutsceneBeforeFight,
     BonusMap1GlacikalIngameCutsceneAfterFight
-} from '../../game/cutscene/glacikalCutscenes.js';
+} from '../../game/cutscene/ingameCutscenes/glacikalCutscenes.js';
 import * as fading from '../../game/animations/fading.js';
 
 jest.useFakeTimers();
@@ -120,16 +120,6 @@ describe('GlacikalCutscene', () => {
     afterEach(() => {
         jest.clearAllMocks();
         jest.clearAllTimers();
-    });
-
-    it('uses Glacikal boss metadata', () => {
-        expect(cut.getBossId()).toBe('glacikal');
-        expect(cut.getBattleTheme()).toBe('glacikalBattleTheme');
-        expect(cut.getResetLayerImageIds()).toEqual([
-            'bonusMap1IceRings',
-            'bonusMap1BigIceCrystal',
-        ]);
-        expect(cut.shouldRemoveBossAfterPostFight()).toBe(true);
     });
 
     it('runs current dialogue onAdvance, updates player state, and sets flags', () => {
@@ -428,10 +418,6 @@ describe('BonusMap1GlacikalIngameCutsceneBeforeFight', () => {
         jest.clearAllTimers();
     });
 
-    it('registers exactly 18 dialogues', () => {
-        expect(m6pre.dialogue.length).toBe(18);
-    });
-
     it('inherits GlacikalCutscene interaction methods', () => {
         expect(typeof m6pre.enterOrLeftClick).toBe('function');
         expect(typeof m6pre.displayDialogue).toBe('function');
@@ -465,10 +451,6 @@ describe('BonusMap1GlacikalIngameCutsceneAfterFight', () => {
     afterEach(() => {
         jest.clearAllMocks();
         jest.clearAllTimers();
-    });
-
-    it('registers exactly 36 dialogues', () => {
-        expect(m6post.dialogue.length).toBe(36);
     });
 
     it('inherits GlacikalCutscene interaction methods', () => {

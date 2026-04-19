@@ -1,4 +1,5 @@
-import { isLocalNight } from '../config/timeOfDay.js';
+import { isLocalNight } from '../utils/timeOfDay.js';
+import { BOSS_MAP_MAX_DISTANCE, MAP_DISPLAY_NAMES } from '../config/constants.js';
 import {
     FIREDOG_FRAME,
     getSkinElement,
@@ -14,7 +15,7 @@ import {
 } from '../cutscene/storyCutscenes.js';
 import {
     Map1, Map2, Map3, Map4, Map5, Map6, Map7, BonusMap1, BonusMap2, BonusMap3,
-} from '../background/background.js';
+} from '../background/maps.js';
 import { SavingAnimation, SavingBookAnimation } from '../animations/savingAnimation.js';
 import { Cabin } from '../entities/cabin.js';
 import { Penguini } from '../entities/penguini.js';
@@ -37,16 +38,16 @@ export class ForestMapMenu extends BaseMenu {
         super(game);
 
         this.mapNames = {
-            map1: 'Lunar Glade',
-            map2: 'Nightfall Phantom Graves',
-            map3: 'Coral Abyss',
-            map4: 'Verdant Vine',
-            map5: 'Springly Lemony',
-            map6: 'Venomveil Lake',
-            map7: 'Infernal Crater Peak',
-            bonus1: 'Icebound Cave',
-            bonus2: 'Crimson Fissure',
-            bonus3: 'Cosmic Rift',
+            map1: MAP_DISPLAY_NAMES.Map1,
+            map2: MAP_DISPLAY_NAMES.Map2,
+            map3: MAP_DISPLAY_NAMES.Map3,
+            map4: MAP_DISPLAY_NAMES.Map4,
+            map5: MAP_DISPLAY_NAMES.Map5,
+            map6: MAP_DISPLAY_NAMES.Map6,
+            map7: MAP_DISPLAY_NAMES.Map7,
+            bonus1: MAP_DISPLAY_NAMES.BonusMap1,
+            bonus2: MAP_DISPLAY_NAMES.BonusMap2,
+            bonus3: MAP_DISPLAY_NAMES.BonusMap3,
         };
 
         this.mapColors = {
@@ -82,7 +83,6 @@ export class ForestMapMenu extends BaseMenu {
         this.lockedNoticeText = '';
         this.lockedNoticeTimer = 0;
 
-        document.addEventListener('wheel', this.handleMouseWheel.bind(this));
     }
 
     getMapOptions() {
@@ -93,10 +93,10 @@ export class ForestMapMenu extends BaseMenu {
             { Map: Map4, maxDistance: 240, winningCoins: 340, environment: null, Cutscene: Map4StartCutscene },
             { Map: Map5, maxDistance: 250, winningCoins: 380, environment: null, Cutscene: Map5StartCutscene },
             { Map: Map6, maxDistance: 250, winningCoins: 300, environment: null, Cutscene: Map6StartCutscene },
-            { Map: Map7, maxDistance: 9999999, winningCoins: 0, environment: null, Cutscene: Map7StartCutscene },
-            { Map: BonusMap1, maxDistance: 9999999, winningCoins: 150, environment: 'ice', Cutscene: BonusMap1StartCutscene },
+            { Map: Map7, maxDistance: BOSS_MAP_MAX_DISTANCE, winningCoins: 0, environment: null, Cutscene: Map7StartCutscene },
+            { Map: BonusMap1, maxDistance: BOSS_MAP_MAX_DISTANCE, winningCoins: 150, environment: 'ice', Cutscene: BonusMap1StartCutscene },
             { Map: BonusMap2, maxDistance: 240, winningCoins: 280, environment: null, Cutscene: BonusMap2StartCutscene },
-            { Map: BonusMap3, maxDistance: 9999999, winningCoins: 210, environment: 'space', Cutscene: BonusMap3StartCutscene },
+            { Map: BonusMap3, maxDistance: BOSS_MAP_MAX_DISTANCE, winningCoins: 210, environment: 'space', Cutscene: BonusMap3StartCutscene },
         ];
     }
 
@@ -445,6 +445,26 @@ export class ForestMapMenu extends BaseMenu {
 
     resetSelectedCircleIndex() {
         this.selectedCircleIndex = 0;
+    }
+
+    selectNextAfterClear(currentMapName) {
+        const targetIndexByMap = {
+            Map1: 1, Map2: 2, Map3: 3, Map4: 4, Map5: 5, Map6: 6,
+            BonusMap1: 1, BonusMap2: 9, BonusMap3: 3,
+        };
+
+        let nextIndex = currentMapName && currentMapName in targetIndexByMap
+            ? targetIndexByMap[currentMapName]
+            : this.selectedCircleIndex + 1;
+
+        const maxIdx = this.circleOptions.length - 1;
+        nextIndex = Math.max(0, Math.min(maxIdx, nextIndex));
+
+        if (this.isNodeUnlocked(nextIndex)) {
+            this.selectedCircleIndex = nextIndex;
+        }
+
+        this.game.audioHandler.menu.playSound("optionHoveredSound", false, true);
     }
 
     handleKeyDown(event) {

@@ -2,7 +2,7 @@ jest.mock('../../../game/animations/fading.js', () => ({
     fadeInAndOut: jest.fn((canvas, fi, stay, fo, cb) => cb && cb()),
 }));
 
-jest.mock('../../../game/animations/collisionAnimation.js', () => {
+jest.mock('../../../game/animations/collisionAnimation/spriteCollisions.js', () => {
     const mockIcyStormBallCollisionCtor = jest.fn();
     const mockPointyIcicleShardCollisionCtor = jest.fn();
 
@@ -41,12 +41,12 @@ import {
     IceSlash,
     SpinningIceBalls,
     Glacikal,
-} from '../../../game/entities/enemies/glacikal.js';
+} from '../../../game/entities/enemies/bosses/glacikal/glacikal.js';
 
 import {
     mockIcyStormBallCollisionCtor,
     mockPointyIcicleShardCollisionCtor,
-} from '../../../game/animations/collisionAnimation.js';
+} from '../../../game/animations/collisionAnimation/spriteCollisions.js';
 
 const makeGame = () => {
     const game = {

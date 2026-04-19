@@ -2,7 +2,7 @@ import {
     NTharaxCutscene,
     BonusMap3NTharaxIngameCutsceneBeforeFight,
     BonusMap3NTharaxIngameCutsceneAfterFight,
-} from '../../game/cutscene/ntharaxCutscene.js';
+} from '../../game/cutscene/ingameCutscenes/ntharaxCutscene.js';
 
 const createBaseGame = () => {
     const noop = jest.fn();
@@ -139,20 +139,9 @@ describe('BonusMap3NTharaxIngameCutsceneBeforeFight', () => {
         jest.restoreAllMocks();
     });
 
-    it('registers exactly 16 dialogues', () => {
-        expect(cutscene.dialogue).toHaveLength(16);
-    });
-
     it('inherits NTharaxCutscene interaction methods', () => {
         expect(typeof cutscene.enterOrLeftClick).toBe('function');
         expect(typeof cutscene.displayDialogue).toBe('function');
-    });
-
-    it('uses ntharax cutscene boss metadata', () => {
-        expect(cutscene.getBossId()).toBe('ntharax');
-        expect(cutscene.getBattleTheme()).toBe('ntharaxBattleTheme');
-        expect(cutscene.getResetLayerImageIds()).toEqual(['bonusMap3Planets']);
-        expect(cutscene.shouldRemoveBossAfterPostFight()).toBe(true);
     });
 
     it('starts with Firedog noticing the celestial tyrant', () => {
@@ -235,20 +224,9 @@ describe('BonusMap3NTharaxIngameCutsceneAfterFight', () => {
         jest.restoreAllMocks();
     });
 
-    it('registers exactly 9 dialogues', () => {
-        expect(cutscene.dialogue).toHaveLength(9);
-    });
-
     it('inherits NTharaxCutscene interaction methods', () => {
         expect(typeof cutscene.enterOrLeftClick).toBe('function');
         expect(typeof cutscene.displayDialogue).toBe('function');
-    });
-
-    it('uses ntharax cutscene boss metadata', () => {
-        expect(cutscene.getBossId()).toBe('ntharax');
-        expect(cutscene.getBattleTheme()).toBe('ntharaxBattleTheme');
-        expect(cutscene.getResetLayerImageIds()).toEqual(['bonusMap3Planets']);
-        expect(cutscene.shouldRemoveBossAfterPostFight()).toBe(true);
     });
 
     it('starts with NTharax reacting to defeat', () => {

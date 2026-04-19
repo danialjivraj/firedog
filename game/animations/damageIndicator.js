@@ -1,3 +1,5 @@
+import { DAMAGE_INDICATOR_OPACITY_BY_MAP } from '../config/constants.js';
+
 export class BaseIndicator {
     constructor(game, rgbStr, initialOpacity) {
         this.game = game;
@@ -75,20 +77,7 @@ export class DamageIndicator extends BaseIndicator {
             (game.background && game.background.constructor.name) ||
             null;
 
-        const opacityByMap = {
-            Map1: 0.2,
-            Map2: 0.10,
-            Map3: 0.40,
-            Map4: 0.25,
-            Map5: 0.27,
-            Map6: 0.26,
-            Map7: 0.26,
-            BonusMap1: 0.35,
-            BonusMap2: 0.19,
-            BonusMap3: 0.15,
-        };
-
-        const initialOpacity = opacityByMap[mapName] ?? 0.4;
+        const initialOpacity = DAMAGE_INDICATOR_OPACITY_BY_MAP[mapName] ?? 0.4;
         super(game, '255,0,0', initialOpacity);
     }
 }

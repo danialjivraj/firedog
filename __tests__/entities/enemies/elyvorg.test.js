@@ -23,14 +23,14 @@ import {
     PurpleLaserBeam,
     Elyvorg,
     ChargeIndicatorBalls,
-} from "../../../game/entities/enemies/elyvorg.js";
+} from "../../../game/entities/enemies/bosses/elyvorg/elyvorg.js";
 
 import {
     MeteorExplosionCollision,
     PoisonDropGroundCollision,
     DarkExplosionCollision,
-    GhostFadeOut,
-} from "../../../game/animations/collisionAnimation.js";
+} from "../../../game/animations/collisionAnimation/spriteCollisions.js";
+import { GhostFadeOut } from "../../../game/animations/collisionAnimation/proceduralCollisions.js";
 
 import { EnemyBoss } from "../../../game/entities/enemies/enemies.js";
 import { PurpleWarningIndicator } from "../../../game/animations/damageIndicator.js";

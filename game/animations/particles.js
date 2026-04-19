@@ -1,4 +1,4 @@
-import { BASE_FRAME_MS } from '../config/constants.js';
+﻿import { BASE_FRAME_MS, normalizeDelta } from '../config/constants.js';
 
 class Particle {
     constructor(game) {
@@ -6,7 +6,7 @@ class Particle {
         this.markedForDeletion = false;
     }
     update(deltaTime) {
-        const dt = (deltaTime ?? BASE_FRAME_MS) / BASE_FRAME_MS;
+        const dt = normalizeDelta(deltaTime ?? BASE_FRAME_MS);
         const cabinFullyVisible = !!this.game.cabin?.isFullyVisible;
         const bossVisible = !!this.game.isBossVisible;
         if (cabinFullyVisible || bossVisible) {
@@ -45,7 +45,7 @@ export class Dust extends Particle {
     update(deltaTime) {
         super.update(deltaTime);
         if (!this.game.menu.pause.isPaused && this.createBubble && this.isUnderwater) {
-            const dt = (deltaTime ?? BASE_FRAME_MS) / BASE_FRAME_MS;
+            const dt = normalizeDelta(deltaTime ?? BASE_FRAME_MS);
             this.y -= 2 * dt;
         }
     }
@@ -99,7 +99,7 @@ export class Bubble extends Particle {
     update(deltaTime) {
         super.update(deltaTime);
         if (!this.game.menu.pause.isPaused && this.createBubble && this.isUnderwater) {
-            const dt = (deltaTime ?? BASE_FRAME_MS) / BASE_FRAME_MS;
+            const dt = normalizeDelta(deltaTime ?? BASE_FRAME_MS);
             this.y -= 2 * dt;
         }
     }
@@ -129,7 +129,7 @@ export class Splash extends Particle {
 
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = (deltaTime ?? BASE_FRAME_MS) / BASE_FRAME_MS;
+        const dt = normalizeDelta(deltaTime ?? BASE_FRAME_MS);
         if (this.game.player.isUnderwater) {
             this.y -= this.gravity * 0.6 * dt;
         } else {
@@ -160,7 +160,7 @@ export class Fire extends Particle {
 
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = (deltaTime ?? BASE_FRAME_MS) / BASE_FRAME_MS;
+        const dt = normalizeDelta(deltaTime ?? BASE_FRAME_MS);
         if (this.game.player.isUnderwater) {
             this.y -= 4 * dt;
         }
@@ -262,7 +262,7 @@ export class Fireball extends Particle {
     }
 
     update(deltaTime) {
-        const dt = (deltaTime ?? BASE_FRAME_MS) / BASE_FRAME_MS;
+        const dt = normalizeDelta(deltaTime ?? BASE_FRAME_MS);
 
         if (this.initialDirection === 'right') this.x += this.speedX * dt;
         else if (this.initialDirection === 'left') this.x -= this.speedX * dt;
@@ -337,7 +337,7 @@ export class CoinLoss extends Particle {
     }
     update(deltaTime) {
         super.update(deltaTime);
-        const dt = (deltaTime ?? BASE_FRAME_MS) / BASE_FRAME_MS;
+        const dt = normalizeDelta(deltaTime ?? BASE_FRAME_MS);
         this.gravity += 0.14 * dt;
         this.y += this.gravity * dt;
     }
@@ -363,7 +363,7 @@ class FloatingBubbleEffect extends Particle {
     }
 
     update(deltaTime) {
-        const dt = (deltaTime ?? BASE_FRAME_MS) / BASE_FRAME_MS;
+        const dt = normalizeDelta(deltaTime ?? BASE_FRAME_MS);
         const cabinFullyVisible = !!this.game.cabin?.isFullyVisible;
         const bossVisible = !!this.game.isBossVisible;
         if (cabinFullyVisible || bossVisible) {
@@ -467,7 +467,7 @@ export class SpinningChicks extends Particle {
     }
 
     update(deltaTime) {
-        const dt = (deltaTime ?? BASE_FRAME_MS) / BASE_FRAME_MS;
+        const dt = normalizeDelta(deltaTime ?? BASE_FRAME_MS);
         const player = this.game.player;
 
         if (!player.isConfused || this.game.gameOver) {
@@ -610,7 +610,7 @@ export class DashGhost extends Particle {
     update(deltaTime) {
         if (this.markedForDeletion) return;
 
-        const dt = (deltaTime ?? BASE_FRAME_MS) / BASE_FRAME_MS;
+        const dt = normalizeDelta(deltaTime ?? BASE_FRAME_MS);
         const cabinFullyVisible = !!this.game.cabin?.isFullyVisible;
         const bossVisible = !!this.game.isBossVisible;
 
@@ -745,7 +745,7 @@ export class DashFireArc extends Particle {
         if (this.game.menu.pause.isPaused) return;
 
         const dt = deltaTime ?? BASE_FRAME_MS;
-        const dtScale = dt / BASE_FRAME_MS;
+        const dtScale = normalizeDelta(dt);
         this.age += dt;
 
         const p = this.game.player;

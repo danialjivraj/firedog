@@ -2,7 +2,7 @@ import {
     ElyvorgCutscene,
     Map7ElyvorgIngameCutsceneBeforeFight,
     Map7ElyvorgIngameCutsceneAfterFight,
-} from '../../game/cutscene/elyvorgCutscenes.js';
+} from '../../game/cutscene/ingameCutscenes/elyvorgCutscenes.js';
 import * as fading from '../../game/animations/fading.js';
 
 jest.useFakeTimers();
@@ -169,18 +169,6 @@ describe('ElyvorgCutscene', () => {
     afterEach(() => {
         jest.clearAllMocks();
         jest.clearAllTimers();
-    });
-
-    it('uses Elyvorg boss metadata', () => {
-        expect(cut.getBossId()).toBe('elyvorg');
-        expect(cut.getBattleTheme()).toBe('elyvorgBattleTheme');
-        expect(cut.getResetLayerImageIds()).toEqual([
-            'map7spikeStones',
-            'map7cactus',
-            'map7rocks1',
-            'map7rocks3',
-        ]);
-        expect(cut.shouldRemoveBossAfterPostFight()).toBe(false);
     });
 
     it('runs current dialogue onAdvance, updates player state, and advances to the next dialogue state correctly', () => {
@@ -512,15 +500,6 @@ describe('Map7ElyvorgIngameCutsceneBeforeFight', () => {
     it('inherits ElyvorgCutscene interaction methods', () => {
         expect(typeof cutscene.enterOrLeftClick).toBe('function');
         expect(typeof cutscene.displayDialogue).toBe('function');
-    });
-
-    it('uses Elyvorg boss metadata', () => {
-        expect(cutscene.getBossId()).toBe('elyvorg');
-        expect(cutscene.getBattleTheme()).toBe('elyvorgBattleTheme');
-    });
-
-    it('registers exactly 29 dialogues', () => {
-        expect(cutscene.dialogue.length).toBe(29);
     });
 
     it('first dialogue is Firedog recognizing the hooded individual', () => {

@@ -1,6 +1,6 @@
 import { RecordsMenu } from '../../game/menu/recordsMenu.js';
 import { BaseMenu } from '../../game/menu/baseMenu.js';
-import { formatTimeMs } from '../../game/config/formatTime.js';
+import { formatTimeMs } from '../../game/utils/formatTime.js';
 
 describe('RecordsMenu', () => {
     let menu;

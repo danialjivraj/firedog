@@ -151,7 +151,7 @@ export const MAP_TIPS = {
     ],
     elyvorg: [
         "When Elyvorg's eyes turn grey, it is your chance to attack.",
-        "When Elyvorg throws a Gravitational Ball, it pulls you toward him.\nDestroy it before it reaches the top where you cannot reach it.",
+        "When Elyvorg throws a Gravitational Ball up in the air, it pulls you toward him.\nDestroy it before it reaches the top where you cannot reach it.",
         "When Elyvorg teleports, he will appear behind you.\nIf that is not possible, he will appear in front of you instead.",
         "Purple particles from Elyvorg's body mean a Purple Slash attack is coming.\nHe uses it while running, so Jump over him to avoid it.",
         "Blue particles from Elyvorg's body mean an Electric Wheel attack is coming.\nKeep your distance to avoid unexpected damage.",

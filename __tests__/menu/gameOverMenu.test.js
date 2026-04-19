@@ -66,37 +66,26 @@ describe('GameOverMenu', () => {
         jest.clearAllMocks();
     });
 
-    describe('draw()', () => {
-        it('draws the “Game Over!” overlay when coins are sufficient', () => {
+    describe('activateMenu()', () => {
+        it('sets title to "Game Over!" when coins are sufficient', () => {
             mockGame.notEnoughCoins = false;
             mockGame.hasActiveBoss = false;
-
-            mockGame.gameOver = true;
-
-            menu.draw(ctx);
-
-            expect(ctx.fillRect).toHaveBeenCalledWith(0, 0, 1920, 689);
+            menu.activateMenu();
             expect(menu.title).toBe('Game Over!');
-            expect(mockGame.menu.pause.canEscape).toBe(false);
             expect(menu.menuOptions).toEqual(['Retry', 'Settings', 'Back to Main Menu']);
         });
 
-        it('draws the “not enough coins” overlay when flagged', () => {
+        it('sets title to "not enough coins" when flagged', () => {
             mockGame.notEnoughCoins = true;
             mockGame.hasActiveBoss = false;
-
-            menu.draw(ctx);
-
-            expect(ctx.fillRect).toHaveBeenCalledWith(0, 0, 1920, 689);
+            menu.activateMenu();
             expect(menu.title).toBe("You don't have enough coins!");
             expect(menu.menuOptions).toEqual(['Retry', 'Settings', 'Back to Main Menu']);
         });
 
-        it('inserts the “Retry Final Boss” option when a boss is active', () => {
+        it('inserts the "Retry Final Boss" option when a boss is active', () => {
             mockGame.hasActiveBoss = true;
-
-            menu.draw(ctx);
-
+            menu.activateMenu();
             expect(menu.menuOptions).toEqual([
                 'Retry Final Boss',
                 'Retry',
@@ -104,10 +93,14 @@ describe('GameOverMenu', () => {
                 'Back to Main Menu',
             ]);
         });
+    });
 
-        it('delegates into BaseMenu.draw()', () => {
+    describe('draw()', () => {
+        it('disables canEscape and delegates to BaseMenu.draw()', () => {
+            mockGame.gameOver = true;
             jest.spyOn(BaseMenu.prototype, 'draw');
             menu.draw(ctx);
+            expect(mockGame.menu.pause.canEscape).toBe(false);
             expect(BaseMenu.prototype.draw).toHaveBeenCalledWith(ctx);
         });
     });
@@ -118,7 +111,7 @@ describe('GameOverMenu', () => {
             menu.menuActive = true;
         });
 
-        it('retries (calls reset) when “Retry” is selected', () => {
+        it('retries (calls reset) when "Retry" is selected', () => {
             menu.selectedOption = 0; // Retry
             menu.handleMenuSelection();
 
@@ -132,7 +125,7 @@ describe('GameOverMenu', () => {
             expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledTimes(1);
         });
 
-        it('goes back to main when “Back to Main Menu” is selected', () => {
+        it('goes back to main when "Back to Main Menu" is selected', () => {
             menu.selectedOption = 2; // Back to Main Menu
             menu.handleMenuSelection();
 
@@ -148,8 +141,7 @@ describe('GameOverMenu', () => {
 
         it('retries final boss using gate data and preserves time', () => {
             mockGame.hasActiveBoss = true;
-
-            menu.draw(ctx);
+            menu.activateMenu();
             menu.selectedOption = 0; // Retry Final Boss
 
             menu.handleMenuSelection();

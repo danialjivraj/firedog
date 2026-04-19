@@ -1,33 +1,18 @@
+import { Background } from '../../game/background/background.js';
+import { Layer, MovingLayer } from '../../game/background/layers.js';
+import { BackgroundEffect } from '../../game/background/effects/backgroundEffect.js';
+import { Firefly } from '../../game/background/effects/firefly.js';
+import { SmallFish, BigFish } from '../../game/background/effects/fish.js';
+import { ZabbyFlyBy, Map3Zabby1FlyBy, BonusMap3Zabby6FlyBy } from '../../game/background/effects/zabbyFlyBy.js';
+import { RaindropAnimation, RaindropSplashAnimation, SnowflakeAnimation } from '../../game/background/effects/weather.js';
+import { BubbleAnimation } from '../../game/background/effects/bubbles.js';
+import { StarField, ShootingStar } from '../../game/background/effects/stars.js';
+import { DragonSilhouette } from '../../game/background/effects/dragonSilhouette.js';
+import { MeteorBackground } from '../../game/background/effects/meteorBackground.js';
 import {
-    Layer,
-    Background,
-    RaindropAnimation,
-    RaindropSplashAnimation,
-    Firefly,
-    SmallFish,
-    BigFish,
-    Map1,
-    Map2,
-    Map3,
-    Map4,
-    Map5,
-    Map6,
-    Map7,
-    SnowflakeAnimation,
-    BonusMap1,
-    BonusMap2,
-    BonusMap3,
-    EntityAnimation,
-    MovingLayer,
-    BubbleAnimation,
-    StarField,
-    ShootingStar,
-    DragonSilhouette,
-    MeteorBackground,
-    ZabbyFlyBy,
-    Map3Zabby1FlyBy,
-    BonusMap3Zabby6FlyBy,
-} from '../../game/background/background.js';
+    Map1, Map2, Map3, Map4, Map5, Map6, Map7,
+    BonusMap1, BonusMap2, BonusMap3,
+} from '../../game/background/maps.js';
 
 function makeSoundtrack() {
     return { playSound: jest.fn(), fadeOutAndStop: jest.fn() };
@@ -611,11 +596,11 @@ describe('MovingLayer', () => {
 });
 
 // -----------------------------------------------------------------------------
-// EntityAnimation
+// BackgroundEffect
 // -----------------------------------------------------------------------------
-describe('EntityAnimation', () => {
+describe('BackgroundEffect', () => {
     test('setOneShotImageIds stores ids and resets picked id', () => {
-        const ent = new EntityAnimation({}, 0);
+        const ent = new BackgroundEffect({}, 0);
         ent._oneShotPickedId = 'already-picked';
 
         ent.setOneShotImageIds(['a', null, 'b', undefined]);
@@ -625,7 +610,7 @@ describe('EntityAnimation', () => {
     });
 
     test('setOneShotGroup exposes group key via getOneShotKeys and forces preferred id', () => {
-        const ent = new EntityAnimation({}, 0);
+        const ent = new BackgroundEffect({}, 0);
 
         ent.setOneShotGroup('GROUP_KEY', 'preferred_sprite_id');
 
@@ -636,7 +621,7 @@ describe('EntityAnimation', () => {
     });
 
     test('hasOneShotCandidate requires keys and not previously shown', () => {
-        const ent = new EntityAnimation({}, 0);
+        const ent = new BackgroundEffect({}, 0);
         expect(ent.hasOneShotCandidate()).toBe(false);
 
         ent.setOneShotImageIds(['x']);
@@ -747,11 +732,11 @@ describe('Background', () => {
             rainUpdateSpy.mockRestore();
         });
 
-        test('EntityAnimation and SnowflakeAnimation still update when cabin is visible', () => {
+        test('BackgroundEffect and SnowflakeAnimation still update when cabin is visible', () => {
             const game = makeGame();
             const bg = new Background(game, { imageId: 'A', bgSpeed: 1 });
 
-            const ent = new (class extends EntityAnimation {
+            const ent = new (class extends BackgroundEffect {
                 constructor(g) {
                     super(g, 0);
                     this.updated = 0;
@@ -1006,10 +991,10 @@ describe('Background', () => {
             r.mockRestore();
         });
 
-        test('supports EntityAnimation-style carriers via triggerOneShot()', () => {
+        test('supports BackgroundEffect-style carriers via triggerOneShot()', () => {
             const game = makeGame({ width: 800, height: 600 });
 
-            class TriggerCarrier extends EntityAnimation {
+            class TriggerCarrier extends BackgroundEffect {
                 constructor(g) {
                     super(g, 0);
                     this._keys = ['map1Zabby1'];
@@ -1047,7 +1032,7 @@ describe('Background', () => {
         test('does not mark _oneShotTriggered if the chosen carrier fails to trigger', () => {
             const game = makeGame({ width: 800, height: 600 });
 
-            class TriggerCarrier extends EntityAnimation {
+            class TriggerCarrier extends BackgroundEffect {
                 constructor(g) {
                     super(g, 0);
                     this._keys = ['map1Zabby1'];
@@ -1085,7 +1070,7 @@ describe('Background', () => {
         test('excludes carriers where hasOneShotCandidate() returns false', () => {
             const game = makeGame({ width: 800, height: 600 });
 
-            class TriggerCarrier extends EntityAnimation {
+            class TriggerCarrier extends BackgroundEffect {
                 constructor(g, key, hasCandidate) {
                     super(g, 0);
                     this._keys = [key];

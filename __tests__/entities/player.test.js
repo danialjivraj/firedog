@@ -1,6 +1,6 @@
 import { Player } from '../../game/entities/player';
 import { Fireball, PoisonBubbles, IceCrystalBubbles } from '../../game/animations/particles';
-import { CollisionLogic } from '../../game/entities/player.js';
+import { CollisionLogic } from '../../game/entities/playerCollision.js';
 
 global.document = {
     getElementById: jest.fn((id) => ({ id, tagName: 'IMG', width: 1920, height: 689 })),
@@ -38,7 +38,7 @@ jest.mock('../../game/config/skinsAndCosmetics', () => {
     };
 });
 
-jest.mock('../../game/animations/playerStates', () => ({
+jest.mock('../../game/entities/playerStates', () => ({
     Sitting: jest.fn().mockImplementation(() => ({})),
     Running: jest.fn().mockImplementation(() => ({})),
     Jumping: jest.fn().mockImplementation(() => ({})),
@@ -81,7 +81,7 @@ jest.mock('../../game/animations/tunnelVision', () => {
     return { TunnelVision };
 });
 
-jest.mock('../../game/entities/enemies/elyvorg', () => {
+jest.mock('../../game/entities/enemies/bosses/elyvorg/elyvorg', () => {
     const { EnemyBoss } = jest.requireMock('../../game/entities/enemies/enemies');
 
     class Elyvorg extends EnemyBoss {
@@ -94,7 +94,7 @@ jest.mock('../../game/entities/enemies/elyvorg', () => {
     return { Elyvorg };
 });
 
-jest.mock('../../game/entities/enemies/ntharax', () => {
+jest.mock('../../game/entities/enemies/bosses/ntharax/ntharax', () => {
     class NTharax { }
     class Kamehameha { constructor() { this.isKamehameha = true; } }
     class HealingBarrier { }
@@ -126,7 +126,7 @@ jest.mock('../../game/entities/enemies/ntharax', () => {
     };
 });
 
-jest.mock('../../game/entities/enemies/glacikal', () => {
+jest.mock('../../game/entities/enemies/bosses/glacikal/glacikal', () => {
     class IceTrail { }
     class IcyStormBall { }
     class IceSlash { }

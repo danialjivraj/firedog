@@ -17,10 +17,14 @@ export const SKINS = {
     foxSkin: { key: 'foxSkin', spriteId: 'foxSkin', label: 'Fox', description: 'Sneaky forest charm with premium mischief included.', cutscene: { prefix: 'fox' }, price: 50, ownedByDefault: false },
     leopardSkin: { key: 'leopardSkin', spriteId: 'leopardSkin', label: 'Leopard', description: 'Spots, speed, and suspiciously fancy confidence.', cutscene: { prefix: 'leopard' }, price: 50, ownedByDefault: false },
     tigerSkin: { key: 'tigerSkin', spriteId: 'tigerSkin', label: 'Tiger', description: 'Orange, striped, and absolutely not a house cat.', cutscene: { prefix: 'tiger' }, price: 50, ownedByDefault: false },
-    iceBreakerSkin: { key: 'iceBreakerSkin', spriteId: 'iceBreakerSkin', label: 'Ice Breaker', description: 'Cold enough to make awkward silence useful.', cutscene: { prefix: 'iceBreaker' }, price: 0, ownedByDefault: false },
-    infernalSkin: { key: 'infernalSkin', spriteId: 'infernalSkin', label: 'Infernal', description: 'So hot the lava asked for personal space.', cutscene: { prefix: 'infernal' }, price: 0, ownedByDefault: false },
-    galaxySkin: { key: 'galaxySkin', spriteId: 'galaxySkin', label: 'Galaxy', description: 'One small step for Firedog, one giant nap after.', cutscene: { prefix: 'galaxy' }, price: 0, ownedByDefault: false },
+    iceBreakerSkin: { key: 'iceBreakerSkin', spriteId: 'iceBreakerSkin', label: 'Ice Breaker', description: 'Cold enough to make awkward silence useful.', cutscene: { prefix: 'iceBreaker' }, price: 0, ownedByDefault: false, giftFlag: 'glacikalDefeated', giftColor: 'cyan' },
+    infernalSkin: { key: 'infernalSkin', spriteId: 'infernalSkin', label: 'Infernal', description: 'So hot the lava asked for personal space.', cutscene: { prefix: 'infernal' }, price: 0, ownedByDefault: false, giftFlag: 'elyvorgDefeated', giftColor: 'orangered' },
+    galaxySkin: { key: 'galaxySkin', spriteId: 'galaxySkin', label: 'Galaxy', description: 'One small step for Firedog, one giant nap after.', cutscene: { prefix: 'galaxy' }, price: 0, ownedByDefault: false, giftFlag: 'ntharaxDefeated', giftColor: 'violet' },
 };
+
+export const GIFT_SKINS = Object.values(SKINS)
+    .filter(skin => skin.giftFlag)
+    .map(skin => ({ key: skin.key, flag: skin.giftFlag }));
 
 export const SKIN_MENU_ORDER = [
     'defaultSkin',

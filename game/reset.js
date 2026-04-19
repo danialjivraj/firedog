@@ -1,4 +1,5 @@
 import { Player } from "./entities/player.js";
+import { COIN_LOSS_KEEP_RATE } from "./config/constants.js";
 
 export class Reset {
     constructor(game) {
@@ -6,7 +7,7 @@ export class Reset {
     }
     coinReset() {
         if (this.game.notEnoughCoins) {
-            this.game.coins = Math.floor(0.1 * this.game.coins);
+            this.game.coins = Math.floor(COIN_LOSS_KEEP_RATE * this.game.coins);
         } else {
             this.game.coins = 0;
         }
@@ -18,9 +19,9 @@ export class Reset {
             cs.removeEventListeners();
         }
         // record
-        if (this.game._recordToastTimeoutId) {
-            clearTimeout(this.game._recordToastTimeoutId);
-            this.game._recordToastTimeoutId = null;
+        if (this.game._animatedToastTimeoutId) {
+            clearTimeout(this.game._animatedToastTimeoutId);
+            this.game._animatedToastTimeoutId = null;
         }
         // shake
         this.game.stopShake();
@@ -65,9 +66,7 @@ export class Reset {
         this.game.floatingMessages = [];
         this.game.powerUps = [];
         this.game.powerDowns = [];
-        this.game.cabins = [];
-        this.game.penguins = [];
-        this.game.recordToasts = [];
+        this.game.animatedToasts = [];
         this.game.coinConvertToasts = [];
         // cutscene
         this.game.clearCutsceneState();
@@ -77,14 +76,15 @@ export class Reset {
         this.game.cabin.x = this.game.width;
         // penguin
         this.game.penguinAppeared = false;
+        if (this.game.penguini) {
+            this.game.penguini.x = this.game.width;
+            this.game.penguini.showEnterToTalkToPenguini = false;
+        }
         this.game.talkToPenguin = false;
         this.game.enterToTalkToPenguin = false;
         this.game.talkToPenguinOneTimeOnly = true;
         // boss
         this.game.bossManager.resetState();
-        this.game.bossTime = 0;
-        this.game._bossFightWasActive = false;
-        this.game._bossDefeatRecorded = false;
         // tips
         if (this.game.UI) this.game.UI.resetTip();
         // level difficulty

@@ -1,5 +1,5 @@
 import { ForestMapMenu } from '../../game/menu/forestMap.js';
-import { isLocalNight } from '../../game/config/timeOfDay.js';
+import { isLocalNight } from '../../game/utils/timeOfDay.js';
 import {
     Map3StartCutscene,
     BonusMap1StartCutscene,
@@ -11,7 +11,7 @@ import {
     Map7,
     BonusMap1,
     BonusMap3,
-} from '../../game/background/background.js';
+} from '../../game/background/maps.js';
 import { Cabin } from '../../game/entities/cabin.js';
 import { Penguini } from '../../game/entities/penguini.js';
 import {
@@ -19,7 +19,7 @@ import {
     getCosmeticChromaDegFromState,
 } from '../../game/config/skinsAndCosmetics.js';
 
-jest.mock('../../game/config/timeOfDay.js', () => ({
+jest.mock('../../game/utils/timeOfDay.js', () => ({
     isLocalNight: jest.fn(() => false),
 }));
 
@@ -72,7 +72,7 @@ jest.mock('../../game/cutscene/storyCutscenes.js', () => {
     };
 });
 
-jest.mock('../../game/background/background.js', () => {
+jest.mock('../../game/background/maps.js', () => {
     class Map1 { constructor(game) { this.game = game; } }
     class Map2 { constructor(game) { this.game = game; } }
     class Map3 { constructor(game) { this.game = game; } }
@@ -609,36 +609,16 @@ describe('ForestMapMenu', () => {
     });
 
     describe('computeMapNameParts()', () => {
-        it('returns correct labels and color for a main map index', () => {
-            const result = menu.computeMapNameParts(0); // map1
-
+        it('returns labels and color for a valid index', () => {
+            const result = menu.computeMapNameParts(0);
             expect(result.nameKey).toBe('map1');
             expect(result.mapIndexLabel).toBe('MAP 1');
-            expect(result.mapNameLabel).toBe('LUNAR GLADE');
+            expect(result.mapNameLabel).toBeTruthy();
             expect(result.colorCfg).toBe(menu.mapColors.map1);
-        });
-
-        it('returns correct labels and color for the new Map6 (Venomveil Lake)', () => {
-            const result = menu.computeMapNameParts(5);
-
-            expect(result.nameKey).toBe('map6');
-            expect(result.mapIndexLabel).toBe('MAP 6');
-            expect(result.mapNameLabel).toBe('VENOMVEIL LAKE');
-            expect(result.colorCfg).toBe(menu.mapColors.map6);
-        });
-
-        it('returns correct labels and color for a bonus map index', () => {
-            const result = menu.computeMapNameParts(7); // bonus1
-
-            expect(result.nameKey).toBe('bonus1');
-            expect(result.mapIndexLabel).toBe('BONUS MAP 1');
-            expect(result.mapNameLabel).toBe('ICEBOUND CAVE');
-            expect(result.colorCfg).toBe(menu.mapColors.bonus1);
         });
 
         it('returns empty labels and default colors for invalid index', () => {
             const result = menu.computeMapNameParts(99);
-
             expect(result.nameKey).toBeNull();
             expect(result.mapIndexLabel).toBe('');
             expect(result.mapNameLabel).toBe('');

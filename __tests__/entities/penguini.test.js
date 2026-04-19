@@ -74,19 +74,18 @@ describe('Penguini', () => {
             expect(penguini.frameX).toBe(0);
         });
 
-        test('moves left until cabin is visible then snaps & stops', () => {
+        test('moves left while cabin is not fully visible', () => {
             const startX = penguini.x;
             penguini.update(13.333);
             expect(penguini.x).toBeCloseTo(startX - game.speed);
+        });
 
-            penguini.x = game.fixedPenguinX + game.speed - 1;
+        test('stops moving once cabin becomes fully visible', () => {
             penguini.update(13.333);
-            expect(penguini.isFullyVisible).toBe(true);
-            expect(penguini.x).toBe(game.fixedPenguinX);
-
-            const prev = penguini.x;
+            const stoppedX = penguini.x;
+            game.cabin.isFullyVisible = true;
             penguini.update(13.333);
-            expect(penguini.x).toBe(prev);
+            expect(penguini.x).toBe(stoppedX);
         });
 
         describe('interaction clamp & prompt logic', () => {
@@ -120,29 +119,21 @@ describe('Penguini', () => {
                 expect(game.enterToTalkToPenguin).toBe(false);
             });
 
-            test('does nothing if game.penguini is null', () => {
-                game.talkToPenguin = true;
-                game.penguini = null;
-                penguini.showEnterToTalkToPenguini = true;
-                penguini.update(0);
-                expect(penguini.showEnterToTalkToPenguini).toBe(false);
-            });
         });
     });
 
     describe('draw()', () => {
         test('always draws the current sprite frame', () => {
             penguini.frameX = 2;
-            penguini.frameY = 1;
             penguini.x = 150;
             penguini.y = 80;
             penguini.draw(ctx);
             expect(ctx.drawImage).toHaveBeenCalledWith(
                 fakeSpritesheet,
-                2 * penguini.frameWidth,
-                1 * penguini.frameHeight,
-                penguini.frameWidth,
-                penguini.frameHeight,
+                2 * penguini.width,
+                0,
+                penguini.width,
+                penguini.height,
                 150, 80,
                 penguini.width, penguini.height
             );

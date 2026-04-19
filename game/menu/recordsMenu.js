@@ -1,7 +1,8 @@
-import { BaseMenu } from "./baseMenu.js";
-import { formatTimeMs } from "../config/formatTime.js";
+import { ScrollableMenu } from "./scrollableMenu.js";
+import { formatTimeMs } from "../utils/formatTime.js";
+import { MAP_DISPLAY_NAMES } from "../config/constants.js";
 
-export class RecordsMenu extends BaseMenu {
+export class RecordsMenu extends ScrollableMenu {
     constructor(game) {
         super(game, ["Go Back"], "Records");
 
@@ -18,16 +19,8 @@ export class RecordsMenu extends BaseMenu {
         this.positionOffset = 270;
         this.menuOptionsPositionOffset = 0;
 
-        // scroll
-        this.scrollY = 0;
-        this.targetScrollY = 0;
-        this.scrollMax = 0;
-        this.scrollEase = 0.18;
-
-        this.barWidth = 8;
+        // override ScrollableMenu default
         this.barTrackAlpha = 0.14;
-        this.draggingBar = false;
-        this.barRect = null;
 
         this._onMouseDown = this.handleMouseDown.bind(this);
         this._onMouseUp = this.handleMouseUp.bind(this);
@@ -145,8 +138,7 @@ export class RecordsMenu extends BaseMenu {
         const contentH = unlockedLen * (this.rowH + this.rowGap);
         this.scrollMax = Math.max(0, contentH - geom.listH);
 
-        this.targetScrollY = Math.max(0, Math.min(this.targetScrollY, this.scrollMax));
-        this.scrollY += (this.targetScrollY - this.scrollY) * this.scrollEase;
+        this.tickScroll();
     }
 
     scrollSelectedIntoView(listH, unlockedLen) {
@@ -159,17 +151,6 @@ export class RecordsMenu extends BaseMenu {
         else if (itemBottom > this.targetScrollY + listH) this.targetScrollY = itemBottom - listH;
 
         this.targetScrollY = Math.max(0, Math.min(this.targetScrollY, this.scrollMax));
-    }
-
-    updateScrollFromThumb(mouseY) {
-        if (!this.barRect) return;
-        const { y, h, thumbH } = this.barRect;
-        const travel = h - thumbH;
-        if (travel <= 1) return;
-
-        let t = (mouseY - y - thumbH / 2) / travel;
-        t = Math.max(0, Math.min(1, t));
-        this.targetScrollY = t * this.scrollMax;
     }
 
     // keyboard
@@ -336,41 +317,11 @@ export class RecordsMenu extends BaseMenu {
         this.game.goBackMenu();
     }
 
-    canvasMouse(event) {
-        const rect = this.game.canvas.getBoundingClientRect();
-        const scaleX = this.game.canvas.width / rect.width;
-        const scaleY = this.game.canvas.height / rect.height;
-        return {
-            mouseX: (event.clientX - rect.left) * scaleX,
-            mouseY: (event.clientY - rect.top) * scaleY,
-        };
-    }
-
     draw(context) {
         if (!this.menuActive) return;
 
-        // background
-        context.save();
-        if (this.menuInGame === false) {
-            if (this.backgroundImage) {
-                context.drawImage(this.backgroundImage, 0, 0, this.game.width, this.game.height);
-            }
-        } else if (this.game.menu.pause.isPaused) {
-            context.fillStyle = "rgba(0, 0, 0, 0.7)";
-            context.fillRect(0, 0, this.game.width, this.game.height);
-        }
-        context.restore();
-
-        // title
-        context.save();
-        context.font = "bold 46px Love Ya Like A Sister";
-        context.fillStyle = "white";
-        context.shadowColor = "black";
-        context.shadowOffsetX = 3;
-        context.shadowOffsetY = 3;
-        context.textAlign = "center";
-        context.fillText(this.title, this.game.width / 2, this.game.height / 2 - this.positionOffset);
-        context.restore();
+        this.drawBackdrop(context);
+        this.drawTitle(context);
 
         const unlocked = this.getUnlockedMaps();
         const geom = this.geometry();
@@ -461,7 +412,8 @@ export class RecordsMenu extends BaseMenu {
             context.shadowColor = "transparent";
             context.textBaseline = "middle";
 
-            const mapY = yMid;
+            const mapY = yMid - 10;
+            const mapSubY = yMid + 13;
             const clearY = hasBossLine ? yMid - 10 : yMid;
             const bossY = yMid + 16;
 
@@ -470,6 +422,10 @@ export class RecordsMenu extends BaseMenu {
             context.font = isSelected ? "bold 28px Arial" : "bold 26px Arial";
             context.fillStyle = isSelected ? "yellow" : "rgba(255,255,255,0.92)";
             context.fillText(m.label, xMap, mapY);
+
+            context.font = "15px Arial";
+            context.fillStyle = isSelected ? "rgba(255,220,0,0.75)" : "rgba(255,255,255,0.50)";
+            context.fillText(MAP_DISPLAY_NAMES[m.key], xMap, mapSubY);
 
             // clear
             context.textAlign = "right";
