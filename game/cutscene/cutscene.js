@@ -1283,10 +1283,9 @@ export class Cutscene {
             if (!this.game.menu.pause.isPaused && !this.pause) {
                 this.playEightBitSound('bit1');
                 this._textAdvanceAccum += (this.game.deltaTime ?? BASE_FRAME_MS);
-                while (this._textAdvanceAccum >= BASE_FRAME_MS) {
+                if (this._textAdvanceAccum >= BASE_FRAME_MS) {
                     this._textAdvanceAccum -= BASE_FRAME_MS;
                     this.textIndex++;
-                    if (this.textIndex >= dialogue.length) break;
                 }
             } else {
                 this.game.audioHandler.cutsceneDialogue.stopSound('bit1');
