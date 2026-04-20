@@ -1,3 +1,11 @@
+const STATUS_THEMES = {
+    freeze: { tint: 'rgba(0, 210, 255, 0.15)', arc: '#00d4ff', glow: 'rgba(0, 210, 255, 0.80)', label: 'F', border: 'rgba(0, 195, 255, 0.55)' },
+    poison: { tint: 'rgba(57, 255, 20, 0.14)', arc: '#39ff14', glow: 'rgba(57, 255, 20, 0.70)', label: 'P', border: 'rgba(57, 255, 20, 0.48)' },
+    slow: { tint: 'rgba(30, 80, 200, 0.16)', arc: '#3a8fff', glow: 'rgba(40, 120, 255, 0.70)', label: 'S', border: 'rgba(50, 130, 255, 0.52)' },
+    confuse: { tint: 'rgba(255, 200, 0, 0.15)', arc: '#ffd700', glow: 'rgba(255, 200, 0, 0.72)', label: 'C', border: 'rgba(255, 200, 0, 0.52)' },
+    blackHole: { tint: 'rgba(150, 60, 255, 0.14)', arc: '#c070ff', glow: 'rgba(135, 55, 225, 0.72)', label: 'B', border: 'rgba(155, 72, 225, 0.52)' },
+};
+
 export class StatusEffectsUI {
     constructor(ui) {
         this.ui = ui;
@@ -86,15 +94,7 @@ export class StatusEffectsUI {
             ? this.ui.clamp(effect.remaining / effect.total, 0, 1)
             : 0;
 
-        const themes = {
-            freeze: { tint: 'rgba(0, 210, 255, 0.15)', arc: '#00d4ff', glow: 'rgba(0, 210, 255, 0.80)', label: 'F', border: 'rgba(0, 195, 255, 0.55)' },
-            poison: { tint: 'rgba(57, 255, 20, 0.14)', arc: '#39ff14', glow: 'rgba(57, 255, 20, 0.70)', label: 'P', border: 'rgba(57, 255, 20, 0.48)' },
-            slow: { tint: 'rgba(30, 80, 200, 0.16)', arc: '#3a8fff', glow: 'rgba(40, 120, 255, 0.70)', label: 'S', border: 'rgba(50, 130, 255, 0.52)' },
-            confuse: { tint: 'rgba(255, 200, 0, 0.15)', arc: '#ffd700', glow: 'rgba(255, 200, 0, 0.72)', label: 'C', border: 'rgba(255, 200, 0, 0.52)' },
-            blackHole: { tint: 'rgba(150, 60, 255, 0.14)', arc: '#c070ff', glow: 'rgba(135, 55, 225, 0.72)', label: 'B', border: 'rgba(155, 72, 225, 0.52)' },
-        };
-
-        const theme = themes[effect.key] || {
+        const theme = STATUS_THEMES[effect.key] || {
             tint: 'rgba(128, 128, 128, 0.15)',
             arc: effect.color,
             glow: effect.color,
@@ -154,9 +154,21 @@ export class StatusEffectsUI {
         ctx.save();
         this.ui.roundedRectPath(ctx, x, y, size, size, radius);
         ctx.clip();
-        const gloss = ctx.createLinearGradient(0, y, 0, y + size * 0.5);
-        gloss.addColorStop(0, 'rgba(255, 255, 255, 0.14)');
-        gloss.addColorStop(1, 'rgba(255, 255, 255, 0.00)');
+        const glossKey = `${y}|${size}`;
+        let gloss = this._glossCache?.get(glossKey);
+        if (!gloss) {
+            gloss = ctx.createLinearGradient(0, y, 0, y + size * 0.5);
+            if (gloss) {
+                gloss.addColorStop(0, 'rgba(255, 255, 255, 0.14)');
+                gloss.addColorStop(1, 'rgba(255, 255, 255, 0.00)');
+                if (!this._glossCache) this._glossCache = new Map();
+                if (this._glossCache.size > 16) {
+                    const firstKey = this._glossCache.keys().next().value;
+                    if (firstKey !== undefined) this._glossCache.delete(firstKey);
+                }
+                this._glossCache.set(glossKey, gloss);
+            }
+        }
         ctx.fillStyle = gloss;
         ctx.fillRect(x, y, size, size);
         ctx.restore();

@@ -1,4 +1,5 @@
 ﻿import { BASE_FRAME_MS, normalizeDelta } from '../config/constants.js';
+import { getHuedSprite, getBubbleBallSprite, getStatusBubbleSprite, getChickGlowSprite } from '../utils/spriteCache.js';
 
 class Particle {
     constructor(game) {
@@ -229,9 +230,18 @@ export class Fireball extends Particle {
     }
 
     drawBubbleBall(ctx, x, y, r, variant = 'normal') {
+        const sprite = getBubbleBallSprite(r, variant);
+        if (sprite) {
+            const pad = sprite._pad || 0;
+            ctx.save();
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.drawImage(sprite, x - pad, y - pad);
+            ctx.restore();
+            return;
+        }
+
         ctx.save();
 
-        // outer glow
         ctx.globalCompositeOperation = 'lighter';
         const glow = ctx.createRadialGradient(x, y, 0, x, y, r * 1.6);
         if (variant === 'red') {
@@ -245,7 +255,6 @@ export class Fireball extends Particle {
         ctx.fillStyle = glow;
         ctx.beginPath(); ctx.arc(x, y, r * 1.6, 0, Math.PI * 2); ctx.fill();
 
-        // shell
         ctx.globalCompositeOperation = 'source-over';
         const shell = ctx.createRadialGradient(x, y, 0, x, y, r);
         if (variant === 'red') {
@@ -261,7 +270,6 @@ export class Fireball extends Particle {
         ctx.fillStyle = shell;
         ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
 
-        // specular highlights
         ctx.fillStyle = 'rgba(255,255,255,0.9)';
         ctx.beginPath(); ctx.arc(x - r * 0.35, y - r * 0.35, r * 0.18, 0, Math.PI * 2); ctx.fill();
 
@@ -410,6 +418,18 @@ export class PoisonBubbles extends FloatingBubbleEffect {
     }
 
     draw(ctx) {
+        const sprite = getStatusBubbleSprite(
+            this.size, this.fill, this.stroke, this.shadowColor, this.shadowBlur
+        );
+        if (sprite) {
+            const pad = sprite._pad || 0;
+            ctx.save();
+            ctx.globalAlpha = Math.max(0, this.life);
+            ctx.drawImage(sprite, this.x - pad, this.y - pad);
+            ctx.restore();
+            return;
+        }
+
         ctx.save();
         ctx.globalAlpha = Math.max(0, this.life);
 
@@ -535,16 +555,26 @@ export class SpinningChicks extends Particle {
         const py = p.y + p.height * (0.5 - this._headOffsetYRatio);
 
         // glow
-        ctx.save();
-        ctx.globalCompositeOperation = 'lighter';
-        const glow = ctx.createRadialGradient(px, py, 0, px, py, this.radiusX + 18);
-        glow.addColorStop(0.0, 'rgba(255, 80, 80, 0.13)');
-        glow.addColorStop(1.0, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = glow;
-        ctx.beginPath();
-        ctx.arc(px, py, this.radiusX + 18, 0, this.TWO_PI);
-        ctx.fill();
-        ctx.restore();
+        const glowR = this.radiusX + 18;
+        const glowSprite = getChickGlowSprite(glowR);
+        if (glowSprite) {
+            const pad = glowSprite._pad || 0;
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.drawImage(glowSprite, px - pad, py - pad);
+            ctx.restore();
+        } else {
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            const glow = ctx.createRadialGradient(px, py, 0, px, py, glowR);
+            glow.addColorStop(0.0, 'rgba(255, 80, 80, 0.13)');
+            glow.addColorStop(1.0, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = glow;
+            ctx.beginPath();
+            ctx.arc(px, py, glowR, 0, this.TWO_PI);
+            ctx.fill();
+            ctx.restore();
+        }
 
         for (let i = 0; i < this.count; i++) {
             const a = this.baseAngle + i * (this.TWO_PI / this.count);
@@ -670,12 +700,27 @@ export class DashGhost extends Particle {
         if (this.layers.length) {
             ctx.globalAlpha = layerAlpha;
 
+            let filterDirty = false;
             for (const layer of this.layers) {
                 const img = layer?.img;
                 if (!img) continue;
 
                 const d = Number(layer.hueDeg) || 0;
-                ctx.filter = Math.abs(d) > 0.001 ? `hue-rotate(${d}deg)` : 'none';
+
+                if (Math.abs(d) > 0.001) {
+                    const cached = getHuedSprite(
+                        img, this.sx, this.sy, this.sw, this.sh, dw, dh, d
+                    );
+                    if (cached) {
+                        ctx.drawImage(cached, -dw / 2, -dh / 2, dw, dh);
+                        continue;
+                    }
+                    ctx.filter = `hue-rotate(${d}deg)`;
+                    filterDirty = true;
+                } else if (filterDirty) {
+                    ctx.filter = 'none';
+                    filterDirty = false;
+                }
 
                 ctx.drawImage(
                     img,
@@ -684,7 +729,7 @@ export class DashGhost extends Particle {
                 );
             }
 
-            ctx.filter = 'none';
+            if (filterDirty) ctx.filter = 'none';
         }
 
         ctx.restore();

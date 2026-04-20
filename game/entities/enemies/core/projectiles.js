@@ -1,6 +1,7 @@
 ﻿import { normalizeDelta } from "../../../config/constants.js";
 import { withCtx, drawSprite, setShadow, getImg } from "./enemyUtils.js";
 import { Enemy } from "./enemyBase.js";
+import { getGlowOrbSprite } from "../../../utils/spriteCache.js";
 
 export class Projectile extends Enemy {
     constructor(game, x, y, width, height, maxFrame, imageId, speedX, fps) {
@@ -388,20 +389,33 @@ export class GlowOrb extends Projectile {
         const r = this.width / 2;
         const grow = this.growDuration > 0 ? Math.min(1, this.pulseTimer / this.growDuration) : 1;
         const pulse = 0.85 + 0.15 * Math.sin(this.pulseTimer * 0.01);
+        const scale = pulse * grow;
+
+        const sprite = getGlowOrbSprite(this.width, this.outerColor, this.innerColor);
+        if (sprite) {
+            const pad = sprite._pad || 0;
+            context.save();
+            context.translate(cx, cy);
+            context.scale(scale, scale);
+            context.drawImage(sprite, -pad, -pad);
+            context.restore();
+            return;
+        }
+
         withCtx(context, () => {
             context.shadowColor = this.outerColor;
             context.shadowBlur = 18;
             context.globalAlpha = 0.3;
             context.fillStyle = this.outerColor;
             context.beginPath();
-            context.arc(cx, cy, r * 1.3 * pulse * grow, 0, Math.PI * 2);
+            context.arc(cx, cy, r * 1.3 * scale, 0, Math.PI * 2);
             context.fill();
 
             context.globalAlpha = 1;
             context.shadowBlur = 10;
             context.fillStyle = this.innerColor;
             context.beginPath();
-            context.arc(cx, cy, r * 0.55 * pulse * grow, 0, Math.PI * 2);
+            context.arc(cx, cy, r * 0.55 * scale, 0, Math.PI * 2);
             context.fill();
         });
     }

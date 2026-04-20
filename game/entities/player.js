@@ -22,6 +22,7 @@ import { Fireball, PoisonBubbles, IceCrystalBubbles, SpinningChicks } from '../a
 import { DamageIndicator } from '../animations/damageIndicator.js';
 import { TunnelVision } from '../animations/tunnelVision.js';
 import { CollisionLogic } from './playerCollision.js';
+import { getTintedFrame, getGlowedSprite } from '../utils/spriteCache.js';
 
 export class Player {
     constructor(game) {
@@ -543,43 +544,12 @@ export class Player {
     }
 
     getTintedFrameCanvas(img, sx, sy, sw, sh, dw, dh, tint, hueDeg = null) {
-        const OW = Math.max(1, Math.round(dw));
-        const OH = Math.max(1, Math.round(dh));
-
-        if (!this.tintCanvas) {
-            this.tintCanvas = document.createElement('canvas');
-            this.tintCtx = this.tintCanvas.getContext('2d');
-        }
-        const oc = this.tintCanvas;
-        const octx = this.tintCtx;
-
-        if (oc.width !== OW || oc.height !== OH) {
-            oc.width = OW;
-            oc.height = OH;
-        }
-
-        octx.setTransform(1, 0, 0, 1, 0, 0);
-        octx.clearRect(0, 0, OW, OH);
-        octx.globalCompositeOperation = 'source-over';
-
-        drawWithOptionalHue(octx, { hueDeg }, () => {
-            octx.drawImage(img, sx, sy, sw, sh, 0, 0, OW, OH);
-        });
-
-        octx.globalCompositeOperation = 'source-atop';
-        if (typeof tint === 'string') {
-            octx.fillStyle = tint;
-        } else {
-            const grad = tint.dir === 'horizontal'
-                ? octx.createLinearGradient(0, 0, OW, 0)
-                : octx.createLinearGradient(0, 0, 0, OH);
-            for (const stop of tint.stops) grad.addColorStop(stop.offset, stop.color);
-            octx.fillStyle = grad;
-        }
-        octx.fillRect(0, 0, OW, OH);
-        octx.globalCompositeOperation = 'source-over';
-
-        return oc;
+        const oc = getTintedFrame(img, sx, sy, sw, sh, dw, dh, tint, hueDeg);
+        if (oc) return oc;
+        const fallback = document.createElement('canvas');
+        fallback.width = Math.max(1, Math.round(dw));
+        fallback.height = Math.max(1, Math.round(dh));
+        return fallback;
     }
 
     drawPlayerWithCurrentSkin(context, skipSkin = false) {
@@ -659,6 +629,16 @@ export class Player {
         const drawCosmeticsGlow = (color, blur) => {
             for (const layer of cosmeticLayers) {
                 if (!layer?.img) continue;
+
+                const cached = getGlowedSprite(
+                    layer.img, sx, sy, sw, sh, dw, dh, color, blur, layer.hueDeg
+                );
+                if (cached) {
+                    const padX = cached._padX || 0;
+                    const padY = cached._padY || 0;
+                    context.drawImage(cached, dx - padX, dy - padY, cached.width, cached.height);
+                    continue;
+                }
 
                 drawWithOptionalHue(context, { hueDeg: layer.hueDeg }, () => {
                     drawGlowLayer(layer.img, color, blur);

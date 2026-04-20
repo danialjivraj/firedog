@@ -1,4 +1,5 @@
 import { drawCoinIcon } from '../interface/coinIcon.js';
+import { getFilteredOutline, OUTLINE_OFFSETS } from '../utils/spriteCache.js';
 
 export class FloatingMessage {
     constructor(value, x, y, options = {}) {
@@ -30,6 +31,11 @@ export class FloatingMessage {
 
         this.elapsed = 0;
         this.markedForDeletion = false;
+
+        this._wFs = -1;
+        this._wTextWidth = 0;
+        this._wNumWidth = 0;
+        this._wLetWidth = 0;
     }
 
     update(deltaTime) {
@@ -68,16 +74,6 @@ export class FloatingMessage {
             const iconW = this.iconWidth * (scaledFs / this.fontSize);
             const iconH = this.iconHeight * (scaledFs / this.fontSize);
             const iconY = this.y - iconH / 2 + this.iconOffsetY;
-            const outlineOffsets = [
-                [-1, 0],
-                [1, 0],
-                [0, -1],
-                [0, 1],
-                [-1, -1],
-                [1, -1],
-                [-1, 1],
-                [1, 1],
-            ];
 
             context.save();
             context.shadowColor = 'transparent';
@@ -94,13 +90,17 @@ export class FloatingMessage {
                     { isLoss: this.coinIconLoss ?? String(this.value).startsWith('-') }
                 );
             } else if (this.iconStrokeFilter) {
-                context.save();
-                context.filter = this.iconStrokeFilter;
-
-                for (const [ox, oy] of outlineOffsets) {
-                    context.drawImage(this.iconImage, iconX + ox, iconY + oy, iconW, iconH);
+                const cached = getFilteredOutline(this.iconImage, iconW, iconH, this.iconStrokeFilter);
+                if (cached) {
+                    context.drawImage(cached, iconX - 1, iconY - 1, cached.width, cached.height);
+                } else {
+                    context.save();
+                    context.filter = this.iconStrokeFilter;
+                    for (const [ox, oy] of OUTLINE_OFFSETS) {
+                        context.drawImage(this.iconImage, iconX + ox, iconY + oy, iconW, iconH);
+                    }
+                    context.restore();
                 }
-                context.restore();
             } else {
                 context.shadowColor = this.iconShadowColor;
                 context.shadowBlur = 0;
@@ -120,10 +120,20 @@ export class FloatingMessage {
             const scaledFs = Math.round(this.fontSize * scale);
             const smallerFs = Math.round(scaledFs * 0.7);
 
-            context.font = `bold ${scaledFs}px Love Ya Like A Sister`;
-            const numWidth = context.measureText(numberPart).width;
-            context.font = `bold ${smallerFs}px Love Ya Like A Sister`;
-            const letWidth = context.measureText(letterPart).width;
+            let numWidth, letWidth;
+            if (this._wFs === scaledFs) {
+                numWidth = this._wNumWidth;
+                letWidth = this._wLetWidth;
+                context.font = `bold ${scaledFs}px Love Ya Like A Sister`;
+            } else {
+                context.font = `bold ${scaledFs}px Love Ya Like A Sister`;
+                numWidth = context.measureText(numberPart).width;
+                context.font = `bold ${smallerFs}px Love Ya Like A Sister`;
+                letWidth = context.measureText(letterPart).width;
+                this._wFs = scaledFs;
+                this._wNumWidth = numWidth;
+                this._wLetWidth = letWidth;
+            }
 
             const startX = this.x - (numWidth + letWidth) / 2;
 
@@ -145,7 +155,14 @@ export class FloatingMessage {
             context.font = `bold ${scaledFs}px Love Ya Like A Sister`;
             context.lineWidth = 3;
             context.strokeStyle = this.strokeColor;
-            const textWidth = context.measureText(this.value).width;
+            let textWidth;
+            if (this._wFs === scaledFs) {
+                textWidth = this._wTextWidth;
+            } else {
+                textWidth = context.measureText(this.value).width;
+                this._wFs = scaledFs;
+                this._wTextWidth = textWidth;
+            }
             const iconW = hasIcon ? this.iconWidth * (scaledFs / this.fontSize) : 0;
             const totalWidth = textWidth + (hasIcon ? iconW + this.iconGap : 0);
             const startX = this.x - totalWidth / 2;

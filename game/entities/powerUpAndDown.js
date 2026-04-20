@@ -1,4 +1,5 @@
 ﻿import { normalizeDelta } from '../config/constants.js';
+import { getBlackHoleSwirlSprite } from '../utils/spriteCache.js';
 
 class Power {
     constructor(game) {
@@ -360,14 +361,20 @@ export class BlackHole extends PowerDown {
             const x = p.radius;
             const y = 0;
 
-            const grad = context.createRadialGradient(x, y, 0, x, y, size * 2.2);
-            grad.addColorStop(0, 'rgba(120, 200, 255, 1)');
-            grad.addColorStop(1, 'rgba(0, 0, 40, 0)');
+            const sprite = getBlackHoleSwirlSprite(size);
+            if (sprite) {
+                const pad = sprite._pad || 0;
+                context.drawImage(sprite, x - pad, y - pad);
+            } else {
+                const grad = context.createRadialGradient(x, y, 0, x, y, size * 2.2);
+                grad.addColorStop(0, 'rgba(120, 200, 255, 1)');
+                grad.addColorStop(1, 'rgba(0, 0, 40, 0)');
 
-            context.fillStyle = grad;
-            context.beginPath();
-            context.ellipse(x, y, size, size * 0.9, 0, 0, Math.PI * 2);
-            context.fill();
+                context.fillStyle = grad;
+                context.beginPath();
+                context.ellipse(x, y, size, size * 0.9, 0, 0, Math.PI * 2);
+                context.fill();
+            }
 
             context.restore();
         }

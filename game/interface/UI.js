@@ -2,6 +2,7 @@ import { drawCoinIcon } from './coinIcon.js';
 import { TipRenderer } from './tipRenderer.js';
 import { AbilityUI } from './abilityUI.js';
 import { StatusEffectsUI } from './statusEffectsUI.js';
+import { getFilteredOutline, OUTLINE_OFFSETS } from '../utils/spriteCache.js';
 
 export class UI {
     constructor(game) {
@@ -360,16 +361,6 @@ export class UI {
         const iconSize = 25;
         const centerX = baseX + iconSize / 2;
         const centerY = baseY + iconSize / 2;
-        const outlineOffsets = [
-            [-1, 0],
-            [1, 0],
-            [0, -1],
-            [0, 1],
-            [-1, -1],
-            [1, -1],
-            [-1, 1],
-            [1, 1],
-        ];
 
         context.save();
         context.shadowColor = 'transparent';
@@ -399,12 +390,19 @@ export class UI {
             context.shadowBlur = 18;
             context.drawImage(this.livesImage, -iconSize / 2, -iconSize / 2, iconSize, iconSize);
         } else {
-            context.save();
-            context.filter = 'brightness(0) invert(1)';
-            for (const [ox, oy] of outlineOffsets) {
-                context.drawImage(this.livesImage, baseX + ox, baseY + oy, iconSize, iconSize);
+            const outlineCanvas = getFilteredOutline(
+                this.livesImage, iconSize, iconSize, 'brightness(0) invert(1)'
+            );
+            if (outlineCanvas) {
+                context.drawImage(outlineCanvas, baseX - 1, baseY - 1, outlineCanvas.width, outlineCanvas.height);
+            } else {
+                context.save();
+                context.filter = 'brightness(0) invert(1)';
+                for (const [ox, oy] of OUTLINE_OFFSETS) {
+                    context.drawImage(this.livesImage, baseX + ox, baseY + oy, iconSize, iconSize);
+                }
+                context.restore();
             }
-            context.restore();
             context.drawImage(this.livesImage, baseX, baseY, iconSize, iconSize);
         }
         context.restore();
@@ -658,26 +656,58 @@ export class UI {
         return a + (b - a) * t;
     }
 
-    getRedToGreenGradient(ctx, x, w) {
-        const g = ctx.createLinearGradient(x, 0, x + w, 0);
-        g.addColorStop(0.0, 'rgb(255, 45, 45)');
-        g.addColorStop(0.5, 'rgb(255, 220, 70)');
-        g.addColorStop(1.0, 'rgb(60, 230, 120)');
+    _getCachedGradient(ctx, key, buildX, buildW, stops) {
+        if (!this._gradientCache) this._gradientCache = new Map();
+        const fullKey = `${key}|${buildX}|${buildW}`;
+        let g = this._gradientCache.get(fullKey);
+        if (g) return g;
+        g = ctx.createLinearGradient(buildX, 0, buildX + buildW, 0);
+        if (!g) return null;
+        for (const [offset, color] of stops) g.addColorStop(offset, color);
+        if (this._gradientCache.size > 32) {
+            const firstKey = this._gradientCache.keys().next().value;
+            if (firstKey !== undefined) this._gradientCache.delete(firstKey);
+        }
+        this._gradientCache.set(fullKey, g);
         return g;
+    }
+
+    getRedToGreenGradient(ctx, x, w) {
+        return this._getCachedGradient(ctx, 'rg', x, w, [
+            [0.0, 'rgb(255, 45, 45)'],
+            [0.5, 'rgb(255, 220, 70)'],
+            [1.0, 'rgb(60, 230, 120)'],
+        ]) ?? (() => {
+            const g = ctx.createLinearGradient(x, 0, x + w, 0);
+            g.addColorStop(0.0, 'rgb(255, 45, 45)');
+            g.addColorStop(0.5, 'rgb(255, 220, 70)');
+            g.addColorStop(1.0, 'rgb(60, 230, 120)');
+            return g;
+        })();
     }
 
     getBluePotionGradient(ctx, x, w) {
-        const g = ctx.createLinearGradient(x, 0, x + w, 0);
-        g.addColorStop(0.0, 'rgb(140, 220, 255)');
-        g.addColorStop(1.0, 'rgba(15, 103, 255, 1)');
-        return g;
+        return this._getCachedGradient(ctx, 'bp', x, w, [
+            [0.0, 'rgb(140, 220, 255)'],
+            [1.0, 'rgba(15, 103, 255, 1)'],
+        ]) ?? (() => {
+            const g = ctx.createLinearGradient(x, 0, x + w, 0);
+            g.addColorStop(0.0, 'rgb(140, 220, 255)');
+            g.addColorStop(1.0, 'rgba(15, 103, 255, 1)');
+            return g;
+        })();
     }
 
     getPoisonGradient(ctx, x, w) {
-        const g = ctx.createLinearGradient(x, 0, x + w, 0);
-        g.addColorStop(0.0, 'rgb(10, 120, 50)');
-        g.addColorStop(1.0, 'rgb(140, 255, 160)');
-        return g;
+        return this._getCachedGradient(ctx, 'po', x, w, [
+            [0.0, 'rgb(10, 120, 50)'],
+            [1.0, 'rgb(140, 255, 160)'],
+        ]) ?? (() => {
+            const g = ctx.createLinearGradient(x, 0, x + w, 0);
+            g.addColorStop(0.0, 'rgb(10, 120, 50)');
+            g.addColorStop(1.0, 'rgb(140, 255, 160)');
+            return g;
+        })();
     }
 
     drawEnergyBar(ctx, x, y, w, h, ratio01, status, showExhaustedMarker, thresholdRatio01) {
@@ -741,9 +771,20 @@ export class UI {
             ctx.fillRect(ix, iy, fillW, ih);
 
             const shineH = ih * this.energyBar.shineHeightRatio;
-            const shine = ctx.createLinearGradient(0, iy, 0, iy + shineH);
-            shine.addColorStop(0, 'rgba(255,255,255,0.35)');
-            shine.addColorStop(1, 'rgba(255,255,255,0.00)');
+            let shine = this._shineCache?.get(`${iy}|${shineH}`);
+            if (!shine) {
+                shine = ctx.createLinearGradient(0, iy, 0, iy + shineH);
+                if (shine) {
+                    shine.addColorStop(0, 'rgba(255,255,255,0.35)');
+                    shine.addColorStop(1, 'rgba(255,255,255,0.00)');
+                    if (!this._shineCache) this._shineCache = new Map();
+                    if (this._shineCache.size > 16) {
+                        const firstKey = this._shineCache.keys().next().value;
+                        if (firstKey !== undefined) this._shineCache.delete(firstKey);
+                    }
+                    this._shineCache.set(`${iy}|${shineH}`, shine);
+                }
+            }
             ctx.fillStyle = shine;
             ctx.fillRect(ix, iy, fillW, shineH);
         }

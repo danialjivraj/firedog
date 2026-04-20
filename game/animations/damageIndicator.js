@@ -15,6 +15,10 @@ export class BaseIndicator {
         this.initialOpacity = initialOpacity;
         this.alpha = this.initialOpacity;
         this.elapsedTime = 0;
+
+        this._cachedGradient = null;
+        this._cachedGradientW = 0;
+        this._cachedGradientH = 0;
     }
 
     update(deltaTime) {
@@ -43,10 +47,16 @@ export class BaseIndicator {
         const R = 0.5 * baseDim * this.outerRadiusFactor;
         const tInner = Math.max(0, 1 - this.ringThicknessFactor);
 
-        const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
-        g.addColorStop(0.00, `rgba(${this.rgbString}, ${this.centerAlpha})`);
-        g.addColorStop(Math.min(0.55, tInner * 0.8), `rgba(${this.rgbString}, ${this.midAlpha})`);
-        g.addColorStop(1.00, `rgba(${this.rgbString}, ${this.edgeAlpha})`);
+        if (!this._cachedGradient || this._cachedGradientW !== W || this._cachedGradientH !== H) {
+            const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
+            g.addColorStop(0.00, `rgba(${this.rgbString}, ${this.centerAlpha})`);
+            g.addColorStop(Math.min(0.55, tInner * 0.8), `rgba(${this.rgbString}, ${this.midAlpha})`);
+            g.addColorStop(1.00, `rgba(${this.rgbString}, ${this.edgeAlpha})`);
+            this._cachedGradient = g;
+            this._cachedGradientW = W;
+            this._cachedGradientH = H;
+        }
+        const g = this._cachedGradient;
 
         ctx.save();
         ctx.globalAlpha = this.alpha;
