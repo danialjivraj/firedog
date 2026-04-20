@@ -179,11 +179,12 @@ export class Map5 extends Background {
 
         this.soundId = 'map5Soundtrack';
         this.isRaining = false;
+        this._raindropLayers = [raindropBack, raindropMid, raindropFront];
     }
 
     update(deltaTime) {
         super.update(deltaTime);
-        const raindropLayers = this.backgroundLayers.filter(layer => layer instanceof RaindropAnimation);
+        const raindropLayers = this._raindropLayers;
 
         const shouldRain = (
             (this.totalDistanceTraveled > 30 && this.totalDistanceTraveled <= 60) ||

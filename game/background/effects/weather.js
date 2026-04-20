@@ -97,18 +97,20 @@ export class RaindropAnimation {
         if (!this.isRaining && this.activeDropCount === 0 && this.splashes.length === 0) return;
 
         context.save();
+        context.strokeStyle = 'rgb(210, 230, 255)';
         for (let i = 0; i < this.raindrops.length; i++) {
             const drop = this.raindrops[i];
             if (!drop.active) continue;
             const dx = drop.length * 0.12;
 
+            context.globalAlpha = drop.opacity;
+            context.lineWidth = drop.width;
             context.beginPath();
             context.moveTo(drop.x, drop.y);
             context.lineTo(drop.x - dx, drop.y + drop.length);
-            context.strokeStyle = `rgba(210, 230, 255, ${drop.opacity})`;
-            context.lineWidth = drop.width;
             context.stroke();
         }
+        context.globalAlpha = 1;
         this.splashes.forEach(splash => splash.draw(context));
         context.restore();
     }

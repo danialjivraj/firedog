@@ -91,12 +91,13 @@ export class StarField extends BackgroundEffect {
         context.save();
         context.fillStyle = this.color;
 
+        context.beginPath();
         for (let i = 0; i < this.stars.length; i++) {
             const star = this.stars[i];
-            context.beginPath();
+            context.moveTo(star.x + star.radius, star.y);
             context.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-            context.fill();
         }
+        context.fill();
 
         context.restore();
     }
