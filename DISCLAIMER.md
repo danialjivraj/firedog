@@ -8,7 +8,7 @@ All source code in this project is the original work of Danial Jivraj and is pro
 
 ## Assets
 
-The project utilizes various assets, such as images and audio files, most of which are sourced from the internet. Some assets, however, are original and created by myself.
+The project utilizes various assets, such as images and audio files, most of which are sourced from the internet. Some assets, however, are original and created by the author.
 
 While some assets are indeed free for use, others may still be subject to copyright protection.
 
