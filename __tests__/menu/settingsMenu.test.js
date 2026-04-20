@@ -193,18 +193,14 @@ describe('SettingsMenu', () => {
       expect(menu.menuOptionsPositionOffset).toBe(baseMenuPos);
     });
 
-    test('in-game: _applyMenuLayout increases positionOffset based on number of options', () => {
+    test('in-game: _applyMenuLayout sets positionOffset to 200', () => {
       const basePos = menu.positionOffset;
-      const baseMenuPos = menu.menuOptionsPositionOffset;
 
       menu.menuInGame = true;
       menu.menuOptions = menu._baseInGameOptions;
       menu._applyMenuLayout();
 
-      const optionHeight = 60;
-      const expected = baseMenuPos + (menu.menuOptions.length * optionHeight) / 2;
-
-      expect(menu.positionOffset).toBe(expected);
+      expect(menu.positionOffset).toBe(200);
       expect(menu.positionOffset).not.toBe(basePos);
     });
 
@@ -215,9 +211,7 @@ describe('SettingsMenu', () => {
       menu.activateMenu({ inGame: true, selectedOption: 0 });
       expect(menu.menuInGame).toBe(true);
 
-      const optionHeight = 60;
-      const expectedInGame = baseMenuPos + (menu._baseInGameOptions.length * optionHeight) / 2;
-      expect(menu.positionOffset).toBe(expectedInGame);
+      expect(menu.positionOffset).toBe(200);
 
       menu.activateMenu({ inGame: false, selectedOption: 0 });
       expect(menu.menuInGame).toBe(false);

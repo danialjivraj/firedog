@@ -90,9 +90,7 @@ export class SettingsMenu extends BaseMenu {
             return;
         }
 
-        const optionHeight = 60;
-        const n = this.menuOptions.length;
-        this.positionOffset = this.menuOptionsPositionOffset + (n * optionHeight) / 2;
+        this.positionOffset = 200;
     }
 
     handleMenuSelection() {
