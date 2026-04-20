@@ -992,11 +992,29 @@ export const tutorialDrawMixin = {
                     if (nextFill) fill = nextFill;
                 }
 
-                ctx.fillStyle = fill || 'black';
-                ctx.strokeText(tok, xx, yy);
-                ctx.fillText(tok, xx, yy);
+                if (fill) {
+                    const leadMatch = tok.match(/^([^\w]*)/);
+                    const trailMatch = tok.match(/([^\w]*)$/);
+                    const leading = leadMatch ? leadMatch[1] : '';
+                    const trailing = trailMatch ? trailMatch[1] : '';
+                    const core = tok.slice(leading.length, tok.length - (trailing.length || 0));
 
-                xx += ctx.measureText(tok).width;
+                    const parts = [];
+                    let px = xx;
+                    if (leading) { parts.push({ text: leading, x: px, fill: 'black' }); px += ctx.measureText(leading).width; }
+                    if (core) { parts.push({ text: core, x: px, fill }); px += ctx.measureText(core).width; }
+                    if (trailing) { parts.push({ text: trailing, x: px, fill: 'black' }); px += ctx.measureText(trailing).width; }
+
+                    for (const p of parts) ctx.strokeText(p.text, p.x, yy);
+                    for (const p of parts) { ctx.fillStyle = p.fill; ctx.fillText(p.text, p.x, yy); }
+
+                    xx = px;
+                } else {
+                    ctx.fillStyle = 'black';
+                    ctx.strokeText(tok, xx, yy);
+                    ctx.fillText(tok, xx, yy);
+                    xx += ctx.measureText(tok).width;
+                }
             }
 
             yy += lineH;
