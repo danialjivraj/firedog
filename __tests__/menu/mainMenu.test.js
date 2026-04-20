@@ -120,7 +120,7 @@ describe('MainMenu', () => {
     test('"Play" plays mapOpening and activates forestMap', () => {
       selectAndRun(0);
 
-      expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('mapOpening');
+      expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('mapOpening', false, true);
       expect(mockGame.openMenu).toHaveBeenCalledWith(mockGame.menu.forestMap, 0);
       expect(mockGame.menu.forestMap.activateMenu).toHaveBeenCalledWith(0);
     });

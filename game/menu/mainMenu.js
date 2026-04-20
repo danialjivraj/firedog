@@ -19,7 +19,7 @@ export class MainMenu extends BaseMenu {
         super.handleMenuSelection();
 
         if (selectedOption === 'Play') {
-            this.game.audioHandler.menu.playSound('mapOpening');
+            this.game.audioHandler.menu.playSound('mapOpening', false, true);
             this.game.openMenu(this.game.menu.forestMap, 0);
         } else if (selectedOption === 'Wardrobe') {
             this.game.openMenu(this.game.menu.wardrobe, 0);
