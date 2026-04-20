@@ -35,7 +35,32 @@ export class BubbleAnimation extends BackgroundEffect {
         this.bandMax = Math.max(this.bandMin, Math.min(1, band.max ?? 1));
         this.spawnBelowGround = !!band.spawnBelowGround;
 
+        this._createGlowSprite();
         this.spawnAll();
+    }
+
+    _createGlowSprite() {
+        const refRadius = 16;
+        const blur = refRadius * 2;
+        const pad = blur * 3;
+        const size = Math.ceil((refRadius + pad) * 2);
+
+        const c = document.createElement('canvas');
+        c.width = size;
+        c.height = size;
+        const ctx = c.getContext('2d');
+        if (!ctx) { this._glowSprite = null; return; }
+
+        ctx.shadowColor = this.colors.shadow;
+        ctx.shadowBlur = blur;
+        ctx.fillStyle = this.colors.base;
+        ctx.beginPath();
+        ctx.arc(size / 2, size / 2, refRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        this._glowSprite = c;
+        this._glowRefRadius = refRadius;
+        this._glowSpriteSize = size;
     }
 
     spawnAll() {
@@ -122,19 +147,20 @@ export class BubbleAnimation extends BackgroundEffect {
         context.save();
         context.globalCompositeOperation = 'lighter';
 
-        context.shadowColor = this.colors.shadow;
-        context.fillStyle = this.colors.base;
+        if (this._glowSprite) {
+            const sprite = this._glowSprite;
+            const refR = this._glowRefRadius;
+            const spriteSize = this._glowSpriteSize;
 
-        for (const b of this.bubbles) {
-            if (b.opacity <= 0) continue;
-            context.globalAlpha = b.opacity;
-            context.shadowBlur = b.radius * 2;
-            context.beginPath();
-            context.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
-            context.fill();
+            for (const b of this.bubbles) {
+                if (b.opacity <= 0) continue;
+                context.globalAlpha = b.opacity;
+                const scale = b.radius / refR;
+                const drawSize = spriteSize * scale;
+                context.drawImage(sprite, b.x - drawSize * 0.5, b.y - drawSize * 0.5, drawSize, drawSize);
+            }
         }
 
-        context.shadowBlur = 0;
         context.fillStyle = this.colors.highlight;
 
         for (const b of this.bubbles) {
