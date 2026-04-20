@@ -107,7 +107,9 @@ jest.mock('../../game/entities/enemies/bosses/ntharax/ntharax', () => {
     class PurpleAsteroid { }
     class BlueAsteroid { }
     class GroundShockwaveRing { }
-    class LaserBall { }
+    class SlowLaserBall { }
+    class PoisonLaserBall { }
+    class RedLaserBall { }
 
     return {
         NTharax,
@@ -122,7 +124,9 @@ jest.mock('../../game/entities/enemies/bosses/ntharax/ntharax', () => {
         PurpleAsteroid,
         BlueAsteroid,
         GroundShockwaveRing,
-        LaserBall,
+        SlowLaserBall,
+        PoisonLaserBall,
+        RedLaserBall,
     };
 });
 

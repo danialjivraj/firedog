@@ -187,7 +187,7 @@ beforeAll(() => {
     this.draw = jest.fn();
   });
 
-  global.LaserBall = jest.fn().mockImplementation(function LaserBall(game, x, y, tx, ty, opts) {
+  const laserBallMockImpl = function(game, x, y, tx, ty, opts) {
     this.game = game;
     this.x = x;
     this.y = y;
@@ -195,7 +195,10 @@ beforeAll(() => {
     this.targetY = ty;
     this.opts = opts;
     this.markedForDeletion = false;
-  });
+  };
+  global.SlowLaserBall = jest.fn().mockImplementation(laserBallMockImpl);
+  global.PoisonLaserBall = jest.fn().mockImplementation(laserBallMockImpl);
+  global.RedLaserBall = jest.fn().mockImplementation(laserBallMockImpl);
 
   global.HealingBarrier = jest.fn().mockImplementation(function HealingBarrier(game, x, y, opts) {
     this.game = game;
@@ -660,7 +663,7 @@ describe("NTharax", () => {
   });
 
   describe("laser attack", () => {
-    test("laserLogic spawns a LaserBall when reaching max frame (normal and mode2)", () => {
+    test("laserLogic spawns a laser ball when reaching max frame (normal and mode2)", () => {
       const { game, boss } = createBoss();
 
       boss.shouldInvert = true;

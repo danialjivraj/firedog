@@ -124,7 +124,7 @@ body {
         /* ntharax */
         #ntharaxIdle, #ntharaxRun, #ntharaxJump, #ntharaxDive, #ntharaxBall, #ntharaxWing, #ntharaxKneel, #ntharaxYellow, #ntharaxAsteroid, #ntharaxBlack, #ntharaxPurple, #ntharaxDistortion, #ntharaxSlap, #ntharaxHealing, #ntharaxTentacle, #ntharaxFly, #ntharaxLaser,
             /* abilities */
-            #healingStar, #galacticSpike, #antennaeTentacleUpward, #laserBall, #laserBallMode2, #purpleAsteroid, #blueAsteroid, #healingBarrier, #healingBarrier1, #healingBarrier2, #healingBarrier3, #healingBarrier4,
+            #healingStar, #galacticSpike, #antennaeTentacleUpward, #slowLaserBall, #redLaserBall, #poisonLaserBall, #purpleAsteroid, #blueAsteroid, #healingBarrier, #healingBarrier1, #healingBarrier2, #healingBarrier3, #healingBarrier4,
         /* projectiles */ 
         #leafAttack, #darkLeafAttack, #windAttack, #poison_spit, #aura, #iceBall, #darkLaser, #yellowBeam, #purpleLaser, #inkBeam, #frozenShard, #lavaBall, #poisonousOrb,
         /* goblin */

@@ -165,7 +165,7 @@ export const MAP_TIPS = {
         "Glacikal can summon large icicles from below.\nTouching them through Rolling or Diving, will damage you, so stay sharp.",
     ],
     ntharax: [
-        "Many attacks will damage you during Rolling or Diving, such as ground tentacles and spirit balls. Avoid them completely.",
+        "Some attacks will damage you during Rolling or Diving, such as ground tentacles and spirit balls. Avoid them completely.",
         "If N'Tharax throws a small bouncing purple, or yellow orb,\ndestroy it quickly before it multiplies.",
         "N'Tharax can create a Healing Barrier that restores his health when damaged.\nAvoid attacking him while the barrier is active.",
         "If the ground fills with warning markers, Jump just before the Stun spikes appear.\nWhile in the air and falling, use your Double Jump just before you touch the Stun spikes.",

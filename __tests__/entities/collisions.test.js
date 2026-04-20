@@ -157,7 +157,7 @@ import {
 
 import {
     NTharax, HealingBarrier, GalacticSpike, PurpleBallOrb, AntennaeTentacle, YellowBeamOrb, BlackBeamOrb,
-    PurpleBeamOrb, PurpleAsteroid, BlueAsteroid, GroundShockwaveRing, LaserBall,
+    PurpleBeamOrb, PurpleAsteroid, BlueAsteroid, GroundShockwaveRing, SlowLaserBall, PoisonLaserBall, RedLaserBall,
 } from '../../game/entities/enemies/bosses/ntharax/ntharax.js';
 
 import { InkSplash } from '../../game/animations/ink.js';
@@ -183,7 +183,6 @@ import {
     AsteroidExplosionCollision,
     GalacticSpikeCollision,
     PurpleFireballCollision,
-    RedFireballCollision,
     HealingStarBurstCollision,
     PoisonousOrbCollision,
 } from '../../game/animations/collisionAnimation/spriteCollisions.js';
@@ -412,11 +411,6 @@ function makeEnemy(EnemyClass, overrides = {}) {
         safeSet(enemy, 'groundBottom', 300);
         safeSet(enemy, 'heightScale', 1);
     }
-    if (EnemyClass === LaserBall) {
-        safeSet(enemy, 'mode2Active', false);
-        safeSet(enemy, 'mode2', false);
-    }
-
     for (const [k, v] of Object.entries(overrides)) safeSet(enemy, k, v);
     return enemy;
 }
@@ -503,6 +497,7 @@ const redEnemyGroup = [
     ['Golex', Golex, 2, 'fallback'],
     ['RedOrb', RedOrb, 1, DisintegrateCollision],
     ['Frogula', Frogula, 1, 'fallback'],
+    ['RedLaserBall', RedLaserBall, 1, DisintegrateCollision],
 ];
 
 const poisonEnemyGroup = [
@@ -520,6 +515,7 @@ const poisonEnemyGroup = [
     ['Bloburn', Bloburn, 'fallback'],
     ['GreenOrb', GreenOrb, DisintegrateCollision],
     ['PoisonousOrb', PoisonousOrb, PoisonousOrbCollision],
+    ['PoisonLaserBall', PoisonLaserBall, DisintegrateCollision],
 ];
 
 const slowEnemyGroup = [
@@ -535,6 +531,7 @@ const slowEnemyGroup = [
     ['FrozenShard', FrozenShard, DisintegrateCollision, null],
     ['BlueOrb', BlueOrb, DisintegrateCollision, null],
     ['Vespion', Vespion, 'fallback', null],
+    ['SlowLaserBall', SlowLaserBall, DisintegrateCollision, null],
 ];
 
 const frozenEnemyGroup = [
@@ -725,18 +722,6 @@ describe('CollisionLogic.handleNormalCollision — full coverage (FX correctness
                 expectNoDamage(ctx);
             }
         });
-    });
-
-    test('LaserBall: mode1 => PurpleFireballCollision once; mode2 => RedFireballCollision once', () => {
-        const ctx1 = makeGameAndLogic();
-        const e1 = makeEnemy(LaserBall, { mode2Active: false, mode2: false });
-        runNormalScenario(ctx1, e1, { label: 'x', isInvisible: false, isDashing: false });
-        expectCollisionCounts(ctx1, [[PurpleFireballCollision, 1]]);
-
-        const ctx2 = makeGameAndLogic();
-        const e2 = makeEnemy(LaserBall, { mode2Active: true, mode2: true });
-        runNormalScenario(ctx2, e2, { label: 'x', isInvisible: false, isDashing: false });
-        expectCollisionCounts(ctx2, [[RedFireballCollision, 1]]);
     });
 
     describe.each(noFxEnemyGroup)('Handled-but-no-FX: %s', (_name, EnemyClass) => {
@@ -1301,22 +1286,6 @@ describe('CollisionLogic.handleRollingOrDivingCollision — full coverage (FX co
                 expectNoDamage(ctx);
             }
         });
-    });
-
-    test('LaserBall: mode1 => PurpleFireballCollision once; mode2 => RedFireballCollision once', () => {
-        const ctx1 = makeGameAndLogic();
-        const e1 = makeEnemy(LaserBall, { mode2Active: false, mode2: false });
-        runRollDiveScenario(ctx1, e1, { label: 'x', isInvisible: false, isRollOrDive: true });
-        expectCollisionCounts(ctx1, [[PurpleFireballCollision, 1]]);
-        expect(ctx1.game.lives).toBe(2);
-        expect(ctx1.game.coins).toBe(49);
-
-        const ctx2 = makeGameAndLogic();
-        const e2 = makeEnemy(LaserBall, { mode2Active: true, mode2: true });
-        runRollDiveScenario(ctx2, e2, { label: 'x', isInvisible: false, isRollOrDive: true });
-        expectCollisionCounts(ctx2, [[RedFireballCollision, 1]]);
-        expect(ctx2.game.lives).toBe(2);
-        expect(ctx2.game.coins).toBe(49);
     });
 
     describe.each(stunEnemyGroup)('Stun enemy: %s', (_name, EnemyClass, Expected, livesOverride) => {
@@ -1978,30 +1947,6 @@ describe('CollisionLogic.fireball vs enemy', () => {
 
         expectExactlyOneCollision(ctx, ExpectedFx);
         expect(fireball.markedForDeletion).toBe(fireballType === 'normalMode');
-    });
-
-    test('LaserBall: mode1 => PurpleFireballCollision; mode2 => RedFireballCollision (both fireball types)', () => {
-        for (const fireballType of ['normalMode', 'redPotionMode']) {
-            {
-                const ctx = makeGameAndLogic();
-                const enemy = makeEnemy(LaserBall, { x: 10, y: 10, mode2Active: false, mode2: false });
-
-                const fireball = runFireballVsEnemy(ctx, enemy, fireballType);
-
-                expectExactlyOneCollision(ctx, PurpleFireballCollision);
-                expect(fireball.markedForDeletion).toBe(fireballType === 'normalMode');
-            }
-
-            {
-                const ctx = makeGameAndLogic();
-                const enemy = makeEnemy(LaserBall, { x: 10, y: 10, mode2Active: true, mode2: true });
-
-                const fireball = runFireballVsEnemy(ctx, enemy, fireballType);
-
-                expectExactlyOneCollision(ctx, RedFireballCollision);
-                expect(fireball.markedForDeletion).toBe(fireballType === 'normalMode');
-            }
-        }
     });
 
     // ------------------------------------------------------------------

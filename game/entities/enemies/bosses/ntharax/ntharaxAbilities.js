@@ -37,7 +37,7 @@ export class LaserBall extends Projectile {
             width = 40,
             height = 40,
             maxFrame = 0,
-            imageId = "laserBall",
+            imageId = "slowLaserBall",
             fps = 0,
             speed = 1500,
             offscreenMargin = 220,
@@ -48,7 +48,6 @@ export class LaserBall extends Projectile {
             glowColor = "rgba(180, 80, 255, 0.95)",
             glowBlur = 22,
             glowAlpha = 0.9,
-            mode2Active = false,
         } = opts;
 
         super(
@@ -63,7 +62,6 @@ export class LaserBall extends Projectile {
             fps
         );
 
-        this.mode2Active = mode2Active;
         this.offscreenMargin = offscreenMargin;
 
         let dx = targetX - spawnX;
@@ -150,6 +148,39 @@ export class LaserBall extends Projectile {
         drawSelf();
 
         context.restore();
+    }
+}
+
+export class SlowLaserBall extends LaserBall {
+    constructor(game, spawnX, spawnY, targetX, targetY, opts = {}) {
+        super(game, spawnX, spawnY, targetX, targetY, {
+            imageId: "slowLaserBall",
+            glowColor: "rgba(80, 140, 255, 0.95)",
+            ...opts,
+        });
+        this.isSlowEnemy = true;
+    }
+}
+
+export class PoisonLaserBall extends LaserBall {
+    constructor(game, spawnX, spawnY, targetX, targetY, opts = {}) {
+        super(game, spawnX, spawnY, targetX, targetY, {
+            imageId: "poisonLaserBall",
+            glowColor: "rgba(80, 255, 80, 0.95)",
+            ...opts,
+        });
+        this.isPoisonEnemy = true;
+    }
+}
+
+export class RedLaserBall extends LaserBall {
+    constructor(game, spawnX, spawnY, targetX, targetY, opts = {}) {
+        super(game, spawnX, spawnY, targetX, targetY, {
+            imageId: "redLaserBall",
+            glowColor: "rgba(255, 90, 90, 0.95)",
+            ...opts,
+        });
+        this.isRedEnemy = true;
     }
 }
 

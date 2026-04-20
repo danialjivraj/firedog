@@ -5,7 +5,8 @@ import { DisintegrateCollision } from "../../../../animations/collisionAnimation
 export * from "./ntharaxAbilities.js";
 export * from "./ntharaxKamehameha.js";
 import {
-    HealingBarrier, LaserBall, GalacticSpike, PurpleBallOrb, PurpleBallOrbAttack,
+    HealingBarrier, SlowLaserBall, PoisonLaserBall, RedLaserBall,
+    GalacticSpike, PurpleBallOrbAttack,
     PurpleBeamOrb, YellowBeamOrb, BlackBeamOrb, AntennaeTentacle,
     GroundShockwaveRing, PurpleAsteroid, BlueAsteroid,
 } from "./ntharaxAbilities.js";
@@ -1379,14 +1380,11 @@ export class NTharax extends EnemyBoss {
 
                 const speed = this.mode2Active ? 1800 : 1500;
 
-                const imageId = this.mode2Active ? "laserBallMode2" : "laserBall";
-
-                const glowColor = this.mode2Active
-                    ? "rgba(255, 90, 90, 0.95)"
-                    : "rgba(180, 80, 255, 0.95)";
+                const LaserBallTypes = [SlowLaserBall, PoisonLaserBall, RedLaserBall];
+                const ChosenLaserBall = LaserBallTypes[Math.floor(Math.random() * LaserBallTypes.length)];
 
                 this.game.enemies.push(
-                    new LaserBall(
+                    new ChosenLaserBall(
                         this.game,
                         spawnX,
                         spawnY,
@@ -1397,13 +1395,9 @@ export class NTharax extends EnemyBoss {
                             width: 40,
                             height: 40,
                             maxFrame: 0,
-                            imageId,
                             fps: 0,
-
-                            glowColor,
                             glowBlur: 22,
                             glowAlpha: 0.9,
-                            mode2Active: this.mode2Active,
                         }
                     )
                 );
@@ -2233,7 +2227,7 @@ export class NTharax extends EnemyBoss {
                 return;
             }
 
-            const anyRetracting = activeSpikes.some(s => s.phase === "retract");
+            const anyRetracting = this.kneelSpikes && this.kneelSpikes.some(s => s && !s.markedForDeletion && s.phase === "retract");
 
             if (anyRetracting) {
                 this.kneelPhase = "returning";
