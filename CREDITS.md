@@ -7,11 +7,11 @@ These are the programs I've used to be able to edit my assets:
 - VectorMagic
 - Audacity
 
-## Assets
+## Tutorials
+- **Frank's Laboratory** - [YouTube](https://www.youtube.com/@Frankslaboratory)
+  - The initial game loop and core 2D game structure were based on tutorials from this channel. The project has since been vastly extended and modified.
 
-### Videos
-- **Frank's Laboratory**
-  - YouTube: [Franks Laboratory](https://www.youtube.com/@Frankslaboratory)
+## Assets
 
 ### Images
 - **Cursor:**
