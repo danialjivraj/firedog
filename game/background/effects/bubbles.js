@@ -122,21 +122,24 @@ export class BubbleAnimation extends BackgroundEffect {
         context.save();
         context.globalCompositeOperation = 'lighter';
 
+        context.shadowColor = this.colors.shadow;
+        context.fillStyle = this.colors.base;
+
         for (const b of this.bubbles) {
             if (b.opacity <= 0) continue;
-
             context.globalAlpha = b.opacity;
             context.shadowBlur = b.radius * 2;
-            context.shadowColor = this.colors.shadow;
-
-            context.fillStyle = this.colors.base;
             context.beginPath();
             context.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
             context.fill();
+        }
 
-            context.shadowBlur = 0;
+        context.shadowBlur = 0;
+        context.fillStyle = this.colors.highlight;
+
+        for (const b of this.bubbles) {
+            if (b.opacity <= 0) continue;
             context.globalAlpha = b.opacity * 0.8;
-            context.fillStyle = this.colors.highlight;
             context.beginPath();
             context.arc(
                 b.x - b.radius * 0.35,

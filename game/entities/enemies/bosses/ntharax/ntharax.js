@@ -393,6 +393,46 @@ export class NTharax extends EnemyBoss {
         this.healStateCounter = 0;
         this.healStateCounterLimit = (12 + Math.random() * 4) * BASE_FRAME_MS; // 12 to 15
 
+        this._stateAnimationMap = {
+            run: this.runAnimation,
+            jump: this.jumpAnimation,
+            dive: this.diveAnimation,
+            ball: this.ballAnimation,
+            wing: this.wingAnimation,
+            purple: this.purpleAnimation,
+            yellow: this.yellowAnimation,
+            black: this.blackAnimation,
+            asteroid: this.asteroidAnimation,
+            slap: this.slapAnimation,
+            tentacle: this.tentacleAnimation,
+            healing: this.healingAnimation,
+            distortion: this.ntharaxDistortionAnimation,
+            kneel: this.kneelAnimation,
+            fly: this.flyAnimation,
+            laser: this.laserAnimation,
+        };
+
+        this._drawAnimationMap = {
+            run: this.runAnimation,
+            jump: this.jumpAnimation,
+            dive: this.diveAnimation,
+            ball: this.ballAnimation,
+            wing: this.wingAnimation,
+            purple: this.purpleAnimation,
+            yellow: this.yellowAnimation,
+            black: this.blackAnimation,
+            asteroid: this.asteroidAnimation,
+            slap: this.slapAnimation,
+            tentacle: this.tentacleAnimation,
+            healing: this.healingAnimation,
+            distortion: this.ntharaxDistortionAnimation,
+            kneel: this.kneelAnimation,
+            fly: this.flyAnimation,
+            laser: this.laserAnimation,
+            transform: null,
+            burrow: null,
+        };
+
         // anchors
         this.stateAnchors = {
             idle: { x: 193.5 / 2, y: 240 },
@@ -3050,26 +3090,7 @@ export class NTharax extends EnemyBoss {
 
         this.state = selectedState;
 
-        const stateAnimations = {
-            run: this.runAnimation,
-            jump: this.jumpAnimation,
-            dive: this.diveAnimation,
-            ball: this.ballAnimation,
-            wing: this.wingAnimation,
-            purple: this.purpleAnimation,
-            yellow: this.yellowAnimation,
-            black: this.blackAnimation,
-            asteroid: this.asteroidAnimation,
-            slap: this.slapAnimation,
-            tentacle: this.tentacleAnimation,
-            healing: this.healingAnimation,
-            distortion: this.ntharaxDistortionAnimation,
-            kneel: this.kneelAnimation,
-            fly: this.flyAnimation,
-            laser: this.laserAnimation,
-        };
-
-        const animation = stateAnimations[this.state];
+        const animation = this._stateAnimationMap[this.state];
         if (animation) {
             if (this.state === "run") {
                 const step = this.getRunStep();
@@ -3327,27 +3348,6 @@ export class NTharax extends EnemyBoss {
                 this.x + this.width / 2;
         }
 
-        const stateAnimations = {
-            run: this.runAnimation,
-            jump: this.jumpAnimation,
-            dive: this.diveAnimation,
-            ball: this.ballAnimation,
-            wing: this.wingAnimation,
-            purple: this.purpleAnimation,
-            yellow: this.yellowAnimation,
-            black: this.blackAnimation,
-            asteroid: this.asteroidAnimation,
-            slap: this.slapAnimation,
-            tentacle: this.tentacleAnimation,
-            healing: this.healingAnimation,
-            distortion: this.ntharaxDistortionAnimation,
-            kneel: this.kneelAnimation,
-            fly: this.flyAnimation,
-            laser: this.laserAnimation,
-            transform: null,
-            burrow: null,
-        };
-
         const isBurrowing = this.state === "burrow";
         const groundY = this.originalY + this.height;
 
@@ -3369,7 +3369,7 @@ export class NTharax extends EnemyBoss {
                 return;
             }
 
-            const animation = stateAnimations[this.state];
+            const animation = this._drawAnimationMap[this.state];
             if (!animation) {
                 this.endPowerVisual(context);
                 return;

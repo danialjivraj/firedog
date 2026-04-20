@@ -380,19 +380,13 @@ describe('Splash', () => {
         expect(ctx.drawImage).toHaveBeenCalled();
     });
 
-    it('draw() returns early when resolved image is missing', () => {
-        const prevImpl = document.getElementById.getMockImplementation();
-        document.getElementById.mockImplementation((id) => {
-            if (id === splash.imageId) return null;
-            return prevImpl(id);
-        });
+    it('draw() returns early when cached image is missing', () => {
+        splash.image = null;
 
         ctx.drawImage.mockClear();
         splash.draw(ctx);
 
         expect(ctx.drawImage).not.toHaveBeenCalled();
-
-        document.getElementById.mockImplementation(prevImpl);
     });
 });
 
@@ -453,18 +447,12 @@ describe('Fire', () => {
     });
 
     it('draw() returns early when image is missing', () => {
-        const prevImpl = document.getElementById.getMockImplementation();
-        document.getElementById.mockImplementation((id) => {
-            if (id === fire.imageId) return null;
-            return prevImpl(id);
-        });
+        fire.image = null;
 
         ctx.drawImage.mockClear();
         fire.draw(ctx);
 
         expect(ctx.drawImage).not.toHaveBeenCalled();
-
-        document.getElementById.mockImplementation(prevImpl);
     });
 });
 
@@ -1438,7 +1426,7 @@ describe('DashFireArc', () => {
         jest.spyOn(Math, 'random').mockReturnValue(0);
 
         const p = new DashFireArc(game, 100, 100, true);
-        p.imageId = 'missing_img';
+        p.image = null;
 
         ctx.drawImage.mockClear();
         expect(() => p.draw(ctx)).not.toThrow();

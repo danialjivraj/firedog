@@ -122,6 +122,7 @@ export class Elyvorg extends EnemyBoss {
         this.thunderAnimation.frameX = 0;
         this.isThunderSequenceActive = false;
         this.thunderSequenceInitialised = false;
+        this._activeThundersCache = [];
         this.thunderMaxActive = 4;
         this.thunderIterationsMax = 5;
         this.thunderTotalSpawned = 0;
@@ -146,6 +147,34 @@ export class Elyvorg extends EnemyBoss {
         this.postTeleportSafeTimer = 0;
 
         this.jumpedBeforeDistanceLogic = false;
+
+        this._stateAnimationMap = {
+            'run': this.runAnimation,
+            'laser': this.laserAnimation,
+            'meteor': this.meteorAnimation,
+            'ghost': this.ghostAnimation,
+            'gravity': this.gravityAnimation,
+            'ink': this.inkAnimation,
+            'fireball': this.fireballAnimation,
+            'poison': this.poisonAnimation,
+            'jump': this.jumpAnimation,
+            'thunder': this.thunderAnimation,
+        };
+
+        this._drawAnimationNameMap = {
+            'recharge': 'rechargeAnimation',
+            'run': 'runAnimation',
+            'jump': 'jumpAnimation',
+            'laser': 'laserAnimation',
+            'meteor': 'meteorAnimation',
+            'pistol': 'pistolAnimation',
+            'ghost': 'ghostAnimation',
+            'gravity': 'gravityAnimation',
+            'ink': 'inkAnimation',
+            'fireball': 'fireballAnimation',
+            'poison': 'poisonAnimation',
+            'thunder': 'thunderAnimation'
+        };
     }
 
     startRunSFX() {
@@ -252,7 +281,8 @@ export class Elyvorg extends EnemyBoss {
     }
 
     getActiveThunders() {
-        const list = [];
+        const list = this._activeThundersCache;
+        list.length = 0;
         for (const enemy of this.game.enemies) {
             if (enemy instanceof PurpleThunder && !enemy.markedForDeletion && enemy.phase !== "done") {
                 list.push(enemy);
@@ -944,10 +974,11 @@ export class Elyvorg extends EnemyBoss {
     ensureElectricWheelOnTop() {
         if (!this.electricWheel) return;
         const enemies = this.game.enemies;
+        const last = enemies.length - 1;
         const idx = enemies.indexOf(this.electricWheel);
-        if (idx !== -1 && idx !== enemies.length - 1) {
-            enemies.splice(idx, 1);
-            enemies.push(this.electricWheel);
+        if (idx !== -1 && idx !== last) {
+            enemies[idx] = enemies[last];
+            enemies[last] = this.electricWheel;
         }
     }
 
@@ -1189,20 +1220,7 @@ export class Elyvorg extends EnemyBoss {
 
         this.state = selectedState;
 
-        const stateAnimations = {
-            'run': this.runAnimation,
-            'laser': this.laserAnimation,
-            'meteor': this.meteorAnimation,
-            'ghost': this.ghostAnimation,
-            'gravity': this.gravityAnimation,
-            'ink': this.inkAnimation,
-            'fireball': this.fireballAnimation,
-            'poison': this.poisonAnimation,
-            'jump': this.jumpAnimation,
-            'thunder': this.thunderAnimation,
-        };
-
-        const animation = stateAnimations[this.state];
+        const animation = this._stateAnimationMap[this.state];
         if (animation) {
             if (this.state === 'run') {
                 this.runningDirection = this.shouldInvert ? 10 : -10;
@@ -1305,28 +1323,13 @@ export class Elyvorg extends EnemyBoss {
 
         this.shouldInvert = this.game.player.x + this.game.player.width / 2 > this.x + this.width / 2;
 
-        const stateAnimations = {
-            'recharge': 'rechargeAnimation',
-            'run': 'runAnimation',
-            'jump': 'jumpAnimation',
-            'laser': 'laserAnimation',
-            'meteor': 'meteorAnimation',
-            'pistol': 'pistolAnimation',
-            'ghost': 'ghostAnimation',
-            'gravity': 'gravityAnimation',
-            'ink': 'inkAnimation',
-            'fireball': 'fireballAnimation',
-            'poison': 'poisonAnimation',
-            'thunder': 'thunderAnimation'
-        };
-
         if (this.state === 'idle') {
             super.draw(context, this.shouldInvert);
         } else if (this.state === 'teleport') {
             // elyvorg invisible while teleport animation plays
             return;
         } else {
-            const animationName = stateAnimations[this.state];
+            const animationName = this._drawAnimationNameMap[this.state];
             if (animationName) {
                 const animation = this[animationName];
                 if (animation) {

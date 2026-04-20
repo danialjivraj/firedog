@@ -108,6 +108,25 @@ export class Glacikal extends EnemyBoss {
         this.isRunSoundPlaying = false;
         this.canPlayJumpLandSound = false;
 
+        this._stateAnimationMap = {
+            run: this.runAnimation,
+            jump: this.jumpAnimation,
+            icyStorm: this.icyStormAnimation,
+            iceSlashAttack: this.iceSlashAttackAnimation,
+            kneelDown: this.glacikalKneelDownAnimation,
+            extendedArm: this.glacikalExtendedArmAnimation,
+        };
+
+        this._drawAnimationMap = {
+            run: this.runAnimation,
+            jump: this.jumpAnimation,
+            icyStorm: this.icyStormAnimation,
+            iceSlashAttack: this.iceSlashAttackAnimation,
+            kneelDown: this.glacikalKneelDownAnimation,
+            recharge: this.glacikalRechargeAnimation,
+            extendedArm: this.glacikalExtendedArmAnimation,
+        };
+
         // anchors
         this.stateAnchors = {
             idle: { x: 58, y: 180 },
@@ -717,16 +736,7 @@ export class Glacikal extends EnemyBoss {
 
         this.enterState(selectedState);
 
-        const stateAnimations = {
-            run: this.runAnimation,
-            jump: this.jumpAnimation,
-            icyStorm: this.icyStormAnimation,
-            iceSlashAttack: this.iceSlashAttackAnimation,
-            kneelDown: this.glacikalKneelDownAnimation,
-            extendedArm: this.glacikalExtendedArmAnimation,
-        };
-
-        const animation = stateAnimations[this.state];
+        const animation = this._stateAnimationMap[this.state];
         if (animation) {
             if (this.state === "run") {
                 this.runningDirection = this.shouldInvert ? 10 : -10;
@@ -834,22 +844,12 @@ export class Glacikal extends EnemyBoss {
     draw(context) {
         this.shouldInvert = this.game.player.x + this.game.player.width / 2 > this.x + this.width / 2;
 
-        const stateAnimations = {
-            run: this.runAnimation,
-            jump: this.jumpAnimation,
-            icyStorm: this.icyStormAnimation,
-            iceSlashAttack: this.iceSlashAttackAnimation,
-            kneelDown: this.glacikalKneelDownAnimation,
-            recharge: this.glacikalRechargeAnimation,
-            extendedArm: this.glacikalExtendedArmAnimation,
-        };
-
         if (this.state === "idle") {
             super.draw(context, this.shouldInvert);
             return;
         }
 
-        const animation = stateAnimations[this.state];
+        const animation = this._drawAnimationMap[this.state];
         if (!animation) return;
 
         let invertForState = this.shouldInvert;

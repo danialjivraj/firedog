@@ -8,6 +8,7 @@ export class RaindropAnimation {
         this.raindrops = [];
         this.isRaining = false;
         this.splashes = [];
+        this.activeDropCount = 0;
 
         this.createRaindrops();
     }
@@ -49,8 +50,7 @@ export class RaindropAnimation {
     }
 
     update(deltaTime) {
-        const hasActiveDrops = this.raindrops.some(d => d.active);
-        if (!this.isRaining && !hasActiveDrops && this.splashes.length === 0) return;
+        if (!this.isRaining && this.activeDropCount === 0 && this.splashes.length === 0) return;
 
         for (let i = 0; i < this.raindrops.length; i++) {
             const drop = this.raindrops[i];
@@ -67,6 +67,7 @@ export class RaindropAnimation {
                     Object.assign(drop, this.makeRaindrop(false));
                 } else {
                     drop.active = false;
+                    this.activeDropCount--;
                 }
             }
         }
@@ -82,13 +83,18 @@ export class RaindropAnimation {
         this.splashes.length = _sw;
 
         if (this.isRaining) {
-            this.raindrops.forEach(d => { if (!d.active) { Object.assign(d, this.makeRaindrop(false)); d.active = true; } });
+            this.raindrops.forEach(d => {
+                if (!d.active) {
+                    Object.assign(d, this.makeRaindrop(false));
+                    d.active = true;
+                    this.activeDropCount++;
+                }
+            });
         }
     }
 
     draw(context) {
-        const hasActiveDrops = this.raindrops.some(d => d.active);
-        if (!this.isRaining && !hasActiveDrops && this.splashes.length === 0) return;
+        if (!this.isRaining && this.activeDropCount === 0 && this.splashes.length === 0) return;
 
         context.save();
         for (let i = 0; i < this.raindrops.length; i++) {
@@ -123,6 +129,7 @@ export class RaindropSplashAnimation {
         this.markedForDeletion = false;
         this.groundSpeed = 0;
         this.bgSpeed = 1;
+        this.image = document.getElementById('raindropSplash');
     }
     calculateRandomY() {
         return this.game.height - Math.random() * 25 - 55;
@@ -146,7 +153,7 @@ export class RaindropSplashAnimation {
     draw(context) {
         if (this.currentFrame < this.maxFrames) {
             context.drawImage(
-                document.getElementById('raindropSplash'),
+                this.image,
                 this.currentFrame * this.width,
                 0,
                 this.width,

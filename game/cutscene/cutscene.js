@@ -47,6 +47,10 @@ export class Cutscene {
         this.fullWordsColor = [];
         this.currentColorSpans = [];
         this.currentSpansForIndex = -1;
+        this._elemCache = new Map();
+        this._cachedWords = null;
+        this._cachedSpaceW = 0;
+        this._cachedWordsForIndex = -1;
 
         // timing / layout
         this.playerCoins = this.game.coins;
@@ -197,6 +201,15 @@ export class Cutscene {
         this.borderOffsetY = -20;
 
         this._stoppedAtDialogueEnd = false;
+    }
+
+    _getElem(id) {
+        let el = this._elemCache.get(id);
+        if (el === undefined) {
+            el = document.getElementById(id);
+            this._elemCache.set(id, el);
+        }
+        return el;
     }
 
     // text colouring
@@ -731,7 +744,7 @@ export class Cutscene {
         context.globalAlpha = opacity !== undefined ? opacity : 1;
 
         for (const layerId of layers) {
-            const el = document.getElementById(layerId);
+            const el = this._getElem(layerId);
             if (!el) continue;
 
             const scale = (typeof layerScaleFn === 'function') ? (layerScaleFn(layerId) || 1) : 1;
@@ -840,9 +853,9 @@ export class Cutscene {
         const baseId = this.getBaseIdFromBorderRequestId(borderRequestId);
         const borderAssetId = this.getBorderAssetIdForBaseFiredogId(baseId);
 
-        const borderEl = document.getElementById(borderAssetId);
+        const borderEl = this._getElem(borderAssetId);
         const baseDomId = this.getAliasedFiredogDomId(baseId);
-        const baseEl = document.getElementById(baseDomId);
+        const baseEl = this._getElem(baseDomId);
 
         if (!baseEl) return;
 
@@ -892,7 +905,7 @@ export class Cutscene {
         if (this.shouldOverlayCosmeticsForImageId(baseId)) {
             const overlays = this.getFiredogCosmeticOverlaysInLayerOrder();
             for (const o of overlays) {
-                const overlayEl = o.overlayId ? document.getElementById(o.overlayId) : null;
+                const overlayEl = o.overlayId ? this._getElem(o.overlayId) : null;
                 if (!overlayEl) continue;
 
                 const hueDeg = this.getCurrentCosmeticChromaDegSafe(o.slot);
@@ -1013,7 +1026,7 @@ export class Cutscene {
         }
 
         const baseDomId = this.isFiredogEmotionImageId(id) ? this.getAliasedFiredogDomId(id) : id;
-        const baseEl = document.getElementById(baseDomId);
+        const baseEl = this._getElem(baseDomId);
         if (baseEl) context.drawImage(baseEl, x, y, width, height);
 
         if (glowColor) {
@@ -1028,7 +1041,7 @@ export class Cutscene {
         if (this.shouldOverlayCosmeticsForImageId(id)) {
             const overlays = this.getFiredogCosmeticOverlaysInLayerOrder();
             for (const o of overlays) {
-                const overlayEl = o.overlayId ? document.getElementById(o.overlayId) : null;
+                const overlayEl = o.overlayId ? this._getElem(o.overlayId) : null;
                 if (!overlayEl) continue;
 
                 const hueDeg = this.getCurrentCosmeticChromaDegSafe(o.slot);
@@ -1125,9 +1138,14 @@ export class Cutscene {
             return drawChar(token.text, token.start, x, y);
         };
 
-        const words = this.buildDialogueRenderWords(fullDialogue, getTokenWidth);
+        if (this._cachedWordsForIndex !== this.dialogueIndex) {
+            this._cachedWords = this.buildDialogueRenderWords(fullDialogue, getTokenWidth);
+            this._cachedSpaceW = context.measureText(' ').width;
+            this._cachedWordsForIndex = this.dialogueIndex;
+        }
+        const words = this._cachedWords;
 
-        const spaceW = context.measureText(' ').width;
+        const spaceW = this._cachedSpaceW;
 
         let line = 0;
         let x = textStartX;

@@ -80,7 +80,7 @@ export class IceCrystal extends Particle {
 
     draw(context) {
         if (this.createIce) {
-            context.drawImage(document.getElementById('ice_crystal'), this.x - this.size, this.y - this.size / 1.3, this.size, this.size);
+            context.drawImage(this.image, this.x - this.size, this.y - this.size / 1.3, this.size, this.size);
         }
     }
 }
@@ -109,7 +109,7 @@ export class Bubble extends Particle {
     draw(context) {
         if (this.isUnderwater === true) {
             if (this.createBubble) {
-                context.drawImage(document.getElementById('bubble'), this.x - this.size, this.y - this.size / 1.3, this.size, this.size);
+                context.drawImage(this.image, this.x - this.size, this.y - this.size / 1.3, this.size, this.size);
             }
         } else {
             context.drawImage(this.image, this.x - this.size, this.y - this.size / 1.3, this.size, this.size);
@@ -127,6 +127,7 @@ export class Splash extends Particle {
         this.speedY = Math.random() * 2 + 2;
         this.gravity = 0;
         this.imageId = resolveFireSplashImageId(this.game.player);
+        this.image = document.getElementById(this.imageId);
     }
 
     update(deltaTime) {
@@ -141,9 +142,8 @@ export class Splash extends Particle {
     }
 
     draw(context) {
-        const img = document.getElementById(this.imageId);
-        if (!img) return;
-        context.drawImage(img, this.x, this.y, this.size, this.size);
+        if (!this.image) return;
+        context.drawImage(this.image, this.x, this.y, this.size, this.size);
     }
 }
 
@@ -158,6 +158,7 @@ export class Fire extends Particle {
         this.angle = 0;
         this.va = Math.random() * 0.2 - 0.1;
         this.imageId = resolveFireSplashImageId(this.game.player);
+        this.image = document.getElementById(this.imageId);
     }
 
     update(deltaTime) {
@@ -171,13 +172,12 @@ export class Fire extends Particle {
     }
 
     draw(context) {
-        const img = document.getElementById(this.imageId);
-        if (!img) return;
+        if (!this.image) return;
 
         context.save();
         context.translate(this.x, this.y);
         context.rotate(this.angle);
-        context.drawImage(img, -this.size * 0.5, -this.size * 0.5, this.size, this.size);
+        context.drawImage(this.image, -this.size * 0.5, -this.size * 0.5, this.size, this.size);
         context.restore();
     }
 }
@@ -214,11 +214,18 @@ export class Fireball extends Particle {
     }
 
     makeSpecks() {
-        return Array.from({ length: 2 }, () => ({
-            a: Math.random() * Math.PI * 2,
-            rr: 0.15 + Math.random() * 0.5,
-            sz: 1 + Math.random() * 1
-        }));
+        return [
+            { a: Math.random() * Math.PI * 2, rr: 0.15 + Math.random() * 0.5, sz: 1 + Math.random() * 1 },
+            { a: Math.random() * Math.PI * 2, rr: 0.15 + Math.random() * 0.5, sz: 1 + Math.random() * 1 },
+        ];
+    }
+
+    refreshSpecks() {
+        for (const s of this._cachedSpecks) {
+            s.a = Math.random() * Math.PI * 2;
+            s.rr = 0.15 + Math.random() * 0.5;
+            s.sz = 1 + Math.random() * 1;
+        }
     }
 
     drawBubbleBall(ctx, x, y, r, variant = 'normal') {
@@ -284,7 +291,7 @@ export class Fireball extends Particle {
 
         this.rotationAngle += this.rotationSpeed * dt;
 
-        this._cachedSpecks = this.makeSpecks();
+        this.refreshSpecks();
     }
 
     draw(context) {
@@ -692,6 +699,7 @@ export class DashFireArc extends Particle {
         const p = this.game.player;
 
         this.imageId = resolveFireSplashImageId(p);
+        this.image = document.getElementById(this.imageId);
 
         this.worldStopped = worldStopped;
 
@@ -797,13 +805,12 @@ export class DashFireArc extends Particle {
     }
 
     draw(ctx) {
-        const img = document.getElementById(this.imageId);
-        if (!img) return;
+        if (!this.image) return;
 
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.rotate(this.angle);
-        ctx.drawImage(img, -this.size * 0.5, -this.size * 0.5, this.size, this.size);
+        ctx.drawImage(this.image, -this.size * 0.5, -this.size * 0.5, this.size, this.size);
         ctx.restore();
     }
 }
