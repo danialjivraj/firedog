@@ -81,6 +81,14 @@ export class SettingsMenu extends BaseMenu {
         this.activateMenu({ inGame: !!inGame, selectedOption: sel });
     }
 
+    drawTitle(context) {
+        if (!this.menuInGame) {
+            super.drawTitle(context, this.game.height / 2 - this.positionOffset + 10);
+        } else {
+            super.drawTitle(context);
+        }
+    }
+
     _applyMenuLayout() {
         this.positionOffset = this._basePositionOffset;
         this.menuOptionsPositionOffset = this._baseMenuOptionsPositionOffset;
