@@ -113,98 +113,117 @@ loadingSpriteId = requestAnimationFrame(drawLoadingSprite);
 window.addEventListener("load", function () {
     loadingBar.style.width = '100%';
     loadingPercent.textContent = '100%';
-    cancelAnimationFrame(loadingSpriteId);
-    loadingScreen.style.display = 'none';
 
-    const canvas = document.getElementById("canvas1");
-    const ctx = canvas.getContext("2d");
-    canvas.width = CANVAS_WIDTH;
-    canvas.height = CANVAS_HEIGHT;
+    // warm up chromium's audio pipeline before hiding the loading screen.
+    // play a short silent buffer to fully initialize the audio subsystem.
+    function warmUpAudio() {
+        return new Promise(resolve => {
+            const ac = new AudioContext();
+            ac.resume().then(() => {
+                const buf = ac.createBuffer(1, ac.sampleRate * 0.1, ac.sampleRate);
+                const src = ac.createBufferSource();
+                src.buffer = buf;
+                src.connect(ac.destination);
+                src.onended = () => { ac.close().then(resolve).catch(resolve); };
+                src.start();
+            }).catch(resolve);
+        });
+    }
 
-    const game = new Game(canvas, canvas.width, canvas.height);
-    let lastTime = 0;
+    warmUpAudio().then(() => {
+        cancelAnimationFrame(loadingSpriteId);
+        loadingScreen.style.display = 'none';
 
-    function animate(timeStamp) {
-        const rawDelta = timeStamp - lastTime;
-        lastTime = timeStamp;
-        const deltaTime = rawDelta > 100 ? 100 : rawDelta;
-        game.deltaTime = deltaTime;
+        const canvas = document.getElementById("canvas1");
+        const ctx = canvas.getContext("2d");
+        canvas.width = CANVAS_WIDTH;
+        canvas.height = CANVAS_HEIGHT;
 
-        game.updateGlobalOverlays(deltaTime);
+        const game = new Game(canvas, canvas.width, canvas.height);
+        let lastTime = 0;
 
-        switch (game.gameState) {
-            case GameState.CUTSCENE: {
-                if (game.fadingIn) {
-                    if (!game.fadingInInitiated) {
-                        game.fadingInInitiated = true;
-                        game.waitForFadeInOpacity = true;
-                        canvas.style.opacity = 0;
-                        setTimeout(() => {
-                            game.fadingIn = false;
-                            game.fadingInInitiated = false;
-                            fadeIn(canvas, FADE_IN_DELAY_MS, () => { });
-                        }, FADE_IN_DELAY_MS);
-                        setTimeout(() => {
-                            game.waitForFadeInOpacity = false;
-                        }, FADE_IN_COMPLETE_MS);
-                    }
-                } else {
-                    game.currentCutscene.draw(ctx);
-                    game.metaToasts.forEach(t => t.draw(ctx));
-                    game.coinConvertToasts.forEach(t => t.draw(ctx));
+        function animate(timeStamp) {
+            const rawDelta = timeStamp - lastTime;
+            lastTime = timeStamp;
+            const deltaTime = rawDelta > 100 ? 100 : rawDelta;
+            game.deltaTime = deltaTime;
 
-                    if (game.menu.pause.isPaused && game.currentMenu) {
-                        game.currentMenu.menuActive = true;
-                        game.currentMenu.draw(ctx);
-                        game.currentMenu.update(deltaTime);
+            game.updateGlobalOverlays(deltaTime);
+
+            switch (game.gameState) {
+                case GameState.CUTSCENE: {
+                    if (game.fadingIn) {
+                        if (!game.fadingInInitiated) {
+                            game.fadingInInitiated = true;
+                            game.waitForFadeInOpacity = true;
+                            canvas.style.opacity = 0;
+                            setTimeout(() => {
+                                game.fadingIn = false;
+                                game.fadingInInitiated = false;
+                                fadeIn(canvas, FADE_IN_DELAY_MS, () => { });
+                            }, FADE_IN_DELAY_MS);
+                            setTimeout(() => {
+                                game.waitForFadeInOpacity = false;
+                            }, FADE_IN_COMPLETE_MS);
+                        }
+                    } else {
+                        game.currentCutscene.draw(ctx);
                         game.metaToasts.forEach(t => t.draw(ctx));
                         game.coinConvertToasts.forEach(t => t.draw(ctx));
+
+                        if (game.menu.pause.isPaused && game.currentMenu) {
+                            game.currentMenu.menuActive = true;
+                            game.currentMenu.draw(ctx);
+                            game.currentMenu.update(deltaTime);
+                            game.metaToasts.forEach(t => t.draw(ctx));
+                            game.coinConvertToasts.forEach(t => t.draw(ctx));
+                        }
                     }
-                }
-                break;
-            }
-
-            case GameState.MENU: {
-                game.isPlayerInGame = false;
-                game.currentMenu.menuActive = true;
-                game.currentMenu.draw(ctx);
-                game.currentMenu.update(deltaTime);
-                game.metaToasts.forEach(t => t.draw(ctx));
-                game.coinConvertToasts.forEach(t => t.draw(ctx));
-                break;
-            }
-
-            case GameState.GAMEPLAY: {
-                game.update(deltaTime);
-
-                const canShake =
-                    game.shakeActive &&
-                    !game.menu.pause.isPaused &&
-                    game.tutorial.tutorialPause === false;
-
-                if (canShake) preShake(ctx);
-                game.draw(ctx);
-                if (canShake) postShake(ctx);
-
-                if (game.distortionActive || game.distortionEffect.amount > 0.01) {
-                    game.distortionEffect.apply(ctx);
+                    break;
                 }
 
-                game.UI.draw(ctx);
-
-                if (game.currentMenu) {
+                case GameState.MENU: {
+                    game.isPlayerInGame = false;
                     game.currentMenu.menuActive = true;
                     game.currentMenu.draw(ctx);
                     game.currentMenu.update(deltaTime);
+                    game.metaToasts.forEach(t => t.draw(ctx));
+                    game.coinConvertToasts.forEach(t => t.draw(ctx));
+                    break;
                 }
 
-                game.metaToasts.forEach(t => t.draw(ctx));
-                game.coinConvertToasts.forEach(t => t.draw(ctx));
-                break;
-            }
-        }
+                case GameState.GAMEPLAY: {
+                    game.update(deltaTime);
 
-        requestAnimationFrame(animate);
-    }
-    animate(0);
+                    const canShake =
+                        game.shakeActive &&
+                        !game.menu.pause.isPaused &&
+                        game.tutorial.tutorialPause === false;
+
+                    if (canShake) preShake(ctx);
+                    game.draw(ctx);
+                    if (canShake) postShake(ctx);
+
+                    if (game.distortionActive || game.distortionEffect.amount > 0.01) {
+                        game.distortionEffect.apply(ctx);
+                    }
+
+                    game.UI.draw(ctx);
+
+                    if (game.currentMenu) {
+                        game.currentMenu.menuActive = true;
+                        game.currentMenu.draw(ctx);
+                        game.currentMenu.update(deltaTime);
+                    }
+
+                    game.metaToasts.forEach(t => t.draw(ctx));
+                    game.coinConvertToasts.forEach(t => t.draw(ctx));
+                    break;
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+        animate(0);
+    });
 });
