@@ -269,9 +269,9 @@ export class InterfaceMenu extends BaseMenu {
         context.scale(scale, scale);
         ui.withHudLayoutStyle(style, () => {
             ui.drawTopLeftOnly(context, {
-                previewCoins: 17,
+                previewCoins: 217,
                 previewLives: 5,
-                previewTime: 157000,
+                previewTime: 228000,
                 drawAbilitiesWithPreviewState: true,
                 previewPlayerPatch: {
                     energy: 100,

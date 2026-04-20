@@ -1336,9 +1336,9 @@ export class UI {
 
     // for how to play menu
     drawTopLeftOnly(context, options = {}) {
-        const previewCoins = options.previewCoins ?? 17;
+        const previewCoins = options.previewCoins ?? 217;
         const previewLives = options.previewLives ?? 5;
-        const previewTime = options.previewTime ?? 157000;
+        const previewTime = options.previewTime ?? 228000;
         const previewPlayerPatch = options.previewPlayerPatch ?? null;
         const drawAbilitiesWithPreviewState = options.drawAbilitiesWithPreviewState === true;
 

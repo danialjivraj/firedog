@@ -266,7 +266,7 @@ export const howToPlayPagesMixin = {
             this.createPage('User Interface: Coins (1)', [
                 this.createPlayerAnimation({ state: 'STANDING', x: cx, y: groundY }),
                 ...infoArrowText({
-                    startX: 110, startY: 30,
+                    startX: 120, startY: 30,
                     textX: 460, textY: 60,
                     text: 'You get coins by killing enemies or projectiles!',
                     maxW: 290,
