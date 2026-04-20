@@ -1,13 +1,36 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const url = require('url');
+const fs = require('fs');
+
+const configPath = path.join(app.getPath('userData'), 'window-config.json');
+
+function readWindowConfig() {
+  try {
+    return JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+  } catch {
+    return {};
+  }
+}
+
+function writeWindowConfig(config) {
+  try {
+    fs.writeFileSync(configPath, JSON.stringify(config));
+  } catch {
+    // ignore write errors
+  }
+}
 
 let mainWindow;
 
 function createWindow() {
+  const config = readWindowConfig();
+  const startFullscreen = config.windowMode === 'fullscreen';
+
   mainWindow = new BrowserWindow({
     width: 1920,
     height: 1080,
+    fullscreen: startFullscreen,
     icon: path.join(__dirname, 'game', 'assets', 'icons', 'firedogHead.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -26,7 +49,9 @@ function createWindow() {
     slashes: true
   }));
 
-  mainWindow.maximize();
+  if (!startFullscreen) {
+    mainWindow.maximize();
+  }
 
   mainWindow.on('closed', function () {
     mainWindow = null;
@@ -35,6 +60,17 @@ function createWindow() {
 
 ipcMain.on('quit-app', () => {
   app.quit();
+});
+
+ipcMain.on('set-window-mode', (_event, mode) => {
+  writeWindowConfig({ windowMode: mode });
+  if (!mainWindow) return;
+  if (mode === 'fullscreen') {
+    mainWindow.setFullScreen(true);
+  } else {
+    mainWindow.setFullScreen(false);
+    mainWindow.maximize();
+  }
 });
 
 app.on('ready', createWindow);

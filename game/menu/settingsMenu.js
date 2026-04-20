@@ -2,11 +2,11 @@ import { BaseMenu } from "./baseMenu.js";
 
 export class SettingsMenu extends BaseMenu {
     constructor(game) {
-        const baseFullOptions = ["Audio", "Controls", "Difficulty", "Interface", "Tutorial", "Delete Progress", "Go Back"];
+        const baseFullOptions = ["Audio", "Controls", "Difficulty", "Interface", "Display", "Tutorial", "Delete Progress", "Go Back"];
         super(game, baseFullOptions, "Settings");
 
         this._baseFullOptions = baseFullOptions;
-        this.inGameOptions = ["Audio", "Controls", "Interface", "Go Back"];
+        this._baseInGameOptions = ["Audio", "Controls", "Interface", "Display", "Go Back"];
 
         this.menuInGame = false;
 
@@ -23,17 +23,35 @@ export class SettingsMenu extends BaseMenu {
         return typeof optionText === "string" && optionText.startsWith("Tutorial");
     }
 
+    _displayLabel() {
+        return `Display: ${this.game.windowMode === "fullscreen" ? "Fullscreen" : "Windowed"}`;
+    }
+
+    _isDisplayOption(optionText) {
+        return typeof optionText === "string" && optionText.startsWith("Display");
+    }
+
     _buildFullMenuOptions() {
         return this._baseFullOptions.map((opt) => {
             if (opt === "Tutorial") return this._tutorialLabel();
+            if (opt === "Display") return this._displayLabel();
+            return opt;
+        });
+    }
+
+    _buildInGameOptions() {
+        return this._baseInGameOptions.map((opt) => {
+            if (opt === "Display") return this._displayLabel();
             return opt;
         });
     }
 
     _refreshMenuOptionsInPlace() {
-        if (this.menuInGame) return;
-        const idx = this.menuOptions.findIndex((opt) => this._isTutorialOption(opt));
-        if (idx !== -1) this.menuOptions[idx] = this._tutorialLabel();
+        const tutIdx = this.menuOptions.findIndex((opt) => this._isTutorialOption(opt));
+        if (tutIdx !== -1) this.menuOptions[tutIdx] = this._tutorialLabel();
+
+        const dispIdx = this.menuOptions.findIndex((opt) => this._isDisplayOption(opt));
+        if (dispIdx !== -1) this.menuOptions[dispIdx] = this._displayLabel();
     }
 
     _toIndex(value, fallback = 0) {
@@ -49,7 +67,7 @@ export class SettingsMenu extends BaseMenu {
         const inGame = isObj ? !!arg.inGame : false;
 
         this.menuInGame = inGame;
-        this.menuOptions = this.menuInGame ? this.inGameOptions : this._buildFullMenuOptions();
+        this.menuOptions = this.menuInGame ? this._buildInGameOptions() : this._buildFullMenuOptions();
 
         this._applyMenuLayout();
 
@@ -68,7 +86,7 @@ export class SettingsMenu extends BaseMenu {
         this.menuOptionsPositionOffset = this._baseMenuOptionsPositionOffset;
 
         if (!this.menuInGame) {
-            this.positionOffset = this._basePositionOffset + 20;
+            this.positionOffset = this._basePositionOffset + 40;
             return;
         }
 
@@ -116,6 +134,22 @@ export class SettingsMenu extends BaseMenu {
                 inGame: this.menuInGame,
                 selectedOption: this.game.uiLayoutStyle === "legacy" ? 1 : 0,
             });
+            return;
+        }
+
+        if (this._isDisplayOption(selected)) {
+            const newMode = this.game.windowMode === "fullscreen" ? "windowed" : "fullscreen";
+            this.game.windowMode = newMode;
+
+            if (window.electronAPI && window.electronAPI.setWindowMode) {
+                window.electronAPI.setWindowMode(newMode);
+            }
+
+            if (typeof this.game.saveGameState === "function") {
+                this.game.saveGameState();
+            }
+
+            this._refreshMenuOptionsInPlace();
             return;
         }
 

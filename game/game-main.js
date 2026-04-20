@@ -97,6 +97,7 @@ export class Game {
         this.player.currentState = this.player.states[0];
         this.player.currentState.enter();
         this.uiLayoutStyle = "compact";
+        this.windowMode = "windowed";
         this.input = new InputHandler(this);
         this.UI = new UI(this);
         this.background = null;

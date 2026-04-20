@@ -2,7 +2,7 @@ import { Game } from './game-main.js';
 import { preShake, postShake } from './animations/shake.js';
 import { fadeIn } from './animations/fading.js';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, FADE_IN_DELAY_MS, FADE_IN_COMPLETE_MS, GameState } from './config/constants.js';
-import { SKIN_MENU_ORDER, COSMETICS, COSMETIC_LAYER_ORDER } from './config/skinsAndCosmetics.js';
+import { SKIN_MENU_ORDER, COSMETICS, COSMETIC_LAYER_ORDER, getCosmeticChromaConfig } from './config/skinsAndCosmetics.js';
 
 const loadingBar = document.getElementById('loading-bar');
 const loadingPercent = document.getElementById('loading-percent');
@@ -51,7 +51,13 @@ for (let i = 0; i < COSMETIC_LAYER_ORDER.length; i++) {
         const slot = COSMETIC_LAYER_ORDER[i];
         const items = Object.keys(COSMETICS[slot]).filter(k => k !== 'none');
         const id = items[Math.floor(Math.random() * items.length)];
-        cosmeticLayers.push(document.getElementById(id));
+        const chromaCfg = getCosmeticChromaConfig(slot, id);
+        let hueDeg = 0;
+        if (chromaCfg && Array.isArray(chromaCfg.variants) && chromaCfg.variants.length > 1) {
+            const variant = chromaCfg.variants[Math.floor(Math.random() * chromaCfg.variants.length)];
+            hueDeg = variant.deg || 0;
+        }
+        cosmeticLayers.push({ el: document.getElementById(id), hueDeg });
     }
 }
 
@@ -87,9 +93,16 @@ function drawLoadingSprite(timeStamp) {
         spriteCtx.drawImage(skinImg, sx, sy, frameW, frameH, 0, 0, 100, 92);
     }
     for (let i = 0; i < cosmeticLayers.length; i++) {
-        const cos = cosmeticLayers[i];
-        if (cos.complete && cos.naturalWidth > 0) {
-            spriteCtx.drawImage(cos, sx, sy, frameW, frameH, 0, 0, 100, 92);
+        const { el, hueDeg } = cosmeticLayers[i];
+        if (el.complete && el.naturalWidth > 0) {
+            if (hueDeg) {
+                spriteCtx.save();
+                spriteCtx.filter = `hue-rotate(${hueDeg}deg)`;
+                spriteCtx.drawImage(el, sx, sy, frameW, frameH, 0, 0, 100, 92);
+                spriteCtx.restore();
+            } else {
+                spriteCtx.drawImage(el, sx, sy, frameW, frameH, 0, 0, 100, 92);
+            }
         }
     }
 

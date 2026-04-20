@@ -8,6 +8,7 @@ function buildGameState(game) {
         currentMap: game.currentMap,
         isTutorialActive: game.isTutorialActive,
         uiLayoutStyle: game.uiLayoutStyle ?? "compact",
+        windowMode: game.windowMode ?? "windowed",
 
         map1Unlocked: game.map1Unlocked,
         map2Unlocked: game.map2Unlocked,
@@ -68,6 +69,11 @@ export function loadGameState(game) {
         game.currentMap = gameState.currentMap ?? game.currentMap;
         game.isTutorialActive = gameState.isTutorialActive ?? game.isTutorialActive;
         game.uiLayoutStyle = gameState.uiLayoutStyle ?? game.uiLayoutStyle ?? "compact";
+        game.windowMode = gameState.windowMode ?? game.windowMode ?? "windowed";
+
+        if (window.electronAPI && window.electronAPI.setWindowMode) {
+            window.electronAPI.setWindowMode(game.windowMode);
+        }
 
         game.map1Unlocked = gameState.map1Unlocked ?? game.map1Unlocked;
         game.map2Unlocked = gameState.map2Unlocked ?? game.map2Unlocked;
@@ -135,6 +141,11 @@ export function clearSavedData(game) {
 
     game.isTutorialActive = true;
     game.uiLayoutStyle = "compact";
+    game.windowMode = "windowed";
+
+    if (window.electronAPI && window.electronAPI.setWindowMode) {
+        window.electronAPI.setWindowMode("windowed");
+    }
 
     game.map1Unlocked = true;
     game.map2Unlocked = false;
