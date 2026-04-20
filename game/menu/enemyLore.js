@@ -53,6 +53,36 @@ export class EnemyLore extends BaseMenu {
         this.highlightPhrases = this.buildHighlightTokens(this.mapColors);
         this.typeHighlightPhrases = this.buildHighlightTokens(this.typeColors);
 
+        this.mouseX = 0;
+        this.mouseY = 0;
+
+        this.projectileDisplayNames = {
+            normal: 'Normal',
+            red: 'Red',
+            stun: 'Stun',
+            poison: 'Poison',
+            slow: 'Slow',
+            frozen: 'Frozen',
+            all: 'All',
+        };
+
+        this.projectileImages = {
+            normal: document.getElementById('normalProjectile'),
+            red: document.getElementById('redProjectile'),
+            stun: document.getElementById('stunProjectile'),
+            poison: document.getElementById('poisonProjectile'),
+            slow: document.getElementById('slowProjectile'),
+            frozen: document.getElementById('frozenProjectile'),
+            all: document.getElementById('allProjectile'),
+        };
+
+        this.fontsReady = !document.fonts;
+        if (document.fonts) {
+            document.fonts.load('bold 21px "Gloria Hallelujah"').then(() => {
+                this.fontsReady = true;
+            });
+        }
+
         this.loadPages(buildPageDefs(this.pageWidth, this.pageHeight));
     }
 
@@ -213,29 +243,119 @@ export class EnemyLore extends BaseMenu {
         return { kind: 'line', lineX: x, lineY: y, lineLength: length, lineWidth };
     }
 
-    drawProjectileIcon(context, cx, cy, projectileType) {
-        const imageIds = {
-            normal: 'normalProjectile',
-            red: 'redProjectile',
-            stun: 'stunProjectile',
-            poison: 'poisonProjectile',
-            slow: 'slowProjectile',
-            frozen: 'frozenProjectile',
-            all: 'allProjectile',
+    getProjectileIconBounds(pageIndex, pageX, pageY) {
+        const page = this.pages[pageIndex];
+        if (!page || page.pageKind !== 'enemy' || page.projectile == null) return null;
+        if (page.mapKey && !this.isMapKeyUnlocked(page.mapKey)) return null;
+
+        const img = this.projectileImages[page.projectile];
+        if (!img) return null;
+
+        const maxWidth = this.pageWidth - 230;
+        const iconCX = pageX + 20 + maxWidth - 50;
+        const iconCY = pageY + 50;
+
+        const scale = 0.9;
+        const w = img.naturalWidth * scale;
+        const h = img.naturalHeight * scale;
+
+        return {
+            x: iconCX - w / 2,
+            y: iconCY - h / 2,
+            width: w,
+            height: h,
+            projectile: page.projectile,
         };
+    }
+
+    drawProjectileTooltip(context, projectileType) {
+        const prefix = 'Projectile Type: ';
+        const typeName = this.projectileDisplayNames[projectileType] || projectileType;
+
+        context.save();
+        context.font = 'bold 16px "Gloria Hallelujah"';
+        const prefixWidth = context.measureText(prefix).width;
+        const typeWidth = context.measureText(typeName).width;
+        const totalWidth = prefixWidth + typeWidth;
+
+        const padX = 14;
+        const padY = 10;
+        const boxW = totalWidth + padX * 2;
+        const boxH = 32 + padY;
+        const r = 8;
+
+        let tipX = this.mouseX + 14;
+        let tipY = this.mouseY - boxH - 6;
+
+        if (tipX + boxW > this.game.width) tipX = this.mouseX - boxW - 6;
+        if (tipY < 0) tipY = this.mouseY + 20;
+
+        const gradient = context.createLinearGradient(tipX, tipY, tipX, tipY + boxH);
+        gradient.addColorStop(0, '#f0e6c8');
+        gradient.addColorStop(1, '#d2c397');
+
+        context.beginPath();
+        context.moveTo(tipX + r, tipY);
+        context.lineTo(tipX + boxW - r, tipY);
+        context.quadraticCurveTo(tipX + boxW, tipY, tipX + boxW, tipY + r);
+        context.lineTo(tipX + boxW, tipY + boxH - r);
+        context.quadraticCurveTo(tipX + boxW, tipY + boxH, tipX + boxW - r, tipY + boxH);
+        context.lineTo(tipX + r, tipY + boxH);
+        context.quadraticCurveTo(tipX, tipY + boxH, tipX, tipY + boxH - r);
+        context.lineTo(tipX, tipY + r);
+        context.quadraticCurveTo(tipX, tipY, tipX + r, tipY);
+        context.closePath();
+
+        context.shadowColor = 'rgba(0, 0, 0, 0.35)';
+        context.shadowBlur = 8;
+        context.fillStyle = gradient;
+        context.fill();
+
+        context.shadowBlur = 0;
+        context.shadowColor = 'transparent';
+
+        context.strokeStyle = '#a89870';
+        context.lineWidth = 2;
+        context.stroke();
+
+        const textY = tipY + boxH / 2 + 1;
+        context.textAlign = 'left';
+        context.textBaseline = 'middle';
+
+        context.fillStyle = '#2b2414';
+        context.fillText(prefix, tipX + padX, textY);
+
+        const typeStyle = this.typeColors[typeName.toUpperCase()];
+        if (typeStyle) {
+            context.strokeStyle = typeStyle.stroke || 'transparent';
+            context.lineWidth = 4;
+            context.shadowColor = typeStyle.stroke || 'transparent';
+            context.shadowBlur = typeStyle.strokeBlur || 0;
+            context.strokeText(typeName, tipX + padX + prefixWidth, textY);
+
+            context.fillStyle = typeStyle.fill;
+            context.shadowBlur = typeStyle.strokeBlur || 0;
+            context.fillText(typeName, tipX + padX + prefixWidth, textY);
+
+            context.shadowBlur = 0;
+            context.shadowColor = 'transparent';
+        } else {
+            context.fillText(typeName, tipX + padX + prefixWidth, textY);
+        }
+
+        context.restore();
+    }
+
+    drawProjectileIcon(context, cx, cy, projectileType) {
+        const img = this.projectileImages[projectileType];
+        if (!img) return;
 
         context.save();
 
-        const imageId = imageIds[projectileType];
-        if (imageId) {
-            const img = document.getElementById(imageId);
-            if (img) {
-                const scale = 0.9;
-                const w = img.naturalWidth * scale;
-                const h = img.naturalHeight * scale;
-                context.drawImage(img, cx - w / 2, cy - h / 2, w, h);
-            }
-        }
+        const scale = 0.9;
+        const w = img.naturalWidth * scale;
+        const h = img.naturalHeight * scale;
+        context.drawImage(img, cx - w / 2, cy - h / 2, w, h);
 
         context.restore();
     }
@@ -761,6 +881,7 @@ export class EnemyLore extends BaseMenu {
 
     draw(context) {
         if (!this.menuActive) return;
+        if (!this.fontsReady) return;
 
         this.game.audioHandler.menu.stopSound('criminalitySoundtrack');
 
@@ -871,6 +992,22 @@ export class EnemyLore extends BaseMenu {
         if (this.currentPage + 1 < this.pages.length) {
             context.textAlign = 'right';
             context.fillText(this.currentPage + 2, this.bookX + this.pageWidth * 2 - 10, this.bookY + this.pageHeight - 10);
+        }
+
+        // projectile tooltip on hover
+        const leftBounds = this.getProjectileIconBounds(this.currentPage, this.bookX, this.bookY);
+        const rightBounds = (this.currentPage + 1 < this.pages.length)
+            ? this.getProjectileIconBounds(this.currentPage + 1, this.bookX + this.pageWidth, this.bookY)
+            : null;
+
+        const hitTest = (b) => b &&
+            this.mouseX >= b.x && this.mouseX <= b.x + b.width &&
+            this.mouseY >= b.y && this.mouseY <= b.y + b.height;
+
+        if (hitTest(leftBounds)) {
+            this.drawProjectileTooltip(context, leftBounds.projectile);
+        } else if (hitTest(rightBounds)) {
+            this.drawProjectileTooltip(context, rightBounds.projectile);
         }
 
         context.restore();
@@ -1026,7 +1163,14 @@ export class EnemyLore extends BaseMenu {
         }
     }
 
-    handleMouseMove() {
-        // do nothing
+    handleMouseMove(event) {
+        if (!this.menuActive) return;
+
+        const rect = this.game.canvas.getBoundingClientRect();
+        const scaleX = this.game.canvas.width / rect.width;
+        const scaleY = this.game.canvas.height / rect.height;
+
+        this.mouseX = (event.clientX - rect.left) * scaleX;
+        this.mouseY = (event.clientY - rect.top) * scaleY;
     }
 }

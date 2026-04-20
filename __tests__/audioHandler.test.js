@@ -76,10 +76,10 @@ describe('AudioHandler (base class)', () => {
             expect(ret).toBe(fake);
         });
 
-        it('when currentTimeZero=true and loop=false, pauses first then resets time and plays', () => {
+        it('when currentTimeZero=true and loop=false, resets time and plays without pausing first', () => {
             fake.currentTime = 5;
             ah.playSound('bar', false, true);
-            expect(fake.pause).toHaveBeenCalled();
+            expect(fake.pause).not.toHaveBeenCalled();
             expect(fake.currentTime).toBe(0);
             expect(fake.play).toHaveBeenCalled();
         });
@@ -299,15 +299,6 @@ describe('AudioHandler (base class)', () => {
             delete ah._state.three;
             ah.resumeSound('three');
             expect(three.play).not.toHaveBeenCalled();
-        });
-
-        it('resumeSound does not play non-looped sounds paused before 0.02s to avoid Chrome play-pending corruption', () => {
-            three.paused = true;
-            three.loop = false;
-            ah._state.three = { pausedAt: 0.01 };
-            ah.resumeSound('three');
-            expect(three.play).not.toHaveBeenCalled();
-            expect(ah._state.three?.pausedAt).toBeUndefined();
         });
 
         it('resumeSound plays non-looped sounds paused at or after 0.02s', () => {

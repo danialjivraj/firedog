@@ -36,12 +36,19 @@ export class AudioHandler {
     el.loop = loop;
 
     if (currentTimeZero) {
-      if (!loop) el.pause();
       el.currentTime = 0;
     }
 
     const p = el.play();
-    if (p && typeof p.catch === 'function') p.catch(() => { });
+    if (p && typeof p.catch === 'function') {
+      p.catch(() => {
+        // chromium can permanently break an audio element after rapid play/pause
+        // cycling. reload the source to reset its internal state.
+        if (!this._state[soundName]?.pausedAt && typeof el.load === 'function') {
+          el.load();
+        }
+      });
+    }
 
     return el;
   }
@@ -100,7 +107,6 @@ export class AudioHandler {
     delete saved.pausedAt;
 
     if (isNaN(el.duration) || pausedAt >= el.duration) return;
-    if (!el.loop && pausedAt < 0.02) return;
 
     // pause() cancels any lingering interrupted play() promise before resuming.
     el.pause();
