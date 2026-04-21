@@ -190,26 +190,6 @@ describe('EnemyLore', () => {
     });
 
     describe('paging logic', () => {
-        it('nextPage() increments currentPage but never past maxValidIndex', () => {
-            menu.currentPage = 0;
-            menu.nextPage();
-            expect(menu.currentPage).toBe(1);
-
-            menu.currentPage = menu.getMaxValidIndex();
-            menu.nextPage();
-            expect(menu.currentPage).toBe(menu.getMaxValidIndex());
-        });
-
-        it('previousPage() decrements currentPage but never below 0', () => {
-            menu.currentPage = 2;
-            menu.previousPage();
-            expect(menu.currentPage).toBe(1);
-
-            menu.currentPage = 0;
-            menu.previousPage();
-            expect(menu.currentPage).toBe(0);
-        });
-
         it('clickNextPage() advances by 2 (mouse click on next page) but clamps to maxValidIndex', () => {
             menu.currentPage = 0;
             menu.clickNextPage();
@@ -230,17 +210,7 @@ describe('EnemyLore', () => {
             expect(menu.currentPage).toBe(0);
         });
 
-        it('plays the flip sound when calling next/previous and clickNext/clickPrevious (when movement happens)', () => {
-            menu.currentPage = 0;
-            menu.nextPage();
-            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlipForwardSound', false, true);
-
-            jest.clearAllMocks();
-            menu.currentPage = 2;
-            menu.previousPage();
-            expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlipBackwardSound', false, true);
-
-            jest.clearAllMocks();
+        it('plays the flip sound when calling clickNext/clickPrevious (when movement happens)', () => {
             menu.currentPage = 0;
             menu.clickNextPage();
             expect(mockGame.audioHandler.menu.playSound).toHaveBeenCalledWith('bookFlipForwardSound', false, true);
@@ -337,15 +307,15 @@ describe('EnemyLore', () => {
     });
 
     describe('input handlers', () => {
-        it('handleKeyDown: ArrowRight calls nextPage and ArrowLeft calls previousPage', () => {
-            jest.spyOn(menu, 'nextPage');
-            jest.spyOn(menu, 'previousPage');
+        it('handleKeyDown: ArrowRight calls clickNextPage and ArrowLeft calls clickPreviousPage', () => {
+            jest.spyOn(menu, 'clickNextPage');
+            jest.spyOn(menu, 'clickPreviousPage');
 
             menu.handleKeyDown({ key: 'ArrowRight' });
-            expect(menu.nextPage).toHaveBeenCalled();
+            expect(menu.clickNextPage).toHaveBeenCalled();
 
             menu.handleKeyDown({ key: 'ArrowLeft' });
-            expect(menu.previousPage).toHaveBeenCalled();
+            expect(menu.clickPreviousPage).toHaveBeenCalled();
         });
 
         it('handleKeyDown: ArrowUp calls setCategory(main)', () => {
@@ -468,8 +438,6 @@ describe('EnemyLore', () => {
 
         it('does not respond to key, wheel, or click input when menuActive is false', () => {
             menu.menuActive = false;
-            jest.spyOn(menu, 'nextPage');
-            jest.spyOn(menu, 'previousPage');
             jest.spyOn(menu, 'clickNextPage');
             jest.spyOn(menu, 'clickPreviousPage');
 
@@ -477,22 +445,16 @@ describe('EnemyLore', () => {
             menu.handleMouseWheel({ deltaY: -1 });
             menu.handleMouseClick({ clientX: 0, clientY: 0 });
 
-            expect(menu.nextPage).not.toHaveBeenCalled();
-            expect(menu.previousPage).not.toHaveBeenCalled();
             expect(menu.clickNextPage).not.toHaveBeenCalled();
             expect(menu.clickPreviousPage).not.toHaveBeenCalled();
         });
 
         it('does not flip pages on mouse move', () => {
             menu.menuActive = true;
-            jest.spyOn(menu, 'nextPage');
-            jest.spyOn(menu, 'previousPage');
             jest.spyOn(menu, 'clickNextPage');
             jest.spyOn(menu, 'clickPreviousPage');
 
             menu.handleMouseMove({ clientX: 100, clientY: 100 });
-            expect(menu.nextPage).not.toHaveBeenCalled();
-            expect(menu.previousPage).not.toHaveBeenCalled();
             expect(menu.clickNextPage).not.toHaveBeenCalled();
             expect(menu.clickPreviousPage).not.toHaveBeenCalled();
         });

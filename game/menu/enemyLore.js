@@ -1014,21 +1014,6 @@ export class EnemyLore extends BaseMenu {
         context.restore();
     }
 
-    nextPage() {
-        const maxValidIndex = this.getMaxValidIndex();
-        if (this.currentPage < maxValidIndex) {
-            this.currentPage++;
-            this.game.audioHandler.menu.playSound('bookFlipForwardSound', false, true);
-        }
-    }
-
-    previousPage() {
-        if (this.currentPage > 0) {
-            this.currentPage--;
-            this.game.audioHandler.menu.playSound('bookFlipBackwardSound', false, true);
-        }
-    }
-
     clickNextPage() {
         const maxValidIndex = this.getMaxValidIndex();
         if (this.currentPage < maxValidIndex) {
@@ -1061,9 +1046,9 @@ export class EnemyLore extends BaseMenu {
         }
 
         if (event.key === 'ArrowRight') {
-            this.nextPage();
+            this.clickNextPage();
         } else if (event.key === 'ArrowLeft') {
-            this.previousPage();
+            this.clickPreviousPage();
         }
     }
 
