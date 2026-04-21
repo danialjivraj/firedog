@@ -1698,7 +1698,7 @@ export class CollisionLogic {
                 game.time += 10000;
                 game.audioHandler.powerUpAndDownSFX.playSound('carbonDioxideTankSound', false, true);
                 game.floatingMessages.push(
-                    new FloatingMessage('-10s', item.x + item.width / 2, item.y, { fontSize: 30, textColor: 'red', smallSuffix: true, ...game.UI.anchors.timer })
+                    new FloatingMessage('-10s', item.x + item.width / 2, item.y, { fontSize: 30, textColor: '#ff4d4d', smallSuffix: true, ...game.UI.anchors.timer })
                 );
                 game.UI.triggerTimerFlash('red');
             },
