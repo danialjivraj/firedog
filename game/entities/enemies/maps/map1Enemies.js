@@ -248,6 +248,7 @@ export class Skulnap extends MovingGroundEnemy {
             this.game.audioHandler.enemySFX.playSound('fuseSound');
             const playerDistance = Math.abs(this.game.player.x - this.x);
             if (playerDistance < 900 && this.y >= this.game.height - this.height - this.game.groundMargin) {
+                this.game.audioHandler.enemySFX.stopSound('fuseSound');
                 this.soundId = 'skeletonRattlingSound';
                 this.loopingSoundId = 'skeletonRattlingSound';
                 this.state = 'running';
