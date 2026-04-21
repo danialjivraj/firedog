@@ -139,7 +139,7 @@ export class Tutorial {
                 condition: () => {
                     const playerOnGround = this.game.player.onGround();
                     const meatSoldier = this.game.enemies.find((enemy) => enemy instanceof MeatSoldier);
-                    const playerNearMeatSoldier = meatSoldier && this.isPlayerNearEnemy(meatSoldier, 200);
+                    const playerNearMeatSoldier = meatSoldier && this.isPlayerNearEnemy(meatSoldier, 240);
                     return playerOnGround && playerNearMeatSoldier;
                 },
                 timerDuration: 0,
