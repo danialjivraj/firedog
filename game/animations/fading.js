@@ -24,7 +24,7 @@ export function fadeIn(element, duration, callback) {
   requestAnimationFrame(animate);
 }
 
-export function fadeInAndOut(element, fadeOutDuration, blackScreenDuration, fadeInDuration, callback) {
+export function fadeInAndOut(element, fadeOutDuration, blackScreenDuration, fadeInDuration, callback, onBlack) {
   let startFadeOut;
 
   function fadeOutAnimate(timeStamp) {
@@ -39,6 +39,8 @@ export function fadeInAndOut(element, fadeOutDuration, blackScreenDuration, fade
 
       requestAnimationFrame(fadeOutAnimate);
     } else {
+      element.style.opacity = 0;
+      if (onBlack) onBlack();
       setTimeout(() => {
         let startFadeIn;
 

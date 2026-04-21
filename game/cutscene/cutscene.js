@@ -437,11 +437,7 @@ export class Cutscene {
 
         if (beforeFade) beforeFade();
 
-        this.cutsceneBackgroundChange(fadeIn, blackDuration, fadeOut);
-
-        const delay = Number.isFinite(onBlackDelayMs) ? onBlackDelayMs : (fadeIn + 100);
-
-        setTimeout(() => {
+        const runSwap = () => {
             this.addEventListeners();
 
             if (imageId) {
@@ -449,7 +445,14 @@ export class Cutscene {
             }
 
             if (onBlack) onBlack();
-        }, delay);
+        };
+
+        if (Number.isFinite(onBlackDelayMs)) {
+            this.cutsceneBackgroundChange(fadeIn, blackDuration, fadeOut);
+            setTimeout(runSwap, onBlackDelayMs);
+        } else {
+            this.cutsceneBackgroundChange(fadeIn, blackDuration, fadeOut, runSwap);
+        }
     }
 
     jumpToDialogue(index) {
@@ -1329,11 +1332,11 @@ export class Cutscene {
         }
     }
 
-    cutsceneBackgroundChange(fadein, stay, fadeout) {
+    cutsceneBackgroundChange(fadein, stay, fadeout, onBlack) {
         this.game.enterDuringBackgroundTransition = false;
         fadeInAndOut(this.game.canvas, fadein, stay, fadeout, () => {
             this.game.enterDuringBackgroundTransition = true;
-        });
+        }, onBlack);
     }
 
     // image setters
