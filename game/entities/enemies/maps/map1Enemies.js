@@ -234,7 +234,7 @@ export class Skulnap extends MovingGroundEnemy {
         this.sleepFrameX = 0;
         this.sleepFrameTimer = 0;
 
-        this.soundId = undefined;
+        this.soundId = 'fuseSound';
         this.loopingSoundId = 'fuseSound';
     }
 
