@@ -90,7 +90,7 @@ export class Tutorial {
             },
             {
                 message:
-                    "That's a Meat Soldier up ahead!\nLet's use Roll Attack!\nHold Enter to kill him!\nKeep in mind your Energy will keep \ndraining while you hold the key!",
+                    "That's a Meat Soldier up ahead!\nLet's use Roll Attack!\nHold Enter to defeat him!\nKeep in mind your Energy will keep \ndraining while you hold the key!",
                 action: "rollAttack",
                 condition: () => {
                     const meatSoldier = this.game.enemies.find((enemy) => enemy instanceof MeatSoldier);
@@ -381,7 +381,7 @@ export class Tutorial {
             },
             {
                 message:
-                    "Some enemies will have more than 1 Life!\n To quickly kill the enemy you can use Q followed by Enter!",
+                    "Some enemies will have more than 1 Life!\n To quickly defeat the enemy you can use Q followed by Enter!",
                 action: "fireballAttack",
                 condition: () => {
                     const piper = this.game.enemies.find((enemy) => enemy instanceof Piper);
@@ -398,7 +398,7 @@ export class Tutorial {
             },
             {
                 message:
-                    "Press E to go Invisible for 5 seconds!\nDuring this time, you can pass through any type of enemy\nas well as kill them without taking any damage!",
+                    "Press E to go Invisible for 5 seconds!\nDuring this time, you can pass through any type of enemy\nas well as defeat them without taking any damage!",
                 action: "invisibleDefense",
                 condition: () => {
                     const skulnap = this.game.enemies.find((enemy) => enemy instanceof Skulnap);
