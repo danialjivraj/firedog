@@ -824,12 +824,13 @@ export class Game {
         this.enemies.forEach(e => e.draw(context));
         this.particles.forEach(p => p.draw(context));
         this.collisions.forEach(c => c.draw(context));
-        this.floatingMessages.forEach(m => m.draw(context));
-        this.animatedToasts.forEach(t => t.draw(context));
 
         if (this.player.isUnderwater === true) {
             this._fillScreen(context, "rgba(0, 0, 50, 0.6)");
         }
+
+        this.floatingMessages.forEach(m => m.draw(context));
+        this.animatedToasts.forEach(t => t.draw(context));
 
         const effect = this.boss.screenEffect;
         if (effect && effect.opacity > 0) {
