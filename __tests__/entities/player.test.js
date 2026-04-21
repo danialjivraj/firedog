@@ -337,7 +337,7 @@ describe('Player', () => {
     test('drainEnergy reduces energy and flips isEnergyExhausted', () => {
         player.energy = 5;
         player.drainEnergy();
-        expect(player.energy).toBeCloseTo(4.6);
+        expect(player.energy).toBeCloseTo(4.67);
         player.energy = 0.2;
         player.drainEnergy();
         expect(player.energy).toBe(0);
