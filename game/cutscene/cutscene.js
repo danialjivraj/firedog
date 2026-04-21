@@ -147,7 +147,7 @@ export class Cutscene {
             [this.cosmicRift]: '#ff41ffff',
 
             // project phrases
-            [this.crypticToken]: '#7DF9FF',
+            [this.crypticToken]: '#7df9ff',
             [this.temporalTimber]: 'GoldenRod',
             [this.projectCryptoterraGenesis]: 'OrangeRed',
         };
