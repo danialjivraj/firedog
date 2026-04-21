@@ -1528,8 +1528,8 @@ export class Map1EndCutscene extends StoryCutscene {
             `${this.firedog}`,
             `(${this.duskmaw} seems to know so much about the history of every land!)`,
             { whisper: true },
-            this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('duskmawNormal', RIGHT, { talking: true }),
+            this.addImage(this.setfiredogNormal(), LEFT, { talking: true }),
+            this.addImage('duskmawNormal', RIGHT),
         );
         this.addDialogue( //82
             `${this.firedog}`,
