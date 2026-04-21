@@ -97,63 +97,58 @@ export class ExplosionCollisionAnimation extends Collision {
         let fps = Math.random() * (40 - 25) + 25;
         super(game, x, adjustedY, 'explosionCollisionAnimation', 300.09523809523809523809523809524, 260, 20, fps);
         this.enemyId = enemyId;
-        this.processed = false;
     }
 
     update(deltaTime) {
-        if (!this.processed) {
-            this.processed = true;
-
-            this.game.enemies.forEach(enemy => {
-                if (
-                    enemy.x < this.x + this.width &&
-                    enemy.x + enemy.width > this.x &&
-                    enemy.y < this.y + this.height &&
-                    enemy.y + enemy.height > this.y && !this.game.gameOver &&
-                    !enemy.markedForDeletion
-                ) {
-                    enemy.markedForDeletion = true;
-                    if (enemy instanceof Skulnap && enemy.id !== this.enemyId) {
-                        this.game.collisions.push(new ExplosionCollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5, this.enemyId));
-                        this.game.audioHandler.collisionSFX.playSound('explosionCollision', false, true);
-                    } else if (!(enemy instanceof Skulnap)) {
-                        this.game.collisions.push(new CollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
-                        this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
-                    }
-                    if (!(enemy instanceof Skulnap) || enemy.id !== this.enemyId) {
-                        this.game.floatingMessages.push(new FloatingMessage('+1', enemy.x + enemy.width / 2, enemy.y, { fontSize: 30, ...this.game.UI.anchors.coins }));
-                        this.game.coins++;
-                    }
-                }
-            });
-
-            this.game.powerUps.forEach(powerUp => {
-                if (
-                    powerUp.x < this.x + this.width &&
-                    powerUp.x + powerUp.width > this.x &&
-                    powerUp.y < this.y + this.height &&
-                    powerUp.y + powerUp.height > this.y && !this.game.gameOver
-                ) {
-                    powerUp.markedForDeletion = true;
+        this.game.enemies.forEach(enemy => {
+            if (
+                enemy.x < this.x + this.width &&
+                enemy.x + enemy.width > this.x &&
+                enemy.y < this.y + this.height &&
+                enemy.y + enemy.height > this.y && !this.game.gameOver &&
+                !enemy.markedForDeletion
+            ) {
+                enemy.markedForDeletion = true;
+                if (enemy instanceof Skulnap && enemy.id !== this.enemyId) {
+                    this.game.collisions.push(new ExplosionCollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5, this.enemyId));
+                    this.game.audioHandler.collisionSFX.playSound('explosionCollision', false, true);
+                } else if (!(enemy instanceof Skulnap)) {
+                    this.game.collisions.push(new CollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
                     this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
-                    this.game.collisions.push(new CollisionAnimation(
-                        this.game, powerUp.x + powerUp.width * 0.5, powerUp.y + powerUp.height * 0.5));
                 }
-            });
+                if (!(enemy instanceof Skulnap) || enemy.id !== this.enemyId) {
+                    this.game.floatingMessages.push(new FloatingMessage('+1', enemy.x + enemy.width / 2, enemy.y, { fontSize: 30, ...this.game.UI.anchors.coins }));
+                    this.game.coins++;
+                }
+            }
+        });
 
-            this.game.powerDowns.forEach(powerDown => {
-                if (
-                    powerDown.x < this.x + this.width &&
-                    powerDown.x + powerDown.width > this.x &&
-                    powerDown.y < this.y + this.height &&
-                    powerDown.y + powerDown.height > this.y && !this.game.gameOver
-                ) {
-                    powerDown.markedForDeletion = true;
-                    this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
-                    this.game.collisions.push(new CollisionAnimation(this.game, powerDown.x + powerDown.width * 0.5, powerDown.y + powerDown.height * 0.5));
-                }
-            });
-        }
+        this.game.powerUps.forEach(powerUp => {
+            if (
+                powerUp.x < this.x + this.width &&
+                powerUp.x + powerUp.width > this.x &&
+                powerUp.y < this.y + this.height &&
+                powerUp.y + powerUp.height > this.y && !this.game.gameOver
+            ) {
+                powerUp.markedForDeletion = true;
+                this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
+                this.game.collisions.push(new CollisionAnimation(
+                    this.game, powerUp.x + powerUp.width * 0.5, powerUp.y + powerUp.height * 0.5));
+            }
+        });
+
+        this.game.powerDowns.forEach(powerDown => {
+            if (
+                powerDown.x < this.x + this.width &&
+                powerDown.x + powerDown.width > this.x &&
+                powerDown.y < this.y + this.height &&
+                powerDown.y + powerDown.height > this.y && !this.game.gameOver
+            ) {
+                powerDown.markedForDeletion = true;
+                this.game.audioHandler.collisionSFX.playSound('poofSound', false, true);
+                this.game.collisions.push(new CollisionAnimation(this.game, powerDown.x + powerDown.width * 0.5, powerDown.y + powerDown.height * 0.5));
+            }
+        });
         super.update(deltaTime);
     }
 }
