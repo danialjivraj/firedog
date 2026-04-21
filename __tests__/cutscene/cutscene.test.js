@@ -78,7 +78,10 @@ describe('Cutscene', () => {
 
         jest
             .spyOn(fading, 'fadeInAndOut')
-            .mockImplementation((canvas, fadeIn, stay, fadeOut, cb) => cb());
+            .mockImplementation((canvas, fadeIn, stay, fadeOut, cb, onBlack) => {
+                if (onBlack) onBlack();
+                cb();
+            });
 
         cutscene = new Cutscene(game);
     });
@@ -710,7 +713,8 @@ describe('Cutscene', () => {
                 1,
                 2,
                 3,
-                expect.any(Function)
+                expect.any(Function),
+                undefined
             );
             expect(game.enterDuringBackgroundTransition).toBe(true);
         });
@@ -759,9 +763,7 @@ describe('Cutscene', () => {
             expect(onBlack).toHaveBeenCalled();
         });
 
-        it('uses default onBlack delay of fadeIn + 100', () => {
-            jest.useFakeTimers();
-
+        it('by default swaps on fade-out completion (onBlack callback), not a wall-clock delay', () => {
             const addSpy = jest.spyOn(cutscene, 'addEventListeners').mockImplementation(() => { });
             const onBlack = jest.fn();
 
@@ -772,10 +774,6 @@ describe('Cutscene', () => {
                 onBlack,
             });
 
-            jest.advanceTimersByTime(599);
-            expect(addSpy).not.toHaveBeenCalled();
-
-            jest.advanceTimersByTime(1);
             expect(addSpy).toHaveBeenCalled();
             expect(onBlack).toHaveBeenCalled();
         });

@@ -62,7 +62,10 @@ describe('PenguiniCutscene & subclasses', () => {
         };
 
         jest.spyOn(fading, 'fadeInAndOut')
-            .mockImplementation((_canvas, _f, _s, _o, cb) => cb());
+            .mockImplementation((_canvas, _f, _s, _o, cb, onBlack) => {
+                if (onBlack) onBlack();
+                cb();
+            });
 
         cutscene = new PenguiniCutscene(game);
     });
@@ -248,7 +251,7 @@ describe('PenguiniCutscene & subclasses', () => {
             cutscene.isEnterPressed = false;
             cutscene.handleKeyDown({ key: 'Tab' });
             expect(fading.fadeInAndOut).toHaveBeenCalledWith(
-                game.canvas, 200, 300, 200, expect.any(Function)
+                game.canvas, 200, 300, 200, expect.any(Function), expect.any(Function)
             );
             expect(game.audioHandler.cutsceneDialogue.stopAllSounds).toHaveBeenCalled();
             expect(game.audioHandler.cutsceneSFX.stopAllSounds).toHaveBeenCalled();
