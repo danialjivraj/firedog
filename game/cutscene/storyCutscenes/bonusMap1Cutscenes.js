@@ -319,13 +319,13 @@ export class BonusMap1StartCutscene extends StoryCutscene {
             `Yes... Please follow me!`,
             {
                 onAdvance: () => this.transitionWithBg({
-                    fadeIn: 500, blackDuration: 3000, fadeOut: 500,
+                    fadeIn: 500, blackDuration: 5000, fadeOut: 500,
                     imageId: 'bonusMap1Village',
                     onBlack: () => {
                         this.playSFX('walkingCutsceneSound');
                         setTimeout(() => {
                             this.playMusic('tundraSuite', true);
-                        }, 3000);
+                        }, 5000);
                     },
                 }),
             },
