@@ -17,7 +17,7 @@ export class ControlsSettingsMenu extends ScrollableMenu {
             'Go Back',
         ];
         super(game, actionOrder, 'Controls Settings');
-        this.positionOffset = 260;
+        this.positionOffset = 280;
         this.menuInGame = false;
 
         this.waitingForKey = false;
@@ -40,7 +40,8 @@ export class ControlsSettingsMenu extends ScrollableMenu {
         }
 
         this.rowHeight = 60;
-        this.listPadding = 20;
+        this.listPadding = 0;
+        this.menuOptionsPositionOffset = 95;
 
         // override ScrollableMenu defaults
         this.barWidth = 10;
@@ -80,7 +81,7 @@ export class ControlsSettingsMenu extends ScrollableMenu {
             this.drawStarsSticker(context);
         }
 
-        this.drawTitle(context);
+        this.drawTitle(context, this.game.height / 2 - this.positionOffset + 20);
 
         context.save();
         context.shadowColor = 'black';
@@ -106,16 +107,30 @@ export class ControlsSettingsMenu extends ScrollableMenu {
             context.shadowOffsetX = 2;
             context.shadowOffsetY = 2;
 
-            context.fillText(msg, this.game.width / 2, listTop - 16);
+            context.fillText(msg, this.game.width / 2, listTop - 32);
             context.restore();
         }
 
         const reservedForButtons = this.rowHeight * 2 + 40;
-        const listBottom = this.game.height - reservedForButtons - 30;
-        const listHeight = Math.max(120, listBottom - listTop);
+        const listBottom = this.game.height - reservedForButtons - 20;
+        const maxListHeight = Math.max(120, listBottom - listTop);
 
         const contentH = this.keybindCount * this.rowHeight + this.listPadding * 2;
+        const listHeight = Math.min(maxListHeight, contentH);
         this.scrollMax = Math.max(0, contentH - listHeight);
+
+        const panelX = this.centerX - 370;
+        const panelW = 755;
+        context.save();
+        context.shadowColor = 'transparent';
+        const isGameOver = !!this.game.gameOver || !!this.game.notEnoughCoins || !!this.game.menu.gameOver?.menuActive;
+        const panelAlpha = !this.menuInGame ? 0.42 : (isGameOver ? 0.35 : 0.1);
+        context.fillStyle = `rgba(0,0,0,${panelAlpha})`;
+        context.fillRect(panelX, listTop - 20, panelW, listHeight + 20);
+        context.strokeStyle = 'rgba(255,255,255,0.30)';
+        context.lineWidth = 2;
+        context.strokeRect(panelX, listTop - 20, panelW, listHeight + 20);
+        context.restore();
 
         context.save();
         context.beginPath();
@@ -147,33 +162,36 @@ export class ControlsSettingsMenu extends ScrollableMenu {
             context.fillText(rightCol, listRightKeyX, y + this.rowHeight / 2);
         }
 
+        context.restore();
+
         // scrollbar
         if (this.scrollMax > 0.5) {
             const barX = this.centerX + 420 - this.barWidth - 10;
-            const trackY = listTop;
-            const trackH = listHeight;
+            const trackY = listTop - 19;
+            const trackH = listHeight + 18;
 
+            context.save();
+            context.shadowColor = 'transparent';
             context.fillStyle = `rgba(255,255,255,${this.barTrackAlpha})`;
             context.fillRect(barX, trackY, this.barWidth, trackH);
 
-            const thumbH = Math.max(30, (listHeight / contentH) * trackH);
+            const thumbH = Math.max(30, (trackH / (contentH + 40)) * trackH);
             const t = this.scrollY / this.scrollMax;
             const thumbY = trackY + (trackH - thumbH) * t;
 
             context.fillStyle = 'rgba(255,255,255,0.85)';
             context.fillRect(barX, thumbY, this.barWidth, thumbH);
+            context.restore();
 
             this.barRect = { x: barX, y: trackY, w: this.barWidth, h: trackH, thumbY, thumbH };
         } else {
             this.barRect = null;
         }
 
-        context.restore();
-
         const resetIdx = this.menuOptions.length - 2;
         const backIdx = this.menuOptions.length - 1;
 
-        const resetY = listTop + listHeight + 40 + this.rowHeight / 2;
+        const resetY = listTop + listHeight + 20 + this.rowHeight / 2;
         const backY = resetY + this.rowHeight;
 
         context.textAlign = 'right';
@@ -251,7 +269,7 @@ export class ControlsSettingsMenu extends ScrollableMenu {
     listBounds() {
         const listTop = this.game.height / 2 - this.positionOffset + this.menuOptionsPositionOffset;
         const reservedForButtons = this.rowHeight * 2 + 40;
-        const listBottom = this.game.height - reservedForButtons - 30;
+        const listBottom = this.game.height - reservedForButtons - 20;
         const listHeight = Math.max(120, listBottom - listTop);
         const listWidth = 840;
         const listX = this.centerX - 420;
@@ -286,7 +304,7 @@ export class ControlsSettingsMenu extends ScrollableMenu {
 
         const listTop = this.game.height / 2 - this.positionOffset + this.menuOptionsPositionOffset;
         const reservedForButtons = this.rowHeight * 2 + 40;
-        const listBottom = this.game.height - reservedForButtons - 30;
+        const listBottom = this.game.height - reservedForButtons - 20;
 
         const resetIdx = this.menuOptions.length - 2;
         const backIdx = this.menuOptions.length - 1;
@@ -425,7 +443,7 @@ export class ControlsSettingsMenu extends ScrollableMenu {
         if (this.selectedOption >= this.keybindCount) return;
         const listTop = this.game.height / 2 - this.positionOffset + this.menuOptionsPositionOffset;
         const reservedForButtons = this.rowHeight * 2 + 40;
-        const listBottom = this.game.height - reservedForButtons - 30;
+        const listBottom = this.game.height - reservedForButtons - 20;
         const listHeight = Math.max(120, listBottom - listTop);
 
         const itemTop = this.listPadding + this.selectedOption * this.rowHeight;

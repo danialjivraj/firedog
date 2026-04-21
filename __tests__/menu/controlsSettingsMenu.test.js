@@ -92,6 +92,7 @@ describe('ControlsSettingsMenu', () => {
             restore: jest.fn(),
             drawImage: jest.fn(),
             fillRect: jest.fn(),
+            strokeRect: jest.fn(),
             fillText: jest.fn(),
             beginPath: jest.fn(),
             rect: jest.fn(),
