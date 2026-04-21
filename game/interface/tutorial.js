@@ -150,7 +150,7 @@ export class Tutorial {
             {
                 message: "And now press S\nto Dive Attack while in the air!",
                 action: "diveAttack",
-                condition: () => this.game.player.vy === -1,
+                condition: () => this.game.player.vy > -2 && this.game.player.vy <= 0,
                 timerDuration: 0,
             },
             {
@@ -191,7 +191,7 @@ export class Tutorial {
             {
                 message: "Now Press S while holding D!",
                 action: "diveAttack",
-                condition: () => this.game.player.vy === -1,
+                condition: () => this.game.player.vy > -2 && this.game.player.vy <= 0,
                 timerDuration: 0,
             },
             {
@@ -558,9 +558,19 @@ export class Tutorial {
     }
 
     isStepKeyHeld(step) {
+        if (!step) return false;
+        const keys = this.game.input.keys;
         const requiredKey = this.getStepKey(step);
-        if (!requiredKey) return false;
-        return this.game.input.keys.includes(requiredKey);
+        if (requiredKey && keys.includes(requiredKey)) return true;
+
+        const mouseForAction = {
+            rollAttack: "rightClick",
+            fireballAttack: "leftClick",
+            invisibleDefense: "scrollClick",
+            dashAttack: "sideClick1",
+        };
+        const mouseButton = mouseForAction[step.action];
+        return mouseButton ? keys.includes(mouseButton) : false;
     }
 
     createSpawnEnemy(enemyClass, deltaTime, initialY = null, additionalConfig = {}) {
@@ -614,6 +624,7 @@ export class Tutorial {
 
     update(deltaTime) {
         if (this.game.menu.pause.isPaused) return;
+        if (this._skipInProgress) return;
 
         const currentStep = this.steps[this.currentStepIndex];
 

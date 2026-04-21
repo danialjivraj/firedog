@@ -67,7 +67,7 @@ export function startLoadingScreen() {
     let frameX = 0;
     let spriteTimer = 0;
     let lastSpriteTime = 0;
-    const spriteInterval = 1000 / 31;
+    const spriteInterval = 1000 / 24;
     let loadingSpriteId = 0;
     const hasSkin = skinImg && skinImg.complete && skinImg.naturalWidth > 0;
 
