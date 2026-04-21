@@ -34,8 +34,7 @@ export class BonusMap1GlacikalIngameCutsceneBeforeFight extends GlacikalCutscene
             {
                 onAdvance: () => this.playMusic('thePowerOfDarkness', true),
             },
-            this.addImage(this.setfiredogSurprisedBorder(), FIREDOG),
-            this.addImage('glacikalBorder', GLACIKAL, { talking: true }),
+            this.addImage(this.setfiredogSurprisedBorder(), FIREDOG, { talking: true }),
         );
         this.addDialogue( //1
             `${this.threeDots}`,
