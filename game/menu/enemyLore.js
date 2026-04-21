@@ -58,13 +58,13 @@ export class EnemyLore extends BaseMenu {
         this.mouseY = 0;
 
         this.projectileDisplayNames = {
-            normal: 'Normal',
-            red: 'Red',
-            stun: 'Stun',
-            poison: 'Poison',
-            slow: 'Slow',
-            frozen: 'Frozen',
-            all: 'All',
+            normal: 'NORMAL',
+            red: 'RED',
+            stun: 'STUN',
+            poison: 'POISON',
+            slow: 'SLOW',
+            frozen: 'FROZEN',
+            all: 'ALL',
         };
 
         this.projectileImages = {
@@ -270,7 +270,7 @@ export class EnemyLore extends BaseMenu {
     }
 
     drawProjectileTooltip(context, projectileType) {
-        const prefix = 'Projectile Type: ';
+        const prefix = 'PROJECTILE TYPE: ';
         const typeName = this.projectileDisplayNames[projectileType] || projectileType;
 
         context.save();
