@@ -5,9 +5,10 @@ const PANEL_W = 820;
 const BTN_W = 420;
 const BTN_H = 50;
 const BTN_RADIUS = 12;
+const PANEL_Y_OFFSET = 40;
 
 function panelY(game, panelH) {
-    return (game.height - panelH) / 2;
+    return (game.height - panelH) / 2 - PANEL_Y_OFFSET;
 }
 
 function drawPanel(context, game, panelH) {
