@@ -449,8 +449,28 @@ describe('Tutorial', () => {
             expect(tab.style).toBe(tutorial.phraseColors['Tab'].fill);
         });
 
-        test('does not render when not paused', () => {
+        test('renders only the step counter when not paused', () => {
             tutorial.tutorialPause = false;
+            tutorial.draw(ctx);
+
+            const counter = fills.find((c) => /Step\s+\d+\s*\/\s*\d+/.test(c.text));
+            expect(counter).toBeTruthy();
+
+            const messageTokens = fills.filter((c) => c.text === 'Tutorial' || c.text === 'Enter');
+            expect(messageTokens).toHaveLength(0);
+        });
+
+        test('renders the step counter when paused', () => {
+            tutorial.tutorialPause = true;
+            tutorial.draw(ctx);
+
+            const counter = fills.find((c) => /Step\s+\d+\s*\/\s*\d+/.test(c.text));
+            expect(counter).toBeTruthy();
+        });
+
+        test('does not render when tutorial is not active on Map1', () => {
+            game.currentMap = 'Map2';
+            tutorial.tutorialPause = true;
             tutorial.draw(ctx);
             expect(ctx.save).not.toHaveBeenCalled();
             expect(fills).toHaveLength(0);

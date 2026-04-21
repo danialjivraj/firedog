@@ -712,7 +712,12 @@ export class Tutorial {
     }
 
     draw(context) {
+        if (!this.isActiveOnMap1()) return;
+
+        this._drawStepCounter(context);
+
         if (!this.tutorialPause) return;
+        if (this._skipInProgress) return;
 
         context.save();
         context.font = this.fontSize + this.fontFamily;
@@ -752,6 +757,28 @@ export class Tutorial {
                 x += context.measureText(token).width;
             });
         });
+
+        context.restore();
+    }
+
+    _drawStepCounter(context) {
+        const total = this.steps.length;
+        const current = Math.min(this.currentStepIndex + 1, total);
+
+        context.save();
+        context.font = `28px ${this.fontFamily}`;
+        context.textAlign = "right";
+        context.textBaseline = "top";
+        context.lineWidth = 5;
+        context.strokeStyle = "black";
+        context.fillStyle = "white";
+
+        const text = `Step ${current} / ${total}`;
+        const x = this.game.width - 20;
+        const y = 20;
+
+        context.strokeText(text, x, y);
+        context.fillText(text, x, y);
 
         context.restore();
     }
