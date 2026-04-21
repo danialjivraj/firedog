@@ -1,5 +1,5 @@
 import { isLocalNight } from '../utils/timeOfDay.js';
-import { MAP_DISPLAY_NAMES_UPPER } from '../config/constants.js';
+import { MAP_DISPLAY_NAMES_UPPER, MAP_THEME_COLORS } from '../config/constants.js';
 import { BaseMenu } from "./baseMenu.js";
 import { buildPageDefs } from '../config/enemyLoreData.js';
 
@@ -27,18 +27,19 @@ export class EnemyLore extends BaseMenu {
         this.bonusPages = [];
         this.pages = this.mainPages;
 
+        const themeColors = MAP_THEME_COLORS.enemyLore;
         this.mapColors = {
-            [EVERYWHERE]: { fill: 'black', stroke: 'white', strokeBlur: 5 },
-            [MAP_DISPLAY_NAMES_UPPER.Map1]: { fill: '#57e2d0ff', stroke: '#06580dff', strokeBlur: 7 },
-            [MAP_DISPLAY_NAMES_UPPER.Map2]: { fill: '#a84ffcff', stroke: 'black', strokeBlur: 10 },
-            [MAP_DISPLAY_NAMES_UPPER.Map3]: { fill: 'dodgerblue', stroke: 'darkblue', strokeBlur: 5 },
-            [MAP_DISPLAY_NAMES_UPPER.Map4]: { fill: '#61c050ff', stroke: 'black', strokeBlur: 15 },
-            [MAP_DISPLAY_NAMES_UPPER.Map5]: { fill: 'yellow', stroke: 'orange', strokeBlur: 5 },
-            [MAP_DISPLAY_NAMES_UPPER.Map6]: { fill: '#39ff14', stroke: '#003b00', strokeBlur: 10 },
-            [MAP_DISPLAY_NAMES_UPPER.Map7]: { fill: '#ff3300ff', stroke: 'black', strokeBlur: 10 },
-            [MAP_DISPLAY_NAMES_UPPER.BonusMap1]: { fill: '#8fd7ff', stroke: '#1c4a7f', strokeBlur: 10 },
-            [MAP_DISPLAY_NAMES_UPPER.BonusMap3]: { fill: '#ff41ffff', stroke: '#270033', strokeBlur: 10 },
-            [MAP_DISPLAY_NAMES_UPPER.BonusMap2]: { fill: '#ff2c56ff', stroke: '#000000ff', strokeBlur: 10 },
+            [EVERYWHERE]:                       { fill: 'black', stroke: 'white', strokeBlur: 5 },
+            [MAP_DISPLAY_NAMES_UPPER.Map1]:      themeColors.Map1,
+            [MAP_DISPLAY_NAMES_UPPER.Map2]:      themeColors.Map2,
+            [MAP_DISPLAY_NAMES_UPPER.Map3]:      themeColors.Map3,
+            [MAP_DISPLAY_NAMES_UPPER.Map4]:      themeColors.Map4,
+            [MAP_DISPLAY_NAMES_UPPER.Map5]:      themeColors.Map5,
+            [MAP_DISPLAY_NAMES_UPPER.Map6]:      themeColors.Map6,
+            [MAP_DISPLAY_NAMES_UPPER.Map7]:      themeColors.Map7,
+            [MAP_DISPLAY_NAMES_UPPER.BonusMap1]: themeColors.BonusMap1,
+            [MAP_DISPLAY_NAMES_UPPER.BonusMap2]: themeColors.BonusMap2,
+            [MAP_DISPLAY_NAMES_UPPER.BonusMap3]: themeColors.BonusMap3,
         };
 
         this.typeColors = {

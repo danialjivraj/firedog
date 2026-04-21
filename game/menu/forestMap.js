@@ -1,5 +1,5 @@
 import { isLocalNight } from '../utils/timeOfDay.js';
-import { BOSS_MAP_MAX_DISTANCE, MAP_DISPLAY_NAMES } from '../config/constants.js';
+import { BOSS_MAP_MAX_DISTANCE, MAP_DISPLAY_NAMES, MAP_THEME_COLORS } from '../config/constants.js';
 import {
     FIREDOG_FRAME,
     getSkinElement,
@@ -50,17 +50,18 @@ export class ForestMapMenu extends BaseMenu {
             bonus3: MAP_DISPLAY_NAMES.BonusMap3,
         };
 
+        const themeColors = MAP_THEME_COLORS.forestMap;
         this.mapColors = {
-            map1: { fill: '#57e2d0ff', stroke: '#097e12ff', strokeBlur: 5 },
-            map2: { fill: '#a84ffcff', stroke: '#380057ff', strokeBlur: 4 },
-            map3: { fill: 'dodgerblue', stroke: 'darkblue', strokeBlur: 4 },
-            map4: { fill: '#61c050ff', stroke: '#346b38ff', strokeBlur: 5 },
-            map5: { fill: 'yellow', stroke: 'orange', strokeBlur: 5 },
-            map6: { fill: '#39ff14', stroke: '#003b00', strokeBlur: 10 },
-            map7: { fill: '#ff2100ff', stroke: 'black', strokeBlur: 5 },
-            bonus1: { fill: '#8fd7ff', stroke: '#1c4a7f', strokeBlur: 10 },
-            bonus2: { fill: '#dc143c', stroke: 'black', strokeBlur: 12 },
-            bonus3: { fill: '#ff41ffff', stroke: '#270033', strokeBlur: 10 },
+            map1:   themeColors.Map1,
+            map2:   themeColors.Map2,
+            map3:   themeColors.Map3,
+            map4:   themeColors.Map4,
+            map5:   themeColors.Map5,
+            map6:   themeColors.Map6,
+            map7:   themeColors.Map7,
+            bonus1: themeColors.BonusMap1,
+            bonus2: themeColors.BonusMap2,
+            bonus3: themeColors.BonusMap3,
         };
 
         this.defaultMapColor = {

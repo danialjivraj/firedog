@@ -52,6 +52,34 @@ export const MAP_DISPLAY_NAMES_UPPER = Object.freeze(
     )
 );
 
+// ─── Map Theme Colors ────────────────────────────────────────────────────────
+export const MAP_THEME_COLORS = Object.freeze({
+    forestMap: Object.freeze({
+        Map1:      { fill: '#57e2d0ff', stroke: '#097e12ff', strokeBlur: 5 },
+        Map2:      { fill: '#a84ffcff', stroke: '#380057ff', strokeBlur: 4 },
+        Map3:      { fill: 'dodgerblue', stroke: 'darkblue',  strokeBlur: 4 },
+        Map4:      { fill: '#61c050ff', stroke: '#346b38ff', strokeBlur: 5 },
+        Map5:      { fill: 'yellow',    stroke: 'orange',     strokeBlur: 5 },
+        Map6:      { fill: '#39ff14',   stroke: '#003b00',    strokeBlur: 10 },
+        Map7:      { fill: '#ff2100ff', stroke: 'black',      strokeBlur: 5 },
+        BonusMap1: { fill: '#8fd7ff',   stroke: '#1c4a7f',    strokeBlur: 10 },
+        BonusMap2: { fill: '#dc143c',   stroke: 'black',      strokeBlur: 12 },
+        BonusMap3: { fill: '#ff41ffff', stroke: '#270033',    strokeBlur: 10 },
+    }),
+    enemyLore: Object.freeze({
+        Map1:      { fill: '#57e2d0ff', stroke: '#06580dff', strokeBlur: 7 },
+        Map2:      { fill: '#a84ffcff', stroke: 'black',     strokeBlur: 10 },
+        Map3:      { fill: 'dodgerblue', stroke: 'darkblue', strokeBlur: 5 },
+        Map4:      { fill: '#61c050ff', stroke: 'black',     strokeBlur: 15 },
+        Map5:      { fill: 'yellow',    stroke: 'orange',    strokeBlur: 5 },
+        Map6:      { fill: '#39ff14',   stroke: '#003b00',   strokeBlur: 10 },
+        Map7:      { fill: '#ff3300ff', stroke: 'black',     strokeBlur: 10 },
+        BonusMap1: { fill: '#8fd7ff',   stroke: '#1c4a7f',   strokeBlur: 10 },
+        BonusMap2: { fill: '#ff2c56ff', stroke: '#000000ff', strokeBlur: 10 },
+        BonusMap3: { fill: '#ff41ffff', stroke: '#270033',   strokeBlur: 10 },
+    }),
+});
+
 // ─── Maps ─────────────────────────────────────────────────────────────────────
 export const MAX_DISTANCE          = 100;
 export const BOSS_MAP_MAX_DISTANCE = 9999999;

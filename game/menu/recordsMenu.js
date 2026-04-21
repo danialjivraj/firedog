@@ -1,6 +1,6 @@
 import { ScrollableMenu } from "./scrollableMenu.js";
 import { formatTimeMs } from "../utils/formatTime.js";
-import { MAP_DISPLAY_NAMES } from "../config/constants.js";
+import { MAP_DISPLAY_NAMES, MAP_THEME_COLORS } from "../config/constants.js";
 
 export class RecordsMenu extends ScrollableMenu {
     constructor(game) {
@@ -412,20 +412,25 @@ export class RecordsMenu extends ScrollableMenu {
             context.shadowColor = "transparent";
             context.textBaseline = "middle";
 
-            const mapY = yMid - 10;
-            const mapSubY = yMid + 13;
+            const mapY = yMid - 9;
+            const mapSubY = yMid + 14;
             const clearY = hasBossLine ? yMid - 10 : yMid;
             const bossY = yMid + 16;
 
             // map
+            const themeFill = MAP_THEME_COLORS.forestMap[m.key]?.fill || "rgba(255,255,255,0.92)";
             context.textAlign = "left";
-            context.font = isSelected ? "bold 28px Arial" : "bold 26px Arial";
-            context.fillStyle = isSelected ? "yellow" : "rgba(255,255,255,0.92)";
-            context.fillText(m.label, xMap, mapY);
+            context.font = isSelected ? "bold 26px Arial" : "bold 24px Arial";
+            context.save();
+            context.shadowColor = "rgba(0,0,0,0.7)";
+            context.shadowBlur = 4;
+            context.fillStyle = themeFill;
+            context.fillText(MAP_DISPLAY_NAMES[m.key], xMap, mapY);
+            context.restore();
 
-            context.font = "15px Arial";
-            context.fillStyle = isSelected ? "rgba(255,220,0,0.75)" : "rgba(255,255,255,0.50)";
-            context.fillText(MAP_DISPLAY_NAMES[m.key], xMap, mapSubY);
+            context.font = "14px Arial";
+            context.fillStyle = isSelected ? "rgba(255,255,255,0.70)" : "rgba(255,255,255,0.45)";
+            context.fillText(m.label, xMap, mapSubY);
 
             // clear
             context.textAlign = "right";
