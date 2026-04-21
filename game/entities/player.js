@@ -719,7 +719,7 @@ export class Player {
         let regenAmount = 0.4;
 
         if (this.currentState === this.states[PlayerState.DIVING]) { // dive attack slows regen
-            regenAmount *= 0.15;
+            regenAmount *= 0.20;
         }
 
         if (this.isHourglassActive) {
@@ -787,7 +787,7 @@ export class Player {
     drainEnergy(deltaTime = BASE_FRAME_MS) {
         if (this.isBluePotionActive) return;
 
-        const energyDrainAmount = 0.4 * (normalizeDelta(deltaTime));
+        const energyDrainAmount = 0.33 * (normalizeDelta(deltaTime));
         this.energy = Math.max(0, this.energy - energyDrainAmount);
         if (this.energy <= 0) {
             this.isEnergyExhausted = true;
