@@ -39,24 +39,39 @@ body {
     font-family: 'Love Ya Like A Sister', cursive;
     color: #ffffff;
     font-size: 1.67cqw;
-    margin-bottom: 1cqw;
+    letter-spacing: 0.3cqw;
+    text-indent: 0.3cqw;
+    margin-bottom: 0.4cqw;
     text-shadow: 2px 2px 0px black;
+}
+
+#loading-text::after {
+    content: "";
+    display: inline-block;
+    width: 1.5ch;
+    text-align: left;
+    animation: loading-dots 1.2s steps(3, end) infinite;
+}
+
+@keyframes loading-dots {
+    0%   { content: "."; }
+    33%  { content: ".."; }
+    66%  { content: "..."; }
+    100% { content: "."; }
 }
 
 #loading-bar-container {
     width: 16.67cqw;
     height: 1.04cqw;
-    border: 2px solid #ffffff;
-    border-radius: 0.5cqw;
+    border: 0.1cqw solid #ffffff;
     overflow: hidden;
-    background-color: #1a1a1a;
+    background-color: #000000;
 }
 
 #loading-bar {
     width: 0%;
     height: 100%;
-    background: linear-gradient(90deg, #ffffff, #cccccc);
-    border-radius: 0.4cqw;
+    background-color: #ffffff;
     transition: width 0.15s ease-out;
 }
 
