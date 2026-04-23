@@ -640,6 +640,7 @@ export class Map6EndCutscene extends StoryCutscene {
     constructor(game) {
         super(game, true);
         this.backgroundImage = document.getElementById('map6InsideCabin');
+        this.game.audioHandler.cutsceneMusic.playSound('blizzardWindFireplace', true);
 
         const LEFT = { x: 0, y: 79, width: 590, height: 610 };
         const RIGHT = { x: 1300, y: 79, width: 590, height: 610 };
@@ -731,7 +732,7 @@ export class Map6EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //17
             `${this.firedog}`,
-            `But then the flashbacks started... first when I was with ${this.galadon} in the cabin at ${this.verdantVine}`,
+            `But then the flashbacks started... first when I was with ${this.galadon} in the cabin at ${this.verdantVine}.`,
             this.addImage(this.setfiredogDiscomfort(), LEFT, { talking: true }),
         );
         this.addDialogue( //18
