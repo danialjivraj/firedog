@@ -1075,7 +1075,6 @@ export class BonusMap3EndCutscene extends StoryCutscene {
             `${this.orialis}`,
             `And you put a stop to it...`,
             this.addImage(this.setfiredogNormal(), LEFT),
-            this.addImage('orialisRelieved', RIGHT),
             this.addImage('orialisTalking', RIGHT, { talking: true }),
         );
         this.addDialogue( //54

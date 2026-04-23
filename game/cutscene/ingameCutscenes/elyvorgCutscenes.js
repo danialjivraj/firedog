@@ -477,43 +477,43 @@ export class Map7ElyvorgIngameCutsceneAfterFight extends ElyvorgCutscene {
             `${this.firedog}`,
             `(What do I do?)`,
             { whisper: true },
-            this.addImage(this.setfiredogCry2Border(), FIREDOG),
-            this.addImage('elyvorgBorder', ELYVORG, { talking: true }),
+            this.addImage(this.setfiredogCry2Border(), FIREDOG, { talking: true }),
+            this.addImage('elyvorgBorder', ELYVORG),
         );
         this.addDialogue( //35
             `${this.firedog}`,
             `(I was used and kept in ${this.lunarGlade} all this time, wrapped in a lie...)`,
             { whisper: true },
-            this.addImage(this.setfiredogCry2Border(), FIREDOG),
-            this.addImage('elyvorgBorder', ELYVORG, { talking: true }),
+            this.addImage(this.setfiredogCry2Border(), FIREDOG, { talking: true }),
+            this.addImage('elyvorgBorder', ELYVORG),
         );
         this.addDialogue( //36
             `${this.firedog}`,
             `(${this.valdorin} could've killed me... just like the others who didn't make it.)`,
             { whisper: true },
-            this.addImage(this.setfiredogCry2Border(), FIREDOG),
-            this.addImage('elyvorgBorder', ELYVORG, { talking: true }),
+            this.addImage(this.setfiredogCry2Border(), FIREDOG, { talking: true }),
+            this.addImage('elyvorgBorder', ELYVORG),
         );
         this.addDialogue( //37
             `${this.firedog}`,
             `(The memories and the voices were all correct after all...)`,
             { whisper: true },
-            this.addImage(this.setfiredogCryBorder(), FIREDOG),
-            this.addImage('elyvorgBorder', ELYVORG, { talking: true }),
+            this.addImage(this.setfiredogCryBorder(), FIREDOG, { talking: true }),
+            this.addImage('elyvorgBorder', ELYVORG),
         );
         this.addDialogue( //38
             `${this.firedog}`,
             `(In a way... I understand why ${this.elyvorg} hates them...)`,
             { whisper: true },
-            this.addImage(this.setfiredogSadBorder(), FIREDOG),
-            this.addImage('elyvorgBorder', ELYVORG, { talking: true }),
+            this.addImage(this.setfiredogSadBorder(), FIREDOG, { talking: true }),
+            this.addImage('elyvorgBorder', ELYVORG),
         );
         this.addDialogue( //39
             `${this.firedog}`,
             `(Okay... make a decision...)`,
             { whisper: true },
-            this.addImage(this.setfiredogSadBorder(), FIREDOG),
-            this.addImage('elyvorgBorder', ELYVORG, { talking: true }),
+            this.addImage(this.setfiredogSadBorder(), FIREDOG, { talking: true }),
+            this.addImage('elyvorgBorder', ELYVORG),
         );
         this.addDialogue( //40
             `${this.firedog}`,
