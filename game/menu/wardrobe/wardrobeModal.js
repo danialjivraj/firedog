@@ -51,6 +51,9 @@ export const wardrobeModalMethods = {
 
         this._openPreviewModal(nextItem);
 
+        if (dir === -1) this.modal.hoverNavLeft = true;
+        else this.modal.hoverNavRight = true;
+
         this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
         return true;
     },
