@@ -672,7 +672,7 @@ export class Map6EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //5
             `${this.firedog}`,
-            `Now I've crossed the haunted graves of ${this.nightfallPhantomGraves}, traveled beneath the waters of ${this.coralAbyss}, passed through ${this.verdantVine}.`,
+            `Now I've crossed the haunted graves of ${this.nightfallPhantomGraves}, traveled beneath the waters of ${this.coralAbyss}, passed through the dense jungle of ${this.verdantVine}.`,
             this.addImage(this.setfiredogHappy(), LEFT, { talking: true }),
         );
         this.addDialogue( //6
