@@ -91,7 +91,7 @@ export class ForestMapMenu extends BaseMenu {
             { Map: Map1, maxDistance: 200, winningCoins: 250, environment: null, Cutscene: Map1StartCutscene },
             { Map: Map2, maxDistance: 240, winningCoins: 270, environment: null, Cutscene: Map2StartCutscene },
             { Map: Map3, maxDistance: 270, winningCoins: 290, environment: 'underwater', Cutscene: Map3StartCutscene },
-            { Map: Map4, maxDistance: 240, winningCoins: 340, environment: null, Cutscene: Map4StartCutscene },
+            { Map: Map4, maxDistance: 240, winningCoins: 350, environment: null, Cutscene: Map4StartCutscene },
             { Map: Map5, maxDistance: 250, winningCoins: 380, environment: null, Cutscene: Map5StartCutscene },
             { Map: Map6, maxDistance: 250, winningCoins: 300, environment: null, Cutscene: Map6StartCutscene },
             { Map: Map7, maxDistance: BOSS_MAP_MAX_DISTANCE, winningCoins: 0, environment: null, Cutscene: Map7StartCutscene },
