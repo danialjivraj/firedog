@@ -350,12 +350,12 @@ export class BonusMap2StartCutscene extends StoryCutscene {
             `Alright. Lead the way.`,
             {
                 onAdvance: () => this.transitionWithBg({
-                    fadeIn: 500, blackDuration: 2000, fadeOut: 500,
+                    fadeIn: 500, blackDuration: 5000, fadeOut: 500,
                     imageId: 'bonusMap2GroundFissures',
                     onBlack: () => {
                         this.playSFX('walkingCutsceneSound');
                         this.fadeOutMusic('birdsChirping');
-                        this.playMusic('darkTensionRisingSound', true);
+                        setTimeout(() => this.playMusic('darkTensionRisingSound', true), 3000);
                     },
                 }),
             },
