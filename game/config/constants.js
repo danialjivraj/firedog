@@ -26,7 +26,7 @@ export const WINNING_COINS       = 100;
 export const COIN_LOSS_KEEP_RATE = 0.1;
 
 // ─── Environment ─────────────────────────────────────────────────────────────
-export const MAX_TIME_UNDERWATER_MS = 450000; // 7.5 minutes
+export const MAX_TIME_UNDERWATER_MS = 420000; // 7 minutes
 
 // ─── Spawn Buffers ───────────────────────────────────────────────────────────
 export const ENEMY_SPAWN_DISTANCE_BUFFER = 5;

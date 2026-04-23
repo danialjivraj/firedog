@@ -577,7 +577,7 @@ export class Map3StartCutscene extends StoryCutscene {
         );
         this.addDialogue( //83
             `${this.zephyrion}`,
-            `But be wary, you must be quick to reach the other side, the spell only lasts 7 minutes and 30 seconds.`,
+            `But be wary, you must be quick to reach the other side, the spell only lasts 7 minutes.`,
             this.addImage(this.setfiredogLaugh(), LEFT),
             this.addImage('zephyrionNormal', RIGHT, { talking: true }),
         );
