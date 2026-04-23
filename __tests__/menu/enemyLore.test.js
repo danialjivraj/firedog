@@ -670,7 +670,7 @@ describe('EnemyLore', () => {
             menu.drawPageContent(ctx, idx, 0, 0);
 
             const texts = ctx.fillText.mock.calls.map(call => call[0]);
-            expect(texts).toEqual(['NAME: ???', 'TYPE: ??? & ???', 'FOUND AT: ???', 'DESCRIPTION: ???']);
+            expect(texts).toEqual(['NAME: ???', 'TYPE: ???', 'FOUND AT: ???', 'DESCRIPTION: ???']);
         });
 
         it('does not render enemy placeholders for cover pages; cover title becomes "???" when locked', () => {
@@ -706,8 +706,14 @@ describe('EnemyLore', () => {
 
         it('blurs images when the enemy page is locked', () => {
             const idx = getEnemyPageIndexByMapKey('map2');
+            const filtersApplied = [];
+            Object.defineProperty(ctx, 'filter', {
+                get: () => filtersApplied.at(-1) ?? 'none',
+                set: (v) => filtersApplied.push(v),
+                configurable: true,
+            });
             menu.drawPageContent(ctx, idx, 0, 0);
-            expect(ctx.filter).toBe('blur(15px)');
+            expect(filtersApplied).toContain('blur(15px) brightness(0) opacity(0.6)');
         });
     });
 

@@ -602,7 +602,7 @@ export class EnemyLore extends BaseMenu {
 
                     context.save();
 
-                    context.filter = blurAmount > 0 ? `blur(${blurAmount}px)` : 'none';
+                    context.filter = blurAmount > 0 ? `blur(${blurAmount}px) brightness(0) opacity(0.6)` : 'none';
                     context.globalAlpha = item.alpha ?? 1;
 
                     if (item.shadowColor) {
@@ -677,10 +677,11 @@ export class EnemyLore extends BaseMenu {
 
         if (page.images && page.images.length > 0) {
             page.images.forEach(image => {
-                context.filter = locked ? 'blur(15px)' : 'none';
+                context.filter = 'none';
 
                 if (image.kind === 'line') {
                     context.save();
+                    if (locked) context.filter = 'blur(6px)';
                     context.strokeStyle = 'black';
                     context.lineWidth = image.lineWidth;
                     context.beginPath();
@@ -699,10 +700,17 @@ export class EnemyLore extends BaseMenu {
                 context.shadowColor = 'transparent';
                 context.shadowBlur = 0;
 
-                if (!locked) {
-                    context.shadowColor = 'transparent';
-                    context.shadowBlur = 0;
-
+                if (locked) {
+                    context.filter = 'blur(15px) brightness(0) opacity(0.6)';
+                    context.drawImage(
+                        image.enemyImage,
+                        frameX, image.srcY ?? 0,
+                        image.frameWidth, image.frameHeight,
+                        x + image.enemyX, y + image.enemyY,
+                        frameWidth, frameHeight
+                    );
+                    context.filter = 'none';
+                } else {
                     if (image.type === 'red') {
                         context.shadowColor = 'red';
                         context.shadowBlur = 20;
@@ -719,21 +727,18 @@ export class EnemyLore extends BaseMenu {
                         context.shadowColor = 'cyan';
                         context.shadowBlur = 20;
                     }
-                } else {
+
+                    context.drawImage(
+                        image.enemyImage,
+                        frameX, image.srcY ?? 0,
+                        image.frameWidth, image.frameHeight,
+                        x + image.enemyX, y + image.enemyY,
+                        frameWidth, frameHeight
+                    );
+
                     context.shadowColor = 'transparent';
                     context.shadowBlur = 0;
                 }
-
-                context.drawImage(
-                    image.enemyImage,
-                    frameX, image.srcY ?? 0,
-                    image.frameWidth, image.frameHeight,
-                    x + image.enemyX, y + image.enemyY,
-                    frameWidth, frameHeight
-                );
-
-                context.shadowColor = 'transparent';
-                context.shadowBlur = 0;
             });
         }
 
@@ -856,7 +861,7 @@ export class EnemyLore extends BaseMenu {
         if (locked) {
             context.fillText(`NAME: ???`, x + 20, y + offsetY);
             offsetY += lineHeight + gapHeight;
-            context.fillText(`TYPE: ??? & ???`, x + 20, y + offsetY);
+            context.fillText(`TYPE: ???`, x + 20, y + offsetY);
             offsetY += lineHeight + gapHeight;
             context.fillText(`FOUND AT: ???`, x + 20, y + offsetY);
             offsetY += lineHeight + gapHeight;

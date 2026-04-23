@@ -172,7 +172,7 @@ export function buildPageDefs(pageWidth, pageHeight) {
                 "IT IS BELIEVED THAT SILKNOIRS' PITCH-BLACK APPEARANCE CAME FROM DECADES OF FEEDING ON SHADOW-BORN CREATURES, SLOWLY ABSORBING THEIR DARKNESS UNTIL NO LIGHT REMAINED IN THEM.\n"
                 + "THEY DESCEND FROM THE TALLEST TREES AT NIGHT, HUNTING ANYTHING THAT STIRS BELOW.",
             images: [
-                line(pageWidth - 110, 0, 345),
+                line(pageWidth - 110, 0, 315),
                 img('silknoir', 120, 144, 0, 'right', 270),
             ],
             mapKey: "map2",
@@ -427,7 +427,7 @@ export function buildPageDefs(pageWidth, pageHeight) {
                 "BRAMBLE IS A LARGE SPIDER FOUND DEEP WITHIN THE DENSE, OVERGROWN PARTS OF THE FOREST.\n"
                 + "IT IS BELIEVED THAT GENERATIONS OF FEEDING ON THE ANCIENT TREES CAUSED ITS SKIN TO GRADUALLY HARDEN INTO WOOD, MAKING IT AS MUCH PLANT AS CREATURE.",
             images: [
-                line(pageWidth - 110, -30, 200),
+                line(pageWidth - 110, -30, 150),
                 img('bramble', 174.2, 140, 0, 'right', pageHeight - 450),
             ],
             mapKey: "map4",
@@ -578,7 +578,7 @@ export function buildPageDefs(pageWidth, pageHeight) {
                 + "IT HANGS PERFECTLY STILL, WAITING WITH A PATIENCE THAT FEELS ALMOST PERSONAL.\n\n"
                 + "RAIN EFFECT: THE RAIN AWAKENS SOMETHING IN THE STRAWSPIDER. IT BEGINS DESCENDING TOWARD ITS PREY, DRIVEN BY INSTINCT ALONE.",
             images: [
-                line(pageWidth - 110, -30, 265),
+                line(pageWidth - 110, -30, 190),
                 img('strawspider', 93.83333333333333, 110, 0, 'right', pageHeight - 400),
             ],
             mapKey: "map5",
@@ -626,7 +626,7 @@ export function buildPageDefs(pageWidth, pageHeight) {
                 + "IT DESCENDS SLOWLY ON A THREAD OF SILK, SWAYING WITH THE STILLNESS OF SOMETHING THAT HAS NEVER NEEDED TO RUSH.\n"
                 + "THOSE WHO HAVE FELT ITS VENOM DESCRIBE A SLOW, CREEPING SENSATION, MUCH LIKE THE WAY IT HUNTS.",
             images: [
-                line(pageWidth - 110, -30, 265),
+                line(pageWidth - 110, -30, 195),
                 img('venarach', 124.25, 150, 0, 'right', pageHeight - 400, 'poison'),
             ],
             mapKey: "map6",
@@ -875,7 +875,7 @@ export function buildPageDefs(pageWidth, pageHeight) {
                 + "OVER GENERATIONS, THE RELENTLESS COLD BLEACHED THEIR DARKNESS AWAY AND COATED THEM IN FROST, TURNING THEM INTO SOMETHING ENTIRELY NEW.\n"
                 + "THEY STILL DESCEND SILENTLY FROM ABOVE, SWAYING AS THEY WAIT. OLD HABITS DIE HARD.",
             images: [
-                line(pageWidth - 110, 0, 345),
+                line(pageWidth - 110, 0, 315),
                 img('iceSilknoir', 120, 144, 0, 'right', 270, 'slow'),
             ],
             mapKey: "bonusMap1",
