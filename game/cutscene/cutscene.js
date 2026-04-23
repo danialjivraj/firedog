@@ -121,7 +121,7 @@ export class Cutscene {
             [this.nysera]: 'Teal',
             [this.duskmaw]: 'DarkOliveGreen',
             [this.aurellia]: 'Plum',
-            [this.craggle]: 'SaddleBrown',
+            [this.craggle]: '#c8956c',
             [this.orialis]: 'MediumPurple',
             [this.orelian]: 'MediumPurple',
             [this.penguini]: 'cyan',
