@@ -59,7 +59,7 @@ export function getEnemySpawnConfig(game) {
             { type: KarateCroco,probability: 0.05, spawningDistance: 0 },
             { type: Bramble,    probability: 0.01, spawningDistance: 70 },
             { type: Jerry,      probability: 0.05, spawningDistance: 120 },
-            { type: Vinelash,   probability: 0.04, spawningDistance: 130 },
+            { type: Vinelash,   probability: 0.04, spawningDistance: 140 },
         ],
         Map5: [
             { type: Goblin,       probability: 0.05, spawningDistance: 0 },
