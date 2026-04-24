@@ -1,5 +1,5 @@
 # firedog
-Firedog is a 2D game built from scratch with over 20k lines of code (+14k for tests) and over 663 different assets (509 images and 154 audio files).
+Firedog is a 2D game built from scratch with over 65k lines of code (+39k for tests) and over 1275 different assets (987 images and 288 audio files).
 
 This game was created by using HTML Canvas and pure JavaScript without relying on external frameworks except for 
 Electron, which was utilized to transform it into a Desktop application.
@@ -7,15 +7,28 @@ Electron, which was utilized to transform it into a Desktop application.
 ## Story and Objective
 Embark on a thrilling quest as Firedog to recover the stolen Cryptic Token, pilfered by an enigmatic thief! <br>
 
-This is a story-based game which includes 6 different maps, with over 49 different enemies and a final boss. <br>
+This story-driven game features 10 maps (7 main story maps + 3 bonus maps), over 92 different enemies, and 3 bosses.  
 Your objective on each map is to eliminate as many enemies as you can, gathering sufficient coins to advance to the next stage of your journey! <br>
 
-Your progress/game settings will be automatically saved whenever you complete a map or adjust your settings (such as audio, skin selection, or level difficulty).
+Your progress, unlocks, and settings are saved automatically.
 
 ## Preview
+
+<details open>
+<summary><strong>🎬 Videos</strong></summary>
+
+<br>
+
 https://github.com/user-attachments/assets/55bf2c6e-c610-45d1-9e82-eae1e124d480
 
 https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
+
+</details>
+
+<details>
+<summary><strong>🖼️ Images</strong></summary>
+
+<br>
 
 ![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview1.png)
 ![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview2.png)
@@ -27,6 +40,8 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 ![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview8.png)
 ![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview9.png)
 ![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview10.png)
+
+</details>
 
 ## Controls
 - **Menus**
@@ -54,8 +69,10 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
     - S (while in the air): Dive Attack
     - Q / Left Click: Fireball Attack
     - E / Scroll Wheel Click: Invisible Defense
+    - Shift / Mouse Button 4: Dash Attack
 
   - Esc: Pause/Unpause Game
+  - F1: Tips
 
 ## Download
 
@@ -87,7 +104,7 @@ npm run start
 
 ## Tests
 
-The project is thoroughly tested using Jest, with over **1.1k+ tests** and and average of **80% test coverage** across all files.<br>
+The project is thoroughly tested using Jest, with over **3k+ tests** and and average of **61% test coverage** across all files.<br>
 You need to install the testing dependencies before being able to run all tests.
 
 1. Install all dependencies by running in the root folder:
@@ -100,7 +117,7 @@ npm test
 ```
 
 ## Diagrams
-[firedog.drawio](https://drive.google.com/file/d/1UzqG0iWC3djNO5h_WFIayjSSvS6cQqbG/view?usp=sharing)
+[firedog.drawio (outdated)](https://drive.google.com/file/d/1UzqG0iWC3djNO5h_WFIayjSSvS6cQqbG/view?usp=sharing)
 
 ## Credits
 [CREDITS.md](https://github.com/danialjivraj/firedog/blob/main/CREDITS.md)
