@@ -26,12 +26,10 @@ export class ZabbyFlyBy extends BackgroundEffect {
 
         this._spriteFacesRight = options.spriteFacesRight ?? true;
 
-        this._debug = options.debug ?? false;
         this._spawnYBand = {
             min: options.spawnYMin ?? 0.40,
             max: options.spawnYMax ?? 0.60,
         };
-        this._debugLabel = options.debugLabel ?? this.constructor.name;
 
         this._spawnedFromLeft = null;
     }
@@ -66,14 +64,6 @@ export class ZabbyFlyBy extends BackgroundEffect {
         this.directionY = Math.random() < 0.5 ? baseDirY : -baseDirY;
 
         this.speed = this._rand(this._minSpeed, this._maxSpeed);
-
-        if (this._debug) {
-            console.log(
-                `[${this._debugLabel}] spawn=${fromLeft ? "LEFT" : "RIGHT"} ` +
-                `dirX=${this.directionX.toFixed(2)} dirY=${this.directionY.toFixed(2)} ` +
-                `x=${this.x.toFixed(1)} y=${this.y.toFixed(1)}`
-            );
-        }
 
         return true;
     }
@@ -150,18 +140,12 @@ export class ZabbyFlyBy extends BackgroundEffect {
 
 export class Map3Zabby1FlyBy extends ZabbyFlyBy {
     constructor(game, options = {}) {
-        super(game, {
-            debugLabel: 'Map3Zabby1FlyBy',
-            ...options,
-        });
+        super(game, options);
     }
 }
 
 export class BonusMap3Zabby6FlyBy extends ZabbyFlyBy {
     constructor(game, options = {}) {
-        super(game, {
-            debugLabel: 'BonusMap3Zabby6FlyBy',
-            ...options,
-        });
+        super(game, options);
     }
 }
