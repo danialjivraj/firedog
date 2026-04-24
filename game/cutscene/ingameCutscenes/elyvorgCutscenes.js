@@ -421,7 +421,7 @@ export class Map7ElyvorgIngameCutsceneAfterFight extends ElyvorgCutscene {
         );
         this.addDialogue( //25
             `${this.elyvorg}`,
-            `Since I removed the ${this.crypticToken} from it's safe, and since you stepped outside ${this.lunarGlade}'s barrier... the connection returned.`,
+            `Since I removed the ${this.crypticToken} from its safe, and since you stepped outside ${this.lunarGlade}'s barrier... the connection returned.`,
             this.addImage(this.setfiredogSurprisedBorder(), FIREDOG),
             this.addImage('elyvorgBorder', ELYVORG, { talking: true }),
         );

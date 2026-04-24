@@ -1388,7 +1388,7 @@ export class Map1EndCutscene extends StoryCutscene {
         );
         this.addDialogue( //58
             `${this.duskmaw}`,
-            `To protect themselves, they decided use the toxic waste from the minerals and rocks and dump it in the nearest forest.`,
+            `To protect themselves, they decided to use the toxic waste from the minerals and rocks and dump it in the nearest forest.`,
             this.addImage(this.setfiredogNormal(), LEFT),
             this.addImage('duskmawNormal', RIGHT, { talking: true }),
         );

@@ -157,7 +157,7 @@ export function buildPageDefs(pageWidth, pageHeight) {
             type: "NORMAL",
             foundAt: MAP_DISPLAY_NAMES_UPPER.Map2,
             description:
-                "DORMANT BY DAY, DUSK PLANTS STIR TO LIFE AS DARKNESS FALLS, PROWLING THE SHADOWS IN SEARCH OF UNSUSPECTED PREY.\n"
+                "DORMANT BY DAY, DUSK PLANTS STIR TO LIFE AS DARKNESS FALLS, PROWLING THE SHADOWS IN SEARCH OF UNSUSPECTING PREY.\n"
                 + "ANCIENT TALES CLAIM THEY WERE ONCE ORDINARY FLOWERS THAT ABSORBED SO MUCH DARKNESS OVER THE CENTURIES THAT THEY LOST THEIR COLOR ENTIRELY.",
             images: [img('duskPlant', 60, 87, 0, 'right', 'bottom')],
             mapKey: "map2",
@@ -519,7 +519,7 @@ export function buildPageDefs(pageWidth, pageHeight) {
             foundAt: MAP_DISPLAY_NAMES_UPPER.Map5,
             description:
                 "THIS STRANGE-LOOKING CREATURE IS A COMMON SIGHT IN THE AREA.\n"
-                + "IT HAS A UNIQUE, LEAF-COVERED BACK THAT HELPS IT BLEND SEAMLESSLY INTO ITS SURROUNDINGS. WITH BAD EYESIGHT, THEY MOVE SLOWLY AND STEADILY, TOWARDS ANY TARGET THEY FINDS AHEAD!\n",
+                + "IT HAS A UNIQUE, LEAF-COVERED BACK THAT HELPS IT BLEND SEAMLESSLY INTO ITS SURROUNDINGS. WITH BAD EYESIGHT, THEY MOVE SLOWLY AND STEADILY, TOWARDS ANY TARGET THEY FIND AHEAD!\n",
             images: [img('leafSlug', 89, 84, 0, 'right', 'bottom')],
             mapKey: "map5",
         },
