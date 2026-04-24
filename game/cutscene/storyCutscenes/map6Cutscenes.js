@@ -362,6 +362,9 @@ export class Map6StartCutscene extends StoryCutscene {
         this.addDialogue( //47
             `${this.craggle}`,
             `Hey! You are interrupting my counting again!`,
+            {
+                onAdvance: () => this.playMusic('iSawSomethingAgain', true),
+            },
             this.addImage(this.setfiredogHeadache(), LEFT),
             this.addImage('craggleUpset', RIGHT, { talking: true }),
         );
@@ -438,7 +441,10 @@ export class Map6StartCutscene extends StoryCutscene {
         this.addDialogue( //58
             `${this.firedog}`,
             `(After all, if the ${this.crypticToken} is in the wrong hands, it doesn't matter what is true or not. The whole world could be at stake right now.)`,
-            { whisper: true },
+            {
+                whisper: true,
+                onAdvance: () => this.fadeOutMusic('iSawSomethingAgain'),
+            },
             this.addImage(this.setfiredogHeadache(), LEFT, { talking: true }),
             this.addImage('craggleCountingRocks', RIGHT),
         );

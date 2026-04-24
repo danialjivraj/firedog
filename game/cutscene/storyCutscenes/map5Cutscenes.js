@@ -514,9 +514,6 @@ export class Map5StartCutscene extends StoryCutscene {
         this.addDialogue( //68
             `${this.galadon}`,
             `But as you said, every second counts. You should go now ${this.firedog}, and make sure to bring the thief down for me!`,
-            {
-                onAdvance: () => this.fadeOutMusic('iSawSomethingAgain'),
-            },
             this.addImage(this.setfiredogNormal(), LEFT),
             this.addImage('galadonHurt', RIGHT, { talking: true }),
         );
