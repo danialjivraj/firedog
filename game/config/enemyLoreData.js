@@ -508,7 +508,7 @@ export function buildPageDefs(pageWidth, pageHeight) {
             name: "LAZY MOSQUITO",
             type: "NORMAL",
             foundAt: MAP_DISPLAY_NAMES_UPPER.Map5,
-            description: "JUST A LAZY MOSQUITO...",
+            description: "RAINING OR NOT, LAZY MOSQUITO WON'T CHASE YOU. IT'S TOO MUCH EFFORT...",
             images: [img('lazyMosquito', 67.23076923076923, 50, 0, 'right', 'top')],
             mapKey: "map5",
         },

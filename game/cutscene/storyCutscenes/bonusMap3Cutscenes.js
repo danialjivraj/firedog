@@ -669,6 +669,7 @@ export class BonusMap3StartCutscene extends StoryCutscene {
             {
                 onAdvance: () => {
                     this.fadeOutSFX('ntharaxGrowl');
+                    this.playMusic('darkTensionRisingSound', true);
                     this.transitionWithBg({
                         fadeIn: 500, blackDuration: 3000, fadeOut: 500,
                         imageId: 'bonusMap3AnchoredPortal',

@@ -54,6 +54,7 @@ export class GameOverMenu extends BaseMenu {
                     this.game.coins = gate.minCoins;
                     if (this.game.background) {
                         this.game.background.totalDistanceTraveled = gate.minDistance;
+                        this.game.background._oneShotTriggered = true;
                     }
                 }
 
