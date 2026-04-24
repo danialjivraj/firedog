@@ -117,6 +117,7 @@ npm test
 ```
 
 ## Diagrams
+[ARCHITECTURE.md](https://github.com/danialjivraj/firedog/blob/main/ARCHITECTURE.md) <br>
 [firedog.drawio (outdated)](https://drive.google.com/file/d/1UzqG0iWC3djNO5h_WFIayjSSvS6cQqbG/view?usp=sharing)
 
 ## Credits
