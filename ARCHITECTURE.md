@@ -119,73 +119,38 @@ Game-over, pause, and distortion effects are drawn as overlays **within** GAMEPL
 
 ## Player — State Machine
 
-11 states defined in [playerStates.js](game/entities/playerStates.js) and enumerated in [PlayerState](game/config/constants.js) (0–10). Initial state is `Sitting` — both [game-main.js:97](game/game-main.js#L97) and [reset.js:50](game/reset.js#L50) set `currentState = states[0]` and `states[0]` is `Sitting`.
+11 states in [playerStates.js](game/entities/playerStates.js), enumerated in [PlayerState](game/config/constants.js) (0–10). Initial state is `Sitting` ([game-main.js:97](game/game-main.js#L97), [reset.js:50](game/reset.js#L50)).
 
-Transitions to `Standing` only happen when the world is stopped (cabin fully visible or boss visible); otherwise recovery lands in `Running`. `Hit` / `Stunned` / `Dying` can be entered from any state — triggered by [playerCollision.js](game/entities/playerCollision.js) and each state's `gameOver()` check — not from Standing specifically. `Hit` / `Stunned` recover to `Sitting` when `previousState === states[0]` (i.e. was Sitting).
+The states group into three roles:
+
+| Role | States | Notes |
+|---|---|---|
+| **Locomotion** | `Sitting`, `Running`, `Jumping`, `Falling`, `Diving`, `Standing` | `Standing` only appears when the world is stopped (cabin fully visible or boss visible); otherwise recovery lands in `Running`. |
+| **Modifier** | `Rolling`, `Dashing` | Enterable from most locomotion states and return to them. |
+| **Reactive** | `Hit`, `Stunned`, `Dying` | Entered from collisions ([playerCollision.js](game/entities/playerCollision.js)) or `gameOver()`. `Hit`/`Stunned` recover to `Sitting` if `previousState === states[0]`, else to `Running` (grounded) / `Falling` (airborne). |
 
 ```mermaid
 stateDiagram-v2
     [*] --> Sitting
+    Locomotion: Locomotion (6 states)
+    Modifier: Modifier (Rolling, Dashing)
+    Reactive: Reactive (Hit, Stunned)
 
-    Standing --> Running: move
-    Running --> Standing: stop (world stopped)
+    Sitting --> Locomotion: move / jump
+    Locomotion --> Modifier: roll / dash
+    Modifier --> Locomotion: release / land
 
-    Standing --> Sitting: sit
-    Running --> Sitting: sit
-    Sitting --> Running: move
-    Sitting --> Jumping: jump
-    Sitting --> Rolling: roll
+    Locomotion --> Reactive: collision
+    Modifier --> Reactive: collision
+    Reactive --> Locomotion: recover
 
-    Standing --> Jumping: jump
-    Running --> Jumping: jump
-    Jumping --> Falling: apex (vy > weight)
-    Falling --> Running: land
-    Falling --> Jumping: double-jump (space map)
-    Jumping --> Running: land
-    Standing --> Falling: roll + airborne (underwater)
-
-    Jumping --> Diving: dive
-    Falling --> Diving: dive
-    Rolling --> Diving: sit + airborne
-    Diving --> Running: land
-    Diving --> Jumping: land + jump held
-    Diving --> Jumping: jump (underwater/space)
-    Diving --> Rolling: space double-jump + roll held
-
-    Standing --> Rolling: roll (boss visible)
-    Running --> Rolling: roll
-    Jumping --> Rolling: roll
-    Falling --> Rolling: roll
-    Rolling --> Running: release
-    Rolling --> Falling: release (airborne)
-    Rolling --> Jumping: roll + jump
-    Rolling --> Jumping: space double-jump
-
-    Standing --> Dashing: dash
-    Running --> Dashing: dash
-    Sitting --> Dashing: dash
-    Jumping --> Dashing: dash
-    Falling --> Dashing: dash
-    Rolling --> Dashing: dash
-    Dashing --> Running: dash ends
-    Dashing --> Standing: dash ends (world stopped, no LR)
-    Dashing --> Jumping: dash ends (airborne, vy ≤ weight)
-    Dashing --> Falling: dash ends (airborne, vy > weight)
-
-    Hit: Hit (from collision)
-    Stunned: Stunned (from collision)
-    Hit --> Running: recover
-    Hit --> Sitting: recover (was sitting)
-    Hit --> Falling: recover (airborne)
-    Stunned --> Running: recover
-    Stunned --> Sitting: recover (was sitting)
-    Stunned --> Falling: recover (airborne)
-
-    Dying: Dying (lives = 0, any state)
+    Locomotion --> Dying: lives = 0
+    Modifier --> Dying: lives = 0
+    Reactive --> Dying: lives = 0
     Dying --> [*]
 ```
 
-Files: [player.js](game/entities/player.js), [playerStates.js](game/entities/playerStates.js), [playerCollision.js](game/entities/playerCollision.js)
+Full per-state transitions (jump apex, dive cooldown, space-map double-jump, dash exit branches, etc.) live in each state's `handleInput()` in [playerStates.js](game/entities/playerStates.js). Files: [player.js](game/entities/player.js), [playerStates.js](game/entities/playerStates.js), [playerCollision.js](game/entities/playerCollision.js).
 
 ---
 
@@ -193,8 +158,13 @@ Files: [player.js](game/entities/player.js), [playerStates.js](game/entities/pla
 
 Base class: `Enemy` in [enemyBase.js](game/entities/enemies/core/enemyBase.js). Mixin subtypes in [enemyTypes.js](game/entities/enemies/core/enemyTypes.js). Bosses extend a shared `EnemyBoss` base.
 
+The regular-enemy hierarchy and the boss hierarchy are shown separately because `EnemyBoss` has very different children from its siblings — keeping them in one diagram forces the layout solver to stretch arrows awkwardly.
+
+**Regular enemies** (extend `Enemy` directly):
+
 ```mermaid
 classDiagram
+    direction TB
     class Enemy {
         +x, y, width, height
         +update()
@@ -207,18 +177,30 @@ classDiagram
     Enemy <|-- VerticalEnemy
     Enemy <|-- FallingEnemy
     Enemy <|-- UnderwaterEnemy
-    Enemy <|-- EnemyBoss
 
+    FlyingEnemy <|-- BeeInstances
     GroundEnemy <|-- MovingGroundEnemy
     GroundEnemy <|-- ImmobileGroundEnemy
     ImmobileGroundEnemy <|-- BurrowingGroundEnemy
     BurrowingGroundEnemy <|-- UndergroundEnemy
-    FlyingEnemy <|-- BeeInstances
+```
 
+**Bosses** (extend `EnemyBoss`, which itself extends `Enemy`):
+
+```mermaid
+classDiagram
+    direction TB
+    class Enemy
+    class EnemyBoss
+    Enemy <|-- EnemyBoss
     EnemyBoss <|-- Elyvorg
     EnemyBoss <|-- Glacikal
     EnemyBoss <|-- NTharax
+```
 
+```mermaid
+classDiagram
+    direction TB
     class BossManager {
         +spawnBossIfNeeded()
         +bossIsEngaged()
@@ -227,6 +209,10 @@ classDiagram
         +updateBossTimers()
         +updateScreenEffect()
     }
+    class Elyvorg
+    class Glacikal
+    class NTharax
+
     BossManager --> Elyvorg
     BossManager --> Glacikal
     BossManager --> NTharax
