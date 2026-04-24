@@ -8,6 +8,13 @@ export const normalizeDelta = (deltaTime) => deltaTime / BASE_FRAME_MS;
 export const CANVAS_WIDTH  = 1920;
 export const CANVAS_HEIGHT = 689;
 
+// ─── Game State ───────────────────────────────────────────────────────────────
+export const GameState = Object.freeze({
+    CUTSCENE: 'CUTSCENE',
+    MENU:     'MENU',
+    GAMEPLAY: 'GAMEPLAY',
+});
+
 // ─── Game Loop ────────────────────────────────────────────────────────────────
 export const NORMAL_SPEED          = 6;
 export const GROUND_MARGIN         = 40;
@@ -114,13 +121,6 @@ export const CUTSCENE_INPUT_DEBOUNCE_MS = 250;
 // ─── Transitions ──────────────────────────────────────────────────────────────
 export const FADE_IN_DELAY_MS    = 1300;
 export const FADE_IN_COMPLETE_MS = 2700;
-
-// ─── Game State ───────────────────────────────────────────────────────────────
-export const GameState = Object.freeze({
-    CUTSCENE: 'CUTSCENE',
-    MENU:     'MENU',
-    GAMEPLAY: 'GAMEPLAY',
-});
 
 // ─── Player States ────────────────────────────────────────────────────────────
 export const PlayerState = Object.freeze({
