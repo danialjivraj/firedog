@@ -26,6 +26,8 @@ flowchart TB
     MAIN --> GAME
 ```
 
+`main.js` calls `startLoadingScreen()` and, once `loading.finish()` resolves on `window.load`, constructs `new Game(...)` itself — `loading.js` never instantiates Game.
+
 ---
 
 ## Game Class — Top-Level Composition
@@ -47,7 +49,7 @@ flowchart TB
         Input[InputHandler]
         UIHud[UI HUD]
         Tutorial
-        Toasts[Toasts /<br/>Confetti]
+        Toasts[Animated /<br/>CoinConvert Toasts]
     end
 
     subgraph Menus["Menu System"]
@@ -117,32 +119,69 @@ Game-over, pause, and distortion effects are drawn as overlays **within** GAMEPL
 
 ## Player — State Machine
 
-11 states defined in [playerStates.js](game/entities/playerStates.js) and enumerated in [PlayerState](game/config/constants.js) (0–10):
+11 states defined in [playerStates.js](game/entities/playerStates.js) and enumerated in [PlayerState](game/config/constants.js) (0–10). Initial state is `Sitting` — both [game-main.js:97](game/game-main.js#L97) and [reset.js:50](game/reset.js#L50) set `currentState = states[0]` and `states[0]` is `Sitting`.
+
+Transitions to `Standing` only happen when the world is stopped (cabin fully visible or boss visible); otherwise recovery lands in `Running`. `Hit` / `Stunned` / `Dying` can be entered from any state — triggered by [playerCollision.js](game/entities/playerCollision.js) and each state's `gameOver()` check — not from Standing specifically. `Hit` / `Stunned` recover to `Sitting` when `previousState === states[0]` (i.e. was Sitting).
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Standing
+    [*] --> Sitting
+
     Standing --> Running: move
-    Running --> Standing: stop
+    Running --> Standing: stop (world stopped)
+
+    Standing --> Sitting: sit
+    Running --> Sitting: sit
+    Sitting --> Running: move
+    Sitting --> Jumping: jump
+    Sitting --> Rolling: roll
+
     Standing --> Jumping: jump
     Running --> Jumping: jump
-    Jumping --> Falling: apex
-    Falling --> Standing: land
-    Falling --> Diving: dive key
-    Diving --> Standing: land
-    Standing --> Rolling: roll
+    Jumping --> Falling: apex (vy > weight)
+    Falling --> Running: land
+    Falling --> Jumping: double-jump (space map)
+    Jumping --> Running: land
+    Standing --> Falling: roll + airborne (underwater)
+
+    Jumping --> Diving: dive
+    Falling --> Diving: dive
+    Rolling --> Diving: sit + airborne
+    Diving --> Running: land
+    Diving --> Jumping: land + jump held
+    Diving --> Jumping: jump (underwater/space)
+    Diving --> Rolling: space double-jump + roll held
+
+    Standing --> Rolling: roll (boss visible)
     Running --> Rolling: roll
-    Rolling --> Standing: release
+    Jumping --> Rolling: roll
+    Falling --> Rolling: roll
+    Rolling --> Running: release
+    Rolling --> Falling: release (airborne)
+    Rolling --> Jumping: roll + jump
+    Rolling --> Jumping: space double-jump
+
     Standing --> Dashing: dash
     Running --> Dashing: dash
-    Dashing --> Standing: dash ends
-    Standing --> Sitting: sit
-    Sitting --> Standing: stand
-    Standing --> Hit: red/frozen contact
-    Hit --> Standing: recover
-    Standing --> Stunned: stun enemy
-    Stunned --> Standing: recover
-    Standing --> Dying: lives = 0
+    Sitting --> Dashing: dash
+    Jumping --> Dashing: dash
+    Falling --> Dashing: dash
+    Rolling --> Dashing: dash
+    Dashing --> Running: dash ends
+    Dashing --> Standing: dash ends (world stopped, no LR)
+    Dashing --> Jumping: dash ends (airborne, vy ≤ weight)
+    Dashing --> Falling: dash ends (airborne, vy > weight)
+
+    Hit: Hit (from collision)
+    Stunned: Stunned (from collision)
+    Hit --> Running: recover
+    Hit --> Sitting: recover (was sitting)
+    Hit --> Falling: recover (airborne)
+    Stunned --> Running: recover
+    Stunned --> Sitting: recover (was sitting)
+    Stunned --> Falling: recover (airborne)
+
+    Dying: Dying (lives = 0, any state)
     Dying --> [*]
 ```
 
@@ -181,8 +220,12 @@ classDiagram
     EnemyBoss <|-- NTharax
 
     class BossManager {
-        +startEncounter()
-        +update()
+        +spawnBossIfNeeded()
+        +bossIsEngaged()
+        +bossGateReached()
+        +onBossDefeated()
+        +updateBossTimers()
+        +updateScreenEffect()
     }
     BossManager --> Elyvorg
     BossManager --> Glacikal
@@ -201,13 +244,21 @@ All menus extend `BaseMenu` in [baseMenu.js](game/menu/baseMenu.js); long/scroll
 classDiagram
     class BaseMenu {
         +activateMenu()
+        +closeMenu()
         +draw()
-        +handleInput()
+        +update()
+        +handleKeyDown()
+        +handleMouseClick()
+        +handleMouseMove()
+        +handleMouseWheel()
     }
     class ScrollableMenu
     class MenuNavigator {
-        +push() pop()
-        +current
+        +setRoot()
+        +open()
+        +openTransient()
+        +closeTransient()
+        +back()
     }
 
     BaseMenu <|-- ScrollableMenu
@@ -243,7 +294,10 @@ classDiagram
     class AudioHandler {
         +playSound()
         +stopSound()
-        +setVolume()
+        +pauseSound()
+        +resumeSound()
+        +fadeOutAndStop()
+        +isPlaying()
     }
 
     AudioHandler <|-- MenuAudioHandler
@@ -352,9 +406,9 @@ flowchart LR
     Tests --> GameCode[game/]
 
     subgraph Cov["Coverage ~62%"]
-        X1[Statements 61.76%]
-        X2[Branches 56.43%]
-        X3[Functions 64.83%]
-        X4[Lines 62.74%]
+        X1[Statements 61.88%]
+        X2[Branches 56.47%]
+        X3[Functions 64.94%]
+        X4[Lines 62.86%]
     end
 ```
