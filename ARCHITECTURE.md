@@ -1,4 +1,4 @@
-# Firedog Architecture
+# ARCHITECTURE
 
 ## High-Level Overview
 
