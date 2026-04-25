@@ -2715,10 +2715,12 @@ describe('Game class (game-main.js)', () => {
       const chick1 = Object.create(SpinningChicks.prototype);
       chick1.update = jest.fn();
       chick1.markedForDeletion = false;
+      chick1._isSpinningChicks = true;
 
       const chick2 = Object.create(SpinningChicks.prototype);
       chick2.update = jest.fn();
       chick2.markedForDeletion = false;
+      chick2._isSpinningChicks = true;
 
       const evictable = Array(5).fill().map(() => ({ update: () => { }, markedForDeletion: false }));
 

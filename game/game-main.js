@@ -659,7 +659,7 @@ export class Game {
             }
             const limit = Math.max(keepCount, this.maxParticles);
             if (this.particles.length > limit) {
-                this.particles.length = limit;
+                this.particles.splice(keepCount, this.particles.length - limit);
             }
         }
 
