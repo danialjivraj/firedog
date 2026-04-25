@@ -51,7 +51,7 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
   - Arrow Left: Move Left
   - Enter / Left Click: Select Option
   - Tab: Open/Close Enemy Lore
-  - Esc / Right Click: Return to Main Menu/Game
+  - Esc / Right Click: Return to Previous Menu
 
 - **Cutscenes**
   - Enter / Left Click: Advance to the next dialogue/Skip dialogue animation
