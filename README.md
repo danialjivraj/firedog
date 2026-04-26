@@ -87,7 +87,19 @@ You can download the game by clicking one of the following links:
 #### For Linux
 - [Download (485.48MB)](https://www.mediafire.com/file/p6wyjbbwonr26vm/Firedog-linux-x64.zip/file)
 
-## Dependencies
+<br>
+<details>
+<summary><strong>The game isn't code-signed, so your OS may warn you on first launch.</strong></summary>
+
+<br>
+
+> - **Windows:** on the *"Windows protected your PC"* popup, click **More info → Run anyway**.
+> - **macOS:** on the *"The application 'Firedog' can't be opened"*, run `chmod +x /Applications/Firedog.app/Contents/MacOS/Firedog` in Terminal.
+> - **Linux:** if the binary won't launch, run `chmod +x Firedog` in the extracted folder.
+
+</details>
+
+## Run from Source
 Alternatively to downloading the game, you can clone the project and run it locally. <br>
 You'll need to run the following command in the root folder:
 - Electron
