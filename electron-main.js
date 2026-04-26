@@ -85,6 +85,6 @@ app.on('activate', function () {
 
 // to package
 // for windows/linux
-// electron-packager . Firedog --platform=all --asar --icon=./game/assets/icons/firedogHeadIcon.ico
+// npx electron-packager . Firedog --platform=win32,linux --arch=x64 --asar --icon=./game/assets/icons/firedogHeadIcon.ico --overwrite --out=dist
 // for mac
-// electron-packager . Firedog --platform=darwin --asar --icon=./game/assets/icons/firedogHeadIconMac.icns
+// npx electron-packager . Firedog --platform=darwin --arch=universal --asar --icon=./game/assets/icons/firedogHeadIconMac.icns --overwrite --out=dist
