@@ -68,6 +68,7 @@ export class Reset {
         this.game.powerDowns = [];
         this.game.animatedToasts = [];
         this.game.coinConvertToasts = [];
+        this.game.metaToasts = [];
         // cutscene
         this.game.clearCutsceneState();
         // cabin

@@ -20,6 +20,19 @@ import { SavingAnimation, SavingBookAnimation } from '../animations/savingAnimat
 import { Cabin } from '../entities/cabin.js';
 import { Penguini } from '../entities/penguini.js';
 
+const UNLOCK_ANIM_DELAY_MS = 800;
+const UNLOCK_LINE_END_MS = 2700;
+const UNLOCK_SCALE_START_MS = 2400;
+const UNLOCK_ANIM_TOTAL_MS = 3800;
+
+const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
+const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+const easeOutBack = (t) => {
+    const c1 = 1.70158;
+    const c3 = c1 + 1;
+    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+};
+
 export class ForestMapMenu extends BaseMenu {
     constructor(game) {
         const circleOptions = [
@@ -84,6 +97,10 @@ export class ForestMapMenu extends BaseMenu {
         this.lockedNoticeText = '';
         this.lockedNoticeTimer = 0;
 
+        this.unlockSnapshot = null;
+        this.pendingUnlocks = new Set();
+        this.unlockAnimTimer = 0;
+        this._wasSavingSprite = false;
     }
 
     getMapOptions() {
@@ -158,6 +175,8 @@ export class ForestMapMenu extends BaseMenu {
         const map = new Map(this.game);
         this.setMap(map);
 
+        this.takeUnlockSnapshot();
+
         this.game.menu.main.closeAllMenus();
     }
 
@@ -195,7 +214,10 @@ export class ForestMapMenu extends BaseMenu {
         return out;
     }
 
-    drawStraightConnection(context, fromCircle, toCircle) {
+    drawStraightConnection(context, fromCircle, toCircle, progress = 1) {
+        progress = clamp01(progress);
+        if (progress <= 0) return;
+
         const dx = toCircle.x - fromCircle.x;
         const dy = toCircle.y - fromCircle.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
@@ -203,8 +225,10 @@ export class ForestMapMenu extends BaseMenu {
 
         const startX = fromCircle.x + (dx / dist) * fromCircle.radius;
         const startY = fromCircle.y + (dy / dist) * fromCircle.radius;
-        const endX = toCircle.x - (dx / dist) * toCircle.radius;
-        const endY = toCircle.y - (dy / dist) * toCircle.radius;
+        const fullEndX = toCircle.x - (dx / dist) * toCircle.radius;
+        const fullEndY = toCircle.y - (dy / dist) * toCircle.radius;
+        const endX = startX + (fullEndX - startX) * progress;
+        const endY = startY + (fullEndY - startY) * progress;
 
         context.beginPath();
         context.moveTo(startX, startY);
@@ -215,7 +239,10 @@ export class ForestMapMenu extends BaseMenu {
         context.closePath();
     }
 
-    drawElbowConnection(context, fromCircle, toCircle, offset = 35, offsetAdjust = { x: -5, y: -15 }) {
+    drawElbowConnection(context, fromCircle, toCircle, offset = 35, offsetAdjust = { x: -5, y: -15 }, progress = 1) {
+        progress = clamp01(progress);
+        if (progress <= 0) return;
+
         const dx = toCircle.x - fromCircle.x;
         const dy = toCircle.y - fromCircle.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
@@ -243,8 +270,19 @@ export class ForestMapMenu extends BaseMenu {
         context.save();
         context.beginPath();
         context.moveTo(startX, startY);
-        context.lineTo(elbowX, elbowY);
-        context.lineTo(endX, endY);
+
+        if (progress >= 1) {
+            context.lineTo(elbowX, elbowY);
+            context.lineTo(endX, endY);
+        } else if (progress <= 0.5) {
+            const p = progress * 2;
+            context.lineTo(startX + (elbowX - startX) * p, startY + (elbowY - startY) * p);
+        } else {
+            context.lineTo(elbowX, elbowY);
+            const p = (progress - 0.5) * 2;
+            context.lineTo(elbowX + (endX - elbowX) * p, elbowY + (endY - elbowY) * p);
+        }
+
         context.strokeStyle = 'rgba(0, 0, 0, 0.5)';
         context.lineWidth = 4;
         context.stroke();
@@ -381,6 +419,47 @@ export class ForestMapMenu extends BaseMenu {
             return !!this.game.bonusMap3Unlocked;
         }
         return false;
+    }
+
+    takeUnlockSnapshot() {
+        this.unlockSnapshot = new Set();
+        for (let i = 0; i < this.circleOptions.length; i++) {
+            if (this.isNodeUnlocked(i)) this.unlockSnapshot.add(i);
+        }
+    }
+
+    startUnlockAnimationFromSnapshot() {
+        this.pendingUnlocks = new Set();
+        this.unlockAnimTimer = 0;
+        if (!this.unlockSnapshot) return;
+        for (let i = 0; i < this.circleOptions.length; i++) {
+            if (this.isNodeUnlocked(i) && !this.unlockSnapshot.has(i)) {
+                this.pendingUnlocks.add(i);
+            }
+        }
+        this.unlockSnapshot = null;
+    }
+
+    getUnlockLineProgress(destIndex) {
+        if (!this.pendingUnlocks.has(destIndex)) return 1;
+        const t = (this.unlockAnimTimer - UNLOCK_ANIM_DELAY_MS)
+            / (UNLOCK_LINE_END_MS - UNLOCK_ANIM_DELAY_MS);
+        return easeOutCubic(clamp01(t));
+    }
+
+    getUnlockNodeScale(destIndex) {
+        if (!this.pendingUnlocks.has(destIndex)) return 1;
+        const t = (this.unlockAnimTimer - UNLOCK_SCALE_START_MS)
+            / (UNLOCK_ANIM_TOTAL_MS - UNLOCK_SCALE_START_MS);
+        return clamp01(easeOutBack(clamp01(t)));
+    }
+
+    getUnlockGlowFlash(destIndex) {
+        if (!this.pendingUnlocks.has(destIndex)) return 0;
+        const t = (this.unlockAnimTimer - UNLOCK_SCALE_START_MS)
+            / (UNLOCK_ANIM_TOTAL_MS - UNLOCK_SCALE_START_MS);
+        const c = clamp01(t);
+        return Math.sin(c * Math.PI);
     }
 
     getUnlockedCircles() {
@@ -550,6 +629,19 @@ export class ForestMapMenu extends BaseMenu {
             this.justOpened = false;
         }
 
+        if (this.showSavingSprite && !this._wasSavingSprite) {
+            this.startUnlockAnimationFromSnapshot();
+        }
+        this._wasSavingSprite = this.showSavingSprite;
+
+        if (this.pendingUnlocks.size > 0) {
+            this.unlockAnimTimer += deltaTime;
+            if (this.unlockAnimTimer >= UNLOCK_ANIM_TOTAL_MS) {
+                this.pendingUnlocks.clear();
+                this.unlockAnimTimer = 0;
+            }
+        }
+
         if (this.showSavingSprite) {
             this.savingAnimation.update(deltaTime);
             this.savingBookAnimation.update(deltaTime);
@@ -589,40 +681,50 @@ export class ForestMapMenu extends BaseMenu {
                 if (!this.isNodeUnlocked(index)) return;
 
                 const sealedBonus3 = (index === 9 && this.isBonusMap3Sealed());
+                const nodeScale = this.getUnlockNodeScale(index);
+                const flash = this.getUnlockGlowFlash(index);
+                const scaledRadius = circle.radius * nodeScale;
 
-                context.save();
-                context.beginPath();
-                context.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
-
-                context.fillStyle = sealedBonus3 ? 'rgba(20, 20, 20, 0.85)' : 'rgba(0, 0, 0, 0.6)';
-                context.shadowColor = sealedBonus3 ? 'rgba(255, 60, 60, 0.9)' : (isNight ? 'orange' : 'white');
-                context.shadowBlur = sealedBonus3 ? 20 : (isNight ? 14 : 30);
-
-                context.fill();
-                context.closePath();
-
-                // red ring + X overlay on sealed node
-                if (sealedBonus3) {
+                if (nodeScale > 0) {
                     context.save();
-                    context.strokeStyle = 'rgba(255, 60, 60, 0.95)';
-                    context.lineWidth = 3;
                     context.beginPath();
-                    context.arc(circle.x, circle.y, circle.radius + 2, 0, Math.PI * 2);
-                    context.stroke();
-                    context.closePath();
-                    context.restore();
+                    context.arc(circle.x, circle.y, scaledRadius, 0, Math.PI * 2);
 
-                    context.save();
-                    context.strokeStyle = 'rgba(255, 60, 60, 0.95)';
-                    context.lineWidth = 3;
-                    const r = circle.radius - 4;
-                    context.beginPath();
-                    context.moveTo(circle.x - r, circle.y - r);
-                    context.lineTo(circle.x + r, circle.y + r);
-                    context.moveTo(circle.x + r, circle.y - r);
-                    context.lineTo(circle.x - r, circle.y + r);
-                    context.stroke();
+                    context.fillStyle = sealedBonus3 ? 'rgba(20, 20, 20, 0.85)' : 'rgba(0, 0, 0, 0.6)';
+                    context.shadowColor = sealedBonus3 ? 'rgba(255, 60, 60, 0.9)' : (isNight ? 'orange' : 'white');
+                    const baseBlur = sealedBonus3 ? 20 : (isNight ? 14 : 30);
+                    context.shadowBlur = baseBlur + flash * 40;
+
+                    context.fill();
                     context.closePath();
+
+                    // red ring + X overlay on sealed node
+                    if (sealedBonus3) {
+                        context.save();
+                        context.strokeStyle = 'rgba(255, 60, 60, 0.95)';
+                        context.lineWidth = 3;
+                        context.beginPath();
+                        context.arc(circle.x, circle.y, scaledRadius + 2, 0, Math.PI * 2);
+                        context.stroke();
+                        context.closePath();
+                        context.restore();
+
+                        context.save();
+                        context.strokeStyle = 'rgba(255, 60, 60, 0.95)';
+                        context.lineWidth = 3;
+                        const r = scaledRadius - 4;
+                        if (r > 0) {
+                            context.beginPath();
+                            context.moveTo(circle.x - r, circle.y - r);
+                            context.lineTo(circle.x + r, circle.y + r);
+                            context.moveTo(circle.x + r, circle.y - r);
+                            context.lineTo(circle.x - r, circle.y + r);
+                            context.stroke();
+                            context.closePath();
+                        }
+                        context.restore();
+                    }
+
                     context.restore();
                 }
 
@@ -631,11 +733,16 @@ export class ForestMapMenu extends BaseMenu {
                     const nextIndex = index + 1;
                     const nextCircle = this.circleOptions[nextIndex];
                     if (nextCircle && this.isNodeUnlocked(nextIndex)) {
-                        this.drawStraightConnection(context, circle, nextCircle);
+                        context.save();
+                        context.shadowColor = isNight ? 'orange' : 'white';
+                        context.shadowBlur = isNight ? 14 : 30;
+                        this.drawStraightConnection(
+                            context, circle, nextCircle,
+                            this.getUnlockLineProgress(nextIndex)
+                        );
+                        context.restore();
                     }
                 }
-
-                context.restore();
 
                 // selection ring + icon
                 if (index === this.selectedCircleIndex && this.selectedCircleIndex !== -1) {
@@ -708,7 +815,10 @@ export class ForestMapMenu extends BaseMenu {
                 context.save();
                 context.shadowColor = lineShadowColor;
                 context.shadowBlur = lineShadowBlur;
-                this.drawStraightConnection(context, this.circleOptions[1], this.circleOptions[7]);
+                this.drawStraightConnection(
+                    context, this.circleOptions[1], this.circleOptions[7],
+                    this.getUnlockLineProgress(7)
+                );
                 context.restore();
             }
 
@@ -716,7 +826,11 @@ export class ForestMapMenu extends BaseMenu {
                 context.save();
                 context.shadowColor = lineShadowColor;
                 context.shadowBlur = lineShadowBlur;
-                this.drawElbowConnection(context, this.circleOptions[3], this.circleOptions[8]);
+                this.drawElbowConnection(
+                    context, this.circleOptions[3], this.circleOptions[8],
+                    35, { x: -5, y: -15 },
+                    this.getUnlockLineProgress(8)
+                );
                 context.restore();
             }
 
@@ -734,7 +848,10 @@ export class ForestMapMenu extends BaseMenu {
                     context.shadowBlur = lineShadowBlur;
                 }
 
-                this.drawStraightConnection(context, this.circleOptions[8], this.circleOptions[9]);
+                this.drawStraightConnection(
+                    context, this.circleOptions[8], this.circleOptions[9],
+                    this.getUnlockLineProgress(9)
+                );
 
                 context.setLineDash([]);
                 context.restore();

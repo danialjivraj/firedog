@@ -42,15 +42,11 @@ window.addEventListener("load", function () {
                         }
                     } else {
                         game.currentCutscene.draw(ctx);
-                        game.metaToasts.forEach(t => t.draw(ctx));
-                        game.coinConvertToasts.forEach(t => t.draw(ctx));
 
                         if (game.menu.pause.isPaused && game.currentMenu) {
                             game.currentMenu.menuActive = true;
                             game.currentMenu.draw(ctx);
                             game.currentMenu.update(deltaTime);
-                            game.metaToasts.forEach(t => t.draw(ctx));
-                            game.coinConvertToasts.forEach(t => t.draw(ctx));
                         }
                     }
                     break;
@@ -89,9 +85,6 @@ window.addEventListener("load", function () {
                         game.currentMenu.draw(ctx);
                         game.currentMenu.update(deltaTime);
                     }
-
-                    game.metaToasts.forEach(t => t.draw(ctx));
-                    game.coinConvertToasts.forEach(t => t.draw(ctx));
                     break;
                 }
             }
