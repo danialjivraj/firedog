@@ -79,13 +79,13 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 You can download the game by clicking one of the following links:
 
 #### For Windows
-- [Download (490.02MB)](https://www.mediafire.com/file/mzrmp4jknzgacdu/Firedog-win32-x64.zip/file)
+- [Download (490.05MB)](https://www.mediafire.com/file/rela22sg9j0yajx/Firedog-win32-x64.zip/file)
 
 #### For macOS
 - [Download (476.55MB)](https://www.mediafire.com/file/m98yhsuohsywgz0/Firedog-mac-arm64.zip/file)
 
 #### For Linux
-- [Download (485.48MB)](https://www.mediafire.com/file/p6wyjbbwonr26vm/Firedog-linux-x64.zip/file)
+- [Download (485.51MB)](https://www.mediafire.com/file/lez0oyns47wim05/Firedog-linux-x64.zip/file)
 
 <br>
 <details>
