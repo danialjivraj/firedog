@@ -504,6 +504,7 @@ export class Map7EndCutscene extends StoryCutscene {
             `${this.firedog}`,
             `(I'm sorry ${this.galadon}... but this might be it for me... I'm stuck in here...)`,
             {
+                whisper: true,
                 onAdvance: () => this.transitionWithBg({
                     fadeIn: 500, blackDuration: 1000, fadeOut: 500,
                     imageId: 'blackBackground',
@@ -512,7 +513,6 @@ export class Map7EndCutscene extends StoryCutscene {
                     },
                 }),
             },
-            { whisper: true },
             this.addImage(this.setfiredogHeadache(), LEFT, { talking: true }),
         );
         this.addDialogue( //32
@@ -531,6 +531,7 @@ export class Map7EndCutscene extends StoryCutscene {
             `${this.galadon}`,
             `(I hope you managed to stop him, ${this.firedog}. I'll be there soon.)`,
             {
+                whisper: true,
                 onAdvance: () => this.transitionWithBg({
                     fadeIn: 500, blackDuration: 1000, fadeOut: 500,
                     imageId: 'map7ElyvorgInsideCave',
@@ -539,7 +540,6 @@ export class Map7EndCutscene extends StoryCutscene {
                     },
                 }),
             },
-            { whisper: true },
         );
         this.addDialogue( //36
             `${this.elyvorg}`,
