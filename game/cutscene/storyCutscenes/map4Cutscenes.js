@@ -768,6 +768,7 @@ export class Map4EndCutscene extends StoryCutscene {
         this.addDialogue( //0
             `${this.threeDots}`,
             `So you've managed to catch up to me I see, ouch... haha...`,
+            this.addImage(this.setfiredogNormal(), LEFT),
         );
         this.addDialogue( //1
             `${this.firedog}`,
