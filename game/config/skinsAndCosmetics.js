@@ -440,7 +440,7 @@ export function drawWithOptionalHue(ctx, { hueDeg = 0, baseFilter = '' } = {}, d
     }
 
     const filter = hasHue
-        ? (hasBase ? `${baseFilter} hue-rotate(${deg}deg)` : `hue-rotate(${deg}deg)`)
+        ? (hasBase ? `hue-rotate(${deg}deg) ${baseFilter}` : `hue-rotate(${deg}deg)`)
         : baseFilter;
 
     ctx.save();
