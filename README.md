@@ -13,7 +13,6 @@ Your objective on each map is to eliminate as many enemies as you can, gathering
 Your progress, unlocks, and settings are saved automatically.
 
 ## Preview
-![all maps](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/mapsGif.gif)
 
 <details><summary><strong>Videos</strong></summary>
 
