@@ -15,7 +15,7 @@ Your progress, unlocks, and settings are saved automatically.
 ## Preview
 ![all maps](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/allMapsGif.gif)
 
-<details><summary><strong>🎬 Videos</strong></summary>
+<details><summary><strong>Videos</strong></summary>
 
 <br>
 
@@ -25,7 +25,7 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 
 </details>
 
-<details><summary><strong>🖼️ Images</strong></summary>
+<details><summary><strong>Images (171)</strong></summary>
 <dl><dd>
 
 <br>
