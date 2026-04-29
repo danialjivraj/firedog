@@ -13,10 +13,9 @@ Your objective on each map is to eliminate as many enemies as you can, gathering
 Your progress, unlocks, and settings are saved automatically.
 
 ## Preview
-![all maps](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/allMapsGif.gif)
+![all maps](githubPreviews/allMapsGif.gif)
 
-<details>
-<summary><strong>🎬 Videos</strong></summary>
+<details><summary><strong>🎬 Videos</strong></summary>
 
 <br>
 
@@ -26,21 +25,163 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 
 </details>
 
-<details>
-<summary><strong>🖼️ Images</strong></summary>
+<details><summary><strong>🖼️ Images</strong></summary>
 
 <br>
 
-![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview1.png)
-![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview2.png)
-![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview3.png)
-![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview4.png)
-![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview5.png)
-![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview6.png)
-![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview7.png)
-![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview8.png)
-![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview9.png)
-![image](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/imagePreview10.png)
+<details><summary><strong>Menus</strong></summary>
+
+<br>
+
+<details open><summary><strong>Main Menu (1)</strong></summary>
+
+<br>
+
+![main menu](githubPreviews/menu/mainMenuPreview.jpg)
+
+</details>
+
+<details><summary><strong>Map (5)</strong></summary>
+
+<br>
+
+![map](githubPreviews/menu/map/mapMenuPreview1.jpg)
+![map](githubPreviews/menu/map/mapMenuPreview2.jpg)
+![map](githubPreviews/menu/map/mapMenuPreview3.jpg)
+![map](githubPreviews/menu/map/mapMenuPreview4.jpg)
+![map](githubPreviews/menu/map/mapMenuPreview5.jpg)
+
+</details>
+
+<details><summary><strong>Wardrobe (11)</strong></summary>
+
+<br>
+
+![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview1.jpg)
+![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview2.jpg)
+![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview3.jpg)
+![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview4.jpg)
+![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview5.jpg)
+![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview6.jpg)
+![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview7.jpg)
+![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview8.jpg)
+![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview9.jpg)
+![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview10.jpg)
+![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview11.jpg)
+
+</details>
+
+<details><summary><strong>Records (3)</strong></summary>
+
+<br>
+
+![records](githubPreviews/menu/records/recordsMenuPreview1.jpg)
+![records](githubPreviews/menu/records/recordsMenuPreview2.jpg)
+![records](githubPreviews/menu/records/recordsMenuPreview3.jpg)
+
+</details>
+
+<details><summary><strong>Enemy Lore (5)</strong></summary>
+
+<br>
+
+![enemy lore](githubPreviews/menu/enemyLore/enemyLoreMenuPreview1.jpg)
+![enemy lore](githubPreviews/menu/enemyLore/enemyLoreMenuPreview2.jpg)
+![enemy lore](githubPreviews/menu/enemyLore/enemyLoreMenuPreview3.jpg)
+![enemy lore](githubPreviews/menu/enemyLore/enemyLoreMenuPreview4.jpg)
+![enemy lore](githubPreviews/menu/enemyLore/enemyLoreMenuPreview5.jpg)
+
+</details>
+
+<details><summary><strong>How to Play (4)</strong></summary>
+
+<br>
+
+![how to play](githubPreviews/menu/howToPlay/howToPlayMenuPreview1.jpg)
+![how to play](githubPreviews/menu/howToPlay/howToPlayMenuPreview2.jpg)
+![how to play](githubPreviews/menu/howToPlay/howToPlayMenuPreview3.jpg)
+![how to play](githubPreviews/menu/howToPlay/howToPlayMenuPreview4.jpg)
+
+</details>
+
+<details open><summary><strong>Settings (1)</strong></summary>
+
+<br>
+
+![settings](githubPreviews/menu/settingsMenuPreview.jpg)
+
+</details>
+
+<details><summary><strong>Audio (3)</strong></summary>
+
+<br>
+
+![audio](githubPreviews/menu/audio/audioMenuPreview1.jpg)
+![audio](githubPreviews/menu/audio/audioMenuPreview2.jpg)
+![audio](githubPreviews/menu/audio/audioMenuPreview3.jpg)
+
+</details>
+
+<details><summary><strong>Controls (3)</strong></summary>
+
+<br>
+
+![controls](githubPreviews/menu/controls/controlsMenuPreview1.jpg)
+![controls](githubPreviews/menu/controls/controlsMenuPreview2.jpg)
+![controls](githubPreviews/menu/controls/controlsMenuPreview3.jpg)
+
+</details>
+
+<details><summary><strong>Difficulty (1)</strong></summary>
+
+<br>
+
+![difficulty](githubPreviews/menu/difficulty/difficultyMenuPreview.jpg)
+
+</details>
+
+<details><summary><strong>Interface (1)</strong></summary>
+
+<br>
+
+![interface](githubPreviews/menu/interface/interfaceMenuPreview.jpg)
+
+</details>
+
+<details><summary><strong>Delete Progress (2)</strong></summary>
+
+<br>
+
+![delete progress](githubPreviews/menu/deleteProgress/deleteProgressMenuPreview1.jpg)
+![delete progress](githubPreviews/menu/deleteProgress/deleteProgressMenuPreview2.jpg)
+
+</details>
+
+<details><summary><strong>Pause (2)</strong></summary>
+
+<br>
+
+![pause](githubPreviews/menu/ingame/pauseMenuPreview1.jpg)
+![pause](githubPreviews/menu/ingame/pauseMenuPreview2.jpg)
+
+</details>
+
+<details><summary><strong>Game Over (2)</strong></summary>
+
+<br>
+
+![game over](githubPreviews/menu/ingame/gameOverMenuPreview1.jpg)
+![game over](githubPreviews/menu/ingame/gameOverMenuPreview2.jpg)
+
+</details>
+
+</details>
+
+<details><summary><strong>Maps</strong></summary>
+
+<br>
+
+</details>
 
 </details>
 
@@ -89,8 +230,7 @@ You can download the game by clicking one of the following links:
 - [Download (485.51MB)](https://www.mediafire.com/file/lez0oyns47wim05/Firedog-linux-x64.zip/file)
 
 <br>
-<details>
-<summary><strong>The game isn't code-signed, so your OS may warn you on first launch.</strong></summary>
+<details><summary><strong>The game isn't code-signed, so your OS may warn you on first launch.</strong></summary>
 
 <br>
 
