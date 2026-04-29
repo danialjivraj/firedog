@@ -676,6 +676,52 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 </dd></dl>
 </details>
 
+<details><summary><strong>Final Bosses (17)</strong></summary>
+<dl><dd>
+
+  <br>
+
+  <details><summary><strong>Glacikal (5)</strong></summary>
+
+  <br>
+
+  ![glacikal](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/finalBosses/glacikal/glacikalPreview1.jpg)
+  ![glacikal](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/finalBosses/glacikal/glacikalPreview2.jpg)
+  ![glacikal](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/finalBosses/glacikal/glacikalPreview3.jpg)
+  ![glacikal](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/finalBosses/glacikal/glacikalPreview4.jpg)
+  ![glacikal](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/finalBosses/glacikal/glacikalPreview5.jpg)
+
+  </details>
+
+  <details><summary><strong>Elyvorg (5)</strong></summary>
+
+  <br>
+
+  ![elyvorg](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/finalBosses/elyvorg/elyvorgPreview1.jpg)
+  ![elyvorg](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/finalBosses/elyvorg/elyvorgPreview2.jpg)
+  ![elyvorg](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/finalBosses/elyvorg/elyvorgPreview3.jpg)
+  ![elyvorg](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/finalBosses/elyvorg/elyvorgPreview4.jpg)
+  ![elyvorg](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/finalBosses/elyvorg/elyvorgPreview5.jpg)
+
+  </details>
+
+  <details><summary><strong>N'Tharax (7)</strong></summary>
+
+  <br>
+
+  ![n'tharax](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/finalBosses/ntharax/ntharaxPreview1.jpg)
+  ![n'tharax](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/finalBosses/ntharax/ntharaxPreview2.jpg)
+  ![n'tharax](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/finalBosses/ntharax/ntharaxPreview3.jpg)
+  ![n'tharax](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/finalBosses/ntharax/ntharaxPreview4.jpg)
+  ![n'tharax](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/finalBosses/ntharax/ntharaxPreview5.jpg)
+  ![n'tharax](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/finalBosses/ntharax/ntharaxPreview6.jpg)
+  ![n'tharax](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/finalBosses/ntharax/ntharaxPreview7.jpg)
+
+  </details>
+
+</dd></dl>
+</details>
+
 </dd></dl>
 </details>
 
