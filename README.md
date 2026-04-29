@@ -179,6 +179,294 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 </dd></dl>
 </details>
 
+<details><summary><strong>Cutscenes (70)</strong></summary>
+<dl><dd>
+
+  <br>
+
+  <details><summary><strong>Map 1 (7)</strong></summary>
+
+  <br>
+
+  ![chapter 1](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map1/chapter1Preview.jpg)
+
+  <details><summary><strong>Start Cutscene (3)</strong></summary>
+
+  <br>
+
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map1/start/map1StartCutscenePreview1.jpg)
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map1/start/map1StartCutscenePreview2.jpg)
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map1/start/map1StartCutscenePreview3.jpg)
+
+  </details>
+
+  <details><summary><strong>End Cutscene (3)</strong></summary>
+
+  <br>
+
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map1/end/map1EndCutscenePreview1.jpg)
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map1/end/map1EndCutscenePreview2.jpg)
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map1/end/map1EndCutscenePreview3.jpg)
+
+  </details>
+
+  </details>
+
+  <details><summary><strong>Map 2 (7)</strong></summary>
+
+  <br>
+
+  ![chapter 2](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map2/chapter2Preview.jpg)
+
+  <details><summary><strong>Start Cutscene (3)</strong></summary>
+
+  <br>
+
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map2/start/map2StartCutscenePreview1.jpg)
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map2/start/map2StartCutscenePreview2.jpg)
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map2/start/map2StartCutscenePreview3.jpg)
+
+  </details>
+
+  <details><summary><strong>End Cutscene (3)</strong></summary>
+
+  <br>
+
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map2/end/map2EndCutscenePreview1.jpg)
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map2/end/map2EndCutscenePreview2.jpg)
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map2/end/map2EndCutscenePreview3.jpg)
+
+  </details>
+
+  </details>
+
+  <details><summary><strong>Map 3 (7)</strong></summary>
+
+  <br>
+
+  ![chapter 3](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map3/chapter3Preview.jpg)
+
+  <details><summary><strong>Start Cutscene (3)</strong></summary>
+
+  <br>
+
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map3/start/map3StartCutscenePreview1.jpg)
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map3/start/map3StartCutscenePreview2.jpg)
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map3/start/map3StartCutscenePreview3.jpg)
+
+  </details>
+
+  <details><summary><strong>End Cutscene (3)</strong></summary>
+
+  <br>
+
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map3/end/map3EndCutscenePreview1.jpg)
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map3/end/map3EndCutscenePreview2.jpg)
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map3/end/map3EndCutscenePreview3.jpg)
+
+  </details>
+
+  </details>
+
+  <details><summary><strong>Map 4 (7)</strong></summary>
+
+  <br>
+
+  ![chapter 4](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map4/chapter4Preview.jpg)
+
+  <details><summary><strong>Start Cutscene (3)</strong></summary>
+
+  <br>
+
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map4/start/map4StartCutscenePreview1.jpg)
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map4/start/map4StartCutscenePreview2.jpg)
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map4/start/map4StartCutscenePreview3.jpg)
+
+  </details>
+
+  <details><summary><strong>End Cutscene (3)</strong></summary>
+
+  <br>
+
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map4/end/map4EndCutscenePreview1.jpg)
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map4/end/map4EndCutscenePreview2.jpg)
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map4/end/map4EndCutscenePreview3.jpg)
+
+  </details>
+
+  </details>
+
+  <details><summary><strong>Map 5 (7)</strong></summary>
+
+  <br>
+
+  ![chapter 5](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map5/chapter5Preview.jpg)
+
+  <details><summary><strong>Start Cutscene (3)</strong></summary>
+
+  <br>
+
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map5/start/map5StartCutscenePreview1.jpg)
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map5/start/map5StartCutscenePreview2.jpg)
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map5/start/map5StartCutscenePreview3.jpg)
+
+  </details>
+
+  <details><summary><strong>End Cutscene (3)</strong></summary>
+
+  <br>
+
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map5/end/map5EndCutscenePreview1.jpg)
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map5/end/map5EndCutscenePreview2.jpg)
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map5/end/map5EndCutscenePreview3.jpg)
+
+  </details>
+
+  </details>
+
+  <details><summary><strong>Map 6 (7)</strong></summary>
+
+  <br>
+
+  ![chapter 6](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map6/chapter6Preview.jpg)
+
+  <details><summary><strong>Start Cutscene (3)</strong></summary>
+
+  <br>
+
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map6/start/map6StartCutscenePreview1.jpg)
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map6/start/map6StartCutscenePreview2.jpg)
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map6/start/map6StartCutscenePreview3.jpg)
+
+  </details>
+
+  <details><summary><strong>End Cutscene (3)</strong></summary>
+
+  <br>
+
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map6/end/map6EndCutscenePreview1.jpg)
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map6/end/map6EndCutscenePreview2.jpg)
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map6/end/map6EndCutscenePreview3.jpg)
+
+  </details>
+
+  </details>
+
+  <details><summary><strong>Map 7 (7)</strong></summary>
+
+  <br>
+
+  ![chapter 7](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map7/chapter7Preview.jpg)
+
+  <details><summary><strong>Start Cutscene (3)</strong></summary>
+
+  <br>
+
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map7/start/map7StartCutscenePreview1.jpg)
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map7/start/map7StartCutscenePreview2.jpg)
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map7/start/map7StartCutscenePreview3.jpg)
+
+  </details>
+
+  <details><summary><strong>End Cutscene (3)</strong></summary>
+
+  <br>
+
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map7/end/map7EndCutscenePreview1.jpg)
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map7/end/map7EndCutscenePreview2.jpg)
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map7/end/map7EndCutscenePreview3.jpg)
+
+  </details>
+
+  </details>
+
+  <details><summary><strong>Bonus Map 1 (7)</strong></summary>
+
+  <br>
+
+  ![bonus chapter 1](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap1/bonusChapter1Preview.jpg)
+
+  <details><summary><strong>Start Cutscene (3)</strong></summary>
+
+  <br>
+
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap1/start/bonusMap1StartCutscenePreview1.jpg)
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap1/start/bonusMap1StartCutscenePreview2.jpg)
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap1/start/bonusMap1StartCutscenePreview3.jpg)
+
+  </details>
+
+  <details><summary><strong>End Cutscene (3)</strong></summary>
+
+  <br>
+
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap1/end/bonusMap1EndCutscenePreview1.jpg)
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap1/end/bonusMap1EndCutscenePreview2.jpg)
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap1/end/bonusMap1EndCutscenePreview3.jpg)
+
+  </details>
+
+  </details>
+
+  <details><summary><strong>Bonus Map 2 (7)</strong></summary>
+
+  <br>
+
+  ![bonus chapter 2](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap2/bonusChapter2Preview.jpg)
+
+  <details><summary><strong>Start Cutscene (3)</strong></summary>
+
+  <br>
+
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap2/start/bonusMap2StartCutscenePreview1.jpg)
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap2/start/bonusMap2StartCutscenePreview2.jpg)
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap2/start/bonusMap2StartCutscenePreview3.jpg)
+
+  </details>
+
+  <details><summary><strong>End Cutscene (3)</strong></summary>
+
+  <br>
+
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap2/end/bonusMap2EndCutscenePreview1.jpg)
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap2/end/bonusMap2EndCutscenePreview2.jpg)
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap2/end/bonusMap2EndCutscenePreview3.jpg)
+
+  </details>
+
+  </details>
+
+  <details><summary><strong>Bonus Map 3 (7)</strong></summary>
+
+  <br>
+
+  ![bonus chapter 3](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap3/bonusChapter3Preview.jpg)
+
+  <details><summary><strong>Start Cutscene (3)</strong></summary>
+
+  <br>
+
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap3/start/bonusMap3StartCutscenePreview1.jpg)
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap3/start/bonusMap3StartCutscenePreview2.jpg)
+  ![start cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap3/start/bonusMap3StartCutscenePreview3.jpg)
+
+  </details>
+
+  <details><summary><strong>End Cutscene (3)</strong></summary>
+
+  <br>
+
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap3/end/bonusMap3EndCutscenePreview1.jpg)
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap3/end/bonusMap3EndCutscenePreview2.jpg)
+  ![end cutscene](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap3/end/bonusMap3EndCutscenePreview3.jpg)
+
+  </details>
+
+  </details>
+
+</dd></dl>
+</details>
+
 <details><summary><strong>Maps</strong></summary>
 
 <br>
