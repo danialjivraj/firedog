@@ -13,7 +13,7 @@ Your objective on each map is to eliminate as many enemies as you can, gathering
 Your progress, unlocks, and settings are saved automatically.
 
 ## Preview
-![all maps](githubPreviews/allMapsGif.gif)
+![all maps](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/allMapsGif.gif)
 
 <details><summary><strong>🎬 Videos</strong></summary>
 
@@ -29,152 +29,154 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 
 <br>
 
-<details><summary><strong>Menus</strong></summary>
+<details><summary><strong>Menus (44)</strong></summary>
+<dl><dd>
 
-<br>
+  <br>
 
-<details open><summary><strong>Main Menu (1)</strong></summary>
+  <details open><summary><strong>Main Menu (1)</strong></summary>
 
-<br>
+  <br>
 
-![main menu](githubPreviews/menu/mainMenuPreview.jpg)
+  ![main menu](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/mainMenuPreview.jpg)
 
-</details>
+  </details>
 
-<details><summary><strong>Map (5)</strong></summary>
+  <details><summary><strong>Map (5)</strong></summary>
 
-<br>
+  <br>
 
-![map](githubPreviews/menu/map/mapMenuPreview1.jpg)
-![map](githubPreviews/menu/map/mapMenuPreview2.jpg)
-![map](githubPreviews/menu/map/mapMenuPreview3.jpg)
-![map](githubPreviews/menu/map/mapMenuPreview4.jpg)
-![map](githubPreviews/menu/map/mapMenuPreview5.jpg)
+  ![map](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/map/mapMenuPreview1.jpg)
+  ![map](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/map/mapMenuPreview2.jpg)
+  ![map](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/map/mapMenuPreview3.jpg)
+  ![map](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/map/mapMenuPreview4.jpg)
+  ![map](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/map/mapMenuPreview5.jpg)
 
-</details>
+  </details>
 
-<details><summary><strong>Wardrobe (11)</strong></summary>
+  <details><summary><strong>Wardrobe (11)</strong></summary>
 
-<br>
+  <br>
 
-![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview1.jpg)
-![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview2.jpg)
-![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview3.jpg)
-![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview4.jpg)
-![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview5.jpg)
-![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview6.jpg)
-![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview7.jpg)
-![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview8.jpg)
-![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview9.jpg)
-![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview10.jpg)
-![wardrobe](githubPreviews/menu/wardrobe/wardrobeMenuPreview11.jpg)
+  ![wardrobe](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/wardrobe/wardrobeMenuPreview1.jpg)
+  ![wardrobe](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/wardrobe/wardrobeMenuPreview2.jpg)
+  ![wardrobe](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/wardrobe/wardrobeMenuPreview3.jpg)
+  ![wardrobe](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/wardrobe/wardrobeMenuPreview4.jpg)
+  ![wardrobe](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/wardrobe/wardrobeMenuPreview5.jpg)
+  ![wardrobe](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/wardrobe/wardrobeMenuPreview6.jpg)
+  ![wardrobe](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/wardrobe/wardrobeMenuPreview7.jpg)
+  ![wardrobe](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/wardrobe/wardrobeMenuPreview8.jpg)
+  ![wardrobe](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/wardrobe/wardrobeMenuPreview9.jpg)
+  ![wardrobe](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/wardrobe/wardrobeMenuPreview10.jpg)
+  ![wardrobe](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/wardrobe/wardrobeMenuPreview11.jpg)
 
-</details>
+  </details>
 
-<details><summary><strong>Records (3)</strong></summary>
+  <details><summary><strong>Records (3)</strong></summary>
 
-<br>
+  <br>
 
-![records](githubPreviews/menu/records/recordsMenuPreview1.jpg)
-![records](githubPreviews/menu/records/recordsMenuPreview2.jpg)
-![records](githubPreviews/menu/records/recordsMenuPreview3.jpg)
+  ![records](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/records/recordsMenuPreview1.jpg)
+  ![records](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/records/recordsMenuPreview2.jpg)
+  ![records](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/records/recordsMenuPreview3.jpg)
 
-</details>
+  </details>
 
-<details><summary><strong>Enemy Lore (5)</strong></summary>
+  <details><summary><strong>Enemy Lore (5)</strong></summary>
 
-<br>
+  <br>
 
-![enemy lore](githubPreviews/menu/enemyLore/enemyLoreMenuPreview1.jpg)
-![enemy lore](githubPreviews/menu/enemyLore/enemyLoreMenuPreview2.jpg)
-![enemy lore](githubPreviews/menu/enemyLore/enemyLoreMenuPreview3.jpg)
-![enemy lore](githubPreviews/menu/enemyLore/enemyLoreMenuPreview4.jpg)
-![enemy lore](githubPreviews/menu/enemyLore/enemyLoreMenuPreview5.jpg)
+  ![enemy lore](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/enemyLore/enemyLoreMenuPreview1.jpg)
+  ![enemy lore](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/enemyLore/enemyLoreMenuPreview2.jpg)
+  ![enemy lore](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/enemyLore/enemyLoreMenuPreview3.jpg)
+  ![enemy lore](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/enemyLore/enemyLoreMenuPreview4.jpg)
+  ![enemy lore](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/enemyLore/enemyLoreMenuPreview5.jpg)
 
-</details>
+  </details>
 
-<details><summary><strong>How to Play (4)</strong></summary>
+  <details><summary><strong>How to Play (4)</strong></summary>
 
-<br>
+  <br>
 
-![how to play](githubPreviews/menu/howToPlay/howToPlayMenuPreview1.jpg)
-![how to play](githubPreviews/menu/howToPlay/howToPlayMenuPreview2.jpg)
-![how to play](githubPreviews/menu/howToPlay/howToPlayMenuPreview3.jpg)
-![how to play](githubPreviews/menu/howToPlay/howToPlayMenuPreview4.jpg)
+  ![how to play](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/howToPlay/howToPlayMenuPreview1.jpg)
+  ![how to play](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/howToPlay/howToPlayMenuPreview2.jpg)
+  ![how to play](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/howToPlay/howToPlayMenuPreview3.jpg)
+  ![how to play](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/howToPlay/howToPlayMenuPreview4.jpg)
 
-</details>
+  </details>
 
-<details open><summary><strong>Settings (1)</strong></summary>
+  <details open><summary><strong>Settings (1)</strong></summary>
 
-<br>
+  <br>
 
-![settings](githubPreviews/menu/settingsMenuPreview.jpg)
+  ![settings](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/settingsMenuPreview.jpg)
 
-</details>
+  </details>
 
-<details><summary><strong>Audio (3)</strong></summary>
+  <details><summary><strong>Audio (3)</strong></summary>
 
-<br>
+  <br>
 
-![audio](githubPreviews/menu/audio/audioMenuPreview1.jpg)
-![audio](githubPreviews/menu/audio/audioMenuPreview2.jpg)
-![audio](githubPreviews/menu/audio/audioMenuPreview3.jpg)
+  ![audio](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/audio/audioMenuPreview1.jpg)
+  ![audio](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/audio/audioMenuPreview2.jpg)
+  ![audio](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/audio/audioMenuPreview3.jpg)
 
-</details>
+  </details>
 
-<details><summary><strong>Controls (3)</strong></summary>
+  <details><summary><strong>Controls (3)</strong></summary>
 
-<br>
+  <br>
 
-![controls](githubPreviews/menu/controls/controlsMenuPreview1.jpg)
-![controls](githubPreviews/menu/controls/controlsMenuPreview2.jpg)
-![controls](githubPreviews/menu/controls/controlsMenuPreview3.jpg)
+  ![controls](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/controls/controlsMenuPreview1.jpg)
+  ![controls](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/controls/controlsMenuPreview2.jpg)
+  ![controls](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/controls/controlsMenuPreview3.jpg)
 
-</details>
+  </details>
 
-<details><summary><strong>Difficulty (1)</strong></summary>
+  <details><summary><strong>Difficulty (1)</strong></summary>
 
-<br>
+  <br>
 
-![difficulty](githubPreviews/menu/difficulty/difficultyMenuPreview.jpg)
+  ![difficulty](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/difficulty/difficultyMenuPreview.jpg)
 
-</details>
+  </details>
 
-<details><summary><strong>Interface (1)</strong></summary>
+  <details><summary><strong>Interface (1)</strong></summary>
 
-<br>
+  <br>
 
-![interface](githubPreviews/menu/interface/interfaceMenuPreview.jpg)
+  ![interface](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/interface/interfaceMenuPreview.jpg)
 
-</details>
+  </details>
 
-<details><summary><strong>Delete Progress (2)</strong></summary>
+  <details><summary><strong>Delete Progress (2)</strong></summary>
 
-<br>
+  <br>
 
-![delete progress](githubPreviews/menu/deleteProgress/deleteProgressMenuPreview1.jpg)
-![delete progress](githubPreviews/menu/deleteProgress/deleteProgressMenuPreview2.jpg)
+  ![delete progress](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/deleteProgress/deleteProgressMenuPreview1.jpg)
+  ![delete progress](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/deleteProgress/deleteProgressMenuPreview2.jpg)
 
-</details>
+  </details>
 
-<details><summary><strong>Pause (2)</strong></summary>
+  <details><summary><strong>Pause (2)</strong></summary>
 
-<br>
+  <br>
 
-![pause](githubPreviews/menu/ingame/pauseMenuPreview1.jpg)
-![pause](githubPreviews/menu/ingame/pauseMenuPreview2.jpg)
+  ![pause](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/ingame/pauseMenuPreview1.jpg)
+  ![pause](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/ingame/pauseMenuPreview2.jpg)
 
-</details>
+  </details>
 
-<details><summary><strong>Game Over (2)</strong></summary>
+  <details><summary><strong>Game Over (2)</strong></summary>
 
-<br>
+  <br>
 
-![game over](githubPreviews/menu/ingame/gameOverMenuPreview1.jpg)
-![game over](githubPreviews/menu/ingame/gameOverMenuPreview2.jpg)
+  ![game over](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/ingame/gameOverMenuPreview1.jpg)
+  ![game over](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/ingame/gameOverMenuPreview2.jpg)
 
-</details>
+  </details>
 
+</dd></dl>
 </details>
 
 <details><summary><strong>Maps</strong></summary>
