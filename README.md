@@ -190,6 +190,8 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 
   ![chapter 1](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map1/chapter1Preview.jpg)
 
+  <dl><dd>
+
   <details><summary><strong>Start Cutscene (3)</strong></summary>
 
   <br>
@@ -210,6 +212,7 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 
   </details>
 
+  </dd></dl>
   </details>
 
   <details><summary><strong>Map 2 (7)</strong></summary>
@@ -217,6 +220,8 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
   <br>
 
   ![chapter 2](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map2/chapter2Preview.jpg)
+
+  <dl><dd>
 
   <details><summary><strong>Start Cutscene (3)</strong></summary>
 
@@ -238,6 +243,7 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 
   </details>
 
+  </dd></dl>
   </details>
 
   <details><summary><strong>Map 3 (7)</strong></summary>
@@ -245,6 +251,8 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
   <br>
 
   ![chapter 3](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map3/chapter3Preview.jpg)
+
+  <dl><dd>
 
   <details><summary><strong>Start Cutscene (3)</strong></summary>
 
@@ -266,6 +274,7 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 
   </details>
 
+  </dd></dl>
   </details>
 
   <details><summary><strong>Map 4 (7)</strong></summary>
@@ -273,6 +282,8 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
   <br>
 
   ![chapter 4](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map4/chapter4Preview.jpg)
+
+  <dl><dd>
 
   <details><summary><strong>Start Cutscene (3)</strong></summary>
 
@@ -294,6 +305,7 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 
   </details>
 
+  </dd></dl>
   </details>
 
   <details><summary><strong>Map 5 (7)</strong></summary>
@@ -301,6 +313,8 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
   <br>
 
   ![chapter 5](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map5/chapter5Preview.jpg)
+
+  <dl><dd>
 
   <details><summary><strong>Start Cutscene (3)</strong></summary>
 
@@ -322,6 +336,7 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 
   </details>
 
+  </dd></dl>
   </details>
 
   <details><summary><strong>Map 6 (7)</strong></summary>
@@ -329,6 +344,8 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
   <br>
 
   ![chapter 6](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map6/chapter6Preview.jpg)
+
+  <dl><dd>
 
   <details><summary><strong>Start Cutscene (3)</strong></summary>
 
@@ -350,6 +367,7 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 
   </details>
 
+  </dd></dl>
   </details>
 
   <details><summary><strong>Map 7 (7)</strong></summary>
@@ -357,6 +375,8 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
   <br>
 
   ![chapter 7](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/map7/chapter7Preview.jpg)
+
+  <dl><dd>
 
   <details><summary><strong>Start Cutscene (3)</strong></summary>
 
@@ -378,6 +398,7 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 
   </details>
 
+  </dd></dl>
   </details>
 
   <details><summary><strong>Bonus Map 1 (7)</strong></summary>
@@ -385,6 +406,8 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
   <br>
 
   ![bonus chapter 1](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap1/bonusChapter1Preview.jpg)
+
+  <dl><dd>
 
   <details><summary><strong>Start Cutscene (3)</strong></summary>
 
@@ -406,6 +429,7 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 
   </details>
 
+  </dd></dl>
   </details>
 
   <details><summary><strong>Bonus Map 2 (7)</strong></summary>
@@ -413,6 +437,8 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
   <br>
 
   ![bonus chapter 2](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap2/bonusChapter2Preview.jpg)
+
+  <dl><dd>
 
   <details><summary><strong>Start Cutscene (3)</strong></summary>
 
@@ -434,6 +460,7 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 
   </details>
 
+  </dd></dl>
   </details>
 
   <details><summary><strong>Bonus Map 3 (7)</strong></summary>
@@ -441,6 +468,8 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
   <br>
 
   ![bonus chapter 3](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/cutscenes/bonusMap3/bonusChapter3Preview.jpg)
+
+  <dl><dd>
 
   <details><summary><strong>Start Cutscene (3)</strong></summary>
 
@@ -462,6 +491,7 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 
   </details>
 
+  </dd></dl>
   </details>
 
 </dd></dl>
