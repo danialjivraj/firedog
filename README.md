@@ -55,6 +55,18 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
 
   </details>
 
+  <details><summary><strong>Enemy Lore (5)</strong></summary>
+
+  <br>
+
+  ![enemy lore](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/enemyLore/enemyLoreMenuPreview1.jpg)
+  ![enemy lore](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/enemyLore/enemyLoreMenuPreview2.jpg)
+  ![enemy lore](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/enemyLore/enemyLoreMenuPreview3.jpg)
+  ![enemy lore](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/enemyLore/enemyLoreMenuPreview4.jpg)
+  ![enemy lore](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/enemyLore/enemyLoreMenuPreview5.jpg)
+
+  </details>
+
   <details><summary><strong>Wardrobe (11)</strong></summary>
 
   <br>
@@ -80,18 +92,6 @@ https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
   ![records](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/records/recordsMenuPreview1.jpg)
   ![records](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/records/recordsMenuPreview2.jpg)
   ![records](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/records/recordsMenuPreview3.jpg)
-
-  </details>
-
-  <details><summary><strong>Enemy Lore (5)</strong></summary>
-
-  <br>
-
-  ![enemy lore](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/enemyLore/enemyLoreMenuPreview1.jpg)
-  ![enemy lore](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/enemyLore/enemyLoreMenuPreview2.jpg)
-  ![enemy lore](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/enemyLore/enemyLoreMenuPreview3.jpg)
-  ![enemy lore](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/enemyLore/enemyLoreMenuPreview4.jpg)
-  ![enemy lore](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/menu/enemyLore/enemyLoreMenuPreview5.jpg)
 
   </details>
 
