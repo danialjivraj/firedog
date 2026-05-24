@@ -14,9 +14,9 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 1920px;
-    max-width: 100%;
-    max-height: 100%;
+    width: 100vw;
+    max-width: calc(100vh * 1920 / 689);
+    max-height: 100vh;
     aspect-ratio: 1920 / 689;
     background: url('./assets/menu/mainmenubackground.png') center / cover no-repeat;
     display: flex;
@@ -88,8 +88,10 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    max-width: 100%;
-    max-height: 100%;
+    width: 100vw;
+    height: calc(100vw * 689 / 1920);
+    max-height: 100vh;
+    max-width: calc(100vh * 1920 / 689);
     font-family: 'Love Ya Like A Sister', cursive;
 }
 
