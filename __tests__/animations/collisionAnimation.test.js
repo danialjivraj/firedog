@@ -1,5 +1,6 @@
 import { Skulnap, Abyssaw } from '../../game/entities/enemies/enemies.js';
 import { FloatingMessage } from '../../game/animations/floatingMessages.js';
+import { originalFrameInterval } from '../../game/config/constants.js';
 import {
   Collision,
   CollisionAnimation,
@@ -108,7 +109,7 @@ describe('Collision', () => {
     expect(c.maxFrame).toBe(3);
 
     expect(c.fps).toBe(10);
-    expect(c.frameInterval).toBe(100);
+    expect(c.frameInterval).toBe(originalFrameInterval(100));
     expect(c.frameTimer).toBe(0);
   });
 
@@ -148,10 +149,11 @@ describe('Collision', () => {
     expect(c.frameX).toBe(0);
     expect(c.frameTimer).toBe(110);
 
-    c.update(1);
-    expect(c.x).toBeCloseTo(95 - 5 * (111 / 13.333), 1);
+    const pushPast = c.frameInterval - 110 + 1;
+    c.update(pushPast);
+    expect(c.x).toBeCloseTo(95 - 5 * ((110 + pushPast) / 13.333), 1);
     expect(c.frameX).toBe(1);
-    expect(c.frameTimer).toBe(0);
+    expect(c.frameTimer).toBeCloseTo(1);
     expect(c.markedForDeletion).toBe(false);
   });
 
@@ -176,11 +178,13 @@ describe('Collision', () => {
   test('marks for deletion after advancing beyond maxFrame', () => {
     const c = new Collision(game, 0, 0, 'testImage', 10, 10, 1, 10);
 
-    c.frameTimer = 1000;
+    c.frameTimer = c.frameInterval + 1;
     c.update(0);
-    c.frameTimer = 1000;
-    c.update(0);
+    expect(c.frameX).toBe(1);
+    expect(c.markedForDeletion).toBe(false);
 
+    c.frameTimer = c.frameInterval + 1;
+    c.update(0);
     expect(c.frameX).toBe(2);
     expect(c.markedForDeletion).toBe(true);
   });
@@ -702,15 +706,17 @@ describe('HealingStar', () => {
     const target = { x: 0, y: 0, width: 10, height: 10, markedForDeletion: false };
 
     const star = new HealingStar(game, target, { dx: 0, dy: 0 }, { fps: 10, maxFrame: 2 });
-    star.update(100);
+    const tick = star.frameInterval + 1;
+
+    star.update(tick);
     expect(star.frameX).toBe(1);
     expect(star.markedForDeletion).toBe(false);
 
-    star.update(100);
+    star.update(tick);
     expect(star.frameX).toBe(2);
     expect(star.markedForDeletion).toBe(false);
 
-    star.update(100);
+    star.update(tick);
     expect(star.markedForDeletion).toBe(true);
   });
 

@@ -138,7 +138,7 @@ export class RecordsMenu extends ScrollableMenu {
         const contentH = unlockedLen * (this.rowH + this.rowGap);
         this.scrollMax = Math.max(0, contentH - geom.listH);
 
-        this.tickScroll();
+        this.tickScroll(deltaTime);
     }
 
     scrollSelectedIntoView(listH, unlockedLen) {

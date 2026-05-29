@@ -1138,12 +1138,12 @@ export class Elyvorg extends EnemyBoss {
             return;
         }
 
-        this.runStateCounter += deltaTime;
-        this.electricWheelStateCounter += deltaTime;
-        this.slashAttackStateCounter += deltaTime;
-        this.thunderStateCounter += deltaTime;
+        this.runStateCounter += BASE_FRAME_MS;
+        this.electricWheelStateCounter += BASE_FRAME_MS;
+        this.slashAttackStateCounter += BASE_FRAME_MS;
+        this.thunderStateCounter += BASE_FRAME_MS;
         if (this.electricWheelActivateStateCounterDeltaTime) {
-            this.electricWheelStateCounterDeltaTime += deltaTime;
+            this.electricWheelStateCounterDeltaTime += BASE_FRAME_MS;
         }
         if (this.slashAttackStateCounter >= this.slashAttackStateCounterLimit - BASE_FRAME_MS && !this.slashChargeWarned) {
             this.game.collisions.push(new ChargeIndicatorBalls(this.game, this));

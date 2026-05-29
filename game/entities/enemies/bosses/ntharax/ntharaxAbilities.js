@@ -1,6 +1,7 @@
 import { Enemy, BurrowingGroundEnemy, Barrier, Projectile, FallingEnemy } from "../../enemies.js";
 import { AsteroidExplosionCollision } from "../../../../animations/collisionAnimation/spriteCollisions.js";
 import { DisintegrateCollision } from "../../../../animations/collisionAnimation/proceduralCollisions.js";
+import { normalizeDelta, BASE_FRAME_MS } from "../../../../config/constants.js";
 
 export class HealingBarrier extends Barrier {
     constructor(game, x, y, opts = {}) {
@@ -757,11 +758,13 @@ export class PurpleBallOrbAttack {
         this.bigOrb.y = mouthY;
 
         const speedMult = this.getSpeedMult();
-        const lerp = Math.min(0.45, 0.18 * speedMult);
+        const lerp75 = Math.min(0.45, 0.18 * speedMult);
+        const dt = normalizeDelta(deltaTime);
+        const k = 1 - Math.pow(1 - lerp75, dt);
 
         const r = this.bigOrb.radius;
         const target = this.bigOrbTargetRadius;
-        this.bigOrb.radius = r + (target - r) * lerp;
+        this.bigOrb.radius = r + (target - r) * k;
     }
 
     launchProjectile(mouthX, mouthY) {
@@ -963,6 +966,7 @@ export class SplitBeamOrb extends Enemy {
 
         this.trail = [];
         this.maxTrail = 14;
+        this._trailAccum = 0;
 
         this.colorProfile = opts.colorProfile ?? "purple";
         this.attackType = opts.attackType ?? "purpleOrb";
@@ -1034,8 +1038,10 @@ export class SplitBeamOrb extends Enemy {
         const { x, y } = this.getBossEmitterPosition();
 
         this.chargeAlpha = Math.min(1, this.chargeAlpha + deltaTime / 250);
+        const _chargeDt = normalizeDelta(deltaTime);
+        const _chargeK = 1 - Math.pow(1 - 0.12, _chargeDt);
         this.chargeRadius =
-            this.chargeRadius + (this.chargeTargetRadius - this.chargeRadius) * 0.12;
+            this.chargeRadius + (this.chargeTargetRadius - this.chargeRadius) * _chargeK;
 
         this.radius = this.chargeRadius;
         this.width = this.radius * 2;
@@ -1046,8 +1052,12 @@ export class SplitBeamOrb extends Enemy {
 
         const cx = this.x + this.radius;
         const cy = this.y + this.radius;
-        this.trail.push({ x: cx, y: cy });
-        if (this.trail.length > this.maxTrail) this.trail.shift();
+        this._trailAccum += deltaTime;
+        if (this._trailAccum >= BASE_FRAME_MS) {
+            this._trailAccum %= BASE_FRAME_MS;
+            this.trail.push({ x: cx, y: cy });
+            if (this.trail.length > this.maxTrail) this.trail.shift();
+        }
     }
 
     fireNow() {
@@ -1279,8 +1289,12 @@ export class SplitBeamOrb extends Enemy {
 
         this.travelled += Math.hypot(nx - px, ny - py);
 
-        this.trail.push({ x: nx, y: ny });
-        if (this.trail.length > this.maxTrail) this.trail.shift();
+        this._trailAccum += deltaTime;
+        if (this._trailAccum >= BASE_FRAME_MS) {
+            this._trailAccum %= BASE_FRAME_MS;
+            this.trail.push({ x: nx, y: ny });
+            if (this.trail.length > this.maxTrail) this.trail.shift();
+        }
 
         if (this.travelled >= this.splitAt) {
             if (this.enableSplit) {

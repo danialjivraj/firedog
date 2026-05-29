@@ -1,5 +1,5 @@
 import { preShake, postShake } from '../animations/shake.js';
-import { BASE_FRAME_MS, MAP_DISPLAY_NAMES } from '../config/constants.js';
+import { BASE_FRAME_MS, MAP_DISPLAY_NAMES, getDt } from '../config/constants.js';
 import { fadeInAndOut } from '../animations/fading.js';
 import {
     COSMETIC_LAYER_ORDER,
@@ -1298,7 +1298,7 @@ export class Cutscene {
         if (this.textIndex < dialogue.length) {
             if (!this.game.menu.pause.isPaused && !this.pause) {
                 this.playEightBitSound('bit1');
-                this._textAdvanceAccum += (this.game.deltaTime ?? BASE_FRAME_MS);
+                this._textAdvanceAccum += getDt(this.game);
                 while (this._textAdvanceAccum >= BASE_FRAME_MS) {
                     this._textAdvanceAccum -= BASE_FRAME_MS;
                     this.textIndex++;

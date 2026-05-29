@@ -1,5 +1,5 @@
 ﻿import { EnemyBoss } from "../../enemies.js";
-import { normalizeDelta, BASE_FRAME_MS } from "../../../../config/constants.js";
+import { normalizeDelta, BASE_FRAME_MS, originalAccumFrameInterval } from "../../../../config/constants.js";
 import { HealingStarBurstCollision } from "../../../../animations/collisionAnimation/spriteCollisions.js";
 import { DisintegrateCollision } from "../../../../animations/collisionAnimation/proceduralCollisions.js";
 export * from "./ntharaxAbilities.js";
@@ -42,7 +42,7 @@ export class NTharax extends EnemyBoss {
         };
         this.burrowPendingX = null;
 
-        const fpsToInterval = (fps) => (fps > 0 ? 1000 / fps : Infinity);
+        const fpsToInterval = (fps) => (fps > 0 ? originalAccumFrameInterval(1000 / fps) : Infinity);
 
         this._base = {
             runStep: 10,
@@ -590,7 +590,7 @@ export class NTharax extends EnemyBoss {
 
     applyFpsOnlyMult(fpsMult) {
         const fps = this._base.fps;
-        const fpsToInterval = (f) => (f > 0 ? 1000 / f : Infinity);
+        const fpsToInterval = (f) => (f > 0 ? originalAccumFrameInterval(1000 / f) : Infinity);
         const scaled = (k) => Math.max(0, Math.round(fps[k] * fpsMult));
 
         this.setFps(scaled("idle"));
@@ -780,8 +780,9 @@ export class NTharax extends EnemyBoss {
                 p.vx += ax * dt;
                 p.vy += ay * dt;
 
-                p.vx *= fx.damping;
-                p.vy *= fx.damping;
+                const dtScale = normalizeDelta(deltaTime);
+                p.vx *= Math.pow(fx.damping, dtScale);
+                p.vy *= Math.pow(fx.damping, dtScale);
 
                 p.x += p.vx * dt;
                 p.y += p.vy * dt;
@@ -1391,7 +1392,7 @@ export class NTharax extends EnemyBoss {
 
         this.laserFrameTimer += deltaTime;
         if (this.laserFrameTimer < this.laserFrameInterval) return;
-        this.laserFrameTimer = 0;
+        this.laserFrameTimer -= this.laserFrameInterval;
 
         const max = this.laserAnimation.maxFrame;
 
@@ -2036,7 +2037,7 @@ export class NTharax extends EnemyBoss {
 
         this.ballFrameTimer += deltaTime;
         if (this.ballFrameTimer >= this.ballFrameInterval) {
-            this.ballFrameTimer = 0;
+            this.ballFrameTimer -= this.ballFrameInterval;
 
             if (this.ballPhase === "opening") {
                 if (this.ballAnimation.frameX < this.BALL_HOLD_FRAME) {
@@ -2123,7 +2124,7 @@ export class NTharax extends EnemyBoss {
 
         if (this.wingWindActive) {
             const player = this.game.player;
-            const pushPerUpdate = this.mode2Active ? 48 : 40;
+            const pushPerUpdate = (this.mode2Active ? 48 : 40) * normalizeDelta(deltaTime);
 
             if (this.wingWindDirection > 0) {
                 const targetX = this.game.width - player.width;
@@ -2144,7 +2145,7 @@ export class NTharax extends EnemyBoss {
 
         this.wingFrameTimer += deltaTime;
         if (this.wingFrameTimer < this.wingFrameInterval) return;
-        this.wingFrameTimer = 0;
+        this.wingFrameTimer -= this.wingFrameInterval;
 
         this.wingAnimation.frameX += this.wingDirection;
 
@@ -2223,7 +2224,7 @@ export class NTharax extends EnemyBoss {
         if (this.kneelPhase === "toMax") {
             this.kneelFrameTimer += deltaTime;
             if (this.kneelFrameTimer < this.kneelFrameInterval) return;
-            this.kneelFrameTimer = 0;
+            this.kneelFrameTimer -= this.kneelFrameInterval;
 
             this.kneelAnimation.frameX += 1;
 
@@ -2244,7 +2245,7 @@ export class NTharax extends EnemyBoss {
         if (this.kneelPhase === "holding") {
             this.kneelFrameTimer += deltaTime;
             if (this.kneelFrameTimer >= this.kneelFrameInterval) {
-                this.kneelFrameTimer = 0;
+                this.kneelFrameTimer -= this.kneelFrameInterval;
                 this._kneelHoldToggle = 1 - this._kneelHoldToggle;
                 this.kneelAnimation.frameX = this._kneelHoldToggle ? last2 : max;
             } else {
@@ -2282,7 +2283,7 @@ export class NTharax extends EnemyBoss {
         if (this.kneelPhase === "returning") {
             this.kneelFrameTimer += deltaTime;
             if (this.kneelFrameTimer < this.kneelFrameInterval) return;
-            this.kneelFrameTimer = 0;
+            this.kneelFrameTimer -= this.kneelFrameInterval;
 
             this.kneelAnimation.frameX -= 1;
 
@@ -2339,7 +2340,7 @@ export class NTharax extends EnemyBoss {
 
         this[cfg.frameTimerKey] += deltaTime;
         if (this[cfg.frameTimerKey] >= this[cfg.frameIntervalKey]) {
-            this[cfg.frameTimerKey] = 0;
+            this[cfg.frameTimerKey] -= this[cfg.frameIntervalKey];
             const anim = this[cfg.animationKey];
             if (anim.frameX < anim.maxFrame) anim.frameX += 1;
         }
@@ -2426,7 +2427,7 @@ export class NTharax extends EnemyBoss {
 
         this.asteroidFrameTimer += deltaTime;
         if (this.asteroidFrameTimer < this.asteroidFrameInterval) return;
-        this.asteroidFrameTimer = 0;
+        this.asteroidFrameTimer -= this.asteroidFrameInterval;
 
         this.asteroidAnimation.frameX += this.asteroidDirection;
 
@@ -2595,7 +2596,7 @@ export class NTharax extends EnemyBoss {
         if (!this.slapReachedEnd && !this.slapGoingBack) {
             this.slapFrameTimer += deltaTime;
             if (this.slapFrameTimer < this.slapFrameInterval) return;
-            this.slapFrameTimer = 0;
+            this.slapFrameTimer -= this.slapFrameInterval;
 
             this.slapAnimation.frameX += 1;
 
@@ -2617,7 +2618,7 @@ export class NTharax extends EnemyBoss {
         if (this.slapReachedEnd && !this.slapGoingBack) {
             this.slapFrameTimer += deltaTime;
             if (this.slapFrameTimer < this.slapFrameInterval) return;
-            this.slapFrameTimer = 0;
+            this.slapFrameTimer -= this.slapFrameInterval;
 
             if (this.slapWobbleToggle === 0) {
                 this.slapAnimation.frameX = Math.max(0, max - 1);
@@ -2641,7 +2642,7 @@ export class NTharax extends EnemyBoss {
         if (this.slapGoingBack) {
             this.slapFrameTimer += deltaTime;
             if (this.slapFrameTimer < this.slapFrameInterval) return;
-            this.slapFrameTimer = 0;
+            this.slapFrameTimer -= this.slapFrameInterval;
 
             this.slapAnimation.frameX -= 1;
 
@@ -2697,7 +2698,7 @@ export class NTharax extends EnemyBoss {
             this.tentacleFrameTimer += deltaTime;
             if (this.tentacleFrameTimer < this.tentacleFrameInterval) return;
 
-            this.tentacleFrameTimer = 0;
+            this.tentacleFrameTimer -= this.tentacleFrameInterval;
             this.tentacleAnimation.frameX += 1;
 
             if (this.tentacleAnimation.frameX >= max) {
@@ -2726,7 +2727,7 @@ export class NTharax extends EnemyBoss {
             this.tentacleFrameTimer += deltaTime;
             if (this.tentacleFrameTimer < this.tentacleFrameInterval) return;
 
-            this.tentacleFrameTimer = 0;
+            this.tentacleFrameTimer -= this.tentacleFrameInterval;
             this.tentacleAnimation.frameX -= 1;
 
             if (this.tentacleAnimation.frameX <= 0) {
@@ -2802,7 +2803,7 @@ export class NTharax extends EnemyBoss {
         if (this.healingPhase === "forward" || this.healingPhase === "pulseUp") {
             this.healingFrameTimer += deltaTime;
             if (this.healingFrameTimer < this.healingFrameInterval) return;
-            this.healingFrameTimer = 0;
+            this.healingFrameTimer -= this.healingFrameInterval;
 
             this.healingAnimation.frameX += 1;
 
@@ -2839,7 +2840,7 @@ export class NTharax extends EnemyBoss {
         if (this.healingPhase === "rewind") {
             this.healingFrameTimer += deltaTime;
             if (this.healingFrameTimer < this.healingFrameInterval) return;
-            this.healingFrameTimer = 0;
+            this.healingFrameTimer -= this.healingFrameInterval;
 
             this.healingAnimation.frameX -= 1;
 
@@ -2989,9 +2990,9 @@ export class NTharax extends EnemyBoss {
             return;
         }
 
-        this.runStateCounter += deltaTime;
-        this.flyStateCounter += deltaTime;
-        this.healStateCounter += deltaTime;
+        this.runStateCounter += BASE_FRAME_MS;
+        this.flyStateCounter += BASE_FRAME_MS;
+        this.healStateCounter += BASE_FRAME_MS;
 
         if (this.state !== "fly") {
             this.shouldInvert =

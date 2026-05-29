@@ -1,4 +1,4 @@
-﻿import { normalizeDelta } from '../../config/constants.js';
+﻿import { normalizeDelta, originalAccumFrameInterval, BASE_FRAME_MS } from '../../config/constants.js';
 import { screenColourFadeIn, screenColourFadeOut } from '../../animations/screenColourFade.js';
 import { FIREDOG_FRAME } from '../../config/skinsAndCosmetics.js';
 
@@ -47,6 +47,42 @@ export const demoUpdatersMixin = {
             activeRemainingMs: 0,
             cooldownElapsedMs: 0,
         };
+    },
+
+    _createStatusDemoState() {
+        return { active: false, type: null, timer: 0, duration: 0 };
+    },
+
+    _updateStatusDemo(deltaTime, cfg) {
+        if (!cfg || cfg.enabled !== true) return null;
+
+        const type = cfg.type;
+        if (type !== 'poison' && type !== 'slow' && type !== 'freeze') return null;
+
+        const duration = Math.max(1, this._num(cfg.durationMs, 8000));
+        const s = this._demoStatus;
+
+        if (!s.active || s.type !== type || s.duration !== duration) {
+            s.active = true;
+            s.type = type;
+            s.duration = duration;
+            s.timer = duration;
+        }
+
+        const dt = Math.max(0, Number(deltaTime) || 0);
+        s.timer -= dt;
+        if (s.timer <= 0) s.timer = duration;
+
+        const remaining = s.timer;
+
+        if (type === 'poison') {
+            return { isPoisonedActive: true, poisonTimer: remaining };
+        }
+        if (type === 'slow') {
+            return { isSlowed: true, slowedTimer: remaining };
+        }
+        // freeze snapshot needs frozenDuration for a non-trivial arc ratio
+        return { isFrozen: true, frozenTimer: remaining, frozenDuration: duration };
     },
 
     _createDashDemoState() {
@@ -444,8 +480,8 @@ export const demoUpdatersMixin = {
         const MAX_GHOSTS = 4;
         const { height: FH } = FIREDOG_FRAME;
         const ROW_RUNNING = 3;
-        const FRAME_INTERVAL_DASH = 1000 / 20;
-        const FRAME_INTERVAL_IDLE = 1000 / 20;
+        const FRAME_INTERVAL_DASH = originalAccumFrameInterval(1000 / 20);
+        const FRAME_INTERVAL_IDLE = originalAccumFrameInterval(1000 / 20);
         const MAX_FRAME_RUNNING = 8;
         const MAX_FRAME_STANDING = 6;
         const ROW_STANDING = 0;
@@ -502,7 +538,7 @@ export const demoUpdatersMixin = {
             arc.y -= arc.speedY * dtScale;
             arc.size *= Math.pow(0.97, dtScale);
             arc.angle += arc.va * dtScale;
-            arc.x += Math.sin(arc.angle * 4) * arc.wobbleAmp;
+            arc.x += Math.sin(arc.angle * 4) * arc.wobbleAmp * dtScale;
         }
         d.fireArcs = d.fireArcs.filter(a => a.size >= 0.5);
 

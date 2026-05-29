@@ -1675,7 +1675,7 @@ describe('Game class (game-main.js)', () => {
       game.background = { totalDistanceTraveled: game.maxDistance };
       game.cabinAppeared = false;
       game.penguinAppeared = false;
-      game.nonEnemyTimer = game.nonEnemyInterval + 1;
+      game.nonEnemyTimer = game.nonEnemyInterval * 2;
       game.enemyTimer = 0;
       jest.spyOn(game, 'addEnemy').mockImplementation(() => {});
       jest.spyOn(game, 'addPowerUp').mockImplementation(() => {});
@@ -1691,7 +1691,7 @@ describe('Game class (game-main.js)', () => {
     it('does not re-activate cabin on subsequent timer fires', () => {
       game._updateSpawnTimers(16, false);
       game.cabin.width = 999;
-      game.nonEnemyTimer = game.nonEnemyInterval + 1;
+      game.nonEnemyTimer = game.nonEnemyInterval * 2;
       game._updateSpawnTimers(16, false);
       expect(game.fixedCabinX).toBe(game.width - 50);
     });
@@ -2115,8 +2115,8 @@ describe('Game class (game-main.js)', () => {
     it('does not add enemies/powerups/powerdowns when tutorial is active on Map1; still activates cabin/penguin', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
 
-      game.enemyTimer = game.enemyInterval + 1;
-      game.nonEnemyTimer = game.nonEnemyInterval + 1;
+      game.enemyTimer = game.enemyInterval * 2;
+      game.nonEnemyTimer = game.nonEnemyInterval * 2;
 
       game.isTutorialActive = true;
       game.currentMap = 'Map1';

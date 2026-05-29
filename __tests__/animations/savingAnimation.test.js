@@ -2,6 +2,7 @@ import {
     SavingOrDeletingAnimation,
 } from '../../game/animations/savingAnimation';
 import { isLocalNight } from '../../game/utils/timeOfDay.js';
+import { originalAccumFrameInterval } from '../../game/config/constants.js';
 
 jest.mock('../../game/utils/timeOfDay.js', () => ({
     isLocalNight: jest.fn(() => false),
@@ -54,7 +55,7 @@ describe('SavingOrDeletingAnimation (base class)', () => {
         expect(anim.frameX).toBe(0);
         expect(anim.frameY).toBe(0);
         expect(anim.fps).toBe(FPS);
-        expect(anim.frameInterval).toBeCloseTo(1000 / FPS);
+        expect(anim.frameInterval).toBeCloseTo(originalAccumFrameInterval(1000 / FPS));
         expect(anim.frameTimer).toBe(0);
     });
 
@@ -64,10 +65,10 @@ describe('SavingOrDeletingAnimation (base class)', () => {
         expect(anim.frameTimer).toBe(anim.frameInterval);
     });
 
-    it('update(delta > frameInterval) advances by one frame and resets timer', () => {
+    it('update(delta > frameInterval) advances by one frame and keeps leftover timer', () => {
         anim.update(anim.frameInterval + 1);
         expect(anim.frameX).toBe(1);
-        expect(anim.frameTimer).toBe(0);
+        expect(anim.frameTimer).toBeCloseTo(1);
     });
 
     it('update() accumulates time across calls and advances only once when threshold exceeded', () => {
@@ -78,7 +79,7 @@ describe('SavingOrDeletingAnimation (base class)', () => {
 
         anim.update(half + 1);
         expect(anim.frameX).toBe(1);
-        expect(anim.frameTimer).toBe(0);
+        expect(anim.frameTimer).toBeCloseTo(1);
     });
 
     it('update() increments frames sequentially and wraps back to 0 after maxFrame', () => {

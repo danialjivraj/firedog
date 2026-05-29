@@ -237,7 +237,7 @@ export class ControlsSettingsMenu extends ScrollableMenu {
 
     update(dt) {
         super.update(dt);
-        this.tickScroll();
+        this.tickScroll(dt);
     }
 
     handleKeyDown(event) {

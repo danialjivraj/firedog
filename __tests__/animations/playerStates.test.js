@@ -11,6 +11,7 @@ import {
     Dying,
     Dashing,
 } from '../../game/entities/playerStates';
+import { normalizeDelta } from '../../game/config/constants.js';
 
 jest.mock('../../game/animations/particles.js', () => {
     class Dust { constructor() { } }
@@ -345,7 +346,7 @@ describe('playerStates.js', () => {
             expect(player.frameY).toBe(1);
         });
 
-        it('underwater + jump input spawns Bubble, moves up 4px, sets JUMPING, and updates buoyancy', () => {
+        it('underwater + jump input spawns Bubble, moves up 4px scaled by deltaTime, sets JUMPING, and updates buoyancy', () => {
             game.player.isUnderwater = true;
             player.onGround.mockReturnValue(false);
 
@@ -354,7 +355,7 @@ describe('playerStates.js', () => {
             st.handleInput(['w']);
 
             expect(game.particles[0].constructor.name).toBe('Bubble');
-            expect(player.y).toBe(baseY - 4);
+            expect(player.y).toBeCloseTo(baseY - 4 * normalizeDelta(game.deltaTime), 5);
             expect(player.setState).toHaveBeenCalledWith(states.JUMPING, 1);
             expect([1, 2, 3, 4]).toContain(player.buoyancy);
         });

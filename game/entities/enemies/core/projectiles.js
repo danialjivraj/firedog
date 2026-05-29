@@ -153,11 +153,10 @@ export class PoisonousOrb extends Projectile {
     }
     advanceFrame(deltaTime) {
         if (this.frameX >= this.maxFrame) return;
-        if (this.frameTimer > this.frameInterval) {
-            this.frameTimer = 0;
+        this.frameTimer += deltaTime;
+        while (this.frameTimer > this.frameInterval && this.frameX < this.maxFrame) {
+            this.frameTimer -= this.frameInterval;
             this.frameX = Math.min(this.frameX + 1, this.maxFrame);
-        } else {
-            this.frameTimer += deltaTime;
         }
     }
     update(deltaTime) {
@@ -265,7 +264,7 @@ export class FrozenShard extends Projectile {
 
 export class BerriflyIceBall extends Projectile {
     constructor(game, x, y, speedY) {
-        super(game, x, y, 35, 35, 0, 'iceBall', 7, speedY);
+        super(game, x, y, 35, 35, 0, 'iceBall', 7, 0);
         this.isSlowEnemy = true;
         this.initialSize = 10;
         this.size = this.initialSize;

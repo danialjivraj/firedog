@@ -1,6 +1,6 @@
 ﻿import { Skulnap } from "../../entities/enemies/enemies.js";
 import { FloatingMessage } from "../floatingMessages.js";
-import { normalizeDelta } from "../../config/constants.js";
+import { normalizeDelta, originalFrameInterval, originalAccumFrameInterval } from "../../config/constants.js";
 
 export class Collision {
     constructor(
@@ -25,7 +25,7 @@ export class Collision {
         this.markedForDeletion = false;
 
         this.fps = fps;
-        this.frameInterval = 1000 / this.fps;
+        this.frameInterval = originalFrameInterval(1000 / this.fps);
         this.frameTimer = 0;
 
         this.clipRect = clipRect;
@@ -57,11 +57,10 @@ export class Collision {
 
         if (this.clipRect) this.clipRect.x -= this.game.speed * dt;
 
-        if (this.frameTimer > this.frameInterval) {
+        this.frameTimer += deltaTime;
+        while (this.frameTimer > this.frameInterval) {
+            this.frameTimer -= this.frameInterval;
             this.frameX++;
-            this.frameTimer = 0;
-        } else {
-            this.frameTimer += deltaTime;
         }
         if (this.frameX > this.maxFrame) this.markedForDeletion = true;
     }
@@ -338,7 +337,7 @@ export class HealingStar {
         this.maxFrame = options.maxFrame ?? 6;
 
         this.fps = options.fps ?? 14;
-        this.frameInterval = 1000 / this.fps;
+        this.frameInterval = originalAccumFrameInterval(1000 / this.fps);
         this.frameTimer = 0;
 
         this.frameX = 0;
@@ -366,8 +365,8 @@ export class HealingStar {
         }
 
         this.frameTimer += deltaTime;
-        if (this.frameTimer >= this.frameInterval) {
-            this.frameTimer = 0;
+        while (this.frameTimer >= this.frameInterval && !this.markedForDeletion) {
+            this.frameTimer -= this.frameInterval;
             if (this.frameX < this.maxFrame) this.frameX += 1;
             else this.markedForDeletion = true;
         }

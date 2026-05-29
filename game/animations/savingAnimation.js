@@ -1,4 +1,5 @@
 import { isLocalNight } from '../utils/timeOfDay.js';
+import { originalAccumFrameInterval } from '../config/constants.js';
 
 export class SavingOrDeletingAnimation {
     constructor(game, width, height, imageId, maxFrame, x, y, fps) {
@@ -14,15 +15,15 @@ export class SavingOrDeletingAnimation {
         this.frameX = 0;
         this.frameY = 0;
         this.fps = fps;
-        this.frameInterval = 1000 / this.fps;
+        this.frameInterval = originalAccumFrameInterval(1000 / this.fps);
         this.frameTimer = 0;
     }
 
     update(deltaTime) {
         this.frameTimer += deltaTime;
 
-        if (this.frameTimer > this.frameInterval) {
-            this.frameTimer = 0;
+        while (this.frameTimer > this.frameInterval) {
+            this.frameTimer -= this.frameInterval;
 
             if (this.frameX < this.maxFrame) {
                 this.frameX++;

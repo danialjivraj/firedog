@@ -423,13 +423,13 @@ describe('Player', () => {
         expect(game.speed).toBe(20);
     });
 
-    test('energyLogic regenerates energy and resets energyTimer', () => {
+    test('energyLogic regenerates energy and decrements energyTimer by the tick interval', () => {
         player.energy = 10;
-        player.energyTimer = 100;
         player.energyInterval = 100;
+        player.energyTimer = 200;
         player.energyLogic(0);
         expect(player.energy).toBeGreaterThan(10);
-        expect(player.energyTimer).toBe(0);
+        expect(player.energyTimer).toBeLessThan(100);
     });
 
     test('energyLogic flips isEnergyExhausted off once energy ≥ 20', () => {
@@ -1849,7 +1849,7 @@ describe('emitStatusParticles (bubble status logic)', () => {
         player.isPoisonedActive = true;
         player.isSlowed = true;
 
-        player.emitStatusParticles(player.statusFxInterval);
+        player.emitStatusParticles(200);
 
         expect(PoisonBubbles).toHaveBeenCalledTimes(1);
         expect(PoisonBubbles).toHaveBeenCalledWith(
@@ -1872,7 +1872,7 @@ describe('emitStatusParticles (bubble status logic)', () => {
         player.isSlowed = false;
         Math.random = jest.fn().mockReturnValue(0.5);
 
-        player.emitStatusParticles(player.statusFxInterval);
+        player.emitStatusParticles(200);
 
         expect(PoisonBubbles).toHaveBeenCalledTimes(1);
         expect(IceCrystalBubbles).not.toHaveBeenCalled();
@@ -1884,7 +1884,7 @@ describe('emitStatusParticles (bubble status logic)', () => {
         player.isSlowed = false;
         Math.random = jest.fn().mockReturnValue(0.9);
 
-        player.emitStatusParticles(player.statusFxInterval);
+        player.emitStatusParticles(200);
 
         expect(PoisonBubbles).not.toHaveBeenCalled();
         expect(IceCrystalBubbles).not.toHaveBeenCalled();
@@ -1896,7 +1896,7 @@ describe('emitStatusParticles (bubble status logic)', () => {
         player.isSlowed = true;
         Math.random = jest.fn().mockReturnValue(0.123);
 
-        player.emitStatusParticles(player.statusFxInterval);
+        player.emitStatusParticles(200);
 
         expect(IceCrystalBubbles).toHaveBeenCalledTimes(1);
         expect(PoisonBubbles).not.toHaveBeenCalled();
@@ -1907,7 +1907,7 @@ describe('emitStatusParticles (bubble status logic)', () => {
         player.isPoisonedActive = false;
         player.isSlowed = false;
 
-        player.emitStatusParticles(player.statusFxInterval);
+        player.emitStatusParticles(200);
 
         expect(PoisonBubbles).not.toHaveBeenCalled();
         expect(IceCrystalBubbles).not.toHaveBeenCalled();
@@ -1919,7 +1919,7 @@ describe('emitStatusParticles (bubble status logic)', () => {
         player.isPoisonedActive = true;
         player.isSlowed = true;
 
-        player.emitStatusParticles(player.statusFxInterval);
+        player.emitStatusParticles(200);
 
         expect(PoisonBubbles).toHaveBeenCalled();
         expect(IceCrystalBubbles).toHaveBeenCalled();

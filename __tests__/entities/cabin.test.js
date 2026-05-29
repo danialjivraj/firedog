@@ -1,4 +1,5 @@
 import { Cabin } from '../../game/entities/cabin';
+import { originalFrameInterval } from '../../game/config/constants';
 
 describe('Cabin', () => {
     let game, cabin, ctx, fakeImage;
@@ -26,7 +27,7 @@ describe('Cabin', () => {
         test('initializes all properties correctly', () => {
             expect(cabin.frameX).toBe(0);
             expect(cabin.fps).toBe(4);
-            expect(cabin.frameInterval).toBe(1000 / 4);
+            expect(cabin.frameInterval).toBe(originalFrameInterval(1000 / 4));
             expect(cabin.frameTimer).toBe(0);
             expect(cabin.game).toBe(game);
             expect(cabin.width).toBe(80);
@@ -56,7 +57,7 @@ describe('Cabin', () => {
             cabin.frameX = 0;
             cabin.update(10);
 
-            expect(cabin.frameTimer).toBe(0);
+            expect(cabin.frameTimer).toBeCloseTo(11);
             expect(cabin.frameX).toBe(1);
         });
 

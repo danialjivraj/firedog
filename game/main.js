@@ -1,5 +1,5 @@
 import { Game } from './game-main.js';
-import { preShake, postShake } from './animations/shake.js';
+import { preShake, postShake, tickShake } from './animations/shake.js';
 import { fadeIn } from './animations/fading.js';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, FADE_IN_DELAY_MS, FADE_IN_COMPLETE_MS, GameState } from './config/constants.js';
 import { startLoadingScreen } from './loading.js';
@@ -21,6 +21,8 @@ window.addEventListener("load", function () {
             lastTime = timeStamp;
             const deltaTime = rawDelta > 100 ? 100 : rawDelta;
             game.deltaTime = deltaTime;
+
+            if (game.shakeActive) tickShake(deltaTime);
 
             game.updateGlobalOverlays(deltaTime);
 

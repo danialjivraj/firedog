@@ -1,6 +1,6 @@
 ﻿import { screenColourFadeIn, screenColourFadeOut } from '../../animations/screenColourFade.js';
 import { FIREDOG_FRAME } from '../../config/skinsAndCosmetics.js';
-import { normalizeDelta } from '../../config/constants.js';
+import { normalizeDelta, originalAccumFrameInterval } from '../../config/constants.js';
 import { PoisonBubbles, IceCrystalBubbles } from '../../animations/particles.js';
 import { BluePotion, RedPotion, HealthLive, Cauldron, BlackHole, IceDrink } from '../../entities/powerUpAndDown.js';
 
@@ -193,7 +193,7 @@ export const tutorialDrawMixin = {
         }
 
         s.fps = Math.max(1, this._num(fps, 4));
-        s.frameInterval = 1000 / s.fps;
+        s.frameInterval = originalAccumFrameInterval(1000 / s.fps);
         s.maxFrame = Math.max(0, this._num(maxFrame, 0));
         return s;
     },
@@ -352,7 +352,7 @@ export const tutorialDrawMixin = {
         const { width: FW, height: FH } = FIREDOG_FRAME;
         const hitCfg = HowToPlayMenu._PLAYER_ANIM[state] ?? HowToPlayMenu._PLAYER_ANIM.HIT;
         const standCfg = HowToPlayMenu._PLAYER_ANIM.STANDING;
-        const frameInterval = 1000 / fps;
+        const frameInterval = originalAccumFrameInterval(1000 / fps);
 
         let phase = 'delay';
         let delayTimer = 0;
@@ -555,7 +555,7 @@ export const tutorialDrawMixin = {
     createRollingDemo() {
         const { width: FW, height: FH } = FIREDOG_FRAME;
         const ROW_ROLLING = 6, MAX_FRAME = 6;
-        const FRAME_INTERVAL = 1000 / 20;
+        const FRAME_INTERVAL = originalAccumFrameInterval(1000 / 20);
         const FIRE_INTERVAL_MS = 1000 / 31;
 
         return {
@@ -621,7 +621,7 @@ export const tutorialDrawMixin = {
         const { width: FW, height: FH } = FIREDOG_FRAME;
         const ROW_STANDING = 0, ROW_JUMPING = 1, ROW_DIVING = 6;
         const MAX_FRAME_STAND = 6, MAX_FRAME_JUMP = 6, MAX_FRAME_DIVE = 6;
-        const FRAME_INTERVAL = 1000 / 20;
+        const FRAME_INTERVAL = originalAccumFrameInterval(1000 / 20);
         const FIRE_INTERVAL_MS = 1000 / 31;
         const STAND_MS = 1200, SETTLE_MS = 900;
 
@@ -1321,7 +1321,7 @@ export const tutorialDrawMixin = {
 
                 for (const p of this._menuParticles) {
                     if (!p) continue;
-                    if (!paused && typeof p.update === 'function') p.update();
+                    if (!paused && typeof p.update === 'function') p.update(dt);
                     if (typeof p.draw === 'function') p.draw(ctx);
                 }
 
@@ -1474,6 +1474,7 @@ export const tutorialDrawMixin = {
         this._demoFireball = this._createFireballDemoState();
         this._demoInvisible = this._createInvisibleDemoState();
         this._demoDash = this._createDashDemoState();
+        this._demoStatus = this._createStatusDemoState();
 
         this._demoInvisibleColourOpacity = 0;
 
@@ -1531,6 +1532,7 @@ export const tutorialDrawMixin = {
         }
 
         applyDemo(cfg?.dashDemo?.enabled, this._updateDashDemo, cfg?.dashDemo);
+        applyDemo(cfg?.statusDemo?.enabled, this._updateStatusDemo, cfg?.statusDemo);
 
         if (cfg?.hitAnimPhaseRef?.phase === 'hit') {
             demoPlayer = { ...(demoPlayer || {}), isFrozen: true };
@@ -1569,6 +1571,14 @@ export const tutorialDrawMixin = {
                 ui.withHudLayoutStyle('compact', () => ui.firedogAbilityUI(ctx));
             } else {
                 ui.firedogAbilityUI(ctx);
+            }
+        }
+
+        if (cfg?.statusDemo?.enabled === true && typeof ui.drawNegativeStatusUI === 'function') {
+            if (typeof ui.withHudLayoutStyle === 'function') {
+                ui.withHudLayoutStyle('compact', () => ui.drawNegativeStatusUI(ctx));
+            } else {
+                ui.drawNegativeStatusUI(ctx);
             }
         }
 

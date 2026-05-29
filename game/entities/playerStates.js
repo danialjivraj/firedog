@@ -1,5 +1,7 @@
 import { Dust, Bubble, Fire, Splash, IceCrystal, DashGhost, DashFireArc } from "../animations/particles.js";
-import { PlayerState } from "../config/constants.js";
+import { PlayerState, BASE_FRAME_MS, getDt, getNormalizedDt } from "../config/constants.js";
+
+const PARTICLE_SPAWN_INTERVAL_MS = BASE_FRAME_MS;
 
 const P = game => game.player;
 
@@ -67,7 +69,8 @@ const spawnDashFireArc = (game, player, count = 1) => {
 
 function handleUnderwaterAscend(game, input) {
     if (jump(game, input) && !game.gameOver) {
-        P(game).y = P(game).y - 4;
+        const dt = getNormalizedDt(game);
+        P(game).y = P(game).y - 4 * dt;
         P(game).setState(PlayerState.JUMPING, 1);
         if (P(game).y < game.height - 400) {
             P(game).buoyancy = 1;
@@ -88,6 +91,7 @@ class State {
     constructor(state, game) {
         this.state = state;
         this.game = game;
+        this.particleSpawnTimer = 0;
     }
     gameOver() {
         const player = this.game.player;
@@ -140,6 +144,7 @@ export class Running extends State {
     enter() {
         const player = this.game.player;
         setAnim(player, { x: 0, max: 8, y: 3 });
+        this.particleSpawnTimer = 0;
     }
 
     handleInput(input, deltaTime) {
@@ -149,18 +154,22 @@ export class Running extends State {
 
         if (player.tryStartDash(input)) return;
 
-        if (player.isSlowed) {
-            spawnIceCrystal(
-                this.game,
-                player.x + player.width * 0.6 + 13,
-                player.y + player.height
-            );
-        } else {
-            spawnDust(
-                this.game,
-                player.x + player.width * 0.6,
-                player.y + player.height
-            );
+        this.particleSpawnTimer += getDt(this.game);
+        while (this.particleSpawnTimer >= PARTICLE_SPAWN_INTERVAL_MS) {
+            this.particleSpawnTimer -= PARTICLE_SPAWN_INTERVAL_MS;
+            if (player.isSlowed) {
+                spawnIceCrystal(
+                    this.game,
+                    player.x + player.width * 0.6 + 13,
+                    player.y + player.height
+                );
+            } else {
+                spawnDust(
+                    this.game,
+                    player.x + player.width * 0.6,
+                    player.y + player.height
+                );
+            }
         }
 
         if (this.game.boss.talkToBoss) {
@@ -218,6 +227,7 @@ export class Jumping extends State {
         }
 
         setAnim(player, { x: 0, max: 6, y: 1 });
+        this.particleSpawnTimer = 0;
     }
 
     handleInput(input, deltaTime) {
@@ -228,11 +238,15 @@ export class Jumping extends State {
         if (player.tryStartDash(input)) return;
 
         if (player.isUnderwater === true) {
-            spawnBubble(
-                this.game,
-                player.x + player.width * 0.8,
-                player.y + player.height
-            );
+            this.particleSpawnTimer += getDt(this.game);
+            while (this.particleSpawnTimer >= PARTICLE_SPAWN_INTERVAL_MS) {
+                this.particleSpawnTimer -= PARTICLE_SPAWN_INTERVAL_MS;
+                spawnBubble(
+                    this.game,
+                    player.x + player.width * 0.8,
+                    player.y + player.height
+                );
+            }
             handleUnderwaterAscend(this.game, input);
         }
 
@@ -273,6 +287,7 @@ export class Falling extends State {
     enter() {
         const player = this.game.player;
         setAnim(player, { x: 0, max: 6, y: 2 });
+        this.particleSpawnTimer = 0;
     }
     handleInput(input, deltaTime) {
         this.gameOver();
@@ -293,13 +308,18 @@ export class Falling extends State {
         }
 
         if (player.isUnderwater === true) {
-            spawnBubble(
-                this.game,
-                player.x + player.width * 0.8,
-                player.y + player.height
-            );
+            this.particleSpawnTimer += getDt(this.game);
+            while (this.particleSpawnTimer >= PARTICLE_SPAWN_INTERVAL_MS) {
+                this.particleSpawnTimer -= PARTICLE_SPAWN_INTERVAL_MS;
+                spawnBubble(
+                    this.game,
+                    player.x + player.width * 0.8,
+                    player.y + player.height
+                );
+            }
             if (jump(this.game, input)) {
-                player.y = player.y - 4;
+                const dt = getNormalizedDt(this.game);
+                player.y = player.y - 4 * dt;
                 player.setState(PlayerState.JUMPING, 1);
                 if (player.y < this.game.height - 400) {
                     player.buoyancy = 1;
@@ -348,6 +368,7 @@ export class Rolling extends State {
     enter() {
         const player = this.game.player;
         setAnim(player, { x: 0, max: 6, y: 6 });
+        this.particleSpawnTimer = 0;
     }
 
     handleInput(input, deltaTime) {
@@ -380,11 +401,15 @@ export class Rolling extends State {
             if (this.game.cabin.isFullyVisible) {
                 player.setState(PlayerState.STANDING, 0);
             } else {
-                spawnFire(
-                    this.game,
-                    player.x + player.width * 0.5,
-                    player.y + player.height * 0.5
-                );
+                this.particleSpawnTimer += getDt(this.game);
+                while (this.particleSpawnTimer >= PARTICLE_SPAWN_INTERVAL_MS) {
+                    this.particleSpawnTimer -= PARTICLE_SPAWN_INTERVAL_MS;
+                    spawnFire(
+                        this.game,
+                        player.x + player.width * 0.5,
+                        player.y + player.height * 0.5
+                    );
+                }
 
                 if (!rollRequested(this.game, input) && player.onGround()) {
                     player.setState(PlayerState.RUNNING, 1);
@@ -453,6 +478,7 @@ export class Diving extends State {
         } else {
             player.vy = 15;
         }
+        this.particleSpawnTimer = 0;
     }
     handleInput(input) {
         this.gameOver();
@@ -482,11 +508,15 @@ export class Diving extends State {
             player.vy = 15;
         }
 
-        spawnFire(
-            this.game,
-            player.x + player.width * 0.5,
-            player.y + player.height * 0.5
-        );
+        this.particleSpawnTimer += getDt(this.game);
+        while (this.particleSpawnTimer >= PARTICLE_SPAWN_INTERVAL_MS) {
+            this.particleSpawnTimer -= PARTICLE_SPAWN_INTERVAL_MS;
+            spawnFire(
+                this.game,
+                player.x + player.width * 0.5,
+                player.y + player.height * 0.5
+            );
+        }
 
         const numberOfParticles = player.isBluePotionActive ? 90 : 30;
 
@@ -655,7 +685,7 @@ export class Dashing extends State {
         this.gameOver();
 
         const player = this.game.player;
-        const dt = this.game.deltaTime ?? 16;
+        const dt = getDt(this.game);
 
         player.dashGhostTimer += dt;
         while (player.dashGhostTimer >= player.dashGhostInterval) {

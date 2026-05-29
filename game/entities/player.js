@@ -1,5 +1,5 @@
 ﻿import { getDefaultKeyBindings } from '../config/keyBindings.js';
-import { normalizeDelta, BASE_FRAME_MS, PlayerState, MAX_LIVES } from '../config/constants.js';
+import { normalizeDelta, getNormalizedDt, BASE_FRAME_MS, PlayerState, MAX_LIVES, originalFrameInterval, originalAccumFrameInterval } from '../config/constants.js';
 import { getConfiguredLivesFromIndex } from '../config/difficultySettings.js';
 import {
     getSkinElement,
@@ -48,7 +48,7 @@ export class Player {
         this.slowMaxSpeedMultiplier = PLAYER_SLOW_MULTIPLIERS.maxSpeed;
         this.slowWeightMultiplier = PLAYER_SLOW_MULTIPLIERS.weight;
         this.fps = PLAYER_PHYSICS.fps;
-        this.frameInterval = 1000 / this.fps;
+        this.frameInterval = originalFrameInterval(1000 / this.fps);
         this.frameTimer = 0;
         this.speed = 0;
         this.lives = getConfiguredLivesFromIndex();
@@ -726,8 +726,12 @@ export class Player {
             regenAmount *= 2;
         }
 
-        if (this.energyTimer >= this.energyInterval) {
-            this.energyTimer = 0;
+        const energyTickInterval = originalAccumFrameInterval(this.energyInterval);
+        if (this.energyTimer > energyTickInterval * 2) {
+            this.energyTimer = energyTickInterval;
+        }
+        while (this.energyTimer >= energyTickInterval) {
+            this.energyTimer -= energyTickInterval;
             this.energy = Math.min(100, this.energy + regenAmount);
         }
 
@@ -1073,7 +1077,8 @@ export class Player {
             this.vy = 0;
         } else {
             const vyDecreaseFactor = 0.01;
-            this.vy = Math.max(-3, this.vy - vyDecreaseFactor * this.y / this.buoyancy);
+            const dt = getNormalizedDt(this.game);
+            this.vy = Math.max(-3, this.vy - vyDecreaseFactor * this.y / this.buoyancy * dt);
         }
 
         const remainingTime = this.getUnderwaterRemainingTime();
@@ -1114,8 +1119,9 @@ export class Player {
 
     emitStatusParticles(deltaTime) {
         this.statusFxTimer += deltaTime;
-        if (this.statusFxTimer < this.statusFxInterval) return;
-        this.statusFxTimer = 0;
+        const tickInterval = originalAccumFrameInterval(this.statusFxInterval);
+        if (this.statusFxTimer < tickInterval) return;
+        this.statusFxTimer -= tickInterval;
 
         const lineLeft = this.x + this.width * 0.20;
         const lineRight = this.x + this.width * 0.80;
@@ -1155,12 +1161,11 @@ export class Player {
     // movement logic
     spriteAnimation(deltaTime) {
         if (this.currentState.deathAnimation) return;
-        if (this.frameTimer > this.frameInterval) {
-            this.frameTimer = 0;
+        this.frameTimer += deltaTime;
+        while (this.frameTimer > this.frameInterval) {
+            this.frameTimer -= this.frameInterval;
             if (this.frameX < this.maxFrame) this.frameX++;
             else this.frameX = 0;
-        } else {
-            this.frameTimer += deltaTime;
         }
     }
 
@@ -1238,7 +1243,7 @@ export class Player {
             }
         }
 
-        const dt = Math.max(1, deltaTime || 16);
+        const dt = Math.max(1, deltaTime || BASE_FRAME_MS);
 
         if (this.prevAxis !== 0 && axis === 0) {
             if (this.vx < 0) {
@@ -1292,7 +1297,7 @@ export class Player {
         if (this.vx > speedCap) this.vx = speedCap;
         if (this.vx < -speedCap) this.vx = -speedCap;
 
-        this.x += this.vx;
+        this.x += this.vx * normalizeDelta(deltaTime);
 
         if (this.x < 0) {
             this.x = 0;
@@ -1348,7 +1353,7 @@ export class Player {
 
         if (this.isUnderwater) {
             if (this.game.input.isRollAttack(input) && this._jump(input) && this.currentState === this.states[PlayerState.ROLLING]) {
-                this.buoyancy -= 1;
+                this.buoyancy -= dt;
                 this.y -= 4 * dt;
             }
             if (this.buoyancy < 1) {
@@ -1367,7 +1372,7 @@ export class Player {
     firedogMeetsElyvorg(input) {
         const left = this._moveLeft(input);
         const right = this._moveRight(input);
-        const dt = normalizeDelta(this.game.deltaTime ?? BASE_FRAME_MS);
+        const dt = getNormalizedDt(this.game);
 
         if (this.game.isBossVisible && this.currentState === this.states[PlayerState.ROLLING]) {
             if (this.facingRight) {
@@ -1415,7 +1420,7 @@ export class Player {
         }
 
         if (this.currentState.deathAnimation && (this.isUnderwater || this.isSpace) && !this.onGround()) {
-            const dt = normalizeDelta(this.game.deltaTime ?? BASE_FRAME_MS);
+            const dt = getNormalizedDt(this.game);
             this.y += 2 * dt;
         }
     }

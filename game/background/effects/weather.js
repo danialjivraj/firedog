@@ -1,4 +1,4 @@
-﻿import { normalizeDelta } from '../../config/constants.js';
+﻿import { normalizeDelta, originalAccumFrameInterval } from '../../config/constants.js';
 
 export class RaindropAnimation {
     constructor(game, maxRaindrops, depth = 'mid') {
@@ -127,7 +127,7 @@ export class RaindropSplashAnimation {
         this.currentFrame = 0;
         this.frameTimer = 0;
         this.fps = Math.random() * 20 + 10;
-        this.frameInterval = 1000 / this.fps;
+        this.frameInterval = originalAccumFrameInterval(1000 / this.fps);
         this.markedForDeletion = false;
         this.groundSpeed = 0;
         this.bgSpeed = 1;
@@ -140,9 +140,9 @@ export class RaindropSplashAnimation {
         if (this.currentFrame < this.maxFrames) {
 
             this.frameTimer += deltaTime;
-            if (this.frameTimer > this.frameInterval) {
+            while (this.frameTimer > this.frameInterval && this.currentFrame < this.maxFrames) {
+                this.frameTimer -= this.frameInterval;
                 this.currentFrame++;
-                this.frameTimer = 0;
             }
         } else {
             this.markedForDeletion = true;

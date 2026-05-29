@@ -1,5 +1,5 @@
 ﻿import { Barrier, Projectile, GroundEnemy, FallingEnemy, ImmobileGroundEnemy } from "../../enemies.js";
-import { normalizeDelta } from "../../../../config/constants.js";
+import { normalizeDelta, originalAccumFrameInterval } from "../../../../config/constants.js";
 import { MeteorExplosionCollision, PoisonDropGroundCollision } from "../../../../animations/collisionAnimation/spriteCollisions.js";
 
 export class PurpleBarrier extends Barrier {
@@ -307,7 +307,8 @@ export class InkBomb extends Projectile {
 
 export class PurpleFireball extends Projectile {
     constructor(game, x, y, speedX, speedY) {
-        super(game, x, y, 40, 40, 0, "purpleFireball", speedX, speedY);
+        super(game, x, y, 40, 40, 0, "purpleFireball", speedX, 0);
+        this.speedY = speedY;
         this.initialSize = 10;
         this.size = this.initialSize;
         this.maxSize = 40;
@@ -352,7 +353,7 @@ export class PurpleFireball extends Projectile {
 
 export class Arrow extends Projectile {
     constructor(game, x, y, speedX, speedY, direction, imageId, shadowColor = null) {
-        super(game, x, y, 155.625, 75, 7, imageId, speedX, speedY);
+        super(game, x, y, 155.625, 75, 7, imageId, speedX, 15);
 
         this.initialSize = 10;
         this.size = this.initialSize;
@@ -644,6 +645,7 @@ export class PurpleThunder extends ImmobileGroundEnemy {
         this.game = game;
         this.lives = 50;
         this.setFps(18);
+        this.frameInterval = originalAccumFrameInterval(1000 / 18);
 
         this.shouldInvert = Math.random() < 0.5;
 
@@ -695,8 +697,8 @@ export class PurpleThunder extends ImmobileGroundEnemy {
 
         if (this.phase === "strike") {
             this.frameTimer += deltaTime;
-            if (this.frameTimer >= this.frameInterval) {
-                this.frameTimer = 0;
+            while (this.frameTimer >= this.frameInterval && this.phase === "strike") {
+                this.frameTimer -= this.frameInterval;
                 if (this.frameX < this.maxFrame) {
                     this.frameX++;
                 } else {

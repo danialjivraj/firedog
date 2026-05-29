@@ -19,6 +19,7 @@ import { drawCoinIcon } from '../../interface/coinIcon.js';
 import { BaseMenu } from '../baseMenu.js';
 import { buildWardrobeUI } from './wardrobeConfig.js';
 import { wardrobeModalMethods } from './wardrobeModal.js';
+import { originalAccumFrameInterval, normalizeDelta } from '../../config/constants.js';
 
 const GIFT_SKIN_FLAGS = Object.freeze({
     iceBreakerSkin: 'glacikalDefeated',
@@ -176,7 +177,7 @@ export class Wardrobe extends BaseMenu {
         this.frameX = 0;
         this.maxFrame = 6;
         this.fps = 20;
-        this.frameInterval = 1000 / this.fps;
+        this.frameInterval = originalAccumFrameInterval(1000 / this.fps);
         this.frameTimer = 0;
 
         this.width = FIREDOG_FRAME.width;
@@ -1700,8 +1701,8 @@ export class Wardrobe extends BaseMenu {
     // update
     _advancePreview(deltaTime) {
         this.frameTimer += deltaTime;
-        if (this.frameTimer >= this.frameInterval) {
-            this.frameTimer = 0;
+        while (this.frameTimer >= this.frameInterval) {
+            this.frameTimer -= this.frameInterval;
             this.frameX = (this.frameX < this.maxFrame) ? (this.frameX + 1) : 0;
         }
     }
@@ -1717,7 +1718,9 @@ export class Wardrobe extends BaseMenu {
             this.targetScrollYByTab[tabIndex] = Math.max(0, Math.min(this.targetScrollYByTab[tabIndex] || 0, layout.maxScroll));
 
             const cur = this.scrollYByTab[tabIndex] || 0;
-            const next = cur + ((this.targetScrollYByTab[tabIndex] || 0) - cur) * this.scrollEase;
+            const dt = normalizeDelta(deltaTime);
+            const k = 1 - Math.pow(1 - this.scrollEase, dt);
+            const next = cur + ((this.targetScrollYByTab[tabIndex] || 0) - cur) * k;
             this.scrollYByTab[tabIndex] = (layout.maxScroll < 12) ? 0 : Math.max(0, Math.min(next, layout.maxScroll));
 
             for (const confetti of this.purchaseConfetti) confetti.update(deltaTime);

@@ -2,7 +2,22 @@
 // normalises deltaTime so that gameplay is frame-rate independent:
 // const dt = normalizeDelta(deltaTime);
 export const BASE_FRAME_MS = 13.333;
-export const normalizeDelta = (deltaTime) => deltaTime / BASE_FRAME_MS;
+export const normalizeDelta = (deltaTime) => (deltaTime ?? BASE_FRAME_MS) / BASE_FRAME_MS;
+
+export const getDt = (game) => game?.deltaTime ?? BASE_FRAME_MS;
+export const getNormalizedDt = (game) => normalizeDelta(game?.deltaTime);
+
+export const originalFrameInterval = (originalIntervalMs) => {
+    if (!Number.isFinite(originalIntervalMs) || originalIntervalMs <= 0) return Infinity;
+    const ticksPerAdvance = Math.floor(originalIntervalMs / BASE_FRAME_MS) + 2;
+    return ticksPerAdvance * BASE_FRAME_MS - 0.001;
+};
+
+export const originalAccumFrameInterval = (originalIntervalMs) => {
+    if (!Number.isFinite(originalIntervalMs) || originalIntervalMs <= 0) return Infinity;
+    const ticksPerAdvance = Math.floor(originalIntervalMs / BASE_FRAME_MS) + 1;
+    return ticksPerAdvance * BASE_FRAME_MS - 0.001;
+};
 
 // ─── Canvas ───────────────────────────────────────────────────────────────────
 export const CANVAS_WIDTH  = 1920;

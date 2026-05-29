@@ -90,7 +90,7 @@ describe('PowerUp & PowerDown subclasses', () => {
             item.frameX = item.maxFrame;
             item.update(0);
             expect(item.frameX).toBe(0);
-            expect(item.frameTimer).toBe(0);
+            expect(item.frameTimer).toBeCloseTo(1);
 
             item.frameTimer = item.frameInterval + 1;
             item.frameX = 0;

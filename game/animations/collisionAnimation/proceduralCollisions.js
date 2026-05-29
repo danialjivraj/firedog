@@ -615,7 +615,7 @@ export class NuclearDisintegrationCollision {
 
             shard.offsetX = dx;
             shard.offsetY = dy;
-            shard.rotation += shard.spin;
+            shard.rotation += shard.spin * dtScale;
 
             const localAlpha = Math.max(0, 1 - t * this.fadeMultiplier);
             shard.alpha = localAlpha * globalFadeAlpha;

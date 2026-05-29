@@ -1,4 +1,4 @@
-﻿import { normalizeDelta } from "../../../config/constants.js";
+﻿import { normalizeDelta, originalAccumFrameInterval } from "../../../config/constants.js";
 import { withCtx, drawSprite, moveAlongAngle } from "../core/enemyUtils.js";
 import { ImmobileGroundEnemy, MovingGroundEnemy, FlyingEnemy, FallingEnemy, UnderwaterEnemy, UndergroundEnemy } from "../core/enemyTypes.js";
 import { PurpleLaser, YellowOrb, RedOrb, CyanOrb, GreenOrb, BlueOrb } from "../core/projectiles.js";
@@ -217,7 +217,7 @@ export class Nebulure extends ImmobileGroundEnemy {
         this.setFps(10);
         this.suckParticles = [];
         this.particleTimer = 0;
-        this.particleInterval = 80;
+        this.particleInterval = originalAccumFrameInterval(80);
         this.loopingSoundId = 'nebulureSuctionSound';
     }
     spawnSuckParticle() {
@@ -237,17 +237,18 @@ export class Nebulure extends ImmobileGroundEnemy {
         super.update(deltaTime);
         this.playIfOnScreen('nebulureSuctionSound');
 
+        const dt = normalizeDelta(deltaTime);
         const mx = this.x + this.width * 0.5;
         const my = this.y + this.height * 0.3 + 10;
         const scroll = this.game.cabin?.isFullyVisible ? 0 : this.game.speed;
         for (const p of this.suckParticles) {
-            p.x -= scroll;
+            p.x -= scroll * dt;
             const dx = mx - p.x;
             const dy = my - p.y;
             const d = Math.hypot(dx, dy);
             if (d <= 8) { p.done = true; continue; }
-            p.x += (dx / d) * p.speed;
-            p.y += (dy / d) * p.speed;
+            p.x += (dx / d) * p.speed * dt;
+            p.y += (dy / d) * p.speed * dt;
             p.lifeTimer += deltaTime;
             const fadeInT = Math.min(1, p.lifeTimer / p.fadeIn);
             const fadeOutT = 1 - p.lifeTimer / p.maxLife;
@@ -258,8 +259,8 @@ export class Nebulure extends ImmobileGroundEnemy {
         if (!this.isOnScreen()) return;
 
         this.particleTimer += deltaTime;
-        if (this.particleTimer >= this.particleInterval) {
-            this.particleTimer = 0;
+        while (this.particleTimer >= this.particleInterval) {
+            this.particleTimer -= this.particleInterval;
             this.spawnSuckParticle();
         }
 
@@ -268,7 +269,6 @@ export class Nebulure extends ImmobileGroundEnemy {
         const dx = (this.x + this.width / 2) - this.game.player.x;
         if (dx <= 0) return;
 
-        const dt = normalizeDelta(deltaTime);
         this.game.player.x += dx * 0.008 * dt;
     }
     draw(context) {
@@ -380,7 +380,7 @@ export class Frogula extends ImmobileGroundEnemy {
         this.playsOnce = true;
         this.jumpFrameX = 0;
         this.jumpFrameTimer = 0;
-        this.jumpFrameInterval = 1000 / 15;
+        this.jumpFrameInterval = originalAccumFrameInterval(1000 / 15);
         this.jumpFrameW = 180;
         this.jumpFrameH = 105;
         this.jumpVX = 0;
@@ -415,9 +415,9 @@ export class Frogula extends ImmobileGroundEnemy {
             }
 
             this.jumpFrameTimer += deltaTime;
-            if (this.jumpFrameTimer >= this.jumpFrameInterval && this.jumpFrameX < 3) {
+            while (this.jumpFrameTimer >= this.jumpFrameInterval && this.jumpFrameX < 3) {
+                this.jumpFrameTimer -= this.jumpFrameInterval;
                 this.jumpFrameX++;
-                this.jumpFrameTimer = 0;
             }
 
             const dt = normalizeDelta(deltaTime);

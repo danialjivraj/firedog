@@ -115,12 +115,11 @@ export class BaseMenu {
             this.game.audioHandler.menu.stopSound('criminalitySoundtrack');
         }
 
-        if (this.frameTimer > this.frameInterval) {
-            this.frameTimer = 0;
+        this.frameTimer += deltaTime;
+        while (this.frameTimer > this.frameInterval) {
+            this.frameTimer -= this.frameInterval;
             if (this.frameX < this.maxFrame) this.frameX++;
             else this.frameX = 0;
-        } else {
-            this.frameTimer += deltaTime;
         }
     }
 

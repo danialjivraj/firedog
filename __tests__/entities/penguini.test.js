@@ -1,4 +1,5 @@
 import { Penguini } from '../../game/entities/penguini';
+import { originalFrameInterval } from '../../game/config/constants';
 
 describe('Penguini', () => {
     let game, penguini, ctx, fakeSpritesheet, fakePressImg;
@@ -43,7 +44,7 @@ describe('Penguini', () => {
         test('initializes all fields correctly', () => {
             expect(penguini.frameX).toBe(0);
             expect(penguini.fps).toBe(40);
-            expect(penguini.frameInterval).toBeCloseTo(1000 / 40);
+            expect(penguini.frameInterval).toBeCloseTo(originalFrameInterval(1000 / 40));
             expect(penguini.game).toBe(game);
             expect(penguini.image).toBe(fakeSpritesheet);
             expect(penguini.x).toBe(game.width);

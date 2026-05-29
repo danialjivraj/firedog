@@ -801,6 +801,24 @@ describe('Background', () => {
             bg.update(13.333);
             expect(bg.totalDistanceTraveled).toBeCloseTo(0.2);
         });
+
+        test('totalDistanceTraveled accumulates at the same wall-clock rate regardless of refresh rate', () => {
+            const game75 = makeGame({ speed: 6 });
+            const bg75 = new Background(game75, { imageId: 'A', bgSpeed: 1 });
+            for (let i = 0; i < 75; i++) bg75.update(1000 / 75);
+
+            const game180 = makeGame({ speed: 6 });
+            const bg180 = new Background(game180, { imageId: 'A', bgSpeed: 1 });
+            for (let i = 0; i < 180; i++) bg180.update(1000 / 180);
+
+            const game240 = makeGame({ speed: 6 });
+            const bg240 = new Background(game240, { imageId: 'A', bgSpeed: 1 });
+            for (let i = 0; i < 240; i++) bg240.update(1000 / 240);
+
+            expect(bg75.totalDistanceTraveled).toBeGreaterThan(0);
+            expect(bg180.totalDistanceTraveled).toBeCloseTo(bg75.totalDistanceTraveled, 1);
+            expect(bg240.totalDistanceTraveled).toBeCloseTo(bg75.totalDistanceTraveled, 1);
+        });
     });
 
     describe('draw', () => {

@@ -1,4 +1,5 @@
 import { Enemy } from "../../enemies.js";
+import { normalizeDelta } from "../../../../config/constants.js";
 
 export class Kamehameha extends Enemy {
     constructor(
@@ -147,6 +148,7 @@ export class Kamehameha extends Enemy {
         this._arcCarry = 0;
         this._rings = [];
         this._ringCarry = 0;
+        this._impactRingCarry = 0;
         // phases
         this._phase = "charge";
         this._phaseStart = 0;
@@ -401,6 +403,7 @@ export class Kamehameha extends Enemy {
     _updateSparks(deltaTime) {
         if (!this._sparks.length) return;
         const dt = deltaTime / 1000;
+        const dtScale = normalizeDelta(deltaTime);
 
         for (let i = 0; i < this._sparks.length; i++) {
             const p = this._sparks[i];
@@ -410,8 +413,8 @@ export class Kamehameha extends Enemy {
             p.alpha = Math.max(0, 1 - t * 1.25);
 
             const drag = p.kind === "arc" ? 0.84 : 0.9;
-            p.vx *= drag;
-            p.vy *= drag;
+            p.vx *= Math.pow(drag, dtScale);
+            p.vy *= Math.pow(drag, dtScale);
 
             const grav = p.kind === "arc" ? -18 : -22;
             p.vy -= grav * dt;
@@ -426,6 +429,7 @@ export class Kamehameha extends Enemy {
     _updateRings(deltaTime) {
         if (!this._rings.length) return;
         const dt = deltaTime / 1000;
+        const dtScale = normalizeDelta(deltaTime);
 
         for (let i = 0; i < this._rings.length; i++) {
             const r = this._rings[i];
@@ -435,7 +439,7 @@ export class Kamehameha extends Enemy {
             r.alpha = Math.max(0, 1 - t);
 
             r.r += r.vr * dt;
-            r.vr *= 0.92;
+            r.vr *= Math.pow(0.92, dtScale);
         }
 
         this._rings = this._rings.filter((r) => r.life < r.maxLife && r.alpha > 0.01);
@@ -745,7 +749,11 @@ export class Kamehameha extends Enemy {
                         this._spawnSpark(ex2 + (Math.random() - 0.5) * jitter, ey2 + (Math.random() - 0.5) * jitter, true);
                     }
 
-                    if (Math.random() < 0.07 / variants.length) this._spawnRing(ex2, ey2, "impact");
+                    this._impactRingCarry += (5.25 / variants.length) * dtSec;
+                    while (this._impactRingCarry >= 1) {
+                        this._impactRingCarry -= 1;
+                        this._spawnRing(ex2, ey2, "impact");
+                    }
                 }
 
                 this._updateSparks(deltaTime);
@@ -836,7 +844,11 @@ export class Kamehameha extends Enemy {
                         this._spawnSpark(ex2 + (Math.random() - 0.5) * jitter, ey2 + (Math.random() - 0.5) * jitter, true);
                     }
 
-                    if (Math.random() < 0.07 / variants.length) this._spawnRing(ex2, ey2, "impact");
+                    this._impactRingCarry += (5.25 / variants.length) * dtSec;
+                    while (this._impactRingCarry >= 1) {
+                        this._impactRingCarry -= 1;
+                        this._spawnRing(ex2, ey2, "impact");
+                    }
                 }
 
                 this._updateSparks(deltaTime);
@@ -889,7 +901,11 @@ export class Kamehameha extends Enemy {
                     this._spawnSpark(ex2 + (Math.random() - 0.5) * jitter, ey2 + (Math.random() - 0.5) * jitter, true);
                 }
 
-                if (Math.random() < 0.07 / variants.length) this._spawnRing(ex2, ey2, "impact");
+                this._impactRingCarry += (5.25 / variants.length) * dtSec;
+                while (this._impactRingCarry >= 1) {
+                    this._impactRingCarry -= 1;
+                    this._spawnRing(ex2, ey2, "impact");
+                }
             }
 
             this._updateSparks(deltaTime);
@@ -945,7 +961,11 @@ export class Kamehameha extends Enemy {
             this._spawnSpark(ex + (Math.random() - 0.5) * jitter, ey + (Math.random() - 0.5) * jitter, true);
         }
 
-        if (Math.random() < 0.07) this._spawnRing(ex, ey, "impact");
+        this._impactRingCarry += 5.25 * dt2;
+        while (this._impactRingCarry >= 1) {
+            this._impactRingCarry -= 1;
+            this._spawnRing(ex, ey, "impact");
+        }
 
         this._updateSparks(deltaTime);
         this._updateRings(deltaTime);

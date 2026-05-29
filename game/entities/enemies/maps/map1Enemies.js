@@ -1,4 +1,4 @@
-﻿import { normalizeDelta } from "../../../config/constants.js";
+﻿import { normalizeDelta, originalFrameInterval } from "../../../config/constants.js";
 import { withCtx, drawSprite, setShadow } from "../core/enemyUtils.js";
 import { MovingGroundEnemy, FlyingEnemy, VerticalEnemy } from "../core/enemyTypes.js";
 import { WindAttack } from "../core/projectiles.js";
@@ -13,7 +13,7 @@ export class Goblin extends MovingGroundEnemy {
         this.walkFps = 60;
         this.attackFps = 60;
         this.jumpFps = 60;
-        this.frameInterval = 1000 / this.walkFps;
+        this.frameInterval = originalFrameInterval(1000 / this.walkFps);
 
         this.state = 'walk';
 
@@ -263,11 +263,10 @@ export class Skulnap extends MovingGroundEnemy {
             this.y = this.game.height - this.height - this.game.groundMargin + 5;
             this.advanceFrame(deltaTime);
         } else {
-            if (this.sleepFrameTimer > this.frameInterval) {
-                this.sleepFrameTimer = 0;
+            this.sleepFrameTimer += deltaTime;
+            while (this.sleepFrameTimer > this.frameInterval) {
+                this.sleepFrameTimer -= this.frameInterval;
                 this.sleepFrameX = this.sleepFrameX < 10 ? this.sleepFrameX + 1 : 0;
-            } else {
-                this.sleepFrameTimer += deltaTime;
             }
         }
     }
@@ -314,13 +313,14 @@ export class GlidoSpike extends FlyingEnemy {
     constructor(game) {
         super(game, 191.68, 130, 24, 'glidoSpike');
         this.walkFps = 120;
-        this.frameInterval = 1000 / this.walkFps;
+        this.frameInterval = originalFrameInterval(1000 / this.walkFps);
         this.state = 'walk';
 
         this.attackFrameX = 0;
         this.attackFrameTimer = 0;
         this.attackMaxFrame = 24;
         this.attackFps = 120;
+        this.attackFrameInterval = originalFrameInterval(1000 / this.attackFps);
 
         this.canAttack = true;
         this.attackCooldown = 1000;
@@ -348,12 +348,10 @@ export class GlidoSpike extends FlyingEnemy {
                 }
             }
         } else if (this.state === 'attack') {
-            const attackInterval = 1000 / this.attackFps;
-            if (this.attackFrameTimer > attackInterval) {
-                this.attackFrameTimer = 0;
-                if (this.attackFrameX < this.attackMaxFrame) this.attackFrameX++;
-            } else {
-                this.attackFrameTimer += deltaTime;
+            this.attackFrameTimer += deltaTime;
+            while (this.attackFrameTimer > this.attackFrameInterval && this.attackFrameX < this.attackMaxFrame) {
+                this.attackFrameTimer -= this.attackFrameInterval;
+                this.attackFrameX++;
             }
 
             if (this.attackFrameX === 12 && this.canAttack === true) {

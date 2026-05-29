@@ -119,11 +119,10 @@ export class KarateCroco extends MovingGroundEnemy {
             this.playSoundOnce('ahhhSound', false, true);
             this.x -= 14 * dt;
             if (this.flykickFrameX < 3) {
-                if (this.flykickFrameTimer > this.frameInterval / 2) {
-                    this.flykickFrameTimer = 0;
+                this.flykickFrameTimer += deltaTime;
+                while (this.flykickFrameTimer > this.frameInterval / 2 && this.flykickFrameX < 3) {
+                    this.flykickFrameTimer -= this.frameInterval / 2;
                     this.flykickFrameX++;
-                } else {
-                    this.flykickFrameTimer += deltaTime;
                 }
             }
         }
@@ -249,12 +248,11 @@ export class Jerry extends FlyingEnemy {
 
         if (this.frameX === 1) this.maxFrameReached = false;
 
-        if (this.frameTimer > this.frameInterval) {
-            this.frameTimer = 0;
+        this.frameTimer += deltaTime;
+        while (this.frameTimer > this.frameInterval) {
+            this.frameTimer -= this.frameInterval;
             if (this.frameX < this.maxFrame) this.frameX++;
             else this.frameX = 0;
-        } else {
-            this.frameTimer += deltaTime;
         }
     }
 }

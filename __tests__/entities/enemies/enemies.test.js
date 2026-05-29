@@ -65,6 +65,7 @@ import {
   Veynoculus,
   VolcanoWasp,
 } from '../../../game/entities/enemies/enemies';
+import { originalFrameInterval } from '../../../game/config/constants';
 
 beforeAll(() => {
   global.document = {
@@ -186,7 +187,7 @@ describe('Enemy (base class)', () => {
   it('setFps() updates fps and frameInterval', () => {
     e.setFps(40);
     expect(e.fps).toBe(40);
-    expect(e.frameInterval).toBe(1000 / 40);
+    expect(e.frameInterval).toBe(originalFrameInterval(1000 / 40));
   });
 
   it('advanceFrame() increments frameX and wraps at maxFrame when frameTimer > frameInterval', () => {
@@ -1243,7 +1244,7 @@ describe('Map 4 Enemies', () => {
     j.frameX = j.maxFrame;
     j.maxFrameReached = false;
 
-    j.update(j.frameInterval + 1);
+    j.update(1);
 
     expect(game.enemies.some((e) => e instanceof Skulnap)).toBe(true);
   });

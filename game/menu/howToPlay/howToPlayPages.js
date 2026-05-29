@@ -871,6 +871,7 @@ export const howToPlayPagesMixin = {
                     drainPerTick: 1.0,
                     alwaysDown: true,
                 },
+                statusDemo: { enabled: true, type: 'poison', durationMs: 2500 },
                 player: {
                     ...basePlayer,
                     isPoisonedActive: true,
@@ -918,7 +919,14 @@ export const howToPlayPagesMixin = {
                 }),
 
                 ...this.createEnemyTypeShowcase({ focusType: 'slow', dimAlpha: 0.1, cx, groundY }),
-            ]),
+            ], {
+                ...baseUI,
+                statusDemo: { enabled: true, type: 'slow', durationMs: 6000 },
+                player: {
+                    ...basePlayer,
+                    isSlowed: true,
+                },
+            }),
 
             this.createPage('Enemy types: Freeze (5)', [
                 ...infoArrowText({
@@ -948,6 +956,7 @@ export const howToPlayPagesMixin = {
                 ...this.createEnemyTypeShowcase({ focusType: 'freeze', dimAlpha: 0.1, cx, groundY }),
             ], {
                 ...baseUI,
+                statusDemo: { enabled: true, type: 'freeze', durationMs: 2500 },
                 player: { ...basePlayer, isFrozen: true },
             }),
         ];

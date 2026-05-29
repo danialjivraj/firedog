@@ -1,4 +1,5 @@
 import { BaseMenu } from './baseMenu.js';
+import { normalizeDelta } from '../config/constants.js';
 
 export class ScrollableMenu extends BaseMenu {
     constructor(game, menuOptions, title) {
@@ -9,7 +10,6 @@ export class ScrollableMenu extends BaseMenu {
         this.scrollMax = 0;
         this.scrollEase = 0.18;
 
-        // scrollbar appearance — subclasses may override
         this.barWidth = 8;
         this.barTrackAlpha = 0.2;
 
@@ -24,9 +24,11 @@ export class ScrollableMenu extends BaseMenu {
         this.draggingBar = false;
     }
 
-    tickScroll() {
+    tickScroll(deltaTime) {
         this.targetScrollY = Math.max(0, Math.min(this.targetScrollY, this.scrollMax));
-        this.scrollY += (this.targetScrollY - this.scrollY) * this.scrollEase;
+        const dt = normalizeDelta(deltaTime);
+        const k = 1 - Math.pow(1 - this.scrollEase, dt);
+        this.scrollY += (this.targetScrollY - this.scrollY) * k;
     }
 
     updateScrollFromThumb(mouseY) {

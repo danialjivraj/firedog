@@ -7,6 +7,7 @@ export class Background {
     constructor(game, ...layers) {
         this.game = game;
         this.totalDistanceTraveled = 0;
+        this._distanceTickAccumulator = 0;
         this.soundId = undefined;
         this.soundPlayed = false;
 
@@ -179,9 +180,12 @@ export class Background {
         const tutorialBlocksScroll = this.game.isTutorialActive && activeMap === 'Map1';
 
         if (lastGroundLayer && !tutorialBlocksScroll) {
-            const dt = normalizeDelta(deltaTime);
-            this.totalDistanceTraveled += (this.game.speed / 1000) * dt;
-            this.totalDistanceTraveled = Math.round(this.totalDistanceTraveled * 100) / 100;
+            this._distanceTickAccumulator += normalizeDelta(deltaTime);
+            while (this._distanceTickAccumulator >= 1) {
+                this.totalDistanceTraveled += this.game.speed / 1000;
+                this.totalDistanceTraveled = Math.round(this.totalDistanceTraveled * 100) / 100;
+                this._distanceTickAccumulator -= 1;
+            }
         }
 
         if (!tutorialBlocksScroll && lastGroundLayer) {

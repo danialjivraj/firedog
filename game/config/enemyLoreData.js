@@ -903,7 +903,7 @@ export function buildPageDefs(pageWidth, pageHeight) {
                 "FROBATS ARE BELIEVED TO HAVE ONCE BEEN ORDINARY CAVE BATS BEFORE THE TEMPERATURES IN ICEBOUND CAVE DROPPED TO LEVELS THAT SHOULD HAVE KILLED THEM.\n"
                 + "INSTEAD, THEY ADAPTED. THEIR WINGS HARDENED WITH FROST, THEIR BODIES GREW RESISTANT TO THE COLD, AND THEY KEPT FLYING.\n"
                 + "SOME SAY THE FROST ON THEIR WINGS HAS NOT MELTED IN THOUSANDS OF YEARS.",
-            images: [img('frobat', 156.75, 130, 0, 'right', 'top')],
+            images: [img('frobat', 156.75, 130, 3, 'right', 'top')],
             mapKey: "bonusMap1",
             category: "bonus",
         },

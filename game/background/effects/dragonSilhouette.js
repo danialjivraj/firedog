@@ -1,4 +1,4 @@
-﻿import { normalizeDelta } from '../../config/constants.js';
+﻿import { normalizeDelta, originalAccumFrameInterval } from '../../config/constants.js';
 import { BackgroundEffect } from './backgroundEffect.js';
 
 export class DragonSilhouette extends BackgroundEffect {
@@ -20,7 +20,7 @@ export class DragonSilhouette extends BackgroundEffect {
         this.frameY = 0;
 
         this.fps = 14;
-        this.frameInterval = 1000 / this.fps;
+        this.frameInterval = originalAccumFrameInterval(1000 / this.fps);
         this.frameTimer = 0;
 
         this.defaultImageId = 'dragonSilhouette';
@@ -182,16 +182,16 @@ export class DragonSilhouette extends BackgroundEffect {
 
     advanceFrame(deltaTime) {
         this.frameTimer += deltaTime;
-        if (this.frameTimer > this.frameInterval) {
-            this.frameTimer = 0;
+        while (this.frameTimer > this.frameInterval) {
+            this.frameTimer -= this.frameInterval;
             this.frameX = this.frameX < this.maxFrame ? this.frameX + 1 : 0;
         }
     }
 
     _advanceDragonFrame(dragon, deltaTime) {
         dragon.frameTimer += deltaTime;
-        if (dragon.frameTimer > this.frameInterval) {
-            dragon.frameTimer = 0;
+        while (dragon.frameTimer > this.frameInterval) {
+            dragon.frameTimer -= this.frameInterval;
             dragon.frameX = dragon.frameX < this.maxFrame ? dragon.frameX + 1 : 0;
         }
     }

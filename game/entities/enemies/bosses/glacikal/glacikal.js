@@ -1,5 +1,5 @@
 ﻿import { EnemyBoss } from "../../enemies.js";
-import { normalizeDelta, BASE_FRAME_MS } from "../../../../config/constants.js";
+import { normalizeDelta, BASE_FRAME_MS, originalAccumFrameInterval } from "../../../../config/constants.js";
 export * from "./glacikalAbilities.js";
 import {
     IceTrail, PointyIcicleShard, UndergroundIcicle, IceSpider,
@@ -66,6 +66,7 @@ export class Glacikal extends EnemyBoss {
         // kneel down
         this.glacikalKneelDownAnimation = new EnemyBoss(game, 126.1666666666667, 180, 5, "glacikalKneelDown");
         this.glacikalKneelDownAnimation.setFps(10);
+        this.glacikalKneelDownAnimation.frameInterval = originalAccumFrameInterval(1000 / 10);
         this.canKneelDownAttack = true;
         this.isKneelDownActive = false;
         this.isKneelDownReversing = false;
@@ -95,6 +96,7 @@ export class Glacikal extends EnemyBoss {
         // extended arm / spinning ice balls
         this.glacikalExtendedArmAnimation = new EnemyBoss(game, 146, 180, 5, "glacikalExtendedArm");
         this.glacikalExtendedArmAnimation.setFps(10);
+        this.glacikalExtendedArmAnimation.frameInterval = originalAccumFrameInterval(1000 / 10);
         this.canSpinningIceBallsAttack = true;
         this.isSpinningIceBallsActive = false;
         this.isSpinningIceBallsReversing = false;
@@ -204,8 +206,8 @@ export class Glacikal extends EnemyBoss {
 
         if (!this.spinningLocked && !this.isSpinningIceBallsReversing) {
             anim.frameTimer += deltaTime;
-            if (anim.frameTimer >= anim.frameInterval) {
-                anim.frameTimer = 0;
+            while (anim.frameTimer >= anim.frameInterval && !this.spinningLocked) {
+                anim.frameTimer -= anim.frameInterval;
                 if (anim.frameX < anim.maxFrame) anim.frameX++;
 
                 if (anim.frameX >= anim.maxFrame) {
@@ -226,8 +228,8 @@ export class Glacikal extends EnemyBoss {
 
         if (this.spinningLocked && !this.isSpinningIceBallsReversing) {
             anim.frameTimer += deltaTime;
-            if (anim.frameTimer >= anim.frameInterval) {
-                anim.frameTimer = 0;
+            while (anim.frameTimer >= anim.frameInterval) {
+                anim.frameTimer -= anim.frameInterval;
                 const max = anim.maxFrame;
                 const min = Math.max(0, max - 1);
                 anim.frameX = anim.frameX === max ? min : max;
@@ -246,8 +248,8 @@ export class Glacikal extends EnemyBoss {
 
         if (this.isSpinningIceBallsReversing) {
             this.spinningReverseTimer += deltaTime;
-            if (this.spinningReverseTimer >= anim.frameInterval) {
-                this.spinningReverseTimer = 0;
+            while (this.spinningReverseTimer >= anim.frameInterval && this.isSpinningIceBallsReversing) {
+                this.spinningReverseTimer -= anim.frameInterval;
                 anim.frameX--;
 
                 if (anim.frameX <= 0) {
@@ -537,8 +539,8 @@ export class Glacikal extends EnemyBoss {
 
         if (!this.kneelDownLocked && !this.isKneelDownReversing) {
             anim.frameTimer += deltaTime;
-            if (anim.frameTimer >= anim.frameInterval) {
-                anim.frameTimer = 0;
+            while (anim.frameTimer >= anim.frameInterval && !this.kneelDownLocked) {
+                anim.frameTimer -= anim.frameInterval;
                 if (anim.frameX < anim.maxFrame) anim.frameX++;
 
                 if (anim.frameX >= anim.maxFrame) {
@@ -630,8 +632,8 @@ export class Glacikal extends EnemyBoss {
 
         if (this.isKneelDownReversing) {
             this.kneelReverseTimer += deltaTime;
-            if (this.kneelReverseTimer >= anim.frameInterval) {
-                this.kneelReverseTimer = 0;
+            while (this.kneelReverseTimer >= anim.frameInterval && this.isKneelDownReversing) {
+                this.kneelReverseTimer -= anim.frameInterval;
                 anim.frameX--;
 
                 if (anim.frameX <= 0) {
@@ -690,7 +692,7 @@ export class Glacikal extends EnemyBoss {
             return;
         }
 
-        this.runStateCounter += deltaTime;
+        this.runStateCounter += BASE_FRAME_MS;
 
         this.shouldInvert = this.game.player.x + this.game.player.width / 2 > this.x + this.width / 2;
 

@@ -1,10 +1,10 @@
-﻿import { normalizeDelta } from '../config/constants.js';
+﻿import { normalizeDelta, originalFrameInterval } from '../config/constants.js';
 
 export class Penguini {
     constructor(game, width, height, image, maxFrame) {
         this.frameX = 0;
         this.fps = 40;
-        this.frameInterval = 1000 / this.fps;
+        this.frameInterval = originalFrameInterval(1000 / this.fps);
         this.frameTimer = 0;
         this.game = game;
         this.width = width;
@@ -17,12 +17,11 @@ export class Penguini {
         this.showEnterToTalkToPenguini = false;
     }
     update(deltaTime) {
-        if (this.frameTimer > this.frameInterval) {
-            this.frameTimer = 0;
+        this.frameTimer += deltaTime;
+        while (this.frameTimer > this.frameInterval) {
+            this.frameTimer -= this.frameInterval;
             if (this.frameX < this.maxFrame) this.frameX++;
             else this.frameX = 0;
-        } else {
-            this.frameTimer += deltaTime;
         }
 
         if (!this.game.cabin.isFullyVisible) {

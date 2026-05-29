@@ -1,4 +1,5 @@
 import { getDefaultKeyBindings } from '../config/keyBindings.js';
+import { BarkBurst } from '../animations/particles.js';
 
 export class InputHandler {
     constructor(game) {
@@ -63,12 +64,16 @@ export class InputHandler {
             if (
                 e.ctrlKey &&
                 lowercaseKey === 'b' &&
+                !e.repeat &&
                 this.game.isPlayerInGame &&
                 this.game.menu.pause.isPaused === false &&
                 this.game.tutorial.tutorialPause === false &&
                 this.game.gameOver === false
             ) {
                 this.game.audioHandler.firedogSFX.playSound('barkSound');
+                if (this.game.player && Array.isArray(this.game.particles)) {
+                    this.game.particles.push(new BarkBurst(this.game, this.game.player.facingRight !== false));
+                }
             }
 
             if (e.key === 'Tab' && this.game.canSelectForestMap) {

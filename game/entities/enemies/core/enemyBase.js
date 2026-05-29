@@ -1,5 +1,5 @@
 ﻿import { fadeInAndOut } from "../../../animations/fading.js";
-import { normalizeDelta } from "../../../config/constants.js";
+import { normalizeDelta, originalFrameInterval } from "../../../config/constants.js";
 import { dist, angleTo, setShadow, drawSprite, withCtx, clamp } from "./enemyUtils.js";
 
 export class Enemy {
@@ -7,7 +7,7 @@ export class Enemy {
         this.frameX = 0;
         this.frameY = 0;
         this.fps = 20;
-        this.frameInterval = 1000 / this.fps;
+        this.frameInterval = originalFrameInterval(1000 / this.fps);
         this.frameTimer = 0;
         this.markedForDeletion = false;
         this.coinValue = 1;
@@ -35,15 +35,17 @@ export class Enemy {
 
     setFps(fps) {
         this.fps = fps;
-        this.frameInterval = 1000 / this.fps;
+        this.frameInterval = (Number.isFinite(fps) && fps > 0)
+            ? originalFrameInterval(1000 / fps)
+            : Infinity;
     }
 
     advanceFrame(deltaTime) {
-        if (this.frameTimer > this.frameInterval) {
-            this.frameTimer = 0;
+        if (!(this.frameInterval > 0)) return;
+        this.frameTimer += deltaTime;
+        while (this.frameTimer > this.frameInterval) {
+            this.frameTimer -= this.frameInterval;
             this.frameX = this.frameX < this.maxFrame ? this.frameX + 1 : 0;
-        } else {
-            this.frameTimer += deltaTime;
         }
     }
 

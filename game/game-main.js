@@ -32,6 +32,7 @@ import {
 } from "./audioHandler.js";
 // animations
 import { fadeIn } from "./animations/fading.js";
+import { resetShake } from "./animations/shake.js";
 import { screenColourFadeIn, screenColourFadeOut } from "./animations/screenColourFade.js";
 import { EnemyLore } from "./menu/enemyLore.js";
 import {
@@ -54,6 +55,7 @@ import {
     CABIN_COLLISION_OFFSET, PENGUIN_OFFSET_FROM_CABIN,
     CUTSCENE_INPUT_DEBOUNCE_MS, LOOPING_SOUND_FADE_OUT_MS,
     MAX_DISTANCE, WINNING_COINS,
+    originalFrameInterval,
 } from "./config/constants.js";
 
 export { GameState };
@@ -435,6 +437,7 @@ export class Game {
         this.shakeActive = false;
         this.shakeTimer = 0;
         this.shakeDuration = 0;
+        resetShake();
     }
 
     showAnimatedToast(text, delayMs = 200) {
@@ -596,14 +599,17 @@ export class Game {
     _updateSpawnTimers(deltaTime, tutorialMapActive) {
         if (this.cabin && this.cabin.isFullyVisible) return;
 
-        if (this.enemyTimer > this.enemyInterval) {
+        const enemyThreshold = originalFrameInterval(this.enemyInterval);
+        const nonEnemyThreshold = originalFrameInterval(this.nonEnemyInterval);
+
+        this.enemyTimer += deltaTime;
+        if (this.enemyTimer > enemyThreshold) {
             if (!tutorialMapActive) this.addEnemy();
-            this.enemyTimer = 0;
-        } else {
-            this.enemyTimer += deltaTime;
+            this.enemyTimer -= enemyThreshold;
         }
 
-        if (this.nonEnemyTimer > this.nonEnemyInterval) {
+        this.nonEnemyTimer += deltaTime;
+        if (this.nonEnemyTimer > nonEnemyThreshold) {
             if (!tutorialMapActive) {
                 this.addPowerUp();
                 this.addPowerDown();
@@ -619,9 +625,7 @@ export class Game {
                     this.talkToPenguin = true;
                 }
             }
-            this.nonEnemyTimer = 0;
-        } else {
-            this.nonEnemyTimer += deltaTime;
+            this.nonEnemyTimer -= nonEnemyThreshold;
         }
     }
 

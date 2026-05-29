@@ -3,6 +3,7 @@ import { TipRenderer } from './tipRenderer.js';
 import { AbilityUI } from './abilityUI.js';
 import { StatusEffectsUI } from './statusEffectsUI.js';
 import { getFilteredOutline, OUTLINE_OFFSETS } from '../utils/spriteCache.js';
+import { BASE_FRAME_MS } from '../config/constants.js';
 
 export class UI {
     constructor(game) {
@@ -959,10 +960,15 @@ export class UI {
         let offsetY = 0;
 
         if (!paused && shakeAmount > 0) {
-            const sx = Math.random() > 0.5 ? 1 : -1;
-            const sy = Math.random() > 0.5 ? 1 : -1;
-            offsetX = shakeAmount * sx * Math.sin(Date.now() * shakeFrequency);
-            offsetY = shakeAmount * sy * Math.cos(Date.now() * shakeFrequency);
+            if (!this._energyBarShake) this._energyBarShake = { sx: 1, sy: 1, lastSample: 0 };
+            const now2 = Date.now();
+            if (now2 - this._energyBarShake.lastSample >= BASE_FRAME_MS) {
+                this._energyBarShake.sx = Math.random() > 0.5 ? 1 : -1;
+                this._energyBarShake.sy = Math.random() > 0.5 ? 1 : -1;
+                this._energyBarShake.lastSample = now2;
+            }
+            offsetX = shakeAmount * this._energyBarShake.sx * Math.sin(now2 * shakeFrequency);
+            offsetY = shakeAmount * this._energyBarShake.sy * Math.cos(now2 * shakeFrequency);
         }
 
         const { x, y, w, h } = this.energyBar;
@@ -1167,10 +1173,15 @@ export class UI {
             let offsetY = 0;
 
             if (!this.game.menu.pause.isPaused) {
-                const shakeDirectionX = Math.random() > 0.5 ? 1 : -1;
-                const shakeDirectionY = Math.random() > 0.5 ? 1 : -1;
-                offsetX = shakeAmount * shakeDirectionX * Math.sin(Date.now() * shakeFrequency);
-                offsetY = shakeAmount * shakeDirectionY * Math.cos(Date.now() * shakeFrequency);
+                if (!this._blueFireTextShake) this._blueFireTextShake = { sx: 1, sy: 1, lastSample: 0 };
+                const now2 = Date.now();
+                if (now2 - this._blueFireTextShake.lastSample >= BASE_FRAME_MS) {
+                    this._blueFireTextShake.sx = Math.random() > 0.5 ? 1 : -1;
+                    this._blueFireTextShake.sy = Math.random() > 0.5 ? 1 : -1;
+                    this._blueFireTextShake.lastSample = now2;
+                }
+                offsetX = shakeAmount * this._blueFireTextShake.sx * Math.sin(now2 * shakeFrequency);
+                offsetY = shakeAmount * this._blueFireTextShake.sy * Math.cos(now2 * shakeFrequency);
             }
 
             const blueFireTime = (this.game.player.blueFireTimer / 1000).toFixed(1);

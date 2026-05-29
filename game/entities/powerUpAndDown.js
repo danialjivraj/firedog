@@ -1,4 +1,4 @@
-﻿import { normalizeDelta } from '../config/constants.js';
+﻿import { normalizeDelta, originalFrameInterval } from '../config/constants.js';
 import { getBlackHoleSwirlSprite } from '../utils/spriteCache.js';
 
 class Power {
@@ -7,7 +7,7 @@ class Power {
         this.frameX = 0;
         this.frameY = 0;
         this.fps = 4;
-        this.frameInterval = 1000 / this.fps;
+        this.frameInterval = originalFrameInterval(1000 / this.fps);
         this.frameTimer = 0;
         this.markedForDeletion = false;
     }
@@ -18,12 +18,11 @@ class Power {
         if (!cabinVisible) {
             this.x -= this.game.speed * dt;
         }
-        if (this.frameTimer > this.frameInterval) {
-            this.frameTimer = 0;
+        this.frameTimer += deltaTime;
+        while (this.frameTimer > this.frameInterval) {
+            this.frameTimer -= this.frameInterval;
             if (this.frameX < this.maxFrame) this.frameX++;
             else this.frameX = 0;
-        } else {
-            this.frameTimer += deltaTime;
         }
         if (this.x + this.width < 0 || this.y > this.game.height) {
             this.markedForDeletion = true;
@@ -72,7 +71,7 @@ export class RandomPower extends Power {
         this.height = 82;
         this.image = document.getElementById('randomPower');
         this.fps = 3;
-        this.frameInterval = 1000 / this.fps;
+        this.frameInterval = originalFrameInterval(1000 / this.fps);
         this.maxFrame = 3;
         this.frameWidth = 72;
         this.frameHeight = 82;
@@ -184,7 +183,7 @@ export class Coin extends PowerUp {
     constructor(game) {
         super(game);
         this.fps = 30;
-        this.frameInterval = 1000 / this.fps;
+        this.frameInterval = originalFrameInterval(1000 / this.fps);
         this.width = 51.722;
         this.height = 50;
         this.image = document.getElementById('coin');
@@ -203,7 +202,7 @@ export class OxygenTank extends PowerUp {
     constructor(game) {
         super(game);
         this.fps = 5;
-        this.frameInterval = 1000 / this.fps;
+        this.frameInterval = originalFrameInterval(1000 / this.fps);
         this.width = 40.2;
         this.height = 100;
         this.image = document.getElementById('oxygenTank');
@@ -274,7 +273,7 @@ export class BlackHole extends PowerDown {
         this.height = 100;
         this.image = document.getElementById('blackhole');
         this.fps = 2;
-        this.frameInterval = 1000 / this.fps;
+        this.frameInterval = originalFrameInterval(1000 / this.fps);
         this.maxFrame = 1;
         this.frameWidth = 98.5;
         this.frameHeight = 100;
@@ -444,7 +443,7 @@ export class DeadSkull extends PowerDown {
         this.height = 100;
         this.image = document.getElementById('deadSkull');
         this.fps = 5;
-        this.frameInterval = 1000 / this.fps;
+        this.frameInterval = originalFrameInterval(1000 / this.fps);
         this.maxFrame = 5;
         this.frameWidth = 62;
         this.frameHeight = 100;
@@ -460,7 +459,7 @@ export class CarbonDioxideTank extends PowerDown {
     constructor(game) {
         super(game);
         this.fps = 5;
-        this.frameInterval = 1000 / this.fps;
+        this.frameInterval = originalFrameInterval(1000 / this.fps);
         this.width = 40.2;
         this.height = 100;
         this.image = document.getElementById('carbonDioxideTank');

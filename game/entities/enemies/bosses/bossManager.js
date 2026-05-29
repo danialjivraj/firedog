@@ -2,7 +2,7 @@ import { Elyvorg } from "./elyvorg/elyvorg.js";
 import { Glacikal } from "./glacikal/glacikal.js";
 import { NTharax } from "./ntharax/ntharax.js";
 import { screenColourFadeIn, screenColourFadeOut } from "../../../animations/screenColourFade.js";
-import { FULL_ENERGY } from "../../../config/constants.js";
+import { FULL_ENERGY, normalizeDelta } from "../../../config/constants.js";
 import { formatTimeMs } from "../../../utils/formatTime.js";
 
 const BOSS_CONFIG = {
@@ -310,7 +310,7 @@ export class BossManager {
             effect.targetRgb
         ) {
             const speed = effect.colorLerpSpeed ?? 0.04;
-            effect.colorLerpT = Math.min(1, effect.colorLerpT + speed);
+            effect.colorLerpT = Math.min(1, effect.colorLerpT + speed * normalizeDelta(deltaTime));
             const t = effect.colorLerpT;
             const [r0, g0, b0] = effect.fromRgb;
             const [r1, g1, b1] = effect.targetRgb;

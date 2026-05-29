@@ -3,6 +3,7 @@ import { screenColourFadeIn, screenColourFadeOut } from '../../animations/screen
 import { howToPlayPagesMixin } from './howToPlayPages.js';
 import { demoUpdatersMixin } from './demoUpdaters.js';
 import { tutorialDrawMixin, _setHowToPlayMenuRef } from './tutorialDrawUtils.js';
+import { BASE_FRAME_MS } from '../../config/constants.js';
 
 export class HowToPlayMenu extends BaseMenu {
     constructor(game) {
@@ -25,6 +26,7 @@ export class HowToPlayMenu extends BaseMenu {
         this._demoFireball = this._createFireballDemoState();
         this._demoInvisible = this._createInvisibleDemoState();
         this._demoDash = this._createDashDemoState();
+        this._demoStatus = this._createStatusDemoState();
 
         this._demoInvisibleColourOpacity = 0;
         this._demoRollingSeq = null;
@@ -52,7 +54,7 @@ export class HowToPlayMenu extends BaseMenu {
     _dt() {
         if (typeof this._lastDt === 'number') return this._lastDt;
         if (typeof this.game.deltaTime === 'number') return this.game.deltaTime;
-        return 16;
+        return BASE_FRAME_MS;
     }
 
     _num(v, fallback) {
@@ -189,6 +191,7 @@ export class HowToPlayMenu extends BaseMenu {
             'dashTimer', 'dashCooldown',
             'dashBetweenTimer', 'dashBetweenCooldown',
             'dashCharges', 'dashAwaitingSecond', 'dashSecondWindowTimer',
+            'poisonTimer', 'isSlowed', 'slowedTimer', 'frozenTimer', 'frozenDuration',
         ]);
 
         if (!demo || typeof demo !== 'object') return null;
