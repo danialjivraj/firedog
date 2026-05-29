@@ -778,6 +778,10 @@ export class Map7EndCutscene extends StoryCutscene {
             ``,
         );
 
+        if (!this.game.elyvorgDefeated) {
+            this.game.pendingStarReveal = 'elyvorg';
+            this.game.starRevealAge = 0;
+        }
         this.game.elyvorgDefeated = true;
         this.game.saveGameState();
     }

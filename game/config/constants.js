@@ -137,6 +137,19 @@ export const CUTSCENE_INPUT_DEBOUNCE_MS = 250;
 export const FADE_IN_DELAY_MS    = 1300;
 export const FADE_IN_COMPLETE_MS = 2700;
 
+// ─── Star Reveal Animation ────────────────────────────────────────────────────
+export const STAR_REVEAL_INTRO_DELAY_MS = 900;
+export const STAR_REVEAL_DURATION_MS    = 2400;
+export const STAR_REVEAL_FALL_MS        = 1100;
+export const STAR_REVEAL_IMPACT_MS      = 300;
+export const STAR_REVEAL_BURST_MS       = 900;
+export const STAR_REVEAL_DROP_PX        = 200;
+export const STAR_CENTERS = Object.freeze({
+    glacikal: { fx: 0.328, fy: 0.246 },
+    elyvorg:  { fx: 0.496, fy: 0.185 },
+    ntharax:  { fx: 0.665, fy: 0.254 },
+});
+
 // ─── Player States ────────────────────────────────────────────────────────────
 export const PlayerState = Object.freeze({
     SITTING:  0,

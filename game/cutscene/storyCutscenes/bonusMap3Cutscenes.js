@@ -1160,6 +1160,10 @@ export class BonusMap3EndCutscene extends StoryCutscene {
             this.addImage('orelianHappy', RIGHT),
         );
 
+        if (!this.game.ntharaxDefeated) {
+            this.game.pendingStarReveal = 'ntharax';
+            this.game.starRevealAge = 0;
+        }
         this.game.ntharaxDefeated = true;
         this.game.saveGameState();
     }

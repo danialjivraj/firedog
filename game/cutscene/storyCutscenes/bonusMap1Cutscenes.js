@@ -793,6 +793,10 @@ export class BonusMap1EndCutscene extends StoryCutscene {
             this.addImage('aurelliaHappy', RIGHT),
         );
 
+        if (!this.game.glacikalDefeated) {
+            this.game.pendingStarReveal = 'glacikal';
+            this.game.starRevealAge = 0;
+        }
         this.game.glacikalDefeated = true;
         this.game.saveGameState();
     }

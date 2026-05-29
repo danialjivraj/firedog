@@ -1,3 +1,11 @@
+import {
+    STAR_REVEAL_FALL_MS,
+    STAR_REVEAL_IMPACT_MS,
+    STAR_REVEAL_BURST_MS,
+    STAR_REVEAL_DROP_PX,
+    STAR_CENTERS,
+} from '../config/constants.js';
+
 // every menu extends from BaseMenu
 export class BaseMenu {
     constructor(game, menuOptions, title) {
@@ -166,14 +174,90 @@ export class BaseMenu {
             ? this.filledStarRightImage
             : this.blankStarRightImage;
 
-        context.drawImage(rightStar, x, y);
-        context.drawImage(leftStar, x, y);
-        context.drawImage(middleStar, x, y);
+        this.drawRevealableStar(context, rightStar, this.blankStarRightImage, 'ntharax', this.game.ntharaxDefeated, x, y);
+        this.drawRevealableStar(context, leftStar, this.blankStarLeftImage, 'glacikal', this.game.glacikalDefeated, x, y);
+        this.drawRevealableStar(context, middleStar, this.blankStarMiddleImage, 'elyvorg', this.game.elyvorgDefeated, x, y);
 
         if (this.game.elyvorgDefeated && this.storyCompleteTextImage) {
             context.drawImage(this.storyCompleteTextImage, x, y);
         }
 
+        context.restore();
+    }
+
+    drawRevealableStar(context, image, blankImage, key, defeated, x, y) {
+        const isRevealing = defeated && this.game.pendingStarReveal === key;
+        if (!isRevealing) {
+            context.drawImage(image, x, y);
+            return;
+        }
+
+        if (blankImage && this.game.starRevealAge < STAR_REVEAL_FALL_MS) {
+            context.drawImage(blankImage, x, y);
+        }
+
+        const age = this.game.starRevealAge;
+        const center = STAR_CENTERS[key];
+        const w = image.naturalWidth || image.width || 230;
+        const h = image.naturalHeight || image.height || 130;
+        const slotX = x + w * center.fx;
+        const slotY = y + h * center.fy;
+
+        let dx = 0, dy = 0, rotation = 0;
+        let sx = 1, sy = 1, alpha = 1;
+
+        if (age < STAR_REVEAL_FALL_MS) {
+            const t = age / STAR_REVEAL_FALL_MS;
+            const easeIn = t * t;
+            dy = -STAR_REVEAL_DROP_PX * (1 - easeIn);
+            dx = Math.sin(t * Math.PI) * 6;
+            rotation = t * Math.PI * 4;
+            alpha = Math.min(1, t * 8);
+        } else if (age < STAR_REVEAL_FALL_MS + STAR_REVEAL_IMPACT_MS) {
+            const t = (age - STAR_REVEAL_FALL_MS) / STAR_REVEAL_IMPACT_MS;
+            const bell = Math.sin(t * Math.PI);
+            sx = 1 + 0.22 * bell;
+            sy = 1 - 0.16 * bell;
+            rotation = Math.PI * 4;
+        } else {
+            rotation = Math.PI * 4;
+        }
+
+        const prevAlpha = context.globalAlpha;
+        context.save();
+        context.globalAlpha = prevAlpha * alpha;
+        context.translate(slotX + dx, slotY + dy);
+        context.rotate(rotation);
+        context.scale(sx, sy);
+        context.drawImage(image, -w * center.fx, -h * center.fy);
+        context.restore();
+
+        if (age >= STAR_REVEAL_FALL_MS) {
+            const burstT = Math.min(1, (age - STAR_REVEAL_FALL_MS) / STAR_REVEAL_BURST_MS);
+            if (burstT < 1) this.drawStarSparkleBurst(context, slotX, slotY, burstT);
+        }
+    }
+
+    drawStarSparkleBurst(context, cx, cy, t) {
+        const N = 8;
+        const maxR = 50;
+        const radius = maxR * (1 - Math.pow(1 - t, 2));
+        const alpha = (1 - t) * 0.85;
+        const size = 3 * (1 - t * 0.5);
+
+        context.save();
+        context.globalCompositeOperation = 'lighter';
+        context.fillStyle = `rgba(255, 235, 150, ${alpha})`;
+        context.shadowColor = 'rgba(255, 220, 100, 0.8)';
+        context.shadowBlur = 8;
+        for (let i = 0; i < N; i++) {
+            const a = (i / N) * Math.PI * 2;
+            const px = cx + Math.cos(a) * radius;
+            const py = cy + Math.sin(a) * radius;
+            context.beginPath();
+            context.arc(px, py, size, 0, Math.PI * 2);
+            context.fill();
+        }
         context.restore();
     }
 

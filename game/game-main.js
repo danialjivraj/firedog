@@ -55,6 +55,7 @@ import {
     CABIN_COLLISION_OFFSET, PENGUIN_OFFSET_FROM_CABIN,
     CUTSCENE_INPUT_DEBOUNCE_MS, LOOPING_SOUND_FADE_OUT_MS,
     MAX_DISTANCE, WINNING_COINS,
+    STAR_REVEAL_INTRO_DELAY_MS, STAR_REVEAL_DURATION_MS,
     originalFrameInterval,
 } from "./config/constants.js";
 
@@ -94,6 +95,9 @@ export class Game {
         this.coinConvertToasts = [];
         this._announcedGiftSkins = {};
         this._pendingCoinConvertAmount = 0;
+        this.pendingStarReveal = null;
+        this.starRevealAge = 0;
+        this.starRevealStartDelay = 0;
         // player/audio handlers/menus/etc classes and vars...
         this.player = new Player(this);
         this.player.currentState = this.player.states[0];
@@ -315,6 +319,9 @@ export class Game {
         this.currentCutscene = null;
         this.pauseContext = 'gameplay';
         this.currentMenu = null;
+        if (this.pendingStarReveal) {
+            this.starRevealStartDelay = STAR_REVEAL_INTRO_DELAY_MS;
+        }
         if (this.input) this.input.clearAll();
         if (
             this.cabin &&
@@ -411,8 +418,13 @@ export class Game {
         this.canSelect = false;
         this.canSelectForestMap = false;
 
+        const fadeInMs = 1400;
+        if (this.pendingStarReveal) {
+            this.starRevealStartDelay = fadeInMs;
+        }
+
         this.enterDuringBackgroundTransition = false;
-        fadeIn(this.canvas, 1300, () => {
+        fadeIn(this.canvas, fadeInMs, () => {
             this.enterDuringBackgroundTransition = true;
         });
 
@@ -935,6 +947,21 @@ export class Game {
         Game._removeDeleted(this.metaToasts);
         this.coinConvertToasts.forEach(t => t.update(deltaTime));
         Game._removeDeleted(this.coinConvertToasts);
+        this.tickStarReveal(deltaTime);
+    }
+
+    tickStarReveal(deltaTime) {
+        if (!this.pendingStarReveal || this.cutsceneActive) return;
+        const dt = Math.max(0, deltaTime);
+        if (this.starRevealStartDelay > 0) {
+            this.starRevealStartDelay -= dt;
+            return;
+        }
+        this.starRevealAge += dt;
+        if (this.starRevealAge >= STAR_REVEAL_DURATION_MS) {
+            this.pendingStarReveal = null;
+            this.starRevealAge = 0;
+        }
     }
 
     // ------------------------------------------------------------ Saving logic  ------------------------------------------------------------
