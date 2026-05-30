@@ -31,6 +31,7 @@ function createWindow() {
     width: 1920,
     height: 1080,
     fullscreen: startFullscreen,
+    backgroundColor: '#000000',
     icon: path.join(__dirname, 'game', 'assets', 'icons', 'firedogHead.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
