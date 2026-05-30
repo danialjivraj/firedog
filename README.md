@@ -775,7 +775,7 @@ You can download the game by clicking one of the following links:
 <br>
 
 > - **Windows:** on the *"Windows protected your PC"* popup, click **More info → Run anyway**.
-> - **macOS:** on the *"The application 'Firedog' can't be opened"*, run `chmod +x /Applications/Firedog.app/Contents/MacOS/Firedog` in Terminal.
+> - **macOS:** on the *"The application 'Firedog' can't be opened"*, run `xattr -cr ~/Downloads/Firedog-darwin-arm64/Firedog.app` in Terminal.
 > - **Linux:** if the binary won't launch, run `chmod +x Firedog` in the extracted folder.
 
 </details>
