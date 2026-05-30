@@ -38,8 +38,6 @@ function makeGame() {
         elyvorgDefeated: false,
         ntharaxDefeated: false,
 
-        _announcedGiftSkins: {},
-
         creditCoins: 0,
         ownedSkins: {},
         ownedCosmetics: {},

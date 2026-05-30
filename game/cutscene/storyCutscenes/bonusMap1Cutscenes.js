@@ -796,6 +796,7 @@ export class BonusMap1EndCutscene extends StoryCutscene {
         if (!this.game.glacikalDefeated) {
             this.game.pendingStarReveal = 'glacikal';
             this.game.starRevealAge = 0;
+            this.game.pendingGiftAnnouncement = 'iceBreakerSkin';
         }
         this.game.glacikalDefeated = true;
         this.game.saveGameState();

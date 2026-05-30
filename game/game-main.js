@@ -41,7 +41,7 @@ import {
     clearSavedData as resetPersistedData
 } from "./persistence/gamePersistence.js";
 import { BossManager } from "./entities/enemies/bosses/bossManager.js";
-import { SKINS, GIFT_SKINS } from "./config/skinsAndCosmetics.js";
+import { SKINS } from "./config/skinsAndCosmetics.js";
 import { MenuNavigator } from "./menu/menuNavigator.js";
 import { CoinConvertToast } from "./interface/coinConvertToast.js";
 import { getEnemySpawnConfig } from "./config/enemySpawnConfig.js";
@@ -93,11 +93,11 @@ export class Game {
         this.ownedCosmetics = {};
         this.metaToasts = [];
         this.coinConvertToasts = [];
-        this._announcedGiftSkins = {};
         this._pendingCoinConvertAmount = 0;
         this.pendingStarReveal = null;
         this.starRevealAge = 0;
         this.starRevealStartDelay = 0;
+        this.pendingGiftAnnouncement = null;
         // player/audio handlers/menus/etc classes and vars...
         this.player = new Player(this);
         this.player.currentState = this.player.states[0];
@@ -282,34 +282,25 @@ export class Game {
     }
 
     announceGiftSkins({ delayMs = 450 } = {}) {
-        let announcedAny = false;
+        const key = this.pendingGiftAnnouncement;
+        if (!key) return false;
 
-        for (const gift of GIFT_SKINS) {
-            if (!this[gift.flag]) continue;
-            if (this._announcedGiftSkins[gift.key]) continue;
+        this.pendingGiftAnnouncement = null;
 
-            this._announcedGiftSkins[gift.key] = true;
-            announcedAny = true;
+        const skin = SKINS[key];
+        const label = skin?.label ?? key;
+        const labelFill = skin?.giftColor ?? "yellow";
 
-            const skin = SKINS[gift.key];
-            const label = skin?.label ?? gift.key;
-            const labelFill = skin?.giftColor ?? "yellow";
+        this.showMetaToast([
+            [{ text: "NEW SKIN UNLOCKED!", fill: "yellow" }],
+            [
+                { text: "YOU'VE RECEIVED THE ", fill: "yellow" },
+                { text: label, fill: labelFill },
+                { text: " SKIN!", fill: "yellow" },
+            ],
+        ], delayMs);
 
-            this.showMetaToast([
-                [{ text: "NEW SKIN UNLOCKED!", fill: "yellow" }],
-                [
-                    { text: "YOU'VE RECEIVED THE ", fill: "yellow" },
-                    { text: label, fill: labelFill },
-                    { text: " SKIN!", fill: "yellow" },
-                ],
-            ], delayMs);
-        }
-
-        if (announcedAny) {
-            this.saveGameState();
-        }
-
-        return announcedAny;
+        return true;
     }
 
     endCutscene() {

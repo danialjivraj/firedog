@@ -1087,41 +1087,31 @@ describe('Game class (game-main.js)', () => {
   });
 
   describe('announceGiftSkins()', () => {
-    it('returns false and does nothing when no gift flags are set', () => {
+    it('returns false and does nothing when no announcement is pending', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
 
-      game.glacikalDefeated = false;
-      game.elyvorgDefeated = false;
-      game.ntharaxDefeated = false;
-      game._announcedGiftSkins = {};
+      game.pendingGiftAnnouncement = null;
 
       const toastSpy = jest.spyOn(game, 'showMetaToast').mockImplementation(() => { });
-      const saveSpy = jest.spyOn(game, 'saveGameState').mockImplementation(() => { });
 
       const out = game.announceGiftSkins({ delayMs: 123 });
 
       expect(out).toBe(false);
       expect(toastSpy).not.toHaveBeenCalled();
-      expect(saveSpy).not.toHaveBeenCalled();
     });
 
-    it('announces an unlocked skin once, records guard, and saves when it announces', () => {
+    it('announces the pending skin, clears the pending field, and only fires once', () => {
       const game = new Game(canvas, canvas.width, canvas.height);
 
-      game.glacikalDefeated = true;
-      game.elyvorgDefeated = false;
-      game.ntharaxDefeated = false;
-      game._announcedGiftSkins = {};
+      game.pendingGiftAnnouncement = 'iceBreakerSkin';
 
       const toastSpy = jest.spyOn(game, 'showMetaToast').mockImplementation(() => { });
-      const saveSpy = jest.spyOn(game, 'saveGameState').mockImplementation(() => { });
 
       const out1 = game.announceGiftSkins({ delayMs: 450 });
 
       expect(out1).toBe(true);
-      expect(game._announcedGiftSkins.iceBreakerSkin).toBe(true);
+      expect(game.pendingGiftAnnouncement).toBe(null);
       expect(toastSpy).toHaveBeenCalledTimes(1);
-      expect(saveSpy).toHaveBeenCalledTimes(1);
 
       const [payload, delay] = toastSpy.mock.calls[0];
       expect(delay).toBe(450);
@@ -1136,40 +1126,35 @@ describe('Game class (game-main.js)', () => {
       expect(hasCyanSegment).toBe(true);
 
       toastSpy.mockClear();
-      saveSpy.mockClear();
 
       const out2 = game.announceGiftSkins({ delayMs: 450 });
       expect(out2).toBe(false);
       expect(toastSpy).not.toHaveBeenCalled();
-      expect(saveSpy).not.toHaveBeenCalled();
     });
 
-    it('announces multiple skins and uses the correct per-skin label fill colors', () => {
-      const game = new Game(canvas, canvas.width, canvas.height);
+    it('uses the correct label fill color for each gift skin', () => {
+      const cases = [
+        { key: 'iceBreakerSkin', expectedFill: 'cyan' },
+        { key: 'infernalSkin',   expectedFill: 'orangered' },
+        { key: 'galaxySkin',     expectedFill: 'violet' },
+      ];
 
-      game.glacikalDefeated = true;
-      game.elyvorgDefeated = true;
-      game.ntharaxDefeated = true;
-      game._announcedGiftSkins = {};
+      for (const { key, expectedFill } of cases) {
+        const game = new Game(canvas, canvas.width, canvas.height);
+        game.pendingGiftAnnouncement = key;
 
-      const toastSpy = jest.spyOn(game, 'showMetaToast').mockImplementation(() => { });
-      const saveSpy = jest.spyOn(game, 'saveGameState').mockImplementation(() => { });
+        const toastSpy = jest.spyOn(game, 'showMetaToast').mockImplementation(() => { });
 
-      const out = game.announceGiftSkins({ delayMs: 1 });
+        const out = game.announceGiftSkins({ delayMs: 1 });
 
-      expect(out).toBe(true);
-      expect(toastSpy).toHaveBeenCalledTimes(3);
-      expect(saveSpy).toHaveBeenCalledTimes(1);
+        expect(out).toBe(true);
+        expect(toastSpy).toHaveBeenCalledTimes(1);
 
-      const allPayloads = toastSpy.mock.calls.map(c => c[0]);
-
-      const hasOrangered = allPayloads.some(p => (p[1] || []).some(seg => seg && seg.fill === 'orangered'));
-      const hasViolet = allPayloads.some(p => (p[1] || []).some(seg => seg && seg.fill === 'violet'));
-      const hasCyan = allPayloads.some(p => (p[1] || []).some(seg => seg && seg.fill === 'cyan'));
-
-      expect(hasCyan).toBe(true);
-      expect(hasOrangered).toBe(true);
-      expect(hasViolet).toBe(true);
+        const payload = toastSpy.mock.calls[0][0];
+        const line2 = payload[1] || [];
+        const hasFill = line2.some(seg => seg && seg.fill === expectedFill);
+        expect(hasFill).toBe(true);
+      }
     });
   });
 

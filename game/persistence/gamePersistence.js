@@ -24,8 +24,6 @@ function buildGameState(game) {
         elyvorgDefeated: game.elyvorgDefeated,
         ntharaxDefeated: game.ntharaxDefeated,
 
-        announcedGiftSkins: game._announcedGiftSkins ?? {},
-
         audioSettingsState: game.menu.audioSettings.getState(),
 
         currentSkinId: game.menu.wardrobe.getCurrentSkinId(),
@@ -90,8 +88,6 @@ export function loadGameState(game) {
         game.glacikalDefeated = gameState.glacikalDefeated ?? game.glacikalDefeated;
         game.elyvorgDefeated = gameState.elyvorgDefeated ?? game.elyvorgDefeated;
         game.ntharaxDefeated = gameState.ntharaxDefeated ?? game.ntharaxDefeated;
-
-        game._announcedGiftSkins = gameState.announcedGiftSkins ?? {};
 
         game.creditCoins = gameState.creditCoins ?? game.creditCoins ?? 0;
         game.ownedSkins = gameState.ownedSkins ?? {};
@@ -160,8 +156,6 @@ export function clearSavedData(game) {
     game.glacikalDefeated = false;
     game.elyvorgDefeated = false;
     game.ntharaxDefeated = false;
-
-    game._announcedGiftSkins = {};
 
     game.creditCoins = 0;
     game.ownedSkins = {};

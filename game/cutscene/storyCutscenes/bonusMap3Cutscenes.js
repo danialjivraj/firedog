@@ -1163,6 +1163,7 @@ export class BonusMap3EndCutscene extends StoryCutscene {
         if (!this.game.ntharaxDefeated) {
             this.game.pendingStarReveal = 'ntharax';
             this.game.starRevealAge = 0;
+            this.game.pendingGiftAnnouncement = 'galaxySkin';
         }
         this.game.ntharaxDefeated = true;
         this.game.saveGameState();
