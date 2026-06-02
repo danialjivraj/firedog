@@ -15,7 +15,7 @@ Your progress, unlocks, and settings are saved automatically.
 ## Preview
 ![all maps](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/all_maps.gif)
 
-<details><summary><strong>Videos (4)</strong></summary>
+<details><summary><strong>Videos (6)</strong></summary>
 <dl><dd>
 
 <br>
@@ -43,6 +43,17 @@ https://github.com/user-attachments/assets/e503d0dd-29f0-4d7a-9450-2b1df8232a13
 <br>
 
 https://github.com/user-attachments/assets/ed85a1b6-4c30-474a-942b-660694a66cc1
+
+</details>
+
+<details><summary><strong>Final Boss Fights (2)</strong></summary>
+
+<br>
+
+https://github.com/user-attachments/assets/c879a43d-9e98-4974-8591-453ea2b8bf1f
+
+
+https://github.com/user-attachments/assets/9a49266c-eee6-4301-971a-496b7b9ca9a7
 
 </details>
 
