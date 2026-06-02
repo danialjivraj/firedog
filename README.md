@@ -15,14 +15,38 @@ Your progress, unlocks, and settings are saved automatically.
 ## Preview
 ![all maps](https://raw.githubusercontent.com/danialjivraj/firedog/main/githubPreviews/all_maps.gif)
 
-<details><summary><strong>Videos</strong></summary>
+<details><summary><strong>Videos (4)</strong></summary>
+<dl><dd>
 
 <br>
 
-https://github.com/user-attachments/assets/55bf2c6e-c610-45d1-9e82-eae1e124d480
+<details><summary><strong>Menus (2)</strong></summary>
 
-https://github.com/user-attachments/assets/66ec27af-cf4a-45f2-9727-5ba54c99bb26
+<br>
 
+https://github.com/user-attachments/assets/4cdca8c1-3add-4c01-9e13-a3b5922ce813
+
+https://github.com/user-attachments/assets/4fb0a13e-e343-4292-a962-7253e9cc5966
+
+</details>
+
+<details><summary><strong>Cutscenes (1)</strong></summary>
+
+<br>
+
+https://github.com/user-attachments/assets/e503d0dd-29f0-4d7a-9450-2b1df8232a13
+
+</details>
+
+<details><summary><strong>Gameplay (1)</strong></summary>
+
+<br>
+
+https://github.com/user-attachments/assets/ed85a1b6-4c30-474a-942b-660694a66cc1
+
+</details>
+
+</dd></dl>
 </details>
 
 <details><summary><strong>Images (171)</strong></summary>
