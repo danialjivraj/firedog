@@ -8,6 +8,7 @@ import {
     getCosmeticChromaDegFromState,
     drawWithOptionalHue,
 } from '../config/skinsAndCosmetics.js';
+import { SKIN_FX_CHANNEL_MENU, drawSkinFx } from '../animations/skinFx.js';
 import { drawCoinIcon } from '../interface/coinIcon.js';
 
 export class Cutscene {
@@ -717,6 +718,28 @@ export class Cutscene {
         return this.isFiredogEmotionImageId(id);
     }
 
+    drawCharacterBaseImage(context, el, id, x, y, w, h) {
+        if (this.isFiredogEmotionImageId(id)) {
+            const drew = drawSkinFx(context, this.getCurrentSkinIdSafe(), {
+                img: el,
+                sx: 0,
+                sy: 0,
+                sw: el.naturalWidth || el.width || w,
+                sh: el.naturalHeight || el.height || h,
+                dx: x,
+                dy: y,
+                dw: w,
+                dh: h,
+                channel: SKIN_FX_CHANNEL_MENU,
+                art: 'portrait',
+                freeze: true,
+            });
+            if (drew) return;
+        }
+
+        context.drawImage(el, x, y, w, h);
+    }
+
     getFiredogCosmeticOverlaysInLayerOrder() {
         const out = [];
         for (const slot of COSMETIC_LAYER_ORDER) {
@@ -903,7 +926,7 @@ export class Cutscene {
         const dx = innerX + (innerW - drawW) / 2 + (this.borderOffsetX || 0);
         const dy = innerY + (innerH - drawH) / 2 + (this.borderOffsetY || 0);
 
-        context.drawImage(baseEl, dx, dy, drawW, drawH);
+        this.drawCharacterBaseImage(context, baseEl, baseId, dx, dy, drawW, drawH);
 
         if (this.shouldOverlayCosmeticsForImageId(baseId)) {
             const overlays = this.getFiredogCosmeticOverlaysInLayerOrder();
@@ -1030,7 +1053,7 @@ export class Cutscene {
 
         const baseDomId = this.isFiredogEmotionImageId(id) ? this.getAliasedFiredogDomId(id) : id;
         const baseEl = this._getElem(baseDomId);
-        if (baseEl) context.drawImage(baseEl, x, y, width, height);
+        if (baseEl) this.drawCharacterBaseImage(context, baseEl, id, x, y, width, height);
 
         if (glowColor) {
             context.shadowColor = 'transparent';

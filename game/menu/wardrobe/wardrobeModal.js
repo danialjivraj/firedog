@@ -1155,14 +1155,15 @@ export const wardrobeModalMethods = {
             ctx.restore();
         }
 
-        const { skinImg, overlays } = this._buildModalPreviewPose(item);
+        const { skinImg, skinKey, overlays } = this._buildModalPreviewPose(item);
         const sx = this.frameX * sw;
 
         const dx = Math.floor(boxX + boxPad);
         const dy = Math.floor(boxY + boxPad);
 
         if (skinImg) {
-            ctx.drawImage(skinImg, sx, 0, sw, sh, dx, dy, sw, sh);
+            const drewFx = this._drawSkinFx(ctx, skinKey, skinImg, sx, 0, sw, sh, dx, dy, sw, sh);
+            if (!drewFx) ctx.drawImage(skinImg, sx, 0, sw, sh, dx, dy, sw, sh);
 
             let previewHueDeg = 0;
             const owned = this._isItemOwned(item);

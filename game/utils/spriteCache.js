@@ -372,3 +372,64 @@ export function getBubbleBallSprite(radius, variant = 'normal') {
         return canvas;
     });
 }
+
+const CONTENT_BOX_CACHE = new Map();
+
+function measureOpaqueBox(ctx, img, w, h) {
+    let data;
+    try {
+        ctx.drawImage(img, 0, 0);
+        data = ctx.getImageData(0, 0, w, h).data;
+    } catch (e) {
+        return undefined;
+    }
+
+    let minX = w;
+    let minY = h;
+    let maxX = -1;
+    let maxY = -1;
+
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            if (data[(y * w + x) * 4 + 3] > 16) {
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+            }
+        }
+    }
+
+    if (maxX < 0) return null;
+
+    return {
+        x0: minX / w,
+        y0: minY / h,
+        x1: (maxX + 1) / w,
+        y1: (maxY + 1) / h,
+    };
+}
+
+export function getContentBox(img) {
+    const key = imgKey(img);
+    if (!key) return null;
+
+    const cached = CONTENT_BOX_CACHE.get(key);
+    if (cached !== undefined) return cached;
+
+    const w = img.naturalWidth || img.width || 0;
+    const h = img.naturalHeight || img.height || 0;
+
+    if (!w || !h) return null;
+
+    const canvas = globalThis.document?.createElement?.('canvas');
+    const ctx = canvas?.getContext?.('2d', { willReadFrequently: true });
+    if (!ctx) return null;
+
+    canvas.width = w;
+    canvas.height = h;
+
+    const box = measureOpaqueBox(ctx, img, w, h);
+    if (box !== undefined) CONTENT_BOX_CACHE.set(key, box);
+    return box || null;
+}

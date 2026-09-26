@@ -1,4 +1,5 @@
 import { Dust, Bubble, Fire, Splash, IceCrystal, DashGhost, DashFireArc } from "../animations/particles.js";
+import { getSkinFxTint } from "../animations/skinFx.js";
 import { PlayerState, BASE_FRAME_MS, getDt, getNormalizedDt } from "../config/constants.js";
 
 const PARTICLE_SPAWN_INTERVAL_MS = BASE_FRAME_MS;
@@ -40,10 +41,13 @@ const spawnDashGhost = (game, player) => {
     const sx = player.frameX * player.width;
     const sy = player.frameY * player.height;
 
+    const tint = getSkinFxTint(game.menu?.wardrobe?.currentSkinKey);
+
     game.behindPlayerParticles.push(
         new DashGhost(game, {
             skinImg,
             layers,
+            tint,
             sx,
             sy,
             sw: player.width,

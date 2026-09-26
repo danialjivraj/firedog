@@ -44,6 +44,7 @@ jest.mock('../../game/config/skinsAndCosmetics.js', () => ({
     COSMETIC_LAYER_ORDER: ['neck', 'eyes', 'nose', 'head'],
     getCosmeticElement: jest.fn(() => null),
 
+    getSkinFxId: jest.fn(() => null),
     getCosmeticChromaDegFromState: jest.fn(() => 0),
     drawWithOptionalHue: jest.fn((ctx, opts, drawFn) => {
         if (typeof drawFn === 'function') drawFn();

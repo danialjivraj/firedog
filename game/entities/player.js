@@ -10,6 +10,11 @@ import {
     FIREDOG_FRAME,
 } from '../config/skinsAndCosmetics.js';
 import {
+    SKIN_FX_CHANNEL_PLAYER,
+    hasSkinFx,
+    drawSkinFx,
+} from '../animations/skinFx.js';
+import {
     PLAYER_PHYSICS, PLAYER_SLOW_MULTIPLIERS,
     ICE_PHYSICS, FROZEN_CONFIG,
     STATUS_EFFECT_DURATIONS, ENERGY_CONFIG,
@@ -570,6 +575,15 @@ export class Player {
 
         const skinAlpha = this.isInvisible ? 0.5 : 1.0;
 
+        const skinKey = this.game?.menu?.wardrobe?.currentSkinKey;
+        const fxSkin = !!skinImg && hasSkinFx(skinKey);
+        const fxOpts = {
+            img: skinImg, sx, sy, sw, sh, dx, dy, dw, dh,
+            channel: SKIN_FX_CHANNEL_PLAYER,
+            alpha: skinAlpha,
+            paused: !!this.game.menu?.pause?.isPaused,
+        };
+
         const drawLayer = (img) => {
             if (!img) return;
             context.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
@@ -669,7 +683,8 @@ export class Player {
                     ],
                 };
 
-                drawSkinTint(mixTint);
+                if (fxSkin) drawSkinFx(context, skinKey, { ...fxOpts, tint: mixTint });
+                else drawSkinTint(mixTint);
                 drawCosmeticsTint(mixTint);
             } else if (poisoned) {
                 const glow = 'rgba(0,130,0,1)';
@@ -677,7 +692,8 @@ export class Player {
                 drawSkinGlow(glow, 6);
                 drawCosmeticsGlow(glow, 6);
 
-                drawSkinTint('rgba(0,100,0,0.40)');
+                if (fxSkin) drawSkinFx(context, skinKey, { ...fxOpts, tint: 'rgba(0,100,0,0.40)' });
+                else drawSkinTint('rgba(0,100,0,0.40)');
                 drawCosmeticsTint('rgba(0,100,0,0.40)');
             } else if (slowed) {
                 const glow = 'rgba(0,160,255,1)';
@@ -685,8 +701,12 @@ export class Player {
                 drawSkinGlow(glow, 6);
                 drawCosmeticsGlow(glow, 6);
 
-                drawSkinTint('rgba(0,120,255,0.35)');
+                if (fxSkin) drawSkinFx(context, skinKey, { ...fxOpts, tint: 'rgba(0,120,255,0.35)' });
+                else drawSkinTint('rgba(0,120,255,0.35)');
                 drawCosmeticsTint('rgba(0,120,255,0.35)');
+            } else if (fxSkin) {
+                drawSkinFx(context, skinKey, fxOpts);
+                drawCosmeticsBase();
             } else {
                 drawSkinBase();
                 drawCosmeticsBase();

@@ -14,6 +14,7 @@ import {
     getCosmeticChromaDegFromState,
     drawWithOptionalHue,
 } from '../../config/skinsAndCosmetics.js';
+import { SKIN_FX_CHANNEL_MENU, drawSkinFx } from '../../animations/skinFx.js';
 import { PurchaseConfetti } from '../../interface/purchaseConfetti.js';
 import { drawCoinIcon } from '../../interface/coinIcon.js';
 import { BaseMenu } from '../baseMenu.js';
@@ -590,6 +591,15 @@ export class Wardrobe extends BaseMenu {
         });
     }
 
+    _drawSkinFx(ctx, skinKey, img, sx, sy, sw, sh, dx, dy, dw, dh, extra = {}) {
+        if (!img) return false;
+        return drawSkinFx(ctx, skinKey, {
+            img, sx, sy, sw, sh, dx, dy, dw, dh,
+            channel: SKIN_FX_CHANNEL_MENU,
+            ...extra,
+        });
+    }
+
     _getItemDef(tab, key) {
         if (!tab) return null;
 
@@ -757,7 +767,7 @@ export class Wardrobe extends BaseMenu {
 
         if (safeItem.kind === 'skin') {
             const skinImg = this._getSkinAsset(safeItem.key) || this._getSkinAsset('defaultSkin');
-            return { skinImg, overlays: [] };
+            return { skinImg, skinKey: safeItem.key, overlays: [] };
         }
 
         const skinImg = this.currentSkin || this._getSkinAsset(this.currentSkinKey) || this._getSkinAsset('defaultSkin');
@@ -765,7 +775,7 @@ export class Wardrobe extends BaseMenu {
             ? this._getCosmeticAsset(safeItem.slot, safeItem.key)
             : null;
 
-        return { skinImg, overlays: overlay ? [overlay] : [] };
+        return { skinImg, skinKey: this.currentSkinKey, overlays: overlay ? [overlay] : [] };
     }
 
     // persistence-facing helpers
@@ -1058,7 +1068,10 @@ export class Wardrobe extends BaseMenu {
                 ctx.shadowBlur = 0;
 
                 const skinImg = getSkinElement(saved.skinKey);
-                if (skinImg) ctx.drawImage(skinImg, 0, 0, fw, fh, dx, dy, dw, dh);
+                const drewFx = this._drawSkinFx(ctx, saved.skinKey, skinImg, 0, 0, fw, fh, dx, dy, dw, dh,
+                    { freeze: true, fringe: false });
+
+                if (!drewFx && skinImg) ctx.drawImage(skinImg, 0, 0, fw, fh, dx, dy, dw, dh);
 
                 for (const slot of COSMETIC_LAYER_ORDER) {
                     const cosKey = saved.cosmetics?.[slot] || 'none';
@@ -1312,7 +1325,6 @@ export class Wardrobe extends BaseMenu {
         };
     }
 
-    /** Box wrapping the tab column, sized from the same numbers the tabs use. */
     _getTabsPanelRect() {
         const cfg = this.UI.sidebar;
         const s = this._getSidebarLayout();
@@ -2589,7 +2601,11 @@ export class Wardrobe extends BaseMenu {
             const dx = Math.floor(spriteBoxX + (spriteBoxW - dw) / 2);
             const dy = Math.floor(spriteBoxY + (spriteBoxH - dh) / 2);
 
-            context.drawImage(skinImg, 0, 0, sw, sh, dx, dy, dw, dh);
+            const fxSkinKey = (tab.kind === 'skin') ? key : this.currentSkinKey;
+            const drewFx = this._drawSkinFx(context, fxSkinKey, skinImg, 0, 0, sw, sh, dx, dy, dw, dh,
+                { freeze: true, fringe: false });
+
+            if (!drewFx) context.drawImage(skinImg, 0, 0, sw, sh, dx, dy, dw, dh);
 
             if (tab.kind === 'cosmetic') {
                 const cosImg = this._getCosmeticAsset(tab.slot, key);
@@ -2829,7 +2845,13 @@ export class Wardrobe extends BaseMenu {
         context.shadowOffsetX = 0;
         context.shadowOffsetY = 0;
 
-        context.drawImage(skinImg, sx, 0, this.width, this.height, px, py, this.width, this.height);
+        const drewFx = this._drawSkinFx(
+            context, this.currentSkinKey, skinImg,
+            sx, 0, this.width, this.height,
+            px, py, this.width, this.height
+        );
+
+        if (!drewFx) context.drawImage(skinImg, sx, 0, this.width, this.height, px, py, this.width, this.height);
 
         for (const slot of COSMETIC_LAYER_ORDER) {
             const img = this.currentCosmeticEls[slot];

@@ -34,9 +34,15 @@ jest.mock('../../game/config/skinsAndCosmetics', () => {
             const v = state?.[slot]?.[key];
             return typeof v === 'number' ? v : 0;
         }),
+        getSkinFxId: jest.fn(() => null),
         drawWithOptionalHue: jest.fn((ctx, opts, fn) => fn()),
     };
 });
+
+jest.mock('../../game/animations/rainbowFx.js', () => ({
+    RAINBOW_FX: 'rainbow',
+    drawRainbowSkin: jest.fn(() => true),
+}));
 
 jest.mock('../../game/entities/playerStates', () => ({
     Sitting: jest.fn().mockImplementation(() => ({})),
@@ -1243,6 +1249,63 @@ describe('Player', () => {
                 skin,
                 0, 0, player.width, player.height,
                 -player.width / 2, -player.height / 2, player.width, player.height
+            );
+        });
+    });
+
+    describe('drawPlayerWithCurrentSkin with an fx skin', () => {
+        const skinsCos = jest.requireMock('../../game/config/skinsAndCosmetics');
+        const rainbowFx = jest.requireMock('../../game/animations/rainbowFx.js');
+        let ctx;
+
+        beforeEach(() => {
+            ctx = {
+                save: jest.fn(),
+                translate: jest.fn(),
+                scale: jest.fn(),
+                drawImage: jest.fn(),
+                restore: jest.fn(),
+                strokeRect: jest.fn(),
+            };
+            withAlphaStack(ctx);
+            skinsCos.getSkinFxId.mockReturnValue('rainbow');
+            rainbowFx.drawRainbowSkin.mockClear();
+        });
+
+        afterEach(() => {
+            skinsCos.getSkinFxId.mockReturnValue(null);
+        });
+
+        test('draws the skin material in the clean state', () => {
+            player.drawPlayerWithCurrentSkin(ctx);
+            expect(rainbowFx.drawRainbowSkin).toHaveBeenCalled();
+        });
+
+        test('still draws it while poisoned', () => {
+            player.isPoisonedActive = true;
+            player.drawPlayerWithCurrentSkin(ctx);
+            expect(rainbowFx.drawRainbowSkin).toHaveBeenCalled();
+        });
+
+        test('still draws it while slowed', () => {
+            player.isSlowed = true;
+            player.drawPlayerWithCurrentSkin(ctx);
+            expect(rainbowFx.drawRainbowSkin).toHaveBeenCalled();
+        });
+
+        test('still draws it while both poisoned and slowed', () => {
+            player.isPoisonedActive = true;
+            player.isSlowed = true;
+            player.drawPlayerWithCurrentSkin(ctx);
+            expect(rainbowFx.drawRainbowSkin).toHaveBeenCalled();
+        });
+
+        test('passes the game pause state through', () => {
+            player.game.menu.pause = { isPaused: true };
+            player.drawPlayerWithCurrentSkin(ctx);
+            expect(rainbowFx.drawRainbowSkin).toHaveBeenCalledWith(
+                ctx,
+                expect.objectContaining({ paused: true })
             );
         });
     });

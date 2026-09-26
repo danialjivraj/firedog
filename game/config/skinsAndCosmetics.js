@@ -17,6 +17,7 @@ export const SKINS = {
     foxSkin: { key: 'foxSkin', spriteId: 'foxSkin', label: 'Fox', description: 'Sneaky forest charm with premium mischief included.', cutscene: { prefix: 'fox' }, price: 50, ownedByDefault: false },
     leopardSkin: { key: 'leopardSkin', spriteId: 'leopardSkin', label: 'Leopard', description: 'Spots, speed, and suspiciously fancy confidence.', cutscene: { prefix: 'leopard' }, price: 50, ownedByDefault: false },
     tigerSkin: { key: 'tigerSkin', spriteId: 'tigerSkin', label: 'Tiger', description: 'Orange, striped, and absolutely not a house cat.', cutscene: { prefix: 'tiger' }, price: 50, ownedByDefault: false },
+    rainbowSkin: { key: 'rainbowSkin', spriteId: 'rainbowSkin', label: 'Rainbow', description: 'Rare holographic pull. Color subject to change.', cutscene: { prefix: '' }, price: 100, ownedByDefault: false, fx: 'rainbow' },
     iceBreakerSkin: { key: 'iceBreakerSkin', spriteId: 'iceBreakerSkin', label: 'Ice Breaker', description: 'Cold enough to make awkward silence useful.', cutscene: { prefix: 'iceBreaker' }, price: 0, ownedByDefault: false, giftFlag: 'glacikalDefeated', giftColor: 'cyan' },
     infernalSkin: { key: 'infernalSkin', spriteId: 'infernalSkin', label: 'Infernal', description: 'So hot the lava asked for personal space.', cutscene: { prefix: 'infernal' }, price: 0, ownedByDefault: false, giftFlag: 'elyvorgDefeated', giftColor: 'orangered' },
     galaxySkin: { key: 'galaxySkin', spriteId: 'galaxySkin', label: 'Galaxy', description: 'One small step for Firedog, one giant nap after.', cutscene: { prefix: 'galaxy' }, price: 0, ownedByDefault: false, giftFlag: 'ntharaxDefeated', giftColor: 'violet' },
@@ -39,6 +40,7 @@ export const SKIN_MENU_ORDER = [
     'zebraSkin',
     'leopardSkin',
     'tigerSkin',
+    'rainbowSkin',
 ];
 
 export const COSMETIC_SLOTS = Object.freeze({
@@ -364,6 +366,11 @@ export function getSkinElement(skinKey) {
     });
 }
 
+export function getSkinFxId(skinKey) {
+    const entry = SKINS[skinKey];
+    return entry?.fx || null;
+}
+
 export function getCosmeticElement(slot, cosmeticKey) {
     const safeSlot = (slot && COSMETICS[slot]) ? slot : COSMETIC_SLOTS.HEAD;
     const key = cosmeticKey || 'none';
@@ -465,7 +472,7 @@ export function getCutsceneCosmeticOverlayId(slot, cosmeticKey) {
 
 // export function logCosmeticPrices() {
 //     const skinsTotal = Object.values(SKINS)
-//         .filter(s => !s.ownedByDefault && s.price < 1000)
+//         .filter(s => !s.ownedByDefault && s.price < MAX_CREDIT_COINS)
 //         .reduce((sum, s) => sum + (s.price || 0), 0);
 
 //     console.log('=== Skins ===');

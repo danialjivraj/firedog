@@ -13,6 +13,7 @@ jest.mock('../../game/config/skinsAndCosmetics.js', () => {
                 default: return '';
             }
         }),
+        getSkinFxId: jest.fn(() => null),
         getCutsceneCosmeticOverlayId: jest.fn((slot, key) => {
             if (!slot || !key || key === 'none') return null;
             return `${slot}_${key}_overlay`;

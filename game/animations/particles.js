@@ -1,5 +1,5 @@
 ﻿import { BASE_FRAME_MS, normalizeDelta } from '../config/constants.js';
-import { getHuedSprite, getBubbleBallSprite, getStatusBubbleSprite, getChickGlowSprite } from '../utils/spriteCache.js';
+import { getHuedSprite, getTintedFrame, getBubbleBallSprite, getStatusBubbleSprite, getChickGlowSprite } from '../utils/spriteCache.js';
 
 class Particle {
     constructor(game) {
@@ -607,6 +607,7 @@ export class DashGhost extends Particle {
         super(game);
 
         this.skinImg = snapshot?.skinImg ?? null;
+        this.tint = snapshot?.tint ?? null;
 
         const rawLayers = Array.isArray(snapshot?.layers) ? snapshot.layers : [];
         this.layers = rawLayers
@@ -697,11 +698,20 @@ export class DashGhost extends Particle {
 
         ctx.globalAlpha = skinAlpha;
         ctx.filter = 'none';
-        ctx.drawImage(
-            this.skinImg,
-            this.sx, this.sy, this.sw, this.sh,
-            -dw / 2, -dh / 2, dw, dh
-        );
+
+        const tinted = this.tint
+            ? getTintedFrame(this.skinImg, this.sx, this.sy, this.sw, this.sh, dw, dh, this.tint)
+            : null;
+
+        if (tinted) {
+            ctx.drawImage(tinted, -dw / 2, -dh / 2, dw, dh);
+        } else {
+            ctx.drawImage(
+                this.skinImg,
+                this.sx, this.sy, this.sw, this.sh,
+                -dw / 2, -dh / 2, dw, dh
+            );
+        }
 
         if (this.layers.length) {
             ctx.globalAlpha = layerAlpha;

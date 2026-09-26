@@ -8,6 +8,7 @@ import {
     getCosmeticChromaDegFromState,
     drawWithOptionalHue,
 } from '../config/skinsAndCosmetics.js';
+import { SKIN_FX_CHANNEL_MENU, drawSkinFx } from '../animations/skinFx.js';
 import { BaseMenu } from './baseMenu.js';
 import { MENU_COLORS } from './dom/menuTheme.js';
 import {
@@ -795,10 +796,24 @@ export class ForestMapMenu extends BaseMenu {
                         });
                     };
 
+                    const skinKey = this.game.menu.wardrobe?.currentSkinKey || 'defaultSkin';
+                    const fxOpts = {
+                        img: skinIcon,
+                        sx: 0, sy: 0, sw: FRAME_W, sh: FRAME_H,
+                        dx: px - (FRAME_W * scale) / 2,
+                        dy: py - (FRAME_H * scale) / 2,
+                        dw: FRAME_W * scale,
+                        dh: FRAME_H * scale,
+                        channel: SKIN_FX_CHANNEL_MENU,
+                        freeze: true,
+                    };
+
                     context.save();
                     context.globalAlpha = sealedBonus3 ? 0.45 : 1.0;
 
-                    drawFrame0WithHue(skinIcon, true, 0);
+                    if (!drawSkinFx(context, skinKey, fxOpts)) {
+                        drawFrame0WithHue(skinIcon, true, 0);
+                    }
 
                     for (const c of cosmeticIcons) {
                         drawFrame0WithHue(c.img, false, c.hueDeg);
