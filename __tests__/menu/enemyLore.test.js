@@ -222,6 +222,50 @@ describe('EnemyLore', () => {
         });
     });
 
+    describe('page flip lifecycle', () => {
+        const stubOffscreenPool = () => {
+            menu.pageFlip.ensurePool = (count) =>
+                Array.from({ length: count }, () => ({ canvas: { width: 10, height: 10 }, ctx: {} }));
+            menu.pageFlip.paintFace = jest.fn();
+        };
+
+        const startFlipAndFreeze = () => {
+            stubOffscreenPool();
+            menu.currentPage = 0;
+            menu.clickNextPage();
+            menu.update(100);
+        };
+
+        it('freezes a flip mid-turn while the book is closed, since update() stops running', () => {
+            startFlipAndFreeze();
+
+            const frozen = menu.pageFlip.progress;
+            expect(menu.pageFlip.isActive()).toBe(true);
+            expect(frozen).toBeGreaterThan(0);
+            expect(frozen).toBeLessThan(1);
+
+            expect(menu.pageFlip.progress).toBe(frozen);
+        });
+
+        it('resets the frozen flip when the book is reopened, so it never resumes mid-turn', () => {
+            startFlipAndFreeze();
+            expect(menu.pageFlip.isActive()).toBe(true);
+
+            menu.activateMenu();
+
+            expect(menu.pageFlip.isActive()).toBe(false);
+            expect(menu.pageFlip.progress).toBe(0);
+            expect(menu.pageFlip.leaves).toEqual([]);
+        });
+
+        it('keeps the page the flip was heading to', () => {
+            startFlipAndFreeze();
+            menu.activateMenu();
+
+            expect(menu.currentPage).toBe(2);
+        });
+    });
+
     describe('getMaxValidIndex()', () => {
         it('returns the last even index when the page count is even', () => {
             const evenPages = menu.pages.slice(0, 10);

@@ -75,7 +75,6 @@ describe('PauseMenu', () => {
                 'Back to Main Menu',
             ]);
             expect(menu.title).toBe('Paused');
-            expect(menu.positionOffset).toBe(180);
             expect(menu.selectedOption).toBe(0);
             expect(menu.isPaused).toBe(false);
             expect(menu.menuInGame).toBe(true);

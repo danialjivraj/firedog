@@ -83,8 +83,6 @@ describe('RecordsMenu', () => {
         unlock('map1', 'map2', 'map3', 'map4', 'map5', 'map6');
     };
 
-    const evtAt = (x, y, extra = {}) => ({ clientX: x, clientY: y, ...extra });
-
     const expectHoverSound = () => {
         expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
     };
@@ -95,13 +93,21 @@ describe('RecordsMenu', () => {
         if (mode === 'cantSelectForest') game.canSelectForestMap = false;
     };
 
-    const goBackButtonCenter = () => {
-        const optionHeight = 60;
-        const gapBelowTable = 70;
-        const bottomMargin = 0;
-        const buttonCenterX = game.width / 2;
-        const buttonTopY = Math.min(game.height - bottomMargin - optionHeight, menu.sectionBottomY + gapBelowTable);
-        return { x: buttonCenterX, y: buttonTopY + optionHeight / 2 };
+    const render = () => {
+        menu.ensurePanel();
+        menu.syncContent();
+        return menu.dom;
+    };
+
+    const hover = (element) => element.dispatchEvent(new Event('pointerenter'));
+    const leave = (element) => element.dispatchEvent(new Event('pointerleave'));
+    const pointerDown = (element, clientY) =>
+        element.dispatchEvent(Object.assign(new Event('pointerdown'), { clientY }));
+
+    const stubBar = (height) => {
+        const { bar } = render();
+        bar.getBoundingClientRect = () => ({ top: 0, height });
+        return bar;
     };
 
     beforeAll(() => {
@@ -115,10 +121,6 @@ describe('RecordsMenu', () => {
 
         menu = new RecordsMenu(game);
         menu.activateMenu();
-    });
-
-    afterEach(() => {
-        if (menu) menu.destroy();
     });
 
     describe('construction & lifecycle', () => {
@@ -143,18 +145,6 @@ describe('RecordsMenu', () => {
             expect(menu.draggingBar).toBe(false);
         });
 
-        test('destroy() removes the document listeners installed in the constructor', () => {
-            const removeSpy = jest.spyOn(document, 'removeEventListener');
-
-            const localMenu = new RecordsMenu(game);
-            localMenu.activateMenu();
-            localMenu.destroy();
-
-            expect(removeSpy).toHaveBeenCalledWith('mousedown', localMenu._onMouseDown);
-            expect(removeSpy).toHaveBeenCalledWith('mouseup', localMenu._onMouseUp);
-
-            removeSpy.mockRestore();
-        });
     });
 
     describe('pure helpers', () => {
@@ -227,12 +217,14 @@ describe('RecordsMenu', () => {
     });
 
     describe('layout & scrolling', () => {
-        test('tableBounds() clamps width to tableMaxWidth and centers the table', () => {
-            const { tableLeft, tableRight, tableWidth } = menu.tableBounds();
+        test('listHeight grows with the unlocked maps up to the scroll cap', () => {
+            const rowH = menu.listHeight;
 
-            expect(tableWidth).toBeLessThanOrEqual(menu.tableMaxWidth);
-            expect(tableRight - tableLeft).toBe(tableWidth);
-            expect(tableLeft).toBe(Math.floor((game.width - tableWidth) / 2));
+            unlock('map1', 'map2');
+            expect(menu.listHeight).toBe(rowH * 2);
+
+            unlockEnoughToScroll();
+            expect(menu.listHeight).toBe(rowH * 5);
         });
 
         test('update() computes scrollMax from content height and clamps targetScrollY into [0, scrollMax]', () => {
@@ -247,20 +239,17 @@ describe('RecordsMenu', () => {
             expect(menu.scrollY).toBeLessThanOrEqual(menu.targetScrollY);
         });
 
-        describe('scrollSelectedIntoView(listH, unlockedLen)', () => {
+        describe('scrollSelectedIntoView()', () => {
             test('adjusts targetScrollY to ensure the selected row is visible (and clamps within bounds)', () => {
                 unlockEnoughToScroll();
                 menu.update(16);
 
-                const { listH } = menu.geometry();
-                const unlockedLen = menu.getUnlockedMaps().length;
-
-                menu.selectedOption = unlockedLen - 1;
+                menu.selectedOption = menu.getUnlockedMaps().length - 1;
                 menu.targetScrollY = 0;
 
-                menu.scrollSelectedIntoView(listH, unlockedLen);
+                menu.scrollSelectedIntoView();
 
-                expect(menu.targetScrollY).toBeGreaterThanOrEqual(0);
+                expect(menu.targetScrollY).toBeGreaterThan(0);
                 expect(menu.targetScrollY).toBeLessThanOrEqual(menu.scrollMax);
             });
 
@@ -268,62 +257,68 @@ describe('RecordsMenu', () => {
                 unlockEnoughToScroll();
                 menu.update(16);
 
-                const { listH } = menu.geometry();
-                const unlockedLen = menu.getUnlockedMaps().length;
-
                 menu.targetScrollY = 123;
 
                 menu.selectedOption = -1;
-                menu.scrollSelectedIntoView(listH, unlockedLen);
+                menu.scrollSelectedIntoView();
                 expect(menu.targetScrollY).toBe(123);
 
-                menu.selectedOption = unlockedLen;
-                menu.scrollSelectedIntoView(listH, unlockedLen);
+                menu.selectedOption = menu.goBackIndex;
+                menu.scrollSelectedIntoView();
                 expect(menu.targetScrollY).toBe(123);
             });
         });
 
-        describe('updateScrollFromThumb(mouseY)', () => {
-            test('maps mouseY into [0, scrollMax] based on thumb travel', () => {
+        describe('dragging the scrollbar thumb', () => {
+            test('maps the pointer onto targetScrollY within [0, scrollMax]', () => {
+                stubBar(300);
                 menu.scrollMax = 500;
-                menu.barRect = { y: 100, h: 300, thumbH: 60 };
+                menu.barRect = { h: 300, thumbY: 0, thumbH: 60 };
+                menu.draggingBar = true;
 
-                const travel = 300 - 60;
-                const midMouseY = 100 + travel / 2 + 60 / 2;
-
-                menu.updateScrollFromThumb(midMouseY);
+                menu._dragBar({ clientY: (300 - 60) / 2 + 60 / 2 });
 
                 expect(menu.targetScrollY).toBeCloseTo(250, 0);
             });
 
-            test('clamps mouse positions above/below the track to 0/scrollMax', () => {
+            test('clamps pointer positions above/below the track to 0/scrollMax', () => {
+                stubBar(300);
                 menu.scrollMax = 500;
-                menu.barRect = { y: 100, h: 300, thumbH: 60 };
+                menu.barRect = { h: 300, thumbY: 0, thumbH: 60 };
+                menu.draggingBar = true;
 
-                menu.updateScrollFromThumb(0);
+                menu._dragBar({ clientY: -1000 });
                 expect(menu.targetScrollY).toBe(0);
 
-                menu.updateScrollFromThumb(10_000);
+                menu._dragBar({ clientY: 10000 });
                 expect(menu.targetScrollY).toBe(500);
             });
 
             test('does nothing when thumb travel is <= 1px', () => {
+                stubBar(60);
                 menu.scrollMax = 500;
                 menu.targetScrollY = 123;
-                menu.barRect = { y: 100, h: 60, thumbH: 59 };
+                menu.barRect = { h: 60, thumbY: 0, thumbH: 59 };
+                menu.draggingBar = true;
 
-                menu.updateScrollFromThumb(120);
+                menu._dragBar({ clientY: 20 });
 
                 expect(menu.targetScrollY).toBe(123);
             });
 
-            test('does nothing when barRect is not set', () => {
+            test('does nothing when not dragging, or when barRect is not set', () => {
+                stubBar(300);
                 menu.scrollMax = 500;
                 menu.targetScrollY = 321;
+                menu.barRect = { h: 300, thumbY: 0, thumbH: 60 };
+
+                menu.draggingBar = false;
+                menu._dragBar({ clientY: 200 });
+                expect(menu.targetScrollY).toBe(321);
+
+                menu.draggingBar = true;
                 menu.barRect = null;
-
-                menu.updateScrollFromThumb(200);
-
+                menu._dragBar({ clientY: 200 });
                 expect(menu.targetScrollY).toBe(321);
             });
         });
@@ -357,12 +352,10 @@ describe('RecordsMenu', () => {
             test('ArrowUp moves selection upward (wraps through Go Back) and plays hover sound', () => {
                 unlock('map1', 'map2');
 
-                const rowCount = menu.getUnlockedMaps().length + 1;
                 menu.selectedOption = 0;
-
                 menu.handleKeyDown({ key: 'ArrowUp' });
 
-                expect(menu.selectedOption).toBe(rowCount - 1);
+                expect(menu.selectedOption).toBe(menu.goBackIndex);
                 expectHoverSound();
             });
 
@@ -374,7 +367,7 @@ describe('RecordsMenu', () => {
                 menu.handleKeyDown({ key: 'Enter' });
                 expect(selectionSpy).not.toHaveBeenCalled();
 
-                menu.selectedOption = menu.getUnlockedMaps().length;
+                menu.selectedOption = menu.goBackIndex;
                 menu.handleKeyDown({ key: 'Enter' });
                 expect(selectionSpy).toHaveBeenCalledTimes(1);
 
@@ -400,61 +393,53 @@ describe('RecordsMenu', () => {
         });
 
         describe('mouse wheel (handleMouseWheel)', () => {
-            test('when cursor is inside a scrollable list, wheel scrolls (clamped) without changing selection', () => {
+            test('over a scrollable list, the wheel scrolls (clamped) without changing selection', () => {
                 unlockEnoughToScroll();
                 menu.update(16);
-                const geom = menu.geometry();
+                hover(render().viewport);
 
                 const prevSelected = menu.selectedOption;
-
                 menu.targetScrollY = menu.scrollMax - 10;
-                menu.handleMouseWheel(evtAt(geom.innerLeft + 10, geom.listTop + 10, { deltaY: 100 }));
 
-                expect(menu.targetScrollY).toBeLessThanOrEqual(menu.scrollMax);
-                expect(menu.targetScrollY).toBeGreaterThanOrEqual(0);
+                menu.handleMouseWheel({ deltaY: 100 });
+
+                expect(menu.targetScrollY).toBe(menu.scrollMax);
                 expect(menu.selectedOption).toBe(prevSelected);
             });
 
-            test('when cursor is inside a scrollable list, wheel scrolling up decreases targetScrollY and clamps at 0', () => {
+            test('over a scrollable list, scrolling up decreases targetScrollY and clamps at 0', () => {
                 unlockEnoughToScroll();
                 menu.update(16);
-                const geom = menu.geometry();
+                hover(render().viewport);
 
                 menu.targetScrollY = 10;
-                menu.handleMouseWheel(evtAt(geom.innerLeft + 10, geom.listTop + 10, { deltaY: -100 }));
+                menu.handleMouseWheel({ deltaY: -100 });
 
                 expect(menu.targetScrollY).toBe(0);
             });
 
-            test('when cursor is inside the list but it is not scrollable, wheel navigates selection and plays hover sound', () => {
+            test('over a list that cannot scroll, the wheel navigates and plays the hover sound', () => {
                 unlock('map1', 'map2'); // not enough rows to scroll
                 menu.update(16);
-                const geom = menu.geometry();
-
-                const unlockedLen = menu.getUnlockedMaps().length;
-                const rowCount = unlockedLen + 1;
+                hover(render().viewport);
 
                 menu.selectedOption = 0;
-
-                menu.handleMouseWheel(evtAt(geom.innerLeft + 10, geom.listTop + 10, { deltaY: 100 }));
+                menu.handleMouseWheel({ deltaY: 100 });
 
                 expect(menu.scrollMax).toBe(0);
-                expect(menu.selectedOption).toBe((0 + 1 + rowCount) % rowCount);
+                expect(menu.selectedOption).toBe(1);
                 expectHoverSound();
             });
 
-            test('when cursor is outside the list, wheel navigates selection and plays hover sound', () => {
+            test('away from the list, the wheel navigates and plays the hover sound', () => {
                 unlockEnoughToScroll();
                 menu.update(16);
-
-                const unlockedLen = menu.getUnlockedMaps().length;
-                const rowCount = unlockedLen + 1;
+                leave(render().viewport);
 
                 menu.selectedOption = 0;
+                menu.handleMouseWheel({ deltaY: 100 });
 
-                menu.handleMouseWheel(evtAt(5, 5, { deltaY: 100 }));
-
-                expect(menu.selectedOption).toBe((0 + 1 + rowCount) % rowCount);
+                expect(menu.selectedOption).toBe(1);
                 expectHoverSound();
             });
 
@@ -470,128 +455,65 @@ describe('RecordsMenu', () => {
                 const prevTarget = menu.targetScrollY;
 
                 setInactiveOrDisabledSelection(mode);
-                menu.handleMouseWheel(evtAt(10, 10, { deltaY: 100 }));
+                menu.handleMouseWheel({ deltaY: 100 });
 
                 expect(menu.selectedOption).toBe(prevSelected);
                 expect(menu.targetScrollY).toBe(prevTarget);
             });
         });
 
-        describe('mouse (move/down/up/click)', () => {
-            test('mousemove over a list row updates selectedOption and plays hover sound (when selection changes)', () => {
+        describe('pointer (hover / scrollbar / click)', () => {
+            test('hovering a list row updates selectedOption and plays the hover sound', () => {
                 unlock('map1', 'map2', 'map3');
                 menu.update(16);
-                const geom = menu.geometry();
 
                 menu.selectedOption = 1;
                 game.audioHandler.menu.playSound.mockClear();
 
-                menu.handleMouseMove(evtAt(geom.innerLeft + 10, geom.listTop + 5));
+                hover(render().mapRows[0].root);
 
                 expect(menu.selectedOption).toBe(0);
                 expectHoverSound();
             });
 
-            test('mousemove uses scrollY when calculating which row is hovered', () => {
-                unlockEnoughToScroll();
-                menu.update(16);
-                const geom = menu.geometry();
-
-                menu.scrollY = menu.rowH + menu.rowGap; // scroll down by ~1 row
-
-                game.audioHandler.menu.playSound.mockClear();
-
-                // hover at the top of the list -> should resolve to index 1 due to scrollY
-                menu.handleMouseMove(evtAt(geom.innerLeft + 10, geom.listTop + 1));
-
-                expect(menu.selectedOption).toBe(1);
-                expectHoverSound();
-            });
-
-            test('mousemove over the Go Back button selects the Go Back row', () => {
+            test('hovering the Go Back button selects the Go Back row', () => {
                 unlock('map1', 'map2');
                 menu.update(16);
 
-                const goBackIndex = menu.getUnlockedMaps().length;
-                const { x, y } = goBackButtonCenter();
-
                 menu.selectedOption = 0;
+                hover(render().back);
 
-                menu.handleMouseMove(evtAt(x, y));
-
-                expect(menu.selectedOption).toBe(goBackIndex);
+                expect(menu.selectedOption).toBe(menu.goBackIndex);
             });
 
-            test('while dragging the scrollbar thumb, mousemove delegates to updateScrollFromThumb()', () => {
+            test('pointerdown on the scrollbar thumb starts dragging; pointerup stops it', () => {
                 unlockEnoughToScroll();
                 menu.update(16);
 
-                menu.draggingBar = true;
-                menu.barRect = { y: 100, h: 300, thumbH: 60 };
+                const bar = stubBar(menu.listHeight);
+                menu.barRect = { h: menu.listHeight, thumbY: 20, thumbH: 40 };
                 menu.scrollMax = 500;
 
-                const spy = jest.spyOn(menu, 'updateScrollFromThumb');
-
-                menu.handleMouseMove(evtAt(10, 150));
-
-                expect(spy).toHaveBeenCalledWith(expect.any(Number));
-                spy.mockRestore();
-            });
-
-            test('mousedown on scrollbar thumb starts dragging; mouseup stops dragging', () => {
-                unlockEnoughToScroll();
-                menu.update(16);
-                const geom = menu.geometry();
-
-                menu.barRect = {
-                    x: geom.barX,
-                    y: geom.listTop,
-                    w: menu.barWidth,
-                    h: geom.listH,
-                    thumbY: geom.listTop + 20,
-                    thumbH: 40,
-                };
-
-                menu.handleMouseDown(evtAt(menu.barRect.x + 2, menu.barRect.thumbY + 2));
+                pointerDown(bar, 30);
                 expect(menu.draggingBar).toBe(true);
 
-                menu.handleMouseUp();
+                document.dispatchEvent(new Event('pointerup'));
                 expect(menu.draggingBar).toBe(false);
             });
 
-            test('mousedown on scrollbar track (not thumb) jumps targetScrollY within bounds', () => {
+            test('pointerdown on the scrollbar track (not the thumb) jumps targetScrollY within bounds', () => {
                 unlockEnoughToScroll();
                 menu.update(16);
-                const geom = menu.geometry();
 
+                const bar = stubBar(menu.listHeight);
                 menu.scrollMax = 500;
                 menu.targetScrollY = 0;
+                menu.barRect = { h: menu.listHeight, thumbY: 0, thumbH: 34 };
 
-                menu.barRect = {
-                    x: geom.barX,
-                    y: geom.listTop,
-                    w: menu.barWidth,
-                    h: geom.listH,
-                    thumbY: geom.listTop + 10,
-                    thumbH: 34,
-                };
-
-                menu.handleMouseDown(evtAt(menu.barRect.x + 2, menu.barRect.y + menu.barRect.h - 2));
+                pointerDown(bar, menu.listHeight - 2);
 
                 expect(menu.targetScrollY).toBeGreaterThan(0);
                 expect(menu.targetScrollY).toBeLessThanOrEqual(menu.scrollMax);
-            });
-
-            test('mousedown inside the list selects the clicked row', () => {
-                unlock('map1', 'map2', 'map3');
-                menu.update(16);
-                const geom = menu.geometry();
-
-                menu.selectedOption = 2;
-
-                menu.handleMouseDown(evtAt(geom.innerLeft + 10, geom.listTop + 5));
-
-                expect(menu.selectedOption).toBe(0);
             });
 
             test('click triggers handleMenuSelection() only when Go Back is selected', () => {
@@ -602,7 +524,7 @@ describe('RecordsMenu', () => {
                 menu.handleMouseClick();
                 expect(spy).not.toHaveBeenCalled();
 
-                menu.selectedOption = menu.getUnlockedMaps().length; // go back
+                menu.selectedOption = menu.goBackIndex;
                 menu.handleMouseClick();
                 expect(spy).toHaveBeenCalledTimes(1);
 
@@ -613,17 +535,19 @@ describe('RecordsMenu', () => {
                 ['inactive', 'menu is inactive'],
                 ['cantSelect', 'game.canSelect is false'],
                 ['cantSelectForest', 'game.canSelectForestMap is false'],
-            ])('ignores mouse interactions when %s (%s)', (mode) => {
+            ])('ignores pointer interactions when %s (%s)', (mode) => {
                 unlockEnoughToScroll();
                 menu.update(16);
+                const dom = render();
 
                 const prevSelected = menu.selectedOption;
                 const prevTarget = menu.targetScrollY;
 
                 setInactiveOrDisabledSelection(mode);
 
-                menu.handleMouseMove(evtAt(10, 10));
-                menu.handleMouseDown(evtAt(10, 10));
+                hover(dom.mapRows[1].root);
+                hover(dom.back);
+                pointerDown(stubBar(menu.listHeight), 10);
                 menu.handleMouseClick();
 
                 expect(menu.selectedOption).toBe(prevSelected);
@@ -662,23 +586,27 @@ describe('RecordsMenu', () => {
     });
 
     describe('rendering (draw)', () => {
+        const panelText = () => menu.panel.textContent;
+
         test('draw() is a no-op when menu is inactive', () => {
             menu.menuActive = false;
+            const syncSpy = jest.spyOn(menu, 'syncPanel');
 
             menu.draw(ctx);
 
+            expect(syncSpy).not.toHaveBeenCalled();
             expect(ctx.fillText).not.toHaveBeenCalled();
+
+            syncSpy.mockRestore();
         });
 
         test('when no maps are unlocked, renders the empty-state message and still draws Go Back', () => {
             expect(() => menu.draw(ctx)).not.toThrow();
 
-            expect(ctx.fillText).toHaveBeenCalledWith(
-                'No maps unlocked yet.',
-                game.width / 2,
-                (menu.sectionTopY + menu.sectionBottomY) / 2
-            );
-            expect(ctx.fillText).toHaveBeenCalledWith('Go Back', expect.any(Number), expect.any(Number));
+            const empty = menu.panel.querySelector('.records-empty');
+            expect(empty.hidden).toBe(false);
+            expect(empty.textContent).toBe('No maps unlocked yet.');
+            expect(menu.dom.back.textContent.trim()).toBe('Go Back');
         });
 
         test('for a boss map, renders a "Boss:" line only when bossMs is present (Map7)', () => {
@@ -689,8 +617,11 @@ describe('RecordsMenu', () => {
 
             expect(() => menu.draw(ctx)).not.toThrow();
 
-            expect(ctx.fillText).toHaveBeenCalledWith('02:00.00', expect.any(Number), expect.any(Number));
-            expect(ctx.fillText).toHaveBeenCalledWith(expect.stringMatching(/^Boss: /), expect.any(Number), expect.any(Number));
+            expect(panelText()).toContain('02:00.00');
+
+            const boss = menu.panel.querySelector('.records-row__boss');
+            expect(boss.hidden).toBe(false);
+            expect(boss.textContent).toMatch(/^Boss: /);
         });
 
         test('renders clear times (including em dash for null) and sets barRect when scrollable', () => {
@@ -705,21 +636,16 @@ describe('RecordsMenu', () => {
 
             expect(() => menu.draw(ctx)).not.toThrow();
 
-            expect(ctx.fillText).toHaveBeenCalledWith('01:05.43', expect.any(Number), expect.any(Number));
-            expect(ctx.fillText).toHaveBeenCalledWith('—', expect.any(Number), expect.any(Number));
+            expect(panelText()).toContain('01:05.43');
+            expect(panelText()).toContain('—');
 
             expect(menu.scrollMax).toBeGreaterThan(0);
             expect(menu.barRect).not.toBeNull();
-            expect(menu.barRect).toEqual(
-                expect.objectContaining({
-                    x: expect.any(Number),
-                    y: expect.any(Number),
-                    w: menu.barWidth,
-                    h: expect.any(Number),
-                    thumbY: expect.any(Number),
-                    thumbH: expect.any(Number),
-                })
-            );
+            expect(menu.barRect).toEqual({
+                h: menu.listHeight,
+                thumbY: expect.any(Number),
+                thumbH: expect.any(Number),
+            });
         });
 
         test('clears barRect when content is not scrollable', () => {

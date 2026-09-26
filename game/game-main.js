@@ -43,6 +43,7 @@ import {
 import { BossManager } from "./entities/enemies/bosses/bossManager.js";
 import { SKINS } from "./config/skinsAndCosmetics.js";
 import { MenuNavigator } from "./menu/menuNavigator.js";
+import { getMenuLayer } from "./menu/dom/menuLayer.js";
 import { CoinConvertToast } from "./interface/coinConvertToast.js";
 import { getEnemySpawnConfig } from "./config/enemySpawnConfig.js";
 import {
@@ -127,6 +128,7 @@ export class Game {
         this.tutorial = new Tutorial(this);
         this.keyBindings = getDefaultKeyBindings();
         this._defaultKeyBindings = getDefaultKeyBindings();
+        this.menuLayer = getMenuLayer();
         this.menu = {
             main: new MainMenu(this),
             forestMap: new ForestMapMenu(this),
@@ -934,6 +936,7 @@ export class Game {
     // ------------------------------------------------------------ Global Overlays ------------------------------------------------------------
 
     updateGlobalOverlays(deltaTime) {
+        this.menuLayer.sync(this);
         this.metaToasts.forEach(t => t.update(deltaTime));
         Game._removeDeleted(this.metaToasts);
         this.coinConvertToasts.forEach(t => t.update(deltaTime));

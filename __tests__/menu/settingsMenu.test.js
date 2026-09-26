@@ -129,23 +129,25 @@ describe('SettingsMenu', () => {
     });
   });
 
+  const labels = () => menu.menuOptions.map((_, i) => menu.getOptionLabel(i));
+
+  const FULL_LABELS = [
+    'Audio',
+    'Controls',
+    'Difficulty',
+    'Interface',
+    'Display: Windowed',
+    'Tutorial: OFF',
+    'Delete Progress',
+    'Go Back',
+  ];
+
   describe('activateMenu() arg parsing, menuOptions switching, and clamping', () => {
     test('activateMenu(number): uses full options (out-of-game) and clamps selectedOption into range', () => {
       menu.activateMenu(999);
 
       expect(menu.menuInGame).toBe(false);
-
-      expect(menu.menuOptions).toEqual([
-        'Audio',
-        'Controls',
-        'Difficulty',
-        'Interface',
-        'Display: Windowed',
-        'Tutorial: OFF',
-        'Delete Progress',
-        'Go Back',
-      ]);
-
+      expect(labels()).toEqual(FULL_LABELS);
       expect(menu.selectedOption).toBe(menu.menuOptions.length - 1);
       expect(mockGame.currentMenu).toBe(menu);
     });
@@ -154,7 +156,7 @@ describe('SettingsMenu', () => {
       menu.activateMenu({ inGame: true, selectedOption: 999 });
 
       expect(menu.menuInGame).toBe(true);
-      expect(menu.menuOptions).toEqual(['Audio', 'Controls', 'Interface', 'Display: Windowed', 'Go Back']);
+      expect(labels()).toEqual(['Audio', 'Controls', 'Interface', 'Display: Windowed', 'Go Back']);
       expect(menu.selectedOption).toBe(menu.menuOptions.length - 1);
       expect(mockGame.currentMenu).toBe(menu);
     });
@@ -163,60 +165,17 @@ describe('SettingsMenu', () => {
       menu.activateMenu({ inGame: false, selectedOption: 2 });
 
       expect(menu.menuInGame).toBe(false);
-      expect(menu.menuOptions).toEqual([
-        'Audio',
-        'Controls',
-        'Difficulty',
-        'Interface',
-        'Display: Windowed',
-        'Tutorial: OFF',
-        'Delete Progress',
-        'Go Back',
-      ]);
+      expect(labels()).toEqual(FULL_LABELS);
       expect(menu.selectedOption).toBe(2);
       expect(mockGame.currentMenu).toBe(menu);
     });
-  });
 
-  describe('_applyMenuLayout() layout rules', () => {
-    test('out-of-game: _applyMenuLayout restores the adjusted full-menu position', () => {
-      const basePos = menu.positionOffset;
-      const baseMenuPos = menu.menuOptionsPositionOffset;
-
-      menu.positionOffset = 999;
-      menu.menuOptionsPositionOffset = 888;
-
-      menu.menuInGame = false;
-      menu._applyMenuLayout();
-
-      expect(menu.positionOffset).toBe(basePos + 40);
-      expect(menu.menuOptionsPositionOffset).toBe(baseMenuPos);
-    });
-
-    test('in-game: _applyMenuLayout sets positionOffset to 200', () => {
-      const basePos = menu.positionOffset;
-
-      menu.menuInGame = true;
-      menu.menuOptions = menu._baseInGameOptions;
-      menu._applyMenuLayout();
-
-      expect(menu.positionOffset).toBe(200);
-      expect(menu.positionOffset).not.toBe(basePos);
-    });
-
-    test('activateMenu({inGame:true}) applies in-game layout; activateMenu({inGame:false}) restores base layout', () => {
-      const basePos = menu.positionOffset;
-      const baseMenuPos = menu.menuOptionsPositionOffset;
-
+    test('switching in and out of game swaps the option list back and forth', () => {
       menu.activateMenu({ inGame: true, selectedOption: 0 });
-      expect(menu.menuInGame).toBe(true);
-
-      expect(menu.positionOffset).toBe(200);
+      expect(menu.menuOptions).not.toContain('Delete Progress');
 
       menu.activateMenu({ inGame: false, selectedOption: 0 });
-      expect(menu.menuInGame).toBe(false);
-      expect(menu.positionOffset).toBe(basePos + 40);
-      expect(menu.menuOptionsPositionOffset).toBe(baseMenuPos);
+      expect(menu.menuOptions).toContain('Delete Progress');
     });
   });
 
@@ -231,7 +190,7 @@ describe('SettingsMenu', () => {
 
     test('"Tutorial" toggles isTutorialActive, updates label, and saves', () => {
       expect(mockGame.isTutorialActive).toBe(false);
-      expect(menu.menuOptions[5]).toBe('Tutorial: OFF');
+      expect(menu.getOptionLabel(5)).toBe('Tutorial: OFF');
 
       selectAndRun(5);
 
@@ -243,12 +202,12 @@ describe('SettingsMenu', () => {
       expect(mockGame.isTutorialActive).toBe(true);
       expect(mockGame.tutorial.tutorialPause).toBe(true);
       expect(mockGame.saveGameState).toHaveBeenCalled();
-      expect(menu.menuOptions[5]).toBe('Tutorial: ON');
+      expect(menu.getOptionLabel(5)).toBe('Tutorial: ON');
 
       selectAndRun(5);
       expect(mockGame.isTutorialActive).toBe(false);
       expect(mockGame.saveGameState).toHaveBeenCalled();
-      expect(menu.menuOptions[5]).toBe('Tutorial: OFF');
+      expect(menu.getOptionLabel(5)).toBe('Tutorial: OFF');
     });
 
     test('"Audio" plays select sound and opens Audio Settings at index 0', () => {
@@ -344,7 +303,7 @@ describe('SettingsMenu', () => {
       window.electronAPI = { setWindowMode: jest.fn() };
 
       expect(mockGame.windowMode).toBe('windowed');
-      expect(menu.menuOptions[4]).toBe('Display: Windowed');
+      expect(menu.getOptionLabel(4)).toBe('Display: Windowed');
 
       selectAndRun(4);
 
@@ -356,13 +315,13 @@ describe('SettingsMenu', () => {
       expect(mockGame.windowMode).toBe('fullscreen');
       expect(window.electronAPI.setWindowMode).toHaveBeenCalledWith('fullscreen');
       expect(mockGame.saveGameState).toHaveBeenCalled();
-      expect(menu.menuOptions[4]).toBe('Display: Fullscreen');
+      expect(menu.getOptionLabel(4)).toBe('Display: Fullscreen');
 
       selectAndRun(4);
       expect(mockGame.windowMode).toBe('windowed');
       expect(window.electronAPI.setWindowMode).toHaveBeenCalledWith('windowed');
       expect(mockGame.saveGameState).toHaveBeenCalled();
-      expect(menu.menuOptions[4]).toBe('Display: Windowed');
+      expect(menu.getOptionLabel(4)).toBe('Display: Windowed');
 
       delete window.electronAPI;
     });
@@ -474,7 +433,7 @@ describe('SettingsMenu', () => {
       window.electronAPI = { setWindowMode: jest.fn() };
 
       expect(mockGame.windowMode).toBe('windowed');
-      expect(menu.menuOptions[3]).toBe('Display: Windowed');
+      expect(menu.getOptionLabel(3)).toBe('Display: Windowed');
 
       menu.selectedOption = 3;
       menu.handleMenuSelection();
@@ -482,7 +441,7 @@ describe('SettingsMenu', () => {
       expect(mockGame.windowMode).toBe('fullscreen');
       expect(window.electronAPI.setWindowMode).toHaveBeenCalledWith('fullscreen');
       expect(mockGame.saveGameState).toHaveBeenCalled();
-      expect(menu.menuOptions[3]).toBe('Display: Fullscreen');
+      expect(menu.getOptionLabel(3)).toBe('Display: Fullscreen');
 
       delete window.electronAPI;
     });

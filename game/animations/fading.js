@@ -2,6 +2,8 @@ export function fadeIn(element, duration, callback) {
   let start;
   const fadeInDuration = duration;
 
+  element.style.opacity = 0;
+
   function animate(timeStamp) {
     if (!start) start = timeStamp;
 

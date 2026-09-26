@@ -18,6 +18,18 @@ describe('DifficultyMenu', () => {
         ...extra,
     });
 
+    const panel = () => menu.ensurePanel();
+    const segmentAt = (row, option) => {
+        panel();
+        return menu.dom.segments[row][option];
+    };
+    const footerAt = (i) => {
+        panel();
+        return menu.dom.footerButtons[i];
+    };
+    const hover = (element) => element.dispatchEvent(new Event('pointerenter'));
+    const clickOn = (element) => menu.handleMouseClick(mkMouseEvt({ target: element }));
+
     beforeAll(() => {
         document.body.innerHTML = `<img id="mainmenubackground" />`;
     });
@@ -204,7 +216,6 @@ describe('DifficultyMenu', () => {
 
             expect(menu.focusedRow).toBe(2);
             expect(menu.menuInGame).toBe(true);
-            expect(menu.showStarsSticker).toBe(false);
         });
 
         it('clamps focusedRow to valid range', () => {
@@ -223,23 +234,20 @@ describe('DifficultyMenu', () => {
 
             expect(menu.getNavState()).toEqual({
                 selectedOption: 3,
-                menuInGame: true,
+                inGame: true,
             });
         });
 
-        it('activateFromNav restores nav state', () => {
-            menu.activateFromNav({ selectedOption: 4, menuInGame: true });
+        it('activateFromNav restores the state getNavState captured', () => {
+            menu.focusedRow = 4;
+            menu.menuInGame = true;
+            const state = menu.getNavState();
+
+            menu.focusedRow = 0;
+            menu.menuInGame = false;
+            menu.activateFromNav(state);
 
             expect(menu.focusedRow).toBe(4);
-            expect(menu.menuInGame).toBe(true);
-            expect(menu.showStarsSticker).toBe(false);
-        });
-
-        it('activateFromNav falls back to existing menuInGame when omitted', () => {
-            menu.menuInGame = true;
-            menu.activateFromNav({ selectedOption: 1 });
-
-            expect(menu.focusedRow).toBe(1);
             expect(menu.menuInGame).toBe(true);
         });
     });
@@ -420,13 +428,9 @@ describe('DifficultyMenu', () => {
         });
     });
 
-    describe('handleMouseMove()', () => {
+    describe('pointer hover', () => {
         it('hovers a lives option and updates focusedRow', () => {
-            const { listTop, optionsStartX } = menu._getLayout();
-            const y = listTop;
-            const x = optionsStartX + 10;
-
-            menu.handleMouseMove(mkMouseEvt({ clientX: x, clientY: y }));
+            hover(segmentAt(0, 0));
 
             expect(menu._hoverRow).toBe(0);
             expect(menu._hoverOptIdx).toBe(0);
@@ -435,30 +439,25 @@ describe('DifficultyMenu', () => {
         });
 
         it('hovers reset button and updates focusedRow to 3', () => {
-            const { centerX, resetY } = menu._getLayout();
-
-            menu.handleMouseMove(mkMouseEvt({ clientX: centerX, clientY: resetY }));
+            hover(footerAt(0));
 
             expect(menu._hoverButton).toBe(0);
             expect(menu.focusedRow).toBe(3);
         });
 
         it('hovers go back button and updates focusedRow to 4', () => {
-            const { centerX, backY } = menu._getLayout();
-
-            menu.handleMouseMove(mkMouseEvt({ clientX: centerX, clientY: backY }));
+            hover(footerAt(1));
 
             expect(menu._hoverButton).toBe(1);
             expect(menu.focusedRow).toBe(4);
         });
 
         it('does not play hover sound when hover target did not change', () => {
-            const { listTop, optionsStartX } = menu._getLayout();
-            const evt = mkMouseEvt({ clientX: optionsStartX + 10, clientY: listTop });
+            const segment = segmentAt(0, 0);
 
-            menu.handleMouseMove(evt);
+            hover(segment);
             mockGame.audioHandler.menu.playSound.mockClear();
-            menu.handleMouseMove(evt);
+            hover(segment);
 
             expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalled();
         });
@@ -470,10 +469,7 @@ describe('DifficultyMenu', () => {
         });
 
         it('clicking a Lives pill updates livesIndex and saves', () => {
-            menu._hoverRow = 0;
-            menu._hoverOptIdx = 0;
-
-            menu.handleMouseClick(mkMouseEvt());
+            clickOn(segmentAt(0, 0));
 
             expect(menu.livesIndex).toBe(0);
             expect(mockGame.player.lives).toBe(1);
@@ -481,20 +477,14 @@ describe('DifficultyMenu', () => {
         });
 
         it('clicking a Power Up pill updates powerUpIndex', () => {
-            menu._hoverRow = 1;
-            menu._hoverOptIdx = 3;
-
-            menu.handleMouseClick(mkMouseEvt());
+            clickOn(segmentAt(1, 3));
 
             expect(menu.powerUpIndex).toBe(3);
             expect(mockGame.powerUpSpawnMultiplier).toBe(1.5);
         });
 
         it('clicking a Power Down pill updates powerDownIndex', () => {
-            menu._hoverRow = 2;
-            menu._hoverOptIdx = 0;
-
-            menu.handleMouseClick(mkMouseEvt());
+            clickOn(segmentAt(2, 0));
 
             expect(menu.powerDownIndex).toBe(0);
             expect(mockGame.powerDownSpawnMultiplier).toBe(0);
@@ -502,32 +492,25 @@ describe('DifficultyMenu', () => {
 
         it('clicking Reset button calls _onReset', () => {
             jest.spyOn(menu, '_onReset');
-            menu._hoverRow = -1;
-            menu._hoverOptIdx = -1;
-            menu._hoverButton = 0;
 
-            menu.handleMouseClick(mkMouseEvt());
+            clickOn(footerAt(0));
 
             expect(menu._onReset).toHaveBeenCalledTimes(1);
         });
 
         it('clicking Go Back button calls _onGoBack', () => {
             jest.spyOn(menu, '_onGoBack');
-            menu._hoverRow = -1;
-            menu._hoverOptIdx = -1;
-            menu._hoverButton = 1;
 
-            menu.handleMouseClick(mkMouseEvt());
+            clickOn(footerAt(1));
 
             expect(menu._onGoBack).toHaveBeenCalledTimes(1);
         });
 
         it('does nothing when menuActive is false', () => {
+            const segment = segmentAt(0, 1);
             menu.menuActive = false;
-            menu._hoverRow = 0;
-            menu._hoverOptIdx = 1;
 
-            menu.handleMouseClick(mkMouseEvt());
+            clickOn(segment);
 
             expect(mockGame.saveGameState).not.toHaveBeenCalled();
         });

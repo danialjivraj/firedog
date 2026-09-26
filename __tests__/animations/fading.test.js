@@ -29,6 +29,13 @@ describe('fading animations', () => {
     });
 
     describe('fadeIn()', () => {
+        it('blacks the element out synchronously, before the first frame runs', () => {
+            element.style.opacity = 1;
+
+            fadeIn(element, 100, callback);
+            expect(parseFloat(element.style.opacity)).toBe(0);
+        });
+
         it('ramps opacity from 0→1 over the duration and calls callback', () => {
             fadeIn(element, 100, callback);
 

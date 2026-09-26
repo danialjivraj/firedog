@@ -1,15 +1,27 @@
-import { BaseMenu } from './baseMenu.js';
+import { DomMenu } from './dom/domMenu.js';
+import { hasUnboundKeybind } from './dom/menuBadges.js';
 import { DeleteProgressAnimation, DeleteProgressBookAnimation, SavingAnimation, SavingBookAnimation } from '../animations/savingAnimation.js';
 
-export class MainMenu extends BaseMenu {
+const TARGETS = {
+    'Play': 'forestMap',
+    'Wardrobe': 'wardrobe',
+    'Records': 'records',
+    'How to Play': 'howToPlay',
+    'Settings': 'settings',
+};
+
+export class MainMenu extends DomMenu {
     constructor(game) {
-        const menuOptions = ['Play', 'Wardrobe', 'Records', 'How to Play', 'Settings', 'Exit'];
-        super(game, menuOptions, 'Main Menu');
+        super(game, [...Object.keys(TARGETS), 'Exit'], 'Main Menu');
         this.showSavingSprite = false;
         this.savingAnimation = new SavingAnimation(this.game);
         this.savingBookAnimation = new SavingBookAnimation(this.game);
         this.deleteProgressAnimation = new DeleteProgressAnimation(this.game);
         this.deleteProgressBookAnimation = new DeleteProgressBookAnimation(this.game);
+    }
+
+    getOptionBadge(index) {
+        return this.menuOptions[index] === 'Settings' && hasUnboundKeybind(this.game);
     }
 
     handleMenuSelection() {
@@ -18,20 +30,16 @@ export class MainMenu extends BaseMenu {
 
         super.handleMenuSelection();
 
+        if (selectedOption === 'Exit') {
+            window.electronAPI.quitApp();
+            return;
+        }
+
         if (selectedOption === 'Play') {
             this.game.audioHandler.menu.playSound('mapOpening', false, true);
-            this.game.openMenu(this.game.menu.forestMap, 0);
-        } else if (selectedOption === 'Wardrobe') {
-            this.game.openMenu(this.game.menu.wardrobe, 0);
-        } else if (selectedOption === 'Records') {
-            this.game.openMenu(this.game.menu.records, 0);
-        } else if (selectedOption === 'How to Play') {
-            this.game.openMenu(this.game.menu.howToPlay, 0);
-        } else if (selectedOption === 'Settings') {
-            this.game.openMenu(this.game.menu.settings, 0);
-        } else if (selectedOption === 'Exit') {
-            window.electronAPI.quitApp();
         }
+
+        this.game.openMenu(this.game.menu[TARGETS[selectedOption]], 0);
     }
 
     update(deltaTime) {

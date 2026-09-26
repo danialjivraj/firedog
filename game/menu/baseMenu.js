@@ -12,7 +12,6 @@ export class BaseMenu {
         this.game = game;
         this.centerX = this.game.width / 2;
         this.positionOffset = 220;
-        this.menuOptionsPositionOffset = 65;
         this.menuOptions = menuOptions ?? [];
         this.title = title;
         this.selectedOption = 0;
@@ -30,8 +29,6 @@ export class BaseMenu {
         this.storyCompleteTextImage = document.getElementById('storyCompleteText');
         this.showStarsSticker = true;
 
-        this.optionWidth = 300;
-
         this.frameTimer = 0;
         this.frameX = 0;
         this.frameInterval = Infinity; // never advances unless subclass sets a real interval
@@ -42,6 +39,14 @@ export class BaseMenu {
         document.addEventListener('click', this.handleMouseClick.bind(this));
         document.addEventListener('contextmenu', this.handleRightClick.bind(this));
         document.addEventListener('wheel', this.handleMouseWheel.bind(this));
+    }
+
+    playHover() {
+        this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
+    }
+
+    playSelect() {
+        this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
     }
 
     drawBackdrop(context) {
@@ -61,52 +66,15 @@ export class BaseMenu {
         context.restore();
     }
 
-    drawTitle(context, y = this.game.height / 2 - this.positionOffset) {
-        context.save();
-        context.font = 'bold 46px Love Ya Like A Sister';
-        context.fillStyle = 'white';
-        context.shadowColor = 'black';
-        context.shadowOffsetX = 3;
-        context.shadowOffsetY = 3;
-        context.textAlign = 'center';
-        context.fillText(this.title, this.game.width / 2, y);
-        context.restore();
+    draw(context) {
+        if (!this.menuActive) return;
+        this.drawBackdrop(context);
+        this.drawStars(context);
     }
 
-    draw(context) {
-        if (this.menuActive) {
-            this.drawBackdrop(context);
-            this.drawTitle(context);
-
-            context.save();
-            context.font = '34px Arial';
-            context.fillStyle = 'white';
-            context.shadowColor = 'black';
-            context.shadowOffsetX = 3;
-            context.shadowOffsetY = 3;
-            context.textAlign = 'center';
-
-            const optionHeight = 60;
-            const topY = this.game.height / 2 - this.positionOffset + this.menuOptionsPositionOffset;
-
-            for (let i = 0; i < this.menuOptions.length; i++) {
-                const y = topY + (i * optionHeight);
-
-                if (i === this.selectedOption) {
-                    context.font = 'bold 36px Arial';
-                    context.fillStyle = 'yellow';
-                } else {
-                    context.font = '34px Arial';
-                    context.fillStyle = 'white';
-                }
-                context.fillText(this.menuOptions[i], this.centerX, y + optionHeight / 2);
-            }
-
-            context.restore();
-
-            if (this.showStarsSticker && this.menuInGame === false) {
-                this.drawStarsSticker(context);
-            }
+    drawStars(context) {
+        if (this.showStarsSticker && this.menuInGame === false) {
+            this.drawStarsSticker(context);
         }
     }
 
@@ -292,7 +260,7 @@ export class BaseMenu {
     }
 
     handleMenuSelection() {
-        this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
+        this.playSelect();
     }
 
     handleNavigation(delta) {
@@ -308,27 +276,22 @@ export class BaseMenu {
     }
 
     handleKeyDown(event) {
-        if (this._canInteract()) {
-            if (event.key === 'ArrowUp') {
-                this.handleNavigation(-1);
-                this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
-            } else if (event.key === 'ArrowDown') {
-                this.handleNavigation(1);
-                this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
-            } else if (event.key === 'Enter') {
-                event.preventDefault();
-                event.stopImmediatePropagation();
-                this.handleMenuSelection();
-            }
+        if (!this._canInteract()) return;
+
+        if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+            this.handleNavigation(event.key === 'ArrowUp' ? -1 : 1);
+            this.playHover();
+        } else if (event.key === 'Enter') {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            this.handleMenuSelection();
         }
     }
 
     handleMouseWheel(event) {
-        if (this._canInteract()) {
-            const delta = Math.sign(event.deltaY);
-            this.handleNavigation(delta);
-            this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
-        }
+        if (!this._canInteract()) return;
+        this.handleNavigation(Math.sign(event.deltaY));
+        this.playHover();
     }
 
     handleRightClick(event) {
@@ -349,32 +312,7 @@ export class BaseMenu {
         };
     }
 
-    handleMouseMove(event) {
-        if (this._canInteract()) {
-            const { mouseX, mouseY } = this.canvasMouse(event);
-
-            const topY = this.game.height / 2 - this.positionOffset + this.menuOptionsPositionOffset;
-            const optionHeight = 60;
-
-            let newSelectedOption = this.selectedOption;
-
-            for (let i = 0; i < this.menuOptions.length; i++) {
-                const x = this.centerX - this.optionWidth / 2;
-                const y = topY + (i * optionHeight);
-
-                if (mouseX >= x && mouseX <= x + this.optionWidth &&
-                    mouseY >= y && mouseY <= y + optionHeight) {
-                    newSelectedOption = i;
-                    break;
-                }
-            }
-
-            if (newSelectedOption !== this.selectedOption) {
-                this.selectedOption = newSelectedOption;
-                this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
-            }
-        }
-    }
+    handleMouseMove() {}
 
     handleMouseClick(event) {
         if (this._canInteract()) {

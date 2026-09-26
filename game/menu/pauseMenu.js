@@ -1,12 +1,26 @@
-import { BaseMenu } from "./baseMenu.js";
+import { DomMenu } from "./dom/domMenu.js";
+import { hasUnboundKeybind } from "./dom/menuBadges.js";
 
-export class PauseMenu extends BaseMenu {
+const PAUSABLE_CHANNELS = [
+    "mapSoundtrack",
+    "firedogSFX",
+    "enemySFX",
+    "collisionSFX",
+    "powerUpAndDownSFX",
+    "cutsceneMusic",
+    "cutsceneSFX",
+];
+
+export class PauseMenu extends DomMenu {
     constructor(game) {
         super(game, ["Resume", "Restart", "Settings", "Back to Main Menu"], "Paused");
-        this.positionOffset = 180;
         this.isPaused = false;
         this.menuInGame = true;
         this.canEscape = false;
+    }
+
+    getOptionBadge(index) {
+        return this.menuOptions[index] === "Settings" && hasUnboundKeybind(this.game);
     }
 
     handleMenuSelection() {
@@ -58,40 +72,25 @@ export class PauseMenu extends BaseMenu {
     togglePause() {
         this.isPaused = !this.isPaused;
         this.selectedOption = 0;
-        
-        if (this.isPaused === true) {
 
+        if (this.isPaused === true) {
             if (this.game.cutsceneActive && this.game.currentCutscene) {
-                this.game.pauseContext = this.game.isPlayerInGame
-                    ? "inGameCutscene"
-                    : "storyCutscene";
+                this.game.pauseContext = this.game.isPlayerInGame ? "inGameCutscene" : "storyCutscene";
             } else {
                 this.game.pauseContext = "gameplay";
             }
 
             this.game.setMenuRoot(this.game.menu.pause, 0);
-
-            this.game.audioHandler.mapSoundtrack.pauseAllSounds();
-            this.game.audioHandler.firedogSFX.pauseAllSounds();
-            this.game.audioHandler.enemySFX.pauseAllSounds();
-            this.game.audioHandler.collisionSFX.pauseAllSounds();
-            this.game.audioHandler.powerUpAndDownSFX.pauseAllSounds();
-            this.game.audioHandler.cutsceneMusic.pauseAllSounds();
-            this.game.audioHandler.cutsceneSFX.pauseAllSounds();
-
         } else {
             this.game.ignoreCutsceneInputUntil = performance.now() + 200;
 
             this.game.menu.pause.closeAllMenus();
             this.game.nav.clear();
+        }
 
-            this.game.audioHandler.mapSoundtrack.resumeAllSounds();
-            this.game.audioHandler.firedogSFX.resumeAllSounds();
-            this.game.audioHandler.enemySFX.resumeAllSounds();
-            this.game.audioHandler.collisionSFX.resumeAllSounds();
-            this.game.audioHandler.powerUpAndDownSFX.resumeAllSounds();
-            this.game.audioHandler.cutsceneMusic.resumeAllSounds();
-            this.game.audioHandler.cutsceneSFX.resumeAllSounds();
+        const action = this.isPaused ? "pauseAllSounds" : "resumeAllSounds";
+        for (const channel of PAUSABLE_CHANNELS) {
+            this.game.audioHandler[channel][action]();
         }
 
         this.canEscape = false;

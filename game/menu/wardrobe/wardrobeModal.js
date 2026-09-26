@@ -592,10 +592,10 @@ export const wardrobeModalMethods = {
         ctx.restore();
 
         const headerFill = this._makeLinearGradient(ctx, panel.x, panel.y, panel.x + panel.w, panel.y, [
-            [0, 'rgba(255, 218, 65, 0.00)'],
+            [0, cfg.accentFade],
             [0.24, cfg.accentSoft],
             [0.68, 'rgba(255, 255, 255, 0.06)'],
-            [1, 'rgba(255, 218, 65, 0.00)'],
+            [1, cfg.accentFade],
         ]);
 
         ctx.save();
@@ -607,11 +607,11 @@ export const wardrobeModalMethods = {
         ctx.save();
         const lineY = panel.y + cfg.pad + cfg.headerH;
         const line = this._makeLinearGradient(ctx, panel.x + cfg.pad, lineY, panel.x + panel.w - cfg.pad, lineY, [
-            [0, 'rgba(255, 218, 65, 0.00)'],
+            [0, cfg.accentFade],
             [0.12, cfg.headerDividerStroke],
             [0.50, 'rgba(255, 255, 255, 0.22)'],
             [0.88, cfg.headerDividerStroke],
-            [1, 'rgba(255, 218, 65, 0.00)'],
+            [1, cfg.accentFade],
         ]);
         ctx.strokeStyle = line || cfg.headerDividerStroke;
         ctx.lineWidth = 2;
@@ -1098,7 +1098,7 @@ export const wardrobeModalMethods = {
         const cy = r.y + r.h / 2;
         const d = 7;
 
-        ctx.strokeStyle = hovered ? 'yellow' : c.fg;
+        ctx.strokeStyle = hovered ? c.fgHover : c.fg;
         ctx.lineWidth = 3;
         ctx.lineCap = 'round';
         ctx.beginPath();
@@ -1146,9 +1146,9 @@ export const wardrobeModalMethods = {
 
             ctx.translate(glowX, glowY);
             ctx.scale(1.45, 0.34);
-            ctx.shadowColor = `rgba(255, 218, 65, ${pcfg.glowAlpha})`;
+            ctx.shadowColor = `rgba(${pcfg.glowRGB}, ${pcfg.glowAlpha})`;
             ctx.shadowBlur = 18;
-            ctx.fillStyle = `rgba(255, 218, 65, ${pcfg.glowAlpha * 0.55})`;
+            ctx.fillStyle = `rgba(${pcfg.glowRGB}, ${pcfg.glowAlpha * 0.55})`;
             ctx.beginPath();
             ctx.arc(0, 0, glowR, 0, Math.PI * 2);
             ctx.fill();
@@ -1224,7 +1224,7 @@ export const wardrobeModalMethods = {
             const hovered = (dir === -1) ? !!this.modal.hoverNavLeft : !!this.modal.hoverNavRight;
 
             ctx.save();
-            ctx.shadowColor = hovered ? 'rgba(255, 218, 65, 0.36)' : 'rgba(0,0,0,0.35)';
+            ctx.shadowColor = hovered ? ncfg.glowHover : 'rgba(0,0,0,0.35)';
             ctx.shadowBlur = hovered ? 10 : 5;
             ctx.shadowOffsetX = 0;
             ctx.shadowOffsetY = 3;
@@ -1244,7 +1244,7 @@ export const wardrobeModalMethods = {
             const bottomY = cy + 9;
 
             ctx.shadowColor = 'transparent';
-            ctx.strokeStyle = hovered ? 'yellow' : ncfg.fg;
+            ctx.strokeStyle = hovered ? ncfg.fgHover : ncfg.fg;
             ctx.lineWidth = 3.2;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
@@ -1283,15 +1283,15 @@ export const wardrobeModalMethods = {
             } else {
                 const fill = isFocused && isPositive
                     ? this._makeLinearGradient(ctx, b.x, b.y, b.x, b.y + b.h, [
-                        [0, 'rgba(255, 230, 92, 0.34)'],
-                        [1, 'rgba(255, 172, 36, 0.24)'],
+                        [0, cfg.btnFillFocus[0]],
+                        [1, cfg.btnFillFocus[1]],
                     ])
                     : null;
 
                 ctx.fillStyle = fill || (isFocused ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.25)');
-                ctx.strokeStyle = isFocused ? 'rgba(255,255,0,0.95)' : 'rgba(255,255,255,0.20)';
+                ctx.strokeStyle = isFocused ? cfg.btnStrokeFocus : 'rgba(255,255,255,0.20)';
                 ctx.lineWidth = isFocused ? 3 : 2;
-                ctx.shadowColor = isFocused ? 'rgba(255, 218, 65, 0.28)' : 'rgba(0,0,0,0.22)';
+                ctx.shadowColor = isFocused ? cfg.btnGlowFocus : 'rgba(0,0,0,0.22)';
                 ctx.shadowBlur = isFocused ? 16 : 7;
                 ctx.shadowOffsetX = 0;
                 ctx.shadowOffsetY = 4;
@@ -1306,7 +1306,7 @@ export const wardrobeModalMethods = {
             ctx.shadowOffsetX = 1;
             ctx.shadowOffsetY = 1;
             ctx.shadowColor = 'rgba(0,0,0,0.60)';
-            ctx.fillStyle = isDisabled ? 'rgba(255,255,255,0.45)' : (isFocused ? 'yellow' : 'white');
+            ctx.fillStyle = isDisabled ? cfg.btnFgDisabled : (isFocused ? cfg.btnFgFocus : cfg.btnFg);
 
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';

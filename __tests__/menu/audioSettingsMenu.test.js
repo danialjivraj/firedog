@@ -21,24 +21,25 @@ jest.mock('../../game/menu/baseMenu.js', () => {
       this.game.currentMenu = this;
     }
 
-    handleMenuSelection() {
+    playHover() {
+      this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
+    }
+
+    playSelect() {
       this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
     }
 
-    canvasMouse(event) {
-      const rect = this.game.canvas.getBoundingClientRect();
-      const scaleX = this.game.canvas.width / rect.width;
-      const scaleY = this.game.canvas.height / rect.height;
-      return {
-        mouseX: (event.clientX - rect.left) * scaleX,
-        mouseY: (event.clientY - rect.top) * scaleY,
-      };
+    handleMenuSelection() {
+      this.playSelect();
     }
 
     _canInteract() {
       return this.menuActive && this.game.canSelect && this.game.canSelectForestMap;
     }
 
+    handleMouseMove() { }
+    draw() { }
+    drawStars() { }
     drawStarsSticker() { }
   }
 
@@ -173,18 +174,48 @@ describe('AudioSettingsMenu', () => {
     ].forEach(addAudioEl);
   };
 
-  const clientFromCanvas = (x, y) => {
-    const rect = game.canvas.getBoundingClientRect();
-    return {
-      clientX: rect.left + (x / game.canvas.width) * rect.width,
-      clientY: rect.top + (y / game.canvas.height) * rect.height,
-    };
-  };
-
   const setInteractable = (enabled) => {
     menu.menuActive = enabled;
     game.canSelect = enabled;
     game.canSelectForestMap = enabled;
+  };
+
+  const TRACK_LEFT = 100;
+  const TRACK_WIDTH = 300;
+
+  const rowAt = (i) => {
+    menu.ensurePanel();
+    menu.syncContent();
+    return menu.dom.rows[i];
+  };
+
+  const tabAt = (i) => {
+    menu.ensurePanel();
+    return menu.dom.tabs[i];
+  };
+
+  const stubTrack = (i) => {
+    const { track } = rowAt(i);
+    track.getBoundingClientRect = () => ({ left: TRACK_LEFT, width: TRACK_WIDTH, top: 0, height: 25 });
+    return track;
+  };
+
+  const handleCentre = (i) => TRACK_LEFT + TRACK_WIDTH * (menu.volumeLevels[i] / 100);
+
+  const clickOn = (element, clientX = 0) =>
+    menu.handleMouseClick({ target: element, clientX, clientY: 0 });
+
+  const hover = (element) => element.dispatchEvent(new Event('pointerenter'));
+
+  const pointerDown = (element, clientX = 0) =>
+    element.dispatchEvent(Object.assign(new Event('pointerdown'), { clientX, clientY: 0 }));
+
+  const grabHandle = (i) => {
+    stubTrack(i);
+    const { handle } = rowAt(i);
+    const centre = handleCentre(i);
+    handle.getBoundingClientRect = () => ({ left: centre - 9.5, width: 19, top: 0, height: 19 });
+    pointerDown(handle, centre);
   };
 
   beforeAll(() => {
@@ -229,7 +260,6 @@ describe('AudioSettingsMenu', () => {
       menu.activateMenu();
 
       expect(menu.menuInGame).toBe(true);
-      expect(menu.showStarsSticker).toBe(false);
       expect(menu.activeTab).toBe('INGAME');
 
       expect(menu.selectedOption).toBe(0);
@@ -245,7 +275,6 @@ describe('AudioSettingsMenu', () => {
       menu.activateMenu();
 
       expect(menu.menuInGame).toBe(true);
-      expect(menu.showStarsSticker).toBe(false);
       expect(menu.activeTab).toBe('CUTSCENE');
 
       expect(menu.selectedOption).toBe(0);
@@ -261,7 +290,6 @@ describe('AudioSettingsMenu', () => {
       menu.activateMenu();
 
       expect(menu.menuInGame).toBe(false);
-      expect(menu.showStarsSticker).toBe(true);
       expect(menu.activeTab).toBe('MENU');
     });
 
@@ -285,7 +313,6 @@ describe('AudioSettingsMenu', () => {
 
       expect(menu.menuInGame).toBe(false);
       expect(menu.activeTab).toBe('CUTSCENE');
-      expect(menu.showStarsSticker).toBe(true);
     });
 
     test('opts.selectedOption is accepted and then clamped only if out of range', () => {
@@ -436,39 +463,34 @@ describe('AudioSettingsMenu', () => {
     });
   });
 
-  describe('geometry and hit-testing', () => {
-    test('getSliderRect nudges Go Back row down (because volumeLevels[i] is null)', () => {
+  describe('row rendering', () => {
+    test('slider rows render a track, mute button and percentage', () => {
+      menu.setTab('MENU');
+      const row = rowAt(1);
+
+      expect(row.track).toBeTruthy();
+      expect(row.mute).toBeTruthy();
+      expect(row.percent.textContent).toBe(`${menu.volumeLevels[1]}%`);
+    });
+
+    test('the Go Back row is a plain action row with no slider controls', () => {
       menu.setTab('MENU');
       const goBackIdx = menu.menuOptions.indexOf('Go Back');
 
-      const prevIdx = goBackIdx - 1;
-
-      const a = menu.getSliderRect(prevIdx);
-      const b = menu.getSliderRect(goBackIdx);
-
-      expect(b.y).toBeGreaterThan(a.y);
+      expect(rowAt(goBackIdx).track).toBeUndefined();
+      expect(rowAt(goBackIdx).label.classList.contains('audio-label--action')).toBe(true);
+      expect(rowAt(goBackIdx - 1).track).toBeTruthy();
     });
 
-    test('hitTestOptionIndex returns the correct row index or null', () => {
+    test('rows are rebuilt when the tab changes', () => {
       menu.setTab('MENU');
-      setInteractable(true);
+      const menuRowCount = menu.menuOptions.length;
+      expect(rowAt(0)).toBeTruthy();
+      expect(menu.dom.rows).toHaveLength(menuRowCount);
 
-      const r1 = menu.getOptionRowRect(1);
-      const hit = menu.hitTestOptionIndex(r1.x + r1.w / 2, r1.y + r1.h / 2);
-      expect(hit).toBe(1);
-
-      expect(menu.hitTestOptionIndex(-999, -999)).toBeNull();
-    });
-
-    test('getMuteIconRect and getLabelRect return rectangles (sanity)', () => {
-      menu.setTab('MENU');
-      const rMute = menu.getMuteIconRect(1);
-      const rLbl = menu.getLabelRect(1);
-
-      expect(rMute.w).toBeGreaterThan(0);
-      expect(rMute.h).toBeGreaterThan(0);
-      expect(rLbl.w).toBeGreaterThan(0);
-      expect(rLbl.h).toBeGreaterThan(0);
+      menu.setTab('CUTSCENE');
+      rowAt(0);
+      expect(menu.dom.rows).toHaveLength(menu.menuOptions.length);
     });
   });
 
@@ -602,35 +624,24 @@ describe('AudioSettingsMenu', () => {
   });
 
   describe('mouse input', () => {
-    test('mousemove selects hovered option row and plays hover sound (ignores tabs)', () => {
+    test('hovering an option row selects it and plays the hover sound', () => {
       menu.setTab('MENU');
       setInteractable(true);
-
-      const r = menu.getOptionRowRect(2);
-      const evt = clientFromCanvas(r.x + r.w / 2, r.y + r.h / 2);
 
       menu.selectedOption = 0;
       game.audioHandler.menu.playSound.mockClear();
 
-      menu.handleMouseMove(evt);
+      hover(rowAt(2).row);
 
       expect(menu.selectedOption).toBe(2);
       expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionHoveredSound', false, true);
     });
 
-    test('mousemove over a tab does not change selectedOption', () => {
+    test('hovering a tab does not change selectedOption', () => {
       setInteractable(true);
       menu.selectedOption = 2;
 
-      const centerY = game.height / 2;
-      const titleY = centerY - menu.positionOffset;
-      const tabY = titleY + menu.tabOffsetY;
-      const tabSpacing = 260;
-      const startX = game.width / 2 - tabSpacing;
-      const cutsceneX = startX + tabSpacing;
-
-      const evt = clientFromCanvas(cutsceneX, tabY - 10);
-      menu.handleMouseMove(evt);
+      hover(tabAt(1));
 
       expect(menu.selectedOption).toBe(2);
     });
@@ -638,42 +649,41 @@ describe('AudioSettingsMenu', () => {
     test('mouse click on a tab switches tab, selects header, and plays select sound', () => {
       setInteractable(true);
 
-      const centerY = game.height / 2;
-      const titleY = centerY - menu.positionOffset;
-      const tabY = titleY + menu.tabOffsetY;
-      const tabSpacing = 260;
-      const startX = game.width / 2 - tabSpacing;
-      const cutsceneX = startX + tabSpacing;
-
-      const evt = clientFromCanvas(cutsceneX, tabY - 10);
-
-      menu.handleMouseClick(evt);
+      clickOn(tabAt(1));
 
       expect(menu.activeTab).toBe('CUTSCENE');
       expect(menu.selectedOption).toBe(menu.headerSelectionIndex);
       expect(game.audioHandler.menu.playSound).toHaveBeenCalledWith('optionSelectedSound', false, true);
     });
 
-    test('mouse click on a slider track sets volume based on mouseX, updates audio, and saves (does NOT unmute)', () => {
+    test('mouse click on the reset button restores the tab to its defaults', () => {
+      menu.setTab('MENU');
+      setInteractable(true);
+
+      menu.volumeLevels[1] = 12;
+      menu.muted[1] = true;
+      menu.ensurePanel();
+
+      clickOn(menu.dom.reset);
+
+      expect(menu.volumeLevels[1]).toBe(50);
+      expect(menu.muted[1]).toBe(false);
+      expect(game.saveGameState).toHaveBeenCalled();
+    });
+
+    test('mouse click on a slider track sets volume from the click position, updates audio, and saves (does NOT unmute)', () => {
       menu.setTab('MENU');
       setInteractable(true);
 
       menu.selectedOption = 1;
       menu.volumeLevels[0] = 100;
       menu.volumeLevels[1] = 0;
-
       menu.muted[1] = true;
 
-      const { x, y, w, h } = menu.getSliderRect(1);
-
-      const clickX = x + w * 0.75;
-      const clickY = y + h / 2;
-
-      const evt = clientFromCanvas(clickX, clickY);
-
+      const track = stubTrack(1);
       game.saveGameState.mockClear();
 
-      menu.handleMouseClick(evt);
+      clickOn(track, TRACK_LEFT + TRACK_WIDTH * 0.75);
 
       expect(menu.volumeLevels[1]).toBe(75);
       expect(menu.muted[1]).toBe(true);
@@ -687,13 +697,9 @@ describe('AudioSettingsMenu', () => {
 
       menu.selectedOption = 0;
       menu.muted[2] = false;
-
-      const r = menu.getMuteIconRect(2);
-      const evt = clientFromCanvas(r.x + r.w / 2, r.y + r.h / 2);
-
       game.saveGameState.mockClear();
 
-      menu.handleMouseClick(evt);
+      clickOn(rowAt(2).mute);
 
       expect(menu.selectedOption).toBe(2);
       expect(menu.muted[2]).toBe(true);
@@ -711,16 +717,25 @@ describe('AudioSettingsMenu', () => {
       menu.updateAudioVolume(menu.audioMap['Menu Music'], 1);
       expect(document.getElementById('criminalitySoundtrack').volume).toBeCloseTo(1, 5);
 
-      const r = menu.getLabelRect(1);
-      const evt = clientFromCanvas(r.x + r.w * 0.75, r.y + r.h / 2);
-
       game.saveGameState.mockClear();
-      menu.handleMouseClick(evt);
+      clickOn(rowAt(1).label);
 
       expect(menu.selectedOption).toBe(1);
       expect(menu.muted[1]).toBe(true);
       expect(document.getElementById('criminalitySoundtrack').volume).toBe(0);
       expect(game.saveGameState).toHaveBeenCalled();
+    });
+
+    test('clicking the Go Back row runs the selection instead of muting', () => {
+      menu.setTab('MENU');
+      setInteractable(true);
+
+      const goBackIdx = menu.menuOptions.indexOf('Go Back');
+      menu.selectedOption = goBackIdx;
+
+      clickOn(rowAt(goBackIdx).label);
+
+      expect(game.goBackMenu).toHaveBeenCalled();
     });
 
     test('mouse click is ignored while draggingSliderActive is true', () => {
@@ -772,32 +787,24 @@ describe('AudioSettingsMenu', () => {
       jest.useRealTimers();
     });
 
-    test('mousedown on slider handle begins dragging; mousemove updates value; mouseup ends drag', () => {
+    test('pointerdown on the handle begins dragging; pointermove updates value; pointerup ends drag', () => {
       menu.setTab('MENU');
       setInteractable(true);
 
-      menu.selectedOption = 1;
       menu.volumeLevels[0] = 100;
       menu.volumeLevels[1] = 50;
 
-      const { x: sx, y: sy, w: sw, h: sh } = menu.getSliderRect(1);
-      const handleR = sh / 2;
-      const handleX = sx + (sw - 2 * handleR) * (menu.volumeLevels[1] / 100);
-
-      const downEvt = clientFromCanvas(handleX + handleR, sy + sh / 2);
-      menu.handleMouseDown(downEvt);
+      grabHandle(1);
 
       expect(menu.draggingSlider).toBe(true);
       expect(menu.draggingSliderIndex).toBe(1);
-
-      const dragX = sx + sw * 0.9;
-      const dragEvt = clientFromCanvas(dragX, sy + sh / 2);
+      expect(menu.selectedOption).toBe(1);
 
       game.saveGameState.mockClear();
-      menu.handleMouseDrag(dragEvt);
+      menu.handleMouseDrag({ clientX: TRACK_LEFT + TRACK_WIDTH * 0.9 });
 
       expect(menu.draggingSliderActive).toBe(true);
-      expect(menu.volumeLevels[1]).toBeGreaterThanOrEqual(85);
+      expect(menu.volumeLevels[1]).toBe(90);
       expect(game.saveGameState).toHaveBeenCalled();
 
       menu.handleMouseUp();
@@ -809,67 +816,39 @@ describe('AudioSettingsMenu', () => {
       expect(menu.draggingSliderActive).toBe(false);
     });
 
-    test('mousedown does nothing when header is selected', () => {
+    test('only the handle starts a drag', () => {
       menu.setTab('MENU');
       setInteractable(true);
 
-      menu.selectedOption = menu.headerSelectionIndex;
-
-      const spy = jest.spyOn(menu, 'getSliderRect');
-      menu.handleMouseDown({ clientX: 10, clientY: 10 });
-
-      expect(menu.draggingSlider).toBe(false);
-      expect(spy).not.toHaveBeenCalled();
-
-      spy.mockRestore();
-    });
-
-    test('mousedown on mute icon does not begin dragging', () => {
-      menu.setTab('MENU');
-      setInteractable(true);
-
-      menu.volumeLevels[1] = 50;
-
-      const r = menu.getMuteIconRect(1);
-      const evt = clientFromCanvas(r.x + r.w / 2, r.y + r.h / 2);
-
-      menu.handleMouseDown(evt);
+      pointerDown(rowAt(1).mute);
+      pointerDown(rowAt(1).label);
+      pointerDown(rowAt(1).track);
 
       expect(menu.draggingSlider).toBe(false);
       expect(menu.draggingSliderIndex).toBe(-1);
     });
 
-    test('mousedown on label does not begin dragging', () => {
+    test('pointerdown on the handle does nothing while the menu is not interactable', () => {
       menu.setTab('MENU');
-      setInteractable(true);
+      setInteractable(false);
 
-      const r = menu.getLabelRect(1);
-      const evt = clientFromCanvas(r.x + r.w / 2, r.y + r.h / 2);
-
-      menu.handleMouseDown(evt);
+      grabHandle(1);
 
       expect(menu.draggingSlider).toBe(false);
-      expect(menu.draggingSliderIndex).toBe(-1);
     });
 
     test('dragging a muted slider updates percentage but stays muted and volume remains 0', () => {
       menu.setTab('MENU');
       setInteractable(true);
 
-      menu.selectedOption = 1;
       menu.volumeLevels[0] = 100;
       menu.volumeLevels[1] = 50;
       menu.muted[1] = true;
 
-      const { x: sx, y: sy, w: sw, h: sh } = menu.getSliderRect(1);
-      const handleR = sh / 2;
-      const handleX = sx + (sw - 2 * handleR) * (menu.volumeLevels[1] / 100);
-      menu.handleMouseDown(clientFromCanvas(handleX + handleR, sy + sh / 2));
+      grabHandle(1);
+      menu.handleMouseDrag({ clientX: TRACK_LEFT + TRACK_WIDTH * 0.95 });
 
-      const dragX = sx + sw * 0.95;
-      menu.handleMouseDrag(clientFromCanvas(dragX, sy + sh / 2));
-
-      expect(menu.volumeLevels[1]).toBeGreaterThanOrEqual(90);
+      expect(menu.volumeLevels[1]).toBe(95);
       expect(menu.muted[1]).toBe(true);
       expect(document.getElementById('criminalitySoundtrack').volume).toBe(0);
     });
@@ -1020,13 +999,12 @@ describe('AudioSettingsMenu', () => {
       menu.muted[0] = true;
       menu.muted[2] = false;
 
-      const r = menu.getMuteIconRect(2);
-      const evt = clientFromCanvas(r.x + r.w / 2, r.y + r.h / 2);
+      const mute = rowAt(2).mute;
 
       game.saveGameState.mockClear();
       game.audioHandler.menu.playSound.mockClear();
 
-      menu.handleMouseClick(evt);
+      clickOn(mute);
 
       expect(menu.selectedOption).toBe(2);
       expect(menu.muted[2]).toBe(false);

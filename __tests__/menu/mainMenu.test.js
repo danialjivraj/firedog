@@ -95,12 +95,33 @@ describe('MainMenu', () => {
   });
 
   describe('constructor and initial state', () => {
-    test('initializes title, options, offsets, and saving flags', () => {
+    test('initializes title, options, and saving flags', () => {
       expect(menu.title).toBe('Main Menu');
       expect(menu.menuOptions).toEqual(['Play', 'Wardrobe', 'Records', 'How to Play', 'Settings', 'Exit']);
-      expect(menu.positionOffset).toBe(220);
-      expect(menu.menuOptionsPositionOffset).toBe(65);
       expect(menu.showSavingSprite).toBe(false);
+    });
+  });
+
+  describe('unbound-keybind badge', () => {
+    const badgeOn = (label) => {
+      menu.ensurePanel();
+      menu.syncContent();
+      const row = menu.dom.rows[menu.menuOptions.indexOf(label)];
+      return !row.querySelector('.menu-option__badge').hidden;
+    };
+
+    test('flags "Settings" only while a keybind two levels down is unbound', () => {
+      mockGame.menu.controlsSettings = { unboundCount: () => 0 };
+      expect(badgeOn('Settings')).toBe(false);
+
+      mockGame.menu.controlsSettings = { unboundCount: () => 2 };
+      expect(badgeOn('Settings')).toBe(true);
+      expect(badgeOn('Records')).toBe(false);
+    });
+
+    test('stays clear when Controls Settings has not been built yet', () => {
+      delete mockGame.menu.controlsSettings;
+      expect(badgeOn('Settings')).toBe(false);
     });
   });
 

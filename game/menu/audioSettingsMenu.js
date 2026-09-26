@@ -1,17 +1,33 @@
-import { BaseMenu } from './baseMenu.js';
+import { DomMenu } from './dom/domMenu.js';
 
-export class AudioSettingsMenu extends BaseMenu {
+const HEADER_INDEX = -1;
+
+const RESET_ICON_SVG = `
+<svg viewBox="0 0 24 24" aria-hidden="true">
+  <path d="M12 5V2L8 6l4 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/>
+</svg>`;
+
+const SPEAKER_ICON_SVG = `
+<svg viewBox="0 0 24 24" aria-hidden="true">
+  <path class="speaker-body" d="M4 9v6h4l5 4V5L8 9H4z"/>
+  <g class="speaker-waves">
+    <path d="M16.5 8.5a5 5 0 0 1 0 7"/>
+    <path d="M19 6a8.5 8.5 0 0 1 0 12"/>
+  </g>
+  <g class="speaker-cross">
+    <path d="M16.5 9.5l5 5M21.5 9.5l-5 5"/>
+  </g>
+</svg>`;
+
+export class AudioSettingsMenu extends DomMenu {
     constructor(game) {
         super(game, ['Go Back'], 'Audio Settings');
-
-        this.positionOffset = 255;
-        this.audioContentOffsetY = 45;
-        this.optionWidth = 650;
+        this.panelModifier = 'menu-panel--audio';
+        this.cardModifier = 'menu-card--wide menu-card--audio';
 
         this.tabs = ['MENU', 'CUTSCENE', 'INGAME'];
         this.activeTab = 'MENU';
-        this.headerSelectionIndex = -1;
-        this.tabOffsetY = 80;
+        this.headerSelectionIndex = HEADER_INDEX;
         this.hoveredHeaderAction = null;
 
         this.draggingSlider = false;
@@ -69,26 +85,9 @@ export class AudioSettingsMenu extends BaseMenu {
         this.setTab('MENU');
 
         this.handleMouseUp = this.handleMouseUp.bind(this);
-        this.handleMouseDown = this.handleMouseDown.bind(this);
         this.handleMouseDrag = this.handleMouseDrag.bind(this);
-
-        document.addEventListener('mouseup', this.handleMouseUp);
-        document.addEventListener('mousedown', this.handleMouseDown);
-        document.addEventListener('mousemove', this.handleMouseDrag);
-    }
-
-    _getHeaderResetRect() {
-        const centerY = this.game.height / 2;
-        const titleY = centerY - this.positionOffset;
-        const tabY = titleY + this.tabOffsetY;
-        const x = this.game.width / 2 + 435;
-        const w = 42;
-        const h = 42;
-        return { x: x - w / 2, y: tabY - h + 8, w, h, centerX: x, centerY: tabY };
-    }
-
-    _getRowSpacing() {
-        return 60;
+        document.addEventListener('pointerup', this.handleMouseUp);
+        document.addEventListener('pointermove', this.handleMouseDrag);
     }
 
     _getActiveTabData() {
@@ -99,70 +98,35 @@ export class AudioSettingsMenu extends BaseMenu {
         return Math.max(0, Math.min(100, n));
     }
 
-    _playHover() {
-        this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
-    }
-
-    _playSelect() {
-        this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
+    _isSlider(i) {
+        return this.volumeLevels[i] !== null;
     }
 
     _displayTabLabel(tabKey) {
         return tabKey === 'INGAME' ? 'IN-GAME' : tabKey;
     }
 
+    // lifecycle
     getNavState() {
-        return {
-            selectedOption: this.selectedOption ?? 0,
-            activeTab: this.activeTab,
-            menuInGame: this.menuInGame,
-        };
-    }
-
-    activateFromNav(state = {}) {
-        const tab = state.activeTab ?? null;
-        this.activateMenu({
-            inGame: state.menuInGame ?? this.menuInGame,
-            selectedOption: state.selectedOption ?? 0,
-            tab,
-        });
+        return { ...super.getNavState(), tab: this.activeTab };
     }
 
     activateMenu(arg = 0) {
-        let selectedOption = 0;
-        let opts = null;
+        const { selectedOption = 0, inGame, tab } = this.readActivation(arg);
 
-        if (typeof arg === 'number') {
-            selectedOption = arg;
-        } else if (arg && typeof arg === 'object') {
-            opts = arg;
-            if (typeof arg.selectedOption === 'number') selectedOption = arg.selectedOption;
-        }
+        const isPaused = !!this.game.menu.pause?.isPaused;
+        const inCutscene = !!(isPaused && this.game.cutsceneActive && this.game.currentCutscene);
+        const inGameplay = !!(isPaused && this.game.isPlayerInGame);
 
-        const isPaused = !!(this.game.menu.pause && this.game.menu.pause.isPaused);
-
-        const shouldBeCutscene = !!(isPaused && this.game.cutsceneActive && this.game.currentCutscene);
-        const shouldBeInGameGameplay = !!(isPaused && this.game.isPlayerInGame);
-
-        const inferredOverlay = shouldBeCutscene || shouldBeInGameGameplay;
-        this.menuInGame = (opts && typeof opts.inGame === 'boolean') ? opts.inGame : inferredOverlay;
-
-        this.showStarsSticker = !this.menuInGame;
-
-        const requestedTab = opts?.tab;
-        const defaultTab =
-            shouldBeCutscene ? 'CUTSCENE'
-                : this.menuInGame ? 'INGAME'
-                    : 'MENU';
-        this.setTab(requestedTab ?? defaultTab);
+        this.menuInGame = typeof inGame === 'boolean' ? inGame : (inCutscene || inGameplay);
+        this.setTab(tab ?? (inCutscene ? 'CUTSCENE' : this.menuInGame ? 'INGAME' : 'MENU'));
 
         super.activateMenu(selectedOption);
         this.clampSelection();
     }
 
     setTab(tabName) {
-        const tab = this.tabs.includes(tabName) ? tabName : 'MENU';
-        this.activeTab = tab;
+        this.activeTab = this.tabs.includes(tabName) ? tabName : 'MENU';
 
         const data = this._getActiveTabData();
         this.menuOptions = data.options;
@@ -174,195 +138,173 @@ export class AudioSettingsMenu extends BaseMenu {
     }
 
     _cycleTab(direction) {
-        const idx = this.tabs.indexOf(this.activeTab);
-        if (idx === -1) return;
-        const nextIdx = (idx + direction + this.tabs.length) % this.tabs.length;
-        this.setTab(this.tabs[nextIdx]);
-        this._playHover();
-    }
-
-    // header-row rules
-    hasHeaderRow() {
-        return typeof this.headerSelectionIndex === 'number';
+        const index = this.tabs.indexOf(this.activeTab);
+        this.setTab(this.tabs[(index + direction + this.tabs.length) % this.tabs.length]);
+        this.playHover();
     }
 
     isHeaderSelected() {
-        return this.hasHeaderRow() && this.selectedOption === this.headerSelectionIndex;
+        return this.selectedOption === HEADER_INDEX;
     }
 
     clampSelection() {
-        const max = this.menuOptions.length - 1;
-        const min = this.hasHeaderRow() ? this.headerSelectionIndex : 0;
-        this.selectedOption = Math.max(min, Math.min(this.selectedOption, max));
+        this.selectedOption = Math.max(HEADER_INDEX, Math.min(this.selectedOption, this.menuOptions.length - 1));
     }
 
     navigateVertical(delta) {
         const max = this.menuOptions.length - 1;
 
-        if (!this.hasHeaderRow()) {
-            this.selectedOption =
-                (this.selectedOption + (delta > 0 ? 1 : -1) + this.menuOptions.length) %
-                this.menuOptions.length;
-            return;
-        }
-
-        const header = this.headerSelectionIndex;
-
-        if (this.selectedOption === header) {
-            this.selectedOption = (delta > 0) ? 0 : max;
-            return;
-        }
-
-        if (delta < 0) {
-            this.selectedOption = (this.selectedOption === 0) ? header : this.selectedOption - 1;
+        if (this.isHeaderSelected()) {
+            this.selectedOption = delta > 0 ? 0 : max;
+        } else if (delta < 0) {
+            this.selectedOption = this.selectedOption === 0 ? HEADER_INDEX : this.selectedOption - 1;
         } else {
-            this.selectedOption = (this.selectedOption === max) ? header : this.selectedOption + 1;
+            this.selectedOption = this.selectedOption === max ? HEADER_INDEX : this.selectedOption + 1;
         }
     }
 
-    // geometry
-    roundRect(context, x, y, width, height, radius, fill, stroke) {
-        context.beginPath();
-        context.moveTo(x + radius, y);
-        context.lineTo(x + width - radius, y);
-        context.quadraticCurveTo(x + width, y, x + width, y + radius);
-        context.lineTo(x + width, y + height - radius);
-        context.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-        context.lineTo(x + radius, y + height);
-        context.quadraticCurveTo(x, y + height, x, y + height - radius);
-        context.lineTo(x, y + radius);
-        context.quadraticCurveTo(x, y, x + radius, y);
-        context.closePath();
+    // dom
+    buildBody(body) {
+        const tabStrip = document.createElement('div');
+        tabStrip.className = 'audio-tabs';
 
-        if (fill) context.fill();
-        if (stroke) context.stroke();
+        this.dom.tabs = this.tabs.map((tabKey) => {
+            const tab = document.createElement('div');
+            tab.className = 'audio-tab';
+            tab.dataset.tab = tabKey;
+            tab.textContent = this._displayTabLabel(tabKey);
+            tabStrip.appendChild(tab);
+            return tab;
+        });
+
+        const reset = document.createElement('div');
+        reset.className = 'audio-reset';
+        reset.innerHTML = RESET_ICON_SVG;
+        reset.addEventListener('pointerenter', () => {
+            if (this.hoveredHeaderAction === 'reset') return;
+            this.hoveredHeaderAction = 'reset';
+            this.playHover();
+        });
+        reset.addEventListener('pointerleave', () => { this.hoveredHeaderAction = null; });
+        tabStrip.appendChild(reset);
+
+        const rows = document.createElement('div');
+        rows.className = 'audio-rows';
+
+        body.append(tabStrip, rows);
+
+        this.dom.reset = reset;
+        this.dom.rowHost = rows;
+        this.dom.rows = [];
+        this._renderedTab = null;
     }
 
-    getSliderRect(i) {
-        const centerY = this.game.height / 2;
-        const x = this.game.width / 2 - 30;
-        const w = 300;
-        const h = 25;
-        const rowSpacing = this._getRowSpacing();
-        let y = centerY + this.audioContentOffsetY + i * rowSpacing - 155;
+    _buildRows() {
+        this.dom.rowHost.replaceChildren();
+        this._syncRowMetrics();
 
-        return { x, y, w, h };
-    }
+        this.dom.rows = this.menuOptions.map((option, i) => {
+            const row = document.createElement('div');
+            row.className = 'audio-row';
+            row.dataset.index = String(i);
+            this.bindHover(row, () => this.focusOption(i));
 
-    getMuteIconRect(i) {
-        const { x: sliderX, y: sliderY, w: sliderW, h: sliderH } = this.getSliderRect(i);
-        const size = 34;
-        const x = sliderX + sliderW + 38;
-        const y = sliderY + sliderH / 2 - size / 2;
-        return { x, y, w: size, h: size };
-    }
+            const label = document.createElement('div');
+            label.className = 'audio-label';
+            label.textContent = option;
 
-    getLabelRect(i) {
-        const { y: rowY } = this.getSliderRect(i);
-
-        const labelRightX = this.game.width / 2 - 50;
-        const labelW = 320;
-        const labelH = 46;
-
-        const x = labelRightX - labelW;
-        const y = rowY - 10;
-
-        return { x, y, w: labelW, h: labelH };
-    }
-
-    getOptionRowRect(i) {
-        const centerX = this.game.width / 2;
-        const rowHeight = 60;
-
-        const { y } = this.getSliderRect(i);
-        return {
-            x: centerX - this.optionWidth / 2,
-            y,
-            w: this.optionWidth,
-            h: rowHeight,
-        };
-    }
-
-    hitTestOptionIndex(mouseX, mouseY) {
-        for (let i = 0; i < this.menuOptions.length; i++) {
-            const r = this.getOptionRowRect(i);
-            if (mouseX >= r.x && mouseX <= r.x + r.w && mouseY >= r.y && mouseY <= r.y + r.h) {
-                return i;
+            if (!this._isSlider(i)) {
+                row.classList.add('audio-row--action');
+                label.classList.add('audio-label--action');
+                row.appendChild(label);
+                this.dom.rowHost.appendChild(row);
+                return { row, label };
             }
+
+            const track = document.createElement('div');
+            track.className = 'audio-track';
+
+            const fill = document.createElement('span');
+            fill.className = 'audio-track__fill';
+
+            const handle = document.createElement('span');
+            handle.className = 'audio-track__handle';
+            handle.addEventListener('pointerdown', (event) => this._startDrag(event, i, handle));
+
+            track.append(fill, handle);
+
+            const mute = document.createElement('div');
+            mute.className = 'audio-mute';
+            mute.innerHTML = SPEAKER_ICON_SVG;
+
+            const percent = document.createElement('div');
+            percent.className = 'audio-percent';
+
+            row.append(label, track, mute, percent);
+            this.dom.rowHost.appendChild(row);
+
+            return { row, label, track, fill, handle, percent, mute };
+        });
+    }
+
+    _syncRowMetrics() {
+        const card = this.dom.card;
+        if (!card) return;
+
+        const maxRows = Math.max(...this.tabs.map((tab) => this.tabData[tab].options.length));
+        card.style.setProperty('--audio-rows', String(this.menuOptions.length));
+        card.style.setProperty('--audio-rows-max', String(maxRows));
+    }
+
+    syncContent() {
+        if (this._renderedTab !== this.activeTab) {
+            this._renderedTab = this.activeTab;
+            this._buildRows();
         }
-        return null;
+
+        const headerFocused = this.isHeaderSelected();
+
+        this.dom.tabs.forEach((tab, i) => {
+            const isActive = this.tabs[i] === this.activeTab;
+            tab.classList.toggle('is-active', isActive);
+            tab.classList.toggle('is-focused', isActive && headerFocused);
+        });
+
+        this.dom.reset.classList.toggle('is-hovered', this.hoveredHeaderAction === 'reset');
+
+        this.dom.rows.forEach((row, i) => {
+            const selected = i === this.selectedOption;
+            row.label.classList.toggle('is-focused', selected);
+
+            if (!row.track) return;
+
+            const volume = this.volumeLevels[i];
+            const muted = !!this.muted[0] || !!this.muted[i];
+
+            row.fill.style.width = `${volume}%`;
+            row.handle.style.left = `${volume}%`;
+            row.track.classList.toggle('is-muted', muted);
+            row.percent.textContent = `${volume}%`;
+            row.mute.classList.toggle('is-muted', muted);
+            row.mute.classList.toggle('is-focused', selected);
+        });
     }
 
-    _hitTestTab(mouseX, mouseY) {
-        const titleY = this.game.height / 2 - this.positionOffset;
-        const tabY = titleY + this.tabOffsetY;
-
-        const tabSpacing = 260;
-        const startX = this.game.width / 2 - tabSpacing;
-
-        const boxW = 220;
-        const boxH = 45;
-
-        for (let i = 0; i < this.tabs.length; i++) {
-            const tabKey = this.tabs[i];
-            const x = startX + i * tabSpacing;
-            const left = x - boxW / 2;
-            const top = tabY - boxH + 8;
-
-            if (mouseX >= left && mouseX <= left + boxW && mouseY >= top && mouseY <= top + boxH) {
-                return tabKey;
-            }
-        }
-        return null;
-    }
-
-    _hitTestHeaderReset(mouseX, mouseY) {
-        const r = this._getHeaderResetRect();
-        return mouseX >= r.x && mouseX <= r.x + r.w && mouseY >= r.y && mouseY <= r.y + r.h;
-    }
-
-    _isMutedIndex(i) {
-        return !!this.muted[i];
-    }
-
-    _setMutedIndex(i, v) {
-        this.muted[i] = !!v;
-    }
-
-    _hitTestMuteIcon(i, mouseX, mouseY) {
-        if (this.volumeLevels[i] === null) return false;
-        const r = this.getMuteIconRect(i);
-        return (mouseX >= r.x && mouseX <= r.x + r.w && mouseY >= r.y && mouseY <= r.y + r.h);
-    }
-
-    _hitTestLabel(i, mouseX, mouseY) {
-        if (this.volumeLevels[i] === null) return false;
-        if (this.menuOptions[i] === 'Go Back') return false;
-        const r = this.getLabelRect(i);
-        return (mouseX >= r.x && mouseX <= r.x + r.w && mouseY >= r.y && mouseY <= r.y + r.h);
-    }
-
-    _isMasterMuted() {
-        return this._isMutedIndex(0);
+    // volume + muting
+    _setVolume(i, percent) {
+        this.volumeLevels[i] = this._clampPct(percent);
+        this.updateAudioVolume(this.audioMap[this.menuOptions[i]], i);
+        this.game.saveGameState();
     }
 
     _toggleMute(i) {
-        if (this.volumeLevels[i] === null) return false;
+        if (!this._isSlider(i) || (i !== 0 && this.muted[0])) return false;
 
-        if (i !== 0 && this._isMasterMuted()) return false;
+        this.muted[i] = !this.muted[i];
 
-        const next = !this._isMutedIndex(i);
-        this._setMutedIndex(i, next);
-
-        const label = this.menuOptions[i];
-        this.updateAudioVolume(this.audioMap[label], i);
-
-        if (i === 0) {
-            for (let k = 1; k < this.volumeLevels.length; k++) {
-                if (this.volumeLevels[k] !== null) {
-                    const otherLabel = this.menuOptions[k];
-                    this.updateAudioVolume(this.audioMap[otherLabel], k);
-                }
+        for (let k = 0; k < this.volumeLevels.length; k++) {
+            if (k === i || (i === 0 && this._isSlider(k))) {
+                this.updateAudioVolume(this.audioMap[this.menuOptions[k]], k);
             }
         }
 
@@ -373,237 +315,19 @@ export class AudioSettingsMenu extends BaseMenu {
     _resetActiveTab() {
         const data = this._getActiveTabData();
 
-        data.volumeLevels = data.volumeLevels.map(level => (level === null ? null : 50));
-        data.muted = data.muted.map(value => (value === null ? null : false));
+        data.volumeLevels = data.volumeLevels.map((level) => (level === null ? null : 50));
+        data.muted = data.muted.map((value) => (value === null ? null : false));
 
         this.volumeLevels = data.volumeLevels;
         this.muted = data.muted;
 
-        for (let i = 0; i < this.menuOptions.length; i++) {
-            if (this.volumeLevels[i] === null) continue;
-            const audioElementId = this.audioMap[this.menuOptions[i]];
-            if (audioElementId) this.updateAudioVolume(audioElementId, i);
-        }
+        this.menuOptions.forEach((option, i) => {
+            if (this._isSlider(i) && this.audioMap[option]) this.updateAudioVolume(this.audioMap[option], i);
+        });
 
         this.game.saveGameState();
     }
 
-    // button + icon
-    drawMuteButton(ctx, rect, muted, isSelectedRow) {
-        ctx.save();
-
-        ctx.shadowColor = 'rgba(0,0,0,0.6)';
-        ctx.shadowBlur = 6;
-        ctx.shadowOffsetX = 2;
-        ctx.shadowOffsetY = 2;
-
-        ctx.fillStyle = muted ? '#1f2a2a' : '#0d3f3d';
-        ctx.strokeStyle = isSelectedRow ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.45)';
-        ctx.lineWidth = 2;
-
-        this.roundRect(ctx, rect.x, rect.y, rect.w, rect.h, 6, true, true);
-
-        const pad = 8;
-        this.drawSpeakerIcon(ctx, rect.x + pad, rect.y + pad, rect.w - pad * 2, muted);
-
-        ctx.restore();
-    }
-
-    drawSpeakerIcon(ctx, x, y, size, muted) {
-        ctx.save();
-
-        const cy = y + size / 2;
-
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = 'rgba(255,255,255,0.95)';
-        ctx.strokeStyle = 'rgba(255,255,255,0.95)';
-        ctx.lineJoin = 'miter';
-        ctx.lineCap = 'butt';
-
-        // base rectangle
-        const baseW = size * 0.18;
-        const baseH = size * 0.36;
-        const baseX = x + size * 0.18;
-        const baseY = cy - baseH / 2;
-
-        ctx.beginPath();
-        ctx.rect(baseX, baseY, baseW, baseH);
-        ctx.fill();
-
-        const gap = size * 0.10;
-
-        // trapezoid cone
-        const coneLeftX = baseX + baseW + gap;
-        const coneRightX = x + size * 0.82;
-
-        const coneTopLeftY = baseY;
-        const coneBotLeftY = baseY + baseH;
-        const coneTopRightY = cy - baseH;
-        const coneBotRightY = cy + baseH;
-
-        ctx.beginPath();
-        ctx.moveTo(coneLeftX, coneTopLeftY);
-        ctx.lineTo(coneRightX, coneTopRightY);
-        ctx.lineTo(coneRightX, coneBotRightY);
-        ctx.lineTo(coneLeftX, coneBotLeftY);
-        ctx.closePath();
-        ctx.fill();
-
-        // mute slash
-        if (muted) {
-            ctx.lineWidth = 3;
-            const pad = size * 0.15;
-
-            ctx.beginPath();
-            ctx.moveTo(x + pad, y + size - pad);
-            ctx.lineTo(x + size - pad, y + pad);
-            ctx.stroke();
-        }
-
-        ctx.restore();
-    }
-
-    drawResetIconButton(ctx, rect, hovered) {
-        ctx.save();
-
-        ctx.shadowColor = 'rgba(0,0,0,0.55)';
-        ctx.shadowBlur = 6;
-        ctx.shadowOffsetX = 2;
-        ctx.shadowOffsetY = 2;
-
-        ctx.fillStyle = hovered ? '#0f4e4b' : '#0d3f3d';
-        ctx.strokeStyle = hovered ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.45)';
-        ctx.lineWidth = 2;
-        this.roundRect(ctx, rect.x, rect.y, rect.w, rect.h, 8, true, true);
-
-        ctx.shadowBlur = 0;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
-        ctx.fillStyle = 'rgba(255,255,255,0.95)';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.font = 'bold 27px Arial';
-        ctx.fillText('↺', rect.x + rect.w / 2, rect.y + rect.h / 2 + 1);
-
-        ctx.restore();
-    }
-
-    // draw
-    draw(context) {
-        if (!this.menuActive) return;
-
-        this.drawBackdrop(context);
-        this.drawTitle(context);
-
-        context.save();
-
-        // tabs
-        const centerY = this.game.height / 2;
-        const titleY = centerY - this.positionOffset;
-        const tabY = titleY + this.tabOffsetY;
-        const tabSpacing = 260;
-        const startX = this.game.width / 2 - tabSpacing;
-        const resetRect = this._getHeaderResetRect();
-
-        context.textAlign = 'center';
-        context.shadowColor = 'black';
-        context.shadowOffsetX = 2;
-        context.shadowOffsetY = 2;
-
-        for (let i = 0; i < this.tabs.length; i++) {
-            const tabKey = this.tabs[i];
-            const x = startX + i * tabSpacing;
-
-            const isActive = tabKey === this.activeTab;
-            const headerFocused = this.selectedOption === this.headerSelectionIndex;
-
-            if (isActive) {
-                context.font = headerFocused ? 'bold 34px Arial' : 'bold 32px Arial';
-                context.fillStyle = 'yellow';
-            } else {
-                context.font = 'bold 30px Arial';
-                context.fillStyle = 'white';
-            }
-
-            context.fillText(this._displayTabLabel(tabKey), x, tabY);
-        }
-
-        this.drawResetIconButton(context, resetRect, this.hoveredHeaderAction === 'reset');
-
-        // options + sliders
-        context.shadowColor = 'black';
-        context.shadowOffsetX = 3;
-        context.shadowOffsetY = 3;
-        context.shadowBlur = 3;
-        context.textAlign = 'right';
-
-        for (let i = 0; i < this.menuOptions.length; i++) {
-            context.font = (i === this.selectedOption) ? 'bold 36px Arial' : '34px Arial';
-            context.fillStyle = (i === this.selectedOption) ? 'yellow' : 'white';
-
-            const { y: rowY } = this.getSliderRect(i);
-            const labelY = rowY + 20;
-
-            const isGoBack = this.menuOptions[i] === 'Go Back' || this.volumeLevels[i] === null;
-
-            if (isGoBack) {
-                context.textAlign = 'center';
-                context.fillText(this.menuOptions[i], this.game.width / 2, labelY + 5);
-                continue;
-            } else {
-                context.textAlign = 'right';
-                context.fillText(this.menuOptions[i], this.game.width / 2 - 50, labelY);
-            }
-
-            const vol = this.volumeLevels[i];
-            if (vol === null) continue;
-
-            const muted = this._isMutedIndex(0) || this._isMutedIndex(i);
-
-            const { x: sliderX, y: sliderY, w: sliderW, h: sliderH } = this.getSliderRect(i);
-
-            // slider track
-            context.fillStyle = '#ccc';
-            this.roundRect(context, sliderX, sliderY, sliderW, sliderH, 14, true, false);
-
-            // handle
-            const handleR = sliderH / 2;
-            const handleX = sliderX + (sliderW - 2 * handleR) * (vol / 100);
-
-            context.shadowOffsetX = 0;
-            context.shadowOffsetY = 0;
-            context.shadowBlur = 0;
-
-            context.shadowColor = muted ? '#888' : '#4CAF50';
-            context.fillStyle = muted ? '#888' : '#4CAF50';
-
-            context.beginPath();
-            context.arc(handleX + handleR, sliderY + sliderH / 2, handleR, 0, 2 * Math.PI);
-            context.fill();
-
-            context.shadowOffsetX = 3;
-            context.shadowOffsetY = 3;
-            context.shadowBlur = 3;
-            context.shadowColor = 'black';
-
-            context.save();
-            context.fillStyle = 'white';
-            context.font = '20px Arial';
-            context.fillText(`${vol}%`, sliderX + sliderW, sliderY + sliderH / 2 - 20);
-            context.restore();
-
-            const iconRect = this.getMuteIconRect(i);
-            this.drawMuteButton(context, iconRect, muted, i === this.selectedOption);
-        }
-
-        context.restore();
-
-        if (this.showStarsSticker && !this.menuInGame) {
-            this.drawStarsSticker(context);
-        }
-    }
-
-    // audio volume updates
     updateSingleAudioVolume(id, index) {
         if (id == null) return;
 
@@ -614,28 +338,18 @@ export class AudioSettingsMenu extends BaseMenu {
         }
 
         const masterVolume = this.volumeLevels[0] / 100;
-        const currentVolume = this.volumeLevels[index];
 
-        const masterMuted = this._isMutedIndex(0);
-        const currentMuted = this._isMutedIndex(index);
-
-        if (masterMuted || currentMuted) {
+        if (this.muted[0] || this.muted[index]) {
             audioElement.volume = 0;
-            return;
-        }
-
-        if (index === 0) {
+        } else if (index === 0) {
             audioElement.volume = masterVolume;
         } else {
-            audioElement.volume = (currentVolume / 100) * masterVolume;
+            audioElement.volume = (this.volumeLevels[index] / 100) * masterVolume;
         }
 
         if (index === 0) {
             for (let i = 1; i < this.volumeLevels.length; i++) {
-                if (this.volumeLevels[i] !== null) {
-                    const otherAudioElementId = this.audioMap[this.menuOptions[i]];
-                    this.updateAudioVolume(otherAudioElementId, i);
-                }
+                if (this._isSlider(i)) this.updateAudioVolume(this.audioMap[this.menuOptions[i]], i);
             }
         }
     }
@@ -643,67 +357,63 @@ export class AudioSettingsMenu extends BaseMenu {
     updateAudioVolume(audioElementId, index) {
         if (audioElementId == null) return;
 
-        if (Array.isArray(audioElementId)) {
-            for (const id of audioElementId) this.updateSingleAudioVolume(id, index);
-            return;
-        }
         if (typeof audioElementId === 'object') {
-            for (const key in audioElementId) {
-                if (Object.prototype.hasOwnProperty.call(audioElementId, key)) {
-                    this.updateSingleAudioVolume(audioElementId[key], index);
-                }
-            }
+            for (const id of Object.values(audioElementId)) this.updateSingleAudioVolume(id, index);
             return;
         }
+
         this.updateSingleAudioVolume(audioElementId, index);
     }
 
     _buildAudioMaps() {
+        const { menu, cutsceneMusic, cutsceneSFX, cutsceneDialogue,
+            mapSoundtrack, enemySFX, firedogSFX, collisionSFX, powerUpAndDownSFX } = this.game.audioHandler;
+
         this.tabData.MENU.audioMap = {
-            'Menu Master Volume': { ...this.game.audioHandler.menu.getSoundsMapping() },
-            'Menu Music': this.game.audioHandler.menu.soundsMapping.criminalitySoundtrack,
+            'Menu Master Volume': { ...menu.getSoundsMapping() },
+            'Menu Music': menu.soundsMapping.criminalitySoundtrack,
             'Map SFX': [
-                this.game.audioHandler.menu.soundsMapping.mapOpening,
-                this.game.audioHandler.menu.soundsMapping.enemyLoreOpenBookSound,
-                this.game.audioHandler.menu.soundsMapping.enemyLoreCloseBookSound,
-                this.game.audioHandler.menu.soundsMapping.bookFlipBackwardSound,
-                this.game.audioHandler.menu.soundsMapping.bookFlipForwardSound,
-                this.game.audioHandler.menu.soundsMapping.enemyLoreSwitchTabSound,
+                menu.soundsMapping.mapOpening,
+                menu.soundsMapping.enemyLoreOpenBookSound,
+                menu.soundsMapping.enemyLoreCloseBookSound,
+                menu.soundsMapping.bookFlipBackwardSound,
+                menu.soundsMapping.bookFlipForwardSound,
+                menu.soundsMapping.enemyLoreSwitchTabSound,
             ],
             'Wardrobe SFX': [
-                this.game.audioHandler.menu.soundsMapping.purchaseCompletedSound,
-                this.game.audioHandler.menu.soundsMapping.shinySkinRizzSound,
+                menu.soundsMapping.purchaseCompletedSound,
+                menu.soundsMapping.shinySkinRizzSound,
             ],
             'Menu Navigation SFX': [
-                this.game.audioHandler.menu.soundsMapping.optionSelectedSound,
-                this.game.audioHandler.menu.soundsMapping.optionHoveredSound,
+                menu.soundsMapping.optionSelectedSound,
+                menu.soundsMapping.optionHoveredSound,
             ],
         };
 
         this.tabData.CUTSCENE.audioMap = {
             'Cutscene Master Volume': {
-                ...this.game.audioHandler.cutsceneMusic.getSoundsMapping(),
-                ...this.game.audioHandler.cutsceneSFX.getSoundsMapping(),
-                ...this.game.audioHandler.cutsceneDialogue.getSoundsMapping(),
+                ...cutsceneMusic.getSoundsMapping(),
+                ...cutsceneSFX.getSoundsMapping(),
+                ...cutsceneDialogue.getSoundsMapping(),
             },
-            'Cutscene Music': { ...this.game.audioHandler.cutsceneMusic.getSoundsMapping() },
-            'Cutscene Dialogue SFX': { ...this.game.audioHandler.cutsceneDialogue.getSoundsMapping() },
-            'Cutscene Action SFX': { ...this.game.audioHandler.cutsceneSFX.getSoundsMapping() },
+            'Cutscene Music': { ...cutsceneMusic.getSoundsMapping() },
+            'Cutscene Dialogue SFX': { ...cutsceneDialogue.getSoundsMapping() },
+            'Cutscene Action SFX': { ...cutsceneSFX.getSoundsMapping() },
         };
 
         this.tabData.INGAME.audioMap = {
             'In-Game Master Volume': {
-                ...this.game.audioHandler.mapSoundtrack.getSoundsMapping(),
-                ...this.game.audioHandler.enemySFX.getSoundsMapping(),
-                ...this.game.audioHandler.firedogSFX.getSoundsMapping(),
-                ...this.game.audioHandler.collisionSFX.getSoundsMapping(),
-                ...this.game.audioHandler.powerUpAndDownSFX.getSoundsMapping(),
+                ...mapSoundtrack.getSoundsMapping(),
+                ...enemySFX.getSoundsMapping(),
+                ...firedogSFX.getSoundsMapping(),
+                ...collisionSFX.getSoundsMapping(),
+                ...powerUpAndDownSFX.getSoundsMapping(),
             },
-            'Map Music': { ...this.game.audioHandler.mapSoundtrack.getSoundsMapping() },
-            'Firedog SFX': { ...this.game.audioHandler.firedogSFX.getSoundsMapping() },
-            'Enemy SFX': { ...this.game.audioHandler.enemySFX.getSoundsMapping() },
-            'Collision SFX': { ...this.game.audioHandler.collisionSFX.getSoundsMapping() },
-            'Power Up/Down SFX': { ...this.game.audioHandler.powerUpAndDownSFX.getSoundsMapping() },
+            'Map Music': { ...mapSoundtrack.getSoundsMapping() },
+            'Firedog SFX': { ...firedogSFX.getSoundsMapping() },
+            'Enemy SFX': { ...enemySFX.getSoundsMapping() },
+            'Collision SFX': { ...collisionSFX.getSoundsMapping() },
+            'Power Up/Down SFX': { ...powerUpAndDownSFX.getSoundsMapping() },
         };
     }
 
@@ -711,285 +421,153 @@ export class AudioSettingsMenu extends BaseMenu {
     handleKeyDown(event) {
         if (!this._canInteract()) return;
 
-        if (event.key === '1') { this.setTab('MENU'); return; }
-        if (event.key === '2') { this.setTab('CUTSCENE'); return; }
-        if (event.key === '3') { this.setTab('INGAME'); return; }
-
-        if (event.key === 'ArrowUp') {
-            this.navigateVertical(-1);
-            this._playHover();
+        const tabByDigit = { 1: 'MENU', 2: 'CUTSCENE', 3: 'INGAME' }[event.key];
+        if (tabByDigit) {
+            this.setTab(tabByDigit);
             return;
         }
 
-        if (event.key === 'ArrowDown') {
-            this.navigateVertical(1);
-            this._playHover();
+        if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+            this.navigateVertical(event.key === 'ArrowUp' ? -1 : 1);
+            this.playHover();
             return;
         }
 
         if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-            const dir = (event.key === 'ArrowLeft') ? -1 : 1;
+            const direction = event.key === 'ArrowLeft' ? -1 : 1;
 
             if (this.isHeaderSelected()) {
-                this._cycleTab(dir);
-                return;
+                this._cycleTab(direction);
+            } else if (this._isSlider(this.selectedOption)) {
+                const step = event.repeat ? 2 : 1;
+                this._setVolume(this.selectedOption, this.volumeLevels[this.selectedOption] + direction * step);
             }
-
-            const i = this.selectedOption;
-            const current = this.volumeLevels[i];
-            if (current === null) return;
-
-            const step = event.repeat ? 2 : 1;
-            this.volumeLevels[i] = this._clampPct(current + (dir < 0 ? -step : step));
-
-            const label = this.menuOptions[i];
-            this.updateAudioVolume(this.audioMap[label], i);
-
-            this.game.saveGameState();
             return;
         }
 
         if (event.key === 'Enter') {
             if (this.isHeaderSelected()) {
-                this._playSelect();
-                return;
+                this.playSelect();
+            } else if (this._isSlider(this.selectedOption)) {
+                if (this._toggleMute(this.selectedOption)) this.playSelect();
+            } else {
+                this.handleMenuSelection();
             }
-
-            const i = this.selectedOption;
-            const isGoBack = this.menuOptions[i] === 'Go Back' || this.volumeLevels[i] === null;
-
-            if (!isGoBack) {
-                const didToggle = this._toggleMute(i);
-                if (didToggle) this._playSelect();
-                return;
-            }
-
-            this.handleMenuSelection();
-        }
-    }
-
-    handleMouseMove(event) {
-        if (!this._canInteract()) return;
-
-        const { mouseX, mouseY } = this.canvasMouse(event);
-
-        const hitTab = this._hitTestTab(mouseX, mouseY);
-        const overReset = this._hitTestHeaderReset(mouseX, mouseY);
-
-        const nextHeaderAction = overReset ? 'reset' : null;
-        if (nextHeaderAction !== this.hoveredHeaderAction) {
-            this.hoveredHeaderAction = nextHeaderAction;
-            if (overReset) this._playHover();
-        }
-
-        if (hitTab || overReset) return;
-
-        const hitIdx = this.hitTestOptionIndex(mouseX, mouseY);
-        if (hitIdx !== null && hitIdx !== this.selectedOption) {
-            this.selectedOption = hitIdx;
-            this._playHover();
         }
     }
 
     handleMouseClick(event) {
-        if (!this._canInteract()) return;
-        if (this.draggingSliderActive) return;
+        if (!this._canInteract() || this.draggingSliderActive) return;
 
-        const { mouseX, mouseY } = this.canvasMouse(event);
-
-        const hitTab = this._hitTestTab(mouseX, mouseY);
-        if (hitTab) {
-            this.setTab(hitTab);
-            this._playSelect();
-            this.selectedOption = this.headerSelectionIndex;
-            this.clampSelection();
+        const tab = this.hit(event, '.audio-tab');
+        if (tab) {
+            this.setTab(tab.dataset.tab);
+            this.playSelect();
+            this.selectedOption = HEADER_INDEX;
             return;
         }
 
-        if (this._hitTestHeaderReset(mouseX, mouseY)) {
+        if (this.hit(event, '.audio-reset')) {
             this._resetActiveTab();
-            this._playSelect();
+            this.playSelect();
             return;
         }
 
-        for (let i = 0; i < this.menuOptions.length; i++) {
-            if (this.volumeLevels[i] === null) continue;
-            if (this._hitTestLabel(i, mouseX, mouseY)) {
-                this.selectedOption = i;
-                const didToggle = this._toggleMute(i);
-                if (didToggle) this._playSelect();
-                return;
-            }
+        const row = this.hit(event, '.audio-row');
+        const index = row ? Number(row.dataset.index) : -1;
+
+        if (row && this._isSlider(index) && (this.hit(event, '.audio-label') || this.hit(event, '.audio-mute'))) {
+            this.selectedOption = index;
+            if (this._toggleMute(index)) this.playSelect();
+            return;
         }
 
-        for (let i = 0; i < this.menuOptions.length; i++) {
-            if (this.volumeLevels[i] === null) continue;
-            if (this._hitTestMuteIcon(i, mouseX, mouseY)) {
-                this.selectedOption = i;
-                const didToggle = this._toggleMute(i);
-                if (didToggle) this._playSelect();
-                return;
-            }
-        }
-
-        if (!this.isHeaderSelected()) {
-            const i = this.selectedOption;
-            const current = this.volumeLevels[i];
-
-            if (current !== null) {
-                const { x: sx, y: sy, w: sw, h: sh } = this.getSliderRect(i);
-                if (mouseX >= sx && mouseX <= sx + sw && mouseY >= sy && mouseY <= sy + sh) {
-                    this.volumeLevels[i] = this._clampPct(Math.round(((mouseX - sx) / sw) * 100));
-
-                    const label = this.menuOptions[i];
-                    this.updateAudioVolume(this.audioMap[label], i);
-
-                    this.game.saveGameState();
-                    return;
-                }
-            }
+        const track = this.hit(event, '.audio-track');
+        if (track) {
+            this.selectedOption = index;
+            this._setVolume(index, Math.round(this._ratioIn(track, event.clientX) * 100));
+            return;
         }
 
         this.handleMenuSelection();
     }
 
-    handleMouseDown(event) {
-        if (!this.menuActive) return;
-        if (this.isHeaderSelected()) return;
+    _ratioIn(element, clientX) {
+        const { left, width } = element.getBoundingClientRect();
+        return width ? Math.max(0, Math.min(1, (clientX - left) / width)) : 0;
+    }
 
-        const { mouseX, mouseY } = this.canvasMouse(event);
+    _startDrag(event, index, handle) {
+        if (!this._canInteract()) return;
+        const rect = handle.getBoundingClientRect();
 
-        for (let i = 0; i < this.menuOptions.length; i++) {
-            if (this.volumeLevels[i] === null) continue;
-            if (this._hitTestMuteIcon(i, mouseX, mouseY)) return;
-            if (this._hitTestLabel(i, mouseX, mouseY)) return;
-        }
+        this.draggingSlider = true;
+        this.draggingSliderIndex = index;
+        this.dragOffsetX = event.clientX - (rect.left + rect.width / 2);
+        this.selectedOption = index;
+    }
 
-        for (let i = 0; i < this.menuOptions.length; i++) {
-            const vol = this.volumeLevels[i];
-            if (vol === null) continue;
+    handleMouseDrag(event) {
+        if (!this.draggingSlider) return;
+        this.draggingSliderActive = true;
 
-            const { x: sliderX, y: sliderY, w: sliderW, h: sliderH } = this.getSliderRect(i);
-            const handleR = sliderH / 2;
-            const handleX = sliderX + (sliderW - 2 * handleR) * (vol / 100);
+        const track = this.dom.rows[this.draggingSliderIndex]?.track;
+        if (!track) return;
 
-            if (
-                mouseX >= handleX &&
-                mouseX <= handleX + 2 * handleR &&
-                mouseY >= sliderY &&
-                mouseY <= sliderY + sliderH
-            ) {
-                this.draggingSlider = true;
-                this.draggingSliderIndex = i;
-                this.dragOffsetX = mouseX - handleX;
-                this.selectedOption = i;
-                break;
-            }
-        }
+        const ratio = this._ratioIn(track, event.clientX - this.dragOffsetX);
+        this._setVolume(this.draggingSliderIndex, Math.round(ratio * 100));
     }
 
     handleMouseUp() {
         this.draggingSlider = false;
         this.draggingSliderIndex = -1;
 
-        setTimeout(() => {
-            this.draggingSliderActive = false;
-        }, 10);
-    }
-
-    handleMouseDrag(event) {
-        if (!this.draggingSlider) return;
-
-        this.draggingSliderActive = true;
-
-        const rect = this.game.canvas.getBoundingClientRect();
-        const scaleX = this.game.canvas.width / rect.width;
-        const mouseX = (event.clientX - rect.left) * scaleX;
-
-        const { x: sliderX, w: sliderW } = this.getSliderRect(this.draggingSliderIndex);
-
-        let relativeX = mouseX - this.dragOffsetX - sliderX;
-        relativeX = Math.max(0, Math.min(relativeX, sliderW));
-
-        this.volumeLevels[this.draggingSliderIndex] =
-            this._clampPct(Math.round((relativeX / sliderW) * 100));
-
-        const label = this.menuOptions[this.draggingSliderIndex];
-        this.updateAudioVolume(this.audioMap[label], this.draggingSliderIndex);
-
-        this.game.saveGameState();
+        setTimeout(() => { this.draggingSliderActive = false; }, 10);
     }
 
     handleMouseWheel(event) {
         if (!this.menuActive) return;
 
         if (this.isHeaderSelected()) {
-            const dir = event.deltaY > 0 ? 1 : -1;
-            this._cycleTab(dir);
+            this._cycleTab(Math.sign(event.deltaY));
             return;
         }
 
         const i = this.selectedOption;
-        if (i === this.menuOptions.length - 1) return;
-
-        const current = this.volumeLevels[i];
-        if (current === null) return;
+        if (i === this.menuOptions.length - 1 || !this._isSlider(i)) return;
 
         const step = event.repeat ? 2 : 1;
-        const newVolume = event.deltaY > 0 ? current - step : current + step;
-
-        this.volumeLevels[i] = this._clampPct(newVolume);
-
-        const label = this.menuOptions[i];
-        this.updateAudioVolume(this.audioMap[label], i);
-
-        this.game.saveGameState();
+        this._setVolume(i, this.volumeLevels[i] - Math.sign(event.deltaY) * step);
     }
 
     handleMenuSelection() {
-        if (this.menuOptions[this.selectedOption] === 'Go Back') {
-            super.handleMenuSelection();
-            this.game.goBackMenu();
-            return;
-        }
-
         super.handleMenuSelection();
+        if (this.menuOptions[this.selectedOption] === 'Go Back') this.game.goBackMenu();
     }
 
     // persistence
     getState() {
-        return {
-            tabData: {
-                MENU: {
-                    volumeLevels: [...this.tabData.MENU.volumeLevels],
-                    muted: [...this.tabData.MENU.muted],
-                },
-                CUTSCENE: {
-                    volumeLevels: [...this.tabData.CUTSCENE.volumeLevels],
-                    muted: [...this.tabData.CUTSCENE.muted],
-                },
-                INGAME: {
-                    volumeLevels: [...this.tabData.INGAME.volumeLevels],
-                    muted: [...this.tabData.INGAME.muted],
-                },
-            },
-        };
+        const tabData = {};
+        for (const tab of this.tabs) {
+            tabData[tab] = {
+                volumeLevels: [...this.tabData[tab].volumeLevels],
+                muted: [...this.tabData[tab].muted],
+            };
+        }
+        return { tabData };
     }
 
     setState(state) {
-        for (const t of this.tabs) {
-            const s = state.tabData[t];
-
-            this.tabData[t].volumeLevels = [...s.volumeLevels];
-            this.tabData[t].muted = [...s.muted];
+        for (const tab of this.tabs) {
+            this.tabData[tab].volumeLevels = [...state.tabData[tab].volumeLevels];
+            this.tabData[tab].muted = [...state.tabData[tab].muted];
         }
 
-        for (const t of this.tabs) {
-            this.setTab(t);
-            for (let i = 0; i < this.menuOptions.length; i++) {
-                const audioElementId = this.audioMap[this.menuOptions[i]];
-                if (audioElementId) this.updateAudioVolume(audioElementId, i);
-            }
+        for (const tab of this.tabs) {
+            this.setTab(tab);
+            this.menuOptions.forEach((option, i) => {
+                if (this.audioMap[option]) this.updateAudioVolume(this.audioMap[option], i);
+            });
         }
 
         this.setTab('MENU');

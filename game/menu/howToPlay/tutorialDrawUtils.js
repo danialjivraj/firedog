@@ -1450,20 +1450,6 @@ export const tutorialDrawMixin = {
         for (const d of (page.drawables || [])) {
             if (d && typeof d.draw === 'function') d.draw(ctx);
         }
-
-        const label = `${this.currentPage + 1}/${this.pages.length} - ${page.title ?? ''}`.trim();
-
-        ctx.save();
-        ctx.font = 'bold 26px "Gloria Hallelujah"';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'bottom';
-        ctx.lineWidth = 6;
-        ctx.strokeStyle = 'white';
-        ctx.fillStyle = 'black';
-
-        ctx.strokeText(label, 18, this.game.height - 14);
-        ctx.fillText(label, 18, this.game.height - 14);
-        ctx.restore();
     },
 
     _resetDemosOnPageChange() {

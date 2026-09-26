@@ -2,6 +2,7 @@ import { isLocalNight } from '../utils/timeOfDay.js';
 import { MAP_DISPLAY_NAMES_UPPER, MAP_THEME_COLORS } from '../config/constants.js';
 import { BaseMenu } from "./baseMenu.js";
 import { buildPageDefs } from '../config/enemyLoreData.js';
+import { BookPageFlip } from './bookPageFlip.js';
 
 const EVERYWHERE = 'EVERYWHERE';
 
@@ -85,6 +86,8 @@ export class EnemyLore extends BaseMenu {
         }
 
         this.loadPages(buildPageDefs(this.pageWidth, this.pageHeight));
+
+        this.pageFlip = new BookPageFlip(this);
     }
 
     loadPages(defs) {
@@ -126,8 +129,14 @@ export class EnemyLore extends BaseMenu {
     }
 
 
-    update() {
+    activateMenu(selectedOption = 0) {
+        super.activateMenu(selectedOption);
+        this.pageFlip.reset();
+    }
+
+    update(deltaTime) {
         this.game.audioHandler.menu.stopSound('criminalitySoundtrack');
+        this.pageFlip.update(deltaTime);
     }
 
     isNightMode() {
@@ -885,6 +894,40 @@ export class EnemyLore extends BaseMenu {
         }
     }
 
+    drawPageNumber(context, pageIndex, side, x, y) {
+        if (pageIndex < 0 || pageIndex >= this.pages.length) return;
+
+        context.font = '24px "Arial"';
+        context.fillStyle = 'black';
+
+        if (side === 'left') {
+            context.textAlign = 'left';
+            context.fillText(pageIndex + 1, x + 10, y + this.pageHeight - 10);
+        } else {
+            context.textAlign = 'right';
+            context.fillText(pageIndex + 1, x + this.pageWidth - 10, y + this.pageHeight - 10);
+        }
+    }
+
+    renderPageFace(context, pageIndex, side) {
+        const bg = this.enemyLoreBookBackground;
+
+        if (bg) {
+            const bgX = (this.game.width - bg.width) / 2;
+            const bgY = (this.game.height - bg.height) / 2 + 10;
+            const pageX = (side === 'right') ? this.bookX + this.pageWidth : this.bookX;
+
+            context.drawImage(
+                bg,
+                pageX - bgX, this.bookY - bgY, this.pageWidth, this.pageHeight,
+                0, 0, this.pageWidth, this.pageHeight,
+            );
+        }
+
+        this.drawPageContent(context, pageIndex, 0, 0);
+        this.drawPageNumber(context, pageIndex, side, 0, 0);
+    }
+
     draw(context) {
         if (!this.menuActive) return;
         if (!this.fontsReady) return;
@@ -983,26 +1026,28 @@ export class EnemyLore extends BaseMenu {
 
         context.drawImage(this.enemyLoreBookBackground, bookBackgroundX, bookBackgroundY);
 
-        this.drawPageContent(context, this.currentPage, this.bookX, this.bookY);
-        if (this.currentPage + 1 < this.pages.length) {
-            this.drawPageContent(context, this.currentPage + 1, this.bookX + this.pageWidth, this.bookY);
+        const flipping = this.pageFlip.isActive();
+        const leftIndex = flipping ? this.pageFlip.staticLeftIndex : this.currentPage;
+        const rightIndex = flipping ? this.pageFlip.staticRightIndex : this.currentPage + 1;
+
+        this.drawPageContent(context, leftIndex, this.bookX, this.bookY);
+        if (rightIndex < this.pages.length) {
+            this.drawPageContent(context, rightIndex, this.bookX + this.pageWidth, this.bookY);
         }
 
         this.drawMapNumberTabs(context);
 
         // page numbers
-        context.font = '24px "Arial"';
-        context.fillStyle = 'black';
-        context.textAlign = 'left';
-        context.fillText(this.currentPage + 1, this.bookX + 10, this.bookY + this.pageHeight - 10);
-        if (this.currentPage + 1 < this.pages.length) {
-            context.textAlign = 'right';
-            context.fillText(this.currentPage + 2, this.bookX + this.pageWidth * 2 - 10, this.bookY + this.pageHeight - 10);
-        }
+        this.drawPageNumber(context, leftIndex, 'left', this.bookX, this.bookY);
+        this.drawPageNumber(context, rightIndex, 'right', this.bookX + this.pageWidth, this.bookY);
+
+        this.pageFlip.draw(context);
 
         // projectile tooltip on hover
-        const leftBounds = this.getProjectileIconBounds(this.currentPage, this.bookX, this.bookY);
-        const rightBounds = (this.currentPage + 1 < this.pages.length)
+        const leftBounds = flipping
+            ? null
+            : this.getProjectileIconBounds(this.currentPage, this.bookX, this.bookY);
+        const rightBounds = (!flipping && this.currentPage + 1 < this.pages.length)
             ? this.getProjectileIconBounds(this.currentPage + 1, this.bookX + this.pageWidth, this.bookY)
             : null;
 
@@ -1022,14 +1067,18 @@ export class EnemyLore extends BaseMenu {
     clickNextPage() {
         const maxValidIndex = this.getMaxValidIndex();
         if (this.currentPage < maxValidIndex) {
+            const previousPage = this.currentPage;
             this.currentPage += 2;
+            this.pageFlip.start(previousPage, this.currentPage);
             this.game.audioHandler.menu.playSound('bookFlipForwardSound', false, true);
         }
     }
 
     clickPreviousPage() {
         if (this.currentPage > 0) {
+            const previousPage = this.currentPage;
             this.currentPage = Math.max(0, this.currentPage - 2);
+            this.pageFlip.start(previousPage, this.currentPage);
             this.game.audioHandler.menu.playSound('bookFlipBackwardSound', false, true);
         }
     }
@@ -1133,8 +1182,13 @@ export class EnemyLore extends BaseMenu {
                     target = Math.min(target, maxValidIndex);
 
                     if (target !== this.currentPage) {
+                        const previousPage = this.currentPage;
+                        const forward = target > previousPage;
                         this.currentPage = target;
+                        this.pageFlip.start(previousPage, this.currentPage);
                         this.game.audioHandler.menu.playSound('enemyLoreSwitchTabSound', false, true);
+                        this.game.audioHandler.menu.playSound(
+                            forward ? 'bookFlipForwardSound' : 'bookFlipBackwardSound', false, true);
                     }
                 }
                 return;

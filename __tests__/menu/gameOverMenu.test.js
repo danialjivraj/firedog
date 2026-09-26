@@ -1,5 +1,5 @@
 import { GameOverMenu } from '../../game/menu/gameOverMenu.js';
-import { BaseMenu } from '../../game/menu/baseMenu.js';
+import { DomMenu } from '../../game/menu/dom/domMenu.js';
 
 describe('GameOverMenu', () => {
     let menu, mockGame, ctx;
@@ -66,6 +66,39 @@ describe('GameOverMenu', () => {
         jest.clearAllMocks();
     });
 
+    describe('unbound-keybind badge', () => {
+        const badgeOn = (label) => {
+            menu.ensurePanel();
+            menu.syncContent();
+            const row = menu.dom.rows[menu.menuOptions.indexOf(label)];
+            return !row.querySelector('.menu-option__badge').hidden;
+        };
+
+        it('flags "Settings" only while a keybind two levels down is unbound', () => {
+            mockGame.menu.controlsSettings = { unboundCount: () => 0 };
+            expect(badgeOn('Settings')).toBe(false);
+
+            mockGame.menu.controlsSettings = { unboundCount: () => 2 };
+            expect(badgeOn('Settings')).toBe(true);
+            expect(badgeOn('Retry')).toBe(false);
+        });
+
+        it('keeps flagging "Settings" once the boss retry row shifts its index', () => {
+            mockGame.menu.controlsSettings = { unboundCount: () => 1 };
+            mockGame.hasActiveBoss = true;
+            menu.activateMenu();
+
+            expect(menu.menuOptions).toEqual(['Retry Final Boss', 'Retry', 'Settings', 'Back to Main Menu']);
+            expect(badgeOn('Settings')).toBe(true);
+            expect(badgeOn('Retry Final Boss')).toBe(false);
+        });
+
+        it('stays clear when Controls Settings has not been built yet', () => {
+            delete mockGame.menu.controlsSettings;
+            expect(badgeOn('Settings')).toBe(false);
+        });
+    });
+
     describe('activateMenu()', () => {
         it('sets title to "Game Over!" when coins are sufficient', () => {
             mockGame.notEnoughCoins = false;
@@ -96,12 +129,18 @@ describe('GameOverMenu', () => {
     });
 
     describe('draw()', () => {
-        it('disables canEscape and delegates to BaseMenu.draw()', () => {
+        it('disables canEscape and delegates to DomMenu.draw()', () => {
             mockGame.gameOver = true;
-            jest.spyOn(BaseMenu.prototype, 'draw');
+            jest.spyOn(DomMenu.prototype, 'draw');
             menu.draw(ctx);
             expect(mockGame.menu.pause.canEscape).toBe(false);
-            expect(BaseMenu.prototype.draw).toHaveBeenCalledWith(ctx);
+            expect(DomMenu.prototype.draw).toHaveBeenCalledWith(ctx);
+        });
+
+        it('renders with the red danger chrome, like the delete confirmations', () => {
+            menu.activateMenu();
+
+            expect(menu.panel.classList.contains('menu-panel--danger')).toBe(true);
         });
     });
 

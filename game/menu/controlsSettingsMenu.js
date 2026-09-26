@@ -1,243 +1,182 @@
 import { ScrollableMenu } from './scrollableMenu.js';
 import { getDefaultKeyBindings, normalizeKey, keyLabel } from '../config/keyBindings.js';
 
+const ACTION_NAMES = {
+    jump: 'Jump',
+    moveBackward: 'Move Backward',
+    sit: 'Sit',
+    moveForward: 'Move Forward',
+    rollAttack: 'Roll Attack',
+    diveAttack: 'Dive Attack',
+    fireballAttack: 'Fireball Attack',
+    invisibleDefense: 'Invisible Defense',
+    dashAttack: 'Dash Attack',
+};
+
+const FOOTER_BUTTONS = ['Reset to Defaults', 'Go Back'];
+
+const ROW_H = 46;
+const MAX_VISIBLE_ROWS = 7;
+
 export class ControlsSettingsMenu extends ScrollableMenu {
     constructor(game) {
-        const actionOrder = [
-            'jump',
-            'moveBackward',
-            'sit',
-            'moveForward',
-            'rollAttack',
-            'diveAttack',
-            'fireballAttack',
-            'invisibleDefense',
-            'dashAttack',
-            'Reset to Defaults',
-            'Go Back',
-        ];
-        super(game, actionOrder, 'Controls Settings');
-        this.positionOffset = 280;
+        super(game, [...Object.keys(ACTION_NAMES), ...FOOTER_BUTTONS], 'Controls Settings');
+        this.cardModifier = 'menu-card--wide menu-card--controls';
         this.menuInGame = false;
 
         this.waitingForKey = false;
         this.waitingAction = null;
 
-        this.actionNames = {
-            jump: 'Jump',
-            moveBackward: 'Move Backward',
-            sit: 'Sit',
-            moveForward: 'Move Forward',
-            rollAttack: 'Roll Attack',
-            diveAttack: 'Dive Attack',
-            fireballAttack: 'Fireball Attack',
-            invisibleDefense: 'Invisible Defense',
-            dashAttack: 'Dash Attack',
-        };
-
-        if (!this.game.keyBindings) {
-            this.game.keyBindings = getDefaultKeyBindings();
-        }
-
-        this.rowHeight = 60;
-        this.listPadding = 0;
-        this.menuOptionsPositionOffset = 95;
-
-        // override ScrollableMenu defaults
-        this.barWidth = 10;
-        this.barTrackAlpha = 0.25;
+        this.game.keyBindings ??= getDefaultKeyBindings();
 
         this.onGlobalKeyDown = this.onGlobalKeyDown.bind(this);
         document.addEventListener('keydown', this.onGlobalKeyDown, true);
     }
 
     get keybindCount() {
-        return this.menuOptions.length - 2;
+        return this.menuOptions.length - FOOTER_BUTTONS.length;
+    }
+
+    get listHeight() {
+        return Math.min(this.keybindCount, MAX_VISIBLE_ROWS) * ROW_H;
     }
 
     closeMenu() {
         super.closeMenu();
         this.waitingForKey = false;
         this.waitingAction = null;
-        this.draggingBar = false;
     }
+
     destroy() {
         document.removeEventListener('keydown', this.onGlobalKeyDown, true);
     }
+
     unboundCount() {
-        let count = 0;
-        for (let i = 0; i < this.keybindCount; i++) {
-            const option = this.menuOptions[i];
-            const key = this.game.keyBindings[option];
-            if (!key) count++;
-        }
-        return count;
+        return this.menuOptions
+            .slice(0, this.keybindCount)
+            .filter((action) => !this.game.keyBindings[action]).length;
     }
 
-    draw(context) {
-        this.drawBackdrop(context);
+    // dom
 
-        if (this.showStarsSticker && this.menuInGame === false) {
-            this.drawStarsSticker(context);
-        }
+    buildBody(body) {
+        const warning = document.createElement('div');
+        warning.className = 'controls-warning';
 
-        this.drawTitle(context, this.game.height / 2 - this.positionOffset + 20);
+        body.append(warning, this.buildScrollArea('controls'));
 
-        context.save();
-        context.shadowColor = 'black';
-        context.shadowOffsetX = 3;
-        context.shadowOffsetY = 3;
+        this.dom.keyRows = this.menuOptions.slice(0, this.keybindCount).map((action, index) => {
+            const row = document.createElement('div');
+            row.className = 'controls-row';
 
-        const listTop = this.game.height / 2 - this.positionOffset + this.menuOptionsPositionOffset;
-        const listLeftLabelX = this.centerX - 40;
-        const listRightKeyX = this.centerX + 40;
+            const label = document.createElement('span');
+            label.className = 'controls-row__label';
+            label.textContent = ACTION_NAMES[action] ?? action;
 
+            const key = document.createElement('span');
+            key.className = 'controls-row__key';
+
+            row.append(label, key);
+            this.bindHover(row, () => this.setSelected(index));
+            this.dom.track.appendChild(row);
+
+            return { row, key };
+        });
+
+        this.dom.footer = this.buildFooter(body, FOOTER_BUTTONS, (i) => this.setSelected(this.keybindCount + i));
+
+        this.dom.warning = warning;
+        this.panel.appendChild(this._buildRebindOverlay());
+    }
+
+    _buildRebindOverlay() {
+        const overlay = document.createElement('div');
+        overlay.className = 'controls-rebind';
+        overlay.hidden = true;
+
+        const prompt = document.createElement('div');
+        prompt.className = 'controls-rebind__prompt';
+
+        const hint = document.createElement('div');
+        hint.className = 'controls-rebind__hint';
+        hint.textContent = '(Esc to cancel)';
+
+        const note = document.createElement('div');
+        note.className = 'controls-rebind__note';
+
+        overlay.append(prompt, hint, note);
+
+        this.dom.rebind = overlay;
+        this.dom.rebindPrompt = prompt;
+        this.dom.rebindNote = note;
+
+        return overlay;
+    }
+
+    syncContent() {
         const missing = this.unboundCount();
+        this.dom.warning.dataset.text = missing === 1
+            ? 'Warning: 1 keybind is unbound'
+            : `Warning: ${missing} keybindings are unbound`;
+        this.dom.warning.hidden = missing === 0;
 
-        if (missing > 0) {
-            const msg = missing === 1
-                ? 'Warning: 1 keybind is unbound'
-                : `Warning: ${missing} keybindings are unbound`;
+        this.dom.keyRows.forEach(({ row, key }, i) => {
+            const bound = this.game.keyBindings[this.menuOptions[i]];
+            key.textContent = keyLabel(bound);
+            row.classList.toggle('is-focused', i === this.selectedOption);
+            row.classList.toggle('is-unbound', !bound);
+        });
 
-            context.save();
-            context.textAlign = 'center';
-            context.font = 'bold 26px Arial';
-            context.fillStyle = '#ff4d4d';
-            context.shadowColor = 'black';
-            context.shadowOffsetX = 2;
-            context.shadowOffsetY = 2;
+        this.dom.footer.forEach((button, i) => {
+            button.classList.toggle('is-focused', this.selectedOption === this.keybindCount + i);
+        });
 
-            context.fillText(msg, this.game.width / 2, listTop - 32);
-            context.restore();
-        }
+        this.syncScroll(this.listHeight, this.keybindCount * ROW_H);
 
-        const reservedForButtons = this.rowHeight * 2 + 40;
-        const listBottom = this.game.height - reservedForButtons - 20;
-        const maxListHeight = Math.max(120, listBottom - listTop);
-
-        const contentH = this.keybindCount * this.rowHeight + this.listPadding * 2;
-        const listHeight = Math.min(maxListHeight, contentH);
-        this.scrollMax = Math.max(0, contentH - listHeight);
-
-        const panelX = this.centerX - 370;
-        const panelW = 755;
-        context.save();
-        context.shadowColor = 'transparent';
-        const isGameOver = !!this.game.gameOver || !!this.game.notEnoughCoins || !!this.game.menu.gameOver?.menuActive;
-        const panelAlpha = !this.menuInGame ? 0.42 : (isGameOver ? 0.35 : 0.1);
-        context.fillStyle = `rgba(0,0,0,${panelAlpha})`;
-        context.fillRect(panelX, listTop - 20, panelW, listHeight + 20);
-        context.strokeStyle = 'rgba(255,255,255,0.30)';
-        context.lineWidth = 2;
-        context.strokeRect(panelX, listTop - 20, panelW, listHeight + 20);
-        context.restore();
-
-        context.save();
-        context.beginPath();
-        context.rect(this.centerX - 420, listTop, 840, listHeight);
-        context.clip();
-
-        context.font = '34px Arial';
-        for (let i = 0; i < this.keybindCount; i++) {
-            const option = this.menuOptions[i];
-            const y = listTop + this.listPadding + i * this.rowHeight - this.scrollY;
-            const isSelected = (i === this.selectedOption);
-
-            if (y + this.rowHeight < listTop || y > listTop + listHeight) continue;
-
-            const label = this.actionNames[option] || option;
-            context.font = isSelected ? 'bold 36px Arial' : '34px Arial';
-            context.textAlign = 'right';
-            context.fillStyle = isSelected ? 'yellow' : 'white';
-            context.fillText(label, listLeftLabelX, y + this.rowHeight / 2);
-
-            const key = this.game.keyBindings[option];
-            const rightCol = keyLabel(key);
-            const isUnbound = !key;
-            const keyColor = isUnbound ? 'red' : (isSelected ? 'yellow' : 'white');
-
-            context.textAlign = 'left';
-            context.font = isSelected ? 'bold 36px Arial' : '34px Arial';
-            context.fillStyle = keyColor;
-            context.fillText(rightCol, listRightKeyX, y + this.rowHeight / 2);
-        }
-
-        context.restore();
-
-        // scrollbar
-        if (this.scrollMax > 0.5) {
-            const barX = this.centerX + 420 - this.barWidth - 10;
-            const trackY = listTop - 19;
-            const trackH = listHeight + 18;
-
-            context.save();
-            context.shadowColor = 'transparent';
-            context.fillStyle = `rgba(255,255,255,${this.barTrackAlpha})`;
-            context.fillRect(barX, trackY, this.barWidth, trackH);
-
-            const thumbH = Math.max(30, (trackH / (contentH + 40)) * trackH);
-            const t = this.scrollY / this.scrollMax;
-            const thumbY = trackY + (trackH - thumbH) * t;
-
-            context.fillStyle = 'rgba(255,255,255,0.85)';
-            context.fillRect(barX, thumbY, this.barWidth, thumbH);
-            context.restore();
-
-            this.barRect = { x: barX, y: trackY, w: this.barWidth, h: trackH, thumbY, thumbH };
-        } else {
-            this.barRect = null;
-        }
-
-        const resetIdx = this.menuOptions.length - 2;
-        const backIdx = this.menuOptions.length - 1;
-
-        const resetY = listTop + listHeight + 20 + this.rowHeight / 2;
-        const backY = resetY + this.rowHeight;
-
-        context.textAlign = 'right';
-
-        context.font = this.selectedOption === resetIdx ? 'bold 36px Arial' : '34px Arial';
-        context.fillStyle = this.selectedOption === resetIdx ? 'yellow' : 'white';
-        context.fillText('Reset to Defaults', listLeftLabelX, resetY);
-
-        context.font = this.selectedOption === backIdx ? 'bold 36px Arial' : '34px Arial';
-        context.fillStyle = this.selectedOption === backIdx ? 'yellow' : 'white';
-        context.fillText('Go Back', listLeftLabelX, backY);
-
+        this.dom.rebind.hidden = !this.waitingForKey;
         if (this.waitingForKey) {
-            context.save();
-            context.setTransform(1, 0, 0, 1, 0, 0);
-            context.shadowColor = 'transparent';
-            context.globalAlpha = 1;
-
-            context.fillStyle = 'rgba(0,0,0,0.8)';
-            context.fillRect(-1, -1, this.game.width + 2, this.game.height + 2);
-            context.restore();
-
-            context.textAlign = 'center';
-            context.fillStyle = 'white';
-            context.font = 'bold 38px Arial';
-            const actionName = this.actionNames[this.waitingAction];
-            context.fillText(`Press a key for "${actionName}"`, this.game.width / 2, this.game.height / 2 - 10);
-            context.font = '24px Arial';
-            context.fillText(`(Esc to cancel)`, this.game.width / 2, this.game.height / 2 + 30);
-
-            if (this.waitingAction === 'sit') {
-                context.font = '20px Arial';
-                context.fillStyle = '#FFD';
-                context.fillText('Note: Dive Attack will also be set to this key.',
-                    this.game.width / 2, this.game.height / 2 + 65);
-                context.fillText('You can change Dive Attack separately later.',
-                    this.game.width / 2, this.game.height / 2 + 90);
-            }
+            this.dom.rebindPrompt.textContent = `Press a key for "${ACTION_NAMES[this.waitingAction]}"`;
+            const isSit = this.waitingAction === 'sit';
+            this.dom.rebindNote.hidden = !isSit;
+            this.dom.rebindNote.textContent = isSit
+                ? 'Note: Dive Attack will also be set to this key. You can change Dive Attack separately later.'
+                : '';
         }
-
-        context.restore();
     }
 
-    update(dt) {
-        super.update(dt);
-        this.tickScroll(dt);
+    // behaviour
+
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.tickScroll(deltaTime);
+    }
+
+    activateMenu(arg = 0) {
+        const { selectedOption = 0, inGame = false } = this.readActivation(arg);
+
+        this.menuInGame = !!inGame;
+        this.scrollY = 0;
+        this.targetScrollY = 0;
+
+        super.activateMenu(selectedOption);
+        this.scrollSelectedIntoView();
+    }
+
+    setSelected(index) {
+        if (index === this.selectedOption) return;
+        this.selectedOption = index;
+        this.playHover();
+        this.scrollSelectedIntoView();
+    }
+
+    scrollSelectedIntoView() {
+        if (this.selectedOption >= this.keybindCount) return;
+        this.scrollIntoView(this.selectedOption * ROW_H, ROW_H, this.listHeight);
+    }
+
+    handleNavigation(delta) {
+        super.handleNavigation(delta);
+        this.scrollSelectedIntoView();
     }
 
     handleKeyDown(event) {
@@ -251,132 +190,25 @@ export class ControlsSettingsMenu extends ScrollableMenu {
             return;
         }
 
-        if (!this.menuActive || !this.game.canSelect || !this.game.canSelectForestMap) return;
+        if (!this._canInteract()) return;
 
-        if (event.key === 'ArrowUp') {
-            this.selectedOption = (this.selectedOption - 1 + this.menuOptions.length) % this.menuOptions.length;
-            this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
-            this.scrollSelectedIntoView();
-        } else if (event.key === 'ArrowDown') {
-            this.selectedOption = (this.selectedOption + 1) % this.menuOptions.length;
-            this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
-            this.scrollSelectedIntoView();
+        if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+            this.handleNavigation(event.key === 'ArrowUp' ? -1 : 1);
+            this.playHover();
         } else if (event.key === 'Enter') {
             this.handleMenuSelection();
         }
     }
 
-    listBounds() {
-        const listTop = this.game.height / 2 - this.positionOffset + this.menuOptionsPositionOffset;
-        const reservedForButtons = this.rowHeight * 2 + 40;
-        const listBottom = this.game.height - reservedForButtons - 20;
-        const listHeight = Math.max(120, listBottom - listTop);
-        const listWidth = 840;
-        const listX = this.centerX - 420;
-        return { x: listX, y: listTop, w: listWidth, h: listHeight };
-    }
-
-    handleMouseWheel(event) {
-        if (!this.menuActive || !this.game.canSelect || !this.game.canSelectForestMap) return;
-
-        const { mouseX, mouseY } = this.canvasMouse(event);
-        const { x, y, w, h } = this.listBounds();
-        const insideList = mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
-
-        if (insideList) {
-            const step = (event.deltaY > 0 ? 1 : -1) * 80;
-            this.targetScrollY = Math.max(0, Math.min(this.targetScrollY + step, this.scrollMax));
-        } else {
-            super.handleMouseWheel(event);
-            this.scrollSelectedIntoView();
-        }
-    }
-
-    handleMouseMove(event) {
-        if (!this.menuActive || !this.game.canSelect || !this.game.canSelectForestMap) return;
-
-        const { mouseX, mouseY } = this.canvasMouse(event);
-
-        if (this.draggingBar) {
-            this.updateScrollFromThumb(mouseY);
-            return;
-        }
-
-        const listTop = this.game.height / 2 - this.positionOffset + this.menuOptionsPositionOffset;
-        const reservedForButtons = this.rowHeight * 2 + 40;
-        const listBottom = this.game.height - reservedForButtons - 20;
-
-        const resetIdx = this.menuOptions.length - 2;
-        const backIdx = this.menuOptions.length - 1;
-
-        const resetY = listTop + (listBottom - listTop) + 40 + this.rowHeight / 2;
-        const backY = resetY + this.rowHeight;
-
-        const xEnd = this.centerX - 40;
-        const xStart = xEnd - 400;
-        const halfH = 28;
-
-        if (mouseX >= xStart && mouseX <= xEnd) {
-            if (Math.abs(mouseY - resetY) <= halfH) { this.setSelected(resetIdx); return; }
-            if (Math.abs(mouseY - backY) <= halfH) { this.setSelected(backIdx); return; }
-        }
-
-        if (mouseY >= listTop && mouseY <= listBottom) {
-            const listY = mouseY - listTop + this.scrollY - this.listPadding;
-            const idx = Math.floor(listY / this.rowHeight);
-            if (idx >= 0 && idx < this.keybindCount) this.setSelected(idx);
-        }
-    }
-
-    handleMouseDown(event) {
-        if (!this.menuActive || !this.game.canSelect || !this.game.canSelectForestMap) return;
-        const { mouseX, mouseY } = this.canvasMouse(event);
-        if (this.barRect) {
-            const { x, y, w, h, thumbY, thumbH } = this.barRect;
-            if (mouseX >= x && mouseX <= x + w && mouseY >= thumbY && mouseY <= thumbY + thumbH) {
-                this.draggingBar = true;
-                this.dragStartMouseY = mouseY;
-                this.dragStartScrollY = this.scrollY;
-                return;
-            }
-            if (mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h) {
-                const t = (mouseY - y - thumbH / 2) / (h - thumbH);
-                this.targetScrollY = Math.max(0, Math.min(this.scrollMax, t * this.scrollMax));
-                return;
-            }
-        }
-    }
-    handleMouseUp() { this.draggingBar = false; }
-
-    handleMouseClick(_event) {
-        if (this.waitingForKey) return;
-        if (!this.menuActive || !this.game.canSelect || !this.game.canSelectForestMap) return;
+    handleMouseClick() {
+        if (this.waitingForKey || !this._canInteract()) return;
         this.handleMenuSelection();
-    }
-
-    activateMenu({ selectedOption = 0, inGame = false } = {}) {
-        this.menuInGame = !!inGame;
-        this.showStarsSticker = !this.menuInGame;
-
-        this.selectedOption = selectedOption;
-        this.scrollY = 0;
-        this.targetScrollY = 0;
-
-        super.activateMenu(this.selectedOption);
-        this.scrollSelectedIntoView();
-    }
-
-    activateFromNav(state = {}) {
-        this.activateMenu({
-            inGame: state.menuInGame ?? this.menuInGame,
-            selectedOption: state.selectedOption ?? 0,
-        });
     }
 
     handleMenuSelection() {
         const option = this.menuOptions[this.selectedOption];
 
-        if (option === "Go Back") {
+        if (option === 'Go Back') {
             super.handleMenuSelection();
             this.game.goBackMenu();
             return;
@@ -391,16 +223,16 @@ export class ControlsSettingsMenu extends ScrollableMenu {
 
         this.waitingForKey = true;
         this.waitingAction = option;
-        this.game.audioHandler.menu.playSound('optionSelectedSound', false, true);
+        this.playSelect();
     }
 
-    onGlobalKeyDown(e) {
+    onGlobalKeyDown(event) {
         if (!this.menuActive || !this.waitingForKey) return;
 
-        e.preventDefault();
-        e.stopPropagation();
+        event.preventDefault();
+        event.stopPropagation();
 
-        const key = normalizeKey(e.key);
+        const key = normalizeKey(event.key);
 
         if (key === 'Escape') {
             this.waitingForKey = false;
@@ -409,50 +241,20 @@ export class ControlsSettingsMenu extends ScrollableMenu {
         }
 
         for (const action in this.game.keyBindings) {
-            const isSitDiveCombo =
+            const sharesWithSit =
                 (this.waitingAction === 'sit' && action === 'diveAttack') ||
                 (this.waitingAction === 'diveAttack' && action === 'sit');
 
-            if (!isSitDiveCombo && this.game.keyBindings[action] === key) {
+            if (!sharesWithSit && this.game.keyBindings[action] === key) {
                 this.game.keyBindings[action] = null;
             }
         }
 
         this.game.keyBindings[this.waitingAction] = key;
-
-        if (this.waitingAction === 'sit') {
-            this.game.keyBindings['diveAttack'] = key;
-        }
+        if (this.waitingAction === 'sit') this.game.keyBindings.diveAttack = key;
 
         this.waitingForKey = false;
         this.waitingAction = null;
         this.game.saveGameState();
     }
-
-    setSelected(idx) {
-        if (idx !== this.selectedOption) {
-            this.selectedOption = idx;
-            this.game.audioHandler.menu.playSound('optionHoveredSound', false, true);
-            if (idx >= 0 && idx < this.keybindCount) {
-                this.scrollSelectedIntoView();
-            }
-        }
-    }
-
-    scrollSelectedIntoView() {
-        if (this.selectedOption >= this.keybindCount) return;
-        const listTop = this.game.height / 2 - this.positionOffset + this.menuOptionsPositionOffset;
-        const reservedForButtons = this.rowHeight * 2 + 40;
-        const listBottom = this.game.height - reservedForButtons - 20;
-        const listHeight = Math.max(120, listBottom - listTop);
-
-        const itemTop = this.listPadding + this.selectedOption * this.rowHeight;
-        const itemBottom = itemTop + this.rowHeight;
-
-        if (itemTop < this.targetScrollY) this.targetScrollY = itemTop;
-        else if (itemBottom > this.targetScrollY + listHeight) this.targetScrollY = itemBottom - listHeight;
-
-        this.targetScrollY = Math.max(0, Math.min(this.targetScrollY, this.scrollMax));
-    }
-
 }

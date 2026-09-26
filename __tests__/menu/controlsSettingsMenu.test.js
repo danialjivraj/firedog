@@ -259,74 +259,49 @@ describe('ControlsSettingsMenu', () => {
         });
     });
 
-    describe('mouse wheel and move behaviour', () => {
-        test('mouse wheel inside list scrolls list; outside delegates to BaseMenu and scrolls selection into view', () => {
+    describe('mouse wheel and hover behaviour', () => {
+        const hover = (element) => element.dispatchEvent(new Event('pointerenter'));
+
+        test('mouse wheel over the list scrolls it; elsewhere it moves the selection', () => {
+            menu.ensurePanel();
             menu.scrollMax = 500;
             menu.targetScrollY = 0;
 
-            const list = menu.listBounds();
-            const insideEvt = {
-                deltaY: 100,
-                clientX: list.x + 10,
-                clientY: list.y + 10,
-            };
-
-            menu.handleMouseWheel(insideEvt);
+            hover(menu.dom.viewport);
+            menu.handleMouseWheel({ deltaY: 100 });
             expect(menu.targetScrollY).toBeGreaterThan(0);
 
-            const spySuper = jest.spyOn(BaseMenu.prototype, 'handleMouseWheel');
+            menu.dom.viewport.dispatchEvent(new Event('pointerleave'));
             const spyScrollIntoView = jest.spyOn(menu, 'scrollSelectedIntoView');
+            const before = menu.selectedOption;
 
-            const outsideEvt = {
-                deltaY: 100,
-                clientX: list.x - 50,
-                clientY: list.y + 10,
-            };
+            menu.handleMouseWheel({ deltaY: 100 });
 
-            menu.handleMouseWheel(outsideEvt);
-
-            expect(spySuper).toHaveBeenCalledWith(outsideEvt);
+            expect(menu.selectedOption).toBe(before + 1);
             expect(spyScrollIntoView).toHaveBeenCalled();
 
-            spySuper.mockRestore();
             spyScrollIntoView.mockRestore();
         });
 
-        test('mouse move over list area selects corresponding row and plays hover sound', () => {
-            const list = menu.listBounds();
+        test('hovering a keybind row selects it and plays the hover sound', () => {
+            menu.ensurePanel();
             menu.selectedOption = 1;
 
-            const mx = list.x + 10;
-            const my = list.y + menu.listPadding + menu.rowHeight * 0.5;
-
-            menu.handleMouseMove({ clientX: mx, clientY: my });
+            hover(menu.dom.keyRows[0].row);
 
             expect(menu.selectedOption).toBe(0);
             expect(mockGame.audioHandler.menu.playSound)
                 .toHaveBeenCalledWith('optionHoveredSound', false, true);
         });
 
-        test('mouse move over bottom buttons selects Reset and Go Back entries', () => {
-            const listTop = mockGame.height / 2 - menu.positionOffset + menu.menuOptionsPositionOffset;
-            const reservedForButtons = menu.rowHeight * 2 + 40;
-            const listBottom = mockGame.height - reservedForButtons - 30;
-            const listHeight = Math.max(120, listBottom - listTop);
+        test('hovering the bottom buttons selects Reset and Go Back entries', () => {
+            menu.ensurePanel();
 
-            const resetIdx = menu.menuOptions.length - 2;
-            const backIdx = menu.menuOptions.length - 1;
+            hover(menu.dom.footer[0]);
+            expect(menu.selectedOption).toBe(menu.menuOptions.length - 2);
 
-            const xEnd = menu.centerX - 40;
-            const xStart = xEnd - 400;
-            const midX = (xStart + xEnd) / 2;
-
-            const resetY = listTop + listHeight + 40 + menu.rowHeight / 2;
-            const backY = resetY + menu.rowHeight;
-
-            menu.handleMouseMove({ clientX: midX, clientY: resetY });
-            expect(menu.selectedOption).toBe(resetIdx);
-
-            menu.handleMouseMove({ clientX: midX, clientY: backY });
-            expect(menu.selectedOption).toBe(backIdx);
+            hover(menu.dom.footer[1]);
+            expect(menu.selectedOption).toBe(menu.menuOptions.length - 1);
         });
     });
 
@@ -357,13 +332,16 @@ describe('ControlsSettingsMenu', () => {
             expect(menu.targetScrollY).toBe(menu.scrollMax);
         });
 
-        test('updateScrollFromThumb maps thumb position to targetScrollY within range', () => {
-            menu.barRect = { y: 100, h: 300, thumbH: 60 };
+        test('dragging the scrollbar thumb maps its position onto targetScrollY', () => {
+            menu.ensurePanel();
+            menu.barRect = { h: 300, thumbY: 0, thumbH: 60 };
             menu.scrollMax = 500;
+            menu.draggingBar = true;
 
-            const mid = 100 + (300 - 60) / 2 + 60 / 2;
+            menu.dom.bar.getBoundingClientRect = () => ({ top: 0, height: 300 });
+            const midpoint = (300 - 60) / 2 + 60 / 2;
 
-            menu.updateScrollFromThumb(mid);
+            menu._dragBar({ clientY: midpoint });
 
             expect(menu.targetScrollY).toBeCloseTo(menu.scrollMax / 2, 1);
         });

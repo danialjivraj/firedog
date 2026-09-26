@@ -1,10 +1,11 @@
-import { BaseMenu } from "./baseMenu.js";
+import { DomMenu } from "./dom/domMenu.js";
+import { hasUnboundKeybind } from "./dom/menuBadges.js";
 
-export class GameOverMenu extends BaseMenu {
+export class GameOverMenu extends DomMenu {
     constructor(game) {
         super(game, ['Retry', 'Settings', 'Back to Main Menu'], '');
-        this.positionOffset = 160;
         this.menuInGame = true;
+        this.panelModifier = 'menu-panel--danger menu-panel--gameover';
     }
 
     activateMenu(selectedOption = 0) {
@@ -17,6 +18,10 @@ export class GameOverMenu extends BaseMenu {
             : "Game Over!";
 
         super.activateMenu(selectedOption);
+    }
+
+    getOptionBadge(index) {
+        return this.menuOptions[index] === 'Settings' && hasUnboundKeybind(this.game);
     }
 
     handleMenuSelection() {

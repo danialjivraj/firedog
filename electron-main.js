@@ -32,6 +32,7 @@ function createWindow() {
     height: 1080,
     fullscreen: startFullscreen,
     backgroundColor: '#000000',
+    opacity: 0,
     icon: path.join(__dirname, 'game', 'assets', 'icons', 'firedogHead.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -53,6 +54,10 @@ function createWindow() {
   if (!startFullscreen) {
     mainWindow.maximize();
   }
+
+  const reveal = () => { if (mainWindow) mainWindow.setOpacity(1); };
+  mainWindow.once('ready-to-show', reveal);
+  setTimeout(reveal, 5000);
 
   mainWindow.on('closed', function () {
     mainWindow = null;

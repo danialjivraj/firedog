@@ -1,11 +1,5 @@
 import { BaseMenu } from '../../game/menu/baseMenu.js';
 
-const getOptionCenterY = (game, menu, index) => {
-  const optionHeight = 60;
-  const topY = game.height / 2 - menu.positionOffset + menu.menuOptionsPositionOffset;
-  return topY + optionHeight * index + optionHeight / 2;
-};
-
 const makeEvent = (overrides = {}) => ({
   preventDefault: jest.fn(),
   stopImmediatePropagation: jest.fn(),
@@ -348,22 +342,10 @@ describe('BaseMenu', () => {
   });
 
   describe('mouse move / hover input', () => {
-    test('handleMouseMove changes selection when pointer is over an option and plays sound', () => {
-      const y2 = getOptionCenterY(mockGame, menu, 1);
-
-      menu.handleMouseMove(makeEvent({ clientX: mockGame.width / 2, clientY: y2 }));
-
-      expect(menu.selectedOption).toBe(1);
-      expect(mockGame.audioHandler.menu.playSound)
-        .toHaveBeenCalledWith('optionHoveredSound', false, true);
-    });
-
-    test('handleMouseMove does nothing when canSelectForestMap=false', () => {
-      menu.menuActive = true;
-      mockGame.canSelectForestMap = false;
+    test('handleMouseMove is inert on the base class', () => {
       mockGame.audioHandler.menu.playSound.mockClear();
 
-      menu.handleMouseMove(makeEvent({ clientX: 100, clientY: 100 }));
+      menu.handleMouseMove(makeEvent({ clientX: mockGame.width / 2, clientY: 300 }));
 
       expect(menu.selectedOption).toBe(0);
       expect(mockGame.audioHandler.menu.playSound).not.toHaveBeenCalled();
@@ -502,9 +484,8 @@ describe('BaseMenu', () => {
 
     test('mouse move hovers but does NOT save', () => {
       mockGame.saveGameState.mockClear();
-      const y1 = getOptionCenterY(mockGame, menu, 0);
 
-      menu.handleMouseMove(makeEvent({ clientX: mockGame.width / 2, clientY: y1 }));
+      menu.handleMouseMove(makeEvent({ clientX: mockGame.width / 2, clientY: 300 }));
 
       expect(mockGame.saveGameState).not.toHaveBeenCalled();
     });

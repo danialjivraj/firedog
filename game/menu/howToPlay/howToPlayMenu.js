@@ -1,11 +1,14 @@
-import { BaseMenu } from '../baseMenu.js';
+import { DomMenu } from '../dom/domMenu.js';
 import { screenColourFadeIn, screenColourFadeOut } from '../../animations/screenColourFade.js';
 import { howToPlayPagesMixin } from './howToPlayPages.js';
 import { demoUpdatersMixin } from './demoUpdaters.js';
 import { tutorialDrawMixin, _setHowToPlayMenuRef } from './tutorialDrawUtils.js';
 import { BASE_FRAME_MS } from '../../config/constants.js';
 
-export class HowToPlayMenu extends BaseMenu {
+const CHEVRON_LEFT = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4.5 7.5 12 15 19.5"/></svg>`;
+const CHEVRON_RIGHT = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4.5 16.5 12 9 19.5"/></svg>`;
+
+export class HowToPlayMenu extends DomMenu {
     constructor(game) {
         const menuOptions = ['Next', 'Previous', 'Go Back'];
         super(game, menuOptions, '');
@@ -13,8 +16,7 @@ export class HowToPlayMenu extends BaseMenu {
         this.backgroundImage = document.getElementById('mainmenubackgroundhowtoplay');
         this.showStarsSticker = false;
 
-        this.centerX = this.game.width - 90;
-        this.positionOffset = -115;
+        this.absoluteLayout = true;
 
         this.assets = this._buildAssets();
 
@@ -45,7 +47,7 @@ export class HowToPlayMenu extends BaseMenu {
         this._tintCache = new Map();
     }
 
-    // ---------------- small utilities ----------------
+    // small utilities
     update(deltaTime) {
         this._lastDt = deltaTime;
         super.update(deltaTime);
@@ -83,7 +85,7 @@ export class HowToPlayMenu extends BaseMenu {
         return (idx / total) * 100;
     }
 
-    // ---------------- navigation ----------------
+    // navigation
     nextPage() {
         if (this.currentPage < this.pages.length - 1) {
             this.currentPage++;
@@ -127,7 +129,7 @@ export class HowToPlayMenu extends BaseMenu {
     }
 
 
-    // ---------------- static data ----------------
+    // static data
     static get _PLAYER_ANIM() {
         return {
             STANDING: { frameY: 0, maxFrame: 6 },
@@ -163,7 +165,7 @@ export class HowToPlayMenu extends BaseMenu {
         ctx.restore();
     }
 
-    // ---------------- player patching ----------------
+    // player patching
     _applyPatchToPlayer(patch) {
         const player = this.game.player;
         if (!player || !patch || typeof patch !== 'object') return null;
@@ -245,14 +247,62 @@ export class HowToPlayMenu extends BaseMenu {
         };
     }
 
+    // dom
+    _buildArrow(direction, glyph, optionIndex) {
+        const arrow = document.createElement('div');
+        arrow.className = `howto-arrow howto-arrow--${direction}`;
+        arrow.innerHTML = glyph;
+        this.bindHover(arrow, () => this.focusOption(optionIndex));
+        return arrow;
+    }
+
+    buildBody(body) {
+        const controls = this.buildFrame('howto-controls');
+
+        const arrows = document.createElement('div');
+        arrows.className = 'howto-arrows';
+        const prev = this._buildArrow('prev', CHEVRON_LEFT, 1);
+        const next = this._buildArrow('next', CHEVRON_RIGHT, 0);
+        arrows.append(prev, next);
+
+        const back = this.buildOption('Go Back', () => this.focusOption(2), 'howto-back');
+
+        controls.append(arrows, back);
+
+        const caption = this.buildFrame('howto-caption');
+
+        const index = document.createElement('span');
+        index.className = 'howto-caption__index';
+
+        const title = document.createElement('span');
+        title.className = 'howto-caption__title';
+
+        caption.append(index, title);
+
+        body.append(controls, caption);
+
+        this.dom.pageIndex = index;
+        this.dom.pageTitle = title;
+
+        this.dom.rows = [next, prev, back];
+    }
+
+    syncContent() {
+        this.dom.rows[0].classList.toggle('is-disabled', this.currentPage >= this.pages.length - 1);
+        this.dom.rows[1].classList.toggle('is-disabled', this.currentPage <= 0);
+
+        this.syncSelection();
+
+        this.dom.pageIndex.textContent = `${this.currentPage + 1} / ${this.pages.length}`;
+        this.dom.pageTitle.textContent = this.pages[this.currentPage]?.title ?? '';
+    }
+
     draw(context) {
         this.drawCurrentPage(context);
         this.drawTopLeftUIOverlay(context);
 
-        const prev = this.menuInGame;
-        this.menuInGame = true;
-        super.draw(context);
-        this.menuInGame = prev;
+        this.ensurePanel();
+        this.syncPanel();
     }
 }
 

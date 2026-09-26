@@ -17,6 +17,16 @@ import {
 import { PurchaseConfetti } from '../../interface/purchaseConfetti.js';
 import { drawCoinIcon } from '../../interface/coinIcon.js';
 import { BaseMenu } from '../baseMenu.js';
+import {
+    MENU_COLORS,
+    SCROLLBAR_MIN_THUMB,
+    bodyFont,
+    valueFont,
+    drawCornerBrackets,
+    drawFocusMarker,
+    drawGlassPanel,
+    drawMenuTitle,
+} from '../dom/menuTheme.js';
 import { buildWardrobeUI } from './wardrobeConfig.js';
 import { wardrobeModalMethods } from './wardrobeModal.js';
 import { originalAccumFrameInterval, normalizeDelta } from '../../config/constants.js';
@@ -221,7 +231,6 @@ export class Wardrobe extends BaseMenu {
         this.scrollMaxByTab = new Array(this.tabs.length).fill(0);
 
         this.barWidth = 10;
-        this.barTrackAlpha = 0.25;
         this.draggingBar = false;
         this.dragStartMouseY = 0;
         this.dragStartScrollY = 0;
@@ -989,14 +998,8 @@ export class Wardrobe extends BaseMenu {
 
         ctx.save();
 
-        // panel background
-        ctx.fillStyle = s.panelFill;
-        ctx.strokeStyle = s.panelStroke;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.roundRect(layout.x, layout.y, layout.w, layout.h, s.panelRadius);
-        ctx.fill();
-        ctx.stroke();
+        drawGlassPanel(ctx, layout.x, layout.y, layout.w, layout.h, { radius: s.panelRadius });
+        drawCornerBrackets(ctx, layout.x, layout.y, layout.w, layout.h, { radius: s.panelRadius });
 
         // title
         ctx.fillStyle = s.titleFill;
@@ -1075,7 +1078,7 @@ export class Wardrobe extends BaseMenu {
             ctx.shadowOffsetX = 0;
             ctx.shadowOffsetY = 0;
             ctx.fillStyle = 'rgba(255,255,255,0.70)';
-            ctx.font = 'bold 13px Arial';
+            ctx.font = valueFont(13, { bold: true });
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(`${i + 1}`, r.cellX + 12, r.cellY + 12);
@@ -1306,6 +1309,21 @@ export class Wardrobe extends BaseMenu {
             contentLeftX,
             contentRightPad,
             bottomReserved,
+        };
+    }
+
+    /** Box wrapping the tab column, sized from the same numbers the tabs use. */
+    _getTabsPanelRect() {
+        const cfg = this.UI.sidebar;
+        const s = this._getSidebarLayout();
+
+        const columnH = this.tabs.length * s.tabH + (this.tabs.length - 1) * s.gap;
+
+        return {
+            x: s.sidebarX + cfg.tabOffsetX - cfg.panelPadX,
+            y: s.sidebarTopY - cfg.panelPadY,
+            w: s.tabW + cfg.panelPadX * 2,
+            h: columnH + cfg.panelPadY * 2,
         };
     }
 
@@ -2166,15 +2184,9 @@ export class Wardrobe extends BaseMenu {
         this.drawBackdrop(context);
 
         context.save();
-        context.font = this.UI.title.font;
-        context.fillStyle = 'white';
-        context.shadowColor = 'black';
-        context.shadowOffsetX = this.UI.title.shadowX;
-        context.shadowOffsetY = this.UI.title.shadowY;
-        context.textAlign = 'center';
 
         const titleY = (this.game.height / 2 - this.positionOffset) - 30;
-        context.fillText(this.title, this.centerX, titleY);
+        drawMenuTitle(context, this.title, this.centerX, titleY);
 
         this._drawTabs(context);
         this._drawCreditCoins(context);
@@ -2311,7 +2323,7 @@ export class Wardrobe extends BaseMenu {
                     ctx.fill();
                 }
 
-                ctx.font = '16px Arial';
+                ctx.font = cfg.optionFont;
                 ctx.textAlign = 'left';
                 ctx.textBaseline = 'middle';
                 ctx.fillStyle = isActive ? cfg.optionFgActive : cfg.optionFg;
@@ -2331,6 +2343,12 @@ export class Wardrobe extends BaseMenu {
         const cfg = this.UI.tabs;
 
         context.save();
+
+        const panel = this._getTabsPanelRect();
+        const panelRadius = this.UI.sidebar.panelRadius;
+        drawGlassPanel(context, panel.x, panel.y, panel.w, panel.h, { radius: panelRadius });
+        drawCornerBrackets(context, panel.x, panel.y, panel.w, panel.h, { radius: panelRadius });
+
         context.shadowColor = 'transparent';
         context.shadowBlur = 0;
         context.shadowOffsetX = 0;
@@ -2344,31 +2362,29 @@ export class Wardrobe extends BaseMenu {
             const x = s.sidebarX + this.UI.sidebar.tabOffsetX;
             const y = s.sidebarTopY + i * (s.tabH + s.gap);
 
-            context.fillStyle = (isActive || isHovered) ? cfg.bgFillHover : cfg.bgFill;
-            this._roundRect(context, x, y, s.tabW, s.tabH, cfg.bgRadius);
-            context.fill();
-
             if (isActive || isHovered) {
-                context.strokeStyle = cfg.strokeHover;
-                context.lineWidth = 2;
-                context.stroke();
+                drawFocusMarker(context, x, y, s.tabW, s.tabH, {
+                    radius: cfg.rowRadius,
+                    opacity: isActive ? 1 : cfg.hoverMarkerOpacity,
+                });
             }
 
             if (isActive) {
-                context.fillStyle = cfg.activeBarFill;
-                this._roundRect(
-                    context,
-                    x + cfg.activeBar.xPad,
-                    y + cfg.activeBar.yPad,
-                    cfg.activeBar.w,
-                    s.tabH - cfg.activeBar.yPad * 2,
-                    cfg.activeBar.r
-                );
-                context.fill();
+                context.shadowColor = MENU_COLORS.emberDim;
+                context.shadowBlur = 18;
+                context.shadowOffsetX = 0;
+                context.shadowOffsetY = 2;
+            } else {
+                context.shadowColor = 'rgba(0, 0, 0, 0.8)';
+                context.shadowBlur = 3;
+                context.shadowOffsetX = 0;
+                context.shadowOffsetY = 2;
             }
 
-            context.font = isActive ? `bold ${cfg.fontActive}px Arial` : `${cfg.fontInactive}px Arial`;
-            context.fillStyle = (isActive || isHovered) ? cfg.textFillHover : 'white';
+            context.font = bodyFont(cfg.font);
+            context.fillStyle = isActive
+                ? cfg.textFillActive
+                : (isHovered ? cfg.textFillHover : cfg.textFill);
             context.textAlign = 'left';
             context.fillText(this.tabs[i].title, x + cfg.padLeft, y + Math.floor(s.tabH / 2));
         }
@@ -2437,18 +2453,30 @@ export class Wardrobe extends BaseMenu {
         const barX = Math.floor(layout.gridLeftX + layout.gridW + 14);
         const w = this.barWidth;
 
+        const bar = this.UI.scrollbar;
+
         ctx.save();
         ctx.shadowColor = 'transparent';
-        ctx.fillStyle = `rgba(255,255,255,${this.barTrackAlpha})`;
-        ctx.fillRect(barX, trackY, w, trackH);
+
+        this._roundRect(ctx, barX, trackY, w, trackH, w / 2);
+        ctx.fillStyle = bar.trackFill;
+        ctx.fill();
 
         const contentH = Math.max(1, layout.contentH);
-        const thumbH = Math.max(30, (layout.gridH / contentH) * trackH);
+        const thumbH = Math.max(SCROLLBAR_MIN_THUMB, (layout.gridH / contentH) * trackH);
         const t = (maxScroll <= 0) ? 0 : (scrollY / maxScroll);
         const thumbY = trackY + (trackH - thumbH) * t;
 
-        ctx.fillStyle = 'rgba(255,255,255,0.85)';
-        ctx.fillRect(barX, thumbY, w, thumbH);
+        ctx.save();
+        this._roundRect(ctx, barX, trackY, w, trackH, w / 2);
+        ctx.clip();
+
+        ctx.shadowColor = bar.thumbGlow;
+        ctx.shadowBlur = 10;
+        this._roundRect(ctx, barX, thumbY, w, thumbH, w / 2);
+        ctx.fillStyle = bar.thumbFill;
+        ctx.fill();
+        ctx.restore();
 
         ctx.restore();
 
@@ -2492,8 +2520,8 @@ export class Wardrobe extends BaseMenu {
             return true;
         })();
 
-        context.fillStyle = isSelected ? 'rgba(255,255,255,0.20)' : 'rgba(0,0,0,0.20)';
-        context.strokeStyle = isSelected ? 'rgba(255,255,0,0.95)' : 'rgba(255,255,255,0.16)';
+        context.fillStyle = isSelected ? cfg.fillSelected : cfg.fill;
+        context.strokeStyle = isSelected ? cfg.strokeSelected : cfg.stroke;
         context.lineWidth = isSelected ? 3 : 2;
 
         this._roundRect(context, x, y, size, size, cfg.radius);
@@ -2605,7 +2633,7 @@ export class Wardrobe extends BaseMenu {
             context.lineTo(rx - corner, ry);
             context.closePath();
 
-            context.fillStyle = 'rgba(255,255,0,0.95)';
+            context.fillStyle = cfg.equippedFlag;
             context.fill();
 
             context.beginPath();
@@ -2658,12 +2686,12 @@ export class Wardrobe extends BaseMenu {
 
         context.textAlign = 'center';
         context.textBaseline = 'bottom';
-        context.fillStyle = isSelected ? 'yellow' : 'white';
+        context.fillStyle = isSelected ? cfg.labelFillSelected : cfg.labelFill;
         context.font = `${isSelected ? 'bold ' : ''}${nameFont}px Arial`;
         context.fillText(label, baseX, nameY);
 
         if (showPrice) {
-            const priceFill = isSelected ? 'rgba(255,255,0,0.92)' : 'rgba(255,255,255,0.75)';
+            const priceFill = isSelected ? cfg.priceFillSelected : cfg.priceFill;
             this._drawCreditCoinAmount(context, price, baseX, priceY, {
                 align: 'center',
                 textBaseline: 'bottom',
@@ -2713,7 +2741,7 @@ export class Wardrobe extends BaseMenu {
         const cy = y + r;
 
         ctx.save();
-        ctx.shadowColor = emphasized ? 'rgba(255,255,0,0.20)' : 'transparent';
+        ctx.shadowColor = emphasized ? cfg.glowHover : 'transparent';
         ctx.shadowBlur = emphasized ? 8 : 0;
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 0;
@@ -2779,8 +2807,8 @@ export class Wardrobe extends BaseMenu {
         context.shadowOffsetX = 2;
         context.shadowOffsetY = 2;
 
-        context.font = isSelected ? cfg.fontActive : cfg.fontInactive;
-        context.fillStyle = isSelected ? 'yellow' : 'white';
+        context.font = cfg.font;
+        context.fillStyle = isSelected ? cfg.fillActive : cfg.fill;
         context.textAlign = 'right';
         context.textBaseline = 'alphabetic';
         context.fillText('Go Back', gb.x, gb.y);

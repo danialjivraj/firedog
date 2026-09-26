@@ -637,6 +637,7 @@ export const howToPlayPagesMixin = {
                 ...baseUI,
                 dashDemo: {
                     enabled: true,
+                    startX: 420,
                     waitMs: 1000,
                     betweenMs: 500,
                     secondWindowMs: 7000,

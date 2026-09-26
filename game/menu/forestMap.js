@@ -9,6 +9,7 @@ import {
     drawWithOptionalHue,
 } from '../config/skinsAndCosmetics.js';
 import { BaseMenu } from './baseMenu.js';
+import { MENU_COLORS } from './dom/menuTheme.js';
 import {
     Map1StartCutscene, Map2StartCutscene, Map3StartCutscene, Map4StartCutscene, Map5StartCutscene, Map6StartCutscene, Map7StartCutscene,
     BonusMap1StartCutscene, BonusMap2StartCutscene, BonusMap3StartCutscene
@@ -747,7 +748,7 @@ export class ForestMapMenu extends BaseMenu {
                 // selection ring + icon
                 if (index === this.selectedCircleIndex && this.selectedCircleIndex !== -1) {
                     context.save();
-                    context.strokeStyle = sealedBonus3 ? '#ff3b3b' : 'yellow';
+                    context.strokeStyle = sealedBonus3 ? '#ff3b3b' : MENU_COLORS.ember;
                     context.lineWidth = 3;
                     context.beginPath();
                     context.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);

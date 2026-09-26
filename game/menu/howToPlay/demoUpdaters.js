@@ -428,6 +428,7 @@ export const demoUpdatersMixin = {
         d.secondWindowRemainingMs = 0;
         d.dashCooldownElapsedMs = d.cooldownMs;
 
+        d.startX = this._num(cfg?.startX, d.startX);
         d.playerX = d.startX;
         d.spriteFrameX = 0;
         d.spriteFrameTimer = 0;
@@ -460,6 +461,7 @@ export const demoUpdatersMixin = {
         d.secondWindowMs = Math.max(0, this._num(cfg?.secondWindowMs, d.secondWindowMs || 7000));
         d.simulateSecondAtMs = Math.max(0, this._num(cfg?.simulateSecondAtMs, d.simulateSecondAtMs || 5000));
         d.cooldownMs = Math.max(0, this._num(cfg?.cooldownMs, d.cooldownMs || 60000));
+        d.startX = this._num(cfg?.startX, d.startX);
 
         const maxEnergy = this._num(cfg?.maxEnergy, d.maxEnergy ?? 100);
         d.maxEnergy = maxEnergy;

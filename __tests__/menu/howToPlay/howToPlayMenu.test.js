@@ -404,7 +404,7 @@ describe('HowToPlayMenu (new logic)', () => {
     });
 
     describe('drawCurrentPage()', () => {
-        it('draws the background, page drawables, and page label', () => {
+        it('draws the background and the page drawables', () => {
             menu.currentPage = 0;
 
             const page = menu.getCurrentPage();
@@ -420,9 +420,16 @@ describe('HowToPlayMenu (new logic)', () => {
 
             expect(ctx.drawImage).toHaveBeenCalledWith(menu.backgroundImage, 0, 0, game.width, game.height);
             expect(dSpy).toHaveBeenCalledTimes(1);
+        });
 
-            expect(ctx.strokeText).toHaveBeenCalled();
-            expect(ctx.fillText).toHaveBeenCalled();
+        it('leaves the page caption to the DOM chip rather than canvas text', () => {
+            menu.currentPage = 0;
+            menu.drawCurrentPage(ctx);
+
+            const captionish = ctx.strokeText.mock.calls.filter(([text]) =>
+                /^\d+\s*\/\s*\d+/.test(String(text))
+            );
+            expect(captionish).toHaveLength(0);
         });
     });
 
@@ -474,14 +481,53 @@ describe('HowToPlayMenu (new logic)', () => {
     });
 
     describe('draw()', () => {
-        it('draws page + UI overlay and then calls BaseMenu.draw', () => {
+        it('draws page + UI overlay and then syncs the DOM chrome', () => {
             menu.draw(ctx);
 
             expect(ctx.drawImage).toHaveBeenCalled();
 
             expect(game.UI.drawTutorialProgressBar).toHaveBeenCalled();
 
-            expect(BaseMenu.prototype.draw).toHaveBeenCalledTimes(1);
+            expect(menu.panel).toBeTruthy();
+            expect(menu.panel.querySelector('.howto-arrow--prev')).toBeTruthy();
+            expect(menu.panel.querySelector('.howto-arrow--next')).toBeTruthy();
+            expect(menu.panel.querySelector('.howto-back').textContent.trim()).toBe('Go Back');
+        });
+
+        it('maps the pager arrows and Go Back onto the menu options in order', () => {
+            menu.draw(ctx);
+
+            expect(menu.dom.rows[0]).toBe(menu.panel.querySelector('.howto-arrow--next'));
+            expect(menu.dom.rows[1]).toBe(menu.panel.querySelector('.howto-arrow--prev'));
+            expect(menu.dom.rows[2]).toBe(menu.panel.querySelector('.howto-back'));
+
+            menu.selectedOption = 2;
+            menu.draw(ctx);
+
+            expect(menu.dom.rows[2].classList.contains('is-focused')).toBe(true);
+            expect(menu.dom.rows[0].classList.contains('is-focused')).toBe(false);
+        });
+
+        it('shows the page caption and greys out an arrow that would do nothing', () => {
+            menu.currentPage = 0;
+            menu.draw(ctx);
+
+            expect(menu.panel.querySelector('.howto-caption__index').textContent)
+                .toBe(`1 / ${menu.pages.length}`);
+            expect(menu.panel.querySelector('.howto-caption__title').textContent)
+                .toBe(menu.pages[0].title ?? '');
+
+            const next = menu.panel.querySelector('.howto-arrow--next');
+            const prev = menu.panel.querySelector('.howto-arrow--prev');
+
+            expect(next.classList.contains('is-disabled')).toBe(false);
+            expect(prev.classList.contains('is-disabled')).toBe(true);
+
+            menu.currentPage = menu.pages.length - 1;
+            menu.draw(ctx);
+
+            expect(next.classList.contains('is-disabled')).toBe(true);
+            expect(prev.classList.contains('is-disabled')).toBe(false);
         });
     });
 
