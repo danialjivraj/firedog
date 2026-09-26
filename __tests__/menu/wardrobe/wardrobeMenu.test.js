@@ -894,6 +894,83 @@ describe('Wardrobe menu', () => {
         });
     });
 
+    describe('scrollbar dragging', () => {
+        const armScrollbar = () => {
+            menu.barRect = { x: 1500, y: 100, w: 10, h: 300, thumbY: 100, thumbH: 60 };
+            menu.scrollMaxByTab[menu.activeTabIndex] = 500;
+        };
+
+        it('a pointerdown on the thumb starts a drag, so the listener is wired', () => {
+            armScrollbar();
+
+            document.dispatchEvent(new MouseEvent('pointerdown', {
+                clientX: 1505, clientY: 120, bubbles: true,
+            }));
+
+            expect(menu.draggingBar).toBe(true);
+        });
+
+        it('a pointerup on document ends the drag, so the listener is wired', () => {
+            armScrollbar();
+            menu.handleMouseDown({ clientX: 1505, clientY: 120 });
+            expect(menu.draggingBar).toBe(true);
+
+            document.dispatchEvent(new MouseEvent('pointerup', { bubbles: true }));
+
+            expect(menu.draggingBar).toBe(false);
+        });
+
+        it('moving while dragging maps the thumb onto the active tab scroll', () => {
+            armScrollbar();
+            menu.handleMouseDown({ clientX: 1505, clientY: 120 });
+
+            menu.handleMouseMove({ clientX: 1505, clientY: 250 });
+
+            expect(menu.targetScrollYByTab[menu.activeTabIndex]).toBeCloseTo(250, 0);
+        });
+
+        it('pressing the track jumps the scroll without equipping anything', () => {
+            armScrollbar();
+            menu.handleMouseDown({ clientX: 1505, clientY: 340 });
+            menu.handleMouseUp();
+
+            const select = jest.spyOn(menu, '_selectCurrent');
+            const hitTest = jest.spyOn(menu, 'canvasMouse');
+            menu.handleMouseClick({ clientX: 1505, clientY: 340 });
+
+            expect(menu.targetScrollYByTab[menu.activeTabIndex]).toBeGreaterThan(0);
+            expect(hitTest).not.toHaveBeenCalled();
+            expect(select).not.toHaveBeenCalled();
+            select.mockRestore();
+            hitTest.mockRestore();
+        });
+
+        it('the click ending a thumb drag does not equip the card under the cursor', () => {
+            armScrollbar();
+            menu.handleMouseDown({ clientX: 1505, clientY: 120 });
+            menu.handleMouseMove({ clientX: 1505, clientY: 300 });
+            menu.handleMouseUp();
+
+            const select = jest.spyOn(menu, '_selectCurrent');
+            const hitTest = jest.spyOn(menu, 'canvasMouse');
+            menu.handleMouseClick({ clientX: 400, clientY: 300 });
+
+            expect(hitTest).not.toHaveBeenCalled();
+            expect(select).not.toHaveBeenCalled();
+            select.mockRestore();
+            hitTest.mockRestore();
+        });
+
+        it('only the click belonging to the scrollbar press is swallowed', () => {
+            armScrollbar();
+            menu.handleMouseDown({ clientX: 1505, clientY: 120 });
+            menu.handleMouseUp();
+            menu.handleMouseClick({ clientX: 400, clientY: 300 });
+
+            expect(menu._consumeBarClick()).toBe(false);
+        });
+    });
+
     describe('outfit slots', () => {
 
         beforeEach(() => {

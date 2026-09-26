@@ -581,7 +581,8 @@ export class Player {
             img: skinImg, sx, sy, sw, sh, dx, dy, dw, dh,
             channel: SKIN_FX_CHANNEL_PLAYER,
             alpha: skinAlpha,
-            paused: !!this.game.menu?.pause?.isPaused,
+            paused: !!this.game.menu?.pause?.isPaused
+                || this.game.tutorial?.tutorialPause === true,
         };
 
         const drawLayer = (img) => {

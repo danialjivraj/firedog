@@ -1308,6 +1308,30 @@ describe('Player', () => {
                 expect.objectContaining({ paused: true })
             );
         });
+
+        test('holds the clock while a tutorial step message freezes the world', () => {
+            player.game.menu.pause = { isPaused: false };
+            player.game.tutorial = { tutorialPause: true };
+
+            player.drawPlayerWithCurrentSkin(ctx);
+
+            expect(rainbowFx.drawRainbowSkin).toHaveBeenCalledWith(
+                ctx,
+                expect.objectContaining({ paused: true })
+            );
+        });
+
+        test('runs the clock once the tutorial step message is dismissed', () => {
+            player.game.menu.pause = { isPaused: false };
+            player.game.tutorial = { tutorialPause: false };
+
+            player.drawPlayerWithCurrentSkin(ctx);
+
+            expect(rainbowFx.drawRainbowSkin).toHaveBeenCalledWith(
+                ctx,
+                expect.objectContaining({ paused: false })
+            );
+        });
     });
 
     describe('drawPlayerWithCurrentSkin transparency', () => {

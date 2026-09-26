@@ -233,9 +233,15 @@ export class Wardrobe extends BaseMenu {
 
         this.barWidth = 10;
         this.draggingBar = false;
+        this.barClickPending = false;
         this.dragStartMouseY = 0;
         this.dragStartScrollY = 0;
         this.barRect = null;
+
+        this.handleMouseDown = this.handleMouseDown.bind(this);
+        this.handleMouseUp = this.handleMouseUp.bind(this);
+        document.addEventListener('pointerdown', this.handleMouseDown);
+        document.addEventListener('pointerup', this.handleMouseUp);
 
         // outfit slots
         this.outfitSlots = Array(4).fill(null);
@@ -261,6 +267,9 @@ export class Wardrobe extends BaseMenu {
 
         this.modal = null;
         this.purchaseConfetti = [];
+
+        this.draggingBar = false;
+        this.barClickPending = false;
 
         if (Array.isArray(this.scrollYByTab)) this.scrollYByTab[0] = 0;
         if (Array.isArray(this.targetScrollYByTab)) this.targetScrollYByTab[0] = 0;
@@ -1917,12 +1926,14 @@ export class Wardrobe extends BaseMenu {
 
             if (mouseX >= x && mouseX <= x + w && mouseY >= thumbY && mouseY <= thumbY + thumbH) {
                 this.draggingBar = true;
+                this.barClickPending = true;
                 this.dragStartMouseY = mouseY;
                 this.dragStartScrollY = this.scrollYByTab[this.activeTabIndex] || 0;
                 return;
             }
 
             if (mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h) {
+                this.barClickPending = true;
                 const travel = h - thumbH;
                 const t = (mouseY - y - thumbH / 2) / Math.max(1, travel);
                 const clamped = Math.max(0, Math.min(1, t));
@@ -1934,6 +1945,12 @@ export class Wardrobe extends BaseMenu {
 
     handleMouseUp() {
         this.draggingBar = false;
+    }
+
+    _consumeBarClick() {
+        if (!this.barClickPending) return false;
+        this.barClickPending = false;
+        return true;
     }
 
     _updateScrollFromThumb(mouseY) {
@@ -2070,6 +2087,7 @@ export class Wardrobe extends BaseMenu {
     }
 
     handleMouseClick(event) {
+        if (this._consumeBarClick()) return;
         if (!this._canInteract()) return;
 
         if (this.modal) {
