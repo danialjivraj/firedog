@@ -181,7 +181,8 @@ export class RecordsMenu extends ScrollableMenu {
         }
     }
 
-    handleMouseClick() {
+    handleMouseClick(event) {
+        if (this.consumeBarClick(event)) return;
         if (!this._canInteract()) return;
         if (this.selectedOption === this.goBackIndex) this.handleMenuSelection();
     }

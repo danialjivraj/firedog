@@ -73,7 +73,7 @@ ipcMain.on('set-window-mode', (_event, mode) => {
   if (!mainWindow) return;
   if (mode === 'fullscreen') {
     mainWindow.setFullScreen(true);
-  } else {
+  } else if (mainWindow.isFullScreen()) {
     mainWindow.setFullScreen(false);
     mainWindow.maximize();
   }

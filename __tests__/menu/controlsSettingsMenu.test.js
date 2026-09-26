@@ -366,6 +366,49 @@ describe('ControlsSettingsMenu', () => {
             expect(spy).toHaveBeenCalled();
             spy.mockRestore();
         });
+
+        const armScrollbar = () => {
+            menu.ensurePanel();
+            menu.barRect = { h: 300, thumbY: 0, thumbH: 60 };
+            menu.scrollMax = 500;
+            menu.dom.bar.getBoundingClientRect = () => ({ top: 0, height: 300 });
+        };
+
+        test('the click ending a thumb drag does not open the rebind prompt', () => {
+            armScrollbar();
+            menu._grabBar({ clientY: 30 });
+            expect(menu.draggingBar).toBe(true);
+
+            const spy = jest.spyOn(menu, 'handleMenuSelection');
+            menu.handleMouseClick({ target: menu.dom.track });
+
+            expect(spy).not.toHaveBeenCalled();
+            expect(menu.waitingForKey).toBe(false);
+            spy.mockRestore();
+        });
+
+        test('clicking the scrollbar itself does not open the rebind prompt', () => {
+            armScrollbar();
+            const spy = jest.spyOn(menu, 'handleMenuSelection');
+
+            menu.handleMouseClick({ target: menu.dom.bar });
+
+            expect(spy).not.toHaveBeenCalled();
+            expect(menu.waitingForKey).toBe(false);
+            spy.mockRestore();
+        });
+
+        test('only the click belonging to the scrollbar press is swallowed', () => {
+            armScrollbar();
+            menu._grabBar({ clientY: 30 });
+            menu.handleMouseClick({ target: menu.dom.track });
+
+            const spy = jest.spyOn(menu, 'handleMenuSelection');
+            menu.handleMouseClick({ target: menu.dom.track });
+
+            expect(spy).toHaveBeenCalled();
+            spy.mockRestore();
+        });
     });
 
     describe('drawing', () => {

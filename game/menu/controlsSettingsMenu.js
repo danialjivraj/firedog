@@ -200,7 +200,8 @@ export class ControlsSettingsMenu extends ScrollableMenu {
         }
     }
 
-    handleMouseClick() {
+    handleMouseClick(event) {
+        if (this.consumeBarClick(event)) return;
         if (this.waitingForKey || !this._canInteract()) return;
         this.handleMenuSelection();
     }

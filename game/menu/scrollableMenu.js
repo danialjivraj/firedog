@@ -14,6 +14,7 @@ export class ScrollableMenu extends DomMenu {
         this.scrollEase = 0.18;
 
         this.draggingBar = false;
+        this.barClickPending = false;
         this.pointerOverList = false;
         this.barRect = null;
 
@@ -24,6 +25,7 @@ export class ScrollableMenu extends DomMenu {
     closeMenu() {
         super.closeMenu();
         this.draggingBar = false;
+        this.barClickPending = false;
     }
 
     tickScroll(deltaTime) {
@@ -77,9 +79,18 @@ export class ScrollableMenu extends DomMenu {
         return scroll;
     }
 
+    consumeBarClick(event) {
+        if (this.barClickPending) {
+            this.barClickPending = false;
+            return true;
+        }
+        return !!this.hit(event, '.menu-scroll__bar');
+    }
+
     _grabBar(event) {
         if (!this._canInteract() || !this.barRect) return;
 
+        this.barClickPending = true;
         const y = this.ratioIn(this.dom.bar, event.clientY) * this.barRect.h;
         const { thumbY, thumbH } = this.barRect;
 
