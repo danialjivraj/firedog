@@ -796,13 +796,13 @@ https://github.com/user-attachments/assets/9a49266c-eee6-4301-971a-496b7b9ca9a7
 You can download the game by clicking one of the following links:
 
 #### For Windows
-- [Download (490.06MB)](https://www.mediafire.com/file/h0iqm99zgrth5w1/Firedog-win32-x64.zip/file)
+- [Download (490.07MB)](https://www.mediafire.com/file/8maovlz7jfqgq9q/Firedog-win32-x64.zip/file)
 
 #### For macOS
-- [Download (477.81MB)](https://www.mediafire.com/file/t5ddvehgiswxuh2/Firedog-darwin-arm64.zip/file)
+- [Download (477.35MB)](https://www.mediafire.com/file/l99q7ogvrccgxd3/Firedog-darwin-arm64.zip/file)
 
 #### For Linux
-- [Download (485.52MB)](https://www.mediafire.com/file/e2yco55afbk775f/Firedog-linux-x64.zip/file)
+- [Download (485.53MB)](https://www.mediafire.com/file/8khsa8u5ta261gk/Firedog-linux-x64.zip/file)
 
 <br>
 <details><summary><strong>The game isn't code-signed, so your OS may warn you on first launch.</strong></summary>
