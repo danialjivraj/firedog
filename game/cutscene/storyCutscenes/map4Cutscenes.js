@@ -117,7 +117,7 @@ export class Map4StartCutscene extends StoryCutscene {
                 onAdvance: () => this.transitionWithBg({
                     fadeIn: 1000, blackDuration: 1000, fadeOut: 1000,
                     imageId: 'dreamLight4',
-                    onBlackDelayMs: 2100,
+                    onBlackDelayMs: 1700,
                     beforeFade: () => {
                         this.playSFX('dreamSound');
                         this.fadeOutMusic('birdsChirping');
