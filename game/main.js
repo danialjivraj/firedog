@@ -59,8 +59,6 @@ window.addEventListener("load", function () {
                     game.currentMenu.menuActive = true;
                     game.currentMenu.draw(ctx);
                     game.currentMenu.update(deltaTime);
-                    game.metaToasts.forEach(t => t.draw(ctx));
-                    game.coinConvertToasts.forEach(t => t.draw(ctx));
                     break;
                 }
 
@@ -89,6 +87,12 @@ window.addEventListener("load", function () {
                     }
                     break;
                 }
+            }
+
+            if (game.gameState === GameState.MENU) {
+                game.menuLayer.drawToasts(game.metaToasts, game.coinConvertToasts);
+            } else {
+                game.menuLayer.drawToasts();
             }
 
             requestAnimationFrame(animate);

@@ -14,6 +14,10 @@ export class MenuLayer {
         this.panels = new Map();
         this.activeMenu = null;
 
+        this.toastCanvas = null;
+        this.toastCtx = null;
+        this.toastsOnCanvas = false;
+
         this.pointer = { x: -1, y: -1 };
         this.anchor = { x: -1, y: -1 };
         this.hoverLocked = false;
@@ -96,6 +100,34 @@ export class MenuLayer {
         panel.hidden = true;
         this.stage.appendChild(panel);
         this.panels.set(menu, panel);
+    }
+
+    _ensureToastCanvas() {
+        if (this.toastCanvas) return this.toastCtx;
+        this.ensureRoot();
+        if (!this.stage) return null;
+
+        const canvas = document.createElement('canvas');
+        canvas.className = 'menu-toasts';
+        canvas.width = CANVAS_WIDTH;
+        canvas.height = CANVAS_HEIGHT;
+        this.stage.appendChild(canvas);
+
+        this.toastCanvas = canvas;
+        this.toastCtx = canvas.getContext('2d');
+        return this.toastCtx;
+    }
+
+    drawToasts(...toastLists) {
+        const hasToasts = toastLists.some(list => list.length > 0);
+        if (!hasToasts && !this.toastsOnCanvas) return;
+
+        const ctx = this._ensureToastCanvas();
+        if (!ctx) return;
+
+        ctx.clearRect(0, 0, this.toastCanvas.width, this.toastCanvas.height);
+        toastLists.forEach(list => list.forEach(t => t.draw(ctx)));
+        this.toastsOnCanvas = hasToasts;
     }
 
     has(menu) {

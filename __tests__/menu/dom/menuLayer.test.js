@@ -48,4 +48,70 @@ describe('MenuLayer', () => {
             expect(() => layer.sync({ currentMenu: null })).not.toThrow();
         });
     });
+
+    describe('toast canvas', () => {
+        let ctx;
+
+        beforeEach(() => {
+            ctx = { clearRect: jest.fn() };
+            jest.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(ctx);
+        });
+
+        afterEach(() => {
+            jest.restoreAllMocks();
+        });
+
+        const toast = () => ({ draw: jest.fn() });
+        const toastCanvas = () => layer.stage.querySelector('canvas.menu-toasts');
+
+        it('is not created while there are no toasts', () => {
+            layer.drawToasts([], []);
+
+            expect(toastCanvas()).toBeNull();
+        });
+
+        it('is created inside the menu stage on the first toast, so toasts draw above menus', () => {
+            layer.drawToasts([toast()]);
+
+            expect(toastCanvas()).not.toBeNull();
+            expect(toastCanvas().width).toBe(1920);
+            expect(toastCanvas().height).toBe(689);
+        });
+
+        it('clears the canvas and draws every toast from every list', () => {
+            const a = toast();
+            const b = toast();
+            const c = toast();
+
+            layer.drawToasts([a, b], [c]);
+
+            expect(ctx.clearRect).toHaveBeenCalledWith(0, 0, 1920, 689);
+            for (const t of [a, b, c]) expect(t.draw).toHaveBeenCalledWith(ctx);
+        });
+
+        it('reuses the same canvas across frames', () => {
+            layer.drawToasts([toast()]);
+            layer.drawToasts([toast()]);
+
+            expect(layer.stage.querySelectorAll('canvas.menu-toasts')).toHaveLength(1);
+        });
+
+        it('clears once after the last toast ends, then stops touching the canvas', () => {
+            layer.drawToasts([toast()]);
+            ctx.clearRect.mockClear();
+
+            layer.drawToasts([]);
+            expect(ctx.clearRect).toHaveBeenCalledTimes(1);
+
+            layer.drawToasts([]);
+            layer.drawToasts();
+            expect(ctx.clearRect).toHaveBeenCalledTimes(1);
+        });
+
+        it('does not throw when the canvas has no 2d context', () => {
+            HTMLCanvasElement.prototype.getContext.mockReturnValue(null);
+
+            expect(() => layer.drawToasts([toast()])).not.toThrow();
+        });
+    });
 });
