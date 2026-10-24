@@ -2441,14 +2441,14 @@ export class NTharax extends EnemyBoss {
             this._asteroidsSpawned = true;
 
             if (this.mode2Active) {
-                for (let i = 0; i < 8; i++) {
+                for (let i = 0; i < 9; i++) {
                     this.game.enemies.push(new PurpleAsteroid(this.game));
                 }
                 for (let i = 0; i < 2; i++) {
                     this.game.enemies.push(new BlueAsteroid(this.game));
                 }
             } else {
-                for (let i = 0; i < 10; i++) {
+                for (let i = 0; i < 11; i++) {
                     this.game.enemies.push(new PurpleAsteroid(this.game));
                 }
             }

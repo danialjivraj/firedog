@@ -197,7 +197,11 @@ export class Asteroid extends FallingEnemy {
             impactSoundId = "elyvorg_meteor_in_contact_with_ground_sound",
         } = {}
     ) {
-        super(game, width, height, points, imageId);
+        const sizeScale = 0.85 + Math.random() * 0.15;
+        super(game, width * sizeScale, height * sizeScale, points, imageId);
+
+        this.spriteWidth = width;
+        this.spriteHeight = height;
 
         this.impactType = impactType;
         this.impactSoundId = impactSoundId;
@@ -242,7 +246,7 @@ export class Asteroid extends FallingEnemy {
 
         this.rotation += this.rotationSpeed * (deltaTime / 1000);
 
-        if (this.y >= this.game.height - this.game.groundMargin - 100) {
+        if (this.y >= this.game.height - this.game.groundMargin - this.height) {
             this.onGroundImpact();
         }
     }
@@ -268,8 +272,8 @@ export class Asteroid extends FallingEnemy {
             this.image,
             0,
             0,
-            this.width,
-            this.height,
+            this.spriteWidth,
+            this.spriteHeight,
             -this.width * 0.5,
             -this.height * 0.5,
             this.width,

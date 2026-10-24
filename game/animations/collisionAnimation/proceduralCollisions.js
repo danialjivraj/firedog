@@ -61,14 +61,14 @@ function _resolveSourceOpts(source, options) {
 
     const spriteWidth =
         options.spriteWidth ??
-        source.width ??
         source.spriteWidth ??
+        source.width ??
         (image ? image.width : 0);
 
     const spriteHeight =
         options.spriteHeight ??
-        source.height ??
         source.spriteHeight ??
+        source.height ??
         (image ? image.height : 0);
 
     const width = options.width ?? source.width ?? spriteWidth;

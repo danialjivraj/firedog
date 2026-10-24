@@ -247,7 +247,7 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-import { NTharax } from "../../../game/entities/enemies/bosses/ntharax/ntharax.js";
+import { NTharax, PurpleAsteroid } from "../../../game/entities/enemies/bosses/ntharax/ntharax.js";
 
 const createBoss = (gameOverrides = {}) => {
   const game = makeGame(gameOverrides);
@@ -722,7 +722,7 @@ describe("NTharax", () => {
   });
 
   describe("asteroid attack", () => {
-    test("asteroidLogic spawns 10 asteroids total in mode1 and mode2", () => {
+    test("asteroidLogic spawns 11 asteroids total in mode1 and mode2", () => {
       const { game, boss } = createBoss();
 
       boss.state = "asteroid";
@@ -737,7 +737,7 @@ describe("NTharax", () => {
         () => !boss.asteroidStarted && boss.state === "idle",
         { max: 20000 }
       );
-      expect(game.enemies.length).toBe(10);
+      expect(game.enemies.length).toBe(11);
 
       boss.state = "asteroid";
       boss.asteroidStarted = false;
@@ -751,7 +751,68 @@ describe("NTharax", () => {
         () => !boss.asteroidStarted && boss.state === "idle",
         { max: 20000 }
       );
-      expect(game.enemies.length).toBe(10);
+      expect(game.enemies.length).toBe(11);
+    });
+
+    const makeAsteroid = (roll, gameOverrides = {}) => {
+      const game = makeGame({
+        groundMargin: 50,
+        audioHandler: { enemySFX: makeAudioMock(), collisionSFX: makeAudioMock() },
+        ...gameOverrides,
+      });
+      const spy = jest.spyOn(Math, "random").mockReturnValue(roll);
+      const asteroid = new PurpleAsteroid(game);
+      spy.mockRestore();
+      return { game, asteroid };
+    };
+
+    test.each([
+      ["smallest", 0, 0.85],
+      ["middle", 0.5, 0.925],
+      ["largest", 0.999999, 1],
+    ])("asteroid size varies (%s) while keeping the sprite source size and aspect ratio", (_label, roll, scale) => {
+      const { asteroid } = makeAsteroid(roll);
+
+      expect(asteroid.width).toBeCloseTo(100 * scale, 3);
+      expect(asteroid.height).toBeCloseTo(98 * scale, 3);
+      expect(asteroid.spriteWidth).toBe(100);
+      expect(asteroid.spriteHeight).toBe(98);
+    });
+
+    test.each([0, 0.5, 0.999999])("asteroid lands when its bottom touches the ground whatever its size (roll %p)", (roll) => {
+      const { game, asteroid } = makeAsteroid(roll);
+      const groundY = game.height - game.groundMargin;
+
+      asteroid.y = groundY - asteroid.height - 1;
+      asteroid.update(16);
+      expect(asteroid.markedForDeletion).toBe(false);
+      expect(game.collisions).toHaveLength(0);
+
+      asteroid.y = groundY - asteroid.height;
+      asteroid.update(16);
+      expect(asteroid.markedForDeletion).toBe(true);
+      expect(game.collisions).toHaveLength(1);
+    });
+
+    test("asteroid draws the whole sprite scaled down to its random size", () => {
+      const { asteroid } = makeAsteroid(0);
+      const ctx = {
+        save: jest.fn(),
+        restore: jest.fn(),
+        translate: jest.fn(),
+        rotate: jest.fn(),
+        drawImage: jest.fn(),
+        strokeRect: jest.fn(),
+      };
+
+      asteroid.draw(ctx);
+
+      const [, sx, sy, sw, sh, dx, dy, dw, dh] = ctx.drawImage.mock.calls[0];
+      expect([sx, sy, sw, sh]).toEqual([0, 0, 100, 98]);
+      expect(dw).toBeCloseTo(85);
+      expect(dh).toBeCloseTo(83.3);
+      expect(dx).toBeCloseTo(-42.5);
+      expect(dy).toBeCloseTo(-41.65);
     });
   });
 

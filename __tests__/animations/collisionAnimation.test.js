@@ -561,6 +561,32 @@ describe('DisintegrateCollision', () => {
     d.draw(ctx);
     expect(ctx.drawImage).toHaveBeenCalled();
   });
+
+  test('crops shards from the full sprite when the source is drawn at a different size', () => {
+    const image = { width: 100, height: 98 };
+    const source = {
+      image,
+      spriteWidth: 100,
+      spriteHeight: 98,
+      width: 85,
+      height: 83.3,
+      x: 0,
+      y: 0,
+    };
+
+    const d = new DisintegrateCollision(game, source);
+
+    expect(d.spriteWidth).toBe(100);
+    expect(d.spriteHeight).toBe(98);
+    expect(d.width).toBe(85);
+    expect(d.height).toBe(83.3);
+    expect(d.x).toBeCloseTo(42.5);
+    expect(d.y).toBeCloseTo(41.65);
+
+    const lastShard = d.shards[d.shards.length - 1];
+    expect(lastShard.sx + lastShard.sw).toBeCloseTo(100);
+    expect(lastShard.sy + lastShard.sh).toBeCloseTo(98);
+  });
 });
 
 describe('GhostFadeOut', () => {
