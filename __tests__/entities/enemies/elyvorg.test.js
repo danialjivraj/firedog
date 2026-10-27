@@ -1228,6 +1228,27 @@ describe("elyvorg.js entities – behavior coverage", () => {
             jest.useRealTimers();
         });
 
+        it("checkIfDefeated clears an active tunnel vision so its status icon does not get stuck", () => {
+            boss.lives = 0;
+            mockGame.boss.current = boss;
+            mockGame.collisions = [{ _isTunnelVision: true }];
+            mockGame.player.isBlackHoleActive = true;
+            mockGame.player.blackHoleTimer = 3000;
+            mockGame.player.blackHoleDuration = 4400;
+
+            jest.useFakeTimers();
+
+            boss.checkIfDefeated();
+            jest.runAllTimers();
+
+            expect(mockGame.collisions).toEqual([]);
+            expect(mockGame.player.isBlackHoleActive).toBe(false);
+            expect(mockGame.player.blackHoleTimer).toBe(0);
+            expect(mockGame.player.blackHoleDuration).toBe(0);
+
+            jest.useRealTimers();
+        });
+
         it("checkIfDefeated enforces gate.minCoins when gate exists", () => {
             boss.lives = 0;
             mockGame.coins = 0;

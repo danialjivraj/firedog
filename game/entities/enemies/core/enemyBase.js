@@ -314,6 +314,10 @@ export class EnemyBoss extends Enemy {
             this.game.collisions = [];
             this.game.behindPlayerParticles = [];
 
+            this.game.player.isBlackHoleActive = false;
+            this.game.player.blackHoleTimer = 0;
+            this.game.player.blackHoleDuration = 0;
+
             this.x = this.game.width / 2 + 200;
             this.y = this.originalY;
             this.speedX = 0;
